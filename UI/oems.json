@@ -1,0 +1,73 @@
+{
+    "assozeta": {
+        "name": "assozeta",
+        "abbreviation": "assozeta",
+        "url": "",
+        "logo": "/oem/assozeta/brand/logo.svg",
+        "xmasLogo": "/oem/assozeta/brand/logo.svg",
+        "newCollaboratorIcon": "/static/smartphone_girl.png",
+        "supportEmail": "",
+        "privacyPolicyUrl": "",
+        "termsOfServiceUrl": "",
+        "isReseller": false,
+        "selfHosted": true,
+        "supportMultipleAssociations": false,
+        "showCourseAthletes": false,
+        "showMinorExemption": true,
+        "showTutorial": false,
+        "hosts": {
+            "prod": {
+                "frontend": "",
+                "api": "/api"
+            },
+            "staging": {
+                "frontend": "",
+                "api": "/api"
+            }
+        },
+        "stripe": {
+            "pricingTable": "",
+            "publicKey": "",
+            "clientPortal": ""
+        },
+        "meta": {
+            "title": "assozeta",
+            "description": "assozeta - software open source per la gestione di associazioni sportive.",
+            "appleMobileWebAppCapable": "yes",
+            "appleMobileWebAppStatusBarStyle": "black",
+            "appleTouchIcon": "/oem/assozeta/brand/logo.svg",
+            "appleMobileWebAppTitle": "assozeta",
+            "manifest": "/oem/assozeta/manifest.json"
+        },
+        "displaySettings": {
+            "general": {
+                "searchBar": false,
+                "cookieConsent": false,
+                "showDemoButton": false
+            },
+            "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": false,
+                "showFooterInfo": false,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+            },
+            "theme": {
+                "primaryColor": "#361fc2"
+            },
+            "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+            },
+            "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": false,
+                "showTermsOfService": false,
+                "showPreferences": false,
+                "showManual": false
+            }
+        }
+    }
+}

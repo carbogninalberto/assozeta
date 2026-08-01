@@ -1,0 +1,13 @@
+{
+    "name": "assozeta",
+    "short_name": "assozeta",
+    "icons": [
+        {
+            "src": "/oem/assozeta/brand/logo.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone"
+}

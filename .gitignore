@@ -1,1 +1,27 @@
+BE/
+
 tmp/
+
+# Deprecated / local-only project artifacts
+/.github/
+/.claude/
+/.idea/
+/.vscode/
+/.vs/
+/android/
+/ios/
+/testing/
+/tests/
+/resources/
+/docs/
+/UI/.github/
+/UI/.claude/
+/UI/.idea/
+/UI/.vscode/
+/UI/.vs/
+/UI/android/
+/UI/ios/
+/UI/testing/
+/UI/tests/
+/UI/resources/
+/UI/docs/

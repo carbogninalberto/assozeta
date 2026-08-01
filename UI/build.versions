@@ -1,0 +1,39 @@
+v0.0.1;Beta Version
+v0.1.0;Improvements in Logo & search
+v0.1.1;fix: api urls in staging/prod/dev & updated staging github actions<br>fix: courses was redirecting to dashboard<br>typo in ApiMiddleware was driving me crazy<br>comment out unused<br>avoid using alias for now<br>inject plugin & dependencies<br>updated rollup alias config without project workdir<br>dependencies & readme & eslint setup<br>updating dependencies<br>Improvements in Logo & search
+v0.1.2;fix: not toggle of menus in mobile, add script bundle in head<br>fix: api urls in staging/prod/dev & updated staging github actions<br>fix: courses was redirecting to dashboard<br>typo in ApiMiddleware was driving me crazy<br>comment out unused<br>avoid using alias for now<br>inject plugin & dependencies<br>updated rollup alias config without project workdir<br>dependencies & readme & eslint setup<br>updating dependencies<br>Improvements in Logo & search
+v0.1.3;fix: logo text is a track now<br>fix: not toggle of menus in mobile, add script bundle in head<br>fix: api urls in staging/prod/dev & updated staging github actions<br>fix: courses was redirecting to dashboard<br>typo in ApiMiddleware was driving me crazy<br>comment out unused<br>avoid using alias for now<br>inject plugin & dependencies<br>updated rollup alias config without project workdir<br>dependencies & readme & eslint setup<br>updating dependencies<br>Improvements in Logo & search
+v0.2.0;improvement: subscription from search result<br>- added subscription from search result<br>- improved add user section to support the embedding inside a modal<br>improvement: added beta badge below the logo<br>fix: header search null result not diplayed & width of header<br>fix: error isLoaded undefined<br>improvement: beta version & new scrollbar dep (to be implemented)<br>improvement: search row is all clickable<br>fix: switched names<br>improvement: refactor<br>fix: refactor & don't fix if it ain't broke<br>clean & added jsconfig for alias path resolving<br>fix: logout on 401
+v0.2.1;
+v0.2.2;
+v0.2.3;
+v0.2.4;
+v0.2.5;
+v0.2.6;
+v0.3.0;
+v0.3.1;
+v0.3.2;
+v0.4.0;
+v0.5.0;
+v0.5.1;
+v0.5.2;
+v0.6.0;
+v0.6.1;
+v0.7.0;
+v0.7.1;
+v0.7.2;
+v0.7.3;
+v0.8.0;
+v0.9.0;
+v0.9.1;
+v0.10.0;
+v0.11.0;
+v0.12.0;
+v0.13.0;
+v0.14.0;
+v0.14.1;
+v0.15.0;
+v0.15.1;
+v0.16.0;
+v0.99.0;
+v0.138.1;

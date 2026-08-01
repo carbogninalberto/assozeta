@@ -1,0 +1,19 @@
+{
+  "appId": "org.assozeta.app",
+  "appName": "assozeta",
+  "webDir": "dist/public",
+  "bundledWebRuntime": false,
+  "webView": {
+    "allowMultipleWindows": true
+  },
+  "server": {
+    "allowNavigation": ["*"]
+  },
+  "android": {
+    "backgroundColor": "#ffffff"
+  },
+  "ios": {
+    "contentInset": "scrollableAxes",
+    "backgroundColor": "#ffffff"
+  }
+}
