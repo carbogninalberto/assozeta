@@ -16,6 +16,12 @@
 
 </div>
 
+## Contributors
+
+<!-- contributors:start -->
+<a href="https://github.com/carbogninalberto"><img src="https://avatars.githubusercontent.com/u/17618905?v=4&amp;s=64" width="64" height="64" alt="@carbogninalberto" title="@carbogninalberto"></a>
+<!-- contributors:end -->
+
 > [!IMPORTANT]
 > Il repository comprende la UI Svelte in `UI/` e il backend Django in `BE/`. Il self-hosting richiede ancora configurazione manuale e servizi esterni: non è disponibile uno stack turnkey avviabile con un solo comando.
 

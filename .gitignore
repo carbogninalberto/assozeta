@@ -1,7 +1,6 @@
 tmp/
 
 # Deprecated / local-only project artifacts
-/.github/
 /.claude/
 /.idea/
 /.vscode/
