@@ -1,0 +1,357 @@
+{% load format %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            color: #000;
+            background: #fff !important;
+        }
+
+        /* Print optimization */
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Layout components */
+        .stampa {
+            width: 19cm;
+            margin: auto;
+            min-height: 15cm;
+        }
+
+        .title-header {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .custom-title {
+            font-size: 9pt;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .logo {
+            max-width: 10cm;
+            height: 2.2cm;
+            max-height: 2.2cm;
+        }
+
+        /* Table styles */
+        .is-a-table {
+            padding: 5px 15px 5px 15px;
+            background: #fff;
+        }
+
+        .is-a-cell {
+            width: 100%;
+            word-wrap: break-word;
+            font-size: 9pt;
+        }
+
+        /* Grid system */
+        .columns {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .is-6 {
+            flex: 0 0 50%;
+        }
+
+        .is-12 {
+            flex: 0 0 100%;
+        }
+
+        /* Header and footer */
+        .divHeader {
+            border-bottom: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            background: #fff;
+            font-size: 9pt;
+        }
+
+        .divFooter {
+            border-top: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            padding-top: 3pt;
+            background: #fff;
+            font-size: 9pt;
+        }
+
+        /* Subscription form specific */
+        .subscription-type {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            background: #f9f9f9;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Print positioning */
+        @media print {
+            .divHeader {
+                position: fixed;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .divFooter {
+                position: fixed;
+                bottom: 0;
+                z-index: 1000;
+            }
+
+            /*.content-wrapper {
+                margin-top: 0px;
+            }*/
+        }
+
+        /* Page breaks */
+        .page-break-before {
+            page-break-before: always;
+            break-before: always;
+        }
+
+        .page-break-after {
+
+            break-after: page;
+        }
+
+        ul, ol {
+            padding-left: 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        ul li, ol li {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        ol {
+            /* Initialize the counter at the list level */
+            counter-reset: section;
+        }
+
+        ol li:before {
+            counter-increment: section;
+            content: counter(section) '.';
+            margin-right: 5px;
+        }
+
+        /* Fix the :not selector syntax and move it to the li element */
+        ul li:not([data-type="taskItem"]):before {
+            content: '•';
+            margin-right: 5px;
+        }
+
+        table {
+            margin-bottom: 10px;
+            margin-top: 10px;
+            width: 100%;
+            border-spacing: 0;
+            border-collapse: collapse;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+
+        th > * {
+            padding: 0 6px;
+        }
+
+        td > * {
+            padding: 0 6px;
+        }
+
+        td, th, tr {
+            margin: 0px !important;
+            padding: 0px !important;
+        }
+
+        p, h1, h2, h3 {
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        p.no-padding, h1.no-padding, h2.no-padding, h3.no-padding {
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        /* Border styles for table cells based on attributes */
+        td[borderright="solid"], th[borderright="solid"] {
+            border-right: 1px solid #aaa !important;
+        }
+        td[borderright="dashed"], th[borderright="dashed"] {
+            border-right: 1px dashed #aaa !important;
+        }
+        td[borderright="dotted"], th[borderright="dotted"] {
+            border-right: 1px dotted #aaa !important;
+        }
+
+        td[bordertop="solid"], th[bordertop="solid"] {
+            border-top: 1px solid #aaa !important;
+        }
+        td[bordertop="dashed"], th[bordertop="dashed"] {
+            border-top: 1px dashed #aaa !important;
+        }
+        td[bordertop="dotted"], th[bordertop="dotted"] {
+            border-top: 1px dotted #aaa !important;
+        }
+
+        td[borderleft="solid"], th[borderleft="solid"] {
+            border-left: 1px solid #aaa !important;
+        }
+        td[borderleft="dashed"], th[borderleft="dashed"] {
+            border-left: 1px dashed #aaa !important;
+        }
+        td[borderleft="dotted"], th[borderleft="dotted"] {
+            border-left: 1px dotted #aaa !important;
+        }
+
+        td[borderbottom="solid"], th[borderbottom="solid"] {
+            border-bottom: 1px solid #aaa !important;
+        }
+        td[borderbottom="dashed"], th[borderbottom="dashed"] {
+            border-bottom: 1px dashed #aaa !important;
+        }
+        td[borderbottom="dotted"], th[borderbottom="dotted"] {
+            border-bottom: 1px dotted #aaa !important;
+        }
+    </style>
+</head>
+
+<body>
+<div class='stampa'>
+    <div class="page-container">
+        {% if header and header != '' and header != '<p><br></p>' and header != '<p></p>' %}
+            <div class="divHeader">{{ header | safe }}</div>
+        {% endif %}
+
+        <div class="content-wrapper">
+            <div class='columns' style='margin-top:10px'>
+                <div class='column is-12'>
+                    <div class="is-a-table">
+                        <div class='is-a-cell'>
+                            {{ template | safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if footer and footer != '' and footer != '<p><br></p>' and footer != '<p></p>' %}
+            <div class="divFooter">{{ footer | safe }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Layout adjustment function
+        function adjustLayout() {
+            const header = document.querySelector('.divHeader');
+            const content = document.querySelector('.content-wrapper');
+            let headerHeight = 0;
+
+            if (header) {
+                const headerClone = header.cloneNode(true);
+                headerClone.style.position = 'absolute';
+                headerClone.style.visibility = 'hidden';
+                document.body.appendChild(headerClone);
+
+                headerHeight = headerClone.offsetHeight;
+                document.body.removeChild(headerClone);
+
+                content.style.marginTop = (headerHeight + 20) + 'px';
+            }
+
+            const sections = document.querySelectorAll('p:not(table p)').forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const pageHeight = window.innerHeight;
+
+                if (rect.top < pageHeight && (rect.top + rect.height) > pageHeight) {
+                    section.classList.add('page-break-before');
+                }
+            });
+
+            const tables = document.querySelectorAll('table').forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const pageHeight = window.innerHeight;
+
+                if (rect.top < pageHeight && (rect.top + rect.height) > pageHeight) {
+                    section.classList.add('page-break-before');
+                    //section.style.marginTop = (headerHeight + 120) + 'px';
+                }
+            });
+
+            if (header) {
+                const pageBreakElements = document.querySelectorAll('.page-break-before');
+                pageBreakElements.forEach((element) => {
+                    element.style.marginTop = (headerHeight + 20) + 'px';
+                });
+            }
+        }
+
+        // Initial layout adjustment
+        adjustLayout();
+
+        // Adjust on window resize
+        window.addEventListener('resize', adjustLayout);
+
+        // Adjust before printing
+        window.addEventListener('beforeprint', adjustLayout);
+
+        // Monitor content changes
+        const observer = new MutationObserver(adjustLayout);
+        observer.observe(document.querySelector('.content-wrapper'), {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    });
+</script>
+</body>
+</html>

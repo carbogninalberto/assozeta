@@ -1,0 +1,155 @@
+{% load format %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
+        }
+        .title {
+            font-size: 14pt;
+            text-align: center;
+            width:100%;
+            margin: 0;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .stampa {
+            /*border: 1px solid #000;*/
+            width: 19cm;
+            height: 15.7cm;
+            max-width: 21cm;
+            min-width: 19cm;
+            min-height: 15cm;
+            margin: auto;
+            /*margin: 10mm 10mm 10mm 10mm;*/
+            padding: 15mm;
+        }
+
+        p {
+            margin: .2rem;
+        }
+
+        ul, li {
+            padding: 0;
+        }
+
+        @media screen {
+            div.divFooter {
+                display: none;
+            }
+        }
+        @media print {
+            div.divFooter {
+                border-top: 1px solid #ccc;
+                width: 19cm;
+                padding-top: 10px;
+                background: #fff;
+                font-size: 9px;
+                position: fixed;
+                bottom: 0;
+            }
+        }
+    </style>
+</head>
+
+<body style="{{ body_style }}">
+<div class='stampa' style="margin-top: 1rem;">
+ <h1 class="title">RICHIESTA DI VISITA MEDICO-SPORTIVA PER L'IDONEITA' ALLA PRATICA AGONISTICA</h1>
+    <p class="text-center" style="font-size:8pt;">
+        (DM del 24/04/2013 - Decreto Balduzzi e del Decreto del Fare, convertito in legge 98, art. 42.bis, pubblicato nella GU il 20 agosto 2013)
+    </p>
+
+    <p class="text-right" style="margin-top: 20px;">
+        Data <b>{{ medical_appointment.date | date:"d/m/Y" | default:"________________" | upper}}</b>
+    </p>
+    <p>
+        <b>{{ sport_association.denomination | default:"________________________________" | upper }}</b>
+    </p>
+    <p>
+        Con sede in: <b>{{ sport_association.address_city | default:"________________________________" | upper }}</b>
+    </p>
+    <p>
+        Indirizzo: <b>{{ sport_association.address | default:"________________________________" | upper }}, {{ sport_association.address_cap | default:"________" | upper }}</b>
+    </p>
+    <p>
+        Affiliata alla Federazione Sportiva Nazionale <b>{{ sport_association.federation | default:"______________" }}</b>
+        con matricola <b>{{ sport_association.enroll_number | default:"______________" | upper }}</b>
+    </p>
+
+    <h3 class="text-center" style="margin-top:20px;"><b>Chiede che il proprio atleta</b></h3>
+
+    <p>
+        Nome e Cognome: <b>{{ associate.full_name | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Città di residenza: <b>{{ associate.address_city | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Indirizzo: <b>{{ associate.address | default:"________________________________" | upper }}, {{ associate.address_cap | default:"________" | upper }}</b>
+    </p>
+
+    <p>
+        Codice fiscale: <b>{{ associate.tax_code | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Tessera sanitaria: <b>{{ associate.health_insurance_card | default:"________________________________" | upper }}</b>
+    </p>
+
+
+    <h3 class="text-center" style="margin-top:20px;"><b>Si sottoponga ad una visita medico-sportiva per l'idoneità alla pratica agonistica dello sport: </b></h3>
+    <h3 class="text-center" style="margin-top:20px;"><b>{{ medical_appointment.sport | default:"________________________________" | upper }}</b></h3>
+
+    <p>
+        Sbarrare una delle seguenti opzioni
+    </p>
+
+    <ul style="list-style-type: none;">
+        <li>
+            <input type="checkbox" {{ meta.first_affiliation | yesno:'checked,""' }} /> Prima Affiliazione
+        </li>
+        <li>
+            <input type="checkbox" {{ meta.renewal | yesno:'checked,""'}} /> Rinnovo (allegare ultimo certificato in originale in possesso dell’atleta)
+        </li>
+    </ul>
+
+
+    <h3 class="text-right" style="margin-top:20px;">Firma del presidente e timbro</h3>
+    <p class="text-right" style="margin-top:20px;">
+        <img height="80" src="{{ sport_association.logo | safe }}" />
+    </p>
+
+    <p style="margin-top: 20px;">
+        <b>N.B.</b> La mancata o l'errata compilazione di uno dei dati richiesti e/o la mancata presentazione dell'ultimo
+certificato rende nulla la richiesta. Per prima affiliazione si intende la prima visita in assoluto dell'atleta
+richiesta per qualsiasi sport, tutte le successive anche per sport diversi sono da considerarsi rinnovi. La
+richiesta deve essere compilata a macchina o con carattere stampatello, timbrata e firmata in originale. La
+richiesta non può essere presentata prima di 30 gg. dalla scadenza del certificato precedente. II presidente
+di <b>{{ sport_association.denomination }}</b> non può compilare più richieste di visita per lo stesso atleta nel corso degli 11
+mesi successivi.
+    </p>
+
+</div>
+
+
+</body>
+
+</html>

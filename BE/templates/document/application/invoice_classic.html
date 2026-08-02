@@ -1,0 +1,741 @@
+{% load format %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        /* Print optimization */
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Layout components */
+        .stampa {
+            width: 19cm;
+            margin: auto;
+            min-height: 15cm;
+        }
+
+        .title-header {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .custom-title {
+            font-size: 9pt;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .logo {
+            max-width: 10cm;
+            height: 2.2cm;
+            max-height: 2.2cm;
+        }
+
+        /* Table styles */
+        .is-a-table {
+            margin: 10px 0;
+            background: #fff;
+        }
+
+        .is-a-cell {
+            width: 100%;
+            word-wrap: break-word;
+            font-size: 9pt;
+        }
+
+        /* Grid system replacement */
+        .columns {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .is-6 {
+            flex: 0 0 50%;
+        }
+
+        .is-12 {
+            flex: 0 0 100%;
+        }
+
+        /* Header and footer */
+        .divHeader {
+            border-bottom: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            background: #fff;
+            font-size: 9pt;
+        }
+        
+        .divHeader table {
+            width: 100% !important;
+        }
+        .divHeader table p {
+            text-align: left;
+        }
+
+        .divFooter {
+            border-top: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            padding-top: 3pt;
+            background: #fff;
+            font-size: 9pt;
+        }
+        .divFooter table {
+            width: 100% !important;
+        }
+        .divFooter table p {
+            text-align: left;
+        }
+
+        /* Page breaks */
+        .page-break-before {
+            page-break-before: always;
+            break-before: always;
+        }
+
+        .page-break-after {
+            page-break-after: always;
+            break-after: always;
+        }
+
+        /* Print positioning */
+        @media print {
+            .divHeader {
+                position: fixed;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .divFooter {
+                position: fixed;
+                bottom: 0;
+                z-index: 1000;
+            }
+
+            .content-wrapper {
+                margin-top: 0px; /* Adjusted by JS */
+            }
+        }
+
+        /* Helper class */
+        .measuring {
+            position: absolute !important;
+            visibility: hidden !important;
+            top: 0 !important;
+        }
+
+        /* Text alignment */
+        .text-right {
+            text-align: right;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-center {
+            text-align: left;
+        }
+
+        /* Notes section */
+        .notes {
+            font-size: 9pt;
+            margin: 1rem 0;
+        }
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+        
+        #extra_text_invoices > p {
+            font-size: 8px !important;
+        }
+                /* Border styles for table cells based on attributes */
+        td[borderright="solid"], th[borderright="solid"] {
+            border-right: 1px solid #aaa !important;
+        }
+        td[borderright="dashed"], th[borderright="dashed"] {
+            border-right: 1px dashed #aaa !important;
+        }
+        td[borderright="dotted"], th[borderright="dotted"] {
+            border-right: 1px dotted #aaa !important;
+        }
+
+        td[bordertop="solid"], th[bordertop="solid"] {
+            border-top: 1px solid #aaa !important;
+        }
+        td[bordertop="dashed"], th[bordertop="dashed"] {
+            border-top: 1px dashed #aaa !important;
+        }
+        td[bordertop="dotted"], th[bordertop="dotted"] {
+            border-top: 1px dotted #aaa !important;
+        }
+
+        td[borderleft="solid"], th[borderleft="solid"] {
+            border-left: 1px solid #aaa !important;
+        }
+        td[borderleft="dashed"], th[borderleft="dashed"] {
+            border-left: 1px dashed #aaa !important;
+        }
+        td[borderleft="dotted"], th[borderleft="dotted"] {
+            border-left: 1px dotted #aaa !important;
+        }
+
+        td[borderbottom="solid"], th[borderbottom="solid"] {
+            border-bottom: 1px solid #aaa !important;
+        }
+        td[borderbottom="dashed"], th[borderbottom="dashed"] {
+            border-bottom: 1px dashed #aaa !important;
+        }
+        td[borderbottom="dotted"], th[borderbottom="dotted"] {
+            border-bottom: 1px dotted #aaa !important;
+        }
+    </style>
+</head>
+
+<body style="{{ body_style }}">
+<div class='stampa'>
+    <div class="page-container">
+        {% if header and header != '' and header != '<p><br></p>' and header != '<p></p>' %}
+            <div class="divHeader">{{ header | safe }}</div>
+        {% endif %}
+
+        <div class="content-wrapper">
+            <div class='columns' style="margin-bottom:9pt;">
+                <div class='column is-6'>
+                    <img class='logo' src="{{ invoice.sport_association.logo | safe }}"/>
+                </div>
+                <div class='column is-6 text-right'>
+                    <h2 style='font-size: 9pt;margin:0'>
+                        <b><span id="invDate">{{ payment.payment_date | date:"d.m.Y" }}</span></b>
+                    </h2>
+                    {% if stamp_free %}
+                        <h6 style="font-size: 6pt;font-weight: bold">
+                            ESENZIONE DALL'IMPOSTA DI BOLLO<br>
+                            (articolo 1, comma 646) La norma modifica<br>
+                            l'articolo 27-bis della Tabella di cui<br>
+                            all'Allegato B annesso al DPR n. 642/1972.
+                        </h6>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rest of the template content remains the same, just removing divs with class="" -->
+            <!-- The rest of your existing template structure goes here, keeping all data and logic -->
+
+            <!-- Example of how to continue with the next section: -->
+            <div class='title-header'>
+                <div class="columns">
+                    <div class="column is-8">
+                        <h2 class='custom-title text-left'>
+                            <b>RICEVUTA {{ invoice.sport_association.denomination }}</b>
+                        </h2>
+                    </div>
+                    <div class="column is-4">
+                        <h2 class='custom-title text-right'>
+                            <b>N° {{ invoice.number }} / {{ payment.payment_date | date:"Y" }}</b>
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            {% if custom_data and custom_data.type_of_associate == 'scuola-asc' or custom_data.type_of_associate == 'asd-o-ssd' or custom_data.is_multiple %}
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column is-12'
+                         style='margin:0px;padding:0px; {{ subscription.associate.is_minor | yesno:"padding-right:10px;," }}'>
+
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>
+                                DATI DEL SOGGETTO PAGATORE
+                            </b></h1>
+                        </div>
+                        <div class='is-a-table'>
+                            <div class='is-a-cell'>
+                                <strong>Denominazione:</strong>
+                                {{ custom_data.denomination | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Comune:</strong>
+                                {{ custom_data.city | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Provincia:</strong>
+                                {{ custom_data.province | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Indirizzo:</strong>
+                                {{ custom_data.address | upper }},
+                                ({{ custom_data.cap }})
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Nazione:</strong>
+                                {{ custom_data.country | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Codice Fiscale (o P.IVA):</strong>
+                                {{ custom_data.tax_code | default:"/" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Email:</strong>
+                                {{ custom_data.email | default:"/" | upper }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% elif payment.associate %}
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column {{ payment.associate.is_minor | yesno:"is-6,is-12" }}'
+                         style='margin:0px;padding:0px; {{ subscription.associate.is_minor | yesno:"padding-right:10px;," }}'>
+
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>
+                                {% if payment.associate.is_minor %}
+                                    DATI DEL MINORE PRATICANTE
+                                {% else %}
+                                    DATI DEL SOGGETTO PAGATORE
+                                {% endif %}
+                            </b></h1>
+                        </div>
+                        <div class='is-a-table'>
+                            <div class='is-a-cell'>
+                                <strong>Nome e Cognome:</strong>
+                                {{ payment.associate.get_full_name | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Codice Fiscale:</strong>
+                                {{ payment.associate.tax_code | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Sesso:</strong>
+                                {{ payment.associate.sex | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Nato il</strong>
+                                {{ payment.associate.born_date | date:"d.m.Y" | upper }}
+                                <strong> a </strong>
+                                {{ payment.associate.born_city | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Indirizzo:</strong>
+                                {{ payment.associate.address | upper }},
+                                {{ payment.associate.address_city | upper }}
+                                ({{ payment.associate.address_cap }})
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Telefono:</strong>
+                                {{ payment.associate.phone | default:"/" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Email:</strong>
+                                {{ payment.associate.email | default:"/" | upper }}
+                            </div>
+                        </div>
+
+                    </div>
+                    {% if payment.associate.is_minor %}
+                        <div class='column is-6' style='margin:0px;padding:0px;padding-left:10px;'>
+                            <div class='stampa-title title-header'>
+                                <h1 class='title custom-title'><b>DATI DEL SOGGETTO PAGATORE</b></h1>
+                            </div>
+                            <div class='is-a-table'>
+                                <div class='is-a-cell'>
+                                    <strong>Nome e Cognome:</strong>
+                                    {{ payment.associate.tutor.get_full_name | default:"/" | upper }}
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Codice Fiscale:</strong>
+                                    {{ payment.associate.tutor.tax_code | default:"/" | upper }}
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Sesso:</strong>
+                                    {{ payment.associate.tutor.sex | default:"/" | upper }}
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Nato il</strong>
+                                    {{ payment.associate.tutor.born_date | default:"/" | date:"d.m.Y" | upper }}
+                                    <strong> a </strong>
+                                    {{ payment.associate.tutor.born_city | default:"/" | upper }}
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Indirizzo:</strong>
+                                    {{ payment.associate.tutor.address | default:"/" | upper }},
+                                    {{ payment.associate.tutor.address_city | default:"/" | upper }}
+                                    ({{ payment.associate.tutor.address_cap | default:"/" }})
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Telefono:</strong>
+                                    {{ payment.associate.tutor.phone | default:"/" | upper }}
+                                </div>
+                                <div class='is-a-cell'>
+                                    <strong>Email:</strong>
+                                    {{ payment.associate.tutor.email | default:"/" | upper }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% elif payment.supplier %}
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column is-12' style='margin:0px;padding:0px;'>
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>DATI DEL SOGGETTO PAGATORE</b></h1>
+                        </div>
+                        <div class='is-a-table'>
+                            <div class='is-a-cell'>
+                                <strong>Denominazione:</strong>
+                                {{ payment.supplier.name | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Indirizzo:</strong>
+                                {{ payment.supplier.address | default:"/" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Codice Fiscale (o P.IVA):</strong>
+                                {{ payment.supplier.tax_code | default:"/" | upper }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <hr/>
+            <div class='is-a-table' style="margin-top:10px;">
+                <div class="columns">
+                    <div class="column is-12">
+                        <h6 class="title" style="text-align: left;font-size: 9pt;font-style: italic;font-weight: 500">
+                            mezzo di pagamento <b>{{ payment_method | upper }}</b>
+                        </h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class='columns' style='width:19cm;margin:0px;margin-top:10px; padding:0px;'>
+                <div class='column is-12'
+                     style='margin:0px;padding:0px;'>
+
+                    <div class='stampa-title title-header'>
+                        <h1 class='title custom-title'><b>CAUSALE</b></h1>
+                    </div>
+                    <div class='is-a-table'>
+                        <div class='is-a-cell'>
+                            <div class="columns">
+                                <div class="column is-8 table-data-row" style="text-align: left">
+                                    <strong>Totale pagamento:</strong>
+                                </div>
+                                <div class="column is-4 table-data-row" style="text-align: right">
+                                    € {{ total_amount|format:"{:0.2f}" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class='is-a-cell'>
+                            <div class="columns">
+                                <div class="column is-12 table-data-row"
+                                     style="text-align: right;padding-top: 0!important;">
+                                    <span style="font-size:9pt;font-style: italic">nello specifico la quota include:</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% if invoice.activity_fee == 0 and invoice.membership_fee == 0 %}
+                            <div class='is-a-cell'>
+                                <div class="columns">
+                                    <div class="column is-8 table-data-row"
+                                         style="text-align: left;padding-top: 0!important;">
+                                    <span style="font-size:9pt;">
+                                        {% if sub and sub.type == 1 or sub.type == 2 %}
+                                            {% if got_plan and got_plan_name %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota associativa
+                                                {% endif %}
+                                                {{ sub_period }} ({{ got_plan_name }})
+                                            {% else %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota associativa
+                                                {% endif %}
+                                                {{ sub_period }}
+                                            {% endif %}
+                                        {% elif sub and sub.type == 2 or sub.type == 3 %}
+                                            {% if got_membership_plan and got_membership_plan_name %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota tesseramento
+                                                {% endif %}
+                                                {{ sub_membership_period }} ({{ got_membership_plan_name }})
+                                            {% else %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota tesseramento
+                                                {% endif %}
+                                                {{ sub_membership_period }}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if payment.payment_category.name != '' %}
+                                                {{ payment.payment_category.name | add:", " }}
+                                            {% endif %}
+                                            {% if payment.description is not None and payment.description != '' %}
+                                                {{ payment.description }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </span>
+                                    </div>
+                                    <div class="column is-4 table-data-row"
+                                         style="text-align: right;padding-top: 0!important;">
+                                        <span style="font-size:9pt">€ {{ invoice.activity_fee | format:"{:0.2f}" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {#                <pre style="font-size:12px;font-weight: bolder">#}
+                        {#                    <hr>#}
+                        {#                    got_plan: {{ got_plan }} | got_membership_plan: {{ got_membership_plan }}<br>#}
+                        {#                    got_plan_name: {{ got_plan_name }} | got_membership_plan_name: {{ got_membership_plan_name }}<br>#}
+                        {#                    <hr>#}
+                        {#                </pre>#}
+                        {% if invoice.membership_fee > 0 %}
+                            <div class='is-a-cell'>
+                                <div class="columns">
+                                    <div class="column is-8 table-data-row"
+                                         style="text-align: left;padding-top: 0!important;">
+                                    <span style="font-size:9pt;">
+                                        {% if sub.type == 1 or sub.type == 2 %}
+                                            {% if got_plan and got_plan_name %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota associativa
+                                                {% endif %}
+                                                {{ sub_period }} ({{ got_plan_name }})
+                                            {% else %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota associativa
+                                                {% endif %}
+                                                {{ sub_period }}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if got_membership_plan and got_membership_plan_name %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota tesseramento
+                                                {% endif %}
+                                                {{ sub_membership_period }} ({{ got_membership_plan_name }})
+                                            {% else %}
+                                                {% if override_label %}
+                                                    {{ payment.payment_category.name | add:", " }}
+                                                {% else %}
+                                                    quota tesseramento
+                                                {% endif %}
+                                                {{ sub_membership_period }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </span>
+                                    </div>
+                                    <div class="column is-4 table-data-row"
+                                         style="text-align: right;padding-top: 0!important;">
+                                        <span style="font-size:9pt">€ {{ invoice.membership_fee | format:"{:0.2f}" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if invoice.activity_fee > 0 and payment.subject != 1 and payment_categories.items|length == 0 %}
+                            <div class='is-a-cell'>
+                                <div class="columns">
+                                    <div class="column is-8 table-data-row"
+                                         style="text-align: left;padding-top: 0!important;">
+                                    <span style="font-size:9pt;">
+                                        {% if payment.payment_category.name != '' %}
+                                            {{ payment.payment_category.name | add:", " }}
+                                        {% endif %}
+                                        {% if course_name and course_name != payment.payment_category.name %}
+                                            {{ course_name }}
+                                        {% elif payment.description is not None and payment.description != '' %}
+                                            {{ payment.description }}
+                                        {% endif %}
+                                    </span>
+                                    </div>
+                                    <div class="column is-4 table-data-row"
+                                         style="text-align: right;padding-top: 0!important;">
+                                        <span style="font-size:9pt">€ {{ invoice.activity_fee | format:"{:0.2f}" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% for name, amount in payment_categories.items %}
+                            {% if amount >= 0 %}
+                                <div class='is-a-cell'>
+                                    <div class="columns">
+                                        <div class="column is-8 table-data-row"
+                                             style="text-align: left;padding-top: 0!important;">
+                                        <span style="font-size:9pt;">
+                                        {% if sub is not None %}
+                                            <span style="font-size:9pt;">
+                                                {% if got_membership_plan and got_membership_plan_name %}
+                                                    {% if override_label %}
+                                                        {{ name | lower | add:", " }}
+                                                    {% else %}
+                                                        quota tesseramento
+                                                    {% endif %}
+                                                    {{ sub_membership_period }} ({{ got_membership_plan_name }})
+                                                {% else %}
+                                                    {% if override_label %}
+                                                        {{ name | lower | add:", " }}
+                                                    {% else %}
+                                                        quota tesseramento
+                                                    {% endif %}
+                                                    {{ sub_membership_period }}
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            {{ name | lower }}
+                                        {% endif %}
+                                        </span>
+                                        </div>
+                                        <div class="column is-4 table-data-row"
+                                             style="text-align: right;padding-top: 0!important;">
+                                            <span style="font-size:9pt">€ {{ amount|format:"{:0.2f}" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+            <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                <div class='column is-12' style='margin:0px;padding:0px;'>
+                    <div class='stampa-title title-header'>
+                        <h1 class='title custom-title'><b>INFORMAZIONI AGGIUNTIVE</b></h1>
+                    </div>
+                    <div class='is-a-table'>
+                        <div class='is-a-cell' style="text-align: justify;font-size:9pt">
+                            {{ invoice.description | safe | linebreaksbr }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if payment.notes %}
+                <div class=""
+                     style="display: flex;flex-direction: column;justify-content: center;align-items: center;margin-top:10px;">
+                    <div class=' title-header'>
+                        <h2 class='title custom-title' style="text-align: left">
+                            <b>NOTE</b>
+                        </h2>
+                    </div>
+                    <div class='is-a-table' style="margin-bottom: 1.2rem;font-size:9pt;width: 100%">
+                        <div class='is-a-cell' style="text-align: justify">
+                            {{ payment.notes | safe | linebreaksbr }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if extra_text_invoices %}
+                <div id="extra_text_invoices" style="margin-top: 1.2rem;font-size:8px!important;">
+                    {{ extra_text_invoices | safe | linebreaksbr }}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if footer and footer != '' and footer != '<p><br></p>' and footer != '<p></p>' %}
+            <div class="divFooter">{{ footer | safe }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function adjustLayout() {
+            const header = document.querySelector('.divHeader');
+            const content = document.querySelector('.content-wrapper');
+
+            content.style.marginTop = '';
+            content.style.marginBottom = '';
+
+            if (header) {
+                const headerClone = header.cloneNode(true);
+                headerClone.classList.add('measuring');
+                document.body.appendChild(headerClone);
+
+                const headerHeight = headerClone.offsetHeight;
+                document.body.removeChild(headerClone);
+
+                content.style.marginTop = (headerHeight + 20) + 'px';
+
+                const pageBreakElements = document.querySelectorAll('.page-break-before');
+                pageBreakElements.forEach((element) => {
+                    element.style.marginTop = (headerHeight + 20) + 'px';
+                });
+            }
+
+            const sections = document.querySelectorAll('.title-header').forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const pageHeight = window.innerHeight;
+
+                if (rect.top < pageHeight && (rect.top + rect.height) > pageHeight) {
+                    section.classList.add('page-break-before');
+                }
+            });
+        }
+
+        // Initial layout adjustment
+        adjustLayout();
+
+        // Adjust on window resize
+        window.addEventListener('resize', adjustLayout);
+
+        // Adjust before printing
+        window.addEventListener('beforeprint', adjustLayout);
+
+        // Add mutation observer for dynamic content changes
+        const observer = new MutationObserver(adjustLayout);
+        observer.observe(document.querySelector('.content-wrapper'), {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    });
+</script>
+</body>
+</html>

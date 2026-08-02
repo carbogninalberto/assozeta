@@ -1,0 +1,468 @@
+"""
+Export/Import API Views
+
+API endpoints for association data export and import functionality.
+"""
+import logging
+import os
+import tempfile
+
+from celery.result import AsyncResult
+from django.core.files.storage import default_storage
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+from application.models.user_models import (
+    SportAssociation,
+    SportAssociationDocumentsArchive,
+    User,
+)
+from application.services.validators import ImportValidator
+from application.tasks import export_association_data, import_association_data
+
+logger = logging.getLogger(__name__)
+
+
+class AssociationExportViewSet(ViewSet):
+    """
+    API endpoints for association data export.
+
+    Allows association owners to export their data for migration
+    to a self-hosted instance.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def _check_export_permission(self, user: User) -> bool:
+        """
+        Check if user has permission to export data.
+
+        Only association owners (not collaborators) can export.
+        """
+        return user.role == User.ASSOCIATION
+
+    @action(detail=False, methods=['POST'], url_path='start')
+    def start_export(self, request):
+        """
+        Start an export task for the current association.
+
+        POST /api/association/export/start/
+
+        Request body (optional):
+        {
+            "include_files": true  // Whether to include binary files
+        }
+
+        Returns:
+        {
+            "task_id": "...",
+            "status": "started",
+            "message": "..."
+        }
+        """
+        user = request.user
+
+        # Check permissions
+        if not self._check_export_permission(user):
+            return Response(
+                {'error': 'Solo il proprietario può esportare i dati'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            sport_association = user.sport_association
+        except SportAssociation.DoesNotExist:
+            return Response(
+                {'error': 'Associazione non trovata'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Get options from request
+        include_files = request.data.get('include_files', True)
+
+        # Start the export task
+        task = export_association_data.delay(
+            sport_association_id=str(sport_association.sport_association_id),
+            user_id=str(user.user_id),
+            include_files=include_files,
+        )
+
+        logger.info(
+            f"Export task started",
+            extra={
+                'task_id': task.id,
+                'sport_association_id': str(sport_association.sport_association_id),
+                'user_id': str(user.user_id),
+            }
+        )
+
+        return Response({
+            'task_id': task.id,
+            'status': 'started',
+            'message': 'Export avviato. Riceverai una email quando sarà completato.',
+        }, status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=False, methods=['GET'], url_path='status')
+    def export_status(self, request):
+        """
+        Check export task status.
+
+        GET /api/association/export/status/?task_id=<id>
+
+        Returns:
+        {
+            "task_id": "...",
+            "status": "PENDING|STARTED|SUCCESS|FAILURE",
+            "ready": true/false,
+            "result": {...}  // Only if ready
+        }
+        """
+        task_id = request.query_params.get('task_id')
+
+        if not task_id:
+            return Response(
+                {'error': 'task_id richiesto'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result = AsyncResult(task_id)
+
+        response_data = {
+            'task_id': task_id,
+            'status': result.status,
+            'ready': result.ready(),
+        }
+
+        if result.ready():
+            if result.successful():
+                response_data['result'] = result.result
+            else:
+                response_data['error'] = str(result.result)
+
+        return Response(response_data)
+
+    @action(detail=False, methods=['GET'], url_path='list')
+    def list_exports(self, request):
+        """
+        List available export files for download.
+
+        GET /api/association/export/list/
+
+        Returns list of recent exports with download info.
+        """
+        user = request.user
+
+        try:
+            sport_association = user.sport_association
+        except SportAssociation.DoesNotExist:
+            return Response(
+                {'error': 'Associazione non trovata'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Get exports (documents starting with 'export_')
+        exports = SportAssociationDocumentsArchive.objects.filter(
+            sport_association=sport_association,
+            document__filename__startswith='export_'
+        ).select_related('document').order_by('-date')[:20]
+
+        export_list = []
+        for archive in exports:
+            doc = archive.document
+            export_list.append({
+                'archive_id': str(archive.sport_association_documents_archive_id),
+                'document_id': str(doc.document_id),
+                'filename': doc.filename,
+                'date': archive.date.isoformat() if archive.date else None,
+                'created_at': doc.creation_date.isoformat() if doc.creation_date else None,
+            })
+
+        return Response({
+            'exports': export_list,
+            'count': len(export_list),
+        })
+
+    @action(detail=False, methods=['DELETE'], url_path='delete')
+    def delete_export(self, request):
+        """
+        Delete an export file.
+
+        DELETE /api/association/export/delete/
+
+        Request body:
+        {
+            "document_id": "..."
+        }
+        """
+        user = request.user
+        document_id = request.data.get('document_id')
+
+        if not document_id:
+            return Response(
+                {'error': 'document_id richiesto'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            sport_association = user.sport_association
+        except SportAssociation.DoesNotExist:
+            return Response(
+                {'error': 'Associazione non trovata'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Find the archive entry
+        try:
+            archive = SportAssociationDocumentsArchive.objects.get(
+                sport_association=sport_association,
+                document__document_id=document_id,
+                document__filename__startswith='export_'
+            )
+        except SportAssociationDocumentsArchive.DoesNotExist:
+            return Response(
+                {'error': 'Export non trovato'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Delete the document and archive entry
+        document = archive.document
+        archive.delete()
+        document.delete()
+
+        logger.info(
+            f"Export deleted",
+            extra={
+                'document_id': document_id,
+                'sport_association_id': str(sport_association.sport_association_id),
+            }
+        )
+
+        return Response({
+            'success': True,
+            'message': 'Export eliminato',
+        })
+
+
+class AssociationImportViewSet(ViewSet):
+    """
+    API endpoints for association data import.
+
+    Allows importing association data from a ZIP export file
+    into a fresh Bakney instance.
+    """
+
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        """
+        Import endpoints require different permissions:
+        - validate_import and start_import: AllowAny (for fresh instances)
+        - import_status: AllowAny
+        """
+        return [AllowAny()]
+
+    @action(detail=False, methods=['POST'], url_path='validate')
+    def validate_import(self, request):
+        """
+        Validate an uploaded ZIP file before importing.
+
+        POST /api/association/import/validate/
+        Content-Type: multipart/form-data
+
+        Request body:
+        - file: ZIP file to validate
+        - owner_email: Email for new owner
+        - preserve_uuids: Boolean (optional, default false)
+
+        Returns:
+        {
+            "is_valid": true/false,
+            "errors": [...],
+            "warnings": [...],
+            "info": {
+                "export_format": "...",
+                "export_date": "...",
+                "association": {...}
+            }
+        }
+        """
+        uploaded_file = request.FILES.get('file')
+        owner_email = request.data.get('owner_email')
+        preserve_uuids = request.data.get('preserve_uuids', 'false').lower() == 'true'
+
+        if not uploaded_file:
+            return Response(
+                {'error': 'File ZIP richiesto'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not owner_email:
+            return Response(
+                {'error': 'Email proprietario richiesta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Save file to temp location
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, uploaded_file.name)
+
+        try:
+            with open(temp_path, 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+
+            # Run validation
+            validator = ImportValidator(temp_path)
+            validation = validator.validate_all(owner_email, preserve_uuids)
+
+            response_data = {
+                'is_valid': validation.is_valid,
+                'errors': validation.errors,
+                'warnings': validation.warnings,
+                'info': validation.info,
+            }
+
+            return Response(response_data)
+
+        except Exception as e:
+            logger.error(f"Validation error: {e}", exc_info=True)
+            return Response(
+                {'error': f'Errore durante la validazione: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            if os.path.exists(temp_dir):
+                os.rmdir(temp_dir)
+
+    @action(detail=False, methods=['POST'], url_path='start')
+    def start_import(self, request):
+        """
+        Start import task with uploaded ZIP file.
+
+        POST /api/association/import/start/
+        Content-Type: multipart/form-data
+
+        Request body:
+        - file: ZIP file to import
+        - owner_email: Email for new owner
+        - owner_password: Password for new owner
+        - preserve_uuids: Boolean (optional, default false)
+        - skip_files: Boolean (optional, default false)
+
+        Returns:
+        {
+            "task_id": "...",
+            "status": "started",
+            "message": "..."
+        }
+        """
+        uploaded_file = request.FILES.get('file')
+        owner_email = request.data.get('owner_email')
+        owner_password = request.data.get('owner_password')
+        preserve_uuids = request.data.get('preserve_uuids', 'false').lower() == 'true'
+        skip_files = request.data.get('skip_files', 'false').lower() == 'true'
+
+        if not uploaded_file:
+            return Response(
+                {'error': 'File ZIP richiesto'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not owner_email:
+            return Response(
+                {'error': 'Email proprietario richiesta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not owner_password:
+            return Response(
+                {'error': 'Password proprietario richiesta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Save file to persistent temp location for the task
+        import uuid as uuid_module
+        temp_filename = f"import_{uuid_module.uuid4()}.zip"
+        temp_path = f"temp/imports/{temp_filename}"
+
+        try:
+            # Save to default storage (S3/local)
+            saved_path = default_storage.save(temp_path, uploaded_file)
+
+            # Start the import task
+            task = import_association_data.delay(
+                zip_file_path=saved_path,
+                owner_email=owner_email,
+                owner_password=owner_password,
+                preserve_uuids=preserve_uuids,
+                skip_files=skip_files,
+            )
+
+            logger.info(
+                f"Import task started",
+                extra={
+                    'task_id': task.id,
+                    'owner_email': owner_email,
+                    'preserve_uuids': preserve_uuids,
+                }
+            )
+
+            return Response({
+                'task_id': task.id,
+                'status': 'started',
+                'message': 'Import avviato. Controlla lo stato con task_id.',
+            }, status=status.HTTP_202_ACCEPTED)
+
+        except Exception as e:
+            logger.error(f"Error starting import: {e}", exc_info=True)
+            return Response(
+                {'error': f'Errore durante avvio import: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['GET'], url_path='status')
+    def import_status(self, request):
+        """
+        Check import task status.
+
+        GET /api/association/import/status/?task_id=<id>
+
+        Returns:
+        {
+            "task_id": "...",
+            "status": "PENDING|STARTED|SUCCESS|FAILURE",
+            "ready": true/false,
+            "result": {...}  // Only if ready and successful
+            "error": "..."   // Only if failed
+        }
+        """
+        task_id = request.query_params.get('task_id')
+
+        if not task_id:
+            return Response(
+                {'error': 'task_id richiesto'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result = AsyncResult(task_id)
+
+        response_data = {
+            'task_id': task_id,
+            'status': result.status,
+            'ready': result.ready(),
+        }
+
+        if result.ready():
+            if result.successful():
+                response_data['result'] = result.result
+            else:
+                response_data['error'] = str(result.result)
+
+        return Response(response_data)

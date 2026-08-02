@@ -1,0 +1,111 @@
+amqp==5.3.1
+appdirs==1.4.4
+asgiref==3.8.1
+# astroid removed - pylint dependency moved to dev-requirements.txt
+async-timeout==5.0.1
+beautifulsoup4==4.13.3
+billiard==4.2.1
+boto3==1.37.12
+botocore==1.37.12
+celery==5.6.2
+channels==4.2.0
+# coverage moved to dev-requirements.txt
+cron-descriptor==1.4.5
+cryptography==44.0.2
+cssselect2==0.8.0
+daphne==4.1.2
+Django==5.2.1
+djangorestframework-simplejwt==5.3.1
+oauthlib==3.2.2
+django-auditlog==3.4.1
+django-braces==1.16.0
+django-celery-beat==2.8.1
+django-celery-results==2.5.1
+django-cors-headers==4.7.0
+django-environ==0.12.0
+django-extensions==3.2.3
+django-formtools==2.5.1
+# django-hardcopy removed - not used
+# django-jsonfield-backport removed - using native Django JSONField
+# django-oauth-toolkit removed - migrated to JWT auth (see migration 0422)
+django-otp==1.5.4
+django-phonenumber-field==8.0.0
+django-ratelimit==4.1.0
+django-redis==5.4.0
+django-storages==1.14.5
+django-timezone-field==7.1
+# django-weasyprint removed - not used
+# django-wkhtmltopdf removed - not used
+djangorestframework==3.16.1
+drf-api-logger==1.1.20
+# drf-social-oauth2 removed - migrated to JWT auth
+editdistance==0.8.1
+# fakeredis removed - not used
+freezegun==1.5.5  # Required for tests (Python 3.13 compatible)
+pytest-xdist>=3.5.0  # Parallel test execution
+openpyxl==3.1.5
+pandas==2.2.3
+phonenumbers==9.0.0
+# pip-upgrader moved to dev-requirements.txt
+prompt-toolkit==3.0.50
+Pillow==11.1.0
+psycopg2-binary==2.9.10
+# pychromepdf removed - not used
+pycparser==2.22
+# pylint moved to dev-requirements.txt
+pyotp==2.9.0
+pyparsing==3.2.1
+PyPDF2==3.0.1
+reportlab==4.2.5  # PDF generation for printing.py
+python-bidi==0.6.6
+python-codicefiscale==0.10.3
+python-crontab==3.2.0
+python-dateutil==2.9.0.post0
+python-decouple==3.8
+python-jose==3.4.0
+python3-openid==3.2.0
+pytz==2025.1
+PyYAML==6.0.2
+qrcode==8.0
+redis==5.2.1
+channels-redis==4.2.1
+requests==2.32.3
+requests-oauthlib==2.0.0
+social-auth-app-django==5.4.3
+social-auth-core==4.5.6
+sortedcontainers==2.4.0
+segno==1.6.6
+stripe==11.6.0
+# xhtml2pdf removed - not used
+XlsxWriter==3.2.2
+smsapi-client==2.9.6
+# replicate removed - not used
+# pytesseract removed - not used
+# pdf2image removed - not used
+a38==0.1.8
+icalendar==6.1.1
+google-api-core==2.24.2
+google-api-python-client==2.164.0
+google-auth==2.38.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+googleapis-common-protos==1.69.1
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2025.3.1
+django-disposable-email-checker==2.0.4
+django-mptt==0.16.0
+bcrypt==4.3.0
+django-silk==5.3.2
+flower==2.0.1
+PyMuPDF==1.25.5
+gunicorn==23.0.0
+uvicorn==0.35.0
+uvloop==0.21.0
+httptools==0.6.4
+websockets==14.1  # WebSocket support for uvicorn
+# Levenshtein removed - not used (editdistance used instead)
+fuzzywuzzy==0.18.0
+# python-Levenshtein removed - not used
+# rapidfuzz removed - not used (fuzzywuzzy used instead)
+mcp>=1.0.0
+groq>=0.4.0

@@ -1,0 +1,649 @@
+{% load format %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src='https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js'></script>
+    <style>
+        /* Base styles */
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+        }
+
+        .title-header {
+            width: 100%;
+            margin: 0px;
+            padding: 10px;
+            color: #ffffff;
+            text-align: center;
+            background-color: #1C5FCA;
+            page-break-after: avoid;
+            page-break-before: avoid;
+            break-before: avoid;
+            break-after: avoid;
+        }
+
+        .stampa {
+            width: 19cm;
+            height: auto;
+            max-width: 21cm;
+            min-width: 19cm;
+            min-height: 15cm;
+            margin: auto;
+        }
+
+        .custom-title {
+            font-size: 1rem !important;
+            color: #FFFFFF !important;
+            margin: 0 !important;
+            page-break-after: avoid;
+            page-break-before: avoid;
+            break-before: avoid;
+            break-after: avoid;
+        }
+
+        .stampa-title {
+            background-color: #1C5FCA;
+            padding: 0.5rem;
+            color: #ffffff;
+        }
+
+        .is-a-table {
+            background-color: #f1f4f8;
+            padding: 1rem;
+            font-size: 0.8rem;
+            break-inside: auto;
+            page-break-inside: auto;
+            break-inside: auto;
+            page-break-inside: auto;
+            page-break-before: avoid;
+            page-break-after: avoid;
+            break-before: avoid;
+            break-after: avoid;
+        }
+
+        .is-a-cell {
+            width: 100%;
+            word-wrap: break-word;
+            page-break-inside: auto;
+            break-inside: auto;
+        }
+
+        .stampa-header {
+            float: right;
+        }
+
+        .logo {
+            position: relative;
+            top: -6px;
+            max-width: 10cm;
+            height: 2.2cm;
+            max-height: 2.2cm;
+            padding: 0px;
+            margin-left: 0;
+        }
+
+        ul, ol {
+            padding: 1rem;
+        }
+
+        .ql-align-center {
+            text-align: center;
+        }
+
+        .ql-align-left {
+            text-align: left;
+        }
+
+        .ql-align-right {
+            text-align: right;
+        }
+
+        /* Page structure and print styles */
+        .page-container {
+            position: relative;
+        }
+
+        .content-wrapper {
+            position: relative;
+        }
+
+        .divHeader {
+            border-bottom: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            background: #fff;
+            font-size: 9pt;
+        }
+
+        .divHeader table {
+            width: 100% !important;
+        }
+
+        .divHeader table p {
+            text-align: left;
+        }
+
+        .divFooter {
+            border-top: 1pt solid #eee;
+            width: 19cm;
+            padding: 1pt 0;
+            padding-top: 3pt;
+            background: #fff;
+            font-size: 9pt;
+        }
+
+        .divFooter table {
+            width: 100% !important;
+        }
+
+        .divFooter table p {
+            text-align: left;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            .page-container {
+                margin: 0;
+                padding: 0;
+            }
+
+            .divHeader {
+                position: fixed;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .divFooter {
+                position: fixed;
+                bottom: 0;
+                z-index: 1000;
+            }
+
+            .stampa {
+                margin: 0 auto;
+            }
+
+            .no-break {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .force-break {
+                page-break-before: always;
+                break-before: always;
+            }
+
+            .content-wrapper > *:last-child {
+                margin-bottom: 0;
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+        }
+
+        @media print {
+            .divFooter {
+                position: running(footer);
+                bottom: 0;
+            }
+
+            @page {
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+        }
+
+        /* Helper class for measuring */
+        .measuring {
+            position: absolute !important;
+            visibility: hidden !important;
+            top: 0 !important;
+        }
+
+        .is-a-cell p, .is-a-cell ol {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+        }
+
+        /* Page break controls */
+        .page-break-before {
+            break-before: page;
+            page-break-before: always;
+        }
+
+        .page-break-after {
+            break-after: page;
+            page-break-after: always;
+        }
+        table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+        /* Border styles for table cells based on attributes */
+        td[borderright="solid"], th[borderright="solid"] {
+            border-right: 1px solid #aaa !important;
+        }
+        td[borderright="dashed"], th[borderright="dashed"] {
+            border-right: 1px dashed #aaa !important;
+        }
+        td[borderright="dotted"], th[borderright="dotted"] {
+            border-right: 1px dotted #aaa !important;
+        }
+
+        td[bordertop="solid"], th[bordertop="solid"] {
+            border-top: 1px solid #aaa !important;
+        }
+        td[bordertop="dashed"], th[bordertop="dashed"] {
+            border-top: 1px dashed #aaa !important;
+        }
+        td[bordertop="dotted"], th[bordertop="dotted"] {
+            border-top: 1px dotted #aaa !important;
+        }
+
+        td[borderleft="solid"], th[borderleft="solid"] {
+            border-left: 1px solid #aaa !important;
+        }
+        td[borderleft="dashed"], th[borderleft="dashed"] {
+            border-left: 1px dashed #aaa !important;
+        }
+        td[borderleft="dotted"], th[borderleft="dotted"] {
+            border-left: 1px dotted #aaa !important;
+        }
+
+        td[borderbottom="solid"], th[borderbottom="solid"] {
+            border-bottom: 1px solid #aaa !important;
+        }
+        td[borderbottom="dashed"], th[borderbottom="dashed"] {
+            border-bottom: 1px dashed #aaa !important;
+        }
+        td[borderbottom="dotted"], th[borderbottom="dotted"] {
+            border-bottom: 1px dotted #aaa !important;
+        }
+    </style>
+</head>
+
+<body>
+<div class='stampa'>
+    <div class="page-container">
+        {% if header and header != '' and header != '<p><br></p>' and header != '<p></p>' %}
+            <div class="divHeader">{{ header | safe }}</div>
+        {% endif %}
+
+        <div class="content-wrapper">
+            <div class='columns' style='width: 19cm;margin-left:0px;margin-top:0px;padding-top:3px'>
+                <div class='column is-6 my-auto' style='margin:auto;padding:0px'>
+                    <img class='logo my-auto' src="{{ subscription.sport_association.logo | safe }}"/>
+                </div>
+                <div class='column is-4' style='margin:auto;padding:0px'>
+                    <h1 class='title' style='font-size:1rem;text-align:right;margin:0;margin-right:1rem;padding:0px'>
+                        <b>DATA DI COMPILAZIONE</b>
+                    </h1>
+                    <h1 class='title' style='font-size:1.5rem;text-align:right;margin:0;margin-right:1rem;padding:0px'>
+                        {% if subscription.creation_date %}
+                            <b><span id="invDate">{{ subscription.creation_date | date:"d.m.Y" }}</span></b>
+                        {% else %}
+                            <span>{{ "__/__/_____" }}</span>
+                        {% endif %}
+                    </h1>
+                </div>
+                {% if subscription.type is not None %}
+                    <div class='column is-2' style='margin:0px;padding:0px;'>
+                        <div id='qrcode' class='stampa-header' style='float:right'></div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                <div class='column is-12' style='margin:0px;padding:0px;padding-right:0px;'>
+
+                    <div class='stampa-element title-header'>
+                        <h2 class='title custom-title'>
+                            <b>MODULO D'ISCRIZIONE <br>
+                                {{ subscription.sport_association.denomination }}</b>
+                        </h2>
+                    </div>
+                    {% if payment_data %}
+                        <div class="is-a-table"
+                             style="text-align:justify;font-size:0.65rem;padding-bottom: 0!important;">
+                            Scelta l'iscrizione <b>{{ payment_data.subscription_data.name | safe }}</b> con un costo di
+                            <b>€ {{ payment_data.subscription_data.subscription_fee|format:"{:0.2f}" }}€</b>.
+                        </div>
+                    {% endif %}
+                    <div class="is-a-table" style="text-align:justify;font-size:0.65rem;">
+                        {% if subscription.type is not None %}
+                            {% if subscription.type == 1 %}
+                                Richiesta di iscrizione come <b>socio</b>
+                            {% elif subscription.type == 2 %}
+                                Richiesta di iscrizione come <b>socio e tesserato</b>
+                            {% elif subscription.type == 3 %}
+                                Richiesta di iscrizione come <b>tesserato</b> . <br>
+                            {% endif %}
+                        {% else %}
+
+                            <div style="display: flex;justify-content: center;align-items: center">
+                                Desidero iscrivermi come (<u>barrare un'opzione sola</u>):
+                            </div>
+                            <div style="display: flex;justify-content: center;align-items: center;margin-top:.5rem;">
+                                <div style="display: flex;justify-content: center;align-items: stretch;margin-right:1rem;">
+                                    <input type="checkbox" {% if subscription.type == 1 %}checked{% endif %} disabled>
+                                    <label for="socio" style="margin-left:.2rem;"><b>Socio</b></label>
+                                </div>
+                                <div style="display: flex;justify-content: center;align-items: stretch;margin-right:1rem;">
+                                    <input type="checkbox" {% if subscription.type == 2 %}checked{% endif %} disabled>
+                                    <label for="tesserato" style="margin-left:.2rem;"><b>Tesserato</b></label>
+                                </div>
+                                <div style="display: flex;justify-content: center;align-items: center">
+                                    <input type="checkbox" {% if subscription.type == 3 %}checked{% endif %} disabled>
+                                    <label for="socio-tesserato" style="margin-left:.2rem;"><b>Socio e
+                                        Tesserato</b></label>
+                                </div>
+                            </div>
+                            <div style="display: flex;justify-content: center;align-items: center; margin-top:.5rem;">
+                                Nel caso di <b style="margin:.2rem">socio</b> o <b style="margin:.2rem">socio e
+                                tesserato</b>, come socio nel ruolo di:
+                            </div>
+                            <div style="display: flex;justify-content: center;align-items: center; margin-top:.5rem;">
+
+                                _______________________________________________________________________
+                            </div>
+                        {% endif %}
+                        {% if subscription.type == 1 or subscription.type == 2 %}
+                            {% if subscription.role == 1 %}
+                                con ruolo di <b>socio ordinario</b>. <br>
+                            {% elif subscription.role == 2 %}
+                                con ruolo di <b>consigliere</b>. <br>
+                            {% elif subscription.role == 3 %}
+                                con ruolo di <b>segretario</b>. <br>
+                            {% elif subscription.role == 4 %}
+                                con ruolo di <b>vice presidente</b>. <br>
+                            {% elif subscription.role == 5 %}
+                                con ruolo di <b>presidente</b>. <br>
+                            {% elif subscription.role == 6 %}
+                                con ruolo di <b>socio volontario</b>. <br>
+                            {% elif subscription.role == 7 %}
+                                con ruolo di <b>socio sostenitore</b>. <br>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+
+            <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                <div class='column {{ subscription.associate.is_minor_now | yesno:"is-6,is-12" }}'
+                     style='margin:0px;padding:0px; {{ subscription.associate.is_minor_now | yesno:"padding-right:10px;," }}'>
+
+                    <div class='stampa-title title-header'>
+                        <h1 class='title custom-title'><b>DATI RICHIEDENTE</b></h1>
+                    </div>
+                    <div class='is-a-table'>
+                        <div class='is-a-cell'>
+                            <strong>Nome e Cognome:</strong>
+                            {{ subscription.associate.get_full_name | upper }}
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Codice Fiscale:</strong>
+                            {{ subscription.associate.tax_code | default:"-" | upper }}
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Sesso:</strong>
+                            {{ subscription.associate.sex | default:"-" | upper }}
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Nato il</strong>
+                            {{ subscription.associate.born_date | default:"-" | date:"d.m.Y" | upper }}
+                            <strong> a </strong>
+                            {{ subscription.associate.born_city | default:"-" | upper }}
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Indirizzo:</strong>
+                            {{ subscription.associate.address | default:"-" | upper }},
+                            {{ subscription.associate.address_city | default:"-" | upper }}
+                            ({{ subscription.associate.address_cap | default:"-" }})
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Telefono:</strong>
+                            {{ subscription.associate.phone | default:"-" | upper }}
+                        </div>
+                        <div class='is-a-cell'>
+                            <strong>Email:</strong>
+                            {{ subscription.associate.email | default:"-" | upper }}
+                        </div>
+                    </div>
+
+                </div>
+                {% if subscription.associate.is_minor_now %}
+                    <div class='column is-6' style='margin:0px;padding:0px;padding-left:10px;'>
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>DATI GENITORE (se minorenne)</b></h1>
+                        </div>
+                        <div class='is-a-table'>
+                            <div class='is-a-cell'>
+                                <strong>Nome e Cognome:</strong>
+                                {{ subscription.associate.main_tutor.get_full_name | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Codice Fiscale:</strong>
+                                {{ subscription.associate.main_tutor.tax_code | default:"-" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Sesso:</strong>
+                                {{ subscription.associate.main_tutor.sex | default:"-" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Nato il</strong>
+                                {{ subscription.associate.main_tutor.born_date | default:"-" | date:"d.m.Y" | upper }}
+                                <strong> a </strong>
+                                {{ subscription.associate.main_tutor.born_city | default:"-" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Indirizzo:</strong>
+                                {{ subscription.associate.main_tutor.address | default:"-" | upper }},
+                                {{ subscription.associate.main_tutor.address_city | default:"-" | upper }}
+                                ({{ subscription.associate.main_tutor.address_cap | default:"-" }})
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Telefono:</strong>
+                                {{ subscription.associate.main_tutor.phone | default:"-" | upper }}
+                            </div>
+                            <div class='is-a-cell'>
+                                <strong>Email:</strong>
+                                {{ subscription.associate.main_tutor.email | default:"-" | upper }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if subscription.additional_fields %}
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column is-12' style='margin:0px;padding:0px;'>
+
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>ALTRI DATI</b></h1>
+                        </div>
+                        <div class='is-a-table'>
+                            {% for field in subscription.additional_fields %}
+                                <div class='is-a-cell'>
+                                    <strong>{{ field.props.label }}:</strong>
+                                    {{ field.props.value | default:"______"  | upper }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% for section in subscription.sport_association.additional_sections %}
+                {# define variable array with the true options between show #}
+                {# show_to_members #}
+                {# show_to_both #}
+                {# show_to_athletes#}
+                {% if is_preview is True or subscription.type in section.show_to %}
+                    <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                        <div class='column is-12' style='margin:0px;padding:0px;padding-right:0px;'>
+
+                            <div class='stampa-title title-header'>
+                                <h1 class='title custom-title'><b>{{ section.name | upper }}</b></h1>
+                            </div>
+                            <div class="is-a-table" style="text-align:justify;font-size:0.65rem;">
+                                {{ section.text | safe }}
+                            </div>
+
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if is_preview is True or subscription.type in show_regulation_to %}
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column is-12' style='margin:0px;padding:0px;padding-right:0px;'>
+
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>REGOLAMENTO</b></h1>
+                        </div>
+                        <div class="is-a-table" style="text-align:justify;font-size:0.65rem;">
+                            {% if subscription.sport_association.regulation is not None %}
+                                {{ subscription.sport_association.regulation | safe }}
+                            {% else %}
+                                Nessun regolamento disponibile.
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+
+                </div>
+            {% endif %}
+
+            {% if is_preview is True or subscription.type in show_demand_to %}
+
+                <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+                    <div class='column is-12' style='margin:0px;padding:0px;padding-right:0px;'>
+
+                        <div class='stampa-title title-header'>
+                            <h1 class='title custom-title'><b>RICHIESTA</b></h1>
+                        </div>
+                        <div class="is-a-table" style="text-align:justify;font-size:0.65rem;">
+                            {% if subscription.sport_association.demand is not None %}
+                                {{ subscription.sport_association.demand | safe }}
+                            {% else %}
+                                Nessuna richiesta disponibile.
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+
+                </div>
+            {% endif %}
+
+            <div class='columns' style='width:19cm;margin:0px;margin-top:20px; padding:0px;'>
+
+
+                <p style="text-align:justify;font-size:0.65rem;">
+                    <b>{{ subscription.sport_association.address_city | default:"Luogo _______________" }}</b>,<br>
+                    Firmando si accettano tutte le condizioni elencate nel documento. <br>
+
+                    FIRMA DEL RICHIEDENTE (GENITORE SE MINORENNE) <br><br>
+                    {% if subscription.signature_url %}
+                        <img src="{{ subscription.get_signature_base64 | safe }}" width="180"/>
+                    {% else %}
+                        <br>
+                        _______________________________________________________________________
+                    {% endif %}
+                    <br><br>
+                </p>
+
+            </div>
+
+        </div>
+
+        {% if footer and footer != '' and footer != '<p><br></p>' and footer != '<p></p>' %}
+            <div class="divFooter">{{ footer | safe }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        function adjustLayout() {
+            const header = document.querySelector('.divHeader');
+            const footer = document.querySelector('.divFooter');
+            const content = document.querySelector('.content-wrapper');
+
+            // Reset any previous adjustments
+            content.style.marginTop = '';
+            content.style.marginBottom = '';
+
+            if (header) {
+                // Create a measuring clone
+                const headerClone = header.cloneNode(true);
+                headerClone.classList.add('measuring');
+                document.body.appendChild(headerClone);
+
+                // Get actual header height
+                const headerHeight = headerClone.offsetHeight;
+                document.body.removeChild(headerClone);
+
+                // Apply margin to content
+                content.style.marginTop = (headerHeight + 20) + 'px';
+
+                // Adjust page-break-before elements
+                const pageBreakElements = document.querySelectorAll('.page-break-before');
+                pageBreakElements.forEach((element) => {
+                    element.style.marginTop = (headerHeight + 20) + 'px';
+                });
+            }
+
+            // Handle page breaks for stampa-element sections
+            const sections = document.querySelectorAll('.stampa-element');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const pageHeight = window.innerHeight;
+
+                if (rect.top < pageHeight && (rect.top + rect.height) > pageHeight) {
+                    section.classList.add('force-break');
+                }
+            });
+        }
+
+        // Generate QR Code
+        var qrcode = new QRCode(document.getElementById('qrcode'), {
+            text: '{"uid": "{{ uid | safe }}"}',
+            width: 100,
+            height: 100,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Initial layout adjustment
+        adjustLayout();
+
+        // Adjust on window resize
+        window.addEventListener('resize', adjustLayout);
+
+        // Adjust before printing
+        window.addEventListener('beforeprint', adjustLayout);
+
+        // Add mutation observer for dynamic content changes
+        const observer = new MutationObserver(function (mutations) {
+            adjustLayout();
+        });
+
+        observer.observe(document.querySelector('.content-wrapper'), {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    });
+</script>
+</body>
+</html>

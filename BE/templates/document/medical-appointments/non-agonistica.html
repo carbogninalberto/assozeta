@@ -1,0 +1,150 @@
+{% load format %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+
+        @media print {
+            div {
+                break-inside: avoid;
+            }
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            text-align: justify;
+        }
+        .title {
+            font-size: 14pt;
+            text-align: center;
+            width:100%;
+            margin: 0;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .stampa {
+            /*border: 1px solid #000;*/
+            width: 19cm;
+            height: 15.7cm;
+            max-width: 21cm;
+            min-width: 19cm;
+            min-height: 15cm;
+            margin: auto;
+            /*margin: 10mm 10mm 10mm 10mm;*/
+            padding: 15mm;
+        }
+
+        p {
+            margin: .2rem;
+        }
+
+        ul, li {
+            padding: 0;
+        }
+
+        @media screen {
+            div.divFooter {
+                display: none;
+            }
+        }
+        @media print {
+            div.divFooter {
+                border-top: 1px solid #ccc;
+                width: 19cm;
+                padding-top: 10px;
+                background: #fff;
+                font-size: 9px;
+                position: fixed;
+                bottom: 0;
+            }
+        }
+    </style>
+</head>
+
+<body style="{{ body_style }}">
+<div class='stampa' style="margin-top: 1rem;">
+ <h1 class="title">RICHIESTA DI VISITA MEDICO-SPORTIVA PER L'IDONEITÀ ALLA PRATICA NON AGONISTICA</h1>
+    <p class="text-center" style="font-size:8pt;">
+       (D.M. Sanità 18.02.1982 - Circ. Min. Sanità 31.01.1983)
+    </p>
+
+    <p class="text-right" style="margin-top: 20px;">
+        Data <b>{{ medical_appointment.date | date:"d/m/Y" | default:"________________" | upper}}</b>
+    </p>
+    <p>
+        <b>{{ sport_association.denomination | default:"________________________________" | upper }}</b>
+    </p>
+    <p>
+        Con sede in: <b>{{ sport_association.address_city | default:"________________________________" | upper }}</b>
+    </p>
+    <p>
+        Indirizzo: <b>{{ sport_association.address | default:"________________________________" | upper }}, {{ sport_association.address_cap | default:"________" | upper }}</b>
+    </p>
+    <p>
+        Affiliata alla Federazione Sportiva Nazionale <b>{{ sport_association.federation | default:"______________" }}</b>
+        con matricola <b>{{ sport_association.enroll_number | default:"______________" | upper }}</b>
+    </p>
+
+    <h3 class="text-center" style="margin-top:20px;"><b>Chiede che il proprio atleta</b></h3>
+
+    <p>
+        Nome e Cognome: <b>{{ associate.full_name | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Città di residenza: <b>{{ associate.address_city | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Indirizzo: <b>{{ associate.address | default:"________________________________" | upper }}, {{ associate.address_cap | default:"________" | upper }}</b>
+    </p>
+
+    <p>
+        Codice fiscale: <b>{{ associate.tax_code | default:"________________________________" | upper }}</b>
+    </p>
+
+    <p>
+        Tessera sanitaria: <b>{{ associate.health_insurance_card | default:"________________________________" | upper }}</b>
+    </p>
+
+    <h3 class="text-center" style="margin-top:20px;"><b>Una visita medico sportiva per l'idoneità alla pratica non agonistica dello sport: </b></h3>
+    <h3 class="text-center" style="margin-top:20px;"><b>{{ medical_appointment.sport | default:"________________________________" | upper }}</b></h3>
+
+    <h3 class="text-right" style="margin-top:20px;">Firma del presidente e timbro</h3>
+    <p class="text-right" style="margin-top:20px;">
+        <img height="80" src="{{ sport_association.logo | safe }}" />
+    </p>
+
+    {% if associate.is_minor_now %}
+        <p style="margin-top: 20px;">
+            <b>Il sottoscritto {{ associate.tutor.full_name | default:'_____________________________________________________________________' | upper }}</b>
+            (esercente la patria potestà sul minore <b>{{ associate.full_name }}</b>) dà il consenso alla effettuazione dei relativi accertamenti di idoneità.
+        </p>
+    {% endif %}
+
+
+    <p style="margin-top: 20px;">
+        Io sottoscritto dichiaro di avere informato esattamente il medico delle mie attuali condizioni psico-fisiche,
+        delle affezioni precedenti e di non essere mai stato dichiarato non idoneo in precedenti visite medico -
+        sportive di legge. Esprimo inoltre, ai sensi della attuale legge sulla privacy, il consenso a trattare i miei dati,
+        personali e sensibili, per le finalità connesse alla mia richiesta di idoneità alla pratica sportiva /non
+        agonistica, secondo le modalità di cui alla specifica normativa in materia.
+    </p>
+
+    <p class="text-right" style="margin-top:20px;">
+        __________________________________________
+    </p>
+
+</div>
+
+
+</body>
+
+</html>
