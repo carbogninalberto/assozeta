@@ -143,6 +143,21 @@ make dev
 
 Il comando avvia UI, API, PostgreSQL, Redis, MinIO, renderer PDF, worker e scheduler Celery. La UI è disponibile su [http://localhost:5001](http://localhost:5001), con HMR Vite; Django viene ricaricato automaticamente quando cambiano i sorgenti Python.
 
+Al primo avvio:
+
+1. Esegui `make dev-config` per generare `selfhost/.env.dev` con segreti sicuri e commenti esplicativi. Le integrazioni opzionali possono restare vuote; in sviluppo si modificano normalmente solo le porte `DEV_*` e `VITE_USE_POLLING`.
+2. Esegui `make dev`, attendi che venga stampato il **first-run setup token** e che i servizi risultino avviati. `make dev` genera automaticamente `.env.dev` anche se il primo comando è stato saltato.
+3. Apri [http://localhost:5001](http://localhost:5001), lascia `localhost` come dominio e incolla nel campo **Token di Setup** il token esatto stampato dal comando.
+4. Completa il wizard creando l'associazione e l'account proprietario, quindi accedi con l'email e la password scelte.
+
+Il token non è una stringa arbitraria: viene generato in `selfhost/.env.dev`. Inserire un valore casuale causa una risposta HTTP `401` da `POST /api/instance/configure`. Per recuperare il solo valore del token:
+
+```bash
+awk -F= '$1 == "INSTANCE_SETUP_TOKEN" { print substr($0, index($0, "=") + 1) }' selfhost/.env.dev
+```
+
+Non è necessario eseguire un reset dopo un tentativo con token errato; basta tornare al primo passaggio e usare il valore corretto. Le istruzioni complete sono in [`selfhost/README.md`](selfhost/README.md#first-development-setup).
+
 Durante lo sviluppo Vite inoltra automaticamente:
 
 - `/api` verso il container Django, rimuovendo il prefisso `/api`

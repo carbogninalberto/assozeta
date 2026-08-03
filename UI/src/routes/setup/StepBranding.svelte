@@ -28,15 +28,15 @@
         const file = e.target.files[0];
         if (file) {
             // Validate file type
-            const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
             if (!validTypes.includes(file.type)) {
-                errors.logo = 'Formato non supportato. Usa PNG, JPG o SVG';
+                errors.logo = 'Formato non supportato. Usa PNG, JPG o WebP';
                 return;
             }
 
-            // Validate file size (max 2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                errors.logo = 'Il file è troppo grande. Massimo 2MB';
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                errors.logo = 'Il file è troppo grande. Massimo 5MB';
                 return;
             }
 
@@ -126,8 +126,8 @@
             <label class="logo-upload d-flex flex-column align-items-center justify-content-center p-4 rounded-lg cursor-pointer">
                 <Image size={32} weight="duotone" class="text-muted mb-2" />
                 <span class="text-muted font-weight-bold">Clicca per caricare il logo</span>
-                <small class="text-muted font-size-sm">PNG, JPG o SVG (max 2MB)</small>
-                <input type="file" accept=".png,.jpg,.jpeg,.svg" class="d-none" on:change={handleLogoSelect} />
+                <small class="text-muted font-size-sm">PNG, JPG o WebP (max 5MB)</small>
+                <input type="file" accept=".png,.jpg,.jpeg,.webp" class="d-none" on:change={handleLogoSelect} />
             </label>
         {/if}
         {#if errors.logo}

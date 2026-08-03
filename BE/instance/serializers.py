@@ -9,6 +9,8 @@ from .defaults import SUPPORTED_FEATURES
 
 
 CANONICAL_LOGO_URL = '/api/instance/logo.png'
+CANONICAL_MANIFEST_URL = '/api/instance/manifest.json'
+DEFAULT_LOGO_URL = '/oem/assozeta/brand/logo.svg'
 
 
 class InstanceStatusSerializer(serializers.Serializer):
@@ -78,7 +80,7 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
         return {
             'name': obj.name,
             'abbreviation': obj.abbreviation,
-            'logo': obj.logo_path if obj.logo_path else None,
+            'logo': obj.logo_path or DEFAULT_LOGO_URL,
             'supportEmail': obj.support_email,
             'primaryColor': obj.primary_color,
             'displaySettings': obj.get_display_settings(),
@@ -101,7 +103,7 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
         return {
             'title': obj.meta_title or obj.name,
             'description': obj.meta_description or 'Gestionale per associazioni sportive',
-            'manifest': '/instance/manifest.json',
+            'manifest': CANONICAL_MANIFEST_URL,
         }
 
     def get_features(self, obj):

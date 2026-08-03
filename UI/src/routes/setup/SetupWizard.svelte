@@ -1,5 +1,5 @@
 <script>
-	import { AlertTriangle, Check as LucideCheck } from 'lucide-svelte';
+    import {AlertTriangle, Check as LucideCheck} from 'lucide-svelte';
     import {onMount, onDestroy} from 'svelte';
     import {fade, scale, fly} from 'svelte/transition';
     import {
@@ -9,7 +9,7 @@
         validateImportFile,
         startImport,
         checkImportStatus,
-        getApiHost
+        getApiHost,
     } from 'store/instanceStore.js';
     import {Check, Stack} from 'phosphor-svelte';
 
@@ -43,7 +43,7 @@
         skipFiles: false,
         validationResult: null,
         importTaskId: null,
-        importResult: null
+        importResult: null,
     };
 
     // Step 3b: Fresh configuration
@@ -51,7 +51,7 @@
         associationName: '',
         ownerEmail: '',
         ownerPassword: '',
-        ownerPasswordConfirm: ''
+        ownerPasswordConfirm: '',
     };
 
     // Step 4: Branding configuration
@@ -61,13 +61,13 @@
         primaryColor: '#351DC2',
         supportEmail: '',
         logoFile: null,
-        logoPreview: null
+        logoPreview: null,
     };
 
     // Step 5: OAuth configuration (optional)
     let oauthConfig = {
         googleClientId: '',
-        appleClientId: ''
+        appleClientId: '',
     };
 
     // Final result
@@ -79,7 +79,7 @@
         {id: 2, label: 'Dati', icon: 'database'},
         {id: 3, label: dataSource === 'import' ? 'Importa' : 'Crea', icon: dataSource === 'import' ? 'upload' : 'plus'},
         {id: 4, label: 'Branding', icon: 'palette'},
-        {id: 5, label: 'Completato', icon: 'check'}
+        {id: 5, label: 'Completato', icon: 'check'},
     ];
 
     onMount(() => {
@@ -128,23 +128,24 @@
                     abbreviation: brandingConfig.abbreviation,
                     primaryColor: brandingConfig.primaryColor,
                     supportEmail: brandingConfig.supportEmail,
-                    logo: logoUrl
+                    logo: logoUrl,
                 },
                 oauth: {
                     googleClientId: oauthConfig.googleClientId || null,
-                    appleClientId: oauthConfig.appleClientId || null
+                    appleClientId: oauthConfig.appleClientId || null,
                 },
-                initialization: dataSource === 'import'
-                    ? {
-                        type: 'import',
-                        importTaskId: importConfig.importTaskId
-                    }
-                    : {
-                        type: 'fresh',
-                        associationName: freshConfig.associationName,
-                        ownerEmail: freshConfig.ownerEmail,
-                        ownerPassword: freshConfig.ownerPassword
-                    }
+                initialization:
+                    dataSource === 'import'
+                        ? {
+                              type: 'import',
+                              importTaskId: importConfig.importTaskId,
+                          }
+                        : {
+                              type: 'fresh',
+                              associationName: freshConfig.associationName,
+                              ownerEmail: freshConfig.ownerEmail,
+                              ownerPassword: freshConfig.ownerPassword,
+                          },
             };
 
             const result = await saveInstanceConfig(config, setupToken);
@@ -163,8 +164,12 @@
     }
 
     function handleComplete() {
-        // Redirect to login page
-        window.location.href = '/#/login';
+        // App initialization stopped early while the instance was unconfigured.
+        // Reload once so it detects the completed setup before rendering login.
+        window.location.hash = '/login';
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     }
 </script>
 
@@ -173,7 +178,9 @@
 </svelte:head>
 
 <div class="setup-wizard d-flex flex-column min-vh-100 position-relative" style="background-color: white;">
-    <div class="position-absolute w-100 h-100" style="background-image: url('/static/forms/pattern.png'); background-size: cover; opacity: 0.03; pointer-events: none;"></div>
+    <div
+        class="position-absolute w-100 h-100"
+        style="background-image: url('/static/forms/pattern.png'); background-size: cover; opacity: 0.03; pointer-events: none;" />
     <!-- Header -->
     <div class="setup-header bg-white shadow-sm py-4 px-5 position-relative" style="z-index: 1;">
         <div class="d-flex align-items-center justify-content-between">
@@ -196,8 +203,7 @@
                         class:active={currentStep === step.id}
                         class:completed={currentStep > step.id}
                         on:click={() => goToStep(step.id)}
-                        disabled={step.id > currentStep}
-                    >
+                        disabled={step.id > currentStep}>
                         {#if currentStep > step.id}
                             <LucideCheck size={14} weight="bold" />
                         {:else}
@@ -205,7 +211,7 @@
                         {/if}
                     </button>
                     {#if i < steps.length - 1}
-                        <div class="step-line" class:completed={currentStep > step.id}></div>
+                        <div class="step-line" class:completed={currentStep > step.id} />
                     {/if}
                 {/each}
             </div>
@@ -213,7 +219,9 @@
     </div>
 
     <!-- Main content -->
-    <div class="setup-content flex-grow-1 d-flex align-items-center justify-content-center py-5 px-4 position-relative" style="z-index: 1;">
+    <div
+        class="setup-content flex-grow-1 d-flex align-items-center justify-content-center py-5 px-4 position-relative"
+        style="z-index: 1;">
         <div class="setup-card bg-white rounded-lg border" style="max-width: 600px; width: 100%;">
             {#if error}
                 <div class="alert alert-danger m-4" transition:fade>
@@ -225,35 +233,18 @@
             <div class="p-5">
                 {#if currentStep === 1}
                     <div in:fly={{x: 20, duration: 200}}>
-                        <StepDomain
-                            bind:config={domainConfig}
-                            bind:setupToken
-                            on:next={nextStep}
-                        />
+                        <StepDomain bind:config={domainConfig} bind:setupToken on:next={nextStep} />
                     </div>
                 {:else if currentStep === 2}
                     <div in:fly={{x: 20, duration: 200}}>
-                        <StepDataSource
-                            bind:dataSource
-                            on:next={nextStep}
-                            on:prev={prevStep}
-                        />
+                        <StepDataSource bind:dataSource on:next={nextStep} on:prev={prevStep} />
                     </div>
                 {:else if currentStep === 3}
                     <div in:fly={{x: 20, duration: 200}}>
                         {#if dataSource === 'import'}
-                            <StepImport
-                                bind:config={importConfig}
-                                {setupToken}
-                                on:next={nextStep}
-                                on:prev={prevStep}
-                            />
+                            <StepImport bind:config={importConfig} {setupToken} on:next={nextStep} on:prev={prevStep} />
                         {:else}
-                            <StepFresh
-                                bind:config={freshConfig}
-                                on:next={nextStep}
-                                on:prev={prevStep}
-                            />
+                            <StepFresh bind:config={freshConfig} on:next={nextStep} on:prev={prevStep} />
                         {/if}
                     </div>
                 {:else if currentStep === 4}
@@ -263,15 +254,11 @@
                             bind:oauthConfig
                             {loading}
                             on:submit={handleFinalSubmit}
-                            on:prev={prevStep}
-                        />
+                            on:prev={prevStep} />
                     </div>
                 {:else if currentStep === 5}
                     <div in:fly={{x: 20, duration: 200}}>
-                        <StepComplete
-                            result={setupResult}
-                            on:complete={handleComplete}
-                        />
+                        <StepComplete result={setupResult} on:complete={handleComplete} />
                     </div>
                 {/if}
             </div>
@@ -290,7 +277,7 @@
 
 <style>
     .setup-icon {
-        color: var(--main-color, #351DC2);
+        color: var(--main-color, #351dc2);
     }
 
     .step-indicator {
@@ -318,14 +305,14 @@
     }
 
     .step-dot.active {
-        border-color: var(--main-color, #351DC2);
-        background: var(--main-color, #351DC2);
+        border-color: var(--main-color, #351dc2);
+        background: var(--main-color, #351dc2);
         color: white;
     }
 
     .step-dot.completed {
-        border-color: var(--main-color, #351DC2);
-        background: var(--main-color, #351DC2);
+        border-color: var(--main-color, #351dc2);
+        background: var(--main-color, #351dc2);
         color: white;
     }
 
@@ -337,7 +324,7 @@
     }
 
     .step-line.completed {
-        background: var(--main-color, #351DC2);
+        background: var(--main-color, #351dc2);
     }
 
     .setup-card {
@@ -353,21 +340,21 @@
     }
 
     :global(.setup-card .form-control:focus) {
-        border-color: var(--main-color, #351DC2);
+        border-color: var(--main-color, #351dc2);
         background: white;
         box-shadow: 0 0 0 0.2rem rgba(53, 29, 194, 0.1);
     }
 
     :global(.setup-card .btn-primary) {
-        background: var(--main-color, #351DC2);
-        border-color: var(--main-color, #351DC2);
+        background: var(--main-color, #351dc2);
+        border-color: var(--main-color, #351dc2);
         padding: 0.75rem 1.5rem;
         border-radius: 0.5rem;
         font-weight: 600;
     }
 
     :global(.setup-card .btn-primary:hover) {
-        background: var(--main-color, #351DC2);
+        background: var(--main-color, #351dc2);
         filter: brightness(1.1);
     }
 

@@ -152,8 +152,45 @@ Celery worker, and Celery Beat are included. Stateful dependencies stay on the
 private Docker network; the MinIO console is available at
 `http://localhost:59001`.
 
-Development startup prints the first-run setup token. Retrieve it later from
-`selfhost/.env.dev` as `INSTANCE_SETUP_TOKEN`.
+### First development setup
+
+1. Generate the local configuration before starting Docker:
+
+   ```bash
+   make dev-config
+   ```
+
+   This creates `selfhost/.env.dev` with generated secrets and explanatory
+   comments. Do not copy `.env.dev.example` over it and do not replace generated
+   secrets with arbitrary values. Optional integration credentials may remain
+   blank; the usual developer customizations are the `DEV_*` ports and
+   `VITE_USE_POLLING`.
+2. Run `make dev` and wait until the UI and API are reported healthy. Keep this
+   terminal open while developing. Use `make dev-up` instead if you want the
+   stack to run in the background. Both commands also create `.env.dev`
+   automatically if you skipped step 1.
+3. Copy the **first-run setup token** printed by the command. This is a generated
+   secret, not a value you choose. A random string will be rejected with HTTP
+   `401` by `POST /api/instance/configure`.
+4. Open `http://localhost:5001`. In the first wizard step, leave the detected
+   domain as `localhost` and paste the exact generated token into **Token di
+   Setup**.
+5. Choose **Crea una nuova istanza**, enter the association and owner account
+   details, configure the branding, and complete the wizard. You can then sign
+   in with the owner email and password entered in the wizard.
+
+The token is stored only in `selfhost/.env.dev`. To retrieve it after the
+startup message has scrolled away, run this from the repository root:
+
+```bash
+awk -F= '$1 == "INSTANCE_SETUP_TOKEN" { print substr($0, index($0, "=") + 1) }' selfhost/.env.dev
+```
+
+Paste only the value printed by that command, without
+`INSTANCE_SETUP_TOKEN=`. The token remains the same across `make dev-down` and
+`make dev-reset`; a new token is generated only if `selfhost/.env.dev` is
+removed and recreated. If you previously submitted a wrong token, no reset is
+needed: return to the first wizard step and enter the correct value.
 
 Useful commands:
 
@@ -170,7 +207,7 @@ make dev-reset CONFIRM=1
 
 `make dev-down` keeps development data. `make dev-reset CONFIRM=1` permanently
 deletes the development database, Redis, MinIO, static, and Node dependency
-volumes.
+volumes. It does not delete `selfhost/.env.dev`.
 
 On Docker Desktop, set `VITE_USE_POLLING=true` in `selfhost/.env.dev` if native
 filesystem notifications do not trigger Vite HMR.

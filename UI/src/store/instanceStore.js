@@ -101,6 +101,9 @@ export const metaConfig = derived([instanceConfig, oemConfig], ([$config, $oem])
 
 // Check if running in self-hosted mode
 export function isSelfHostedMode() {
+    if (get(instanceConfig)?.features?.selfHosted === true) {
+        return true;
+    }
     // Self-hosted mode if OEM_CONFIG is not set at compile time
     // or if it's explicitly set to selfhosted mode
     if (typeof __bakney === 'undefined') {
@@ -355,7 +358,13 @@ export async function uploadInstanceLogo(file, setupToken = '') {
         body: formData
     });
 
-    return response.json();
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.logo_url) {
+        throw new Error(result.error || 'Logo upload failed');
+    }
+
+    return result;
 }
 
 /**

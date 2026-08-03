@@ -2,7 +2,7 @@ SHELL := /bin/sh
 
 ASSOZETA := ./selfhost/bin/assozeta
 
-.PHONY: help dev dev-up dev-down dev-logs dev-shell dev-ui-shell dev-db-shell \
+.PHONY: help dev-config dev dev-up dev-down dev-logs dev-shell dev-ui-shell dev-db-shell \
 	dev-migrate dev-makemigrations dev-test dev-rebuild dev-reset \
 	selfhost-configure selfhost-install selfhost-validate selfhost-start \
 	selfhost-stop selfhost-status selfhost-logs selfhost-backup selfhost-restore \
@@ -10,6 +10,7 @@ ASSOZETA := ./selfhost/bin/assozeta
 
 help:
 	@printf '%s\n' \
+		'make dev-config               Generate selfhost/.env.dev without starting Docker' \
 		'make dev                      Run the complete development stack' \
 		'make dev-up                   Start development detached' \
 		'make dev-down                 Stop development and keep data' \
@@ -27,6 +28,9 @@ help:
 		'make selfhost-test            Validate scripts, Compose, and Python syntax' \
 		'make selfhost-smoke           Start and smoke-test the development stack' \
 		'make selfhost-production-smoke Build and test the production stack'
+
+dev-config:
+	@$(ASSOZETA) dev-config
 
 dev:
 	@$(ASSOZETA) dev

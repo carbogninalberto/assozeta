@@ -21,6 +21,7 @@ from celery.result import AsyncResult
 from .models import InstanceConfiguration
 from .serializers import (
     CANONICAL_LOGO_URL,
+    DEFAULT_LOGO_URL,
     InstanceConfigSerializer,
     InstanceSetupSerializer,
     InstanceReconfigureSerializer,
@@ -430,12 +431,12 @@ class InstanceManifestView(APIView):
                 "description": "Gestionale per associazioni sportive",
                 "icons": [
                     {
-                        "src": "/favicon.svg",
+                        "src": DEFAULT_LOGO_URL,
                         "sizes": "192x192",
                         "type": "image/svg+xml"
                     },
                     {
-                        "src": "/favicon.svg",
+                        "src": DEFAULT_LOGO_URL,
                         "sizes": "512x512",
                         "type": "image/svg+xml"
                     }
@@ -447,7 +448,7 @@ class InstanceManifestView(APIView):
             })
 
         # Determine icon info
-        icon_src = config.logo_path if config.logo_path else "/favicon.svg"
+        icon_src = config.logo_path or DEFAULT_LOGO_URL
         icon_type = "image/png"
         if icon_src.endswith('.svg'):
             icon_type = "image/svg+xml"
