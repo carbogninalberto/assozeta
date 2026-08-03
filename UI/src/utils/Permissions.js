@@ -339,7 +339,12 @@ export const setPermissions = function (planType, role) {
         }
     }
     // if it's not set, set it to the default, this is also set all persmissions to collaborator role 1
-    if (permissionsMap[planType][role] === undefined) return;
+    const planPermissions = permissionsMap[Number(planType)];
+    if (!planPermissions || planPermissions[role] === undefined) {
+        console.error('Unsupported permissions context', {planType, role});
+        permissions.set([]);
+        return;
+    }
 
     // set all permissions
     permissions.set(allPermissions);

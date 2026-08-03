@@ -28,12 +28,6 @@
         Wallet,
     } from 'phosphor-svelte';
     import {isAgentOpen, agentProcessing} from 'store/agentStore.js';
-    import AddPersonaDrawer from 'routes/association/personas/detail/AddPersonaDrawer.svelte';
-    import AddMemberDrawer from 'routes/association/Members/add/AddMemberDrawer.svelte';
-    import AddCourseDrawer from 'routes/association/course/add/AddCourseDrawer.svelte';
-    import AddEditModal from 'routes/accounting/payment/modals/AddEditModal.svelte';
-    import SupplierDrawer from 'routes/accounting/suppliers-and-customers/SupplierDrawer.svelte';
-    import AddInstructorDrawer from 'routes/association/course/instructor/add/AddInstructorDrawer.svelte';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
     import BasicDropdown from 'components/dropdowns/basic-dropdown.svelte';
@@ -75,12 +69,15 @@
         }
     }
 
-    function openQuickAdd(event) {
+    async function openQuickAdd(event) {
         const item = event.detail;
         destroyQuickAdd();
 
         switch (item.id) {
             case 'persona':
+                const {default: AddPersonaDrawer} = await import(
+                    'routes/association/personas/detail/AddPersonaDrawer.svelte'
+                );
                 quickAddInstance = new AddPersonaDrawer({
                     target: document.getElementById('drawer-elements'),
                     props: {title: 'Nuova Anagrafica'},
@@ -91,6 +88,9 @@
                 });
                 break;
             case 'subscription':
+                const {default: AddMemberDrawer} = await import(
+                    'routes/association/Members/add/AddMemberDrawer.svelte'
+                );
                 quickAddInstance = new AddMemberDrawer({
                     target: document.getElementById('drawer-elements'),
                     props: {title: 'Nuova Iscrizione'},
@@ -104,6 +104,9 @@
                 });
                 break;
             case 'course':
+                const {default: AddCourseDrawer} = await import(
+                    'routes/association/course/add/AddCourseDrawer.svelte'
+                );
                 quickAddInstance = new AddCourseDrawer({
                     target: document.getElementById('drawer-elements'),
                     props: {title: 'Nuovo Corso'},
@@ -114,6 +117,9 @@
                 });
                 break;
             case 'payment':
+                const {default: AddEditModal} = await import(
+                    'routes/accounting/payment/modals/AddEditModal.svelte'
+                );
                 quickAddInstance = new AddEditModal({
                     target: document.getElementById('portal-elements-foreground'),
                     props: {show: true, data: {type: 'cash', expense: false, meta_payment_categories: []}},
@@ -124,6 +130,9 @@
                 });
                 break;
             case 'supplier':
+                const {default: SupplierDrawer} = await import(
+                    'routes/accounting/suppliers-and-customers/SupplierDrawer.svelte'
+                );
                 quickAddInstance = new SupplierDrawer({
                     target: document.getElementById('drawer-elements'),
                     props: {title: 'Nuovo Fornitore'},
@@ -134,6 +143,9 @@
                 });
                 break;
             case 'instructor':
+                const {default: AddInstructorDrawer} = await import(
+                    'routes/association/course/instructor/add/AddInstructorDrawer.svelte'
+                );
                 quickAddInstance = new AddInstructorDrawer({
                     target: document.getElementById('drawer-elements'),
                     props: {title: 'Nuovo Istruttore'},

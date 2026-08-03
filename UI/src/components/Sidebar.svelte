@@ -57,7 +57,7 @@
     import NewTicket from './NewTicket.svelte';
     import Portal from 'svelte-portal';
     import {toast} from 'svelte-sonner';
-    import {SmartSelect} from 'components/formBuilder/preview-blocks';
+    import SmartSelect from 'components/formBuilder/preview-blocks/smart-select-input.svelte';
     import {ChevronRight, Ellipsis} from 'lucide-svelte';
     import {oemConfig} from 'store/instanceStore.js';
 
@@ -112,13 +112,14 @@
                 // TODO: check if plan active & show plan in the case is expired
                 if (!res.error) {
                     showPlan = true;
+                    const planData = res.response.data;
                     const currentDate = new Date();
-                    const planDate = new Date(res?.response?.data?.ends_on);
-                    planType = '🚀 ' + (res?.response?.data?.active_plan?.name || 'Piano di Valutazione');
+                    const planDate = new Date(planData?.ends_on);
+                    planType = '🚀 ' + (planData?.active_plan?.name || 'Piano di Valutazione');
                     $isExpired = currentDate > planDate; //&& res.response.data.active_plan.billing_type != 1;
                     daysLeft = Math.max(Math.floor((planDate - currentDate) / (1000 * 60 * 60 * 24)), -1);
-                    billingData.set(res?.response?.data);
-                    setPermissions($billingData?.active_plan?.billing_type, $role);
+                    billingData.set(planData);
+                    setPermissions(planData?.active_plan?.billing_type, $role);
 
                     if ($isExpired) {
                         window.location.href = '/#/subscription/upgrade';

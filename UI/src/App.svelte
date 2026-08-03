@@ -366,13 +366,14 @@
             $sessionToken != null
         ) {
             console.warn('checking role...', currentPage, $role);
-            await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(async res => {
-                if (!res.error) {
-                    billingData.set(res.response.data);
-                    await apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                        if (!res.error) {
-                            role.set(res.response.info.role);
-                            setPermissions($billingData?.active_plan?.billing_type, $role);
+            await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(async billingResult => {
+                if (!billingResult.error) {
+                    billingData.set(billingResult.response.data);
+                    await apiFetch(__bakney.env.API.PROFILE.INFO).then(profileResult => {
+                        if (!profileResult.error) {
+                            const currentRole = profileResult.response.info.role;
+                            role.set(currentRole);
+                            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
                         }
                     });
                 } else {

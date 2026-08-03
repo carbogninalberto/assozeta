@@ -96,6 +96,9 @@ let oemConfig = buildConfig({
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    optimizeDeps: {
+        include: ['jose', 'uuid'],
+    },
     resolve:{
         alias:{
             'utils': path.resolve(projectRootDir, 'src/utils'),
@@ -115,50 +118,6 @@ export default defineConfig({
                 assetFileNames: 'build-assets/[name]-[hash][extname]',
                 chunkFileNames: 'build-assets/[name]-[hash].js',
                 entryFileNames: 'build-assets/[name]-[hash].js',
-                manualChunks: {
-                    'canvas-confetti': ['canvas-confetti'],
-                    'phosphor-svelte': ['phosphor-svelte'],
-                    'lucide-svelte': ['lucide-svelte'],
-                    'html5-qrcode': ['html5-qrcode'],
-                    'svelte-qrcode': ['svelte-qrcode'],
-                    'svelte-clipboard': ['svelte-clipboard'],
-                    'svelte-dnd-action': ['svelte-dnd-action'],
-                    'svelte-stripe': ['svelte-stripe'],
-                    'svelte-i18n': ['svelte-i18n'],
-                    'svelte-sortable-items': ['svelte-sortable-items'],
-                    'svelte-spa-router': ['svelte-spa-router'],
-                    'svelvet': ['svelvet'],
-                    'svelte-filepond': ['svelte-filepond'],
-                    'svelte-content-loader': ['svelte-content-loader'],
-                    'svelte-sonner': ['svelte-sonner'],
-                    'svelte-tiny-virtual-list': ['svelte-tiny-virtual-list'],
-                    'svelte-select': ['svelte-select'],
-                    'svelte-loading-spinners': ['svelte-loading-spinners'],
-                    'svelte-star-rating': ['@ernane/svelte-star-rating'],
-                    'tiptap': [
-                        "@tiptap/core",
-                        "@tiptap/extension-bubble-menu",
-                        '@tiptap/extension-image',
-                        '@tiptap/extension-task-list',
-                        '@tiptap/extension-task-item',
-                        '@tiptap/extension-text-align',
-                        '@tiptap/extension-paragraph',
-                        '@tiptap/extension-dropcursor',
-                        '@tiptap/extension-underline',
-                        '@tiptap/extension-table',
-                        '@tiptap/extension-table-row',
-                        '@tiptap/extension-table-cell',
-                        '@tiptap/extension-table-header',
-                        '@tiptap/extension-link',
-                        '@tiptap/extension-mention',
-                    ],
-                    'scripts': [
-                        'store/stores.js',
-                        'utils/ApiMiddleware.js',
-                        'utils/Functions.js',
-                        'utils/Permissions.js',
-                    ]
-                }
             }
         },
     },

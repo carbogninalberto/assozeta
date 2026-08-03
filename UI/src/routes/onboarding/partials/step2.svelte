@@ -1,13 +1,12 @@
 <script>
     import {PhoneInput, SmartSelect} from 'components/formBuilder/preview-blocks';
     import TextInput from 'components/formBuilder/preview-blocks/text-input.svelte';
-    import {userData} from 'store/stores';
+    import {billingData, role, userData} from 'store/stores';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {getDataFromForm} from 'utils/Functions';
     import confetti from 'canvas-confetti';
     import {toast} from 'svelte-sonner';
-    import {push} from 'svelte-spa-router';
-    import {canPerformAction} from 'utils/Permissions';
+    import {setPermissions} from 'utils/Permissions';
 
     userData.useLocalStorage();
 
@@ -21,25 +20,35 @@
         {label: 'più di 500 tesserati', value: 'più di 500 tesserati'},
     ];
 
-    function completeWelcomeStep(res) {
+    async function completeWelcomeStep(res) {
         if (!res.error) {
-            setTimeout(() => {
-                confetti({
-                    particleCount: 200,
-                    spread: 400,
-                    origin: {
-                        y: 0.5,
-                    },
-                });
-                localStorage.removeItem('userData');
-                toast.success('Configurazione del tuo gestionale completata');
-                setTimeout(() => {
-                    history.pushState(null, '', `/`);
-                    canPerformAction('association.dashboard.read');
-                    window.location.reload();
-                    isLoading = false;
-                }, 1000);
-            }, 500);
+            confetti({
+                particleCount: 200,
+                spread: 400,
+                origin: {
+                    y: 0.5,
+                },
+            });
+            toast.success('Configurazione del tuo gestionale completata');
+
+            const [profileResult, billingResult] = await Promise.all([
+                apiFetch(__bakney.env.API.PROFILE.INFO),
+                apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
+            ]);
+
+            if (profileResult.error || billingResult.error) {
+                isLoading = false;
+                toast.error('Impossibile aggiornare i dati del profilo. Riprova.');
+                return;
+            }
+
+            const currentRole = profileResult.response.info.role;
+            userData.set(profileResult.response.user_data);
+            role.set(currentRole);
+            billingData.set(billingResult.response.data);
+            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
+
+            window.location.replace('/#/');
         } else {
             isLoading = false;
             toast.error('Errore nella configurazione del tuo gestionale');
@@ -61,7 +70,7 @@
                 },
             }),
         });
-        completeWelcomeStep(res);
+        await completeWelcomeStep(res);
     }
 </script>
 

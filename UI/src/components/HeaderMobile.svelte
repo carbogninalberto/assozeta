@@ -94,7 +94,9 @@
 <BasicDrawer bind:isOpen={$isMobileSidebarOpen} position="left" title="" width="280px">
     <div slot="header" style="display: none;"></div>
     <div slot="content" class="mobile-sidebar-drawer">
-        <Sidebar on:navigate={() => $isMobileSidebarOpen = false} />
+        {#if $isMobileSidebarOpen}
+            <Sidebar on:navigate={() => $isMobileSidebarOpen = false} />
+        {/if}
     </div>
 </BasicDrawer>
 <!--end::Mobile Sidebar Drawer-->
