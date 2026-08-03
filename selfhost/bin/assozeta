@@ -1,0 +1,1335 @@
+#!/bin/sh
+set -eu
+
+SELFHOST_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+PROD_ENV=${ASSOZETA_ENV_FILE:-"$SELFHOST_DIR/.env"}
+DEV_ENV=${ASSOZETA_DEV_ENV_FILE:-"$SELFHOST_DIR/.env.dev"}
+PROD_COMPOSE="$SELFHOST_DIR/compose.yml"
+DEV_COMPOSE="$SELFHOST_DIR/compose.dev.yml"
+REQUIRED_ENV="$SELFHOST_DIR/config/required.env"
+MIN_COMPOSE_VERSION=2.20.0
+PROD_LOCK_DIR="$SELFHOST_DIR/.lifecycle.lock"
+READINESS_ATTEMPTS=${ASSOZETA_READINESS_ATTEMPTS:-60}
+READINESS_DELAY=${ASSOZETA_READINESS_DELAY:-2}
+
+log() {
+    printf '[assozeta] %s\n' "$*"
+}
+
+die() {
+    printf '[assozeta] error: %s\n' "$*" >&2
+    exit 1
+}
+
+usage() {
+    cat <<'EOF'
+Usage: ./selfhost/bin/assozeta COMMAND [OPTIONS]
+
+Production commands:
+  configure [--domain DOMAIN] [--email EMAIL] [--version VERSION]
+  install [configure options]
+  validate
+  pull
+  migrate
+  start
+  stop
+  restart
+  status
+  logs [SERVICE]
+  backup [DIRECTORY]
+  restore ARCHIVE [--yes]
+  upgrade VERSION
+  uninstall [--volumes] [--yes]
+
+Development commands:
+  dev-config
+  dev
+  dev-up
+  dev-down
+  dev-logs [SERVICE]
+  dev-reset [--yes]
+  dev-compose [ARGS...]
+EOF
+}
+
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+compose_version_at_least() {
+    current=$1
+    required=$2
+
+    current_major=${current%%.*}
+    current_rest=${current#*.}
+    [ "$current_rest" != "$current" ] || current_rest=0
+    current_minor=${current_rest%%.*}
+    current_rest=${current_rest#*.}
+    [ "$current_rest" != "$current_minor" ] || current_rest=0
+    current_patch=${current_rest%%.*}
+
+    required_major=${required%%.*}
+    required_rest=${required#*.}
+    required_minor=${required_rest%%.*}
+    required_rest=${required_rest#*.}
+    required_patch=${required_rest%%.*}
+
+    for part in "$current_major" "$current_minor" "$current_patch" "$required_major" "$required_minor" "$required_patch"; do
+        case "$part" in
+            ""|*[!0-9]*) return 1 ;;
+        esac
+    done
+
+    [ "$current_major" -gt "$required_major" ] && return 0
+    [ "$current_major" -lt "$required_major" ] && return 1
+    [ "$current_minor" -gt "$required_minor" ] && return 0
+    [ "$current_minor" -lt "$required_minor" ] && return 1
+    [ "$current_patch" -ge "$required_patch" ]
+}
+
+compose_version() {
+    output=$(docker compose version --short 2>/dev/null || docker compose version 2>/dev/null) \
+        || die "Docker Compose v$MIN_COMPOSE_VERSION or newer is required"
+    version=$(printf '%s\n' "$output" | awk '
+        {
+            for (i = 1; i <= NF; i++) {
+                value = $i
+                sub(/^v/, "", value)
+                if (value ~ /^[0-9]+([.][0-9]+)+/) {
+                    sub(/[^0-9.].*/, "", value)
+                    print value
+                    exit
+                }
+            }
+        }
+    ')
+    [ -n "$version" ] || die "could not determine Docker Compose version from: $output"
+    printf '%s\n' "$version"
+}
+
+preflight() {
+    require_command docker
+    docker info >/dev/null 2>&1 || die "Docker is not running or is not accessible"
+    detected_compose_version=$(compose_version)
+    compose_version_at_least "$detected_compose_version" "$MIN_COMPOSE_VERSION" \
+        || die "Docker Compose v$MIN_COMPOSE_VERSION or newer is required (found $detected_compose_version)"
+}
+
+pid_is_running() {
+    pid=$1
+    case "$pid" in
+        ""|*[!0-9]*) return 1 ;;
+    esac
+    kill -0 "$pid" 2>/dev/null
+}
+
+release_prod_lock() {
+    [ "${prod_lock_held:-false}" = true ] || return 0
+
+    if [ -r "$PROD_LOCK_DIR/pid" ]; then
+        IFS= read -r lock_pid < "$PROD_LOCK_DIR/pid" || lock_pid=
+    else
+        lock_pid=
+    fi
+    if [ "$lock_pid" = "$$" ]; then
+        rm -rf "$PROD_LOCK_DIR" || true
+    fi
+    prod_lock_held=false
+}
+
+prod_lock_on_exit() {
+    status=$?
+    trap - EXIT HUP INT TERM
+    release_prod_lock
+    exit "$status"
+}
+
+set_prod_lock_traps() {
+    trap 'prod_lock_on_exit' EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+}
+
+acquire_prod_lock() {
+    lock_command=$1
+    [ "${prod_lock_held:-false}" = true ] && return 0
+
+    waited=false
+    while :; do
+        if mkdir "$PROD_LOCK_DIR" 2>/dev/null; then
+            prod_lock_held=true
+            printf '%s\n' "$$" > "$PROD_LOCK_DIR/pid"
+            printf '%s\n' "$lock_command" > "$PROD_LOCK_DIR/command"
+            date -u +%Y-%m-%dT%H:%M:%SZ > "$PROD_LOCK_DIR/created_at" 2>/dev/null || true
+            chmod 700 "$PROD_LOCK_DIR" 2>/dev/null || true
+            set_prod_lock_traps
+            return 0
+        fi
+
+        if [ -r "$PROD_LOCK_DIR/pid" ]; then
+            IFS= read -r lock_pid < "$PROD_LOCK_DIR/pid" || lock_pid=
+        else
+            lock_pid=
+        fi
+
+        if pid_is_running "$lock_pid"; then
+            if [ "$waited" = false ]; then
+                log "waiting for production lifecycle lock held by PID $lock_pid"
+                waited=true
+            fi
+            sleep 2
+            continue
+        fi
+
+        sleep 1
+        [ -d "$PROD_LOCK_DIR" ] || continue
+        if [ -r "$PROD_LOCK_DIR/pid" ]; then
+            IFS= read -r lock_pid < "$PROD_LOCK_DIR/pid" || lock_pid=
+        else
+            lock_pid=
+        fi
+        if pid_is_running "$lock_pid"; then
+            continue
+        fi
+
+        die "stale lifecycle lock at $PROD_LOCK_DIR; verify no lifecycle command is running, then remove the lock directory"
+    done
+}
+
+compose_with_env() {
+    compose_env_file=$1
+    compose_file=$2
+    shift 2
+
+    [ -f "$compose_env_file" ] || die "configuration not found: $compose_env_file"
+
+    (
+        while IFS='=' read -r name _; do
+            case "$name" in
+                ''|[0-9]*|*[!A-Za-z0-9_]*) ;;
+                *) unset "$name" ;;
+            esac
+        done < "$compose_env_file"
+
+        ASSOZETA_ENV_FILE=$compose_env_file; export ASSOZETA_ENV_FILE
+        docker compose --env-file "$compose_env_file" -f "$compose_file" "$@"
+    )
+}
+
+prod_compose() {
+    compose_with_env "$PROD_ENV" "$PROD_COMPOSE" "$@"
+}
+
+dev_compose() {
+    compose_with_env "$DEV_ENV" "$DEV_COMPOSE" "$@"
+}
+
+random_hex() {
+    openssl rand -hex "$1"
+}
+
+configuration_on_exit() {
+    status=$?
+    trap - EXIT HUP INT TERM
+    if [ -n "${configuration_temporary_directory:-}" ]; then
+        rm -rf "$configuration_temporary_directory" || true
+    fi
+    release_prod_lock
+    exit "$status"
+}
+
+env_value() {
+    key=$1
+    file=$2
+    awk -v key="$key" '
+        index($0, key "=") == 1 {
+            print substr($0, length(key) + 2)
+            exit
+        }
+    ' "$file"
+}
+
+set_env_value() {
+    key=$1
+    value=$2
+    file=$3
+    temporary="${file}.tmp.$$"
+
+    awk -v key="$key" -v value="$value" '
+        BEGIN { updated = 0 }
+        index($0, key "=") == 1 {
+            print key "=" value
+            updated = 1
+            next
+        }
+        { print }
+        END {
+            if (!updated) print key "=" value
+        }
+    ' "$file" > "$temporary"
+    chmod 600 "$temporary"
+    mv "$temporary" "$file"
+}
+
+ensure_configuration_values() {
+    file=$1
+    [ -f "$file" ] || return
+
+    value=$(env_value INSTANCE_SETUP_TOKEN "$file")
+    case "$value" in
+        ""|replace-me)
+            require_command openssl
+            set_env_value INSTANCE_SETUP_TOKEN "$(random_hex 32)" "$file"
+            log "added INSTANCE_SETUP_TOKEN to $file"
+            ;;
+    esac
+
+    value=$(env_value GOOGLE_CALENDAR_REDIRECT_URL "$file")
+    if [ -z "$value" ]; then
+        app_url=$(env_value APP_URL "$file")
+        [ -n "$app_url" ] || die "missing APP_URL in $file"
+        set_env_value GOOGLE_CALENDAR_REDIRECT_URL "${app_url%/}/api/google/oauth2callback" "$file"
+        log "added GOOGLE_CALENDAR_REDIRECT_URL to $file"
+    fi
+}
+
+log_setup_token() {
+    file=$1
+    token=$(env_value INSTANCE_SETUP_TOKEN "$file")
+    [ -n "$token" ] || return
+
+    log "first-run setup token: $token"
+    log "retrieve it later from $file as INSTANCE_SETUP_TOKEN"
+}
+
+validate_port() {
+    port=$1
+    label=$2
+
+    case "$port" in
+        ""|*[!0-9]*) die "invalid port for $label: $port" ;;
+    esac
+    if ! [ "$port" -ge 1 ] 2>/dev/null || ! [ "$port" -le 65535 ] 2>/dev/null; then
+        die "invalid port for $label: $port (must be 1-65535)"
+    fi
+}
+
+derive_site_ports() {
+    label=$1
+
+    HTTP_PORT=80
+    HTTPS_PORT=443
+    APP_ALLOWED_HOST=$APP_HOST
+
+    case "$APP_HOST" in
+        *:*)
+            host_without_port=${APP_HOST%:*}
+            site_port=${APP_HOST##*:}
+            [ -n "$host_without_port" ] || die "invalid domain or site address: $label"
+            case "$host_without_port" in
+                *:*) die "invalid domain or site address: $label" ;;
+            esac
+            validate_port "$site_port" "$label"
+            APP_ALLOWED_HOST=$host_without_port
+            case "$APP_URL" in
+                http://*) HTTP_PORT=$site_port ;;
+                https://*) HTTPS_PORT=$site_port ;;
+            esac
+            ;;
+    esac
+}
+
+normalise_site() {
+    raw=${1%/}
+    case "$raw" in
+        http://*)
+            SITE_ADDRESS=$raw
+            APP_URL=$raw
+            APP_HOST=${raw#http://}
+            ;;
+        https://*)
+            SITE_ADDRESS=$raw
+            APP_URL=$raw
+            APP_HOST=${raw#https://}
+            ;;
+        localhost|localhost:*|127.0.0.1|127.0.0.1:*)
+            SITE_ADDRESS="http://$raw"
+            APP_URL="http://$raw"
+            APP_HOST=$raw
+            ;;
+        *)
+            SITE_ADDRESS=$raw
+            APP_URL="https://$raw"
+            APP_HOST=$raw
+            ;;
+    esac
+
+    [ -n "$APP_HOST" ] || die "invalid domain or site address: $1"
+    case "$APP_HOST" in
+        *[!A-Za-z0-9.:-]*) die "invalid domain or site address: $1" ;;
+    esac
+    derive_site_ports "$1"
+}
+
+write_configuration() {
+    output=$1
+    mode=$2
+    domain=$3
+    email=$4
+    version=$5
+
+    require_command openssl
+    normalise_site "$domain"
+
+    umask 077
+    temporary_directory=$(mktemp -d)
+    configuration_temporary_directory=$temporary_directory
+    trap 'configuration_on_exit' EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    openssl genpkey -algorithm ED25519 -out "$temporary_directory/jwt-private.pem" >/dev/null 2>&1
+    openssl pkey -in "$temporary_directory/jwt-private.pem" -pubout -out "$temporary_directory/jwt-public.pem" >/dev/null 2>&1
+
+    jwt_private=$(openssl base64 -A -in "$temporary_directory/jwt-private.pem")
+    jwt_public=$(openssl base64 -A -in "$temporary_directory/jwt-public.pem")
+    secret_key=$(random_hex 48)
+    database_password=$(random_hex 24)
+    redis_password=$(random_hex 24)
+    minio_password=$(random_hex 24)
+    document_token=$(random_hex 32)
+    senja_token=$(random_hex 32)
+    crm_token=$(random_hex 32)
+    stripe_webhook_token=$(random_hex 32)
+    instance_setup_token=$(random_hex 32)
+    admin_path="$(random_hex 12)/"
+
+    if [ "$mode" = dev ]; then
+        debug=True
+        ratelimit=False
+        cors_all=True
+        secure_cookie=False
+        allowed_hosts="localhost,127.0.0.1,api"
+        trusted_origins="http://localhost:5001,http://localhost:8000"
+        app_url=http://localhost:5001
+        app_host=localhost:5001
+        site_address=http://localhost:5001
+        http_port=80
+        https_port=443
+        acme_email=localhost@example.invalid
+        project_name=assozeta-dev
+    else
+        debug=False
+        ratelimit=True
+        cors_all=False
+        case "$APP_URL" in
+            http://*) secure_cookie=False ;;
+            *) secure_cookie=True ;;
+        esac
+        allowed_hosts="$APP_ALLOWED_HOST,api,localhost,127.0.0.1"
+        trusted_origins=$APP_URL
+        app_url=$APP_URL
+        app_host=$APP_HOST
+        site_address=$SITE_ADDRESS
+        http_port=$HTTP_PORT
+        https_port=$HTTPS_PORT
+        if [ -n "$email" ]; then
+            acme_email=$email
+        else
+            acme_email=localhost@example.invalid
+        fi
+        project_name=assozeta
+    fi
+
+    cat > "$output" <<EOF
+COMPOSE_PROJECT_NAME=$project_name
+ASSOZETA_VERSION=$version
+ASSOZETA_BACKEND_IMAGE=ghcr.io/carbogninalberto/assozeta-backend
+ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web
+ASSOZETA_RENDERER_IMAGE=ghcr.io/carbogninalberto/assozeta-renderer
+POSTGRES_IMAGE=postgres:16-alpine
+REDIS_IMAGE=redis:7-alpine
+MINIO_IMAGE=quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+MINIO_CLIENT_IMAGE=quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+
+SITE_ADDRESS=$site_address
+APP_URL=$app_url
+APP_HOST=$app_host
+ACME_EMAIL=$acme_email
+HTTP_PORT=$http_port
+HTTPS_PORT=$https_port
+
+SECRET_KEY=$secret_key
+INSTANCE_SETUP_TOKEN=$instance_setup_token
+JWT_SECRET_KEY_B64=$jwt_private
+JWT_PUBLIC_KEY_B64=$jwt_public
+DOCUMENT_BYPASS_TOKEN=$document_token
+SENJA_WEBHOOK_SECRET=$senja_token
+CRM_API_TOKEN=$crm_token
+STRIPE_WEBHOOK_SECRET=$stripe_webhook_token
+ADMIN_URL=$admin_path
+
+DEBUG=$debug
+RATELIMIT_ENABLE=$ratelimit
+ALLOWED_HOSTS=$allowed_hosts
+CORS_ORIGIN_ALLOW_ALL=$cors_all
+CORS_ALLOWED_ORIGINS=$trusted_origins
+CSRF_TRUSTED_ORIGINS=$trusted_origins
+SESSION_COOKIE_SECURE=$secure_cookie
+CSRF_COOKIE_SECURE=$secure_cookie
+CURRENT_HOST=http://api:8000
+GOOGLE_CALENDAR_REDIRECT_URL=$app_url/api/google/oauth2callback
+WHITELABEL_NAME=Assozeta
+
+DBTYPE=POSTGRES
+DBNAME=assozeta
+DBUSER=assozeta
+DBPASSWORD=$database_password
+DBHOST=postgres
+DBPORT=5432
+USE_PGBOUNCER=False
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_USERNAME=default
+REDIS_PASSWORD=$redis_password
+
+STORE_ON_DISK=False
+AWS_ACCESS_KEY_ID=assozeta
+AWS_SECRET_ACCESS_KEY=$minio_password
+AWS_STORAGE_BUCKET_NAME=assozeta
+AWS_S3_REGION_NAME=us-east-1
+AWS_S3_ENDPOINT_URL=http://minio:9000
+AWS_LOCATION=storage
+AWS_S3_FILE_OVERWRITE=False
+MINIO_ROOT_USER=assozeta
+MINIO_ROOT_PASSWORD=$minio_password
+
+PUPPETEER_HOST=renderer
+PUPPETEER_PORT=3000
+CURRENT_HOST_PUPPETEER=http://api:8000
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=
+SOCIAL_AUTH_APPLE_ID_CLIENT=
+SOCIAL_AUTH_APPLE_ID_TEAM=
+SOCIAL_AUTH_APPLE_ID_KEY=
+SOCIAL_AUTH_APPLE_ID_SECRET=
+STRIPE_KEY=
+EMAIL_HOST=
+EMAIL_PORT=
+EMAIL_HOST_USER=
+EMAIL_HOST_SUPPORT=
+EMAIL_HOST_PASSWORD=
+EMAIL_USE_TLS=False
+EMAIL_USE_SSL=False
+GROQ_API_KEY=
+SMSAPI_TOKEN=
+
+WEB_CONCURRENCY=2
+CELERY_CONCURRENCY=2
+TZ=Europe/Rome
+DEV_UI_PORT=5001
+DEV_API_PORT=8000
+DEV_MINIO_CONSOLE_PORT=59001
+VITE_USE_POLLING=false
+EOF
+    chmod 600 "$output"
+    rm -rf "$temporary_directory"
+    configuration_temporary_directory=
+    trap - EXIT HUP INT TERM
+    if [ "${prod_lock_held:-false}" = true ]; then
+        set_prod_lock_traps
+    fi
+}
+
+configure() {
+    domain=
+    email=
+    version=latest
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --domain) [ "$#" -ge 2 ] || die "--domain needs a value"; domain=$2; shift 2 ;;
+            --email) [ "$#" -ge 2 ] || die "--email needs a value"; email=$2; shift 2 ;;
+            --version) [ "$#" -ge 2 ] || die "--version needs a value"; version=$2; shift 2 ;;
+            *) die "unknown configure option: $1" ;;
+        esac
+    done
+
+    if [ -f "$PROD_ENV" ]; then
+        ensure_configuration_values "$PROD_ENV"
+        log "configuration already exists at $PROD_ENV; leaving other values unchanged"
+        return
+    fi
+
+    if [ -z "$domain" ]; then
+        if [ -t 0 ]; then
+            printf 'Public domain (or localhost): '
+            read -r domain
+        else
+            die "--domain is required without an interactive terminal"
+        fi
+    fi
+
+    case "$domain" in
+        localhost|localhost:*|127.0.0.1|127.0.0.1:*|http://localhost*|http://127.0.0.1*) ;;
+        *)
+            if [ -z "$email" ] && [ -t 0 ]; then
+                printf 'ACME email: '
+                read -r email
+            fi
+            [ -n "$email" ] || die "--email is required for a public domain"
+            ;;
+    esac
+
+    write_configuration "$PROD_ENV" production "$domain" "$email" "$version"
+    log "created $PROD_ENV"
+}
+
+dev_config() {
+    if [ -f "$DEV_ENV" ]; then
+        ensure_configuration_values "$DEV_ENV"
+        return
+    fi
+    write_configuration "$DEV_ENV" dev localhost:5001 "" dev
+    log "created $DEV_ENV"
+}
+
+validate_file() {
+    file=$1
+    compose_file=$2
+
+    [ -f "$file" ] || die "configuration not found: $file"
+
+    while IFS= read -r key; do
+        [ -n "$key" ] || continue
+        value=$(env_value "$key" "$file")
+        [ -n "$value" ] || die "missing required value in $file: $key"
+        case "$value" in
+            replace-me) die "placeholder value remains in $file: $key" ;;
+        esac
+    done < "$REQUIRED_ENV"
+
+    http_port=$(env_value HTTP_PORT "$file")
+    [ -z "$http_port" ] || validate_port "$http_port" "HTTP_PORT in $file"
+    https_port=$(env_value HTTPS_PORT "$file")
+    [ -z "$https_port" ] || validate_port "$https_port" "HTTPS_PORT in $file"
+
+    compose_with_env "$file" "$compose_file" --profile tools config --quiet
+}
+
+validate_prod() {
+    preflight
+    ensure_configuration_values "$PROD_ENV"
+    validate_file "$PROD_ENV" "$PROD_COMPOSE"
+    log "production configuration is valid"
+}
+
+validate_dev() {
+    preflight
+    dev_config
+    validate_file "$DEV_ENV" "$DEV_COMPOSE"
+    log "development configuration is valid"
+}
+
+validate_positive_integer() {
+    value=$1
+    case "$value" in
+        ""|*[!0-9]*) return 1 ;;
+    esac
+    [ "$value" -gt 0 ] 2>/dev/null
+}
+
+wait_url_ready() {
+    label=$1
+    url=$2
+
+    if ! command -v curl >/dev/null 2>&1; then
+        log "curl is required for public readiness checks"
+        return 1
+    fi
+    if ! validate_positive_integer "$READINESS_ATTEMPTS"; then
+        log "invalid ASSOZETA_READINESS_ATTEMPTS: $READINESS_ATTEMPTS"
+        return 1
+    fi
+    if ! validate_positive_integer "$READINESS_DELAY"; then
+        log "invalid ASSOZETA_READINESS_DELAY: $READINESS_DELAY"
+        return 1
+    fi
+
+    attempt=1
+    while [ "$attempt" -le "$READINESS_ATTEMPTS" ]; do
+        if curl --fail --silent --show-error "$url" >/dev/null 2>&1; then
+            log "$label readiness check passed"
+            return 0
+        fi
+        [ "$attempt" -lt "$READINESS_ATTEMPTS" ] || break
+        sleep "$READINESS_DELAY"
+        attempt=$((attempt + 1))
+    done
+
+    log "$label readiness check failed after $READINESS_ATTEMPTS attempts: $url"
+    return 1
+}
+
+wait_public_readiness() {
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    app_url=$(env_value APP_URL "$PROD_ENV")
+    [ -n "$app_url" ] || die "missing APP_URL in $PROD_ENV"
+
+    wait_url_ready "web" "$app_url/healthz" || return 1
+    wait_url_ready "API" "$app_url/api/readyz" || return 1
+}
+
+require_public_readiness() {
+    wait_public_readiness || die "public web/API readiness checks failed"
+}
+
+initialise_prod() {
+    force_recreate=${1:-false}
+
+    prod_compose stop web api worker beat || return $?
+    if [ "$force_recreate" = true ]; then
+        prod_compose up -d --wait --force-recreate postgres redis minio renderer || return $?
+    else
+        prod_compose up -d --wait postgres redis minio renderer || return $?
+    fi
+    prod_compose --profile tools run --rm minio-init || return $?
+    prod_compose --profile tools run --rm --no-deps migrate || return $?
+}
+
+migrate_prod() {
+    validate_prod
+    app_was_running=false
+    if prod_app_services_running; then
+        app_was_running=true
+    else
+        app_state_status=$?
+        [ "$app_state_status" -eq 1 ] || die "failed to inspect application service state"
+    fi
+
+    migrate_status=0
+    initialise_prod || migrate_status=$?
+
+    if [ "$migrate_status" -ne 0 ]; then
+        prod_compose stop web api worker beat >/dev/null 2>&1 \
+            || log "failed to confirm application services are stopped after migration failure"
+        log "migration failed; application services remain stopped"
+        return "$migrate_status"
+    fi
+
+    if [ "$app_was_running" = true ]; then
+        if ! prod_compose up -d --wait api worker beat web; then
+            migrate_status=1
+        elif ! wait_public_readiness; then
+            migrate_status=1
+        fi
+    fi
+
+    return "$migrate_status"
+}
+
+install_prod() {
+    configure "$@"
+    validate_prod
+    prod_compose pull
+    initialise_prod
+    prod_compose up -d --wait api worker beat web
+    require_public_readiness
+    status_prod
+    log "installation complete: $(env_value APP_URL "$PROD_ENV")"
+    log_setup_token "$PROD_ENV"
+}
+
+start_prod() {
+    validate_prod
+    initialise_prod
+    prod_compose up -d --wait api worker beat web
+    require_public_readiness
+    status_prod
+}
+
+restart_prod() {
+    validate_prod
+    initialise_prod true
+    prod_compose up -d --wait --force-recreate api worker beat web
+    require_public_readiness
+    status_prod
+}
+
+status_prod() {
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    prod_compose ps
+    app_url=$(env_value APP_URL "$PROD_ENV")
+    if command -v curl >/dev/null 2>&1; then
+        curl --fail --silent --show-error "$app_url/healthz" >/dev/null \
+            && log "web health check passed" \
+            || log "web health check has not passed yet"
+        curl --fail --silent --show-error "$app_url/api/readyz" >/dev/null \
+            && log "API readiness check passed" \
+            || log "API readiness check has not passed yet"
+    fi
+}
+
+prod_app_services_running() {
+    running=$(prod_compose ps --status running --services web api worker beat 2>/dev/null) || return 2
+    [ -n "$running" ]
+}
+
+backup_cleanup() {
+    status=${1:-$?}
+    [ "${backup_cleanup_done:-false}" = true ] && return "$status"
+    backup_cleanup_done=true
+
+    if [ -n "${backup_working:-}" ]; then
+        rm -rf "$backup_working" || true
+    fi
+
+    if [ "${backup_app_stopped:-false}" = true ] && [ "${backup_app_was_running:-false}" = true ]; then
+        log "restarting application services"
+        if ! prod_compose up -d --wait api worker beat web; then
+            log "failed to restart application services after backup"
+            [ "$status" -eq 0 ] && status=1
+        fi
+    fi
+
+    return "$status"
+}
+
+backup_on_exit() {
+    status=$?
+    trap - EXIT HUP INT TERM
+    cleanup_status=0
+    backup_cleanup "$status" || cleanup_status=$?
+    if [ "$status" -eq 0 ]; then
+        status=$cleanup_status
+    fi
+    release_prod_lock
+    exit "$status"
+}
+
+restore_cleanup() {
+    status=${1:-$?}
+    [ "${restore_cleanup_done:-false}" = true ] && return "$status"
+    restore_cleanup_done=true
+
+    if [ "$status" -ne 0 ] && [ "${restore_live_modified:-false}" = true ]; then
+        log "restore failed; rolling back live database/object data"
+        if ! restore_rollback_live_data; then
+            log "restore rollback failed; manual recovery may be required"
+            status=1
+        fi
+    fi
+
+    if [ "${restore_validation_database_created:-false}" = true ]; then
+        log "removing restore validation database"
+        if ! postgres_drop_database "$restore_database_user" "$restore_validation_database" >/dev/null 2>&1; then
+            log "failed to remove restore validation database: $restore_validation_database"
+            [ "$status" -eq 0 ] && status=1
+        fi
+        restore_validation_database_created=false
+    fi
+
+    if [ "${restore_rollback_database_created:-false}" = true ]; then
+        if [ "$status" -eq 0 ] || [ "${restore_rollback_database_needed:-false}" = false ]; then
+            log "removing restore rollback database"
+            if ! postgres_drop_database "$restore_database_user" "$restore_rollback_database" >/dev/null 2>&1; then
+                log "failed to remove restore rollback database: $restore_rollback_database"
+                [ "$status" -eq 0 ] && status=1
+            else
+                restore_rollback_database_created=false
+            fi
+        else
+            log "preserving restore rollback database for manual recovery: $restore_rollback_database"
+        fi
+    fi
+
+    if [ "${restore_stage_bucket_created:-false}" = true ]; then
+        log "removing restore staging bucket"
+        if ! minio_remove_bucket "$restore_stage_bucket"; then
+            log "failed to remove restore staging bucket: $restore_stage_bucket"
+            [ "$status" -eq 0 ] && status=1
+        else
+            restore_stage_bucket_created=false
+        fi
+    fi
+
+    if [ "${restore_rollback_bucket_created:-false}" = true ]; then
+        if [ "$status" -eq 0 ] || [ "${restore_rollback_bucket_needed:-false}" = false ]; then
+            log "removing restore rollback bucket"
+            if ! minio_remove_bucket "$restore_rollback_bucket"; then
+                log "failed to remove restore rollback bucket: $restore_rollback_bucket"
+                [ "$status" -eq 0 ] && status=1
+            else
+                restore_rollback_bucket_created=false
+            fi
+        else
+            log "preserving restore rollback bucket for manual recovery: $restore_rollback_bucket"
+        fi
+    fi
+
+    if [ "$status" -ne 0 ] && [ "${restore_app_stopped:-false}" = true ] && [ "${restore_app_was_running:-false}" = true ]; then
+        log "restarting application services"
+        if ! prod_compose up -d --wait api worker beat web || ! wait_public_readiness; then
+            log "failed to restart application services after restore failure"
+            status=1
+        fi
+    fi
+
+    if [ -n "${restore_temporary:-}" ]; then
+        rm -rf "$restore_temporary" || true
+    fi
+
+    return "$status"
+}
+
+restore_on_exit() {
+    status=$?
+    trap - EXIT HUP INT TERM
+    cleanup_status=0
+    restore_cleanup "$status" || cleanup_status=$?
+    if [ "$status" -eq 0 ]; then
+        status=$cleanup_status
+    fi
+    release_prod_lock
+    exit "$status"
+}
+
+postgres_drop_database() {
+    database_user=$1
+    database=$2
+    prod_compose exec -T postgres dropdb --if-exists --force --maintenance-db=postgres -U "$database_user" "$database"
+}
+
+postgres_terminate_database() {
+    database_user=$1
+    database=$2
+    printf '%s\n' "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = :'db' AND pid <> pg_backend_pid();" | \
+        prod_compose exec -T postgres psql \
+        -U "$database_user" \
+        -d postgres \
+        -v ON_ERROR_STOP=1 \
+        -v db="$database" \
+        >/dev/null
+}
+
+postgres_rename_database() {
+    database_user=$1
+    old_database=$2
+    new_database=$3
+    printf '%s\n' 'ALTER DATABASE :"old" RENAME TO :"new";' | \
+        prod_compose exec -T postgres psql \
+        -U "$database_user" \
+        -d postgres \
+        -v ON_ERROR_STOP=1 \
+        -v old="$old_database" \
+        -v new="$new_database" \
+        >/dev/null
+}
+
+postgres_database_exists() {
+    database_user=$1
+    database=$2
+    printf '%s\n' "SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = :'db');" | \
+        prod_compose exec -T postgres psql \
+        -U "$database_user" \
+        -d postgres \
+        -v ON_ERROR_STOP=1 \
+        -v db="$database" \
+        -At
+}
+
+minio_remove_bucket() {
+    bucket_name=$1
+    prod_compose --profile tools run --rm -T \
+        -e RESTORE_BUCKET="$bucket_name" \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        'if mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null; then mc rb --force "local/$RESTORE_BUCKET" >/dev/null 2>&1 || true; else exit 1; fi' \
+        >/dev/null
+}
+
+minio_mirror_bucket() {
+    source_bucket=$1
+    destination_bucket=$2
+    prod_compose --profile tools run --rm -T \
+        -e RESTORE_SOURCE_BUCKET="$source_bucket" \
+        -e RESTORE_DESTINATION_BUCKET="$destination_bucket" \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        'set -eu
+         mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null
+         mc mirror --overwrite --remove "local/$RESTORE_SOURCE_BUCKET" "local/$RESTORE_DESTINATION_BUCKET" >/dev/null'
+}
+
+restore_rollback_live_data() {
+    rollback_status=0
+
+    prod_compose up -d --wait postgres redis minio || return 1
+    prod_compose stop web api worker beat >/dev/null 2>&1 || return 1
+
+    if [ "${restore_rollback_database_needed:-false}" = true ]; then
+        rollback_exists=$(postgres_database_exists "$restore_database_user" "$restore_rollback_database") || return 1
+        live_exists=$(postgres_database_exists "$restore_database_user" "$restore_database_name") || return 1
+
+        if [ "$rollback_exists" = t ]; then
+            log "rolling back PostgreSQL"
+            if [ "$live_exists" = t ]; then
+                postgres_terminate_database "$restore_database_user" "$restore_database_name" || rollback_status=1
+                postgres_drop_database "$restore_database_user" "$restore_database_name" >/dev/null || rollback_status=1
+            fi
+            if [ "$rollback_status" -eq 0 ] && \
+                postgres_rename_database "$restore_database_user" "$restore_rollback_database" "$restore_database_name"; then
+                restore_rollback_database_created=false
+                restore_rollback_database_needed=false
+            else
+                rollback_status=1
+            fi
+        elif [ "$rollback_exists" = f ] && [ "$live_exists" = t ]; then
+            # The first rename did not complete, so the live database is intact.
+            restore_rollback_database_created=false
+            restore_rollback_database_needed=false
+        else
+            rollback_status=1
+        fi
+    fi
+
+    if [ "${restore_rollback_bucket_created:-false}" = true ] && [ "${restore_rollback_bucket_needed:-false}" = true ]; then
+        log "rolling back object storage"
+        if minio_mirror_bucket "$restore_rollback_bucket" "$restore_bucket"; then
+            restore_rollback_bucket_needed=false
+        else
+            rollback_status=1
+        fi
+    fi
+
+    prod_compose exec -T \
+        -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
+        redis redis-cli FLUSHALL >/dev/null 2>&1 || true
+
+    return "$rollback_status"
+}
+
+backup_prod() {
+    preflight
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    ensure_configuration_values "$PROD_ENV"
+    require_command tar
+
+    umask 077
+    destination=${1:-"$SELFHOST_DIR/backups"}
+    mkdir -p "$destination"
+    timestamp=$(date -u +%Y%m%dT%H%M%SZ)
+    working="$destination/.assozeta-$timestamp-$$"
+    archive="$destination/assozeta-$timestamp.tar.gz"
+    if [ -e "$archive" ]; then
+        archive="$destination/assozeta-$timestamp-$$.tar.gz"
+    fi
+    mkdir -p "$working/objects"
+    backup_working=$working
+    backup_app_was_running=false
+    backup_app_stopped=false
+    backup_cleanup_done=false
+    trap 'backup_on_exit' EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+
+    database_user=$(env_value DBUSER "$PROD_ENV")
+    database_name=$(env_value DBNAME "$PROD_ENV")
+    bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+
+    if prod_app_services_running; then
+        backup_app_was_running=true
+    else
+        app_state_status=$?
+        [ "$app_state_status" -eq 1 ] || die "failed to inspect application service state"
+    fi
+
+    log "ensuring backup dependencies are healthy"
+    prod_compose up -d --wait postgres minio
+    prod_compose --profile tools run --rm minio-init
+
+    log "stopping application services for consistent backup"
+    backup_app_stopped=true
+    prod_compose stop web api worker beat
+
+    log "backing up PostgreSQL"
+    prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"
+
+    log "backing up object storage"
+    prod_compose --profile tools run --rm \
+        -v "$working/objects:/backup:z" \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        "mc alias set local http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc mirror local/$bucket /backup"
+
+    cp "$PROD_ENV" "$working/config.env"
+    cat > "$working/manifest.txt" <<EOF
+created_at=$timestamp
+version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+database=$database_name
+bucket=$bucket
+EOF
+
+    tar -C "$working" -czf "$archive" .
+    chmod 600 "$archive"
+    cleanup_status=0
+    backup_cleanup 0 || cleanup_status=$?
+    [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
+    log "backup created: $archive"
+    log "the archive contains secrets; copy it off-host and protect it"
+}
+
+confirm_destructive() {
+    prompt=$1
+    assume_yes=${2:-false}
+    [ "$assume_yes" = true ] && return
+    [ -t 0 ] || die "$prompt (pass --yes for non-interactive use)"
+    printf '%s [y/N] ' "$prompt"
+    read -r answer
+    case "$answer" in y|Y|yes|YES) ;; *) die "cancelled" ;; esac
+}
+
+restore_prod() {
+    archive=${1:-}
+    [ -n "$archive" ] || die "restore requires a backup archive"
+    [ -f "$archive" ] || die "backup archive not found: $archive"
+    shift || true
+    assume_yes=false
+    [ "${1:-}" = "--yes" ] && assume_yes=true
+    confirm_destructive "Restore $archive and replace current database/object data?" "$assume_yes"
+
+    preflight
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    ensure_configuration_values "$PROD_ENV"
+    require_command tar
+    umask 077
+    temporary=$(mktemp -d)
+    restore_temporary=$temporary
+    restore_validation_database_created=false
+    restore_rollback_database_created=false
+    restore_rollback_database_needed=false
+    restore_stage_bucket_created=false
+    restore_rollback_bucket_created=false
+    restore_rollback_bucket_needed=false
+    restore_live_modified=false
+    restore_app_was_running=false
+    restore_app_stopped=false
+    restore_cleanup_done=false
+    trap 'restore_on_exit' EXIT
+    trap 'exit 129' HUP
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+
+    tar -tzf "$archive" > "$temporary/archive.list"
+    while IFS= read -r archive_path; do
+        case "$archive_path" in
+            ""|/*|..|../*|*/..|*/../*) die "backup archive contains unsafe path: $archive_path" ;;
+        esac
+    done < "$temporary/archive.list"
+    tar -xzf "$archive" -C "$temporary"
+    [ -f "$temporary/postgres.dump" ] || die "backup has no PostgreSQL dump"
+    [ -d "$temporary/objects" ] || die "backup has no object-storage data"
+
+    database_user=$(env_value DBUSER "$PROD_ENV")
+    database_name=$(env_value DBNAME "$PROD_ENV")
+    bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+    database_suffix="$(date -u +%Y%m%d%H%M%S)_$$"
+    bucket_suffix="$(date -u +%Y%m%d%H%M%S)-$$"
+    validation_database="assozeta_restore_stage_$database_suffix"
+    rollback_database="assozeta_restore_rollback_$database_suffix"
+    stage_bucket="assozeta-restore-stage-$bucket_suffix"
+    rollback_bucket="assozeta-restore-rollback-$bucket_suffix"
+    restore_database_user=$database_user
+    restore_database_name=$database_name
+    restore_bucket=$bucket
+    restore_validation_database=$validation_database
+    restore_rollback_database=$rollback_database
+    restore_stage_bucket=$stage_bucket
+    restore_rollback_bucket=$rollback_bucket
+
+    log "validating PostgreSQL dump"
+    prod_compose up -d --wait postgres minio
+    prod_compose --profile tools run --rm minio-init
+    prod_compose exec -T postgres createdb -U "$database_user" "$validation_database"
+    restore_validation_database_created=true
+    prod_compose exec -T postgres pg_restore --exit-on-error -U "$database_user" -d "$validation_database" --no-owner --no-privileges < "$temporary/postgres.dump"
+
+    log "staging object storage"
+    restore_stage_bucket_created=true
+    prod_compose --profile tools run --rm -T \
+        -v "$temporary/objects:/backup:ro,z" \
+        -e RESTORE_STAGE_BUCKET="$stage_bucket" \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        'set -eu
+         mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null
+         mc rb --force "local/$RESTORE_STAGE_BUCKET" >/dev/null 2>&1 || true
+         mc mb "local/$RESTORE_STAGE_BUCKET" >/dev/null
+         mc mirror --overwrite --remove /backup "local/$RESTORE_STAGE_BUCKET" >/dev/null'
+
+    if prod_app_services_running; then
+        restore_app_was_running=true
+    else
+        app_state_status=$?
+        [ "$app_state_status" -eq 1 ] || die "failed to inspect application service state"
+    fi
+
+    log "stopping application services"
+    restore_app_stopped=true
+    prod_compose stop web api worker beat
+    prod_compose up -d --wait postgres redis minio
+
+    log "snapshotting current object storage for rollback"
+    restore_rollback_bucket_created=true
+    prod_compose --profile tools run --rm -T \
+        -e RESTORE_BUCKET="$bucket" \
+        -e RESTORE_ROLLBACK_BUCKET="$rollback_bucket" \
+        --entrypoint /bin/sh \
+        minio-init -c \
+        'set -eu
+         mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null
+         mc rb --force "local/$RESTORE_ROLLBACK_BUCKET" >/dev/null 2>&1 || true
+         mc mb "local/$RESTORE_ROLLBACK_BUCKET" >/dev/null
+         mc mirror --overwrite --remove "local/$RESTORE_BUCKET" "local/$RESTORE_ROLLBACK_BUCKET" >/dev/null'
+
+    log "swapping PostgreSQL databases"
+    restore_rollback_database_needed=true
+    restore_live_modified=true
+    postgres_terminate_database "$database_user" "$database_name"
+    postgres_rename_database "$database_user" "$database_name" "$rollback_database"
+    restore_rollback_database_created=true
+    postgres_rename_database "$database_user" "$validation_database" "$database_name"
+    restore_validation_database_created=false
+
+    log "replacing object storage"
+    restore_rollback_bucket_needed=true
+    minio_mirror_bucket "$stage_bucket" "$bucket"
+
+    log "flushing Redis"
+    prod_compose exec -T \
+        -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
+        redis redis-cli FLUSHALL >/dev/null
+
+    prod_compose --profile tools run --rm --no-deps migrate
+    prod_compose up -d --wait api worker beat web
+    require_public_readiness
+    cleanup_status=0
+    restore_cleanup 0 || cleanup_status=$?
+    [ "$cleanup_status" -eq 0 ] || exit "$cleanup_status"
+    status_prod
+    log "restore completed"
+}
+
+upgrade_prod() {
+    version=${1:-}
+    [ -n "$version" ] || die "upgrade requires a version"
+    [ -f "$PROD_ENV" ] || die "run configure first"
+    previous=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+    [ "$previous" != "$version" ] || die "already configured for version $version"
+    ensure_configuration_values "$PROD_ENV"
+
+    backup_prod
+    set_env_value ASSOZETA_VERSION "$version" "$PROD_ENV"
+    log "upgrading from $previous to $version"
+    if ! prod_compose pull; then
+        set_env_value ASSOZETA_VERSION "$previous" "$PROD_ENV"
+        die "failed to pull version $version; restored configured version $previous"
+    fi
+    initialise_prod
+    prod_compose up -d --wait api worker beat web
+    require_public_readiness
+    status_prod
+    log "upgrade complete; previous version was $previous"
+}
+
+prepare_dev() {
+    preflight
+    dev_config
+    validate_file "$DEV_ENV" "$DEV_COMPOSE"
+    dev_compose build
+    dev_compose up -d --wait postgres redis minio renderer
+    dev_compose --profile tools run --rm minio-init
+    dev_compose --profile tools run --rm --no-deps migrate
+}
+
+run_locked_prod_command() {
+    locked_command=$1
+    shift
+
+    acquire_prod_lock "$locked_command"
+    case "$locked_command" in
+        configure) configure "$@" ;;
+        install) preflight; install_prod "$@" ;;
+        pull) validate_prod; prod_compose pull ;;
+        migrate) migrate_prod ;;
+        start) start_prod ;;
+        stop) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose stop ;;
+        restart) restart_prod ;;
+        backup) backup_prod "$@" ;;
+        restore) restore_prod "$@" ;;
+        upgrade) upgrade_prod "$@" ;;
+        uninstall)
+            preflight
+            [ -f "$PROD_ENV" ] || die "run configure first"
+            volumes=false
+            assume_yes=false
+            while [ "$#" -gt 0 ]; do
+                case "$1" in
+                    --volumes) volumes=true ;;
+                    --yes) assume_yes=true ;;
+                    *) die "unknown uninstall option: $1" ;;
+                esac
+                shift
+            done
+            if [ "$volumes" = true ]; then
+                confirm_destructive "Delete all Assozeta production data volumes?" "$assume_yes"
+                prod_compose down --volumes --remove-orphans
+            else
+                prod_compose down --remove-orphans
+            fi
+            ;;
+        *) die "internal error: unlocked production command: $locked_command" ;;
+    esac
+    release_prod_lock
+    trap - EXIT HUP INT TERM
+}
+
+command=${1:-help}
+[ "$#" -eq 0 ] || shift
+
+case "$command" in
+    help|-h|--help) usage ;;
+    configure|install|pull|migrate|start|stop|restart|backup|restore|upgrade|uninstall) run_locked_prod_command "$command" "$@" ;;
+    validate) validate_prod ;;
+    status) preflight; status_prod ;;
+    logs) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose logs --follow --tail=200 "$@" ;;
+    dev-config) dev_config ;;
+    dev)
+        prepare_dev
+        log "UI: http://localhost:$(env_value DEV_UI_PORT "$DEV_ENV")"
+        log_setup_token "$DEV_ENV"
+        dev_compose up --remove-orphans api worker beat ui
+        ;;
+    dev-up)
+        prepare_dev
+        dev_compose up -d --wait api worker beat ui
+        log "UI: http://localhost:$(env_value DEV_UI_PORT "$DEV_ENV")"
+        log_setup_token "$DEV_ENV"
+        ;;
+    dev-down) preflight; dev_config; dev_compose down --remove-orphans ;;
+    dev-logs) preflight; dev_config; dev_compose logs --follow --tail=200 "$@" ;;
+    dev-reset)
+        preflight
+        dev_config
+        assume_yes=false
+        [ "${1:-}" = "--yes" ] && assume_yes=true
+        confirm_destructive "Delete all Assozeta development data and dependency volumes?" "$assume_yes"
+        dev_compose down --volumes --remove-orphans
+        ;;
+    dev-compose) preflight; dev_config; dev_compose "$@" ;;
+    *) die "unknown command: $command (run with --help)" ;;
+esac

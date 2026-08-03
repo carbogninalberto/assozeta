@@ -1,0 +1,45 @@
+{
+    email {$ACME_EMAIL:localhost@example.invalid}
+}
+
+{$SITE_ADDRESS} {
+    encode zstd gzip
+    root * /srv
+
+    header {
+        -Server
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Content-Type-Options "nosniff"
+    }
+
+    handle /healthz {
+        respond 200
+    }
+
+    handle_path /api/* {
+        reverse_proxy api:8000
+    }
+
+    handle /ws/* {
+        reverse_proxy api:8000
+    }
+
+    @ui_static {
+        path /static/*
+        file
+    }
+
+    handle @ui_static {
+        file_server
+    }
+
+    handle_path /static/* {
+        root * /django-static
+        file_server
+    }
+
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+}

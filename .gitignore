@@ -1,5 +1,9 @@
 tmp/
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # Deprecated / local-only project artifacts
 /.claude/
 /.idea/
@@ -22,3 +26,17 @@ tmp/
 /UI/tests/
 /UI/resources/
 /UI/docs/
+
+# Local backend state
+/BE/.env
+/BE/db.sqlite3
+/BE/test_db.sqlite3
+/BE/staticfiles/
+/BE/storage/
+/BE/VERSION
+
+# Generated self-host configuration and data
+/selfhost/.env
+/selfhost/.env.dev
+/selfhost/.lifecycle.lock/
+/selfhost/backups/

@@ -1,49 +1,65 @@
-# pull official base image
-FROM python:3.13.2-bullseye
+# syntax=docker/dockerfile:1.7
 
-# set work directory
-WORKDIR /usr/src/app
+FROM python:3.13.2-slim-bookworm AS base
 
-# set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    LANG=it_IT.UTF-8 \
+    LC_ALL=it_IT.UTF-8 \
+    PATH=/opt/venv/bin:$PATH
 
-# Install system dependencies (optimized - removed unused: tesseract-ocr, poppler-utils, ffmpeg, libev-dev, sqlite3, vim)
-RUN apt-get update && apt-get -y upgrade && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    curl wget gnupg2 \
-    libsm6 libxext6 && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        libpq5 \
+        libsm6 \
+        libxext6 \
+        locales \
+    && sed -i 's/# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PostgreSQL 15 client (matches server version)
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    apt-get update && \
-    apt-get install -y postgresql-client-15 && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y locales && \
-    sed -i -e 's/# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen && \
-    dpkg-reconfigure --frontend=noninteractive locales
+FROM base AS dependencies
 
-ENV LANG it_IT.UTF-8
-ENV LC_ALL it_IT.UTF-8
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+    && python -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip setuptools wheel \
+    && rm -rf /var/lib/apt/lists/*
 
-# install dependencies
-RUN pip3.13 install --upgrade pip
-RUN pip3.13 install --upgrade setuptools wheel
-COPY ./requirements.txt .
-RUN pip3.13 install -r requirements.txt && rm -rf /root/.cache
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /opt/venv/bin/pip install -r requirements.txt
 
-# copy project
+FROM base AS development
+
+COPY --from=dependencies /opt/venv /opt/venv
 COPY . .
 
-# Version injection from build arg
-ARG VERSION=v0.0.0
-RUN echo "${VERSION}" > /usr/src/app/VERSION
+EXPOSE 8000
 
-# Run entrypoint
-CMD ["/usr/src/app/entrypoint.sh"]
+CMD ["gunicorn", "core.asgi:application", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "1", "--bind", "0.0.0.0:8000", "--reload", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+
+FROM base AS production
+
+ARG VERSION=v0.0.0
+
+RUN groupadd --gid 10001 assozeta \
+    && useradd --uid 10001 --gid assozeta --create-home assozeta
+
+COPY --from=dependencies /opt/venv /opt/venv
+COPY --chown=assozeta:assozeta . .
+RUN printf '%s\n' "$VERSION" > VERSION \
+    && chmod +x entrypoint.sh \
+    && chown assozeta:assozeta VERSION
+
+USER assozeta
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl --fail --silent http://127.0.0.1:8000/healthz >/dev/null || exit 1
+
+CMD ["./entrypoint.sh"]
