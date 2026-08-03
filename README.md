@@ -23,7 +23,7 @@
 <!-- contributors:end -->
 
 > [!IMPORTANT]
-> Il repository comprende la UI Svelte in `UI/` e il backend Django in `BE/`. Il self-hosting richiede ancora configurazione manuale e servizi esterni: non è disponibile uno stack turnkey avviabile con un solo comando.
+> Il repository comprende la UI Svelte in `UI/`, il backend Django in `BE/` e uno stack Docker completo in [`selfhost/`](selfhost/README.md).
 
 ## Il progetto
 
@@ -127,35 +127,28 @@ assozeta/
 │   ├── oems.json             # Configurazione dei brand e degli host
 │   ├── package.json
 │   └── vite.config.js
+├── selfhost/                  # Compose, configurazione e operazioni self-hosted
+├── Makefile                   # Comandi di sviluppo locale
 ├── LICENSE
 └── README.md
 ```
 
 ## Avvio locale
 
-### Requisiti
-
-- Node.js 18 o successivo
-- npm 9 o successivo
-- Un backend API compatibile in esecuzione su `http://127.0.0.1:8000`
-
-### Installazione
+### Avvio completo con Docker
 
 ```bash
-git clone https://github.com/carbogninalberto/assozeta.git
-cd assozeta/UI
-npm ci
-npm run dev:selfhosted
+make dev
 ```
 
-La UI sarà disponibile su [https://localhost:5001](https://localhost:5001). Il server di sviluppo usa un certificato HTTPS locale gestito da `vite-plugin-mkcert`; al primo avvio potrebbe essere richiesta l'installazione di una CA locale.
+Il comando avvia UI, API, PostgreSQL, Redis, MinIO, renderer PDF, worker e scheduler Celery. La UI è disponibile su [http://localhost:5001](http://localhost:5001), con HMR Vite; Django viene ricaricato automaticamente quando cambiano i sorgenti Python.
 
 Durante lo sviluppo Vite inoltra automaticamente:
 
-- `/api` verso `http://127.0.0.1:8000`, rimuovendo il prefisso `/api`
-- `/ws` verso `ws://127.0.0.1:8000`
+- `/api` verso il container Django, rimuovendo il prefisso `/api`
+- `/ws` verso il container ASGI
 
-Senza un backend compatibile l'interfaccia può essere avviata, ma autenticazione, dati e operazioni applicative non saranno disponibili.
+Consulta [`selfhost/README.md`](selfhost/README.md) per i comandi di sviluppo, reset e diagnostica.
 
 I canali WebSocket usati dalla UI sono `/ws/notifications/`, `/ws/health/`, `/ws/updates/` e `/ws/agent/`.
 
@@ -170,7 +163,7 @@ Il backend è configurato per essere eseguito sulla porta `8000`. Un'istanza com
 - processi separati per API ASGI, worker Celery e Celery Beat;
 - un servizio di rendering PDF per ricevute e documenti generati.
 
-Il backend non dispone ancora di un file `.env.example`, dati iniziali e orchestrazione completa dei servizi. Prima dell'avvio è quindi necessario predisporre manualmente le variabili richieste da `BE/core/settings.py` e i servizi dipendenti.
+Lo stack di sviluppo genera automaticamente una configurazione locale in `selfhost/.env.dev` e inizializza database, storage e dati di riferimento.
 
 ## Configurazione
 
@@ -250,6 +243,20 @@ In produzione configura il web server o reverse proxy per:
 - gestire HTTPS e gli header di sicurezza appropriati.
 
 La sola pubblicazione dei file statici non è sufficiente per un'istanza funzionante. Oltre al backend, le funzioni asincrone richiedono worker e scheduler Celery; documenti, comunicazioni e pagamenti richiedono i relativi servizi esterni.
+
+### Release self-host e visibilità dei pacchetti GHCR
+
+Alla pubblicazione di una release, `.github/workflows/publish-images.yml` pubblica le immagini `linux/amd64` e `linux/arm64` su GHCR e allega l'archivio self-host alla release.
+
+I pacchetti container di GHCR sono privati per impostazione predefinita, ma l'installer self-host (`assozeta install` / `assozeta upgrade`) esegue il pull delle immagini senza credenziali. Prima della prima release è quindi necessario un intervento una tantum, da parte del proprietario del pacchetto o di un amministratore, per impostare su **Public** la visibilità di tutti e tre i pacchetti:
+
+- `ghcr.io/<repository-owner>/assozeta-backend`
+- `ghcr.io/<repository-owner>/assozeta-web`
+- `ghcr.io/<repository-owner>/assozeta-renderer`
+
+(`Package settings > Change visibility > Public`.)
+
+La visibilità non può essere impostata automaticamente dalla pipeline tramite `GITHUB_TOKEN`: la CI la verifica soltanto. Finché i tre pacchetti non sono pubblici, la verifica anonima eseguita prima della pubblicazione della release fallisce e il bundle self-host non viene allegato; il messaggio di errore riporta i tre pacchetti e chiede di rilanciare la pipeline dopo aver impostato la visibilità.
 
 ## Qualità del codice
 
