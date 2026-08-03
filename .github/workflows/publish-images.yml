@@ -1,0 +1,219 @@
+name: Build and publish images
+
+on:
+  pull_request:
+    paths:
+      - "BE/**"
+      - "UI/**"
+      - "selfhost/**"
+      - ".github/workflows/publish-images.yml"
+  push:
+    branches: [main]
+    paths:
+      - "BE/**"
+      - "UI/**"
+      - "selfhost/**"
+      - ".github/workflows/publish-images.yml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate self-host stack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run static self-host validation
+        run: make selfhost-test
+
+      - name: Run development smoke test
+        run: make selfhost-smoke
+
+  production-smoke:
+    name: Run production smoke suite
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build production images and run smoke test
+        run: make selfhost-production-smoke
+
+  publish:
+    name: Publish ${{ matrix.name }}
+    if: github.event_name != 'pull_request'
+    needs: [validate, production-smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            image: assozeta-backend
+            context: ./BE
+            file: ./BE/Dockerfile
+            target: production
+          - name: web
+            image: assozeta-web
+            context: ./UI
+            file: ./UI/Dockerfile
+            target: production
+          - name: renderer
+            image: assozeta-renderer
+            context: ./selfhost/renderer
+            file: ./selfhost/renderer/Dockerfile
+            target: ""
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=edge,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
+
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            VERSION=${{ github.event.release.tag_name || github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: true
+          sbom: true
+
+  verify-release-images:
+    name: Verify release images are public
+    if: github.event_name == 'release'
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify anonymous pull of release-tag images
+        env:
+          IMAGE_OWNER: ${{ github.repository_owner }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          images=(assozeta-backend assozeta-web assozeta-renderer)
+          failures=()
+
+          for image in "${images[@]}"; do
+            repo="${IMAGE_OWNER}/${image}"
+            ref="ghcr.io/${repo}:${RELEASE_TAG}"
+            echo "Verifying anonymous pull of ${ref}"
+
+            if ! token="$(curl -fsSL "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull" | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')"; then
+              failures+=("${ref}")
+              continue
+            fi
+            if ! curl -fsSL -o /dev/null \
+              -H "Authorization: Bearer ${token}" \
+              -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json" \
+              "https://ghcr.io/v2/${repo}/manifests/${RELEASE_TAG}"; then
+              failures+=("${ref}")
+            fi
+          done
+
+          if [ "${#failures[@]}" -gt 0 ]; then
+            printf '\nAnonymous pull verification failed for:\n' >&2
+            printf '  - %s\n' "${failures[@]}" >&2
+            printf '\nGHCR container packages are private by default, but the self-host installer\n' >&2
+            printf 'pulls images without credentials. Set all three packages to Public\n' >&2
+            printf '(Package settings > Change visibility > Public), then rerun this workflow:\n' >&2
+            printf '  - ghcr.io/%s/assozeta-backend\n' "${IMAGE_OWNER}" >&2
+            printf '  - ghcr.io/%s/assozeta-web\n' "${IMAGE_OWNER}" >&2
+            printf '  - ghcr.io/%s/assozeta-renderer\n' "${IMAGE_OWNER}" >&2
+            exit 1
+          fi
+
+          echo "All three release images are anonymously pullable."
+
+  release-bundle:
+    name: Attach self-host bundle
+    if: github.event_name == 'release'
+    needs: [publish, verify-release-images]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set bundle image owner
+        env:
+          BUNDLE_IMAGE_OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          owner = os.environ["BUNDLE_IMAGE_OWNER"]
+          replacement = f"ghcr.io/{owner}/assozeta-"
+          for filename in (
+              "selfhost/bin/assozeta",
+              "selfhost/compose.yml",
+              "selfhost/.env.example",
+          ):
+              path = Path(filename)
+              path.write_text(path.read_text().replace("ghcr.io/carbogninalberto/assozeta-", replacement))
+          PY
+
+      - name: Create bundle
+        run: tar -czf "assozeta-selfhost-${{ github.event.release.tag_name }}.tar.gz" selfhost
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "assozeta-selfhost-${{ github.event.release.tag_name }}.tar.gz" --clobber
