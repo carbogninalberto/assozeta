@@ -303,6 +303,43 @@ log_setup_token() {
     log "retrieve it later from $file as INSTANCE_SETUP_TOKEN"
 }
 
+dev_instance_needs_setup() {
+    response=$(dev_compose exec -T api curl --fail --silent http://127.0.0.1:8000/instance/status 2>/dev/null) \
+        || return 1
+    compact=$(printf '%s' "$response" | tr -d '[:space:]')
+
+    case "$compact" in
+        *'"configured":false'*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+print_dev_setup_banner() {
+    file=$1
+    token=$(env_value INSTANCE_SETUP_TOKEN "$file")
+    [ -n "$token" ] || return
+    ui_url="http://localhost:$(env_value DEV_UI_PORT "$file")"
+
+    printf '\n'
+    printf '%s\n' '+==============================================================================+'
+    printf '%s\n' '|                                                                              |'
+    printf '%s\n' '|                   FIRST-RUN CONFIGURATION REQUIRED                           |'
+    printf '%s\n' '|                                                                              |'
+    printf '|  %-76s|\n' "Open $ui_url"
+    printf '%s\n' '|                                                                              |'
+    printf '%s\n' '|  INSTANCE SETUP SECRET                                                       |'
+    printf '%s\n' '|                                                                              |'
+    if [ -t 1 ]; then
+        printf '\033[1;35m|  %-76s|\033[0m\n' "$token"
+    else
+        printf '|  %-76s|\n' "$token"
+    fi
+    printf '%s\n' '|                                                                              |'
+    printf '%s\n' '|  Paste this exact value into the setup wizard. Keep it private.              |'
+    printf '%s\n' '|                                                                              |'
+    printf '%s\n' '+==============================================================================+'
+}
+
 validate_port() {
     port=$1
     label=$2
@@ -1328,7 +1365,9 @@ case "$command" in
         prepare_dev
         dev_compose up -d --wait api worker beat ui
         log "UI: http://localhost:$(env_value DEV_UI_PORT "$DEV_ENV")"
-        log_setup_token "$DEV_ENV"
+        if dev_instance_needs_setup; then
+            print_dev_setup_banner "$DEV_ENV"
+        fi
         ;;
     dev-down) preflight; dev_config; dev_compose down --remove-orphans ;;
     dev-logs) preflight; dev_config; dev_compose logs --follow --tail=200 "$@" ;;
