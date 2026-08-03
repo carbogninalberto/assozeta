@@ -8,6 +8,9 @@ from .models import InstanceConfiguration
 from .defaults import SUPPORTED_FEATURES
 
 
+CANONICAL_LOGO_URL = '/api/instance/logo.png'
+
+
 class InstanceStatusSerializer(serializers.Serializer):
     """Serializer for /instance/status endpoint."""
     configured = serializers.BooleanField()
@@ -122,6 +125,18 @@ class OEMInputSerializer(serializers.Serializer):
     supportEmail = serializers.EmailField(required=False, allow_blank=True, default='')
 
 
+class OEMSetupInputSerializer(OEMInputSerializer):
+    """OEM setup input including the canonical first-run logo path."""
+    logo = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+
+    def validate_logo(self, value):
+        if value in (None, ''):
+            return ''
+        if value != CANONICAL_LOGO_URL:
+            raise serializers.ValidationError(f'Logo must be {CANONICAL_LOGO_URL}.')
+        return value
+
+
 class OAuthInputSerializer(serializers.Serializer):
     """Input serializer for OAuth configuration."""
     googleClientId = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True, default='')
@@ -173,7 +188,7 @@ class InstanceSetupSerializer(serializers.Serializer):
     Handles initial instance setup.
     """
     domain = serializers.CharField(max_length=255)
-    oem = OEMInputSerializer()
+    oem = OEMSetupInputSerializer()
     oauth = OAuthInputSerializer(required=False, default=dict)
     stripe = StripeInputSerializer(required=False, default=dict)
     initialization = InitializationInputSerializer()

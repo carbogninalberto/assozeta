@@ -38,7 +38,7 @@ from application.tasks import export_invoices_to_zip
 from core.tasks import send_mail_async
 
 from application.utils.payments_utils import generate_invoice_description
-from core.settings import APP_HOST
+from core.settings import APP_URL
 
 logger = logging.getLogger(__name__)
 
@@ -339,10 +339,10 @@ def invoice_send(request, uid):
         {invoice.description}
         <br>
         <br>
-        <a href="https://{APP_HOST}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}">Scarica la ricevuta</a><br>
+        <a href="{APP_URL}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}">Scarica la ricevuta</a><br>
         <br>
         se non riesci a scaricare la ricevuta, copia e incolla il seguente link nel tuo browser:<br>
-        https://{APP_HOST}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}<br>
+        {APP_URL}/api/document/retrieve/{invoice.invoice_id}?download=true&token={invoice.document_pdf.token}<br>
         <br>
         <br>
         Cordiali saluti,<br>

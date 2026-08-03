@@ -19,6 +19,7 @@ from django_ratelimit.exceptions import Ratelimited
 
 from core.settings import DEBUG
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from core.health import health, readiness
 
 
 def handler403(request, exception=None):
@@ -28,6 +29,8 @@ def handler403(request, exception=None):
 
 
 urlpatterns = [
+    path('healthz', health, name='health'),
+    path('readyz', readiness, name='readiness'),
     # path(ADMIN_URL, admin.site.urls),
     path('', include('application.urls')),
     path('', include('application.chat.urls')),

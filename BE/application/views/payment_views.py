@@ -597,7 +597,7 @@ def payment_request(request, uid):
                 Per favore procedi con il pagamento.<br>
                 <br>
                 
-                Se hai un già un account {settings.WHITELABEL_NAME}, puoi vedere i dettagli del pagamento online cliccando <a href="https://{settings.APP_HOST}">qui</a>.<br>
+                Se hai un già un account {settings.WHITELABEL_NAME}, puoi vedere i dettagli del pagamento online cliccando <a href="{settings.APP_URL}">qui</a>.<br>
                 
                 {f"<br>Puoi pagare online! <br><br>" if payment.sport_association.user.online_payments is True else ''}
                 

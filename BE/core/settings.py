@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 import logging
+import base64
 
 import environ
 from pathlib import Path
@@ -27,19 +28,30 @@ base = environ.Path(BASE_DIR)
 environ.Env.read_env(env_file=base('.env'))
 
 
+def env_key(name):
+    encoded = env.str(f'{name}_B64', '')
+    if encoded:
+        return base64.b64decode(encoded).decode('utf-8')
+    return env.str(name, multiline=True)
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str('SECRET_KEY')
-JWT_SECRET_KEY = env.str('JWT_SECRET_KEY', multiline=True)
-JWT_PUBLIC_KEY = env.str('JWT_PUBLIC_KEY', multiline=True)
+JWT_SECRET_KEY = env_key('JWT_SECRET_KEY')
+JWT_PUBLIC_KEY = env_key('JWT_PUBLIC_KEY')
+
+APP_HOST = env.str('APP_HOST')
+APP_URL = env.str('APP_URL', f'https://{APP_HOST}').rstrip('/')
+INSTANCE_SETUP_TOKEN = env.str('INSTANCE_SETUP_TOKEN', '')
 
 
 # STRIPE CONFIGURATION
 STRIPE_KEY = env.str('STRIPE_KEY', '')
-STRIPE_REFRESH_URL = env.str('STRIPE_REFRESH_URL', 'https://app.bakney.com/#/stripe/onboarding')
-STRIPE_RETURN_URL = env.str('STRIPE_RETURN_URL', 'https://app.bakney.com/#/stripe/onboarded')
+STRIPE_REFRESH_URL = env.str('STRIPE_REFRESH_URL', f'{APP_URL}/#/stripe/onboarding')
+STRIPE_RETURN_URL = env.str('STRIPE_RETURN_URL', f'{APP_URL}/#/stripe/onboarded')
 STRIPE_WEBHOOK_SECRET = env.str('STRIPE_WEBHOOK_SECRET')
 DOCUMENT_BYPASS_TOKEN = env.str('DOCUMENT_BYPASS_TOKEN')
 SENJA_WEBHOOK_SECRET = env.str('SENJA_WEBHOOK_SECRET')
@@ -50,15 +62,21 @@ stripe.api_key = STRIPE_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG')
 
-RATELIMIT_ENABLE = False #not DEBUG
+RATELIMIT_ENABLE = env.bool('RATELIMIT_ENABLE', not DEBUG)
 
 # EMAIL SPAM FILTER
 DEC_LOADER = "application.disposable_email.custom_email_domain_loader"
 
-ALLOWED_HOSTS = ['*']   # ['127.0.0.1', 'localhost', 'localhost:5000', env.str('PRODUCTION_HOST')]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'api'])
+CORS_ORIGIN_ALLOW_ALL = env.bool('CORS_ORIGIN_ALLOW_ALL', DEBUG)
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
-# CORS_ORIGIN_WHITELIST = ('http://localhost:5000')
-CORS_ORIGIN_ALLOW_ALL = True
+# Caddy terminates TLS and forwards the original scheme to Django.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', not DEBUG)
+CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', not DEBUG)
 
 CURRENT_HOST = env.str('CURRENT_HOST')
 
@@ -101,7 +119,6 @@ MCP_AGENT_HISTORY_CAP = env.int('MCP_AGENT_HISTORY_CAP', 50)
 PUPPETEER_HOST = env.str('PUPPETEER_HOST')
 PUPPETEER_PORT = env.str('PUPPETEER_PORT')
 CURRENT_HOST_PUPPETEER = env.str('CURRENT_HOST_PUPPETEER')
-APP_HOST = env.str('APP_HOST')
 
 # REDIS DB
 REDIS_HOST = os.environ.get("REDIS_HOST", 'localhost')
@@ -523,7 +540,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'staticfiles/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Application definition
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
@@ -605,7 +622,7 @@ STATICFILES_DIRS = (
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 # DOCUMENT STORAGE DIR
-STORE_ON_DISK = env.str('STORE_ON_DISK', True)
+STORE_ON_DISK = env.bool('STORE_ON_DISK', False)
 
 # STORAGE DIR
 STORAGE_DIR = os.path.join(BASE_DIR, env.str('STORAGE_DIR', 'storage'))
@@ -622,7 +639,7 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 AWS_LOCATION = env.str('AWS_LOCATION')
 AWS_DEFAULT_ACL = env.str('AWS_DEFAULT_ACL', None)
-AWS_S3_FILE_OVERWRITE = env.str('AWS_S3_FILE_OVERWRITE', True)
+AWS_S3_FILE_OVERWRITE = env.bool('AWS_S3_FILE_OVERWRITE', False)
 
 STORAGE_DIR = ''    # f'https://{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/'
 

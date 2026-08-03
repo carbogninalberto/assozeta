@@ -9,7 +9,7 @@ from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
 from core import settings
-from core.settings import APP_HOST
+from core.settings import APP_URL
 from .models import Message, CommunicationConfiguration, SmsCreditPayment, MessageTransaction, AutomationWorkflow
 from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
     CommunicationConfigurationPatchSerializer, SmsSerializer, SmsCreditPaymentSerializer, PostSerializer, \
@@ -302,8 +302,8 @@ def configuration_buy_sms(request):
                 "type": "text",
             },
         ],
-        success_url=f"https://{APP_HOST}/#/communication/configuration",
-        cancel_url=f"https://{APP_HOST}/#/cancel",
+        success_url=f"{APP_URL}/#/communication/configuration",
+        cancel_url=f"{APP_URL}/#/cancel",
         metadata={
             'sms_balance': int(amount),
             'sport_association': request.user.sport_association.sport_association_id,

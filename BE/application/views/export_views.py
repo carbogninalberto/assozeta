@@ -12,7 +12,7 @@ from django.core.files.storage import default_storage
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
@@ -23,6 +23,7 @@ from application.models.user_models import (
 )
 from application.services.validators import ImportValidator
 from application.tasks import export_association_data, import_association_data
+from instance.permissions import SetupTokenOrAuthenticated
 
 logger = logging.getLogger(__name__)
 
@@ -256,14 +257,7 @@ class AssociationImportViewSet(ViewSet):
     """
 
     parser_classes = [MultiPartParser, FormParser]
-
-    def get_permissions(self):
-        """
-        Import endpoints require different permissions:
-        - validate_import and start_import: AllowAny (for fresh instances)
-        - import_status: AllowAny
-        """
-        return [AllowAny()]
+    permission_classes = [SetupTokenOrAuthenticated]
 
     @action(detail=False, methods=['POST'], url_path='validate')
     def validate_import(self, request):

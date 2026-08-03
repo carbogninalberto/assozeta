@@ -69,26 +69,19 @@ class Puppeteer:
         """
         logger.debug('[Puppeteer => pdf_from_url(): url={} local={}'.format(url, local))
         try:
-            # if local:
-            #     url = '{}/{}'.format(CURRENT_HOST_PUPPETEER, url)
-            #
-            #     # if self.current_port != 80 and self.current_host != 'localhost':
-            #     #     url = 'http://{}:{}/{}'.format(self.current_host, self.current_port, url)
-            #     # else:
-            #     #     url = 'https://{}/{}'.format(self.current_host, url)
-            # logger.debug(f'url: {url} service: {self.service}')
-            # request_url = f"{self.service}" \
-            #               f"url={url}&" \
-            #               f"type={self.type_tag}&" \
-            #               f"printBackground={self.print_background}&" \
-            #               f"margin={self.margin}&" \
-            #               f"headers={json.dumps(headers)}"
-            #
-            # logger.debug(f"request_url: {request_url}")
-            # document = requests.get(request_url)
-
             # get from fast render
             document = FastRender.get_pdf(url, headers)
+
+            if document.status_code < 200 or document.status_code >= 300:
+                return False, Exception(
+                    f"Renderer returned HTTP {document.status_code}: {document.text[:500]}"
+                )
+
+            content_type = document.headers.get('content-type', '')
+            if 'application/pdf' not in content_type or not document.content.startswith(b'%PDF-'):
+                return False, Exception(
+                    f"Renderer returned invalid PDF data (content-type: {content_type})"
+                )
 
             return True, document.content
         except Exception as e:
@@ -161,7 +154,8 @@ class FastRender:
             FastRender.render_url,
             headers=FastRender.headers,
             verify=False,
-            data=json.dumps(payload)
+            data=json.dumps(payload),
+            timeout=60,
         )
 
     def render(self, url, config):

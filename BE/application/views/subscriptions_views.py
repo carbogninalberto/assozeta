@@ -2534,7 +2534,7 @@ def subscription_medical_certificate_send_email_reminder(request, uid):
             "denomination": subscription.sport_association.denomination,
         },
         'certificate_expiring_date': subscription.medical.expiration_date.strftime("%d/%m/%Y"),
-        'app_host': settings.APP_HOST,
+        'app_host': settings.APP_URL,
         'settings': {
             'WHITELABEL_NAME': settings.WHITELABEL_NAME,
             'IS_WHITELABEL': settings.IS_WHITELABEL

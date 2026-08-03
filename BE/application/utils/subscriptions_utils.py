@@ -1162,7 +1162,7 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             'sport_association': {
                 "denomination": subscription.sport_association.denomination,
             },
-            'app_host': settings.APP_HOST,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL

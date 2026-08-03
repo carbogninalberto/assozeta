@@ -2,6 +2,7 @@
 @ copyright: Bakney SRL
 """
 import datetime
+import json
 import logging
 import redis
 import secrets
@@ -28,6 +29,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 
 from application.utils.api_utils import generate_readable_unique_string, export_customer_to_crm, \
     migrate_bcrypt_to_django
@@ -41,6 +43,21 @@ from core.tasks import send_mail_async
 logger = logging.getLogger(__name__)
 
 
+def _login_ip_key(group, request):
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    return forwarded_for.split(',', 1)[0].strip() or request.META.get('REMOTE_ADDR', 'unknown')
+
+
+def _login_account_key(group, request):
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return 'invalid-request'
+    return str(payload.get('username', '')).strip().casefold() or 'missing-username'
+
+
+@ratelimit(group='login-ip', key=_login_ip_key, rate='20/m', method='POST', block=True)
+@ratelimit(group='login-account', key=_login_account_key, rate='5/m', method='POST', block=True)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def oauth2_login(request):
@@ -628,7 +645,7 @@ class AuthUtils:
         data = {
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'app_host': settings.APP_HOST,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL
@@ -658,7 +675,7 @@ class AuthUtils:
             'email': user.email,
             'password': password,
             'sport_association': sport_association,
-            'app_host': settings.APP_HOST,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL
@@ -685,7 +702,7 @@ class AuthUtils:
             'first_name': user.first_name,
             'last_name': user.last_name,
             'token': token,
-            'app_host': settings.APP_HOST,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL
@@ -711,6 +728,7 @@ class AuthUtils:
         data = {
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL

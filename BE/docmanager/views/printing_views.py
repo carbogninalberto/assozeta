@@ -307,7 +307,7 @@ def document_invoice(request, uid):
             subject = f"Ricevuta di pagamento {invoice.payment.payment_date.date().strftime('%d/%m/%y')}"
             message = f"Gentile {p.associate.get_full_name()},\n" \
                       f"abbiamo il piacere di inviarle la ricevuta di pagamento di {str(invoice.payment.amount).replace(',', ' ').replace('.', ',')} € del {invoice.payment.payment_date.date().strftime('%d/%m/%y')}.\n\n" \
-                      f"Ecco il link per scaricare la ricevuta:\n https://{settings.APP_HOST}/api/document/retrieve/{document.document_id}?download=false&token={invoice.document_pdf.token}\n\n" \
+                      f"Ecco il link per scaricare la ricevuta:\n {settings.APP_URL}/api/document/retrieve/{document.document_id}?download=false&token={invoice.document_pdf.token}\n\n" \
                       f"Cordiali saluti,\n" \
                       f"{invoice.sport_association.denomination}"
 

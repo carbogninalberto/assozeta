@@ -20,11 +20,13 @@ from celery.result import AsyncResult
 
 from .models import InstanceConfiguration
 from .serializers import (
+    CANONICAL_LOGO_URL,
     InstanceConfigSerializer,
     InstanceSetupSerializer,
     InstanceReconfigureSerializer,
 )
 from .defaults import SUPPORTED_FEATURES, DEFAULT_DISPLAY_SETTINGS
+from .permissions import SetupTokenOrAuthenticated, is_primary_association_owner_or_superuser
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +73,9 @@ class InstanceSetupView(APIView):
     """
     POST /instance/configure
     Initial instance setup (only works once).
-    Public endpoint - this is called during first-run setup wizard.
+    Protected by setup token during first-run setup wizard.
     """
-    permission_classes = [AllowAny]
+    permission_classes = [SetupTokenOrAuthenticated]
     parser_classes = [JSONParser]
 
     def post(self, request):
@@ -106,6 +108,7 @@ class InstanceSetupView(APIView):
                     abbreviation=data['oem'].get('abbreviation') or '',
                     primary_color=data['oem'].get('primaryColor') or '#351DC2',
                     support_email=data['oem'].get('supportEmail') or '',
+                    logo_path=data['oem'].get('logo') or '',
                     display_settings=DEFAULT_DISPLAY_SETTINGS.copy(),
                     # OAuth (convert null to empty string)
                     google_client_id=data.get('oauth', {}).get('googleClientId') or '',
@@ -140,6 +143,7 @@ class InstanceSetupView(APIView):
                     )
 
                 if association:
+                    self._ensure_selfhost_billing(association.user)
                     config.primary_association = association
                     config.save()
 
@@ -171,10 +175,7 @@ class InstanceSetupView(APIView):
         """Create a new user and sport association for fresh instance setup."""
         # Import here to avoid circular imports
         from application.models import User, SportAssociation, CustomAccounts
-        from application.models.billing_models import BillingPlan, BillingSubscription
         from application.models.user_models import UsersOnboarding
-        import datetime
-        import pytz
 
         # Create owner user
         user = User.objects.create_user(
@@ -211,25 +212,6 @@ class InstanceSetupView(APIView):
             sport_association=association,
         )
 
-        # Create billing subscription with Pro plan (or fallback to base)
-        billing_plan = BillingPlan.objects.filter(name__exact="Piano Pro").first()
-        if not billing_plan:
-            billing_plan = BillingPlan.objects.first()
-
-        if billing_plan:
-            BillingSubscription.objects.get_or_create(
-                user=user,
-                defaults={
-                    'auto_renewal': True,
-                    'renewal_type': BillingSubscription.ANNUALLY,
-                    'ends_on': pytz.timezone('Europe/Rome').localize(
-                        datetime.datetime.now() + datetime.timedelta(days=365),
-                        is_dst=None
-                    ),
-                    'billing_plan': billing_plan,
-                }
-            )
-
         # Create onboarding record
         try:
             UsersOnboarding.objects.create(user=user)
@@ -246,6 +228,33 @@ class InstanceSetupView(APIView):
         )
 
         return association
+
+    @staticmethod
+    def _ensure_selfhost_billing(user):
+        """Keep self-hosted owners on the included Pro plan."""
+        import datetime
+
+        from django.utils import timezone
+
+        from application.models.billing_models import BillingPlan, BillingSubscription
+
+        billing_plan = BillingPlan.objects.filter(name__exact="Piano Pro").first()
+        if not billing_plan:
+            billing_plan = BillingPlan.objects.first()
+        if not billing_plan:
+            raise ValueError("No billing plan is available for the self-hosted owner.")
+
+        defaults = {
+            'auto_renewal': True,
+            'renewal_type': BillingSubscription.ANNUALLY,
+            'ends_on': timezone.now() + datetime.timedelta(days=36500),
+            'billing_plan': billing_plan,
+        }
+        subscriptions = BillingSubscription.objects.filter(user=user)
+        if subscriptions.exists():
+            subscriptions.update(**defaults)
+        else:
+            BillingSubscription.objects.create(user=user, **defaults)
 
     def _link_imported_instance(self, config, import_task_id):
         """Link an association from a completed import task."""
@@ -301,7 +310,7 @@ class InstanceLogoUploadView(APIView):
     POST /instance/logo
     Upload instance logo.
     """
-    permission_classes = [AllowAny]  # AllowAny during setup, could be restricted after
+    permission_classes = [SetupTokenOrAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -314,10 +323,10 @@ class InstanceLogoUploadView(APIView):
         file = request.FILES['file']
 
         # Validate file type
-        allowed_types = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']
+        allowed_types = ['image/png', 'image/jpeg', 'image/webp']
         if file.content_type not in allowed_types:
             return Response(
-                {"success": False, "error": "Invalid file type. Use PNG, JPG, SVG, or WebP."},
+                {"success": False, "error": "Invalid file type. Use PNG, JPG, or WebP."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -332,7 +341,6 @@ class InstanceLogoUploadView(APIView):
         ext_map = {
             'image/png': 'png',
             'image/jpeg': 'jpg',
-            'image/svg+xml': 'svg',
             'image/webp': 'webp',
         }
         ext = ext_map.get(file.content_type, 'png')
@@ -348,7 +356,7 @@ class InstanceLogoUploadView(APIView):
 
             # Save new logo
             saved_path = default_storage.save(filename, file)
-            logo_url = f'/instance/logo.{ext}'
+            logo_url = CANONICAL_LOGO_URL
 
             # Update config if exists
             config = InstanceConfiguration.get_config()
@@ -488,15 +496,12 @@ class InstanceReconfigureView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Check if user is the primary association owner
         user = request.user
-        if config.primary_association and config.primary_association.user != user:
-            # Also allow superusers
-            if not user.is_superuser:
-                return Response(
-                    {"success": False, "error": "Only the instance owner can reconfigure"},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+        if not is_primary_association_owner_or_superuser(user, config):
+            return Response(
+                {"success": False, "error": "Only the instance owner can reconfigure"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         serializer = InstanceReconfigureSerializer(
             config,

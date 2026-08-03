@@ -620,7 +620,7 @@ def auto_move_users_to_base_plan():
                     data={
                         'first_name': user.first_name,
                         'last_name': user.last_name,
-                        'app_host': settings.APP_HOST
+                        'app_host': settings.APP_URL
                     },
                     recipient_list=[user.email],
                     sport_association_id=user.sport_association.sport_association_id,
@@ -739,7 +739,7 @@ def nurturing_warm_leads():
                 data = {
                     'first_name': billing_subscription.user.first_name,
                     'last_name': billing_subscription.user.last_name,
-                    'app_host': settings.APP_HOST
+                    'app_host': settings.APP_URL
                 }
                 # perform the nurturing plan
                 message = render_to_string(nurturing_emails_plan.email_template, data)
@@ -967,7 +967,7 @@ def send_expiring_certificate_email():
                 'athlete_last_name': subscription.associate.last_name,
                 'sport_association': subscription.sport_association,
                 'certificate_expiring_date': subscription.medical.expiration_date.strftime("%d/%m/%Y"),
-                'app_host': settings.APP_HOST,
+                'app_host': settings.APP_URL,
                 'settings': settings
             }
             # check if there is associate email
@@ -1079,7 +1079,7 @@ def send_expired_certificate_email():
                 'athlete_last_name': subscription.associate.last_name,
                 'sport_association': subscription.sport_association,
                 'certificate_expiring_date': subscription.medical.expiration_date.strftime("%d/%m/%Y"),
-                'app_host': settings.APP_HOST,
+                'app_host': settings.APP_URL,
                 'settings': {
                     'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                     'IS_WHITELABEL': settings.IS_WHITELABEL
@@ -1162,7 +1162,7 @@ def send_user_partial_registration_email():
         for user_partial in user_partials_qs.iterator(chunk_size=50):
             data = {
                 'email': user_partial.email,
-                'app_host': settings.APP_HOST,
+                'app_host': settings.APP_URL,
                 'settings': {
                     'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                     'IS_WHITELABEL': settings.IS_WHITELABEL
@@ -1211,7 +1211,7 @@ def send_updated_certificate_email(subscription_id):
             'athlete_last_name': subscription.associate.last_name,
             'sport_association': subscription.sport_association,
             'certificate_expiring_date': subscription.medical.expiration_date.strftime("%d/%m/%Y"),
-            'app_host': settings.APP_HOST,
+            'app_host': settings.APP_URL,
             'settings': {
                 'WHITELABEL_NAME': settings.WHITELABEL_NAME,
                 'IS_WHITELABEL': settings.IS_WHITELABEL
