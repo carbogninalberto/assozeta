@@ -6,13 +6,16 @@
     export let config = {
         domain: ''
     };
+    export let setupToken = '';
 
     const dispatch = createEventDispatcher();
 
     let error = null;
+    let tokenError = null;
 
     function validateAndNext() {
         error = null;
+        tokenError = null;
 
         if (!config.domain || config.domain.trim() === '') {
             error = 'Il dominio è obbligatorio';
@@ -28,6 +31,11 @@
                 error = 'Inserisci un dominio valido (es. app.miaassociazione.it)';
                 return;
             }
+        }
+
+        if (!setupToken || setupToken.trim() === '') {
+            tokenError = 'Il token di setup è obbligatorio';
+            return;
         }
 
         dispatch('next');
@@ -67,6 +75,26 @@
         {/if}
         <small class="text-muted font-size-sm mt-2 d-block">
             Il dominio viene rilevato automaticamente. Modificalo solo se necessario.
+        </small>
+    </div>
+
+    <div class="form-group">
+        <label class="col-form-label font-weight-bolder text-left">Token di Setup<b class="text-danger">*</b></label>
+        <input
+            type="password"
+            class="form-control form-control-solid"
+            class:is-invalid={tokenError}
+            bind:value={setupToken}
+            placeholder="Inserisci il token di bootstrap"
+            autocomplete="off"
+            spellcheck="false"
+            on:keydown={e => e.key === 'Enter' && validateAndNext()}
+        />
+        {#if tokenError}
+            <div class="invalid-feedback d-block">{tokenError}</div>
+        {/if}
+        <small class="text-muted font-size-sm mt-2 d-block">
+            Il token protegge la configurazione iniziale e non viene salvato nel browser.
         </small>
     </div>
 

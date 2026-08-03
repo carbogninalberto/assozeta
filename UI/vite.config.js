@@ -13,6 +13,9 @@ const CURRENT_OEM_ENV = process.env.OEM_ENV || "assozeta";
 const OEM = oems[CURRENT_OEM_ENV];
 const CLIENT_ID = process.env.CLIENT_ID || "";
 const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID || "";
+const DEV_HTTPS = process.env.VITE_DEV_HTTPS !== 'false';
+const API_PROXY_TARGET = process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:8000';
+const WS_PROXY_TARGET = process.env.VITE_WS_PROXY_TARGET || 'ws://127.0.0.1:8000';
 
 console.log("OEM: ", JSON.stringify(OEM, null, 2));
 
@@ -162,13 +165,14 @@ export default defineConfig({
     server: {
         host: "0.0.0.0",
         port: 5001,
-        https: true,
+        https: DEV_HTTPS,
         watch: {
             ignored: ignoredWorkspaceDirs,
+            usePolling: process.env.VITE_USE_POLLING === 'true',
         },
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1:8000/',
+                target: API_PROXY_TARGET,
                 // changeOrigin: true,
                 // secure: true,
                 rewrite: (path) => path.replace(/^\/api/, ''),
@@ -180,17 +184,20 @@ export default defineConfig({
 				}
             },
             '/ws': {
-                target: 'ws://127.0.0.1:8000',
+                target: WS_PROXY_TARGET,
                 ws: true,
                 changeOrigin: true,
-                secure: true,
+                secure: false,
             }
         }
     },
-    define: oemConfig,
+    define: {
+        ...oemConfig,
+        ...(OEM.selfHosted ? { '__bakney.env.DOMAIN': 'globalThis.location.origin' } : {})
+    },
     plugins: [
         // basicSsl(),
-        mkcert(),
+        DEV_HTTPS && mkcert(),
         svelte({
         configFile: false,
         compilerOptions: {
@@ -205,5 +212,5 @@ export default defineConfig({
             postcss: true,
             sourceMap: true,
         }),
-    })],
+    })].filter(Boolean),
 });

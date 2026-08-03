@@ -1,3 +1,5 @@
+import {getWebSocketUrl} from './websocketUrl.js';
+
 /**
  * AgentWebSocket - AI Agent chat via WebSocket
  *
@@ -54,11 +56,8 @@ class AgentWebSocket {
             return;
         }
 
-        const domain = __bakney.env.DOMAIN;
-        const protocol = domain.startsWith('https') ? 'wss:' : 'ws:';
-        const host = domain.replace(/^https?:\/\//, '');
         const wsPath = __bakney.env.WS?.AGENT || '/ws/agent/';
-        const baseUrl = `${protocol}//${host}${wsPath}`;
+        const baseUrl = getWebSocketUrl(wsPath);
         const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
 
         this.ws = new WebSocket(url);

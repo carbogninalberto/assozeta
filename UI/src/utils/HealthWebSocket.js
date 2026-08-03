@@ -1,3 +1,5 @@
+import {getWebSocketUrl} from './websocketUrl.js';
+
 /**
  * HealthWebSocket - Application health status via WebSocket
  *
@@ -34,11 +36,8 @@ class HealthWebSocket {
      * Connect to the health WebSocket
      */
     connect() {
-        const domain = __bakney.env.DOMAIN;
-        const protocol = domain.startsWith('https') ? 'wss:' : 'ws:';
-        const host = domain.replace(/^https?:\/\//, '');
         const wsPath = __bakney.env.WS.HEALTH;
-        const url = `${protocol}//${host}${wsPath}`;
+        const url = getWebSocketUrl(wsPath);
 
         this.ws = new WebSocket(url);
 

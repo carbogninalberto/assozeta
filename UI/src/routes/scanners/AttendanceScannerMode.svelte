@@ -8,6 +8,7 @@
     import {Camera} from '@capacitor/camera';
     import {onMount} from 'svelte';
     import {oemConfig} from 'store/instanceStore.js';
+    import {getWebSocketUrl} from 'utils/websocketUrl.js';
 
     let settings = writable({
         showScanner: true,
@@ -66,10 +67,7 @@
     }
 
     function initWebSocket() {
-        const domain = __bakney.env.DOMAIN;
-        const protocol = domain.startsWith('https') ? 'wss:' : 'ws:';
-        const host = domain.replace(/^https?:\/\//, '');
-        const socket = new WebSocket(`${protocol}//${host}${__bakney.env.WS.UPDATES}`);
+        const socket = new WebSocket(getWebSocketUrl(__bakney.env.WS.UPDATES));
 
         socket.onopen = function (e) {
             console.log('WebSocket connection established');

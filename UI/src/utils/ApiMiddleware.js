@@ -32,6 +32,10 @@ export const updateTableSettings = function (cols, table) {
 // Store the original fetch function in a variable
 export const originalFetch = window.fetch;
 
+const mergeHeaders = function (headers) {
+    return new Headers(headers || undefined);
+};
+
 // function to check if token is expired or about to expire (proactive refresh 5 min before expiry)
 let checkExpired = async function () {
     let sessionToken = JSON.parse(localStorage.getItem('sessionToken'));
@@ -90,14 +94,17 @@ window.fetch = async (...args) => {
 
     // Operations before the fetch call
     let {sessionToken, refreshToken, expires} = await checkExpired();
+
+    const callerHeaders = args[1]?.headers || (typeof args[0] !== 'string' ? args[0]?.headers : null);
+    let headers = mergeHeaders(callerHeaders);
+
     if (sessionToken && refreshToken && expires) {
         if (!args[1]) args[1] = {};
         // For FormData, only set Accept and Authorization - browser will set Content-Type with boundary
-        args[1]['headers'] = {
-            Accept: 'application/json',
-            ...(isFormData ? {} : {'Content-Type': 'application/json'}),
-            Authorization: `Bearer ${sessionToken}`,
-        };
+        headers.set('Accept', 'application/json');
+        if (!isFormData) headers.set('Content-Type', 'application/json');
+        headers.set('Authorization', `Bearer ${sessionToken}`);
+        args[1]['headers'] = headers;
     }
 
     if (localStorage.getItem('switched_superuser') == 'true' && localStorage.getItem('USER_ID') != null) {
@@ -107,18 +114,19 @@ window.fetch = async (...args) => {
         // check if headers are set and arg 1 is present
         if (!args[1]) args[1] = {};
         // For FormData, only set Accept, Authorization, and User-Id - browser will set Content-Type with boundary
-        args[1]['headers'] = {
-            Accept: 'application/json',
-            ...(isFormData ? {} : {'Content-Type': 'application/json'}),
-            Authorization: `Bearer ${sessionToken}`,
-            'User-Id': USER_ID,
-        };
+        headers.set('Accept', 'application/json');
+        if (!isFormData) headers.set('Content-Type', 'application/json');
+        if (sessionToken) headers.set('Authorization', `Bearer ${sessionToken}`);
+        headers.set('User-Id', USER_ID);
+        args[1]['headers'] = headers;
     }
 
-    // get selectedGroup from localStorage - only if headers exist
+    // get selectedGroup from localStorage
     let selectedGroup = localStorage.getItem('selectedGroup');
-    if (selectedGroup && JSON.parse(selectedGroup) != null && args[1]?.headers) {
-        args[1]['headers']['X-Group-ID'] = JSON.parse(selectedGroup);
+    if (selectedGroup && JSON.parse(selectedGroup) != null) {
+        if (!args[1]) args[1] = {};
+        headers.set('X-Group-ID', JSON.parse(selectedGroup));
+        args[1]['headers'] = headers;
     }
 
     try {
@@ -195,15 +203,13 @@ window.fetch = async (...args) => {
 
 export const apiFetch = async function (url, fetchData = {method: 'GET'}) {
     let sessionToken = JSON.parse(localStorage.getItem('sessionToken'));
-    // updating headers
-    let headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-    };
-    if (sessionToken) headers.Authorization = `Bearer ${sessionToken}`;
+    let headers = mergeHeaders(fetchData.headers);
+    headers.set('Accept', 'application/json');
+    headers.set('Content-Type', 'application/json');
+    if (sessionToken) headers.set('Authorization', `Bearer ${sessionToken}`);
     // get selectedGroup from localStorage
     let selectedGroup = localStorage.getItem('selectedGroup');
-    if (selectedGroup && JSON.parse(selectedGroup) != null) headers['X-Group-ID'] = JSON.parse(selectedGroup);
+    if (selectedGroup && JSON.parse(selectedGroup) != null) headers.set('X-Group-ID', JSON.parse(selectedGroup));
 
     fetchData['headers'] = headers;
 

@@ -14,6 +14,7 @@
         importTaskId: null,
         importResult: null
     };
+    export let setupToken = '';
 
     const dispatch = createEventDispatcher();
 
@@ -67,7 +68,8 @@
             const result = await validateImportFile(
                 config.file,
                 config.ownerEmail,
-                config.preserveUuids
+                config.preserveUuids,
+                setupToken
             );
 
             config.validationResult = result;
@@ -93,7 +95,8 @@
                 config.ownerEmail,
                 config.ownerPassword,
                 config.preserveUuids,
-                config.skipFiles
+                config.skipFiles,
+                setupToken
             );
 
             if (result.task_id) {
@@ -112,7 +115,7 @@
     function startPolling() {
         pollInterval = setInterval(async () => {
             try {
-                const status = await checkImportStatus(config.importTaskId);
+                const status = await checkImportStatus(config.importTaskId, setupToken);
 
                 if (status.ready) {
                     clearInterval(pollInterval);

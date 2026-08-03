@@ -1,3 +1,5 @@
+import {getWebSocketUrl} from './websocketUrl.js';
+
 /**
  * NotificationWebSocket - Real-time notification management via WebSocket
  *
@@ -40,11 +42,8 @@ class NotificationWebSocket {
      * Connect to the notifications WebSocket
      */
     connect() {
-        const domain = __bakney.env.DOMAIN;
-        const protocol = domain.startsWith('https') ? 'wss:' : 'ws:';
-        const host = domain.replace(/^https?:\/\//, '');
         const wsPath = __bakney.env.WS.NOTIFICATIONS;
-        const baseUrl = `${protocol}//${host}${wsPath}`;
+        const baseUrl = getWebSocketUrl(wsPath);
         const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
 
         this.ws = new WebSocket(url);

@@ -29,6 +29,7 @@
     let domainConfig = {
         domain: '',
     };
+    let setupToken = '';
 
     // Step 2: Data source selection
     let dataSource = null; // 'import' or 'fresh'
@@ -113,7 +114,7 @@
             // Upload logo if provided
             let logoUrl = null;
             if (brandingConfig.logoFile) {
-                const logoResult = await uploadInstanceLogo(brandingConfig.logoFile);
+                const logoResult = await uploadInstanceLogo(brandingConfig.logoFile, setupToken);
                 if (logoResult.success) {
                     logoUrl = logoResult.logo_url;
                 }
@@ -146,7 +147,7 @@
                     }
             };
 
-            const result = await saveInstanceConfig(config);
+            const result = await saveInstanceConfig(config, setupToken);
 
             if (result.success) {
                 setupResult = result;
@@ -226,6 +227,7 @@
                     <div in:fly={{x: 20, duration: 200}}>
                         <StepDomain
                             bind:config={domainConfig}
+                            bind:setupToken
                             on:next={nextStep}
                         />
                     </div>
@@ -242,6 +244,7 @@
                         {#if dataSource === 'import'}
                             <StepImport
                                 bind:config={importConfig}
+                                {setupToken}
                                 on:next={nextStep}
                                 on:prev={prevStep}
                             />

@@ -151,6 +151,12 @@ function getEndpoint(category, endpoint, apiHost) {
     return fallbackPaths[category]?.[endpoint] || `${apiHost}/${category.toLowerCase()}/${endpoint.toLowerCase()}`;
 }
 
+function getSetupTokenHeaders(setupToken) {
+    return {
+        'X-Setup-Token': setupToken || ''
+    };
+}
+
 // Check localStorage cache
 function getCachedConfig() {
     try {
@@ -305,15 +311,17 @@ async function refreshConfigInBackground(apiHost) {
 /**
  * Save instance configuration (during setup wizard)
  * @param {Object} config - Configuration to save
+ * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Response from backend
  */
-export async function saveInstanceConfig(config) {
+export async function saveInstanceConfig(config, setupToken = '') {
     const apiHost = getApiHost();
 
     const response = await fetch(getEndpoint('INSTANCE', 'CONFIGURE', apiHost), {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...getSetupTokenHeaders(setupToken)
         },
         body: JSON.stringify(config)
     });
@@ -332,9 +340,10 @@ export async function saveInstanceConfig(config) {
 /**
  * Upload instance logo
  * @param {File} file - Logo file to upload
+ * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Response with logo URL
  */
-export async function uploadInstanceLogo(file) {
+export async function uploadInstanceLogo(file, setupToken = '') {
     const apiHost = getApiHost();
 
     const formData = new FormData();
@@ -342,6 +351,7 @@ export async function uploadInstanceLogo(file) {
 
     const response = await fetch(getEndpoint('INSTANCE', 'LOGO', apiHost), {
         method: 'POST',
+        headers: getSetupTokenHeaders(setupToken),
         body: formData
     });
 
@@ -353,9 +363,10 @@ export async function uploadInstanceLogo(file) {
  * @param {File} file - ZIP file to validate
  * @param {string} ownerEmail - Owner email
  * @param {boolean} preserveUuids - Whether to preserve original UUIDs
+ * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Validation result
  */
-export async function validateImportFile(file, ownerEmail, preserveUuids = false) {
+export async function validateImportFile(file, ownerEmail, preserveUuids = false, setupToken = '') {
     const apiHost = getApiHost();
     const importEndpoints = getEndpoint('ASSOCIATION', 'IMPORT', apiHost);
 
@@ -366,6 +377,7 @@ export async function validateImportFile(file, ownerEmail, preserveUuids = false
 
     const response = await fetch(importEndpoints.VALIDATE, {
         method: 'POST',
+        headers: getSetupTokenHeaders(setupToken),
         body: formData
     });
 
@@ -379,9 +391,10 @@ export async function validateImportFile(file, ownerEmail, preserveUuids = false
  * @param {string} ownerPassword - Owner password
  * @param {boolean} preserveUuids - Whether to preserve original UUIDs
  * @param {boolean} skipFiles - Whether to skip binary files
+ * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Import task info
  */
-export async function startImport(file, ownerEmail, ownerPassword, preserveUuids = false, skipFiles = false) {
+export async function startImport(file, ownerEmail, ownerPassword, preserveUuids = false, skipFiles = false, setupToken = '') {
     const apiHost = getApiHost();
     const importEndpoints = getEndpoint('ASSOCIATION', 'IMPORT', apiHost);
 
@@ -394,6 +407,7 @@ export async function startImport(file, ownerEmail, ownerPassword, preserveUuids
 
     const response = await fetch(importEndpoints.START, {
         method: 'POST',
+        headers: getSetupTokenHeaders(setupToken),
         body: formData
     });
 
@@ -403,12 +417,15 @@ export async function startImport(file, ownerEmail, ownerPassword, preserveUuids
 /**
  * Check import status
  * @param {string} taskId - Task ID from startImport
+ * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Import status
  */
-export async function checkImportStatus(taskId) {
+export async function checkImportStatus(taskId, setupToken = '') {
     const apiHost = getApiHost();
     const importEndpoints = getEndpoint('ASSOCIATION', 'IMPORT', apiHost);
 
-    const response = await fetch(`${importEndpoints.STATUS}?task_id=${taskId}`);
+    const response = await fetch(`${importEndpoints.STATUS}?task_id=${taskId}`, {
+        headers: getSetupTokenHeaders(setupToken)
+    });
     return response.json();
 }
