@@ -4,10 +4,10 @@ import django_ratelimit
 import requests
 
 from django.core.cache import cache
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied, NotAcceptable
 from rest_framework.permissions import BasePermission
-from rest_framework.response import Response
 from auditlog.context import auditlog_value
 from application.models import User
 
@@ -178,8 +178,13 @@ class ExceptionHandlerMiddleware:
 
             OPTIMIZATION: Only read body for methods that actually have a body (POST, PUT, PATCH, DELETE)
             This saves 5-10ms per GET request by avoiding unnecessary I/O
+
+            Multipart requests are excluded so Django's upload handlers can stream large files to disk.
             '''
-            if request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
+            if (
+                request.method in ['POST', 'PUT', 'PATCH', 'DELETE']
+                and not (request.content_type or '').startswith('multipart/')
+            ):
                 request.body
             response = self.get_response(request)
 
@@ -187,52 +192,56 @@ class ExceptionHandlerMiddleware:
 
         except django_ratelimit.exceptions.Ratelimited as e:
             logger.error("Rate limit exceeded", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": e.detail}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+            return JsonResponse({"exception": e.detail}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        except django.core.exceptions.RequestDataTooBig as e:
+            logger.warning("Request body too large", extra={'path': request.path})
+            return JsonResponse({'exception': str(e)}, status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
 
         except FileNotFoundError as e:
             logger.error("File not found", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"exception": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         except NotAcceptable as e:
             logger.error("Not acceptable", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": e.detail}, status=status.HTTP_409_CONFLICT)
+            return JsonResponse({"exception": e.detail}, status=status.HTTP_409_CONFLICT)
 
         except PermissionDenied as e:
             logger.error("Permission denied", extra={'path': request.path, 'user_id': str(request.user.user_id) if hasattr(request.user, 'user_id') else None}, exc_info=True)
-            return Response({"exception": e.detail}, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse({"exception": e.detail}, status=status.HTTP_403_FORBIDDEN)
 
         except User.DoesNotExist as e:
             logger.error("User does not exist", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": "No user found."}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"exception": "No user found."}, status=status.HTTP_404_NOT_FOUND)
 
         except requests.RequestException as e:
             logger.error("Request exception", extra={'path': request.path}, exc_info=True)
-            return Response({'exception': str(e)}, status=status.HTTP_408_REQUEST_TIMEOUT)
+            return JsonResponse({'exception': str(e)}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
         except NotFound as e:
             logger.error("Not found", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": e.detail}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"exception": e.detail}, status=status.HTTP_404_NOT_FOUND)
 
         except ValueError as e:
             logger.error("Value error", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"exception": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         except TypeError as e:
             logger.error("Type error", extra={'path': request.path}, exc_info=True)
-            return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         except django.core.exceptions.ValidationError as e:
             logger.error("Django validation error", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"exception": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         except ValidationError as e:
             logger.error("DRF validation error", extra={'path': request.path}, exc_info=True)
-            return Response({"exception": "validation errors."}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"exception": "validation errors."}, status=status.HTTP_400_BAD_REQUEST)
 
         except django.core.exceptions.ObjectDoesNotExist as e:
             logger.error("Object does not exist", extra={'path': request.path}, exc_info=True)
-            return Response({'exception': str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'exception': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             logger.error("Unhandled exception", extra={'path': request.path}, exc_info=True)
-            return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
