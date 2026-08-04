@@ -354,11 +354,20 @@ class AssociationExportService:
                 models.Q(user__connected_user=owner) |
                 models.Q(user_id__in=athlete_user_ids)
             ).values_list('user_id', flat=True).distinct()
+            medical_ids = Subscription.objects.filter(
+                sport_association=self.sport_association,
+                medical__isnull=False,
+            ).values_list('medical_id', flat=True).distinct()
+            medical_user_ids = MedicalCertificate.objects.filter(
+                medical_id__in=medical_ids,
+                user__isnull=False,
+            ).values_list('user_id', flat=True).distinct()
             return qs.filter(
                 models.Q(user_id=owner.user_id) |
                 models.Q(connected_user=owner) |
                 models.Q(user_id__in=athlete_user_ids) |
-                models.Q(user_id__in=signature_user_ids)
+                models.Q(user_id__in=signature_user_ids) |
+                models.Q(user_id__in=medical_user_ids)
             )
 
         # PaymentCategory - include association's categories AND shared categories referenced by Payments

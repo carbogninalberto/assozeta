@@ -84,26 +84,31 @@ def oauth2_login(request):
     if not (is_password_login or is_social_login):
         return Response({"msg": "Invalid request."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Find user by username or email
-    try:
-        if re.match(r"[^@]+@[^@]+\.[^@]+", data['username']):
-            user = User.objects.get(email__iexact=data['username'])
-            data['username'] = user.username
-        else:
-            user = User.objects.get(username__iexact=data['username'])
+    # Email is not unique in legacy data, so defer account selection until credentials are checked.
+    login_identifier = str(data['username']).strip()
+    if re.match(r"[^@]+@[^@]+\.[^@]+", login_identifier):
+        candidates = list(User.objects.filter(email__iexact=login_identifier).order_by('user_id'))
+    else:
+        candidates = list(User.objects.filter(username__iexact=login_identifier).order_by('user_id'))
 
-        # Normalize username to uppercase
-        if user.username != data['username'].upper():
-            user.username = data['username'].upper()
-            user.save()
-        data['username'] = data['username'].upper()
-
-    except User.DoesNotExist:
+    if not candidates:
         logger.warning("Login failed - user not found", extra={'username': data.get('username', 'unknown')})
         return Response({'error': 'invalid credential (not found)'}, status=status.HTTP_401_UNAUTHORIZED)
 
     # Verify credentials
     if is_social_login:
+        preferred_candidates = [
+            candidate for candidate in candidates
+            if candidate.username.casefold() == login_identifier.casefold()
+        ]
+        if len(preferred_candidates) == 1:
+            user = preferred_candidates[0]
+        elif len(candidates) == 1:
+            user = candidates[0]
+        else:
+            logger.warning("Login failed - ambiguous account", extra={'username': login_identifier})
+            return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
         # Verify social token
         backend = data['backend']
         if backend in ['google-oauth2', 'google-identity', 'google']:
@@ -126,16 +131,39 @@ def oauth2_login(request):
                           extra={'expected': user.email, 'got': user_info['email']})
             return Response({'error': 'Email mismatch'}, status=status.HTTP_401_UNAUTHORIZED)
     else:
-        # Password authentication
-        if not user.check_password(data['password']):
-            # Try bcrypt migration for legacy passwords
-            new_hash = migrate_bcrypt_to_django(data['password'], user.password)
-            if not new_hash:
-                logger.warning("Login failed - invalid password", extra={'user_id': str(user.user_id)})
-                return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-            # Save migrated password hash
-            user.password = new_hash
+        matching_candidates = []
+        migrated_passwords = {}
+        for candidate in candidates:
+            if candidate.check_password(data['password']):
+                matching_candidates.append(candidate)
+                continue
+
+            new_hash = migrate_bcrypt_to_django(data['password'], candidate.password)
+            if new_hash:
+                matching_candidates.append(candidate)
+                migrated_passwords[candidate.user_id] = new_hash
+
+        preferred_candidates = [
+            candidate for candidate in matching_candidates
+            if candidate.username.casefold() == login_identifier.casefold()
+        ]
+        if len(preferred_candidates) == 1:
+            user = preferred_candidates[0]
+        elif len(matching_candidates) == 1:
+            user = matching_candidates[0]
+        else:
+            logger.warning("Login failed - invalid or ambiguous password", extra={'username': login_identifier})
+            return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user.user_id in migrated_passwords:
+            user.password = migrated_passwords[user.user_id]
             user.save(update_fields=['password'])
+
+    # Preserve legacy username normalization, but only after successful authentication.
+    normalized_username = user.username.upper()
+    if user.username != normalized_username:
+        user.username = normalized_username
+        user.save(update_fields=['username'])
 
     # Check 2FA if enabled
     logger.debug("Checking 2FA requirement", extra={'user_id': str(user.user_id), 'two_fa_enabled': user.two_fa})
@@ -155,7 +183,7 @@ def oauth2_login(request):
     logger.info("User logged in successfully", extra={'user_id': str(user.user_id), 'role': user.role})
 
     # Update last login and clear deletion flag
-    user.last_login = datetime.datetime.now()
+    user.last_login = timezone.now()
     if user.delete_on is not None and user.delete_on >= timezone.now().date():
         user.delete_on = None
     user.save()

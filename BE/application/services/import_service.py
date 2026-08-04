@@ -19,7 +19,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import django.db.utils
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
@@ -343,7 +343,7 @@ class AssociationImportService:
 
         # Document Manager
         'Document': 'document_id',
-        'Folder': 'folder_id',
+        'Folder': 'id',
 
         # Additional subscription-related models
         'SoldProducts': 'sold_product_id',
@@ -386,6 +386,7 @@ class AssociationImportService:
         'SportAssociationDocumentsArchive': [
             ('sport_association_id', 'SportAssociation'),
             ('document_id', 'Document'),
+            ('folder_id', 'Folder'),
         ],
         'Reminder': [('user_id', 'User')],
         'EmailLog': [('user_id', 'User')],
@@ -418,7 +419,7 @@ class AssociationImportService:
             ('document_id', 'Document'),
         ],
         'MedicalCertificate': [
-            ('associate_id', 'Associate'),
+            ('user_id', 'User'),
             ('document_id', 'Document'),
         ],
         'MedicalAppointments': [('medical_certificate_id', 'MedicalCertificate')],
@@ -688,6 +689,7 @@ class AssociationImportService:
             UUID to use in import
         """
         if self.options.preserve_uuids:
+            self.uuid_mapping[old_uuid] = old_uuid
             return old_uuid
 
         # Check if we already mapped this UUID
@@ -699,7 +701,7 @@ class AssociationImportService:
         self.uuid_mapping[old_uuid] = new_uuid
         return new_uuid
 
-    def _resolve_fk(self, old_uuid: Optional[str], related_model: str) -> Optional[str]:
+    def _resolve_fk(self, old_uuid: Optional[str], related_model: str) -> Optional[Any]:
         """
         Resolve a foreign key reference to the new UUID.
 
@@ -713,8 +715,12 @@ class AssociationImportService:
         if old_uuid is None:
             return None
 
+        imported_object = self.imported_objects.get(related_model, {}).get(str(old_uuid))
+        if imported_object is not None and imported_object.pk is not None:
+            return imported_object.pk
+
         if self.options.preserve_uuids:
-            return old_uuid
+            return self.uuid_mapping.get(old_uuid)
 
         return self.uuid_mapping.get(old_uuid)
 
@@ -897,6 +903,9 @@ class AssociationImportService:
 
         logger.info(f"Processing {model_name}: {len(records)} records to import")
 
+        if model_class is Folder:
+            return self._import_folders(records)
+
         for record in records:
             try:
                 obj = self._create_model_instance(model_class, record)
@@ -920,6 +929,57 @@ class AssociationImportService:
         # Mark this model as imported so FKs to it can be resolved
         self.imported_models.add(model_name)
         logger.info(f"Imported {count} {model_name} records")
+        return count
+
+    def _import_folders(self, records: List[Dict[str, Any]]) -> int:
+        """Import folders parent-first and let MPTT generate its tree fields."""
+        remaining = {}
+        for record in records:
+            old_pk = str(record.get('id'))
+            if old_pk == 'None':
+                raise ValueError("Folder record is missing its id")
+            if old_pk in remaining:
+                raise ValueError(f"Duplicate Folder id: {old_pk}")
+            remaining[old_pk] = record
+
+        imported = self.imported_objects.setdefault('Folder', {})
+        count = 0
+
+        while remaining:
+            imported_in_pass = False
+
+            for old_pk, record in list(remaining.items()):
+                parent_old_pk = record.get('parent_id')
+                parent = None
+                if parent_old_pk is not None:
+                    parent = imported.get(str(parent_old_pk))
+                    if parent is None:
+                        continue
+
+                kwargs = {
+                    'name': record.get('name', ''),
+                    'parent': parent,
+                    'sport_association': self.association,
+                }
+                if record.get('created_at'):
+                    kwargs['created_at'] = parse_datetime(record['created_at'])
+
+                folder = Folder(**kwargs)
+                if not self.options.dry_run:
+                    folder.save()
+                    count += 1
+
+                imported[old_pk] = folder
+                del remaining[old_pk]
+                imported_in_pass = True
+
+            if not imported_in_pass:
+                unresolved = ', '.join(sorted(remaining))
+                raise ValueError(f"Folder hierarchy has missing or circular parents: {unresolved}")
+
+        self.stats['Folder'] = count
+        self.imported_models.add('Folder')
+        logger.info(f"Imported {count} Folder records")
         return count
 
     def _create_model_instance(
@@ -966,8 +1026,14 @@ class AssociationImportService:
                     )
 
         # Resolve foreign keys
-        fk_mappings = self.FK_MAPPINGS.get(model_name, [])
-        for fk_field, related_model in fk_mappings:
+        fk_mappings = dict(self.FK_MAPPINGS.get(model_name, []))
+        for field in model_class._meta.get_fields():
+            if field.is_relation and field.many_to_one:
+                related_model = field.related_model.__name__
+                if related_model in self.PK_FIELDS:
+                    fk_mappings[field.attname] = related_model
+
+        for fk_field, related_model in fk_mappings.items():
             if fk_field in data and data[fk_field]:
                 # Skip FK if target model hasn't been imported yet
                 # This handles circular dependencies (e.g., Payment.invoice_id -> Invoice)
@@ -982,7 +1048,7 @@ class AssociationImportService:
                     continue
                 old_fk = data[fk_field]
                 new_fk = self._resolve_fk(old_fk, related_model)
-                if new_fk is None and not self.options.preserve_uuids:
+                if new_fk is None:
                     # FK reference not found in mapping - the referenced record wasn't exported
                     logger.warning(
                         f"{model_name}.{fk_field} references {related_model} {old_fk} "
@@ -1299,16 +1365,20 @@ class AssociationImportService:
                     self.errors.append(f"Failed to import {model_name}: {e}")
                     raise  # Re-raise to trigger transaction rollback
 
-            # 4. Import files
-            self._import_files(zf)
-
-        # Pass 2: Resolve deferred FKs (outside the ZipFile context)
+        # Pass 2: Resolve deferred FKs
         logger.info("Pass 2: Resolving deferred foreign keys...")
         self._resolve_deferred_fks()
 
         # Pass 3: Import M2M relationships
         logger.info("Pass 3: Importing M2M relationships...")
         self._import_m2m_relationships()
+
+        # Validate deferred database constraints before writing non-transactional files.
+        connection.check_constraints()
+
+        # Pass 4: Import files only after the database graph is valid.
+        with zipfile.ZipFile(self.zip_path, 'r') as zf:
+            self._import_files(zf)
 
         logger.info(f"Import completed: {self.association.denomination}")
         return self.association
