@@ -370,19 +370,15 @@ export async function uploadInstanceLogo(file, setupToken = '') {
 /**
  * Validate import file
  * @param {File} file - ZIP file to validate
- * @param {string} ownerEmail - Owner email
- * @param {boolean} preserveUuids - Whether to preserve original UUIDs
  * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Validation result
  */
-export async function validateImportFile(file, ownerEmail, preserveUuids = false, setupToken = '') {
+export async function validateImportFile(file, setupToken = '') {
     const apiHost = getApiHost();
     const importEndpoints = getEndpoint('ASSOCIATION', 'IMPORT', apiHost);
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('owner_email', ownerEmail);
-    formData.append('preserve_uuids', preserveUuids.toString());
 
     const response = await fetch(importEndpoints.VALIDATE, {
         method: 'POST',
@@ -396,23 +392,17 @@ export async function validateImportFile(file, ownerEmail, preserveUuids = false
 /**
  * Start import process
  * @param {File} file - ZIP file to import
- * @param {string} ownerEmail - Owner email
- * @param {string} ownerPassword - Owner password
- * @param {boolean} preserveUuids - Whether to preserve original UUIDs
- * @param {boolean} skipFiles - Whether to skip binary files
+ * @param {string} ownerPassword - Recovery password for archived owner
  * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Import task info
  */
-export async function startImport(file, ownerEmail, ownerPassword, preserveUuids = false, skipFiles = false, setupToken = '') {
+export async function startImport(file, ownerPassword, setupToken = '') {
     const apiHost = getApiHost();
     const importEndpoints = getEndpoint('ASSOCIATION', 'IMPORT', apiHost);
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('owner_email', ownerEmail);
     formData.append('owner_password', ownerPassword);
-    formData.append('preserve_uuids', preserveUuids.toString());
-    formData.append('skip_files', skipFiles.toString());
 
     const response = await fetch(importEndpoints.START, {
         method: 'POST',

@@ -138,6 +138,8 @@ class ImportValidator:
         """
         self.zip_path = zip_path
         self.manifest: Optional[Dict] = None
+        self.source_association: Optional[Dict] = None
+        self.source_owner: Optional[Dict] = None
 
     def validate_file(self) -> ValidationResult:
         """
@@ -251,12 +253,86 @@ class ImportValidator:
 
         return result
 
-    def validate_uuid_conflicts(self, preserve_uuids: bool = False) -> ValidationResult:
+    def validate_owner_identity(self) -> ValidationResult:
+        """
+        Validate and expose the archived owner identity.
+
+        The owner is selected exclusively from SportAssociation.user_id and the
+        matching User.user_id.  Roles are not used for owner discovery.
+        """
+        result = ValidationResult()
+
+        try:
+            with zipfile.ZipFile(self.zip_path, 'r') as zf:
+                try:
+                    associations = json.loads(zf.read('data/01_sport_association.json'))
+                except KeyError:
+                    result.add_error("Missing required data file: 01_sport_association.json")
+                    return result
+
+                if not isinstance(associations, list) or len(associations) != 1:
+                    result.add_error(
+                        "Export must contain exactly one SportAssociation record in "
+                        "data/01_sport_association.json"
+                    )
+                    return result
+
+                association = associations[0]
+                association_id = association.get('sport_association_id')
+                if not association_id:
+                    result.add_error("SportAssociation record is missing sport_association_id")
+                    return result
+
+                owner_user_id = association.get('user_id')
+                if not owner_user_id:
+                    result.add_error("SportAssociation record is missing user_id for owner selection")
+                    return result
+
+                try:
+                    users = json.loads(zf.read('data/02_users.json'))
+                except KeyError:
+                    result.add_error("Missing required data file: 02_users.json")
+                    return result
+
+                owner_matches = [
+                    user_data for user_data in users
+                    if str(user_data.get('user_id')) == str(owner_user_id)
+                ]
+                if len(owner_matches) != 1:
+                    result.add_error(
+                        f"Expected exactly one User with user_id {owner_user_id} "
+                        "matching SportAssociation.user_id"
+                    )
+                    return result
+
+                owner = owner_matches[0]
+                self.source_association = association
+                self.source_owner = owner
+                result.info['association'] = {
+                    **result.info.get('association', {}),
+                    'sport_association_id': association.get('sport_association_id'),
+                    'denomination': association.get('denomination'),
+                    'tax_code': association.get('tax_code'),
+                }
+                result.info['owner_user'] = {
+                    'user_id': owner.get('user_id'),
+                    'username': owner.get('username'),
+                    'email': owner.get('email'),
+                }
+
+        except json.JSONDecodeError as e:
+            result.add_error(f"Invalid JSON in data files: {e}")
+        except Exception as e:
+            result.add_error(f"Error reading owner identity: {e}")
+
+        return result
+
+    def validate_uuid_conflicts(self, preserve_uuids: bool = True) -> ValidationResult:
         """
         Check for UUID conflicts with existing data.
 
         Args:
-            preserve_uuids: Whether UUIDs will be preserved during import
+            preserve_uuids: Ignored stale option; source UUIDs are always preserved
 
         Returns:
             ValidationResult
@@ -265,17 +341,12 @@ class ImportValidator:
 
         result = ValidationResult()
 
-        if not preserve_uuids:
-            # No conflicts possible if generating new UUIDs
-            return result
-
-        if not self.manifest:
-            result.add_error("Manifest not loaded")
+        if not self.source_association or not self.source_owner:
+            result.add_error("Owner identity not loaded")
             return result
 
         # Check association UUID
-        assoc_info = self.manifest.get('association', {})
-        assoc_id = assoc_info.get('sport_association_id')
+        assoc_id = self.source_association.get('sport_association_id')
 
         if assoc_id:
             if SportAssociation.original_objects.filter(
@@ -285,41 +356,32 @@ class ImportValidator:
                     f"Association UUID conflict: {assoc_id} already exists"
                 )
 
-        return result
-
-    def validate_owner_email(self, owner_email: str) -> ValidationResult:
-        """
-        Validate that the owner email is available.
-
-        Args:
-            owner_email: Email for the new owner
-
-        Returns:
-            ValidationResult
-        """
-        from application.models.user_models import User
-
-        result = ValidationResult()
-
-        if User.objects.filter(email=owner_email).exists():
-            result.add_error(f"User with email '{owner_email}' already exists")
-
-        if User.objects.filter(username=owner_email).exists():
-            result.add_error(f"User with username '{owner_email}' already exists")
+        owner_id = self.source_owner.get('user_id')
+        if owner_id:
+            existing_owner = User.original_objects.filter(user_id=owner_id).first()
+            if existing_owner:
+                conflicting_association = SportAssociation.original_objects.filter(
+                    user=existing_owner
+                ).exclude(sport_association_id=assoc_id).first()
+                if conflicting_association:
+                    result.add_error(
+                        "Owner user already owns another SportAssociation: "
+                        f"{conflicting_association.sport_association_id}"
+                    )
 
         return result
 
     def validate_all(
         self,
-        owner_email: str,
-        preserve_uuids: bool = False
+        owner_email: str = '',
+        preserve_uuids: bool = True
     ) -> ValidationResult:
         """
         Run all validations.
 
         Args:
-            owner_email: Email for the new owner
-            preserve_uuids: Whether to preserve original UUIDs
+            owner_email: Ignored stale option; archived owner email is retained
+            preserve_uuids: Ignored stale option; source UUIDs are always preserved
 
         Returns:
             Combined ValidationResult
@@ -342,13 +404,14 @@ class ImportValidator:
         data_result = self.validate_data_files()
         result.merge(data_result)
 
-        # UUID conflicts
-        uuid_result = self.validate_uuid_conflicts(preserve_uuids)
-        result.merge(uuid_result)
+        # Archived owner identity
+        identity_result = self.validate_owner_identity()
+        result.merge(identity_result)
 
-        # Owner email
-        email_result = self.validate_owner_email(owner_email)
-        result.merge(email_result)
+        # UUID conflicts
+        if identity_result.is_valid:
+            uuid_result = self.validate_uuid_conflicts(preserve_uuids)
+            result.merge(uuid_result)
 
         return result
 
@@ -382,16 +445,16 @@ def validate_export_file(zip_path: str) -> ValidationResult:
 
 def validate_import(
     zip_path: str,
-    owner_email: str,
-    preserve_uuids: bool = False
+    owner_email: str = '',
+    preserve_uuids: bool = True
 ) -> ValidationResult:
     """
     Convenience function to validate an import operation.
 
     Args:
         zip_path: Path to the export ZIP file
-        owner_email: Email for the new owner
-        preserve_uuids: Whether to preserve original UUIDs
+        owner_email: Ignored stale option; archived owner email is retained
+        preserve_uuids: Ignored stale option; source UUIDs are always preserved
 
     Returns:
         ValidationResult

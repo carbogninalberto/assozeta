@@ -123,9 +123,13 @@ class ValidationResult:
 @dataclass
 class ImportOptions:
     """Options for the import process."""
-    owner_email: str
-    owner_password: str
-    preserve_uuids: bool = False
+    # owner_email, preserve_uuids and skip_files are kept only for backwards
+    # compatibility with stale clients/tasks.  The importer always preserves
+    # source UUIDs, always imports media present in the archive, and keeps the
+    # archived owner username/email.
+    owner_email: str = ''
+    owner_password: str = ''
+    preserve_uuids: bool = True
     skip_files: bool = False
     dry_run: bool = False
 
@@ -603,9 +607,27 @@ class AssociationImportService:
         # The new association and owner
         self.owner_user: Optional[User] = None
         self.association: Optional[SportAssociation] = None
+        self.source_association_data: Optional[Dict[str, Any]] = None
+        self.source_owner_data: Optional[Dict[str, Any]] = None
+        self.source_association_id: Optional[str] = None
+        self.source_owner_user_id: Optional[str] = None
 
         # Document mapping: old_doc_id -> new_doc
         self.document_mapping: Dict[str, Document] = {}
+
+        # Original primary keys present in each source data file.  This lets us
+        # distinguish a missing FK from a forward/self reference that will be
+        # resolved later (notably User.connected_user).
+        self.source_pks_by_model: Dict[str, Set[str]] = {}
+
+        # Existing users are intentionally reused by exact UUID only.  Track
+        # them so deferred FK/M2M processing never overwrites their profile or
+        # relationship state.
+        self.reused_user_pks: Set[str] = set()
+
+        # Storage writes are outside the DB transaction; track new keys for
+        # best-effort cleanup if a later media import step fails.
+        self.created_storage_keys: List[str] = []
 
         # Stats and errors
         self.stats: Dict[str, int] = {}
@@ -621,6 +643,143 @@ class AssociationImportService:
 
         # Model name to class mapping (built during import)
         self._model_class_cache: Dict[str, Type[models.Model]] = {}
+
+    def _get_unfiltered_manager(self, model_class: Type[models.Model]):
+        """Return a manager that does not hide soft-deleted rows."""
+        if hasattr(model_class, 'original_objects'):
+            return model_class.original_objects
+        return model_class._base_manager
+
+    def _load_source_identity(self, zf: zipfile.ZipFile) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Load and validate the single exported association and its owner.
+
+        Ownership is defined exclusively by data/01_sport_association.json
+        user_id and the matching data/02_users.json user_id.  User roles are
+        deliberately ignored for owner discovery.
+        """
+        if self.source_association_data is not None and self.source_owner_data is not None:
+            return self.source_association_data, self.source_owner_data
+
+        try:
+            associations = json.loads(zf.read('data/01_sport_association.json'))
+        except KeyError as exc:
+            raise ValueError("Missing required data file: 01_sport_association.json") from exc
+
+        if not isinstance(associations, list) or len(associations) != 1:
+            raise ValueError(
+                "Export must contain exactly one SportAssociation record in "
+                "data/01_sport_association.json"
+            )
+
+        association_data = associations[0]
+        association_id = association_data.get('sport_association_id')
+        if not association_id:
+            raise ValueError("SportAssociation record is missing sport_association_id")
+
+        owner_user_id = association_data.get('user_id')
+        if not owner_user_id:
+            raise ValueError("SportAssociation record is missing user_id for owner selection")
+
+        try:
+            users = json.loads(zf.read('data/02_users.json'))
+        except KeyError as exc:
+            raise ValueError("Missing required data file: 02_users.json") from exc
+
+        owner_matches = [
+            user_data for user_data in users
+            if str(user_data.get('user_id')) == str(owner_user_id)
+        ]
+        if len(owner_matches) != 1:
+            raise ValueError(
+                f"Expected exactly one User with user_id {owner_user_id} "
+                "matching SportAssociation.user_id"
+            )
+
+        self.source_association_data = association_data
+        self.source_owner_data = owner_matches[0]
+        self.source_association_id = str(association_id)
+        self.source_owner_user_id = str(owner_user_id)
+        self.source_pks_by_model['SportAssociation'] = {self.source_association_id}
+        self.source_pks_by_model['User'] = {
+            str(user_data.get('user_id'))
+            for user_data in users
+            if user_data.get('user_id') is not None
+        }
+        return association_data, owner_matches[0]
+
+    def _build_model_kwargs(
+        self,
+        model_class: Type[models.Model],
+        data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Build model constructor kwargs from exported data."""
+        kwargs = {}
+        for field in model_class._meta.get_fields():
+            if not getattr(field, 'concrete', False):
+                continue
+
+            field_name = field.name
+            if field.is_relation and (field.many_to_one or field.one_to_one):
+                fk_name = getattr(field, 'attname', None)
+                if not fk_name:
+                    continue
+                if fk_name in data:
+                    value = data[fk_name]
+                    if value is None:
+                        kwargs[fk_name] = None
+                    else:
+                        kwargs[fk_name] = self._parse_value(value, field.target_field)
+            elif field_name in data:
+                kwargs[field_name] = self._parse_value(data[field_name], field)
+
+        return kwargs
+
+    def _sanitize_user_data(self, data: Dict[str, Any], *, is_owner: bool) -> Dict[str, Any]:
+        """Apply safe auth-field handling while preserving profile/settings data."""
+        sanitized = data.copy()
+        sanitized['password'] = make_password(self.options.owner_password) if is_owner else make_password(None)
+        sanitized['is_staff'] = False
+        sanitized['is_superuser'] = False
+        sanitized['two_fa'] = False
+        sanitized['two_fa_secret'] = None
+        sanitized['stripe_account_id'] = None
+        sanitized['stripe_on_boarding_completed'] = False
+        sanitized['integration_google_state'] = None
+        sanitized['integration_google_credentials'] = None
+        sanitized['integration_google_auto_sync'] = False
+        if is_owner:
+            sanitized['role'] = User.ASSOCIATION
+            sanitized['is_active'] = True
+        return sanitized
+
+    def _ensure_no_pk_collision(
+        self,
+        model_class: Type[models.Model],
+        model_name: str,
+        pk_field: Optional[str],
+        new_pk: Optional[str]
+    ):
+        """Fail explicitly on duplicate non-User primary keys."""
+        if not pk_field or new_pk is None or model_name == 'User':
+            return
+
+        manager = self._get_unfiltered_manager(model_class)
+        if manager.filter(**{pk_field: new_pk}).exists():
+            raise ValueError(
+                f"{model_name} UUID collision: {new_pk} already exists. "
+                "Only User rows may be reused by exact UUID during import."
+            )
+
+    def _register_imported_object(self, model_name: str, old_pk: Optional[Any], obj: Any):
+        """Register a created/reused object for deferred FK/M2M resolution."""
+        if old_pk is None or obj is None:
+            return
+
+        old_pk_str = str(old_pk)
+        self.imported_objects.setdefault(model_name, {})[old_pk_str] = obj
+        if model_name == 'Document':
+            self.document_mapping[old_pk_str] = obj
 
     def validate(self) -> ValidationResult:
         """
@@ -663,12 +822,37 @@ class AssociationImportService:
                     if data_path not in zf.namelist():
                         result.add_warning(f"Missing data file: {filename}")
 
-                # Validate owner email doesn't exist (if not preserving UUIDs)
-                if not self.options.preserve_uuids:
-                    if User.objects.filter(email=self.options.owner_email).exists():
-                        result.add_error(
-                            f"User with email {self.options.owner_email} already exists"
+                try:
+                    association_data, owner_data = self._load_source_identity(zf)
+                    result.warnings = [
+                        warning for warning in result.warnings
+                        if warning not in (
+                            "Missing data file: 01_sport_association.json",
+                            "Missing data file: 02_users.json",
                         )
+                    ]
+                    assoc_id = association_data.get('sport_association_id')
+                    if SportAssociation.original_objects.filter(
+                        sport_association_id=assoc_id
+                    ).exists():
+                        result.add_error(
+                            f"SportAssociation UUID collision: {assoc_id} already exists"
+                        )
+
+                    existing_owner = User.original_objects.filter(
+                        user_id=owner_data.get('user_id')
+                    ).first()
+                    if existing_owner:
+                        conflicting_association = SportAssociation.original_objects.filter(
+                            user=existing_owner
+                        ).exclude(sport_association_id=assoc_id).first()
+                        if conflicting_association:
+                            result.add_error(
+                                "Owner user already owns another SportAssociation: "
+                                f"{conflicting_association.sport_association_id}"
+                            )
+                except ValueError as e:
+                    result.add_error(str(e))
 
         except json.JSONDecodeError as e:
             result.add_error(f"Invalid JSON in manifest: {e}")
@@ -688,18 +872,9 @@ class AssociationImportService:
         Returns:
             UUID to use in import
         """
-        if self.options.preserve_uuids:
-            self.uuid_mapping[old_uuid] = old_uuid
-            return old_uuid
-
-        # Check if we already mapped this UUID
-        if old_uuid in self.uuid_mapping:
-            return self.uuid_mapping[old_uuid]
-
-        # Generate new UUID
-        new_uuid = str(uuid.uuid4())
-        self.uuid_mapping[old_uuid] = new_uuid
-        return new_uuid
+        old_uuid = str(old_uuid)
+        self.uuid_mapping[old_uuid] = old_uuid
+        return old_uuid
 
     def _resolve_fk(self, old_uuid: Optional[str], related_model: str) -> Optional[Any]:
         """
@@ -715,12 +890,10 @@ class AssociationImportService:
         if old_uuid is None:
             return None
 
-        imported_object = self.imported_objects.get(related_model, {}).get(str(old_uuid))
+        old_uuid = str(old_uuid)
+        imported_object = self.imported_objects.get(related_model, {}).get(old_uuid)
         if imported_object is not None and imported_object.pk is not None:
             return imported_object.pk
-
-        if self.options.preserve_uuids:
-            return self.uuid_mapping.get(old_uuid)
 
         return self.uuid_mapping.get(old_uuid)
 
@@ -741,6 +914,8 @@ class AssociationImportService:
         field_type = type(field).__name__
 
         if field_type == 'UUIDField':
+            if isinstance(value, uuid.UUID):
+                return value
             return uuid.UUID(value) if value else None
         elif field_type == 'DateTimeField':
             if isinstance(value, str):
@@ -761,7 +936,7 @@ class AssociationImportService:
 
     def _create_owner_user(self, zf: zipfile.ZipFile) -> User:
         """
-        Create the new owner user for the association.
+        Create or reuse the owner user for the association.
 
         Args:
             zf: Open ZIP file
@@ -769,56 +944,49 @@ class AssociationImportService:
         Returns:
             Created User instance
         """
-        # Read original owner data
-        users_data = json.loads(zf.read('data/02_users.json'))
-
-        # Find the original owner (role = ASSOCIATION = 1)
-        original_owner = None
-        for user_data in users_data:
-            if user_data.get('role') == 1:  # ASSOCIATION
-                original_owner = user_data
-                break
-
-        if not original_owner:
-            raise ValueError("No owner user found in export data")
-
-        # Get old UUID
-        old_user_id = original_owner.get('user_id')
-
-        # Create new user
+        association_data, original_owner = self._load_source_identity(zf)
+        old_user_id = str(original_owner.get('user_id'))
         new_user_id = self._generate_uuid(old_user_id, 'User')
 
-        user = User(
-            user_id=uuid.UUID(new_user_id),
-            username=self.options.owner_email,
-            email=self.options.owner_email,
-            password=make_password(self.options.owner_password),
-            role=User.ASSOCIATION,
-            first_name=original_owner.get('first_name', ''),
-            last_name=original_owner.get('last_name', ''),
-            is_active=True,
-            # Copy settings from original
-            enumerate_invoices=original_owner.get('enumerate_invoices', False),
-            online_payments=original_owner.get('online_payments', True),
-            balance_sheet_year=original_owner.get('balance_sheet_year', 1),
-            balance_sheet_start_day=original_owner.get('balance_sheet_start_day', 1),
-            balance_sheet_start_month=original_owner.get('balance_sheet_start_month', 1),
-            subscription_duration=original_owner.get('subscription_duration', 2),
-            membership_duration=original_owner.get('membership_duration', 2),
-            subscription_start_day=original_owner.get('subscription_start_day', 1),
-            subscription_start_month=original_owner.get('subscription_start_month', 1),
-            tables_settings=original_owner.get('tables_settings', {}),
-        )
+        existing_user = User.original_objects.filter(user_id=new_user_id).first()
+        if existing_user:
+            conflicting_association = SportAssociation.original_objects.filter(
+                user=existing_user
+            ).exclude(
+                sport_association_id=association_data.get('sport_association_id')
+            ).first()
+            if conflicting_association:
+                raise ValueError(
+                    "Owner user "
+                    f"{new_user_id} already owns another SportAssociation "
+                    f"({conflicting_association.sport_association_id}); "
+                    "cannot import a second association for the same owner user"
+                )
 
-        if not self.options.dry_run:
-            user.save()
+            if not existing_user.has_usable_password():
+                existing_user.set_password(self.options.owner_password)
+                if not self.options.dry_run:
+                    existing_user.save(update_fields=['password'])
+
+            user = existing_user
+            self.reused_user_pks.add(old_user_id)
+            logger.info(f"Reused owner user by UUID: {user.user_id}")
+        else:
+            owner_data = self._sanitize_user_data(original_owner, is_owner=True)
+            owner_data['user_id'] = new_user_id
+            kwargs = self._build_model_kwargs(User, owner_data)
+            user = User(**kwargs)
+
+            if not self.options.dry_run:
+                user.save()
+
+            logger.info(f"Created owner user from archive identity: {user.email}")
 
         self.owner_user = user
-        self.imported_objects.setdefault('User', {})[old_user_id] = user
+        self._register_imported_object('User', old_user_id, user)
         self.imported_models.add('User')
         self.stats['User'] = 1
 
-        logger.info(f"Created owner user: {user.email}")
         return user
 
     def _import_sport_association(self, zf: zipfile.ZipFile) -> SportAssociation:
@@ -831,43 +999,37 @@ class AssociationImportService:
         Returns:
             Created SportAssociation instance
         """
-        assoc_data = json.loads(zf.read('data/01_sport_association.json'))
-
-        if not assoc_data:
-            raise ValueError("No association data found in export")
-
-        # Get first (and only) association
-        data = assoc_data[0]
-        old_assoc_id = data.get('sport_association_id')
+        data, _owner_data = self._load_source_identity(zf)
+        old_assoc_id = str(data.get('sport_association_id'))
         new_assoc_id = self._generate_uuid(old_assoc_id, 'SportAssociation')
 
-        association = SportAssociation(
-            sport_association_id=uuid.UUID(new_assoc_id),
-            user=self.owner_user,
-            denomination=data.get('denomination', ''),
-            address_city=data.get('address_city'),
-            address=data.get('address'),
-            address_cap=data.get('address_cap'),
-            tax_code=data.get('tax_code', ''),
-            email=data.get('email'),
-            phone=data.get('phone'),
-            regulation=data.get('regulation'),
-            demand=data.get('demand'),
-            additional_sections=data.get('additional_sections', {}),
-            logo=data.get('logo'),
-            subscription_fee=Decimal(data.get('subscription_fee', '0.00')),
-            membership_fee=Decimal(data.get('membership_fee', '0.00')) if data.get('membership_fee') else None,
-            configuration=data.get('configuration', {}),
-            enabled_for=data.get('enabled_for'),
-            invoice_template=data.get('invoice_template', 'invoice.html'),
-            subscription_template=data.get('subscription_template', 'subscription.html'),
-        )
+        if SportAssociation.original_objects.filter(sport_association_id=new_assoc_id).exists():
+            raise ValueError(
+                f"SportAssociation UUID collision: {new_assoc_id} already exists"
+            )
+
+        conflicting_association = SportAssociation.original_objects.filter(
+            user=self.owner_user
+        ).exclude(sport_association_id=new_assoc_id).first()
+        if conflicting_association:
+            raise ValueError(
+                "Owner user "
+                f"{self.owner_user.user_id} already owns another SportAssociation "
+                f"({conflicting_association.sport_association_id}); "
+                "cannot import a second association for the same owner user"
+            )
+
+        association_data = data.copy()
+        association_data['sport_association_id'] = new_assoc_id
+        association_data['user_id'] = str(self.owner_user.user_id)
+        kwargs = self._build_model_kwargs(SportAssociation, association_data)
+        association = SportAssociation(**kwargs)
 
         if not self.options.dry_run:
             association.save()
 
         self.association = association
-        self.imported_objects.setdefault('SportAssociation', {})[old_assoc_id] = association
+        self._register_imported_object('SportAssociation', old_assoc_id, association)
         self.imported_models.add('SportAssociation')
         self.stats['SportAssociation'] = 1
 
@@ -899,6 +1061,13 @@ class AssociationImportService:
             return 0
 
         records = json.loads(zf.read(data_path))
+        pk_field = self.PK_FIELDS.get(model_name)
+        if pk_field:
+            self.source_pks_by_model[model_name] = {
+                str(record.get(pk_field))
+                for record in records
+                if record.get(pk_field) is not None
+            }
         count = 0
 
         logger.info(f"Processing {model_name}: {len(records)} records to import")
@@ -907,18 +1076,24 @@ class AssociationImportService:
             return self._import_folders(records)
 
         for record in records:
+            old_pk = str(record.get(pk_field)) if pk_field and record.get(pk_field) is not None else None
             try:
-                obj = self._create_model_instance(model_class, record)
-                if obj and not self.options.dry_run:
+                obj = self._create_model_instance(model_class, record.copy())
+                was_existing = bool(obj and not obj._state.adding)
+                if obj and not self.options.dry_run and obj._state.adding:
                     obj.save()
-                    count += 1
                     # Debug logging for User and Signature imports
                     if model_name == 'User':
                         logger.info(f"Saved User: {obj.pk} - {obj.email}")
                     elif model_name == 'Signature':
                         logger.info(f"Saved Signature: {obj.pk} - user_id={obj.user_id}")
+                if obj:
+                    self._register_imported_object(model_name, old_pk, obj)
+                    count += 1
+                    if model_name == 'User' and was_existing:
+                        logger.info(f"Reused User by UUID: {obj.pk} - {obj.email}")
                 elif obj is None and model_name == 'User':
-                    logger.info(f"Skipped User record (returned None): {record.get('user_id')}")
+                    logger.info(f"Skipped source owner User record: {record.get('user_id')}")
             except Exception as e:
                 # Any error during import should abort - re-raise to trigger rollback
                 logger.error(f"Error importing {model_name} record: {e}", exc_info=True)
@@ -941,6 +1116,8 @@ class AssociationImportService:
             if old_pk in remaining:
                 raise ValueError(f"Duplicate Folder id: {old_pk}")
             remaining[old_pk] = record
+
+        self.source_pks_by_model['Folder'] = set(remaining.keys())
 
         imported = self.imported_objects.setdefault('Folder', {})
         count = 0
@@ -1010,6 +1187,22 @@ class AssociationImportService:
             new_pk = self._generate_uuid(old_pk, model_name)
             data[pk_field] = new_pk
 
+        if model_name == 'User':
+            # Skip only the exact owner selected by SportAssociation.user_id.
+            # Other role=ASSOCIATION rows can be legitimate shared users and
+            # must be imported/reused normally.
+            if old_pk is not None and str(old_pk) == self.source_owner_user_id:
+                return None
+
+            existing_user = User.original_objects.filter(user_id=data.get(pk_field)).first()
+            if existing_user:
+                # Reuse by exact UUID only; do not merge by email/username and
+                # do not overwrite credentials, profile, security fields or M2M.
+                self.reused_user_pks.add(str(old_pk))
+                return existing_user
+        else:
+            self._ensure_no_pk_collision(model_class, model_name, pk_field, data.get(pk_field))
+
         # Extract and defer M2M fields (they start with _m2m_)
         m2m_data = {}
         for key in list(data.keys()):
@@ -1028,6 +1221,8 @@ class AssociationImportService:
         # Resolve foreign keys
         fk_mappings = dict(self.FK_MAPPINGS.get(model_name, []))
         for field in model_class._meta.get_fields():
+            if not getattr(field, 'concrete', False):
+                continue
             if field.is_relation and field.many_to_one:
                 related_model = field.related_model.__name__
                 if related_model in self.PK_FIELDS:
@@ -1035,18 +1230,23 @@ class AssociationImportService:
 
         for fk_field, related_model in fk_mappings.items():
             if fk_field in data and data[fk_field]:
+                old_fk = str(data[fk_field])
                 # Skip FK if target model hasn't been imported yet
                 # This handles circular dependencies (e.g., Payment.invoice_id -> Invoice)
-                if related_model not in self.imported_models:
+                target_is_pending_self_reference = (
+                    related_model == model_name and
+                    old_fk in self.source_pks_by_model.get(related_model, set()) and
+                    old_fk not in self.imported_objects.get(related_model, {})
+                )
+                if related_model not in self.imported_models or target_is_pending_self_reference:
                     # DEFER instead of setting to NULL permanently
                     if old_pk:
                         self.deferred_fks.setdefault(model_name, []).append(
-                            (old_pk, fk_field, data[fk_field])
+                            (str(old_pk), fk_field, old_fk)
                         )
                     logger.debug(f"Deferring {fk_field} -> {related_model} (not imported yet)")
                     data[fk_field] = None
                     continue
-                old_fk = data[fk_field]
                 new_fk = self._resolve_fk(old_fk, related_model)
                 if new_fk is None:
                     # FK reference not found in mapping - the referenced record wasn't exported
@@ -1061,33 +1261,14 @@ class AssociationImportService:
 
         # Special handling for certain models
         if model_name == 'User':
-            # Skip owner user (already created)
-            if data.get('role') == 1:  # ASSOCIATION
-                return None
-            # Handle collaborators
-            data['password'] = make_password(None)  # Set unusable password
+            data = self._sanitize_user_data(data, is_owner=False)
 
         if model_name == 'Associate':
             # Resolve sport_association
             data['sport_association_id'] = str(self.association.sport_association_id)
 
         # Build kwargs for model creation
-        kwargs = {}
-        for field in model_class._meta.get_fields():
-            if field.one_to_many or field.many_to_many:
-                continue
-
-            field_name = field.name
-            if field.is_relation and field.many_to_one:
-                # FK field - use the _id suffix
-                fk_name = f'{field_name}_id'
-                if fk_name in data:
-                    value = data[fk_name]
-                    if value:
-                        kwargs[fk_name] = uuid.UUID(value) if isinstance(value, str) else value
-            elif field_name in data:
-                value = self._parse_value(data[field_name], field)
-                kwargs[field_name] = value
+        kwargs = self._build_model_kwargs(model_class, data)
 
         try:
             return model_class(**kwargs)
@@ -1105,17 +1286,11 @@ class AssociationImportService:
         Returns:
             Number of files imported
         """
-        if self.options.skip_files:
-            logger.info("Skipping file import (--skip-files)")
-            return 0
-
-        from core.settings import STORAGE_DIR
-
         count = 0
         files_prefix = 'files/'
 
         for name in zf.namelist():
-            if not name.startswith(files_prefix):
+            if not name.startswith(files_prefix) or name.endswith('/'):
                 continue
 
             # Parse path: files/<category>/<doc_id>/<filename>
@@ -1126,38 +1301,10 @@ class AssociationImportService:
             category, old_doc_id, filename = parts[0], parts[1], parts[2]
 
             try:
-                # Get or create new document
-                if old_doc_id in self.document_mapping:
-                    doc = self.document_mapping[old_doc_id]
+                if category in ('subscription_signatures', 'signatures'):
+                    self._import_subscription_signature_file(zf, name, old_doc_id, filename)
                 else:
-                    new_doc_id = self._generate_uuid(old_doc_id, 'Document')
-                    # Check if Document was already imported from JSON
-                    existing_doc = Document.objects.filter(document_id=new_doc_id).first()
-                    if existing_doc:
-                        doc = existing_doc
-                    else:
-                        doc = Document(
-                            document_id=uuid.UUID(new_doc_id),
-                            filename=filename,
-                        )
-                        if not self.options.dry_run:
-                            doc.save()
-                    self.document_mapping[old_doc_id] = doc
-
-                # Build new storage path
-                timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-                if STORAGE_DIR:
-                    storage_path = f"{STORAGE_DIR}/{timestamp}/{doc.document_id}/{filename}"
-                else:
-                    storage_path = f"{timestamp}/{doc.document_id}/{filename}"
-
-                # Upload to storage
-                if not self.options.dry_run:
-                    content = zf.read(name)
-                    saved_path = default_storage.save(storage_path, ContentFile(content))
-                    doc.filepath = saved_path
-                    doc.save()
-
+                    self._import_document_file(zf, name, old_doc_id, filename)
                 count += 1
 
             except (
@@ -1171,10 +1318,107 @@ class AssociationImportService:
             except Exception as e:
                 logger.error(f"Error importing file {name}: {e}")
                 self.errors.append(f"Failed to import file {name}: {e}")
+                raise
 
         self.stats['files_imported'] = count
         logger.info(f"Imported {count} files")
         return count
+
+    def _import_document_file(
+        self,
+        zf: zipfile.ZipFile,
+        archive_name: str,
+        old_doc_id: str,
+        filename: str
+    ):
+        """Import a Document binary and update/create its Document row."""
+        from core.settings import STORAGE_DIR
+
+        if old_doc_id in self.document_mapping:
+            doc = self.document_mapping[old_doc_id]
+        else:
+            new_doc_id = self._generate_uuid(old_doc_id, 'Document')
+            doc = self.imported_objects.get('Document', {}).get(old_doc_id)
+            if doc is None:
+                self._ensure_no_pk_collision(Document, 'Document', 'document_id', new_doc_id)
+                doc = Document(
+                    document_id=uuid.UUID(new_doc_id),
+                    filename=filename,
+                )
+                if not self.options.dry_run:
+                    doc.save()
+                self._register_imported_object('Document', old_doc_id, doc)
+            self.document_mapping[old_doc_id] = doc
+
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        if STORAGE_DIR:
+            storage_path = f"{STORAGE_DIR}/{timestamp}/{doc.document_id}/{filename}"
+        else:
+            storage_path = f"{timestamp}/{doc.document_id}/{filename}"
+
+        if not self.options.dry_run:
+            content = zf.read(archive_name)
+            saved_path = default_storage.save(storage_path, ContentFile(content))
+            self.created_storage_keys.append(saved_path)
+            doc.filepath = saved_path
+            doc.save(update_fields=['filepath'])
+
+    def _import_subscription_signature_file(
+        self,
+        zf: zipfile.ZipFile,
+        archive_name: str,
+        old_subscription_id: str,
+        filename: str
+    ):
+        """Import and re-key a private Subscription.signature_storage_key binary."""
+        from core.settings import STORAGE_DIR
+
+        new_subscription_id = self.uuid_mapping.get(str(old_subscription_id))
+        if not new_subscription_id:
+            raise ValueError(
+                f"Signature media references missing Subscription {old_subscription_id}"
+            )
+
+        subscription = self.imported_objects.get('Subscription', {}).get(str(old_subscription_id))
+        if subscription is None and not self.options.dry_run:
+            subscription = Subscription.objects.filter(subscription_id=new_subscription_id).first()
+        if subscription is None:
+            raise ValueError(
+                f"Signature media references missing Subscription {old_subscription_id}"
+            )
+
+        safe_filename = filename or 'signature.png'
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        base_dir = str(STORAGE_DIR or '').strip('/')
+        storage_path = '/'.join(
+            part for part in [
+                base_dir,
+                'subscriptions',
+                str(new_subscription_id),
+                f'imported_signature_{timestamp}_{safe_filename}',
+            ] if part
+        )
+
+        if not self.options.dry_run:
+            content = zf.read(archive_name)
+            saved_path = default_storage.save(storage_path, ContentFile(content))
+            self.created_storage_keys.append(saved_path)
+            subscription.signature_storage_key = saved_path
+            subscription.signature_url = subscription._signature_public_url(saved_path)
+            subscription.save(update_fields=['signature_storage_key', 'signature_url'])
+
+    def _cleanup_created_storage_keys(self):
+        """Best-effort cleanup for media written before an import failure."""
+        for storage_key in reversed(list(dict.fromkeys(self.created_storage_keys))):
+            try:
+                default_storage.delete(storage_key)
+            except Exception:
+                logger.warning(
+                    "Failed to clean up imported media after import failure",
+                    extra={'storage_key': storage_key},
+                    exc_info=True,
+                )
+        self.created_storage_keys.clear()
 
     def _resolve_deferred_fks(self):
         """
@@ -1198,15 +1442,21 @@ class AssociationImportService:
                 continue
 
             for old_pk, fk_field, old_fk_value in deferred_list:
+                if model_name == 'User' and str(old_pk) in self.reused_user_pks:
+                    logger.debug(
+                        f"Skipping deferred FK update for reused User {old_pk}.{fk_field}"
+                    )
+                    continue
+
                 # Get the new PK for this record
-                new_pk = self.uuid_mapping.get(old_pk)
+                new_pk = self.uuid_mapping.get(str(old_pk))
                 if not new_pk:
                     logger.warning(f"Cannot resolve deferred FK: record {old_pk} not found in mapping")
                     failed_count += 1
                     continue
 
                 # Get the new FK value
-                new_fk_value = self.uuid_mapping.get(old_fk_value)
+                new_fk_value = self.uuid_mapping.get(str(old_fk_value))
                 if not new_fk_value:
                     logger.warning(f"Cannot resolve deferred FK {fk_field}: target {old_fk_value} not found")
                     failed_count += 1
@@ -1215,7 +1465,7 @@ class AssociationImportService:
                 # Update the record
                 try:
                     if not self.options.dry_run:
-                        model_class.objects.filter(**{pk_field: new_pk}).update(
+                        self._get_unfiltered_manager(model_class).filter(**{pk_field: new_pk}).update(
                             **{fk_field: new_fk_value}
                         )
                     resolved_count += 1
@@ -1250,8 +1500,14 @@ class AssociationImportService:
                 continue
 
             for old_pk, m2m_field, old_related_pks in deferred_list:
+                if model_name == 'User' and str(old_pk) in self.reused_user_pks:
+                    logger.debug(
+                        f"Skipping M2M update for reused User {old_pk}.{m2m_field}"
+                    )
+                    continue
+
                 # Get the new PK for this record
-                new_pk = self.uuid_mapping.get(old_pk)
+                new_pk = self.uuid_mapping.get(str(old_pk))
                 if not new_pk:
                     logger.warning(f"Cannot import M2M: record {old_pk} not found in mapping")
                     failed_count += 1
@@ -1262,7 +1518,7 @@ class AssociationImportService:
                         resolved_count += 1
                         continue
 
-                    instance = model_class.objects.get(**{pk_field: new_pk})
+                    instance = self._get_unfiltered_manager(model_class).get(**{pk_field: new_pk})
                     m2m_manager = getattr(instance, m2m_field, None)
                     if m2m_manager is None:
                         logger.warning(f"M2M field {m2m_field} not found on {model_name}")
@@ -1272,7 +1528,7 @@ class AssociationImportService:
                     # Map old PKs to new PKs
                     new_related_pks = []
                     for old_related_pk in old_related_pks:
-                        new_related_pk = self.uuid_mapping.get(old_related_pk)
+                        new_related_pk = self.uuid_mapping.get(str(old_related_pk))
                         if new_related_pk:
                             new_related_pks.append(new_related_pk)
                         else:
@@ -1306,89 +1562,93 @@ class AssociationImportService:
         """
         logger.info(f"Starting import from {self.zip_path}")
 
-        with zipfile.ZipFile(self.zip_path, 'r') as zf:
-            # Read manifest
-            manifest = json.loads(zf.read('manifest.json'))
-            logger.info(
-                f"Importing association: {manifest['association']['denomination']}"
-            )
+        try:
+            with zipfile.ZipFile(self.zip_path, 'r') as zf:
+                # Read manifest
+                manifest = json.loads(zf.read('manifest.json'))
+                logger.info(
+                    f"Importing association: {manifest['association']['denomination']}"
+                )
 
-            # Build model_name -> file mapping from manifest
-            # This allows importing exports created with different file naming
-            model_file_mapping = {}
-            for model_info in manifest.get('models_exported', []):
-                model_name = model_info.get('name')
-                file_path = model_info.get('file')
-                if model_name and file_path:
-                    # Extract just the filename from the path (e.g., "data/09_vat_management.json" -> "09_vat_management.json")
-                    if '/' in file_path:
-                        filename = file_path.split('/')[-1]
-                    else:
-                        filename = file_path
-                    model_file_mapping[model_name] = filename
-                    logger.debug(f"Model {model_name} -> {filename}")
+                # Build model_name -> file mapping from manifest
+                # This allows importing exports created with different file naming
+                model_file_mapping = {}
+                for model_info in manifest.get('models_exported', []):
+                    model_name = model_info.get('name')
+                    file_path = model_info.get('file')
+                    if model_name and file_path:
+                        # Extract just the filename from the path (e.g., "data/09_vat_management.json" -> "09_vat_management.json")
+                        if '/' in file_path:
+                            filename = file_path.split('/')[-1]
+                        else:
+                            filename = file_path
+                        model_file_mapping[model_name] = filename
+                        logger.debug(f"Model {model_name} -> {filename}")
 
-            # 1. Create owner user first
-            self._create_owner_user(zf)
+                # 1. Create/reuse owner user first
+                self._create_owner_user(zf)
 
-            # 2. Create sport association
-            self._import_sport_association(zf)
+                # 2. Create sport association
+                self._import_sport_association(zf)
 
-            # 3. Import all other models in order
-            # Use IMPORT_ORDER for the correct dependency order, but get filenames from manifest
-            for _, model_class in self.IMPORT_ORDER:
-                model_name = model_class.__name__
+                # 3. Import all other models in order
+                # Use IMPORT_ORDER for the correct dependency order, but get filenames from manifest
+                for _, model_class in self.IMPORT_ORDER:
+                    model_name = model_class.__name__
 
-                # Skip SportAssociation (imported separately above)
-                # Note: User is NOT skipped - only owner (role=1) is created above,
-                # other users (athletes, collaborators) need to be imported here
-                if model_name == 'SportAssociation':
-                    continue
+                    # Skip SportAssociation (imported separately above).  User
+                    # records are still processed; only the exact owner UUID is
+                    # skipped because it was handled above.
+                    if model_name == 'SportAssociation':
+                        continue
 
-                # Get filename from manifest mapping, fall back to IMPORT_ORDER filename
-                filename = model_file_mapping.get(model_name)
-                if not filename:
-                    # Fall back to finding in IMPORT_ORDER
-                    for order_filename, order_model in self.IMPORT_ORDER:
-                        if order_model.__name__ == model_name:
-                            filename = order_filename
-                            break
+                    # Get filename from manifest mapping, fall back to IMPORT_ORDER filename
+                    filename = model_file_mapping.get(model_name)
+                    if not filename:
+                        # Fall back to finding in IMPORT_ORDER
+                        for order_filename, order_model in self.IMPORT_ORDER:
+                            if order_model.__name__ == model_name:
+                                filename = order_filename
+                                break
 
-                if not filename:
-                    logger.warning(f"No filename found for {model_name}, skipping")
-                    continue
+                    if not filename:
+                        logger.warning(f"No filename found for {model_name}, skipping")
+                        continue
 
-                try:
-                    self._import_model_data(zf, filename, model_class)
-                except Exception as e:
-                    logger.error(f"Error importing {model_name}: {e}")
-                    self.errors.append(f"Failed to import {model_name}: {e}")
-                    raise  # Re-raise to trigger transaction rollback
+                    try:
+                        self._import_model_data(zf, filename, model_class)
+                    except Exception as e:
+                        logger.error(f"Error importing {model_name}: {e}")
+                        self.errors.append(f"Failed to import {model_name}: {e}")
+                        raise  # Re-raise to trigger transaction rollback
 
-        # Pass 2: Resolve deferred FKs
-        logger.info("Pass 2: Resolving deferred foreign keys...")
-        self._resolve_deferred_fks()
+            # Pass 2: Resolve deferred FKs
+            logger.info("Pass 2: Resolving deferred foreign keys...")
+            self._resolve_deferred_fks()
 
-        # Pass 3: Import M2M relationships
-        logger.info("Pass 3: Importing M2M relationships...")
-        self._import_m2m_relationships()
+            # Pass 3: Import M2M relationships
+            logger.info("Pass 3: Importing M2M relationships...")
+            self._import_m2m_relationships()
 
-        # Validate deferred database constraints before writing non-transactional files.
-        connection.check_constraints()
+            # Validate deferred database constraints before writing non-transactional files.
+            connection.check_constraints()
 
-        # Pass 4: Import files only after the database graph is valid.
-        with zipfile.ZipFile(self.zip_path, 'r') as zf:
-            self._import_files(zf)
+            # Pass 4: Import files only after the database graph is valid.
+            with zipfile.ZipFile(self.zip_path, 'r') as zf:
+                self._import_files(zf)
 
-        logger.info(f"Import completed: {self.association.denomination}")
-        return self.association
+            logger.info(f"Import completed: {self.association.denomination}")
+            return self.association
+        except Exception:
+            self._cleanup_created_storage_keys()
+            raise
 
 
 def import_association(
     zip_path: str,
-    owner_email: str,
-    owner_password: str,
-    preserve_uuids: bool = False,
+    owner_email: str = '',
+    owner_password: str = '',
+    preserve_uuids: bool = True,
     skip_files: bool = False,
     dry_run: bool = False
 ) -> Optional[SportAssociation]:
@@ -1397,10 +1657,10 @@ def import_association(
 
     Args:
         zip_path: Path to the export ZIP file
-        owner_email: Email for the new owner
-        owner_password: Password for the new owner
-        preserve_uuids: Whether to preserve original UUIDs
-        skip_files: Whether to skip file import
+        owner_email: Ignored stale option; archived owner email is retained
+        owner_password: Recovery password for the archived owner account
+        preserve_uuids: Ignored stale option; source UUIDs are always preserved
+        skip_files: Ignored stale option; archive media is always imported
         dry_run: Whether to validate without making changes
 
     Returns:

@@ -779,11 +779,64 @@ class AssociationExportService:
                 self.errors.append(f"Failed to export document {doc.document_id}")
                 failed += 1
 
+        # Export private subscription signatures tracked outside Document.
+        signature_count, signature_failed = self._export_subscription_signatures(files_dir)
+        count += signature_count
+        failed += signature_failed
+
         self.stats['files_exported'] = count
         self.stats['files_failed'] = failed
         self.stats['files_skipped'] = skipped
         logger.info(f"Exported {count} files, {failed} failed, {skipped} skipped (no filepath)")
         return count
+
+    def _export_subscription_signatures(self, files_dir: str) -> Tuple[int, int]:
+        """Export private Subscription.signature_storage_key binaries."""
+        count = 0
+        failed = 0
+        subscriptions = self.get_queryset_for_model(Subscription).exclude(
+            signature_storage_key__isnull=True
+        ).exclude(signature_storage_key='')
+
+        for subscription in subscriptions.iterator(chunk_size=100):
+            storage_key = subscription.signature_storage_key
+            try:
+                if not default_storage.exists(storage_key):
+                    logger.warning(f"Signature file not found in storage: {storage_key}")
+                    failed += 1
+                    continue
+
+                filename = os.path.basename(storage_key) or 'signature.png'
+                signature_dir = os.path.join(
+                    files_dir,
+                    'subscription_signatures',
+                    str(subscription.subscription_id),
+                )
+                os.makedirs(signature_dir, exist_ok=True)
+                dest_path = os.path.join(signature_dir, filename)
+
+                with default_storage.open(storage_key, 'rb') as src:
+                    with open(dest_path, 'wb') as dest:
+                        for chunk in iter(lambda: src.read(8192), b''):
+                            dest.write(chunk)
+                count += 1
+            except FileNotFoundError as e:
+                logger.warning(
+                    f"Signature file not found for subscription {subscription.subscription_id}: {e}"
+                )
+                failed += 1
+            except Exception as e:
+                logger.error(
+                    f"Error exporting signature for subscription {subscription.subscription_id}: {e}"
+                )
+                self.errors.append(
+                    f"Failed to export signature for subscription {subscription.subscription_id}"
+                )
+                failed += 1
+
+        self.stats['signature_files_exported'] = count
+        self.stats['signature_files_failed'] = failed
+        return count, failed
 
     def _categorize_document(self, doc: Document) -> str:
         """Categorize a document based on its usage."""
@@ -916,7 +969,7 @@ class AssociationExportService:
         Perform the full export.
 
         Args:
-            include_files: Whether to include binary files from S3
+            include_files: Ignored stale option; binary media is always included
 
         Returns:
             Document instance for the created export file
@@ -947,9 +1000,8 @@ class AssociationExportService:
                     # Only report generic error without details
                     self.errors.append(f"Failed to export {model_class.__name__}")
 
-            # Export binary files
-            if include_files:
-                self.export_files(temp_dir)
+            # Export binary files.  Media is always included in new backups.
+            self.export_files(temp_dir)
 
             # Create manifest
             self.create_manifest(temp_dir)
@@ -975,7 +1027,7 @@ def export_association(sport_association_id: uuid.UUID, include_files: bool = Tr
 
     Args:
         sport_association_id: UUID of the association to export
-        include_files: Whether to include binary files
+        include_files: Ignored stale option; binary media is always included
 
     Returns:
         Document instance for the created export file

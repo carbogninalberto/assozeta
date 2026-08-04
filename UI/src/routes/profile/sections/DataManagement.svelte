@@ -12,7 +12,6 @@
     userData.useLocalStorage();
 
     // Export state
-    let includeFiles = true;
     let exporting = false;
     let exportTaskId = null;
     let exportStatus = null;
@@ -46,7 +45,6 @@
         exportStatus = 'STARTED';
         let res = await apiFetch(__bakney.env.API.ASSOCIATION.EXPORT.START, {
             method: 'POST',
-            body: JSON.stringify({include_files: includeFiles}),
         });
         if (!res.error) {
             exportTaskId = res.response.task_id;
@@ -176,7 +174,7 @@
                         <div class="col-12">
                             <p class="text-muted font-size-sm mb-4">
                                 Esporta tutti i dati della tua associazione in un file ZIP. L'export include:
-                                iscrizioni, tesseramenti, pagamenti, corsi, anagrafiche e configurazioni.
+                                iscrizioni, tesseramenti, pagamenti, corsi, anagrafiche, configurazioni e file allegati.
                             </p>
                         </div>
                     </div>
@@ -191,33 +189,6 @@
                                     Riceverai una email quando l'export sarà pronto per il download.
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Include files toggle -->
-                    <div in:scale={{duration: 150, start: 0.98}} class="form-group row mb-0">
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label class="col-12 col-form-label font-weight-bolder text-left">Includi file</label>
-                        <div class="col-12 d-flex justify-content-start align-items-center mb-3">
-                            <span class="switch switch-icon">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        bind:checked={includeFiles}
-                                        disabled={exporting || !canPerformAction('other.settings.update')} />
-                                    <span></span>
-                                </label>
-                            </span>
-                        </div>
-                        <div class="col-12">
-                            <small class="text-muted font-size-sm lh-xs">
-                                Se abilitato, l'export includerà certificati medici, firme, documenti e ricevute.
-                                Aumenta significativamente la dimensione del file.
-                            </small>
-                            <small class="text-warning font-weight-boldest font-size-sm lh-xs d-block mt-1">
-                                <Warning size={16} class="mr-0" weight="duotone" />
-                                Si consiglia di NON disabilitare questa opzione.
-                            </small>
                         </div>
                     </div>
 

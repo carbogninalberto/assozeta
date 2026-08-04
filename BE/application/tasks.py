@@ -1962,7 +1962,7 @@ def export_association_data(sport_association_id: str, user_id: str, include_fil
     Args:
         sport_association_id: UUID string of the association to export
         user_id: UUID string of the user who requested the export
-        include_files: Whether to include binary files from S3
+        include_files: Ignored stale option; binary media is always included
     """
     import uuid
     from application.services.export_service import AssociationExportService
@@ -1996,7 +1996,7 @@ def export_association_data(sport_association_id: str, user_id: str, include_fil
 
         # Create and run export service
         service = AssociationExportService(uuid.UUID(sport_association_id))
-        document = service.export(include_files=include_files)
+        document = service.export()
 
         # Send notification email
         subject = f"Export completato - {association.denomination}"
@@ -2079,9 +2079,9 @@ Il team {WHITELABEL_NAME}
 @shared_task(name="import_association_data")
 def import_association_data(
     zip_file_path: str,
-    owner_email: str,
-    owner_password: str,
-    preserve_uuids: bool = False,
+    owner_email: str = '',
+    owner_password: str = '',
+    preserve_uuids: bool = True,
     skip_files: bool = False,
 ):
     """
@@ -2089,10 +2089,10 @@ def import_association_data(
 
     Args:
         zip_file_path: Path to the uploaded ZIP file in storage
-        owner_email: Email for the new association owner
-        owner_password: Password for the new owner
-        preserve_uuids: Whether to preserve original UUIDs
-        skip_files: Whether to skip importing binary files
+        owner_email: Ignored stale option; archived owner email is retained
+        owner_password: Recovery password for the archived owner account
+        preserve_uuids: Ignored stale option; source UUIDs are always preserved
+        skip_files: Ignored stale option; archive media is always imported
     """
     import os
     import tempfile
@@ -2105,8 +2105,7 @@ def import_association_data(
         "Starting import_association_data task",
         extra={
             'task_name': 'import_association_data',
-            'owner_email': owner_email,
-            'preserve_uuids': preserve_uuids,
+            'stale_owner_email': owner_email,
         }
     )
 
@@ -2122,8 +2121,6 @@ def import_association_data(
         options = ImportOptions(
             owner_email=owner_email,
             owner_password=owner_password,
-            preserve_uuids=preserve_uuids,
-            skip_files=skip_files,
             dry_run=False,
         )
 
@@ -2167,7 +2164,7 @@ def import_association_data(
             'success': True,
             'sport_association_id': str(association.sport_association_id),
             'denomination': association.denomination,
-            'owner_email': owner_email,
+            'owner_email': association.user.email,
             'stats': service.stats,
             'warnings': service.errors,
         }

@@ -53,10 +53,7 @@ class AssociationExportViewSet(ViewSet):
 
         POST /api/association/export/start/
 
-        Request body (optional):
-        {
-            "include_files": true  // Whether to include binary files
-        }
+        Request body is ignored; binary media is always included.
 
         Returns:
         {
@@ -82,14 +79,10 @@ class AssociationExportViewSet(ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Get options from request
-        include_files = request.data.get('include_files', True)
-
         # Start the export task
         task = export_association_data.delay(
             sport_association_id=str(sport_association.sport_association_id),
             user_id=str(user.user_id),
-            include_files=include_files,
         )
 
         logger.info(
@@ -269,8 +262,7 @@ class AssociationImportViewSet(ViewSet):
 
         Request body:
         - file: ZIP file to validate
-        - owner_email: Email for new owner
-        - preserve_uuids: Boolean (optional, default false)
+        - recovery owner identity is read from the archive
 
         Returns:
         {
@@ -285,18 +277,10 @@ class AssociationImportViewSet(ViewSet):
         }
         """
         uploaded_file = request.FILES.get('file')
-        owner_email = request.data.get('owner_email')
-        preserve_uuids = request.data.get('preserve_uuids', 'false').lower() == 'true'
 
         if not uploaded_file:
             return Response(
                 {'error': 'File ZIP richiesto'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if not owner_email:
-            return Response(
-                {'error': 'Email proprietario richiesta'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -311,7 +295,7 @@ class AssociationImportViewSet(ViewSet):
 
             # Run validation
             validator = ImportValidator(temp_path)
-            validation = validator.validate_all(owner_email, preserve_uuids)
+            validation = validator.validate_all()
 
             response_data = {
                 'is_valid': validation.is_valid,
@@ -345,10 +329,8 @@ class AssociationImportViewSet(ViewSet):
 
         Request body:
         - file: ZIP file to import
-        - owner_email: Email for new owner
-        - owner_password: Password for new owner
-        - preserve_uuids: Boolean (optional, default false)
-        - skip_files: Boolean (optional, default false)
+        - owner_password: Recovery password for archived owner
+        Stale owner_email/preserve_uuids/skip_files fields are ignored.
 
         Returns:
         {
@@ -358,10 +340,7 @@ class AssociationImportViewSet(ViewSet):
         }
         """
         uploaded_file = request.FILES.get('file')
-        owner_email = request.data.get('owner_email')
         owner_password = request.data.get('owner_password')
-        preserve_uuids = request.data.get('preserve_uuids', 'false').lower() == 'true'
-        skip_files = request.data.get('skip_files', 'false').lower() == 'true'
 
         if not uploaded_file:
             return Response(
@@ -369,15 +348,9 @@ class AssociationImportViewSet(ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not owner_email:
-            return Response(
-                {'error': 'Email proprietario richiesta'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         if not owner_password:
             return Response(
-                {'error': 'Password proprietario richiesta'},
+                {'error': 'Password di recupero proprietario richiesta'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -393,18 +366,13 @@ class AssociationImportViewSet(ViewSet):
             # Start the import task
             task = import_association_data.delay(
                 zip_file_path=saved_path,
-                owner_email=owner_email,
                 owner_password=owner_password,
-                preserve_uuids=preserve_uuids,
-                skip_files=skip_files,
             )
 
             logger.info(
                 f"Import task started",
                 extra={
                     'task_id': task.id,
-                    'owner_email': owner_email,
-                    'preserve_uuids': preserve_uuids,
                 }
             )
 

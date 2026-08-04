@@ -1,15 +1,12 @@
 <script>
-	import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle as LucideCheckCircle, Info as LucideInfo, Upload as LucideUpload, X } from 'lucide-svelte';
+    import {AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle as LucideCheckCircle, Upload as LucideUpload, X} from 'lucide-svelte';
     import {createEventDispatcher, onDestroy} from 'svelte';
-    import {validateImportFile, startImport, checkImportStatus, getApiHost} from 'store/instanceStore.js';
-    import {Upload, CloudArrowUp, Info, File, Warning, CheckCircle} from 'phosphor-svelte';
+    import {validateImportFile, startImport, checkImportStatus} from 'store/instanceStore.js';
+    import {CloudArrowUp, File, Warning} from 'phosphor-svelte';
 
     export let config = {
         file: null,
-        ownerEmail: '',
         ownerPassword: '',
-        preserveUuids: false,
-        skipFiles: false,
         validationResult: null,
         importTaskId: null,
         importResult: null
@@ -56,8 +53,8 @@
     }
 
     async function validateFile() {
-        if (!config.file || !config.ownerEmail) {
-            error = 'Seleziona un file e inserisci l\'email';
+        if (!config.file) {
+            error = 'Seleziona un file ZIP';
             return;
         }
 
@@ -67,8 +64,6 @@
         try {
             const result = await validateImportFile(
                 config.file,
-                config.ownerEmail,
-                config.preserveUuids,
                 setupToken
             );
 
@@ -92,10 +87,7 @@
         try {
             const result = await startImport(
                 config.file,
-                config.ownerEmail,
                 config.ownerPassword,
-                config.preserveUuids,
-                config.skipFiles,
                 setupToken
             );
 
@@ -136,7 +128,7 @@
         }, 3000);
     }
 
-    $: canValidate = config.file && config.ownerEmail && !validating;
+    $: canValidate = config.file && !validating;
     $: canImport = config.validationResult?.is_valid && config.ownerPassword && !importing;
 </script>
 
@@ -193,21 +185,6 @@
                 </label>
             </div>
         {/if}
-    </div>
-
-    <!-- Owner email -->
-    <div class="form-group">
-        <label class="col-form-label font-weight-bolder">Email Proprietario<b class="text-danger">*</b></label>
-        <input
-            type="email"
-            class="form-control form-control-solid"
-            bind:value={config.ownerEmail}
-            placeholder="admin@miaassociazione.it"
-        />
-        <div class="text-primary align-items-center d-flex font-weight-bold mt-2 font-size-sm">
-            <LucideInfo size={14} weight="duotone" class="mr-1" />
-            Questo sarà l'account amministratore dopo l'import
-        </div>
     </div>
 
     <!-- Validate button -->
@@ -281,6 +258,14 @@
                             <small class="text-muted font-size-xs">Dimensione</small>
                             <p class="mb-0 font-weight-bolder">{config.validationResult.info.file_size_mb?.toFixed(2) || 'N/A'} MB</p>
                         </div>
+                        <div class="col-6">
+                            <small class="text-muted font-size-xs">Email Proprietario</small>
+                            <p class="mb-0 font-weight-bolder">{config.validationResult.info.owner_user?.email || 'N/A'}</p>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted font-size-xs">Username Proprietario</small>
+                            <p class="mb-0 font-weight-bolder">{config.validationResult.info.owner_user?.username || 'N/A'}</p>
+                        </div>
                     </div>
                 </div>
             {/if}
@@ -289,7 +274,7 @@
         <!-- Password input -->
         {#if config.validationResult.is_valid}
             <div class="form-group">
-                <label class="col-form-label font-weight-bolder">Password Nuovo Account<b class="text-danger">*</b></label>
+                <label class="col-form-label font-weight-bolder">Password di recupero proprietario<b class="text-danger">*</b></label>
                 <input
                     type="password"
                     class="form-control form-control-solid"
@@ -297,34 +282,8 @@
                     placeholder="Inserisci una password sicura"
                 />
                 <small class="text-muted font-size-sm mt-2 d-block">
-                    Minimo 10 caratteri, 1 maiuscola, 1 numero, 1 carattere speciale
+                    Verrà usata solo per l'account proprietario archiviato, mantenendo email e username originali.
                 </small>
-            </div>
-
-            <!-- Options -->
-            <div class="form-group">
-                <div class="custom-control custom-checkbox mb-2">
-                    <input
-                        type="checkbox"
-                        class="custom-control-input"
-                        id="skipFiles"
-                        bind:checked={config.skipFiles}
-                    />
-                    <label class="custom-control-label font-weight-bold" for="skipFiles">
-                        Salta file binari (import più veloce)
-                    </label>
-                </div>
-                <div class="custom-control custom-checkbox">
-                    <input
-                        type="checkbox"
-                        class="custom-control-input"
-                        id="preserveUuids"
-                        bind:checked={config.preserveUuids}
-                    />
-                    <label class="custom-control-label font-weight-bold" for="preserveUuids">
-                        Preserva UUID originali (avanzato)
-                    </label>
-                </div>
             </div>
         {/if}
     {/if}

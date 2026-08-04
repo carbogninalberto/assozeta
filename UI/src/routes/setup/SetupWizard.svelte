@@ -1,15 +1,10 @@
 <script>
     import {AlertTriangle, Check as LucideCheck} from 'lucide-svelte';
-    import {onMount, onDestroy} from 'svelte';
+    import {onMount} from 'svelte';
     import {fade, scale, fly} from 'svelte/transition';
     import {
-        instanceStatus,
         saveInstanceConfig,
         uploadInstanceLogo,
-        validateImportFile,
-        startImport,
-        checkImportStatus,
-        getApiHost,
     } from 'store/instanceStore.js';
     import {Check, Stack} from 'phosphor-svelte';
 
@@ -37,10 +32,7 @@
     // Step 3a: Import configuration
     let importConfig = {
         file: null,
-        ownerEmail: '',
         ownerPassword: '',
-        preserveUuids: false,
-        skipFiles: false,
         validationResult: null,
         importTaskId: null,
         importResult: null,
