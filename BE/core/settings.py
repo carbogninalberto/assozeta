@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 import logging
 import base64
+from urllib.parse import urlparse
 
 import environ
 from pathlib import Path
@@ -634,12 +635,33 @@ AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = env.str('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = env.str('AWS_S3_ENDPOINT_URL')
+
+
+def _is_digitalocean_spaces_endpoint(endpoint_url):
+    parsed = urlparse(endpoint_url if '://' in endpoint_url else f'//{endpoint_url}')
+    hostname = (parsed.hostname or '').lower()
+    return hostname == 'digitaloceanspaces.com' or hostname.endswith('.digitaloceanspaces.com')
+
+
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 AWS_LOCATION = env.str('AWS_LOCATION')
 AWS_DEFAULT_ACL = env.str('AWS_DEFAULT_ACL', None)
 AWS_S3_FILE_OVERWRITE = env.bool('AWS_S3_FILE_OVERWRITE', False)
+AWS_S3_USE_OBJECT_ACL = env.bool(
+    'AWS_S3_USE_OBJECT_ACL',
+    default=_is_digitalocean_spaces_endpoint(AWS_S3_ENDPOINT_URL)
+)
+_default_s3_public_base_url = ''
+if _is_digitalocean_spaces_endpoint(AWS_S3_ENDPOINT_URL):
+    _default_s3_public_base_url = (
+        f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
+    )
+AWS_S3_PUBLIC_BASE_URL = env.str(
+    'AWS_S3_PUBLIC_BASE_URL',
+    default=_default_s3_public_base_url
+).rstrip('/')
 
 STORAGE_DIR = ''    # f'https://{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/'
 

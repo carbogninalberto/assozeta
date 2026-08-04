@@ -1,7 +1,7 @@
 import uuid
 import base64
 import binascii
-import os
+import posixpath
 import logging
 from datetime import datetime, timedelta
 
@@ -11,10 +11,12 @@ from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.db import models
+from django.conf import settings
+from django.db import models, transaction
 from django.db.utils import cached_property
 from django.utils import timezone
 
+from application.exceptions import DuplicateSubscriptionError, InvalidSignatureError, StorageUnavailableError
 from application.mixin import GroupModelMixin, GroupAwareManager
 from application.models.payment_models import Payment, SupplierAndCustomers
 from application.models.user_models import User, Associate, SportAssociation, Instructor
@@ -105,11 +107,14 @@ class SubscriptionManager(GroupAwareManager):
     def create(self, **kwargs):
         # Check for existing subscriptions before creating
         if self.subscription_exists(**kwargs):
-            raise ValidationError("Questa iscrizione esiste già.")
+            raise DuplicateSubscriptionError()
 
         obj = super().create(**kwargs)
         from application.signals import new_subscription
-        new_subscription.send(sender=self.__class__, subscription=obj)
+        transaction.on_commit(
+            lambda: new_subscription.send(sender=obj.__class__, subscription=obj),
+            robust=True
+        )
         return obj
 
     def get_subscription_if_it_exists(self, **kwargs):
@@ -282,6 +287,12 @@ class Subscription(GroupModelMixin):
     end_date = models.DateField(null=True)
     # S3 URL for signature image stored on CDN
     signature_url = models.CharField(max_length=1024, null=True, blank=True, help_text='S3 URL for signature image')
+    signature_storage_key = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        help_text='Internal storage key for private signature image'
+    )
     document_pdf = models.ForeignKey(Document, on_delete=models.SET_NULL, null=True)
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True)
     deleted = models.BooleanField(null=False, default=False)
@@ -515,67 +526,104 @@ class Subscription(GroupModelMixin):
     @property
     def get_signature(self):
         """
-        Returns the S3 CDN URL for the signature image.
-        For backward compatibility and quick checks.
+        Returns the public URL for the signature image when available.
+        Private signatures are tracked with signature_storage_key instead.
 
         Returns:
-            str: S3 CDN URL or None if no signature exists
+            str: public URL or None if no public signature URL exists
         """
         return self.signature_url
 
+    @property
+    def has_signature(self):
+        return bool(self.signature_storage_key or self.signature_url)
+
+    @classmethod
+    def delete_signature_key_if_unreferenced(cls, storage_key):
+        if not storage_key or cls._base_manager.filter(signature_storage_key=storage_key).exists():
+            return
+        try:
+            default_storage.delete(storage_key)
+        except Exception:
+            logger.warning(
+                "Failed to delete unreferenced signature object",
+                extra={'storage_key': storage_key},
+                exc_info=True
+            )
+
+    def _signature_storage_object_key(self, saved_path):
+        location = (getattr(default_storage, 'location', None) or settings.AWS_LOCATION or '').strip('/')
+        cleaned_path = (saved_path or '').lstrip('/')
+        if location and not cleaned_path.startswith(f'{location}/'):
+            return posixpath.join(location, cleaned_path)
+        return cleaned_path
+
+    def _signature_public_url(self, saved_path):
+        public_base_url = getattr(settings, 'AWS_S3_PUBLIC_BASE_URL', '').strip().rstrip('/')
+        if not public_base_url:
+            return None
+        object_key = self._signature_storage_object_key(saved_path)
+        return f"{public_base_url}/{object_key.lstrip('/')}"
+
     def get_signature_base64(self):
         """
-        Fetches signature from S3 and returns as base64 data URI for PDF embedding.
-        WARNING: This makes an HTTP request - only call when actually needed for PDF generation!
+        Fetches signature and returns it as a base64 data URI for PDF embedding.
+        Private objects are read through Django storage first; legacy URL-only
+        records fall back to HTTP.
 
         Returns:
             str: Base64 data URI (data:image/png;base64,...) or None if no signature exists
         """
-        if not self.signature_url:
-            return None
+        if self.signature_storage_key:
+            try:
+                with default_storage.open(self.signature_storage_key, 'rb') as signature_file:
+                    signature_base64 = base64.b64encode(signature_file.read()).decode('utf-8')
+                return f"data:image/png;base64,{signature_base64}"
+            except Exception as e:
+                logger.error(
+                    "Failed to read signature from private storage for PDF rendering",
+                    extra={
+                        'subscription_id': str(self.subscription_id),
+                        'error': str(e)
+                    },
+                    exc_info=True
+                )
 
-        try:
-            import requests
+        if self.signature_url:
+            try:
+                import requests
 
-            # Fetch image from S3 CDN
-            response = requests.get(self.signature_url, timeout=10)
-            response.raise_for_status()
+                response = requests.get(self.signature_url, timeout=10)
+                response.raise_for_status()
+                signature_base64 = base64.b64encode(response.content).decode('utf-8')
+                return f"data:image/png;base64,{signature_base64}"
+            except Exception as e:
+                logger.error(
+                    "Failed to fetch legacy signature URL for PDF rendering",
+                    extra={
+                        'subscription_id': str(self.subscription_id),
+                        'error': str(e)
+                    },
+                    exc_info=True
+                )
 
-            # Convert to base64
-            signature_base64 = base64.b64encode(response.content).decode('utf-8')
-
-            # Return as data URI for embedding in HTML/PDF
-            return f"data:image/png;base64,{signature_base64}"
-
-        except Exception as e:
-            logger.error(
-                "Failed to fetch signature from S3 for PDF rendering",
-                extra={
-                    'subscription_id': str(self.subscription_id),
-                    'signature_url': self.signature_url,
-                    'error': str(e)
-                },
-                exc_info=True
-            )
-            return None
+        return None
 
     def set_signature_from_base64(self, signature_data):
         """
-        Upload base64 signature to S3 and set signature_url.
+        Upload base64 signature to storage and set signature_storage_key.
 
         Args:
             signature_data: Base64 encoded signature (with or without data URI prefix)
 
         Returns:
-            str: The CDN URL of the uploaded signature
+            str: The storage key of the uploaded signature
 
         Raises:
-            ValueError: If signature_data is invalid or cannot be decoded
+            InvalidSignatureError: If signature_data is invalid or cannot be decoded
         """
-        from core.settings import STORAGE_DIR, AWS_STORAGE_BUCKET_NAME, AWS_LOCATION
-
         if not signature_data:
-            raise ValueError("signature_data cannot be empty")
+            raise InvalidSignatureError()
 
         # Check if it's already a URL
         if signature_data.startswith('http://') or signature_data.startswith('https://'):
@@ -584,7 +632,8 @@ class Subscription(GroupModelMixin):
                 extra={'subscription_id': str(self.subscription_id)}
             )
             self.signature_url = signature_data
-            return signature_data
+            self.signature_storage_key = None
+            return None
 
         # Extract base64 data (handle data URI format)
         if ',' in signature_data:
@@ -595,63 +644,70 @@ class Subscription(GroupModelMixin):
 
         # Decode base64
         try:
-            decoded_signature = base64.b64decode(sig_data)
+            decoded_signature = base64.b64decode(sig_data, validate=True)
         except (binascii.Error, ValueError) as e:
             logger.error(
                 "Failed to decode base64 signature",
                 extra={'subscription_id': str(self.subscription_id), 'error': str(e)}
             )
-            raise ValueError(f"Failed to decode base64 signature: {e}")
+            raise InvalidSignatureError() from e
+
+        if not decoded_signature:
+            raise InvalidSignatureError()
 
         # Generate storage path with timestamp for uniqueness
         timestamp = datetime.now().timestamp()
-        storage_path = os.path.join(
-            STORAGE_DIR,
-            f'subscriptions/{self.subscription_id}/signature_{timestamp}.png'
-        )
+        storage_path = posixpath.join(
+            str(settings.STORAGE_DIR or '').strip('/'),
+            'subscriptions',
+            str(self.subscription_id),
+            f'signature_{timestamp}.png'
+        ).lstrip('/')
 
-        # Upload to S3
+        saved_path = None
         try:
             saved_path = default_storage.save(
                 storage_path,
                 ContentFile(decoded_signature)
             )
 
-            # Set ACL to public-read
-            s3_client = default_storage.connection.meta.client
-            s3_client.put_object_acl(
-                Bucket=AWS_STORAGE_BUCKET_NAME,
-                Key=f"{AWS_LOCATION}/{saved_path}",
-                ACL='public-read'
-            )
+            if settings.AWS_S3_USE_OBJECT_ACL:
+                s3_client = default_storage.connection.meta.client
+                s3_client.put_object_acl(
+                    Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                    Key=self._signature_storage_object_key(saved_path),
+                    ACL='public-read'
+                )
 
-            # Generate CDN URL
-            cdn_url = os.path.join(
-                'https://bakney-object-spaces.fra1.cdn.digitaloceanspaces.com',
-                AWS_LOCATION,
-                storage_path
-            )
-
-            # Set signature_url
-            self.signature_url = cdn_url
+            self.signature_storage_key = saved_path
+            self.signature_url = self._signature_public_url(saved_path)
 
             logger.info(
-                "Signature uploaded to S3 successfully",
+                "Signature uploaded to storage successfully",
                 extra={
                     'subscription_id': str(self.subscription_id),
-                    'cdn_url': cdn_url
+                    'has_public_url': bool(self.signature_url)
                 }
             )
 
-            return cdn_url
+            return saved_path
 
         except Exception as e:
+            if saved_path:
+                try:
+                    default_storage.delete(saved_path)
+                except Exception:
+                    logger.warning(
+                        "Failed to clean up signature object after upload failure",
+                        extra={'subscription_id': str(self.subscription_id)},
+                        exc_info=True
+                    )
             logger.error(
-                "Failed to upload signature to S3",
+                "Failed to upload signature to storage",
                 extra={'subscription_id': str(self.subscription_id), 'error': str(e)},
                 exc_info=True
             )
-            raise
+            raise StorageUnavailableError()
 
 
 class SubscriptionMembership(models.Model):

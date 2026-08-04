@@ -105,7 +105,7 @@ FIELD_BLACKLIST = {
     'password', 'token', 'secret', 'api_key',
     'stripe_account_id', 'stripe_customer_id', 'stripe_onboarded',
     'two_fa_secret', 'two_fa_enabled', 'two_fa_backup_codes',
-    'signature_url', 'configuration', 'collaborator_permissions',
+    'signature_url', 'signature_storage_key', 'configuration', 'collaborator_permissions',
     'dashboard_layout', 'push_subscriptions',
     'social_auth', 'last_login', 'is_superuser', 'is_staff',
     'groups', 'user_permissions',

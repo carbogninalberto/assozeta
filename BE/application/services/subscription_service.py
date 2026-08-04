@@ -15,6 +15,7 @@ import dateutil
 import editdistance
 
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.utils.timezone import make_aware
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
@@ -140,6 +141,8 @@ class SubscriptionService:
             subscription.payment.delete()
             subscription.payment = None
 
+        signature_storage_key = subscription.signature_storage_key
+
         # Archive then delete subscription
         subscription.archived = True
         subscription.save()
@@ -157,6 +160,11 @@ class SubscriptionService:
         payments.delete()
 
         subscription.delete()
+        if signature_storage_key:
+            transaction.on_commit(
+                lambda: Subscription.delete_signature_key_if_unreferenced(signature_storage_key),
+                robust=True
+            )
 
     @staticmethod
     def resolve_subscription_fee_and_meta(sport_association, data):

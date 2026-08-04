@@ -3,6 +3,7 @@
 """
 import logging
 import os
+import posixpath
 import re
 import secrets
 import string
@@ -15,6 +16,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.exceptions import FieldDoesNotExist
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from rest_framework import status
@@ -22,6 +24,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from application.models import CourseSubscription, CourseSubscriptionInstallment, Course
+from application.exceptions import DuplicateSubscriptionError
 from application.models.payment_models import Payment, PaymentCategory
 from application.models.subscriptions_models import Signature, MedicalCertificate, SubscriptionMembership
 from application.models.subscriptions_models import Subscription
@@ -44,6 +47,24 @@ from django.db.models import F, Value as V, CharField, Q, Case, When, FloatField
 from django.db.models.functions import Concat, Cast
 
 logger = logging.getLogger(__name__)
+
+
+def cleanup_storage_keys(storage_keys):
+    """Delete storage objects created by a failed subscription operation."""
+    for storage_key in storage_keys:
+        if not storage_key:
+            continue
+        try:
+            default_storage.delete(storage_key)
+        except Exception:
+            logger.warning(
+                "Failed to clean up storage object after subscription rollback",
+                exc_info=True
+            )
+
+
+def _on_commit_robust(callback):
+    transaction.on_commit(callback, robust=True)
 
 
 def smart_search(queryset, search_term):
@@ -446,8 +467,8 @@ def check_if_subscription_exists(sport_association, associate_data, date_from, d
         # can be renewed if is not current
         renewal_available = not sub.is_current
 
-        if renewal_available is False:
-            # if it's not renewabale check if there is a subscription created later than current
+        if renewal_available is True:
+            # if it is renewable, make sure there is no subscription created later than current
             current_year_sub = Subscription.objects.filter(
                 sport_association=sub.sport_association,
                 start_date__gte=sub.end_date,
@@ -665,6 +686,24 @@ def safe_int(value, default=0):
 
 
 def create_subscription(data, user, auth_token, is_athlete_request=False):
+    created_storage_keys = []
+    try:
+        with transaction.atomic():
+            return _create_subscription_impl(
+                data,
+                user,
+                auth_token,
+                is_athlete_request=is_athlete_request,
+                created_storage_keys=created_storage_keys
+            )
+    except Exception:
+        cleanup_storage_keys(created_storage_keys)
+        raise
+
+
+def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, created_storage_keys=None):
+    if created_storage_keys is None:
+        created_storage_keys = []
     preregistration = False
     preregistration_user = user
     if 'preregistration' in data.keys() and data['preregistration'] is not None and \
@@ -777,9 +816,13 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             user=user
         )
 
+    SportAssociation.objects.select_for_update().filter(
+        sport_association_id=sport_association.sport_association_id
+    ).first()
+
     exists = check_if_subscription_exists(sport_association, associate_data, date_from, date_to, data)
     if exists is True:
-        raise ValidationError({'msg': 'Questa iscrizione esiste già.', "code": 409, "ref": 332})
+        raise DuplicateSubscriptionError()
 
     # add new member if present
     if new_user_account.is_valid() and new_user_account.save().new_member:
@@ -797,7 +840,11 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             password = ''.join(secrets.choice(alphabet) for i in range(8))
             user.set_password(password)
             user.save()
-            AuthUtils.send_password_welcome_email(user, password, sport_association)
+            _on_commit_robust(lambda user=user, password=password: AuthUtils.send_password_welcome_email(
+                user,
+                password,
+                sport_association
+            ))
 
     # creating the associate
     if associate_data.is_valid(raise_exception=True):
@@ -861,6 +908,8 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
         # it means that there is the certificate_expring_date in the request but no medical_certificate, we need to
         # create a new medical certificate
         expiration_date = data['medical_certificate']['certificate_expring_date']
+        document = None
+        saved_file = None
 
         try:
             # understand the format of the date and convert it to datetime YYYY-MM-DD or DD/MM/YYYY
@@ -892,9 +941,12 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             document = Document.objects.create(filename=filename)
             document.save()
 
-            storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()),
-                                        str(document.document_id))
-            file = os.path.join(storing_path, document.filename)
+            storing_path = posixpath.join(
+                (STORAGE_DIR or '').strip('/'),
+                str(document.creation_date.timestamp()),
+                str(document.document_id)
+            )
+            file = posixpath.join(storing_path, document.filename).lstrip('/')
 
             # store image_png in file
             # image png is Image from PIL
@@ -905,17 +957,20 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             django_file = ContentFile(f.read(), name=filename)
 
             # save the file
-            default_storage.save(file, django_file)
+            saved_file = default_storage.save(file, django_file)
 
             medical = MedicalCertificate.objects.create(
                 expiration_date=expiration_date,
                 user=sport_association.user,
                 document=document
             )
-
-            medical.save()
+            created_storage_keys.append(saved_file)
 
         except Exception as e:
+            if saved_file:
+                cleanup_storage_keys([saved_file])
+            if document and document.pk:
+                document.delete()
             logger.debug(f"Error in empty certificate creation: {e}")
 
     # get type of subscription
@@ -945,43 +1000,33 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
                 name__iexact='entrate e proventi da attività tipiche').first()
 
         if fee_amount > 0 or sport_association.user.show_zero_payments:
-            from django.db import transaction
-
-            # Use get_or_create with transaction to prevent race conditions
-            # Create a unique idempotency key based on associate + date range + amount
             payment_date = timezone.now().date()
 
-            with transaction.atomic():
-                # Lock the sport association to serialize subscription renewals
-                SportAssociation.objects.select_for_update().filter(
-                    sport_association_id=sport_association.sport_association_id
-                ).first()
+            # Check for recent duplicate payment (within same day, same amount, unpaid)
+            existing_payment = Payment.objects.filter(
+                associate=associate,
+                sport_association=sport_association,
+                subject=Payment.SUBSCRIPTION,
+                paid=False,
+                amount=fee_amount,
+                payment_date=payment_date
+            ).order_by('-creation_date').first()
 
-                # Check for recent duplicate payment (within same day, same amount, unpaid)
-                existing_payment = Payment.objects.filter(
+            if existing_payment:
+                # Reuse existing payment to avoid duplicates
+                payment = existing_payment
+            else:
+                payment = Payment.objects.create(
+                    user=user,
                     associate=associate,
-                    sport_association=sport_association,
-                    subject=Payment.SUBSCRIPTION,
-                    paid=False,
                     amount=fee_amount,
+                    subject=subject,
+                    payment_category=payment_category,
+                    sport_association=sport_association,
+                    meta_payment_categories=meta_payment_categories,
+                    meta=payment_meta,
                     payment_date=payment_date
-                ).order_by('-creation_date').first()
-
-                if existing_payment:
-                    # Reuse existing payment to avoid duplicates
-                    payment = existing_payment
-                else:
-                    payment = Payment.objects.create(
-                        user=user,
-                        associate=associate,
-                        amount=fee_amount,
-                        subject=subject,
-                        payment_category=payment_category,
-                        sport_association=sport_association,
-                        meta_payment_categories=meta_payment_categories,
-                        meta=payment_meta,
-                        payment_date=payment_date
-                    )
+                )
         else:
             payment = None
     else:
@@ -1095,14 +1140,15 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
     try:
         # Create the subscription with all data in a single query
         subscription = Subscription.objects.create(**subscription_data)
+    except DuplicateSubscriptionError:
+        raise DuplicateSubscriptionError()
 
-        # Upload signature to S3 if present
-        if signature.there_is_signature and signature.data:
-            subscription.set_signature_from_base64(signature.data)
-            subscription.save(update_fields=['signature_url'])
-    except Exception as e:
-        logger.error(e)
-        raise ValidationError({'msg': 'Questa iscrizione esiste già.', "code": 409, "ref": 635})
+    # Upload signature to storage if present
+    if signature.there_is_signature and signature.data:
+        subscription.set_signature_from_base64(signature.data)
+        if subscription.signature_storage_key:
+            created_storage_keys.append(subscription.signature_storage_key)
+        subscription.save(update_fields=['signature_url', 'signature_storage_key'])
 
     if subscription.type in [Subscription.ASSOCIATE_AND_MEMBER, Subscription.MEMBER_ONLY]:
         membership_start_date = None
@@ -1141,10 +1187,9 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             subscription_membership.save()
         except Exception as e:
             logger.error(e)
-            raise ValidationError({'msg': 'Errore nella creazione del tesseramento.', "code": 500, "ref": 635})
+            raise
 
-    # printing the document
-    print_document_subscription.delay(str(subscription.subscription_id), auth_token)
+    _on_commit_robust(lambda: print_document_subscription.delay(str(subscription.subscription_id), auth_token))
 
     messages = [
         {
@@ -1153,7 +1198,7 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
         }
     ]
 
-    NotificationService.send_notification(user, messages)
+    _on_commit_robust(lambda: NotificationService.send_notification(user, messages))
 
     if user.role == User.ATHLETE:
         data = {
@@ -1169,14 +1214,15 @@ def create_subscription(data, user, auth_token, is_athlete_request=False):
             }
         }
 
-        send_email_template.delay(
+        _on_commit_robust(lambda: send_email_template.delay(
             recipient_list=[subscription.sport_association.user.email],
             subject=f"[{subscription.sport_association.denomination}] Ricordati di approvare l\'iscrizione di "
                     f"{subscription.associate.first_name} {subscription.associate.last_name}",
             template="email/account/email_new_subscription.html",
             data=data,
             sport_association_id=subscription.sport_association.sport_association_id
-        )
+        ))
+    subscription._created_storage_keys = list(created_storage_keys)
     return True, subscription
 
 

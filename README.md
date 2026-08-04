@@ -180,6 +180,8 @@ Il backend è configurato per essere eseguito sulla porta `8000`. Un'istanza com
 
 Lo stack di sviluppo genera automaticamente una configurazione locale in `selfhost/.env.dev` e inizializza database, storage e dati di riferimento.
 
+Lo storage self-host usa MinIO su rete Docker privata: non viene pubblicato da Caddy e non usa ACL oggetto. Le firme delle iscrizioni vengono salvate con una chiave interna privata; eventuali record storici con `signature_url` pubblico continuano a essere letti. I comandi self-host di backup/restore sono specifici per il MinIO privato incluso: ripristinano database e albero MinIO completo, poi le migrazioni correnti convertono i backup pre-patch con `Subscription.signature` URL/base64 e recuperano in modo conservativo eventuali oggetti `subscriptions/<UUID>/signature_*.png` gia' presenti. I fallback URL restano supportati. Per provider pubblici compatibili S3, ad esempio DigitalOcean Spaces, il runtime applicativo abilita automaticamente `AWS_S3_USE_OBJECT_ACL` per gli endpoint `*.digitaloceanspaces.com`; l'impostazione puo' essere sovrascritta e `AWS_S3_PUBLIC_BASE_URL` puo' indicare il dominio CDN pubblico. Questa compatibilita' non trasforma il ciclo di vita self-host in un sistema di backup DigitalOcean.
+
 ## Configurazione
 
 ### Ambiente e API
@@ -282,7 +284,7 @@ cd UI
 npm run css:verify
 ```
 
-Il comando può segnalare anche classi dinamiche o riferimenti legacy e va quindi usato come supporto alla revisione, non come test automatico. Non sono attualmente presenti suite di test automatici per UI e backend.
+Il comando può segnalare anche classi dinamiche o riferimenti legacy e va quindi usato come supporto alla revisione, non come test automatico. Il backend include test Django mirati per l'affidabilita' delle iscrizioni in `BE/application/tests/`.
 
 ## Contribuire
 

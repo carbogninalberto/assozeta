@@ -10,8 +10,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='subscription',
-            name='signature',
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name='subscription',
+                    name='signature',
+                ),
+            ],
         ),
     ]

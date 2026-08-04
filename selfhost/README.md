@@ -77,6 +77,22 @@ The lifecycle wrapper runs Docker Compose with the selected env file isolated
 from conflicting exported shell variables such as `COMPOSE_PROJECT_NAME`, port
 values, passwords, or image names.
 
+MinIO is used as private S3-compatible storage. The generated self-host env sets
+`AWS_S3_USE_OBJECT_ACL=False` and leaves `AWS_S3_PUBLIC_BASE_URL` empty because
+MinIO does not support the public object ACL flow used by some hosted providers.
+The application stores subscription signatures by private storage key and reads
+them through the backend. Do not add a Caddy route or host port for MinIO to make
+objects public.
+
+The self-host lifecycle commands are designed for the bundled private MinIO
+service. In particular, `backup` and `restore` mirror that MinIO bucket and are
+not a DigitalOcean Spaces backup/restore workflow. The application runtime still
+supports public-ACL providers outside this bundled lifecycle: for example,
+`AWS_S3_USE_OBJECT_ACL` defaults to enabled when `AWS_S3_ENDPOINT_URL` has a
+`*.digitaloceanspaces.com` hostname, or you may set it explicitly.
+`AWS_S3_PUBLIC_BASE_URL` can override the derived public bucket origin with a
+DigitalOcean CDN or custom domain.
+
 ## Operations
 
 ```bash
@@ -105,8 +121,8 @@ stale lock, verify that no lifecycle command is running before removing
 
 ## Backups
 
-Create a logical PostgreSQL dump, an object-storage mirror, configuration
-snapshot, and manifest:
+Create a logical PostgreSQL dump, a bundled-MinIO object-storage mirror,
+configuration snapshot, and manifest:
 
 ```bash
 ./selfhost/bin/assozeta backup
@@ -120,6 +136,12 @@ storage.
 Backup stops the web, API, worker, and scheduler services while PostgreSQL and
 MinIO are snapshotted, then restarts them only if any were running beforehand.
 Expect brief write downtime for the duration of the dump and object mirror.
+
+Backup archives are specific to the bundled private MinIO layout. New manifests
+record the source `AWS_LOCATION`; archives created before that manifest field are
+read from their archived configuration when available and otherwise treated as
+the legacy self-host default `storage` prefix. Restore stops before the live swap
+if the source and target prefixes differ.
 
 Restore replaces the current database and object-storage contents:
 
@@ -137,6 +159,13 @@ object bucket are kept as rollback copies until migrations and public web/API
 readiness checks succeed. Redis is flushed before the restored stack starts to
 avoid stale sessions, cache entries, or queued jobs.
 
+For backups created before the private signature-storage change, restore still
+brings back the database and full MinIO tree first; current Django migrations
+then migrate legacy `Subscription.signature` URL/base64 values, preserve
+`signature_url` fallbacks, and conservatively recover existing
+`subscriptions/<subscription UUID>/signature_*.png` objects when no DB pointer
+exists. URL-only signature records remain supported as fallbacks.
+
 ## Development
 
 From the repository root:
@@ -151,6 +180,11 @@ Gunicorn/Uvicorn with source reload. PostgreSQL, Redis, MinIO, the renderer,
 Celery worker, and Celery Beat are included. Stateful dependencies stay on the
 private Docker network; the MinIO console is available at
 `http://localhost:59001`.
+
+Development uses the same private-object behavior as production: MinIO API
+traffic stays inside Docker, the console is bound to localhost for operators,
+and generated env files set `AWS_S3_USE_OBJECT_ACL=False` with no public base
+URL.
 
 ### First development setup
 

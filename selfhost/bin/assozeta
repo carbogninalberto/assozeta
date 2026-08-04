@@ -550,6 +550,8 @@ AWS_S3_REGION_NAME=us-east-1
 AWS_S3_ENDPOINT_URL=http://minio:9000
 AWS_LOCATION=storage
 AWS_S3_FILE_OVERWRITE=False
+AWS_S3_USE_OBJECT_ACL=False
+AWS_S3_PUBLIC_BASE_URL=
 MINIO_ROOT_USER=assozeta
 MINIO_ROOT_PASSWORD=$minio_password
 
@@ -1087,6 +1089,7 @@ backup_prod() {
     database_user=$(env_value DBUSER "$PROD_ENV")
     database_name=$(env_value DBNAME "$PROD_ENV")
     bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+    aws_location=$(env_value AWS_LOCATION "$PROD_ENV")
 
     if prod_app_services_running; then
         backup_app_was_running=true
@@ -1119,6 +1122,7 @@ created_at=$timestamp
 version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
 database=$database_name
 bucket=$bucket
+aws_location=$aws_location
 EOF
 
     tar -C "$working" -czf "$archive" .
@@ -1181,9 +1185,22 @@ restore_prod() {
     [ -f "$temporary/postgres.dump" ] || die "backup has no PostgreSQL dump"
     [ -d "$temporary/objects" ] || die "backup has no object-storage data"
 
+    backup_aws_location=storage
+    if [ -f "$temporary/manifest.txt" ]; then
+        manifest_aws_location=$(env_value aws_location "$temporary/manifest.txt")
+        [ -n "$manifest_aws_location" ] && backup_aws_location=$manifest_aws_location
+    elif [ -f "$temporary/config.env" ]; then
+        archived_aws_location=$(env_value AWS_LOCATION "$temporary/config.env")
+        [ -n "$archived_aws_location" ] && backup_aws_location=$archived_aws_location
+    fi
+
     database_user=$(env_value DBUSER "$PROD_ENV")
     database_name=$(env_value DBNAME "$PROD_ENV")
     bucket=$(env_value AWS_STORAGE_BUCKET_NAME "$PROD_ENV")
+    current_aws_location=$(env_value AWS_LOCATION "$PROD_ENV")
+    if [ -n "$current_aws_location" ] && [ "$backup_aws_location" != "$current_aws_location" ]; then
+        die "backup AWS_LOCATION is $backup_aws_location but current AWS_LOCATION is $current_aws_location; restore requires matching object prefixes"
+    fi
     database_suffix="$(date -u +%Y%m%d%H%M%S)_$$"
     bucket_suffix="$(date -u +%Y%m%d%H%M%S)-$$"
     validation_database="assozeta_restore_stage_$database_suffix"

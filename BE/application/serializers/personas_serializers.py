@@ -226,7 +226,11 @@ class AssociateSubscriptionSerializer(serializers.ModelSerializer):
     medical_expiration_date = serializers.SerializerMethodField(read_only=True)
     age = serializers.SerializerMethodField(read_only=True)
     renewal_available = serializers.SerializerMethodField(read_only=True)
+    signature_present = serializers.SerializerMethodField(read_only=True)
     associate = BasicAssociateSerializer(read_only=True)
+
+    def get_signature_present(self, obj):
+        return obj.has_signature
 
     def get_medical(self, obj):
         medical = obj.medical
@@ -260,4 +264,4 @@ class AssociateSubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        exclude = ('signature_storage_key',)

@@ -24,9 +24,10 @@ from fuzzywuzzy import fuzz
 import pandas
 from io import StringIO, BytesIO
 
+from django.db import transaction
 from django.utils.timezone import make_aware
 
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import APIException, ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -35,7 +36,7 @@ from application.printing_tasks import print_document_medical_appointment
 from application.signals import subscription_signed, subscription_approved
 from application.utils.printing import current_view_subscriptions
 from application.utils.subscriptions_utils import create_subscription, get_optimized_subscriptions, \
-    add_course_to_subscription, smart_search
+    add_course_to_subscription, smart_search, cleanup_storage_keys
 from application.services.subscription_service import (
     SubscriptionService, TagService, MedicalCertificateService, SubscriptionImportService
 )
@@ -193,82 +194,66 @@ def subscription_tags_unassign(request, tag_id, subscription_id):
 @permission_classes([IsAuthenticated])
 def subscription_renew(request):
     logger.info("Subscription renewal started", extra={'user_id': str(request.user.user_id)})
-    # getting body
     data = request.data
     if request.user.role != User.ASSOCIATION:
-        # set the request.user to the sport association user
         request.user = SportAssociation.objects.get(sport_association_id=data['sport_association']['sport_association_id']).user
 
-    # we use the common code to avoid duplication, then we add the required subscriptions
-    logger.info("Creating new subscription", extra={'user_id': str(request.user.user_id), 'sport_association_id': str(request.user.sport_association.sport_association_id)})
-    ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), False)
-
-    if not ok or fresh_sub is None:
-        logger.error("Subscription creation failed", extra={'user_id': str(request.user.user_id)})
-        return Response(
-            {"status": "error", "msg": "error creating subscription"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
+    created_storage_keys = []
     try:
-        logger.info("Subscription created successfully", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
-        # get all the SUBSCRIPTION payments within this subscription's date range
-        # (to clean up duplicates from failed renewal attempts)
-        # Only delete subscription payments, NOT course payments
-        payments = Payment.objects.filter(
-            associate__first_name=fresh_sub.associate.first_name,
-            associate__last_name=fresh_sub.associate.last_name,
-            associate__tax_code__iexact=fresh_sub.associate.tax_code,  # Case-insensitive
-            sport_association=fresh_sub.sport_association,
-            subject=Payment.SUBSCRIPTION,  # Only subscription payments
-            creation_date__gte=fresh_sub.start_date,
-            creation_date__lte=fresh_sub.end_date,  # Constrain to this subscription period
-            paid=False
-        )
-        if fresh_sub.payment:
-            payments = payments.exclude(
-                payment_id=fresh_sub.payment.payment_id
+        with transaction.atomic():
+            # Delay callbacks until creation and renewal post-processing both succeed.
+            logger.info("Creating new subscription", extra={'user_id': str(request.user.user_id), 'sport_association_id': str(request.user.sport_association.sport_association_id)})
+            ok, fresh_sub = create_subscription(data, request.user, request.headers.get('authorization'), False)
+            if not ok or fresh_sub is None:
+                raise RuntimeError("error creating subscription")
+            created_storage_keys.extend(getattr(fresh_sub, '_created_storage_keys', []))
+
+            logger.info("Subscription created successfully", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
+            payments = Payment.objects.filter(
+                associate__first_name=fresh_sub.associate.first_name,
+                associate__last_name=fresh_sub.associate.last_name,
+                associate__tax_code__iexact=fresh_sub.associate.tax_code,
+                sport_association=fresh_sub.sport_association,
+                subject=Payment.SUBSCRIPTION,
+                creation_date__gte=fresh_sub.start_date,
+                creation_date__lte=fresh_sub.end_date,
+                paid=False
             )
+            if fresh_sub.payment:
+                payments = payments.exclude(payment_id=fresh_sub.payment.payment_id)
+            payments.order_by('creation_date').delete()
 
-        payments = payments.order_by('creation_date')
+            if 'user' in data and 'email' in data['user']:
+                user = User.objects.filter(email=data['user']['email']).first()
+                if user is not None:
+                    fresh_sub.user = user
+                    fresh_sub.save()
 
-        # delete all the payments
-        payments.delete()
+            if 'tags' in data and len(data['tags']) > 0:
+                if isinstance(data['tags'][0], str):
+                    tag_ids = data['tags']
+                else:
+                    tag_ids = [tag['tag_id'] for tag in data['tags']]
+                tags = Tags.objects.filter(tag_id__in=tag_ids)
+                fresh_sub.tags.set(tags)
 
-        if 'user' in data and 'email' in data['user']:
-            user = User.objects.filter(email=data['user']['email']).first()
-            if user is not None:
-                fresh_sub.user = user
-                fresh_sub.save()
-
-        if 'tags' in data and len(data['tags']) > 0:
-            # Handle both formats: list of strings or list of dicts with 'tag_id'
-            if isinstance(data['tags'][0], str):
-                # Tags are already just IDs (strings)
-                tag_ids = data['tags']
-            else:
-                # Tags are dictionaries with 'tag_id' key
-                tag_ids = [tag['tag_id'] for tag in data['tags']]
-            tags = Tags.objects.filter(tag_id__in=tag_ids)
-            fresh_sub.tags.set(tags)
-        if 'courses' in data and len(data['courses']) > 0:
-            # call: course_overview_add
-            for c in data['courses']:
-                u: User = request.user
-                course = Course.objects.filter(course_id=c['value']).first()
-                add_course_to_subscription(course, fresh_sub, u.sport_association, data=None, is_athlete=False)
+            if 'courses' in data and len(data['courses']) > 0:
+                for c in data['courses']:
+                    u: User = request.user
+                    course = Course.objects.filter(course_id=c['value']).first()
+                    add_course_to_subscription(course, fresh_sub, u.sport_association, data=None, is_athlete=False)
 
         logger.info("Subscription renewal completed", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
         return Response(
             {"status": "success", "payment_id": fresh_sub.payment.payment_id if fresh_sub.payment is not None else None},
             status=status.HTTP_200_OK
         )
+    except APIException:
+        cleanup_storage_keys(created_storage_keys)
+        raise
     except Exception as e:
+        cleanup_storage_keys(created_storage_keys)
         logger.error("Subscription renewal failed", extra={'user_id': str(request.user.user_id), 'error': str(e)}, exc_info=True)
-        if fresh_sub.payment is not None:
-            fresh_sub.payment.delete()
-            fresh_sub.payment = None
-        fresh_sub.delete()
         return Response(
             {"status": "error", "msg": str(e)},
             status=status.HTTP_400_BAD_REQUEST
@@ -305,22 +290,36 @@ def _handle_family_subscription(data, request, is_athlete_request):
     if type_of_family not in Family.ALL_TYPES:
         type_of_family = Family.FAMILY
 
-    family = Family.objects.create(type=type_of_family)
     payments = []
+    created_storage_keys = []
 
     asd_custom_data = {}
     if type_of_family == Family.GROUPED_SUBSCRIPTIONS:
         asd_custom_data = _get_asd_custom_data_for_grouped_subscriptions(request.user)
 
-    for entry in data['multiple_entry_form_data']:
-        if entry['valid'] is True:
-            entry['sport_association'] = data['sport_association']
-            entry['associate_data']['family'] = family.family_id
-            entry['custom_data'] = {**entry['custom_data'], **asd_custom_data}
+    try:
+        with transaction.atomic():
+            family = Family.objects.create(type=type_of_family)
 
-            ok, fresh_sub = create_subscription(entry, request.user, request.headers.get('authorization'), is_athlete_request)
-            if fresh_sub is not None and fresh_sub.payment is not None:
-                payments.append(fresh_sub.payment)
+            for entry in data['multiple_entry_form_data']:
+                if entry['valid'] is True:
+                    entry['sport_association'] = data['sport_association']
+                    entry['associate_data']['family'] = family.family_id
+                    entry['custom_data'] = {**entry['custom_data'], **asd_custom_data}
+
+                    ok, fresh_sub = create_subscription(
+                        entry,
+                        request.user,
+                        request.headers.get('authorization'),
+                        is_athlete_request
+                    )
+                    if fresh_sub is not None:
+                        created_storage_keys.extend(getattr(fresh_sub, '_created_storage_keys', []))
+                        if fresh_sub.payment is not None:
+                            payments.append(fresh_sub.payment)
+    except Exception:
+        cleanup_storage_keys(created_storage_keys)
+        raise
 
     return Response({
         "status": "success",
@@ -339,26 +338,36 @@ def _handle_quick_subscription(data, request):
     sport_association = SportAssociation.objects.get(sport_association_id=data['sport_association'])
     associate = Associate.objects.get(associate_id=data['associate'])
 
-    # Create subscription using service
-    subscription = SubscriptionService.create_quick_subscription(
-        sport_association, associate, data, request.user
-    )
-    subscription.save()
+    with transaction.atomic():
+        sport_association = SportAssociation.objects.select_for_update().get(
+            sport_association_id=sport_association.sport_association_id
+        )
+        # Create subscription using service
+        subscription = SubscriptionService.create_quick_subscription(
+            sport_association, associate, data, request.user
+        )
+        subscription.save()
 
-    # Trigger document printing
-    auth_token = request.headers.get('authorization')
-    print_document_subscription.delay(str(subscription.subscription_id), auth_token)
+        # Trigger document printing
+        auth_token = request.headers.get('authorization')
+        transaction.on_commit(
+            lambda: print_document_subscription.delay(str(subscription.subscription_id), auth_token),
+            robust=True
+        )
 
-    # Send notification
-    messages = [{
-        "type": NotificationUtils.SUBSCRIPTION,
-        "msg": "Nuova Iscrizione aggiunta per {}.".format(associate.get_full_name())
-    }]
-    NotificationService.send_notification(request.user, messages)
+        # Send notification
+        messages = [{
+            "type": NotificationUtils.SUBSCRIPTION,
+            "msg": "Nuova Iscrizione aggiunta per {}.".format(associate.get_full_name())
+        }]
+        transaction.on_commit(
+            lambda: NotificationService.send_notification(request.user, messages),
+            robust=True
+        )
 
-    # Send email for athlete subscriptions
-    if request.user.role == User.ATHLETE:
-        _send_athlete_subscription_email(subscription)
+        # Send email for athlete subscriptions
+        if request.user.role == User.ATHLETE:
+            transaction.on_commit(lambda: _send_athlete_subscription_email(subscription), robust=True)
 
     return Response({
         "status": "success",
@@ -369,11 +378,18 @@ def _handle_quick_subscription(data, request):
 def _prepare_subscription_request(request, data, mode):
     """Prepare and validate subscription request parameters."""
 
-    logger.error(f"DATA ADD SUBSCRIPTION {data}")
+    logger.info(
+        "Preparing subscription request",
+        extra={
+            'user_id': str(request.user.user_id) if request.user.is_authenticated else 'anonymous',
+            'mode': mode,
+            'is_family_wizard': data.get('is_family_wizard') is True,
+        }
+    )
 
     # Handle anonymous user
     if not request.user.is_authenticated:
-        logger.error(f"NEW REQUEST FROM ANONYMOUS USER, data: {data}")
+        logger.info("New anonymous subscription request")
         if 'sport_association' in data:
             sport_association_user = User.objects.get(username=data['sport_association'])
             request.user = sport_association_user
@@ -583,25 +599,48 @@ def subscription_sign(request):
         #     raise PermissionDenied('User not allowed')
 
         if signature.is_valid(raise_exception=True):
-            signature = signature.save()
-            # save new signature if present
-            if signature.there_is_signature:
-                new_signature = Signature.objects.create(
-                    signature=signature.data,
-                    user=user
-                )
-                new_signature.save()
-                # Upload signature to S3 and update subscription
-                subscription.set_signature_from_base64(signature.data)
-                subscription.status_flag = Subscription.PENDING
-                subscription.save(update_fields=['signature_url', 'status_flag'])
-                logger.info("Subscription signed successfully", extra={'user_id': str(user.user_id), 'subscription_id': str(subscription.subscription_id)})
-            subscription_signed.send(sender=subscription.__class__, subscription=subscription)
+            new_storage_key = None
+            try:
+                with transaction.atomic():
+                    subscription = Subscription.objects.select_for_update().get(
+                        subscription_id=subscription.subscription_id
+                    )
+                    old_storage_key = subscription.signature_storage_key
+                    signature = signature.save()
+                    # save new signature if present
+                    if signature.there_is_signature:
+                        new_signature = Signature.objects.create(
+                            signature=signature.data,
+                            user=user
+                        )
+                        new_signature.save()
+                        # Upload signature to storage and update subscription
+                        subscription.set_signature_from_base64(signature.data)
+                        new_storage_key = subscription.signature_storage_key
+                        subscription.status_flag = Subscription.PENDING
+                        subscription.save(update_fields=['signature_url', 'signature_storage_key', 'status_flag'])
+                        if old_storage_key and old_storage_key != new_storage_key:
+                            transaction.on_commit(
+                                lambda: Subscription.delete_signature_key_if_unreferenced(old_storage_key),
+                                robust=True
+                            )
+                        logger.info("Subscription signed successfully", extra={'user_id': str(user.user_id), 'subscription_id': str(subscription.subscription_id)})
+                    transaction.on_commit(
+                        lambda: subscription_signed.send(sender=subscription.__class__, subscription=subscription),
+                        robust=True
+                    )
 
-        # printing the document
-        logger.info("Printing subscription document", extra={'subscription_id': str(subscription.subscription_id)})
-        auth_token = request.headers.get('authorization')
-        print_document_subscription.delay(str(subscription.subscription_id), auth_token)
+                    # printing the document
+                    logger.info("Printing subscription document", extra={'subscription_id': str(subscription.subscription_id)})
+                    auth_token = request.headers.get('authorization')
+                    transaction.on_commit(
+                        lambda: print_document_subscription.delay(str(subscription.subscription_id), auth_token),
+                        robust=True
+                    )
+            except Exception:
+                if new_storage_key:
+                    cleanup_storage_keys([new_storage_key])
+                raise
 
         return Response({"status": "success"}, status=status.HTTP_200_OK)
     else:
@@ -1527,7 +1566,7 @@ def _build_simplified_row(subscription):
         'si' if subscription.medical else 'no',
         subscription.medical.expiration_date.strftime('%Y-%m-%d') if subscription.medical and subscription.medical.expiration_date else '',
         _get_medical_status(subscription),
-        'si' if subscription.get_signature else 'no',
+        'si' if subscription.has_signature else 'no',
         subscription.associate.email,
         subscription.start_date.strftime('%Y-%m-%d') if subscription.start_date else '',
         subscription.end_date.strftime('%Y-%m-%d') if subscription.end_date else '',
@@ -1545,7 +1584,7 @@ def _build_full_row(subscription):
         'si' if subscription.medical else 'no',
         subscription.medical.expiration_date.strftime('%Y-%m-%d') if subscription.medical and subscription.medical.expiration_date else '',
         _get_medical_status(subscription),
-        'si' if subscription.get_signature else 'no',
+        'si' if subscription.has_signature else 'no',
         subscription.associate.first_name,
         subscription.associate.last_name,
         subscription.associate.sex,
@@ -1980,23 +2019,17 @@ def subscription_approve(request, uid):
         subscription.status_flag = Subscription.ACCEPTED
         subscription.acceptance_date = timezone.now()
         # check if there are past subscription for this associate that are approved and have the signature
-        past_subscriptions = Subscription.objects.filter(
-            associate=subscription.associate,
-            status_flag__in=[Subscription.ACCEPTED, Subscription.PENDING],
-            signature_url__isnull=False
-        ).exclude(subscription_id=subscription.subscription_id).order_by('-creation_date')
-        # get the most recent subscription
-        if past_subscriptions.count() > 0:
+        if not subscription.has_signature:
+            past_subscriptions = Subscription.objects.filter(
+                associate=subscription.associate,
+                status_flag__in=[Subscription.ACCEPTED, Subscription.PENDING],
+            ).filter(
+                Q(signature_storage_key__isnull=False) | Q(signature_url__isnull=False)
+            ).exclude(subscription_id=subscription.subscription_id).order_by('-creation_date')
             last_subscription = past_subscriptions.first()
-            signature_data = last_subscription.get_signature
-            # check if the last subscription has a signature
-            if signature_data:
-                # If it's already an S3 URL, just copy it
-                if signature_data.startswith('http://') or signature_data.startswith('https://'):
-                    subscription.signature_url = signature_data
-                else:
-                    # If it's base64, upload to S3
-                    subscription.set_signature_from_base64(signature_data)
+            if last_subscription and last_subscription.has_signature:
+                subscription.signature_storage_key = last_subscription.signature_storage_key
+                subscription.signature_url = last_subscription.signature_url
 
         subscription.save()
     else:

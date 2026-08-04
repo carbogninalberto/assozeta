@@ -552,7 +552,7 @@
                     Firmando si accettano tutte le condizioni elencate nel documento. <br>
 
                     FIRMA DEL RICHIEDENTE (GENITORE SE MINORENNE) <br><br>
-                    {% if subscription.signature_url %}
+                    {% if subscription.has_signature %}
                         <img src="{{ subscription.get_signature_base64 | safe }}" width="180"/>
                     {% else %}
                         <br>

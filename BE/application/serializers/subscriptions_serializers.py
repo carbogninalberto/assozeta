@@ -14,6 +14,8 @@ from application.serializers.personas_serializers import AssociateSerializer as 
 from core.settings import STORAGE_DIR
 from docmanager.models import Document
 
+SUBSCRIPTION_INTERNAL_FIELDS = ('signature_storage_key',)
+
 
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -192,7 +194,7 @@ class SubscriptionOptimizedSerializer(serializers.ModelSerializer):
         return obj.get_plain_medical_label()
 
     def get_signature_present(self, obj):
-        return obj.get_signature is not None and obj.get_signature != ''
+        return obj.has_signature
 
     def create(self, validated_data):
         # Remove deprecated 'signature' field if present
@@ -202,8 +204,11 @@ class SubscriptionOptimizedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
-        read_only_fields = tuple(field.name for field in model._meta.fields)
+        exclude = SUBSCRIPTION_INTERNAL_FIELDS
+        read_only_fields = tuple(
+            field.name for field in model._meta.fields
+            if field.name not in SUBSCRIPTION_INTERNAL_FIELDS
+        )
 
 
 class SubscriptionFastOptimizedSerializer(serializers.Serializer):
@@ -363,7 +368,7 @@ class SubscriptionFastOptimizedSerializer(serializers.Serializer):
 
             # Helper fields
             'plain_medical_label': obj.get_plain_medical_label() if obj.associate else None,
-            'signature_present': obj.get_signature is not None and obj.get_signature != '',
+            'signature_present': obj.has_signature,
         }
 
 
@@ -382,6 +387,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     medical_expiration_date = serializers.SerializerMethodField(read_only=True)
     document = serializers.SerializerMethodField(read_only=True)
     document_token = serializers.SerializerMethodField(read_only=True)
+    signature_present = serializers.SerializerMethodField(read_only=True)
 
     def get_current_year(self, obj):
         return obj.is_current
@@ -389,20 +395,23 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def get_next_years(self, obj):
         return obj.is_next_year
 
+    def get_signature_present(self, obj):
+        return obj.has_signature
+
     def get_renewal_available(self, obj):
         # renewable available only if not current sub and there is not a sub in the current year
         renewal_available = not obj.is_current
 
         # check if there is a subscription created later than current
-        if renewal_available is False:
+        if renewal_available is True:
             current_year_sub = Subscription.objects.filter(
-                sport_association=self.sport_association,
-                start_date__gte=self.end_date,
+                sport_association=obj.sport_association,
+                start_date__gte=obj.end_date,
                 archived=False,
-                associate__tax_code__iexact=self.associate.tax_code
+                associate__tax_code__iexact=obj.associate.tax_code
             ).count()
             renewal_available = current_year_sub == 0
-        return not renewal_available
+        return renewal_available
 
     def get_medical(self, obj):
         if obj.medical is not None and obj.medical.document is not None:
@@ -460,7 +469,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        exclude = SUBSCRIPTION_INTERNAL_FIELDS
 
 
 class SubscriptionInfoSerializer(serializers.ModelSerializer):
@@ -473,6 +482,10 @@ class SubscriptionInfoSerializer(serializers.ModelSerializer):
     subscription_files = serializers.SerializerMethodField()
     is_current = serializers.BooleanField(read_only=True)
     is_next_year = serializers.BooleanField(read_only=True)
+    signature_present = serializers.SerializerMethodField(read_only=True)
+
+    def get_signature_present(self, obj):
+        return obj.has_signature
 
     def create(self, validated_data):
         # Remove deprecated 'signature' field if present
@@ -482,7 +495,7 @@ class SubscriptionInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        exclude = SUBSCRIPTION_INTERNAL_FIELDS
 
     def get_subscription_files(self, obj):
         # Use prefetched data if available, otherwise query with select_related
@@ -560,6 +573,11 @@ class SignatureRequestSerializer(serializers.Serializer):
     there_is_signature = serializers.BooleanField(default=False)
     data = serializers.CharField(allow_blank=True, allow_null=True)
 
+    def validate(self, attrs):
+        if attrs.get('there_is_signature') and not attrs.get('data'):
+            raise serializers.ValidationError({'data': 'La firma è obbligatoria.'})
+        return attrs
+
     def update(self, instance, validated_data):
         pass
 
@@ -572,6 +590,10 @@ class SubscriptionSerializerAthleteList(serializers.ModelSerializer):
     user = UserSerializer()
     associate = AssociateSerializer()
     sport_association = SportAssociationSearchSerializer()
+    signature_present = serializers.SerializerMethodField(read_only=True)
+
+    def get_signature_present(self, obj):
+        return obj.has_signature
 
     def create(self, validated_data):
         # Remove deprecated 'signature' field if present
@@ -581,7 +603,7 @@ class SubscriptionSerializerAthleteList(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        exclude = SUBSCRIPTION_INTERNAL_FIELDS
 
 
 class DictListSerializer(serializers.ListSerializer):
@@ -605,10 +627,14 @@ class SubscriptionSerializerAthleteOptimizedList(serializers.ModelSerializer):
     medical_document = serializers.SerializerMethodField(read_only=True)
     courses = serializers.SerializerMethodField(read_only=True)
     renewal_available = serializers.SerializerMethodField(read_only=True)
+    signature_present = serializers.SerializerMethodField(read_only=True)
     # attendance_registry = serializers.SerializerMethodField(read_only=True)
 
     def get_carnets(self, obj):
         return CarnetSubscription.objects.filter(subscription=obj).count() > 0
+
+    def get_signature_present(self, obj):
+        return obj.has_signature
 
     def get_medical(self, obj):
         if obj.medical is not None:
@@ -670,7 +696,7 @@ class SubscriptionSerializerAthleteOptimizedList(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = DictListSerializer
         model = Subscription
-        fields = '__all__'
+        exclude = SUBSCRIPTION_INTERNAL_FIELDS
 
 
 class SubscriptionTransferCreateSerializer(serializers.ModelSerializer):
