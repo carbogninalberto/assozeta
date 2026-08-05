@@ -204,10 +204,7 @@
                                 window.location.reload();
                             }
                         } else {
-                            // the url is something like: #/subscribe/example-association
-                            // we take the last part of the url and redirect to the page #/search/profile/example-association
-                            // window.location.href = `/#/search/profile/${params?.sportAssociationUsername}`;
-                            history.pushState(null, '', `/#/search/profile/${params?.sportAssociationUsername}`);
+                            history.pushState(null, '', '/#/payment/list');
                         }
                     }
                 } else {
@@ -225,6 +222,8 @@
                             // If payment_id is empty, reload the page
                             window.location.reload();
                         }
+                    } else {
+                        history.pushState(null, '', `/#/search/profile/${params?.sportAssociationUsername}`);
                     }
                 }
                 window.location.reload();

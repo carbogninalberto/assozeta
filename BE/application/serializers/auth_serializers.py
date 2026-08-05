@@ -8,6 +8,7 @@ from application.models import BillingSubscription, Group
 from application.models.user_models import SportAssociationMembershipCardConfiguration, User, SportAssociation, UserAccount, \
     UsersOnboarding
 from instance.models import InstanceConfiguration
+from application.utils.stripe_utils import online_payments_available
 
 
 class SportAssociationSerializer(serializers.ModelSerializer):
@@ -158,9 +159,18 @@ class SportAssociationToolSerializer(serializers.ModelSerializer):
 
 class UserSerializerSearch(serializers.ModelSerializer):
     preview_and_custom_features = serializers.SerializerMethodField()
+    online_payments = serializers.SerializerMethodField()
 
     def get_preview_and_custom_features(self, obj):
         return [preview.name for preview in obj.preview_and_custom_features.all()]
+
+    def get_online_payments(self, obj):
+        if obj.role == User.ATHLETE:
+            return False
+        try:
+            return online_payments_available(obj.sport_association)
+        except SportAssociation.DoesNotExist:
+            return False
 
     class Meta:
         model = User

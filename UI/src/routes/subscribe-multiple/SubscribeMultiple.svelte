@@ -206,9 +206,11 @@
             }
         }
         if (payments_ids.length > 0) {
-            // set on the session storage the payments_ids
-            // redirect to the page #/stripe/cart-pay
-            push('/stripe/cart-pay/?payments_ids=' + payments_ids.join(','));
+            if (wizardData.sportAssociationData.user.online_payments) {
+                push('/stripe/cart-pay/?payments_ids=' + payments_ids.join(','));
+            } else {
+                push('/payment/list');
+            }
         }
     }
 

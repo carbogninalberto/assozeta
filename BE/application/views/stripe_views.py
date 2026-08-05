@@ -28,6 +28,7 @@ from application.models.payment_models import Payment
 from application.utils.api_utils import is_valid_uuid, BalanceSheetData
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import generate_invoice_description
+from application.utils.stripe_utils import online_payments_available
 from communications.models import SmsCreditPayment, CommunicationConfiguration
 from notifications.services import NotificationService
 from core import settings
@@ -186,6 +187,11 @@ def stripe_multiple_pay(request):
             for payment in payments_groups[sport_association_key]:
                 # retrieve the payment
                 payment = Payment.objects.get(payment_id=payment['payment_id'])
+                if not online_payments_available(payment.sport_association):
+                    return Response(
+                        {'error': 'Online payments are not configured.'},
+                        status=status.HTTP_409_CONFLICT,
+                    )
                 # let's assure it is not already paid
                 sport_association_stripe_account = payment.sport_association.user.stripe_account_id
                 if payment.sport_association.stripe_available_methods is not None:
@@ -290,6 +296,11 @@ def stripe_pay(request, payment_id):
     if payment_intent_q:
         payment = Payment.objects.filter(payment_intent_id=payment_intent_q).first()
         if payment is not None:
+            if not online_payments_available(payment.sport_association):
+                return Response(
+                    {'error': 'Online payments are not configured.'},
+                    status=status.HTTP_409_CONFLICT,
+                )
             sport_association_stripe_account = payment.sport_association.user.stripe_account_id
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
@@ -319,12 +330,14 @@ def stripe_pay(request, payment_id):
         raise ValidationError('not valid uuid')
     else:
         payment = Payment.objects.filter(payment_id=payment_id).first()
-        sport_association_stripe_account = payment.sport_association.user.stripe_account_id
-        if sport_association_stripe_account is None or \
-                len(sport_association_stripe_account) == 0:
-            raise ValidationError('sport association stripe account not set')
         if payment is None:
             raise NotFound('payment not found')
+        if not online_payments_available(payment.sport_association):
+            return Response(
+                {'error': 'Online payments are not configured.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        sport_association_stripe_account = payment.sport_association.user.stripe_account_id
         if payment.paid:
             # already paid the transaction
             data = {

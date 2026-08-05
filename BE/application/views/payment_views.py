@@ -44,6 +44,7 @@ from application.utils.api_utils import is_valid_uuid, KTDatatablePagination
 from application.utils.excel_utils import get_excel_base64
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import calculate_simulation, generate_invoice_description
+from application.utils.stripe_utils import online_payments_available
 
 from docmanager.views.printing_views import document_invoice
 from notifications.services import NotificationService
@@ -983,10 +984,7 @@ def payment_list(request):
             data[idx] = PaymentCompressedSerializer(payment).data
             pay_available = False
             one_solution_available = False
-            if payment.sport_association.user.stripe_account_id is not None and \
-                    payment.sport_association.user.stripe_account_id != "" and \
-                    payment.sport_association.user.stripe_on_boarding_completed is True and \
-                    payment.sport_association.user.online_payments is True:
+            if online_payments_available(payment.sport_association):
                 pay_available = True
                 # if payment online available look for course that allows the one time payment
                 course_installment = course_installments_map.get(str(payment.payment_id))
