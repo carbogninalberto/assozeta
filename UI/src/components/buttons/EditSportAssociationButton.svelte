@@ -32,7 +32,7 @@
     }
 </script>
 
-<span data-toggle="modal" data-target="#upload-billing-invoice-{randomId}">
+<span data-toggle="modal" data-target="#edit-sport-association-{randomId}">
     <button
         {disabled}
         
@@ -49,7 +49,7 @@
 <Portal>
     <div
         class="modal fade"
-        id="upload-billing-invoice-{randomId}"
+        id="edit-sport-association-{randomId}"
         style="padding:0!important"
         data-backdrop="static"
         tabindex="-1"

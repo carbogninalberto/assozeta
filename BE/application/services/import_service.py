@@ -87,7 +87,6 @@ from application.models.user_models import (
     SportAssociation,
     SportAssociationDocumentsArchive,
     SportAssociationHeadquarter,
-    SportAssociationInvoices,
     SportAssociationMaterial,
     SportAssociationMembershipCardConfiguration,
     SportAssociationModuleTemplates,
@@ -226,7 +225,6 @@ class AssociationImportService:
         ('45_invoice_rows.json', InvoiceRows),
         ('46_invoice_suppliers.json', InvoiceSuppliers),
         ('47_customer_invoices.json', CustomerInvoice),
-        ('48_sport_association_invoices.json', SportAssociationInvoices),
 
         # Tier 14: Balance sheet
         ('49_balance_sheets.json', BalanceSheet),
@@ -279,7 +277,6 @@ class AssociationImportService:
         'SportAssociationModuleTemplates': 'sport_association_module_templates_id',
         'SportAssociationMaterial': 'sport_association_material_id',
         'SportAssociationMembershipCardConfiguration': 'sport_association_membership_card_configuration_id',
-        'SportAssociationInvoices': 'sport_association_invoice_id',
         'SportAssociationDocumentsArchive': 'sport_association_documents_archive_id',
         'Reminder': 'reminder_id',
         'EmailLog': 'email_log_id',
@@ -501,11 +498,6 @@ class AssociationImportService:
             ('sport_association_id', 'SportAssociation'),
             ('supplier_id', 'SupplierAndCustomers'),
         ],
-        'SportAssociationInvoices': [
-            ('sport_association_id', 'SportAssociation'),
-            ('document_id', 'Document'),
-        ],
-
         # Balance Sheet Models
         'BalanceSheet': [('sport_association_id', 'SportAssociation')],
         'CustomAccounts': [('sport_association_id', 'SportAssociation')],

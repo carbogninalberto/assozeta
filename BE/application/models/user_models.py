@@ -804,15 +804,6 @@ class SportAssociationMaterial(models.Model):
     description = models.TextField(null=True)
 
 
-class SportAssociationInvoices(models.Model):
-
-    sport_association_invoice_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(default=timezone.now)
-    invoice_date = models.DateField()
-    document = models.ForeignKey(Document, default=None, on_delete=models.CASCADE)
-
-
 class Folder(MPTTModel):
     name = models.CharField(max_length=255)
     parent = TreeForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)

@@ -433,10 +433,6 @@ export const buildConfig = function(config={
                         UPDATE_PASSWORD: `${apiHost}/profile/update/password`,
                         UPDATE_SUBSCRIPTION_TEMPLATE: `${apiHost}/profile/update/subscription/template`,
                         IMAGE: `${apiHost}/profile/image/<uid>`,
-                        BILLING_INVOICE: {
-                            LIST: `${apiHost}/profile/billing-invoice/list`,
-                            UPLOAD: `${apiHost}/document/billing-invoice/`,
-                        }
                     },
                     PERSONAS: {
                         ADD: `${apiHost}/personas/add`,

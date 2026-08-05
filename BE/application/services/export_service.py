@@ -87,7 +87,6 @@ from application.models.user_models import (
     SportAssociation,
     SportAssociationDocumentsArchive,
     SportAssociationHeadquarter,
-    SportAssociationInvoices,
     SportAssociationMaterial,
     SportAssociationMembershipCardConfiguration,
     SportAssociationModuleTemplates,
@@ -206,7 +205,6 @@ class AssociationExportService:
         (InvoiceRows, '45_invoice_rows'),
         (InvoiceSuppliers, '46_invoice_suppliers'),
         (CustomerInvoice, '47_customer_invoices'),
-        (SportAssociationInvoices, '48_sport_association_invoices'),
 
         # Tier 14: Balance sheet
         (BalanceSheet, '49_balance_sheets'),

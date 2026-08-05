@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from application.models import BillingSubscription, Group
-from application.models.user_models import SportAssociationMembershipCardConfiguration, User, SportAssociation, UserAccount, SportAssociationInvoices, \
+from application.models.user_models import SportAssociationMembershipCardConfiguration, User, SportAssociation, UserAccount, \
     UsersOnboarding
 from instance.models import InstanceConfiguration
 
@@ -217,18 +217,6 @@ class UserTablesSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('tables_settings',)
-
-
-class SportAssociationInvoiceSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = SportAssociationInvoices
-        fields = (
-            'sport_association_invoice_id',
-            'date_created',
-            'invoice_date',
-            'document_id',
-        )
 
 
 class SportAssociationSearchSerializer(serializers.ModelSerializer):

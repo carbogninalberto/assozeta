@@ -454,7 +454,6 @@ EXCLUDED_ENDPOINTS = [
     # Billing (handled by plan-level permissions)
     'billing/active-plan',
     'billing/checkout',
-    'profile/billing-invoice/list',
 
     # Signature conversion (utility)
     'signature/convert/picture',

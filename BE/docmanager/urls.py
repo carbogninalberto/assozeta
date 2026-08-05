@@ -1,7 +1,6 @@
 from django.urls import path
 
-from docmanager.views.document_view import medical_certificate_document, retrieve_document, billing_invoice_document, \
-    delete_document
+from docmanager.views.document_view import medical_certificate_document, retrieve_document, delete_document
 from .views.printing_views import document_subscription, document_subscription_view, document_invoice, \
     document_invoice_view, document_subscription_preview, document_compensation, document_compensation_view, \
     document_medical_appointment, document_medical_appointment_view, document_template, document_template_view, \
@@ -9,7 +8,6 @@ from .views.printing_views import document_subscription, document_subscription_v
 
 urlpatterns = [
     path(r'document/medical/certificate/', medical_certificate_document),
-    path(r'document/billing-invoice/', billing_invoice_document),
     path(r'document/subscription/<str:uid>', document_subscription),
     path(r'document/subscription/preview/', document_subscription_preview),
     path(r'document/subscription/<str:uid>/view/', document_subscription_view),

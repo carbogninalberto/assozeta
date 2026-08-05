@@ -23,11 +23,10 @@ from application.models.courses_models import Course, CourseSubscription, Course
 from application.models.invoices_models import Invoice
 from application.models.payment_models import PaymentCategory, SupplierAndCustomers
 from application.models.subscriptions_models import Subscription
-from application.models.user_models import SportAssociation, SportAssociationMembershipCardConfiguration, User, Associate, SportAssociationInvoices, \
+from application.models.user_models import SportAssociation, SportAssociationMembershipCardConfiguration, User, Associate, \
     Testimonial, Instructor
 from application.serializers.auth_serializers import UserAuthSerializer, SportAssociationSerializer, \
-    UserAuthUpdateSerializer, UserSettingsSerializer, UserTablesSettingsSerializer, SportAssociationToolSerializer, \
-    SportAssociationInvoiceSerializer
+    UserAuthUpdateSerializer, UserSettingsSerializer, UserTablesSettingsSerializer, SportAssociationToolSerializer
 from application.utils.api_utils import ApiMessages, is_valid_uuid, BalanceSheetData, compress_base64
 from core.middleware import IsAuthenticated
 
@@ -484,32 +483,6 @@ def profile_settings_tables(request):
         user.save()
 
     return Response({'status': 'success'}, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile_invoice_list(request):
-
-    invoices = SportAssociationInvoices.objects.filter(sport_association=request.user.sport_association).order_by(
-        '-date_created')
-    invoices_list = SportAssociationInvoiceSerializer(invoices, many=True).data
-
-    return Response({'data': invoices_list}, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile_invoice_download(request, sport_association_invoice_id):
-
-    invoices = SportAssociationInvoices.objects.filter(
-        sport_association=request.user.sport_association,
-        sport_association_invoice_id=sport_association_invoice_id
-    ).first()
-
-    if invoices is None:
-        return Response({'error': 'invoice not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    return Response({'data': invoices.invoice}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])

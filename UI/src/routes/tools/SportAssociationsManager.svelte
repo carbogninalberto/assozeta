@@ -5,7 +5,6 @@
     import * as easing from 'svelte/easing';
     import {sessionToken, userData, role, permissions, billingData, selectedGroup, currentPage, subPage} from 'store/stores.js';
     import UserSwitch from 'components/buttons/UserSwitch.svelte';
-    import BillingInvoiceUploadButton from 'components/buttons/BillingInvoiceUploadButton.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {push} from 'svelte-spa-router';
@@ -272,15 +271,6 @@ import {push} from 'svelte-spa-router';
 
                     editBtn.$on('saved', () => {
                         datatable.reload();
-                    });
-
-                    let uploadInvoiceBtn = new BillingInvoiceUploadButton({
-                        target: document.querySelector(`#action-col-${row.user_id}`),
-                        intro: true,
-                        props: {
-                            disabled: false,
-                            sport_association_id: row?.sport_association_id,
-                        },
                     });
 
                     let switchBtn = new UserSwitch({

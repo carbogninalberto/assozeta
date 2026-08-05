@@ -44,8 +44,7 @@ from .views.invoice_views import invoice_list, invoice_list_export, invoice_list
 from .views.profile_views import profile_update, profile_update_subscription_template, profile_image, \
     profile_update_password, profile_associates_course, profile_associates_sport_association, \
     profile_settings, profile_info, profile_settings_tables, sport_association_list, \
-    profile_invoice_list, testimonials_update, testimonials_create, profile_integrations, \
-    sport_association_admin_update, export_all_data
+    testimonials_update, testimonials_create, profile_integrations, sport_association_admin_update, export_all_data
 from .views.search_views import search_all, search_profile
 from .views.statistic_views import statistic_dashboard, statistic_athlete_dashboard, check_inconsistencies, \
     statistic_report, attendance_day_mark_absent, attendance_day_delete, statistic_dashboard_layout, attendance_mark
@@ -162,7 +161,6 @@ urlpatterns = [
     path(r'profile/settings', profile_settings),
     path(r'profile/integrations', profile_integrations),
     path(r'profile/settings/tables', profile_settings_tables),
-    path(r'profile/billing-invoice/list', profile_invoice_list),
     path(r'profile/update/subscription/template', profile_update_subscription_template),
     path(r'calendar/events', full_events_calendar),
     path(r'calendar/events/update', full_events_calendar_update),

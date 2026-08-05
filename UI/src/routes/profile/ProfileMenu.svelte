@@ -4,7 +4,7 @@
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
     import {isMobile} from 'store/breakpointStore.js';
 
-    import {User, Sliders, FingerprintSimple, Password, StripeLogo, Money, Plugs, Database} from 'phosphor-svelte';
+    import {User, Sliders, FingerprintSimple, Password, StripeLogo, Plugs, Database} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
 
     sessionToken.useLocalStorage();
@@ -15,7 +15,7 @@
     userData.useLocalStorage();
     subPage.useLocalStorage();
 
-    let pages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'billing', 'data-management'];
+    let pages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'data-management'];
     export let changes = false;
 
     function checkParams() {
@@ -33,7 +33,7 @@
 
     const changeSubPage = function (page) {
         if ($subPage !== page) {
-            if ($subPage === 'stripe' || $subPage === 'billing' || !changes) {
+            if ($subPage === 'stripe' || !changes) {
                 subPage.set(page);
             } else {
                 const confirmed = confirm(
@@ -240,17 +240,6 @@
                                 <Plugs size="24" weight="duotone" />
                             </span>
                             <span class="navi-text font-size-lg">Integrazioni</span>
-                        </a>
-                    </div>
-                    <div class="navi-item mb-2">
-                        <a
-                            href="/#/profile"
-                            on:click={() => changeSubPage('billing')}
-                            class="navi-link py-4 {$subPage == 'billing' ? 'active' : ''}">
-                            <span class="menu-icon m-0 mr-md-3">
-                                <Money size="24" weight="duotone" />
-                            </span>
-                            <span class="navi-text font-size-lg">Fatturazione</span>
                         </a>
                     </div>
                     <div class="navi-item mb-2">

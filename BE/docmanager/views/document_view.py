@@ -10,7 +10,6 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
-from application.models.user_models import SportAssociationInvoices, SportAssociation
 from application.models.invoices_models import Invoice
 from core.middleware import IsAuthenticated
 from rest_framework.response import Response
@@ -23,8 +22,6 @@ import os
 from django.core.files.storage import default_storage
 
 from docmanager.models import Document
-import base64
-from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
@@ -177,42 +174,3 @@ def medical_certificate_document(request):
         }, status=status.HTTP_200_OK)
     else:
         raise TypeError("medical_certificate key not present!")
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def billing_invoice_document(request):
-
-    if request.user.is_superuser is False:
-        return Response({'error': 'Unauthorized'}, status.HTTP_401_UNAUTHORIZED)
-
-    data = request.data
-    if 'billing_invoice' in data.keys() and 'sport_association_id' in data.keys():
-        billing_invoice = data['billing_invoice']
-
-        sport_association = SportAssociation.objects.get(sport_association_id=data['sport_association_id'])
-
-        if sport_association is None:
-            return Response({'error': 'Sport Association not found'}, status.HTTP_404_NOT_FOUND)
-
-        document = Document.objects.create(filename=billing_invoice['name'])
-        document.save()
-
-        storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()), str(document.document_id))
-        file = os.path.join(storing_path, document.filename)
-
-        file_data = base64.b64decode(billing_invoice['file'])
-        file_like = BytesIO(file_data)
-
-        default_storage.save(file, file_like)
-
-
-        billing_invoice_doc = SportAssociationInvoices.objects.create(
-            document=document,
-            sport_association=sport_association,
-            invoice_date=billing_invoice['invoice_date'],
-        )
-        billing_invoice_doc.save()
-        return Response({'msg': 'success!'}, status=status.HTTP_200_OK)
-    else:
-        raise TypeError("billing_invoice key not present!")

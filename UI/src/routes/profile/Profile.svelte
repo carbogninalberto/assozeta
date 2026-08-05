@@ -8,7 +8,6 @@
     import {scale} from 'svelte/transition';
     import {subPage, role} from 'store/stores.js';
     import * as easing from 'svelte/easing';
-    import Billing from './sections/Billing.svelte';
     import Integrations from './sections/Integrations.svelte';
     import DataManagement from './sections/DataManagement.svelte';
     role.useLocalStorage();
@@ -51,10 +50,6 @@
 
                 {#if $subPage == 'integrations'}
                     <Integrations bind:changes />
-                {/if}
-
-                {#if $subPage == 'billing'}
-                    <Billing />
                 {/if}
 
                 {#if $subPage == 'data-management'}
