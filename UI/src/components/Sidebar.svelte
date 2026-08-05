@@ -34,7 +34,6 @@
         ChartBar,
         UserList,
         Gear,
-        ChatsTeardrop,
         Info,
         UserFocus,
         Bank,
@@ -54,7 +53,6 @@
         AddressBook,
         ClipboardText,
     } from 'phosphor-svelte';
-    import NewTicket from './NewTicket.svelte';
     import Portal from 'svelte-portal';
     import {toast} from 'svelte-sonner';
     import SmartSelect from 'components/formBuilder/preview-blocks/smart-select-input.svelte';
@@ -971,28 +969,6 @@
                             </a>
                         </div>
                     {/if}
-                {/if}
-                {#if canPerformAction('association.ticketing.create') && $role != 'athlete'}
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <div
-                        id="open-ticket"
-                        class={$currentPage == 'tickets' ? 'menu-item menu-item-active' : 'menu-item'}>
-                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <!-- svelte-ignore a11y-no-static-element-interactions -->
-                        <!-- svelte-ignore a11y-missing-attribute -->
-                        <a
-                            data-toggle="modal"
-                            data-target="#newTicketModal"
-                            class="menu-link"
-                            on:click={collapseSidebar}>
-                            <span class="menu-icon">
-                                <ChatsTeardrop size={24} weight="duotone" />
-                            </span>
-                            <span class="menu-text"
-                                >Assistenza <span class="d-none d-md-inline ml-1">Tecnica</span></span>
-                        </a>
-                    </div>
-                    <NewTicket />
                 {/if}
                 {#if $oemConfig?.displaySettings?.sidebar?.showManual && $oemConfig?.manualUrl}
                     <!-- svelte-ignore a11y-role-supports-aria-props -->

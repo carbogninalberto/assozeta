@@ -434,10 +434,7 @@
                     }}>
                     <div slot="search-header">
                         <div class="col-12 col-md-auto p-0 text-right text-md-left p-md-auto m-0 mx-md-1 my-2 my-md-0">
-                            <QueryFilter
-                                {filters}
-                                showMore={false}
-                                on:filter-applied={handleFilterApplied} />
+                            <QueryFilter {filters} on:filter-applied={handleFilterApplied} />
                         </div>
                     </div>
                 </BKNDatatable>

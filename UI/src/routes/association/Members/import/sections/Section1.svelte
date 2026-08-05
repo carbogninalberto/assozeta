@@ -1,6 +1,7 @@
 <script>
     import {onMount} from 'svelte';
     import {sessionToken} from 'store/stores.js';
+    import {oemConfig} from 'store/instanceStore.js';
     import {createDropzone} from 'shim/dropzone.js';
     import {toast} from 'svelte-sonner';
 
@@ -47,9 +48,15 @@
             </p>
             <p class="text-left">
                 <span class="font-weight-boldest h6">Posso importare un file con un formato diverso?</span><br />
-                Sì, dovrai collegare manualmente le colonne corrispondenti, se hai bisogno di aiuto contattaci aprendo un
-                ticket dalla barra laterale a sinistra
-                <code class="font-weight-boldest">Altro &gt; Assistenza Tecnica</code>
+                Sì, dovrai collegare manualmente le colonne corrispondenti. Se hai bisogno di aiuto,
+                {#if $oemConfig?.supportEmail}
+                    contatta il supporto a
+                    <a href="mailto:{$oemConfig.supportEmail}" class="font-weight-boldest">
+                        {$oemConfig.supportEmail}</a
+                    >.
+                {:else}
+                    contatta il supporto.
+                {/if}
             </p>
         </div>
     </div>

@@ -15,6 +15,7 @@
     import AdditionalFields from './partials/AdditionalFields.svelte';
     import LinkShareHeader from './share/link-share-header.svelte';
     import {UiApp} from 'shim/ui.js';
+    import {oemConfig} from 'store/instanceStore.js';
 
     let isShowPreview = false;
     let userData;
@@ -326,11 +327,16 @@
                                     </span>
                                     <br />
                                     <span>
-                                        <a
-                                            data-toggle="modal"
-                                            data-target="#newTicketModal"
-                                            class="font-weight-boldest"
-                                            style="cursor:pointer;">Apri un ticket</a> e ti risponderemo il prima possibile.
+                                        {#if $oemConfig?.supportEmail}
+                                            <a
+                                                href="mailto:{$oemConfig.supportEmail}"
+                                                class="font-weight-boldest"
+                                                >Contatta il supporto</a
+                                            >
+                                        {:else}
+                                            Contatta il supporto
+                                        {/if}
+                                        e ti risponderemo il prima possibile.
                                     </span>
                                 </span>
                             </div>

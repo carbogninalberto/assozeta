@@ -4,9 +4,6 @@ export const allPermissions = [
     // dashboard
     'association.dashboard.read',
 
-    // ticketing
-    'association.ticketing.create',
-
     // calendar
     'association.calendar.read',
 
@@ -214,7 +211,6 @@ const planBasedResources = {
         'bookeeping.documents.invoices.update',
         'bookeeping.documents.invoices.delete',
         'association.calendar.read',
-        'association.ticketing.create',
         'association.events.read',
         'association.events.create',
         'association.events.update',
@@ -334,7 +330,7 @@ export const setPermissions = function (planType, role) {
             permissions.set(collaboratorPermissions);
             return;
         } else if (collaboratorPermissions.length == 0) {
-            permissions.set(['association.ticketing.create', 'other.settings.read']);
+            permissions.set(['other.settings.read']);
             return;
         }
     }

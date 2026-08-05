@@ -776,10 +776,7 @@ toast.success(res.response.data?.msg || 'Corso aggiornato');
                     {loadFilters}
                     showDividerFilter={false}>
                     <div slot="search-header" class="my-1 my-md-0 mr-2">
-                        <QueryFilter
-                            {filters}
-                            showMore={false}
-                            on:filter-applied={handleFilterApplied} />
+                        <QueryFilter {filters} on:filter-applied={handleFilterApplied} />
                     </div>
                     <div slot="search-actions">
                         <div class="my-2 mr-1">

@@ -8,9 +8,6 @@
         // dashboard
         'association.dashboard.read',
 
-        // ticketing
-        'association.ticketing.create',
-
         // calendar
         'association.calendar.read',
 
@@ -184,7 +181,6 @@
     let collaboratorPermissionsMap = {
         // Dashboard
         'association.dashboard.read': 'Vedi dashboard',
-        'association.ticketing.create': 'Crea ticket di supporto',
         'association.calendar.read': 'Vedi calendario generale',
 
         // Personas
@@ -341,7 +337,6 @@
     // order is changed for the view
     let resources = [
         'association.dashboard',
-        'association.ticketing',
         'association.calendar',
         'association.report',
         'association.archive',
@@ -377,7 +372,6 @@
 
     let resourcesMap = {
         'association.dashboard': 'Dashboard',
-        'association.ticketing': 'Ticketing',
         'association.calendar': 'Calendario',
         'association.members': 'Iscrizioni',
         'association.modules': 'Moduli',

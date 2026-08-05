@@ -386,11 +386,6 @@ PERMISSIONS_REGISTRY = {
     'testimonials/update': 'other.settings.update',
 
     # ============================================
-    # Ticketing
-    # ============================================
-    # Note: No ticket endpoints in current urls.py, but permission exists in frontend
-
-    # ============================================
     # Google Integration
     # ============================================
     'google/check': 'other.settings.read',
