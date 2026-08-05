@@ -135,6 +135,7 @@ function getEndpoint(category, endpoint, apiHost) {
     const fallbackPaths = {
         INSTANCE: {
             STATUS: `${apiHost}/instance/status`,
+            VALIDATE_SETUP_TOKEN: `${apiHost}/instance/setup-token/validate`,
             CONFIG: `${apiHost}/instance/config`,
             CONFIGURE: `${apiHost}/instance/configure`,
             LOGO: `${apiHost}/instance/logo`,
@@ -156,7 +157,7 @@ function getEndpoint(category, endpoint, apiHost) {
 
 function getSetupTokenHeaders(setupToken) {
     return {
-        'X-Setup-Token': setupToken || ''
+        'X-Setup-Token': (setupToken || '').trim()
     };
 }
 
@@ -196,6 +197,31 @@ export function clearInstanceCache() {
     } catch (e) {
         console.warn('Failed to clear instance cache:', e);
     }
+}
+
+/**
+ * Validate the first-run setup token without changing instance state.
+ * @param {string} setupToken - First-run setup token
+ * @returns {Promise<Object>} - Validation result
+ */
+export async function validateSetupToken(setupToken = '') {
+    const apiHost = getApiHost();
+    const response = await fetch(getEndpoint('INSTANCE', 'VALIDATE_SETUP_TOKEN', apiHost), {
+        method: 'POST',
+        headers: getSetupTokenHeaders(setupToken)
+    });
+
+    let result = {};
+    try {
+        result = await response.json();
+    } catch (e) {
+        // Keep the response status as the source of truth when no JSON is returned.
+    }
+
+    return {
+        valid: response.ok && result.valid === true,
+        error: result.error || result.detail || (response.ok ? null : 'Token di setup non valido')
+    };
 }
 
 /**
@@ -331,6 +357,10 @@ export async function saveInstanceConfig(config, setupToken = '') {
 
     const result = await response.json();
 
+    if (!response.ok && !result.error) {
+        result.error = result.detail || 'Configurazione non autorizzata';
+    }
+
     if (response.ok && result.success) {
         // Clear cache and reload config
         clearInstanceCache();
@@ -361,7 +391,7 @@ export async function uploadInstanceLogo(file, setupToken = '') {
     const result = await response.json();
 
     if (!response.ok || !result.success || !result.logo_url) {
-        throw new Error(result.error || 'Logo upload failed');
+        throw new Error(result.error || result.detail || 'Logo upload failed');
     }
 
     return result;

@@ -2,6 +2,7 @@
 	import { ArrowRight, Info as LucideInfo } from 'lucide-svelte';
     import {createEventDispatcher} from 'svelte';
     import {Info, Globe, Link} from 'phosphor-svelte';
+    import {validateSetupToken} from 'store/instanceStore.js';
 
     export let config = {
         domain: ''
@@ -12,8 +13,11 @@
 
     let error = null;
     let tokenError = null;
+    let validatingToken = false;
 
-    function validateAndNext() {
+    async function validateAndNext() {
+        if (validatingToken) return;
+
         error = null;
         tokenError = null;
 
@@ -33,12 +37,27 @@
             }
         }
 
-        if (!setupToken || setupToken.trim() === '') {
+        const normalizedSetupToken = setupToken.trim();
+        if (!normalizedSetupToken) {
             tokenError = 'Il token di setup è obbligatorio';
             return;
         }
 
-        dispatch('next');
+        validatingToken = true;
+        try {
+            const result = await validateSetupToken(normalizedSetupToken);
+            if (!result.valid) {
+                tokenError = result.error || 'Il token di setup non è valido';
+                return;
+            }
+
+            setupToken = normalizedSetupToken;
+            dispatch('next');
+        } catch (e) {
+            tokenError = 'Impossibile verificare il token di setup. Riprova.';
+        } finally {
+            validatingToken = false;
+        }
     }
 </script>
 
@@ -112,9 +131,10 @@
         <button
             type="button"
             class="btn btn-primary font-weight-bolder"
+            disabled={validatingToken}
             on:click={validateAndNext}
         >
-            Continua
+            {validatingToken ? 'Verifica...' : 'Continua'}
             <ArrowRight size={16} class="ml-2" />
         </button>
     </div>

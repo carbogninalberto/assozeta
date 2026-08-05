@@ -40,6 +40,28 @@ class InstanceSetupOnboardingTests(TestCase):
             format='json',
         )
 
+    def test_setup_token_can_be_validated_before_configuration(self):
+        valid_response = self.client.post(
+            '/instance/setup-token/validate',
+            HTTP_X_SETUP_TOKEN='setup-token',
+        )
+        invalid_response = self.client.post(
+            '/instance/setup-token/validate',
+            HTTP_X_SETUP_TOKEN='wrong-token',
+        )
+
+        self.assertEqual(valid_response.status_code, 200)
+        self.assertTrue(valid_response.data['valid'])
+        self.assertEqual(invalid_response.status_code, 401)
+
+    def test_public_status_ignores_a_stale_authorization_header(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer stale-token')
+
+        response = self.client.get('/instance/status')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data['configured'])
+
     def _create_association(self, email, denomination='Legacy ASD'):
         user = User.objects.create_user(
             username=email,

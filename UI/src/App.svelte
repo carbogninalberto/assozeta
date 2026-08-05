@@ -65,6 +65,16 @@
         }
     }
 
+    function clearStaleSession() {
+        sessionToken.set(null);
+        refreshToken.set(null);
+        expires.set(null);
+        userDataStore.set({});
+        role.set(null);
+        localStorage.removeItem('switched_superuser');
+        localStorage.removeItem('USER_ID');
+    }
+
     // Reactive statement for user preference (only when logged in)
     $: {
         if (!$sessionToken || $sessionToken === 'null') {
@@ -106,6 +116,9 @@
 
             // If not configured, show setup wizard (don't continue with app initialization)
             if (!instanceConfigured) {
+                if ($instanceStatus.configured === false) {
+                    clearStaleSession();
+                }
                 return;
             }
         } else {

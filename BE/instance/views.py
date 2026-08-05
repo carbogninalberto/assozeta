@@ -40,6 +40,7 @@ class InstanceStatusView(APIView):
     Check if instance is configured.
     Public endpoint - no authentication required.
     """
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -52,12 +53,21 @@ class InstanceStatusView(APIView):
         })
 
 
+class InstanceSetupTokenValidateView(APIView):
+    """Validate the first-run setup token without changing instance state."""
+    permission_classes = [SetupTokenOrAuthenticated]
+
+    def post(self, request):
+        return Response({"valid": True})
+
+
 class InstanceConfigView(APIView):
     """
     GET /instance/config
     Get full instance configuration for frontend.
     Public endpoint - no authentication required.
     """
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -391,6 +401,7 @@ class InstanceLogoServeView(APIView):
     GET /instance/logo.png (or .jpg, .svg, .webp)
     Serve the instance logo.
     """
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -424,6 +435,7 @@ class InstanceManifestView(APIView):
     GET /instance/manifest.json
     Dynamic PWA manifest.
     """
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):

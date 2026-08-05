@@ -1,5 +1,5 @@
 <script>
-	import { ArrowLeft, Building, Check, Info as LucideInfo, X } from 'lucide-svelte';
+	import { ArrowLeft, Check, Info as LucideInfo, X } from 'lucide-svelte';
     import {createEventDispatcher} from 'svelte';
     import {Palette, Image, CaretDown, CaretUp, Info} from 'phosphor-svelte';
 
@@ -23,6 +23,7 @@
 
     let errors = {};
     let showAdvanced = false;
+    const defaultLogoUrl = '/oem/assozeta/brand/logo.svg';
 
     function handleLogoSelect(e) {
         const file = e.target.files[0];
@@ -107,7 +108,7 @@
 
     <!-- Logo upload -->
     <div class="form-group">
-        <label class="col-form-label font-weight-bolder">Logo</label>
+        <label class="col-form-label font-weight-bolder">Logo (opzionale)</label>
 
         {#if config.logoPreview}
             <div class="logo-preview d-flex align-items-center p-3 bg-light rounded-lg">
@@ -123,12 +124,20 @@
                 </button>
             </div>
         {:else}
-            <label class="logo-upload d-flex flex-column align-items-center justify-content-center p-4 rounded-lg cursor-pointer">
-                <Image size={32} weight="duotone" class="text-muted mb-2" />
-                <span class="text-muted font-weight-bold">Clicca per caricare il logo</span>
-                <small class="text-muted font-size-sm">PNG, JPG o WebP (max 5MB)</small>
-                <input type="file" accept=".png,.jpg,.jpeg,.webp" class="d-none" on:change={handleLogoSelect} />
-            </label>
+            <div class="logo-preview d-flex align-items-center p-3 bg-light rounded-lg">
+                <div class="preview-image mr-3">
+                    <img src={defaultLogoUrl} alt="Logo Assozeta predefinito" />
+                </div>
+                <div class="flex-grow-1">
+                    <p class="mb-0 font-weight-bolder">Logo Assozeta</p>
+                    <small class="text-muted font-size-sm">Verrà usato se non scegli un logo personalizzato</small>
+                </div>
+                <label class="btn btn-sm btn-light font-weight-bolder mb-0 cursor-pointer">
+                    <Image size={16} weight="duotone" class="mr-1" />
+                    Sostituisci
+                    <input type="file" accept=".png,.jpg,.jpeg,.webp" class="d-none" on:change={handleLogoSelect} />
+                </label>
+            </div>
         {/if}
         {#if errors.logo}
             <div class="invalid-feedback d-block">{errors.logo}</div>
@@ -266,9 +275,7 @@
             {#if config.logoPreview}
                 <img src={config.logoPreview} alt="Logo" class="preview-logo mr-3" />
             {:else}
-                <div class="preview-logo-placeholder mr-3" style="background-color: {config.primaryColor}20;">
-                    <Building size={16} style="color: {config.primaryColor};" />
-                </div>
+                <img src={defaultLogoUrl} alt="Logo Assozeta" class="preview-logo mr-3" />
             {/if}
             <div>
                 <h5 class="mb-0 font-weight-bolder" style="color: {config.primaryColor};">{config.name || 'Nome Istanza'}</h5>
@@ -318,17 +325,6 @@
         align-items: center;
         justify-content: center;
         color: var(--main-color, #351DC2);
-    }
-
-    .logo-upload {
-        border: 2px dashed #e4e6ef;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .logo-upload:hover {
-        border-color: var(--main-color, #351DC2);
-        background-color: rgba(53, 29, 194, 0.02);
     }
 
     .logo-preview {
@@ -392,13 +388,4 @@
         object-fit: contain;
     }
 
-    .preview-logo-placeholder {
-        width: 50px;
-        height: 50px;
-        border-radius: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
 </style>

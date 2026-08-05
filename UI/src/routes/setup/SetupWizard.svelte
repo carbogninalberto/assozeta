@@ -1,7 +1,8 @@
 <script>
-    import {AlertTriangle, Check as LucideCheck} from 'lucide-svelte';
+    import {Check as LucideCheck} from 'lucide-svelte';
     import {onMount} from 'svelte';
-    import {fade, scale, fly} from 'svelte/transition';
+    import {fly} from 'svelte/transition';
+    import {toast} from 'svelte-sonner';
     import {
         saveInstanceConfig,
         uploadInstanceLogo,
@@ -18,7 +19,6 @@
     // Wizard state
     let currentStep = 1;
     let loading = false;
-    let error = null;
 
     // Step 1: Domain configuration
     let domainConfig = {
@@ -100,7 +100,6 @@
 
     async function handleFinalSubmit() {
         loading = true;
-        error = null;
 
         try {
             // Upload logo if provided
@@ -145,11 +144,12 @@
             if (result.success) {
                 setupResult = result;
                 currentStep = 5;
+                toast.success('Configurazione completata con successo.');
             } else {
-                error = result.error || 'Si è verificato un errore durante la configurazione';
+                toast.error(result.error || 'Si è verificato un errore durante la configurazione');
             }
         } catch (e) {
-            error = e.message || 'Si è verificato un errore durante la configurazione';
+            toast.error(e.message || 'Si è verificato un errore durante la configurazione');
         } finally {
             loading = false;
         }
@@ -215,13 +215,6 @@
         class="setup-content flex-grow-1 d-flex align-items-center justify-content-center py-5 px-4 position-relative"
         style="z-index: 1;">
         <div class="setup-card bg-white rounded-lg border" style="max-width: 600px; width: 100%;">
-            {#if error}
-                <div class="alert alert-danger m-4" transition:fade>
-                    <AlertTriangle size={16} class="mr-2" />
-                    {error}
-                </div>
-            {/if}
-
             <div class="p-5">
                 {#if currentStep === 1}
                     <div in:fly={{x: 20, duration: 200}}>

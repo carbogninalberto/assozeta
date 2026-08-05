@@ -41,6 +41,7 @@ export const buildConfig = function(config={
                     // Instance configuration endpoints (for self-hosted mode)
                     INSTANCE: {
                         STATUS: `${apiHost}/instance/status`,
+                        VALIDATE_SETUP_TOKEN: `${apiHost}/instance/setup-token/validate`,
                         CONFIG: `${apiHost}/instance/config`,
                         CONFIGURE: `${apiHost}/instance/configure`,
                         LOGO: `${apiHost}/instance/logo`,
