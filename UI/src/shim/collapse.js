@@ -17,15 +17,15 @@ export function toggleCollapse(id) {
 export function showCollapse(el) {
   if (typeof el === 'string') el = document.getElementById(el);
   if (!el) return;
-  el.style.maxHeight = el.scrollHeight + 'px';
   el.classList.add('show');
+  el.style.removeProperty('max-height');
 }
 
 export function hideCollapse(el) {
   if (typeof el === 'string') el = document.getElementById(el);
   if (!el) return;
-  el.style.maxHeight = '0';
   el.classList.remove('show');
+  el.style.removeProperty('max-height');
 }
 
 // --- Trigger state helpers ---

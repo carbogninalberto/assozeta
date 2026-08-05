@@ -67,7 +67,7 @@
                         message: 'La data di nascita è obbligatoria.',
                     },
                     date: {
-                        format: 'DD/MM/YYYY',
+                        format: 'YYYY-MM-DD',
                         message: 'La data di nascita non è in un formato valido',
                     },
                 },
@@ -174,7 +174,7 @@
                 [`tutor_${index}_born_date`]: {
                     validators: {
                         date: {
-                            format: 'DD/MM/YYYY',
+                            format: 'YYYY-MM-DD',
                             message: 'La data di nascita non è in un formato valido',
                         },
                     },
@@ -217,15 +217,18 @@
     function cleanData(data) {
         // clean the select and multiple select to just set the value
         data = {...associate};
-        data.born_date = moment(data.born_date).format('DD/MM/YYYY');
+        data.born_date = data.born_date ? moment(data.born_date).format('DD/MM/YYYY') : null;
 
-        data.tutors_data = [...associate.tutors];
+        data.tutors_data = associate.tutors.map(relation => ({
+            ...relation,
+            tutor: {
+                ...relation.tutor,
+                born_date: relation.tutor.born_date
+                    ? moment(relation.tutor.born_date).format('DD/MM/YYYY')
+                    : null,
+            },
+        }));
         data.notes = associate.notes && associate.notes != '' && associate.notes != '<p></p>' ? associate.notes : null;
-
-        // refactor the born_date to be a DD/MM/YYY date for tutors
-        data.tutors_data.forEach(tutor => {
-            tutor.tutor.born_date = moment(tutor.tutor.born_date).format('DD/MM/YYYY');
-        });
 
         return data;
     }

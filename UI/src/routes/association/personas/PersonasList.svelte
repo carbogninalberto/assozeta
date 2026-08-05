@@ -1,5 +1,6 @@
 <script>
-	import { Search, User } from 'lucide-svelte';
+	import { Search } from 'lucide-svelte';
+	import { createElement as createLucideElement, User as userIcon } from 'lucide';
     import moment from 'moment';
     import swal from 'sweetalert2';
     import {sessionToken, userData} from 'store/stores.js';
@@ -27,6 +28,13 @@
     let datatable;
     let visibleMultiaction = false;
     let selectedCounter = 0;
+
+    const userIconElement = createLucideElement(userIcon);
+    userIconElement.setAttribute('width', '16');
+    userIconElement.setAttribute('height', '16');
+    userIconElement.setAttribute('class', 'text-light-dark');
+    userIconElement.setAttribute('aria-hidden', 'true');
+    const userIconMarkup = userIconElement.outerHTML;
 
     function deleteSelected() {
         swal.fire({
@@ -187,7 +195,7 @@
                             minWidth: '100%',
                             template: row => {
                                 if (!row.picture_path) {
-                                    return '<div class="symbol symbol-30 symbol-light"><span class="symbol-label font-size-h5 rounded-circle"><User size={16} class="text-light-dark" /></span></div>';
+                                    return `<div class="symbol symbol-30 symbol-light"><span class="symbol-label font-size-h5 rounded-circle">${userIconMarkup}</span></div>`;
                                 }
                                 return `<div class="d-flex justify-content-start"><div class="symbol symbol-30 rounded-circle overflow-hidden border border-secondary shadow-xs"><img src="${row.picture_path}" style="object-fit: cover !important;" alt=""/></div></div>`;
                             },

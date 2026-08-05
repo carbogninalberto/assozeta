@@ -26749,9 +26749,9 @@ code {
     -webkit-transition: all 0.15s ease;
     transition: all 0.15s ease;
     position: absolute;
-    font-family: Ki;
+    font-family: Arial, sans-serif;
     font-style: normal;
-    font-weight: normal;
+    font-weight: 700;
     font-variant: normal;
     line-height: 1;
     text-decoration: inherit;
@@ -26760,7 +26760,7 @@ code {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     font-smoothing: antialiased;
-    content: "";
+    content: "\2212";
     font-size: 0.75rem;
     color: #351DC2; }
   .accordion.accordion-toggle-plus .card .card-header .card-title.collapsed {
@@ -26769,9 +26769,9 @@ code {
       -webkit-transition: all 0.15s ease;
       transition: all 0.15s ease;
       color: #7E8299;
-      font-family: Ki;
+      font-family: Arial, sans-serif;
       font-style: normal;
-      font-weight: normal;
+      font-weight: 700;
       font-variant: normal;
       line-height: 1;
       text-decoration: inherit;
@@ -26780,7 +26780,7 @@ code {
       -moz-osx-font-smoothing: grayscale;
       -webkit-font-smoothing: antialiased;
       font-smoothing: antialiased;
-      content: ""; }
+      content: "+"; }
 
 .accordion.accordion-toggle-arrow .card .card-header .card-title {
   color: #351DC2;
@@ -28399,9 +28399,9 @@ code {
       cursor: not-allowed;
       opacity: 0.5; }
   .switch.switch-icon input:checked ~ span:after {
-    font-family: Ki;
+    font-family: Arial, sans-serif;
     font-style: normal;
-    font-weight: normal;
+    font-weight: 700;
     font-variant: normal;
     line-height: 1;
     text-decoration: inherit;
@@ -28410,8 +28410,8 @@ code {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     font-smoothing: antialiased;
-    content: "";
-    line-height: 0; }
+    content: "\2713";
+    line-height: 1; }
 
 .switch input:empty ~ span {
   margin: 2px 0;
