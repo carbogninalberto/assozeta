@@ -146,10 +146,8 @@ export default {
         // Condition is logged
         conditions: [
             () => {
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
-                    currentPage.set('search');
+                    currentPage.set('dashboard');
                     return true;
                 }
             },

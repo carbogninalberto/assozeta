@@ -29,6 +29,7 @@ from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
 from application.serializers.user_serializers import AssociateSerializer
 from application.utils.api_utils import BalanceSheetData, is_valid_uuid
 from communications.models import MessageTransaction, Message
+from instance.models import InstanceConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -717,13 +718,29 @@ def statistic_athlete_dashboard(request):
         return Response({'error: forbidden.'}, status.HTTP_403_FORBIDDEN)
 
     try:
-        # get all subscriptions
-        # Get subscriptions for this user
-        user_subscriptions = Subscription.objects.filter(user=request.user)
+        instance_config = InstanceConfiguration.objects.select_related(
+            'primary_association__user'
+        ).first()
+        if instance_config is None or instance_config.primary_association is None:
+            logger.error(
+                "Athlete dashboard unavailable: primary association is not configured",
+                extra={"user_id": str(request.user.user_id)},
+            )
+            return Response(
+                {'error': 'Primary sport association is not configured.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        sport_association = instance_config.primary_association
+        user_subscriptions = Subscription.objects.filter(
+            user=request.user,
+            sport_association=sport_association,
+        )
         logger.debug(
             "User subscriptions retrieved",
             extra={
                 "user_id": str(request.user.user_id),
+                "sport_association_id": str(sport_association.sport_association_id),
                 "subscription_count": user_subscriptions.count(),
             }
         )
@@ -733,9 +750,13 @@ def statistic_athlete_dashboard(request):
             associate__tax_code__isnull=False
         ).values_list('associate__tax_code', flat=True).distinct()
 
-        # Get all subscriptions for users with those tax codes, plus original user subscriptions
-        subscriptions: list[Subscription] = Subscription.objects.filter(
-            Q(user=request.user) | Q(associate__tax_code__in=tax_codes)
+        # Family subscriptions remain visible, but only inside this self-hosted association.
+        subscriptions = Subscription.objects.filter(
+            sport_association=sport_association,
+        ).filter(
+            Q(user=request.user) |
+            Q(associate__user=request.user) |
+            Q(associate__tax_code__in=tax_codes)
         ).distinct()
 
         logger.debug(
@@ -747,94 +768,47 @@ def statistic_athlete_dashboard(request):
             }
         )
 
-        # group by sport association
-        sport_associations = {}
+        active_subscriptions = [subscription for subscription in subscriptions if subscription.active]
+        communication_message_transaction_posts = MessageTransaction.objects.filter(
+            recipient=sport_association.sport_association_id,
+            sent_on__gte=timezone.now() - timedelta(days=14),
+            message__type=Message.INSIDE_APP
+        ).order_by('-sent_on')[:5]
 
-        try:
-            if settings.IS_WHITELABEL and settings.DEFAULT_SPORT_ASSOCIATION_ID is not None:
-                s = SportAssociation.objects.filter(sport_association_id=settings.DEFAULT_SPORT_ASSOCIATION_ID).first()
-                if s is not None:
-                    sport_associations = {
-                        s: [sub for sub in subscriptions.filter(sport_association=s) if sub.active]
-                    }
-                    logger.debug(
-                        "Whitelabel sport association loaded",
-                        extra={
-                            "user_id": str(request.user.user_id),
-                            "sport_association_id": str(s.sport_association_id),
-                            "active_subscriptions": len(sport_associations[s]),
-                        }
-                    )
-        except Exception as e:
-            logger.error(
-                "Error loading whitelabel sport association",
-                extra={
-                    "user_id": str(request.user.user_id),
-                    "error": str(e),
-                    "error_type": type(e).__name__,
+        data = [{
+            "sport_association": {
+                "denomination": sport_association.denomination,
+                "sport_association_id": sport_association.sport_association_id,
+                "user": {
+                    "user_id": sport_association.user.user_id,
+                    "avatar_image": sport_association.user.avatar_image,
+                    "first_name": sport_association.user.first_name,
+                    "last_name": sport_association.user.last_name,
+                    "username": sport_association.user.username,
                 },
-                exc_info=True
-            )
-
-        if settings.IS_WHITELABEL is False and settings.DEFAULT_SPORT_ASSOCIATION_ID is None:
-            for subscription in subscriptions:
-                if subscription.sport_association not in sport_associations:
-                    sport_associations[subscription.sport_association] = []
-                if subscription.active:
-                    sport_associations[subscription.sport_association].append(subscription)
-
-            logger.debug(
-                "Sport associations grouped",
-                extra={
-                    "user_id": str(request.user.user_id),
-                    "sport_association_count": len(sport_associations),
-                }
-            )
-
-        # return data with sport association name and number of subscriptions
-        data = []
-        for sport_association in sport_associations:
-            # let's get the communication message transaction post for each sport association
-            communication_message_transaction_posts = MessageTransaction.objects.filter(
-                recipient=sport_association.sport_association_id,
-                sent_on__gte=timezone.now() - timedelta(days=14),
-                message__type=Message.INSIDE_APP
-            ).order_by('-sent_on')[:5]
-
-            data.append({
-                "sport_association": {
-                    "denomination": sport_association.denomination,
-                    "sport_association_id": sport_association.sport_association_id,
-                    "user": {
-                        "user_id": sport_association.user.user_id,
-                        "avatar_image": sport_association.user.avatar_image,
-                        "first_name": sport_association.user.first_name,
-                        "last_name": sport_association.user.last_name,
-                        "username": sport_association.user.username,
-                    },
-                    "review_url": sport_association.review_url,
-                    "review_url_enabled": sport_association.review_url_enabled,
-                    "communications": [
-                        {
-                            "message": c.message.message,
-                            "sent_on": c.sent_on,
-                        } for c in communication_message_transaction_posts
-                    ]
-                },
-                "subscriptions": len(sport_associations[sport_association])
-            })
+                "review_url": sport_association.review_url,
+                "review_url_enabled": sport_association.review_url_enabled,
+                "communications": [
+                    {
+                        "message": communication.message.message,
+                        "sent_on": communication.sent_on,
+                    } for communication in communication_message_transaction_posts
+                ]
+            },
+            "subscriptions": len(active_subscriptions)
+        }]
 
         upcoming_lessons = []
-        active_subscriptions = subscriptions.filter(archived=False)
+        subscriptions_with_lessons = subscriptions.filter(archived=False)
         logger.debug(
             "Processing upcoming lessons",
             extra={
                 "user_id": str(request.user.user_id),
-                "active_subscriptions": active_subscriptions.count(),
+                "active_subscriptions": subscriptions_with_lessons.count(),
             }
         )
 
-        for subscription in active_subscriptions:
+        for subscription in subscriptions_with_lessons:
             # get upcoming lessons for each course
             course_subscriptions = CourseSubscription.objects.filter(
                 subscription=subscription
@@ -911,7 +885,7 @@ def statistic_athlete_dashboard(request):
             "Athlete dashboard request completed successfully",
             extra={
                 "user_id": str(request.user.user_id),
-                "sport_associations_count": len(sport_associations),
+                "sport_associations_count": 1,
                 "upcoming_lessons_count": len(upcoming_lessons),
             }
         )

@@ -8,22 +8,18 @@ import redis
 import secrets
 import re
 
-import stripe
 from disposable_email_checker.validators import validate_disposable_email
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 import pyotp
-import pytz
 from django.db import IntegrityError
 from django.template.loader import render_to_string
 
-from application.models import BillingSubscription, BillingPlan
-from application.models.balance_sheet_models import CustomAccounts
 from application.models.subscriptions_models import SubscriptionTransfer
 from application.serializers.auth_serializers import UserSerializer, SportAssociationSerializer, \
     UserSerializerSignup
-from application.models.user_models import User, SportAssociation, UserPartial, CollaborationInvites, UsersOnboarding
+from application.models.user_models import User, UserPartial, CollaborationInvites
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -31,8 +27,7 @@ from rest_framework import status
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
 
-from application.utils.api_utils import generate_readable_unique_string, export_customer_to_crm, \
-    migrate_bcrypt_to_django
+from application.utils.api_utils import migrate_bcrypt_to_django
 from application.services.social_auth_service import SocialAuthService
 from application.services.jwt_token_service import JWTTokenService
 from core.middleware import IsAuthenticated
@@ -267,13 +262,38 @@ def oauth2_signup(request):
     is_external_user = False
     user = None
     sport_association = None
-    billing_sub = None
+
+    if 'sport_association' not in data:
+        return Response({
+            "msg": "Invalid request.",
+            "details": {"sport_association": ["This field is required."]},
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if not isinstance(data['sport_association'], bool):
+        return Response({
+            "msg": "Invalid request.",
+            "details": {"sport_association": ["Must be a boolean."]},
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    if data['sport_association']:
+        logger.warning(
+            "Association signup blocked",
+            extra={'email': data.get('email', 'unknown')},
+        )
+        return Response({
+            "msg": "Invalid request.",
+            "details": {
+                "sport_association": [
+                    "Association accounts can only be created during instance setup."
+                ]
+            },
+        }, status=status.HTTP_403_FORBIDDEN)
 
     # check if there is a sub transfer token in data
     subscription_transfer = False
     subscription_transfer_token = None
     subscription_transfer_obj = None
-    role = User.ASSOCIATION if data['sport_association'] else User.ATHLETE
+    role = User.ATHLETE
 
     # validate email
     try:
@@ -341,8 +361,6 @@ def oauth2_signup(request):
 
     serialized = UserSerializerSignup(data=data)
     validated = serialized.is_valid()
-    sport_association_serialized = SportAssociationSerializer(data=data)
-
 
     # checking type of login
     if validated or is_external_user is True:
@@ -385,88 +403,10 @@ def oauth2_signup(request):
                 subscription_transfer_obj.recipient = user
                 subscription_transfer_obj.save()
 
-            if data['sport_association']:
-                logger.info("Creating sport association", extra={'user_id': str(user.user_id), 'denomination': sport_association_serialized.initial_data.get('denomination')})
-                sport_association = SportAssociation.objects.create(
-                    user=user,
-                    denomination=sport_association_serialized.initial_data['denomination'],
-                    tax_code=sport_association_serialized.initial_data['tax_code']
-                )
-                sport_association.save()
-
-                # generate the stripe coupon
-                logger.info("Creating Stripe coupon", extra={'user_id': str(user.user_id), 'sport_association_id': str(sport_association.sport_association_id)})
-                coupon = generate_readable_unique_string()
-                # generate the coupon in stripe
-                coupon_stripe = stripe.Coupon.create(
-                    percent_off=10.0,
-                    duration="once",
-                    name="{}".format(sport_association.denomination)[:40],
-                )
-                stripe.PromotionCode.create(
-                    coupon=coupon_stripe.id,
-                    code=coupon,
-                    active=True,
-                )
-                sport_association.affiliate_code = coupon
-
-                # update the field in sport association
-                sport_association.affiliate_code_stripe = coupon_stripe.id
-                sport_association.save()
-
-                custom_account = CustomAccounts.objects.create(
-                    name='cassa',
-                    initial_balance=0,
-                    account_type=1,
-                    account_code='cassa',
-                    editable=False,
-                    sport_association=sport_association,
-                )
-                custom_account.save()
-
-                # adding banca
-                custom_account = CustomAccounts.objects.create(
-                    name='banca',
-                    initial_balance=0,
-                    account_type=2,
-                    account_code='banca',
-                    editable=False,
-                    sport_association=sport_association,
-                )
-                custom_account.save()
-
-                # adding default plan
-                base_plan = BillingPlan.objects.filter(name__exact="Piano Pro").first()
-                if base_plan is not None:
-                    billing_sub, billing_sub_created = BillingSubscription.objects.get_or_create(
-                        user=user,
-                        auto_renewal=True,
-                        renewal_type=BillingSubscription.ANNUALLY,
-                        ends_on=pytz.timezone('Europe/Rome').localize(datetime.datetime.now() +
-                                                                      datetime.timedelta(days=14),
-                                                                      is_dst=None),
-                        billing_plan=base_plan
-                    )
-                    billing_sub.save()
-
-                # create the onboarding object
-                try:
-                    UsersOnboarding.objects.create(user=user)
-                except Exception as e:
-                    # create sentry issue
-                    logging.exception(e)
-
-                # export_customer_to_crm
-                logger.info("Exporting customer to CRM", extra={'sport_association_id': str(sport_association.sport_association_id)})
-                export_customer_to_crm(sport_association)
         except ValueError as e:
             logger.error("Signup failed", extra={'email': data.get('email'), 'error': str(e)}, exc_info=True)
             if user is not None:
                 user.delete()
-            if sport_association is not None:
-                sport_association.delete()
-            if billing_sub is not None:
-                billing_sub.delete()
             return Response({"msg": e}, status=status.HTTP_400_BAD_REQUEST)
 
         # Generate JWT tokens for the new user
@@ -479,9 +419,8 @@ def oauth2_signup(request):
         logger.info("User signup completed successfully", extra={'user_id': str(user.user_id), 'role': user.role})
 
         # Override with signup-specific data
-        if user.role == User.ASSOCIATION or user.role == User.COLLABORATOR:
-            if user.role == User.COLLABORATOR:
-                sport_association = user.connected_user.sport_association
+        if user.role == User.COLLABORATOR:
+            sport_association = user.connected_user.sport_association
             content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
             if sport_association.regulation is None or sport_association.regulation == '' or \
                     sport_association.demand is None or sport_association.demand == '':

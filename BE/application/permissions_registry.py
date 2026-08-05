@@ -443,7 +443,6 @@ EXCLUDED_ENDPOINTS = [
     'subscription/get-associations-for-federation',
 
     # Search (social features)
-    'search/all',
     'search/profile/*',
 
     # Billing (handled by plan-level permissions)

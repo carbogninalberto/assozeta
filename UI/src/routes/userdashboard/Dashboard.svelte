@@ -1,35 +1,27 @@
 <script>
-    import {scale} from 'svelte/transition';
-    import * as easing from 'svelte/easing';
-    import {sessionToken, userData} from 'store/stores.js';
+    import {sessionToken} from 'store/stores.js';
     import {onMount} from 'svelte';
     import {
         SealQuestion,
         ArrowLeft,
         ArrowRight,
         Binoculars,
-        X,
         XCircle,
         CheckCircle,
-        Star,
-        MagnifyingGlass,
-        ThumbsUp,
     } from 'phosphor-svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
     import ContentLoader from 'svelte-content-loader';
     import {toast} from 'svelte-sonner';
-    import {push} from 'svelte-spa-router';
-    import SimpleButton from 'components/buttons/simple-button.svelte';
     import SearchProfile from 'routes/search/profile/Profile.svelte';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
 
     sessionToken.useLocalStorage();
-    userData.useLocalStorage();
 
-    let associations = [];
+    let association = null;
     let upcoming_lessons = [];
     let communications = [];
     let loading = false;
+    let loadError = false;
 
     onMount(async () => {
         await fetchData();
@@ -37,20 +29,22 @@
 
     async function fetchData() {
         loading = true;
+        loadError = false;
         let res = await apiFetch(__bakney.env.API.STATISTIC.ATHLETE_DASHBOARD);
         if (!res.error) {
-            associations = res.response.data;
-            communications = [];
-            // iterate over associations and get communications
-            for (let i = 0; i < associations?.length; i++) {
-                for (let j = 0; j < associations[i]?.sport_association?.communications?.length; j++) {
-                    let communication = associations[i]?.sport_association?.communications[j];
-                    communication.sport_association_denomination = associations[i]?.sport_association?.denomination;
-                    communication.avatar_image = associations[i]?.sport_association?.user?.avatar_image;
-                    communications.push(communication);
-                }
-            }
+            association = res.response.data?.[0] || null;
+            communications = (association?.sport_association?.communications || []).map(communication => ({
+                ...communication,
+                sport_association_denomination: association?.sport_association?.denomination,
+                avatar_image: association?.sport_association?.user?.avatar_image,
+            }));
             upcoming_lessons = res.response.upcoming_lessons || [];
+            loadError = !association;
+        } else {
+            association = null;
+            communications = [];
+            upcoming_lessons = [];
+            loadError = true;
         }
 
         loading = false;
@@ -248,144 +242,30 @@
         {/if}
         <!--end::Row-->
 
-        {#if __bakney.OEM_CONFIG?.supportMultipleAssociations && associations && associations?.length > 1}
-            <div class="row">
-                <h1 class="mb-5 mt-10 px-4 font-weight-boldest text-dark font-size-h1">Le mie associazioni</h1>
-            </div>
-        {/if}
         <div class="row p-0 p-md-4">
             {#if loading}
                 <ContentLoader width="100%" primaryColor="#6b6b6b1f" secondaryColor="#eaf1f7" />
-            {:else if associations.length === 0}
+            {:else if loadError}
                 <div class="col-12 card card-custom p-4">
                     <div class="card-body p-8">
                         <div class="d-flex justify-content-start align-items-center p-0">
                             <div class="mr-6">
-                                <Binoculars size={50} weight="duotone" />
+                                <XCircle size={50} weight="duotone" class="text-danger" />
                             </div>
                             <div class="d-flex flex-column">
-                                <!-- svelte-ignore a11y-invalid-attribute -->
-                                <!-- svelte-ignore a11y-missing-attribute -->
                                 <a class="text-dark font-weight-boldest font-size-h4 mb-2">
-                                    Nessuna associazione trovata!
+                                    Associazione non disponibile
                                 </a>
                                 <div class="text-dark-75">
-                                    Non sei ancora associato ad alcuna associazione.<br />
-                                    Per iscriverti ad un'associazione cercala nella barra di ricerca in alto e compila il
-                                    modulo d'iscrizione.
-                                    <SimpleButton
-                                        classList="mt-4"
-                                        color="primary"
-                                        on:click={() => push('/search')}>
-                                        <MagnifyingGlass size={16} weight="duotone" class="mr-1" />
-                                        Cerca la tua associazione
-                                    </SimpleButton>
+                                    Contatta l'amministratore per verificare la configurazione dell'istanza.
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            {:else if associations && associations?.length > 1}
-                <div class="scrolling-wrapper w-100 d-flex">
-                    {#each associations as association}
-                        <div class="col-12 col-md-3 card-widget card card-custom p-0 mr-md-4">
-                            <div class="card-body p-8">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <div class="d-flex justify-content-center flex-column">
-                                        <a
-                                            href="/#/search/profile/{association?.sport_association.user.username}"
-                                            class="text-center">
-                                            <!--
-                                                svelte-ignore
-                                                a11y-invalid-attribute
-                                                -->
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <div class="d-flex justify-content-center align-items-center mb-5 mt-5">
-                                                {#if association?.sport_association.user.avatar_image}
-                                                    <div class="symbol symbol-80 symbol-circle" style="margin:auto">
-                                                        <img
-                                                            alt="Pic"
-                                                            src={association?.sport_association.user.avatar_image} />
-                                                    </div>
-                                                {:else}
-                                                    <div
-                                                        class="symbol symbol-light-info symbol-80 symbol-circle"
-                                                        style="margin:auto">
-                                                        <span
-                                                            class="symbol-label font-weight-bold"
-                                                            style="font-size: 4.5rem !important;">
-                                                            {#if association?.sport_association.user.first_name && association?.sport_association.user.last_name}
-                                                                {association?.sport_association.user.first_name
-                                                                    .charAt(0)
-                                                                    .toUpperCase()}{association?.sport_association.user.last_name
-                                                                    .charAt(0)
-                                                                    .toUpperCase()}
-                                                            {/if}
-                                                        </span>
-                                                    </div>
-                                                {/if}
-                                            </div>
-                                            <span
-                                                class="text-dark text-center text-hover-primary font-weight-boldest font-size-h3 mb-3">
-                                                {association?.sport_association.denomination}
-                                            </span>
-                                        </a>
-                                        <div
-                                            class="text-dark-75 text-center font-size-lg mt-4"
-                                            style="background: var(--bg-surface-secondary); border: 0.1rem solid var(--border-color); border-radius: 0.55rem; padding: 0.7rem;width: 100%;">
-                                            Ci sono <a
-                                                href="/#/subscription/list"
-                                                class="text-primary font-weight-boldest"
-                                                style="cursor: pointer">{association?.subscriptions}</a>
-                                            iscrizioni attive. <br />
-                                            <a
-                                                href="/#/subscription/list"
-                                                class="text-primary font-weight-boldest"
-                                                style="cursor: pointer">Vai alle iscrizioni <ArrowRight /></a>
-
-                                            <!-- <a
-                                                    href="/#/search/profile/{association?.sport_association.user.username}"
-                                                    class="text-primary font-weight-boldest"
-                                                    style="cursor: pointer">Apri profilo <ArrowRight /></a> -->
-                                        </div>
-                                        <div class="d-flex mx-2 justify-content-center flex-column align-items-center">
-                                            <!-- {#if association?.sport_association?.review_url_enabled}
-                                                <a
-                                                    href={association?.sport_association?.review_url}
-                                                    target="_blank"
-                                                    class="btn-secondary d-flex align-items-center btn-sm btn mt-4 font-weight-bolder"
-                                                    style="cursor: pointer">
-                                                    <Star weight="duotone" class="mr-1" size={16} />
-                                                    Lascia una recensione
-                                                </a>
-                                            {/if} -->
-                                            <a
-                                                href="/#/search/profile/{association?.sport_association.user.username}"
-                                                class="btn-primary btn-sm btn mt-4 font-weight-boldest"
-                                                style="cursor: pointer"
-                                                >Iscrizioni, corsi e carnet
-                                                <ArrowRight size={16} weight="bold" class="ml-1" />
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-                {#if associations.length > 3}
-                    <div class="col-12 text-center mt-2">
-                        <!-- scorri per vedere tutto -->
-                        <span class="text-dark-50 font-weight-bold font-size-xs">
-                            <ArrowLeft />
-                            <span>scorri per vedere di più</span>
-                            <ArrowRight />
-                        </span>
-                    </div>
-                {/if}
-            {:else if associations && associations?.length == 1}
+            {:else if association}
                 <SearchProfile
-                    params={{username: associations[0]?.sport_association.user.username, insideDashboard: true}} />
+                    params={{username: association?.sport_association.user.username, insideDashboard: true}} />
             {/if}
         </div>
     </div>

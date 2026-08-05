@@ -1,6 +1,6 @@
 <script>
     import {userData, role} from 'store/stores.js';
-    import {Rows, Ticket, NotePencil, MagnifyingGlass, At, Cube, MapPin, Lock, Repeat} from 'phosphor-svelte';
+    import {Rows, Ticket, NotePencil, At, Cube, MapPin, Lock, Repeat} from 'phosphor-svelte';
 
     import {onMount} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware.js';
@@ -89,15 +89,6 @@
 <div class="d-flex flex-column-fluid mt-16 mt-md-0 {params?.insideDashboard ? 'p-0' : 'p-2'}">
     <!--begin::Container-->
     <div class="container {params?.insideDashboard ? 'p-0' : ''}">
-        {#if __bakney.OEM_CONFIG?.displaySettings?.general?.searchBar && !params?.insideDashboard}
-            <div class="m-2 mb-5 d-lg-none d-flex justify-content-center">
-                <a href="/#/search" class="btn btn-primary font-weight-bolder d-flex align-items-center">
-                    <MagnifyingGlass size={16} weight="bold" class="mr-1" />
-                    Torna alla ricerca
-                </a>
-            </div>
-        {/if}
-
         {#if loaded}
             <div class="card card-custom gutter-b">
                 <div

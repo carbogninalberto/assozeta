@@ -2,7 +2,7 @@
     import {Capacitor} from '@capacitor/core';
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
-    import {fade, scale} from 'svelte/transition';
+    import {scale} from 'svelte/transition';
     import {querystring} from 'svelte-spa-router';
     import {setPermissions} from 'utils/Permissions';
     import {
@@ -15,7 +15,6 @@
         tablesSettings,
         billingData,
     } from 'store/stores.js';
-    import Section2 from './sections/Section2.svelte';
     import {getBase64FromUrl} from 'utils/Functions.js';
     import {onMount} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
@@ -32,7 +31,6 @@
     billingData.useLocalStorage();
     tablesSettings.useLocalStorage();
 
-    let selectedAccountType;
     let agreeCheckbox = false;
     let ageCheckbox = false;
 
@@ -45,8 +43,6 @@
         email: null,
         password: null,
         sport_association: false,
-        denomination: null,
-        tax_code: null,
     };
 
     let email;
@@ -69,7 +65,6 @@
     let validationForgot;
     let validationLogin;
     let validationSignUp;
-    let validationAssociationSignUp;
     let brandLogo;
     let privacyPolicyUrl;
     let termsAndConditionsUrl;
@@ -119,24 +114,22 @@
             while ((match = search.exec($querystring))) urlParams[decode(match[1])] = decode(match[2]);
 
             if (urlParams.page) {
-                if (urlParams.page == 'signup') {
-                    currentShown = 2;
+                if (
+                    urlParams.page == 'signup' ||
+                    urlParams.page == 'signup_athlete' ||
+                    urlParams.page == 'signup_association'
+                ) {
+                    currentShown = 4;
                 } else if (urlParams.page == 'login') {
                     currentShown = 1;
                 } else if (urlParams.page == 'forgot') {
                     currentShown = 3;
                     email = urlParams?.email_reset || null;
-                } else if (urlParams.page == 'signup_athlete') {
-                    currentShown = 4;
-                } else if (urlParams.page == 'signup_association') {
-                    currentShown = 5;
                 }
             }
 
-            if (urlParams.type) {
-                if (urlParams.type == 'association') {
-                    selectedAccountType = 'signup_association';
-                }
+            if (urlParams.type == 'association') {
+                currentShown = 4;
             }
 
             if (urlParams.email) {
@@ -152,11 +145,6 @@
                 });
             }
 
-            if (urlParams.billing) {
-                if (urlParams.type == 'association') {
-                    selectedAccountType = 'signup_association';
-                }
-            }
         })();
         setTimeout(initSignleSingOn, 500);
     });
@@ -198,8 +186,6 @@
             email: null,
             password: null,
             sport_association: false,
-            denomination: null,
-            tax_code: null,
         };
 
         loginInfo = {
@@ -221,11 +207,7 @@
                 break;
             case 'signup':
                 // gtag_report_conversion();
-                if ($oemConfig?.displaySettings?.login?.allowOnlyAthletes) {
-                    currentShown = currentShown == 4 ? 1 : 4;
-                } else {
-                    currentShown = 2;
-                }
+                currentShown = 4;
                 resetData();
                 break;
             case 'reset':
@@ -236,7 +218,7 @@
                 currentShown = 4;
                 break;
             case 'signup_association':
-                currentShown = 5;
+                currentShown = 4;
                 break;
             default:
                 currentShown = 1;
@@ -421,139 +403,6 @@
         });
     };
 
-    var handleAssociationSignUpForm = function (e) {
-        // gtag_report_conversion();
-
-        validationAssociationSignUp?.destroy();
-
-        // Init form validation rules. For more info check the FormValidation plugin's official documentation:https://formvalidation.io/
-        validationAssociationSignUp = FormValidation.formValidation(
-            UiUtil.getById('bkn_login_association_signup_form'),
-            {
-                fields: {
-                    nome: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Nome obbligatorio',
-                            },
-                        },
-                    },
-                    cognome: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Cognome obbligatorio',
-                            },
-                        },
-                    },
-                    username: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Username obbligatorio',
-                            },
-                            regexp: {
-                                regexp: /^[\w.+-]+$/m,
-                                message: 'Lo username può contenere solo lettere, numeri, punti e trattini bassi',
-                            },
-                            stringLength: {
-                                max: 150,
-                                message: 'Lo username non può superare i 150 caratteri',
-                            },
-                            remote: {
-                                message: 'Lo username è già stato utilizzato.',
-                                method: 'GET',
-                                url: __bakney.env.API.OAUTH2.CHECK.USERNAME,
-                            },
-                        },
-                    },
-                    email: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Email obbligatoria',
-                            },
-                            emailAddress: {
-                                message: 'Non è un indirizzo email valido',
-                            },
-                            stringLength: {
-                                max: 255,
-                                message: "L'email non può superare i 255 caratteri",
-                            },
-                            remote: {
-                                message: "L'indirizzo email è già stato utilizzato per creare un utente.",
-                                method: 'GET',
-                                url: __bakney.env.API.OAUTH2.CHECK.EMAIL,
-                            },
-                        },
-                    },
-                    password: {
-                        validators: {
-                            regexp: {
-                                regexp: /^(?=.*[A-Z])(?=.*[!@#$&\.\-\_*])(?=.*[0-9]).{10,}$/m,
-                                message:
-                                    'La password deve contenere almeno:<br>- 1 lettera maiuscola<br>- 1 carattere speciale !@#$&-_*.<br>- 1 numero<br>- avere più di 10 caratteri',
-                            },
-                        },
-                    },
-                    denomination: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Nome Associazione obbligatorio',
-                            },
-                        },
-                    },
-                    tax_code: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Codice Fiscale/P.IVA obbligatorio/a',
-                            },
-                            stringLength: {
-                                max: 11,
-                                message:
-                                    'Codice Fiscale/P.IVA non può superare le 11 cifre. Controlla di non aver inserito spazi',
-                            },
-                        },
-                    },
-                    agree: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Devi accettare i termini e condizioni',
-                            },
-                        },
-                    },
-                    age: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Devi essere maggiorenne per poterti registrare',
-                            },
-                        },
-                    },
-                },
-                plugins: {
-                    trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap(),
-                },
-            }
-        );
-
-        validationAssociationSignUp.validate().then(function (status) {
-            if (status == 'Valid') {
-                userInfo.sport_association = true;
-                signup();
-            } else {
-                swal.fire({
-                    text: 'Scusa, ho individuato degli errori, per favore riprova.',
-                    icon: 'error',
-                    buttonsStyling: false,
-                    confirmButtonText: 'Ok, capito!',
-                    customClass: {
-                        confirmButton: 'btn font-weight-bold btn-light-primary',
-                    },
-                }).then(function () {
-                    UiUtil.scrollTop();
-                });
-            }
-        });
-    };
-
     async function signup(data = {}) {
         localStorage.clear();
         UiApp.blockPage({
@@ -571,16 +420,7 @@
             email: String(userInfo.email).trim().toUpperCase(),
             password: userInfo.password,
             sport_association: userInfo.sport_association,
-            denomination: String(userInfo.denomination || '')
-                .trim()
-                .toUpperCase(),
-            tax_code: String(userInfo.tax_code || '')
-                .trim()
-                .toUpperCase(),
         };
-
-        const signupMethod = data?.token && data?.backend ? data.backend : 'credentials';
-        const accountType = userInfo.sport_association ? 'association' : 'athlete';
 
         if (data?.token && data?.backend) {
             (body.response = data?.response), (body.token = data?.token);
@@ -922,7 +762,7 @@
             //                         singleSignOnData.name = responseInfo.name;
             //                         singleSignOnData.username = responseInfo.name.replace(/\s/g, '').toLowerCase();
             //                         singleSignOnData.picture = getBase64FromUrl(responseInfo.picture.data.url);
-            //                         currentShown = 2;
+            //                         currentShown = 4;
             //                     }
 
             //                 });
@@ -951,7 +791,7 @@
                 singleSignOnData.name = responseInfo.name;
                 singleSignOnData.username = responseInfo.name.replace(/\s/g, '').toLowerCase();
                 singleSignOnData.picture = getBase64FromUrl(responseInfo.picture);
-                currentShown = 2;
+                currentShown = 4;
             }
         } else {
             console.warn(`[WARNING] Backend "${backend}" is not recognized`);
@@ -1114,41 +954,6 @@
                                 <!--end::Form-->
                             </div>
                             <!--end::Signin-->
-                            <!--begin::Signup Athlete-->
-                            <div class="login-form login-signup form-40" class:no-display={currentShown != 2}>
-                                <!--begin::Form-->
-                                <div>
-                                    <div class="pb-13 pt-lg-0 pt-1 text-center">
-                                        <img id="logo" class="h-40px" src={brandLogo} alt="logo" />
-                                    </div>
-                                    {#if currentShown == 2}
-                                        <Section2 bind:selectedAccountType />
-                                    {/if}
-                                    <!--end::Form group-->
-                                    <!--begin::Form group-->
-                                    <div class="form-group d-flex flex-wrap pb-lg-0 pb-3 mt-15">
-                                        <button
-                                            type="button"
-                                            id="bkn_login_signup_cancel"
-                                            class="btn btn-sm btn-light-primary font-weight-bolder font-size-sm px-8 py-4 my-3 mr-4"
-                                            on:click|preventDefault={() => toggleView('login')}>Indietro</button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-primary font-weight-bolder font-size-sm px-8 py-4 my-3"
-                                            on:click|preventDefault={() => {
-                                                sessionStorage.removeItem('collaboratorToken');
-                                                toggleView(selectedAccountType);
-                                            }}>
-                                            Crea un'{selectedAccountType == 'signup_association'
-                                                ? 'associazione'
-                                                : 'atleta'}
-                                        </button>
-                                    </div>
-                                    <!--end::Form group-->
-                                </div>
-                                <!--end::Form-->
-                            </div>
-                            <!--end::Signup Athlete-->
                             <!--begin::Signup Athlete-->
 
                             <div class="login-form login-signup form-50" class:no-display={currentShown != 4}>
@@ -1340,7 +1145,7 @@
                                                         type="button"
                                                         id="bkn_login_signup_cancel"
                                                         class="btn btn-sm btn-light-primary font-weight-bolder font-size-sm px-8 py-4 my-3 mr-4"
-                                                        on:click|preventDefault={() => toggleView('signup')}
+                                                        on:click|preventDefault={() => toggleView('login')}
                                                         >Indietro</button>
                                                 {/if}
                                                 <button
@@ -1356,8 +1161,6 @@
                                                                 username: singleSignOnData.username,
                                                                 picture: singleSignOnData.picture,
                                                                 response: singleSignOnData.response,
-                                                                is_sport_association:
-                                                                    selectedAccountType != 'signup_athlete',
                                                             });
                                                         } else {
                                                             handleSignUpForm();
@@ -1373,250 +1176,6 @@
                                 <!--end::Form-->
                             </div>
                             <!--end::Signup Athlete-->
-                            <!--end::Signup Athlete-->
-                            <!--begin::Signup Sport Association-->
-                            <div class="login-form login-signup form-50" class:no-display={currentShown != 5}>
-                                <!--begin::Form-->
-                                <form
-                                    class="form"
-                                    novalidate="novalidate"
-                                    id="bkn_login_association_signup_form"
-                                    autocomplete="off">
-                                    {#if currentShown == 5}
-                                        <div in:scale={{duration: 100, start: 0.95}}>
-                                            <div class="pt-lg-0 pt-1 pb-5">
-                                                <img id="logo" class="h-40px" src={brandLogo} alt="logo" />
-                                            </div>
-                                            <!--begin::Title-->
-                                            <div class="pt-lg-0 pt-5 pb-5">
-                                                <h3 class="font-weight-bolder text-dark font-size-h1 font-size-h1-lg">
-                                                    Crea un account
-                                                </h3>
-                                                <p class="text-muted font-weight-bold font-size-sm">
-                                                    Compila il modulo con i tuoi dati per creare un account
-                                                    associazione.
-                                                </p>
-                                            </div>
-                                            {#if !singleSignOnData.onboarding}
-                                                <!--end::Title-->
-                                                <h3 class="font-weight-bolder font-size-h3 font-size-h3-lg">
-                                                    Informazioni associazione
-                                                </h3>
-                                                <div class="row p-0 m-0">
-                                                    <!--begin::Form group-->
-                                                    <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                        <div class="d-flex justify-content-between mt-n5">
-                                                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                            <label
-                                                                class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                                >Nome</label>
-                                                        </div>
-                                                        <input
-                                                            bind:value={userInfo.first_name}
-                                                            class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                            type="text"
-                                                            placeholder="Nome"
-                                                            name="nome"
-                                                            autocomplete="off" />
-                                                    </div>
-                                                    <!--end::Form group-->
-                                                    <!--begin::Form group-->
-                                                    <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                        <div class="d-flex justify-content-between mt-n5">
-                                                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                            <label
-                                                                class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                                >Cognome</label>
-                                                        </div>
-                                                        <input
-                                                            bind:value={userInfo.last_name}
-                                                            class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                            type="text"
-                                                            placeholder="Cognome"
-                                                            name="cognome"
-                                                            autocomplete="off" />
-                                                    </div>
-                                                    <!--end::Form group-->
-                                                </div>
-                                            {/if}
-                                            <div class="row p-0 m-0">
-                                                <!--begin::Form group-->
-                                                <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                    <div class="d-flex justify-content-between mt-n5">
-                                                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                        <label class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                            >Nome Associazione Sportiva</label>
-                                                    </div>
-                                                    <input
-                                                        bind:value={userInfo.denomination}
-                                                        class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                        type="text"
-                                                        placeholder="Nome Associazione Sportiva"
-                                                        name="denomination"
-                                                        autocomplete="off" />
-                                                </div>
-                                                <!--end::Form group-->
-                                                <!--begin::Form group-->
-                                                <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                    <div class="d-flex justify-content-between mt-n5">
-                                                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                        <label class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                            >Codice Fiscale / P.IVA</label>
-                                                    </div>
-                                                    <input
-                                                        bind:value={userInfo.tax_code}
-                                                        class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                        type="text"
-                                                        placeholder="Codice Fiscale/P.IVA"
-                                                        name="tax_code"
-                                                        autocomplete="off" />
-                                                </div>
-                                                <!--end::Form group-->
-                                            </div>
-                                            {#if !singleSignOnData.onboarding}
-                                                <h3 class="font-weight-bolder font-size-h3 font-size-h3-lg">Account</h3>
-                                                <div class="row p-0 m-0">
-                                                    <!--begin::Form group-->
-                                                    <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                        <div class="d-flex justify-content-between mt-n5">
-                                                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                            <label
-                                                                class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                                >Username</label>
-                                                        </div>
-                                                        <input
-                                                            bind:value={userInfo.username}
-                                                            class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                            type="text"
-                                                            placeholder="Username"
-                                                            name="username"
-                                                            autocomplete="off" />
-                                                    </div>
-                                                    <!--end::Form group-->
-                                                    <!--begin::Form group-->
-                                                    <div class="form-group col-12 col-lg-6 mb-5 pl-0">
-                                                        <div class="d-flex justify-content-between mt-n5">
-                                                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                            <label
-                                                                class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                                >Email</label>
-                                                        </div>
-                                                        <input
-                                                            bind:value={userInfo.email}
-                                                            class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                            type="email"
-                                                            placeholder="Email"
-                                                            name="email"
-                                                            autocomplete="off" />
-                                                    </div>
-                                                    <!--end::Form group-->
-                                                </div>
-                                                <!--begin::Form group-->
-                                                <div class="form-group">
-                                                    <div class="d-flex justify-content-between mt-n5">
-                                                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                                                        <label class="font-size-h6 font-weight-bolder text-dark pt-5"
-                                                            >Password</label>
-                                                    </div>
-
-                                                    <div class="input-group input-group-solid">
-                                                        <input
-                                                            bind:value={userInfo.password}
-                                                            class="form-control form-control-solid p-7 rounded-lg font-size-sm"
-                                                            type="password"
-                                                            placeholder="Password"
-                                                            name="password"
-                                                            autocomplete="off"
-                                                            id="signin-password-association" />
-                                                        <div
-                                                            class="input-group-append"
-                                                            style="cursor:pointer"
-                                                            on:click={() =>
-                                                                togglePasswordInput(
-                                                                    'signin-password-association',
-                                                                    'userPassword'
-                                                                )}>
-                                                            <span class="input-group-text">
-                                                                {#if userInfo.password_visibility}
-                                                                    <EyeOff size={16} />
-                                                                {:else}
-                                                                    <Eye size={16} />
-                                                                {/if}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            {/if}
-                                            <!--end::Form group-->
-                                            <!--begin::Form group-->
-                                            <div class="form-group align-items-center">
-                                                <label class="checkbox mb-0" style="font-size: 1rem !important;">
-                                                    <input type="checkbox" name="agree" bind:checked={agreeCheckbox} />
-                                                    <span />
-                                                    <div class="pl-2">
-                                                        Accetto i
-                                                        {#if termsAndConditionsUrl}
-                                                            <a
-                                                                class="ml-1"
-                                                                href={termsAndConditionsUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer">termini e condizioni</a>
-                                                        {:else}
-                                                            <span class="ml-1">termini e condizioni del servizio</span>
-                                                        {/if}
-                                                    </div>
-                                                </label>
-                                            </div>
-                                            <div class="form-group align-items-center">
-                                                <label class="checkbox mb-0" style="font-size: 1rem !important;">
-                                                    <input type="checkbox" name="age" bind:checked={ageCheckbox} />
-                                                    <span />
-                                                    <div class="pl-2">Dichiario di aver compiuto 18 anni</div>
-                                                </label>
-                                            </div>
-                                            <!--end::Form group-->
-                                            <!--begin::Form group-->
-                                            <div class="form-group d-flex flex-wrap pb-lg-0 pb-3">
-                                                <button
-                                                    type="button"
-                                                    id="bkn_login_signup_cancel"
-                                                    class="btn btn-light-primary font-weight-bolder font-size-sm px-8 py-4 my-3 mr-4"
-                                                    on:click|preventDefault={() => toggleView('signup')}
-                                                    >Indietro</button>
-                                                <button
-                                                    type="button"
-                                                    disabled={!agreeCheckbox ||
-                                                        !ageCheckbox ||
-                                                        !userInfo.denomination ||
-                                                        !userInfo.tax_code}
-                                                    on:click|preventDefault={() => {
-                                                        if (singleSignOnData.onboarding) {
-                                                            userInfo.sport_association = true;
-                                                            signup({
-                                                                backend: singleSignOnData.backend,
-                                                                token: singleSignOnData.token,
-                                                                email: singleSignOnData.email,
-                                                                name: singleSignOnData.name,
-                                                                username: singleSignOnData.username,
-                                                                picture: singleSignOnData.picture,
-                                                                response: singleSignOnData.response,
-                                                                is_sport_association:
-                                                                    selectedAccountType != 'signup_athlete',
-                                                            });
-                                                        } else {
-                                                            handleAssociationSignUpForm();
-                                                        }
-                                                    }}
-                                                    class="btn btn-primary font-weight-bolder font-size-sm px-8 py-4 my-3"
-                                                    >Conferma e Accedi</button>
-                                            </div>
-                                            <!--end::Form group-->
-                                        </div>
-                                    {/if}
-                                </form>
-                                <!--end::Form-->
-                            </div>
-                            <!--end::Signup Sport Association-->
                             <!--begin::Forgot-->
                             <div class="login-form login-forgot form-40" class:no-display={currentShown != 3}>
                                 <div class="pb-13 pt-lg-0 pt-1">

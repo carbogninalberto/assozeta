@@ -132,7 +132,6 @@ export const buildConfig = function(config={
                         ATHLETE_DASHBOARD: `${apiHost}/statistic/athlete-dashboard`,
                     },
                     SEARCH: {
-                        ALL: `${apiHost}/search/all`,
                         PROFILE: `${apiHost}/search/profile`,
                     },
                     CALENDAR:{

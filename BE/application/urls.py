@@ -45,7 +45,7 @@ from .views.profile_views import profile_update, profile_update_subscription_tem
     profile_update_password, profile_associates_course, profile_associates_sport_association, \
     profile_settings, profile_info, profile_settings_tables, sport_association_list, \
     testimonials_update, testimonials_create, profile_integrations, sport_association_admin_update, export_all_data
-from .views.search_views import search_all, search_profile
+from .views.search_views import search_profile
 from .views.statistic_views import statistic_dashboard, statistic_athlete_dashboard, check_inconsistencies, \
     statistic_report, attendance_day_mark_absent, attendance_day_delete, statistic_dashboard_layout, attendance_mark
 from .views.auth_views import oauth2_login, oauth2_signup, oauth2_reset_password, oauth2_check_email, \
@@ -382,7 +382,6 @@ urlpatterns = [
     path(r'statistic/dashboard/layout', statistic_dashboard_layout),
     path(r'statistic/athlete-dashboard', statistic_athlete_dashboard),
     path(r'statistic/report', statistic_report),
-    path(r'search/all', search_all),
     path(r'search/profile/<str:username>', search_profile),
     path(r'stripe/on-boarding', stripe_on_boarding),
     path(r'stripe/info', stripe_info),

@@ -2,104 +2,27 @@
 @ copyright: Bakney SRL
 """
 import logging
-import operator
 from datetime import datetime
-from functools import reduce
 
-from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 
 from application.utils.api_utils import compress_base64
-from core.middleware import IsAuthenticated
-
 from application.models import Carnet
 from application.models.courses_models import Course, CourseSubscription, CourseTags
 from application.models.user_models import SportAssociation, User
-from application.serializers.auth_serializers import SportAssociationSearchSerializer, UserSerializerSearch, \
-    SportAssociationSearchProfileSerializer
+from application.serializers.auth_serializers import UserSerializerSearch, SportAssociationSearchProfileSerializer
 from application.serializers.carnet_serializers import CarnetListInfoSerializer
 from application.serializers.courses_serializers import CourseSerializer
-from notifications import utils as nt
 
 
 logger = logging.getLogger(__name__)
-notification_manager = nt.NotificationManager()
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def search_all(request):
-    query = str(request.GET.get('q', None))
-    logger.info("Executing search", extra={'user_id': str(request.user.user_id), 'query': query[:50] if query else None})
-
-    if query is None or query == '':
-        logger.debug("Empty search query", extra={'user_id': str(request.user.user_id)})
-        return Response({
-            'data': {
-                'users_match': [],
-                'sport_associations_match': [],
-                'message': None
-            }
-        }, status=status.HTTP_200_OK)
-
-    query_words = query.split()
-
-    # OR QUERY
-    users = User.objects.filter(
-                reduce(operator.or_,
-                       (Q(first_name__icontains=query_word) for query_word in query_words)
-                       )
-                ) | \
-        User.objects.filter(
-                reduce(operator.or_,
-                       (Q(last_name__icontains=query_word) for query_word in query_words)
-                       )
-                ) | \
-        User.objects.filter((
-                reduce(operator.or_,
-                       (Q(username__icontains=query_word) for query_word in query_words)
-                       )
-                )).prefetch_related('preview_and_custom_features')
-
-    users_match = []
-    for u in users:
-        if not u.is_superuser and u.role is User.ATHLETE and u.user_id != request.user.user_id:
-            user_data = UserSerializerSearch(u).data
-            users_match.append(user_data)
-
-    sport_associations = SportAssociation.objects.filter(
-            reduce(
-                operator.or_,
-                (Q(denomination__icontains=query_word) for query_word in query_words)
-            )) | \
-        SportAssociation.objects.filter(
-            reduce(
-                operator.or_,
-                (Q(denomination__icontains=query_word) for query_word in query_words)
-            )
-        )
-
-    sport_associations_match = []
-    for sport_association in sport_associations:
-        if sport_association.user.user_id != request.user.user_id:
-            sport_association_data = SportAssociationSearchSerializer(sport_association).data
-            sport_associations_match.append(sport_association_data)
-
-    data = {
-        'users_match': users_match,
-        'sport_associations_match': sport_associations_match
-    }
-
-    logger.info("Search completed", extra={'user_id': str(request.user.user_id), 'users_found': len(users_match), 'associations_found': len(sport_associations_match), 'query': query[:50]})
-    return Response({'data': data}, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-# @permission_classes([IsAuthenticated])
 def search_profile(request, username):
     """
     Returns information about a certain profile
