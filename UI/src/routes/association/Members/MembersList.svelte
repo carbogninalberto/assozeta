@@ -331,7 +331,7 @@
             field: 'creation_date',
             title: 'Data',
             checked: true,
-            width: 80,
+            width: 100,
             type: 'date',
             fireClick: true,
             responsive: {
