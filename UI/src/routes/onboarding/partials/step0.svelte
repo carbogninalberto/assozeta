@@ -8,6 +8,7 @@
     userData.useLocalStorage();
 
     export let currentStep;
+    export let isFreshSelfHosted = false;
     let files;
     let logo;
 
@@ -46,12 +47,12 @@
         props={{
             id: 'logo',
             name: 'logo',
-            label: 'Logo o Timbro con firma del presidente',
+            label: isFreshSelfHosted ? 'Logo / timbro / firma del presidente' : 'Logo o Timbro con firma del presidente',
             placeholder: 'Inserisci il logo',
-            required: true,
+            required: !isFreshSelfHosted,
             placeholderImage: '/static/placeholder_logo.png',
             value: $userData?.sport_association?.logo || '',
-            helperLabel: 'La dimensione consigliata è 590 x 130px.',
+            helperLabel: isFreshSelfHosted ? 'Opzionale. Potrai aggiungerlo in seguito.' : 'La dimensione consigliata è 590 x 130px.',
         }} />
 
     <div class="row">

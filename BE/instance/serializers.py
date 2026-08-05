@@ -71,10 +71,11 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
     stripe = serializers.SerializerMethodField()
     meta = serializers.SerializerMethodField()
     features = serializers.SerializerMethodField()
+    setup = serializers.SerializerMethodField()
 
     class Meta:
         model = InstanceConfiguration
-        fields = ['oem', 'oauth', 'stripe', 'meta', 'features']
+        fields = ['oem', 'oauth', 'stripe', 'meta', 'features', 'setup']
 
     def get_oem(self, obj):
         return {
@@ -114,6 +115,12 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
             'showCourseAthletes': obj.show_course_athletes,
             'showMinorExemption': obj.show_minor_exemption,
             'showTutorial': obj.show_tutorial,
+        }
+
+    def get_setup(self, obj):
+        return {
+            'provenance': obj.setup_provenance,
+            'onboardingComplete': obj.onboarding_completed_at is not None,
         }
 
 

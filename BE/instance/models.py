@@ -12,10 +12,27 @@ class InstanceConfiguration(models.Model):
     Only one record should exist per instance.
     """
 
+    SETUP_PROVENANCE_FRESH = 'fresh'
+    SETUP_PROVENANCE_IMPORT = 'import'
+    SETUP_PROVENANCE_LEGACY = 'legacy'
+    SETUP_PROVENANCE_CHOICES = (
+        (SETUP_PROVENANCE_FRESH, 'Fresh setup'),
+        (SETUP_PROVENANCE_IMPORT, 'Imported backup'),
+        (SETUP_PROVENANCE_LEGACY, 'Legacy setup'),
+    )
+
     # Basic info
     domain = models.CharField(max_length=255, unique=True)
     configured_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Setup state
+    setup_provenance = models.CharField(
+        max_length=16,
+        choices=SETUP_PROVENANCE_CHOICES,
+        default=SETUP_PROVENANCE_LEGACY,
+    )
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
 
     # OEM Branding
     name = models.CharField(max_length=255)

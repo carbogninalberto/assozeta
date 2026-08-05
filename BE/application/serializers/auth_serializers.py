@@ -7,6 +7,7 @@ from rest_framework import serializers
 from application.models import BillingSubscription, Group
 from application.models.user_models import SportAssociationMembershipCardConfiguration, User, SportAssociation, UserAccount, SportAssociationInvoices, \
     UsersOnboarding
+from instance.models import InstanceConfiguration
 
 
 class SportAssociationSerializer(serializers.ModelSerializer):
@@ -337,25 +338,7 @@ class UserAuthSerializer(serializers.ModelSerializer):
     requires_welcome = serializers.SerializerMethodField()
     onboarding = serializers.SerializerMethodField()
 
-    def get_requires_welcome(self, obj):
-        '''
-        We return a boolean value to determine if the user is a new user.
-        The parameter we use are:
-        - empty sport association logo
-        - empty sport association denomination
-        - empty sport association tax code
-        - balance sheet start day
-        - balance sheet start month
-        ( less than 30 days since the user joined:
-        - lead_sport_association_role
-        - lead_sport_association_size
-        - lead_sport_market_channel
-        )
-        '''
-        if obj.role != User.ASSOCIATION:
-            return False
-        sport_association = obj.sport_association
-
+    def _get_legacy_requires_welcome(self, obj, sport_association):
         # check logo
         if sport_association.logo == '' or sport_association.logo is None:
             return True
@@ -381,6 +364,37 @@ class UserAuthSerializer(serializers.ModelSerializer):
             if obj.lead_sport_market_channel == '' or obj.lead_sport_market_channel is None:
                 return True
         return False
+
+    def get_requires_welcome(self, obj):
+        '''
+        We return a boolean value to determine if the user is a new user.
+        The parameter we use are:
+        - empty sport association logo
+        - empty sport association denomination
+        - empty sport association tax code
+        - balance sheet start day
+        - balance sheet start month
+        ( less than 30 days since the user joined:
+        - lead_sport_association_role
+        - lead_sport_association_size
+        - lead_sport_market_channel
+        )
+        '''
+        if obj.role != User.ASSOCIATION:
+            return False
+        sport_association = obj.sport_association
+
+        instance_config = InstanceConfiguration.objects.filter(
+            self_hosted=True,
+            primary_association=sport_association,
+        ).first()
+        if instance_config:
+            if instance_config.setup_provenance == InstanceConfiguration.SETUP_PROVENANCE_FRESH:
+                return instance_config.onboarding_completed_at is None
+            if instance_config.setup_provenance == InstanceConfiguration.SETUP_PROVENANCE_IMPORT:
+                return False
+
+        return self._get_legacy_requires_welcome(obj, sport_association)
 
     def get_onboarding(self, obj):
         if obj.role != User.ASSOCIATION:

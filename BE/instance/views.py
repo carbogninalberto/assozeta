@@ -4,11 +4,13 @@ API views for instance configuration endpoints.
 import os
 import logging
 import secrets
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.http import FileResponse, Http404
 from django.db import transaction
+from django.utils import timezone
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -110,6 +112,8 @@ class InstanceSetupView(APIView):
                     primary_color=data['oem'].get('primaryColor') or '#351DC2',
                     support_email=data['oem'].get('supportEmail') or '',
                     logo_path=data['oem'].get('logo') or '',
+                    setup_provenance=init_data['type'],
+                    onboarding_completed_at=timezone.now() if init_data['type'] == 'import' else None,
                     display_settings=DEFAULT_DISPLAY_SETTINGS.copy(),
                     # OAuth (convert null to empty string)
                     google_client_id=data.get('oauth', {}).get('googleClientId') or '',
@@ -192,6 +196,8 @@ class InstanceSetupView(APIView):
             user=user,
             denomination=association_name,
             tax_code='',  # Will be filled during onboarding
+            subscription_fee=Decimal('20.00'),
+            membership_fee=Decimal('20.00'),
         )
 
         # Create default custom accounts (cassa and banca)

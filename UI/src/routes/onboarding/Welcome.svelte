@@ -8,7 +8,7 @@
     import WelcomeStep2 from './partials/step2.svelte';
     import Footer from './partials/footer.svelte';
     import {onDestroy, onMount} from 'svelte';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {instanceConfig, oemConfig} from 'store/instanceStore.js';
 
     userData.useLocalStorage();
     role.useLocalStorage();
@@ -21,9 +21,12 @@
     $: privacyPolicyUrl = $oemConfig?.privacyPolicyUrl || '';
     $: termsAndConditionsUrl =
         $oemConfig?.displaySettings?.login?.termsAndConditionsUrl || $oemConfig?.termsOfServiceUrl || '';
+    $: isFreshSelfHosted =
+        $instanceConfig?.features?.selfHosted === true && $instanceConfig?.setup?.provenance === 'fresh';
+    $: finalWelcomeStep = isFreshSelfHosted ? 1 : 2;
 
     function beforeUnloadHandler(event) {
-        if (currentStep == 2 || currentStep == 0) return;
+        if (currentStep == finalWelcomeStep || currentStep == 0) return;
         if (hasUnsavedChanges && !isExiting) {
             event.preventDefault();
             event.returnValue = 'Hai modifiche non salvate. Sei sicuro di voler uscire?';
@@ -31,7 +34,7 @@
     }
 
     async function handleExit() {
-        if (currentStep == 2 || currentStep == 0) return;
+        if (currentStep == finalWelcomeStep || currentStep == 0) return;
         if (hasUnsavedChanges && !isExiting) {
             isExiting = true;
             const result = await swal.fire({
@@ -62,7 +65,7 @@
     }
 
     function handlePopState(event) {
-        if (currentStep == 2 || currentStep == 0) return;
+        if (currentStep == finalWelcomeStep || currentStep == 0) return;
         if (hasUnsavedChanges) {
             history.pushState(null, '', window.location.href);
             handleExit();
@@ -133,13 +136,15 @@
                     weight="duotone"
                     class={currentStep < 1 ? 'text-light-dark' : 'text-primary'} />
             </div>
-            <div class="w-100 border border-{currentStep < 2 ? 'light-dark' : 'primary'} opacity-75" />
-            <div>
-                <NumberCircleThree
-                    size={34}
-                    weight="duotone"
-                    class={currentStep < 2 ? 'text-light-dark' : 'text-primary'} />
-            </div>
+            {#if !isFreshSelfHosted}
+                <div class="w-100 border border-{currentStep < 2 ? 'light-dark' : 'primary'} opacity-75" />
+                <div>
+                    <NumberCircleThree
+                        size={34}
+                        weight="duotone"
+                        class={currentStep < 2 ? 'text-light-dark' : 'text-primary'} />
+                </div>
+            {/if}
         </div>
         <div class="mb-0">
             {#if currentStep == 0}
@@ -148,7 +153,7 @@
                     Configuriamo insieme {$oemConfig?.name || 'assozeta'} per sfruttarne al massimo le potenzialità!
                 </p>
                 <div class="mt-6">
-                    <WelcomeStep0 bind:currentStep>
+                    <WelcomeStep0 bind:currentStep {isFreshSelfHosted}>
                         <Footer bind:currentStep />
                     </WelcomeStep0>
                 </div>
@@ -160,18 +165,18 @@
                     <b>tesseramento</b>.
                 </p>
                 <div class="mt-6">
-                    <WelcomeStep1 bind:currentStep>
-                        <Footer bind:currentStep />
+                    <WelcomeStep1 bind:currentStep bind:isLoading isFinalStep={isFreshSelfHosted}>
+                        <Footer bind:currentStep bind:isLoading isFinalStep={isFreshSelfHosted} />
                     </WelcomeStep1>
                 </div>
-            {:else if currentStep == 2}
+            {:else if currentStep == 2 && !isFreshSelfHosted}
                 <h1 class="font-weight-boldest text-black font-size-h1">🏁 Ci siamo quasi</h1>
                 <p class="font-size-h5 font-weight-bold text-dark-50">
                     Queste informazioni ci permettono di offrirti la migliore esperienza possibile.
                 </p>
                 <div class="mt-6">
                     <WelcomeStep2 bind:isLoading>
-                        <Footer bind:currentStep bind:isLoading />
+                        <Footer bind:currentStep bind:isLoading isFinalStep={true} />
                     </WelcomeStep2>
                 </div>
             {/if}

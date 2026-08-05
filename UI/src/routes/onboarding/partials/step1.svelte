@@ -4,19 +4,60 @@
     import TextInput from 'components/formBuilder/preview-blocks/text-input.svelte';
     import {DayMonthPicker} from 'components/pickers';
     import {Info, Warning} from 'phosphor-svelte';
-    import {userData} from 'store/stores';
+    import {billingData, role, userData} from 'store/stores';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {getDataFromForm} from 'utils/Functions';
+    import confetti from 'canvas-confetti';
+    import {toast} from 'svelte-sonner';
+    import {setPermissions} from 'utils/Permissions';
 
     userData.useLocalStorage();
 
     export let currentStep;
+    export let isFinalStep = false;
+    export let isLoading = false;
     let selectedDay = $userData?.balance_sheet_start_day || 1;
     let selectedMonth = $userData?.balance_sheet_start_month || 1;
     let selectedBalanceSheetDay = $userData?.balance_sheet_year || 1;
     let selectedBalanceSheetMonth = $userData?.balance_sheet_year || 1;
 
+    async function completeWelcomeStep(res) {
+        if (!res.error) {
+            confetti({
+                particleCount: 200,
+                spread: 400,
+                origin: {
+                    y: 0.5,
+                },
+            });
+            toast.success('Configurazione del tuo gestionale completata');
+
+            const [profileResult, billingResult] = await Promise.all([
+                apiFetch(__bakney.env.API.PROFILE.INFO),
+                apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
+            ]);
+
+            if (profileResult.error || billingResult.error) {
+                isLoading = false;
+                toast.error('Impossibile aggiornare i dati del profilo. Riprova.');
+                return;
+            }
+
+            const currentRole = profileResult.response.info.role;
+            userData.set(profileResult.response.user_data);
+            role.set(currentRole);
+            billingData.set(billingResult.response.data);
+            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
+
+            window.location.replace('/#/');
+        } else {
+            isLoading = false;
+            toast.error('Errore nella configurazione del tuo gestionale');
+        }
+    }
+
     async function handleSubmit(e) {
+        if (isFinalStep) isLoading = true;
         // get the form data
         let data = getDataFromForm(e);
         let res = await apiFetch(__bakney.env.API.ONBOARDING.UPDATE, {
@@ -38,7 +79,14 @@
         });
 
         if (!res.error) {
-            currentStep += 1;
+            if (isFinalStep) {
+                await completeWelcomeStep(res);
+            } else {
+                currentStep += 1;
+            }
+        } else if (isFinalStep) {
+            isLoading = false;
+            toast.error('Errore nella configurazione del tuo gestionale');
         }
     }
 </script>
