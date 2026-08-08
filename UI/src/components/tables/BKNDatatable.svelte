@@ -540,14 +540,14 @@
         return !configuredWidth || configuredWidth >= 120;
     }
 
-    function getColumnLayoutWidth(column, columnIndex) {
-        return columnWidths?.[columnIndex] || getColumnPreferredWidth(column);
+    function getColumnLayoutWidth(column, layoutWidth) {
+        return layoutWidth || getColumnPreferredWidth(column);
     }
 
-    function getColumnStyle(column, columnIndex) {
+    function getColumnStyle(column, layoutWidth) {
         const styles = [];
         const minWidth = resolveMinWidth(column.minWidth);
-        const columnWidth = getColumnLayoutWidth(column, columnIndex);
+        const columnWidth = getColumnLayoutWidth(column, layoutWidth);
         const textAlign = getColumnTextAlign(column);
 
         styles.push(`width: ${columnWidth}px`);
@@ -556,10 +556,10 @@
         return styles.join('; ');
     }
 
-    function getColumnSpanStyle(column, columnIndex) {
+    function getColumnSpanStyle(column, layoutWidth) {
         const styles = [];
         const minWidth = resolveMinWidth(column.minWidth);
-        const columnWidth = getColumnLayoutWidth(column, columnIndex);
+        const columnWidth = getColumnLayoutWidth(column, layoutWidth);
         const textAlign = getColumnTextAlign(column);
 
         styles.push(`width: ${columnWidth}px`);
@@ -643,8 +643,8 @@
         return {columnWidths, rowMinWidth: Math.ceil(preferredTotal)};
     }
 
-    function getRowStyle() {
-        return `width: max(100%, ${rowMinWidth}px)`;
+    function getRowStyle(minWidth) {
+        return `width: max(100%, ${minWidth}px)`;
     }
 
     function getResponsiveBreakpoint(column) {
@@ -1041,7 +1041,7 @@
         <div class="datatable-table" bind:clientWidth={tableWidth} tabindex="0" aria-label="Tabella dati scorrevole orizzontalmente">
             <div class="datatable-head">
                 {#key rerenderKey}
-                    <div class="datatable-row" style={getRowStyle()}>
+                    <div class="datatable-row" style={getRowStyle(rowMinWidth)}>
                         {#if hasResponsiveDetails}
                             <span
                                 class="datatable-cell datatable-toggle-detail datatable-cell-center datatable-detail-toggle-cell datatable-toggle-visible-below-{detailToggleBreakpoint}"
@@ -1053,9 +1053,9 @@
                             <span
                                 data-field={column.field || ''}
                                 class={getCellClass(column, true)}
-                                style={getColumnStyle(column, columnIndex)}
+                                style={getColumnStyle(column, columnWidths?.[columnIndex])}
                                 on:click={() => handleSort(column)}>
-                                <span style={getColumnSpanStyle(column, columnIndex)}>
+                                <span style={getColumnSpanStyle(column, columnWidths?.[columnIndex])}>
                                     {#if column.selector}
                                         <label class="checkbox checkbox-single mb-0" on:click|stopPropagation>
                                             <input
@@ -1083,7 +1083,7 @@
             <div class="datatable-body">
                 {#if dataSet.length === 0 && !loading}
                     {#key rerenderKey}
-                        <div class="datatable-row" style={getRowStyle()}>
+                        <div class="datatable-row" style={getRowStyle(rowMinWidth)}>
                             <span class="datatable-cell datatable-cell-center" style="width: 100%;">
                                 <span style="width: 100%; text-align: center; display: block;">Nessun dato disponibile</span>
                             </span>
@@ -1095,7 +1095,7 @@
                             class="datatable-row {rowIndex % 2 === 1 ? 'datatable-row-even' : ''} {selectedRows.has(rowIndex)
                                 ? 'datatable-row-active'
                                 : ''}"
-                            style={getRowStyle()}
+                            style={getRowStyle(rowMinWidth)}
                             data-row={rowIndex}
                             on:click={event => handleRowClick(event, row)}>
                             {#if hasResponsiveDetails}
@@ -1124,8 +1124,8 @@
                                 <span
                                     data-field={column.field || ''}
                                     class={getCellClass(column)}
-                                    style={getColumnStyle(column, columnIndex)}>
-                                    <span style={getColumnSpanStyle(column, columnIndex)}>
+                                    style={getColumnStyle(column, columnWidths?.[columnIndex])}>
+                                    <span style={getColumnSpanStyle(column, columnWidths?.[columnIndex])}>
                                         {#if column.selector}
                                             <label class="checkbox checkbox-single mb-0" on:click|stopPropagation>
                                                 <input
@@ -1142,7 +1142,7 @@
                             {/each}
                         </div>
                         {#if hasResponsiveDetails && expandedRows.has(rowIndex)}
-                            <div class="datatable-row-detail" style={getRowStyle()}>
+                            <div class="datatable-row-detail" style={getRowStyle(rowMinWidth)}>
                                 <div class="datatable-detail">
                                     {#each responsiveDetailColumns as detailColumn}
                                         <div class="datatable-detail-row {getDetailVisibilityClass(detailColumn)}">
