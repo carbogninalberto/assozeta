@@ -155,14 +155,11 @@
 {/if}
 
 <!--begin::Aside-->
-<div
-    class="aside aside-left aside-fixed d-flex flex-column flex-row-auto"
-    collapsed={$sidebarCollapsed}
-    id="bkn_aside">
+<div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" collapsed={$sidebarCollapsed} id="bkn_aside">
     <!--begin::Brand #351DC2-->
     <div class="brand flex-column-auto" id="bkn_brand">
         <!--begin::Logo-->
-        <a href="/" class="brand-logo mt-4 mx-auto">
+        <a href="/" class="brand-logo mx-auto">
             <!-- svelte-ignore a11y-missing-attribute -->
             <img id="logo" class="h-30px" style={visibleLogo ? '' : 'display:none;'} src={brandLogo} />
             <!-- svelte-ignore missing-declaration -->
@@ -176,7 +173,10 @@
 
     <!--end::Brand-->
     <!--begin::Aside Menu-->
-    <div class="aside-menu-wrapper" id="bkn_aside_menu_wrapper" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+    <div
+        class="aside-menu-wrapper"
+        id="bkn_aside_menu_wrapper"
+        style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
         <!--begin::Menu Container-->
         <div
             id="bkn_aside_menu"
@@ -222,7 +222,9 @@
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                         <div
-                            class="menu-item menu-item-submenu {$currentPage == 'members' ? 'menu-item-active' : ''} {expandedMenus.members ? 'menu-item-open' : ''}"
+                            class="menu-item menu-item-submenu {$currentPage == 'members'
+                                ? 'menu-item-active'
+                                : ''} {expandedMenus.members ? 'menu-item-open' : ''}"
                             aria-haspopup="true">
                             <!-- svelte-ignore a11y-invalid-attribute -->
                             <span class="menu-link menu-toggle" on:click={() => toggleMenu('members')}>
@@ -233,97 +235,97 @@
                                 <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                             </span>
                             {#if expandedMenus.members}
-                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-                                <div class="menu-subnav">
-                                    {#if canPerformAction('association.personas.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'personas-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="/#/personas/list" class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <IdentificationCard size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Anagrafiche</span>
-                                                <!-- <span
+                                <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                    <div class="menu-subnav">
+                                        {#if canPerformAction('association.personas.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'personas-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="/#/personas/list" class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <IdentificationCard size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Anagrafiche</span>
+                                                    <!-- <span
                                                     class="badge badge-danger font-weight-boldest font-size-xs px-3 py-2"
                                                     style="border-radius: 1rem;">Novità</span> -->
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    {#if canPerformAction('association.members.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'members-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="/#/members/list" class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Book size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Iscrizioni</span>
-                                                {#if newUsers > 0}
-                                                    <span class="menu-label">
-                                                        <span class="label label-primary label-rounded"
-                                                            >{newUsers}</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('association.members.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'members-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="/#/members/list" class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Book size={24} weight="duotone" />
                                                     </span>
-                                                {/if}
-                                            </a>
-                                        </div>
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'members-template'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/members/subscription/template'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <NotePencil size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Modulo Iscrizioni
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    {#if canPerformAction('association.modules.read')}
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'modules'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/members/modules'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Browsers size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Moduli Web
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    <!-- {/if} -->
+                                                    <span class="menu-text">Iscrizioni</span>
+                                                    {#if newUsers > 0}
+                                                        <span class="menu-label">
+                                                            <span class="label label-primary label-rounded"
+                                                                >{newUsers}</span>
+                                                        </span>
+                                                    {/if}
+                                                </a>
+                                            </div>
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'members-template'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/members/subscription/template'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <NotePencil size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Modulo Iscrizioni
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('association.modules.read')}
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'modules'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/members/modules'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Browsers size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Moduli Web
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        <!-- {/if} -->
+                                    </div>
                                 </div>
-                            </div>
                             {/if}
                         </div>
                     {/if}
@@ -331,7 +333,9 @@
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                         <div
-                            class="menu-item menu-item-submenu {$currentPage == 'course' ? 'menu-item-active' : ''} {expandedMenus.course ? 'menu-item-open' : ''}"
+                            class="menu-item menu-item-submenu {$currentPage == 'course'
+                                ? 'menu-item-active'
+                                : ''} {expandedMenus.course ? 'menu-item-open' : ''}"
                             aria-haspopup="true">
                             <!-- svelte-ignore a11y-invalid-attribute -->
                             <span class="menu-link menu-toggle" on:click={() => toggleMenu('course')}>
@@ -342,95 +346,95 @@
                                 <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                             </span>
                             {#if expandedMenus.course}
-                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-                                <div class="menu-subnav">
-                                    {#if canPerformAction('association.courses.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'course-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a href="/#/course/list" class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Volleyball size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Corsi e Abbonamenti</span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    <!--TODO: update permissions-->
-                                    {#if canPerformAction('association.campsandretreats.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage ==
-                                            'camps-and-retreats-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a
-                                                href="/#/course/camps-and-retreats/list"
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Tent size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Camp e Ritiri</span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                    <div class="menu-subnav">
+                                        {#if canPerformAction('association.courses.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'course-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a href="/#/course/list" class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Volleyball size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Corsi e Abbonamenti</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        <!--TODO: update permissions-->
+                                        {#if canPerformAction('association.campsandretreats.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage ==
+                                                'camps-and-retreats-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a
+                                                    href="/#/course/camps-and-retreats/list"
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Tent size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Camp e Ritiri</span>
+                                                </a>
+                                            </div>
+                                        {/if}
 
-                                    {#if canPerformAction('association.carnet.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'carnet-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/course/carnet/list/'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Ticket size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Carnet
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                        {#if canPerformAction('association.carnet.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'carnet-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/course/carnet/list/'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Ticket size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Carnet
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
 
-                                    {#if canPerformAction('association.instructor.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'instructor-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/course/instructor/list/'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <UserFocus size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Istruttori
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                        {#if canPerformAction('association.instructor.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'instructor-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/course/instructor/list/'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <UserFocus size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Istruttori
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                    </div>
                                 </div>
-                            </div>
                             {/if}
                         </div>
                     {/if}
@@ -438,7 +442,9 @@
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                         <div
-                            class="menu-item menu-item-submenu {$currentPage == 'communication' ? 'menu-item-active' : ''} {expandedMenus.communication ? 'menu-item-open' : ''}"
+                            class="menu-item menu-item-submenu {$currentPage == 'communication'
+                                ? 'menu-item-active'
+                                : ''} {expandedMenus.communication ? 'menu-item-open' : ''}"
                             aria-haspopup="true">
                             <!-- svelte-ignore a11y-invalid-attribute -->
                             <span class="menu-link menu-toggle" on:click={() => toggleMenu('communication')}>
@@ -449,81 +455,80 @@
                                 <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                             </span>
                             {#if expandedMenus.communication}
-                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-
-                                <div class="menu-subnav">
-                                    {#if canPerformAction('association.communication.messages.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'messages-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/communication/messages'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <PaperPlaneTilt size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Messaggi
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    {#if canPerformAction('association.communication.workflows.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'message-automation'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/communication/automation'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <TreeStructure size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Automazioni</span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    {#if canPerformAction('association.communication.settings.read')}
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'email' ||
-                                            $subPage == 'sms' ||
-                                            $subPage == 'stats'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- class="menu-link coming-soon-item" -->
-                                            <a
-                                                href={isFreePlan()
-                                                    ? '/#/subscription/upgrade'
-                                                    : '/#/communication/configuration'}
-                                                class="menu-link"
-                                                on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <GearSix size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text"
-                                                    >Configurazioni
-                                                    <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
-                                                </span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                    <div class="menu-subnav">
+                                        {#if canPerformAction('association.communication.messages.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'messages-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/communication/messages'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <PaperPlaneTilt size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Messaggi
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('association.communication.workflows.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'message-automation'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/communication/automation'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <TreeStructure size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Automazioni</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('association.communication.settings.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'email' ||
+                                                $subPage == 'sms' ||
+                                                $subPage == 'stats'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- class="menu-link coming-soon-item" -->
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/communication/configuration'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <GearSix size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text"
+                                                        >Configurazioni
+                                                        <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
+                                                    </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                    </div>
                                 </div>
-                            </div>
                             {/if}
                         </div>
                     {/if}
@@ -585,10 +590,7 @@
                                 : 'menu-item menu-item-submenu'}
                             aria-haspopup="true"
                             data-menu-toggle="hover">
-                            <a
-                                href="/#/audit/list"
-                                class="menu-link"
-                                on:click={collapseSidebar}>
+                            <a href="/#/audit/list" class="menu-link" on:click={collapseSidebar}>
                                 <span class="menu-icon">
                                     <ClipboardText size={24} weight="duotone" />
                                 </span>
@@ -623,7 +625,9 @@
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                         <div
-                            class="menu-item menu-item-submenu {$currentPage == 'invoice' ? 'menu-item-active' : ''} {expandedMenus.invoice ? 'menu-item-open' : ''}"
+                            class="menu-item menu-item-submenu {$currentPage == 'invoice'
+                                ? 'menu-item-active'
+                                : ''} {expandedMenus.invoice ? 'menu-item-open' : ''}"
                             aria-haspopup="true">
                             <span class="menu-link menu-toggle" on:click={() => toggleMenu('invoice')}>
                                 <span class="menu-icon">
@@ -633,88 +637,88 @@
                                 <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                             </span>
                             {#if expandedMenus.invoice}
-                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-                                <div class="menu-subnav">
-                                    {#if canPerformAction('bookeeping.documents.invoices.read')}
-                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'invoice-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            on:click={() => replace('/invoice/list')}
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <FileText size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Ricevute</span>
-                                                {#if newInvoices > 0}
-                                                    <span class="menu-label">
-                                                        <span class="label label-primary label-rounded"
-                                                            >{newInvoices}</span>
+                                <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                    <div class="menu-subnav">
+                                        {#if canPerformAction('bookeeping.documents.invoices.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'invoice-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                on:click={() => replace('/invoice/list')}
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <FileText size={24} weight="duotone" />
                                                     </span>
-                                                {/if}
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    {#if canPerformAction('bookeeping.documents.clientinvoices.read')}
-                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            on:click={() => {
-                                                isFreePlan()
-                                                    ? (location.href = '/#/subscription/upgrade')
-                                                    : (location.href = '/#/customers-invoice/list');
-                                            }}
-                                            class="menu-item menu-item-submenu {$subPage == 'customers-invoice-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <File size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Fatture Attive</span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                                    <span class="menu-text">Ricevute</span>
+                                                    {#if newInvoices > 0}
+                                                        <span class="menu-label">
+                                                            <span class="label label-primary label-rounded"
+                                                                >{newInvoices}</span>
+                                                        </span>
+                                                    {/if}
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('bookeeping.documents.clientinvoices.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                on:click={() => {
+                                                    isFreePlan()
+                                                        ? (location.href = '/#/subscription/upgrade')
+                                                        : (location.href = '/#/customers-invoice/list');
+                                                }}
+                                                class="menu-item menu-item-submenu {$subPage == 'customers-invoice-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <File size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Fatture Attive</span>
+                                                </a>
+                                            </div>
+                                        {/if}
 
-                                    {#if canPerformAction('bookeeping.documents.supplierinvoices.read')}
-                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            on:click={() => {
-                                                isFreePlan()
-                                                    ? (location.href = '/#/subscription/upgrade')
-                                                    : (location.href = '/#/suppliers-invoice/list');
-                                            }}
-                                            class="menu-item menu-item-submenu {$subPage == 'suppliers-invoice-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <File size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Fatture Passive</span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                        {#if canPerformAction('bookeeping.documents.supplierinvoices.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                on:click={() => {
+                                                    isFreePlan()
+                                                        ? (location.href = '/#/subscription/upgrade')
+                                                        : (location.href = '/#/suppliers-invoice/list');
+                                                }}
+                                                class="menu-item menu-item-submenu {$subPage == 'suppliers-invoice-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <File size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Fatture Passive</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                    </div>
                                 </div>
-                            </div>
                             {/if}
                         </div>
                     {/if}
@@ -723,15 +727,19 @@
                         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <div
-                            class="menu-item menu-item-submenu {$currentPage == 'balance-sheet' ? 'menu-item-active' : ''} {expandedMenus.balanceSheet ? 'menu-item-open' : ''}"
+                            class="menu-item menu-item-submenu {$currentPage == 'balance-sheet'
+                                ? 'menu-item-active'
+                                : ''} {expandedMenus.balanceSheet ? 'menu-item-open' : ''}"
                             aria-haspopup="true">
-                            <span class="menu-link menu-toggle" on:click={() => {
-                                if (isFreePlan()) {
-                                    location.href = '/#/subscription/upgrade';
-                                } else {
-                                    toggleMenu('balanceSheet');
-                                }
-                            }}>
+                            <span
+                                class="menu-link menu-toggle"
+                                on:click={() => {
+                                    if (isFreePlan()) {
+                                        location.href = '/#/subscription/upgrade';
+                                    } else {
+                                        toggleMenu('balanceSheet');
+                                    }
+                                }}>
                                 <span class="menu-icon">
                                     <Percent size={24} weight="duotone" />
                                 </span>
@@ -739,77 +747,77 @@
                                 <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                             </span>
                             {#if expandedMenus.balanceSheet}
-                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-                                <div class="menu-subnav">
-                                    <div class="menu-item menu-item-parent" aria-haspopup="true">
-                                        <span class="menu-link">
-                                            <span class="menu-text">Gestione</span>
-                                        </span>
-                                    </div>
-                                    {#if canPerformAction('bookeeping.management.suppliers.read')}
+                                <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                    <div class="menu-subnav">
+                                        <div class="menu-item menu-item-parent" aria-haspopup="true">
+                                            <span class="menu-link">
+                                                <span class="menu-text">Gestione</span>
+                                            </span>
+                                        </div>
+                                        {#if canPerformAction('bookeeping.management.suppliers.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'suppliers-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                on:click={() => replace('/suppliers-and-customers/list')}
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <AddressBook size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Fornitori e Clienti</span>
+                                                </a>
+                                            </div>
+                                        {/if}
                                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'suppliers-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            on:click={() => replace('/suppliers-and-customers/list')}
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <AddressBook size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Fornitori e Clienti</span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                    {#if canPerformAction('bookeeping.management.accounts.read')}
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'accounting-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            on:click={() => replace('/accounting/list')}
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Bank size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Conti Finanziari</span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                    {#if canPerformAction('bookeeping.management.accountstransfers.read')}
+                                        {#if canPerformAction('bookeeping.management.accounts.read')}
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'accounting-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                on:click={() => replace('/accounting/list')}
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Bank size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Conti Finanziari</span>
+                                                </a>
+                                            </div>
+                                        {/if}
                                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage ==
-                                            'accounting-transfer-list'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            on:click={() => replace('/accounting-transfer/list')}
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <Coins size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Giroconti</span>
-                                            </a>
-                                        </div>
-                                    {/if}
-                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                    <!-- <div
+                                        {#if canPerformAction('bookeeping.management.accountstransfers.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage ==
+                                                'accounting-transfer-list'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                on:click={() => replace('/accounting-transfer/list')}
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <Coins size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Giroconti</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                        <!-- <div
                                     class="menu-item menu-item-submenu {$subPage == 'accounting-transactions-list'
                                         ? 'menu-item-active'
                                         : ''}"
@@ -823,28 +831,28 @@
                                         <span class="menu-text">Entrate e Uscite</span>
                                     </a>
                                 </div> -->
-                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                    {#if canPerformAction('bookeeping.management.balancesheet.read')}
                                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                        <!-- svelte-ignore a11y-role-supports-aria-props -->
-                                        <div
-                                            class="menu-item menu-item-submenu {$subPage == 'balance-sheet-manage'
-                                                ? 'menu-item-active'
-                                                : ''}"
-                                            on:click={() => replace('/balance-sheet/list')}
-                                            aria-haspopup="true"
-                                            data-menu-toggle="hover">
-                                            <!-- svelte-ignore a11y-missing-attribute -->
-                                            <a class="menu-link" on:click={collapseSidebar}>
-                                                <span class="menu-icon">
-                                                    <ChartBar size={24} weight="duotone" />
-                                                </span>
-                                                <span class="menu-text">Bilancio</span>
-                                            </a>
-                                        </div>
-                                    {/if}
+                                        {#if canPerformAction('bookeeping.management.balancesheet.read')}
+                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                                            <!-- svelte-ignore a11y-role-supports-aria-props -->
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'balance-sheet-manage'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                on:click={() => replace('/balance-sheet/list')}
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <!-- svelte-ignore a11y-missing-attribute -->
+                                                <a class="menu-link" on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <ChartBar size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Bilancio</span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                    </div>
                                 </div>
-                            </div>
                             {/if}
                         </div>
                     {/if}
@@ -869,9 +877,7 @@
                         </a>
                     </div>
                     <div
-                        class={$currentPage == 'carnet'
-                            ? 'menu-item menu-item-active'
-                            : 'menu-item menu-item-submenu'}
+                        class={$currentPage == 'carnet' ? 'menu-item menu-item-active' : 'menu-item menu-item-submenu'}
                         on:click={() => push('/carnet/list')}
                         aria-haspopup="true"
                         data-menu-toggle="hover">
@@ -884,9 +890,7 @@
                     </div>
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <div
-                        class={$currentPage == 'payment'
-                            ? 'menu-item menu-item-active'
-                            : 'menu-item menu-item-submenu'}
+                        class={$currentPage == 'payment' ? 'menu-item menu-item-active' : 'menu-item menu-item-submenu'}
                         on:click={() => push('/payment/list')}
                         aria-haspopup="true"
                         data-menu-toggle="hover">
@@ -906,9 +910,7 @@
                 {#if canPerformAction('other.users.collaborators.read')}
                     {#if $role != 'athlete' && canPerformAction('other.users.collaborators.read')}
                         <div
-                            class={$subPage == 'connected-collaborators'
-                                ? 'menu-item menu-item-active'
-                                : 'menu-item'}
+                            class={$subPage == 'connected-collaborators' ? 'menu-item menu-item-active' : 'menu-item'}
                             aria-haspopup="true"
                             data-menu-toggle="hover">
                             <a href="/#/connected-collaborators" class="menu-link" on:click={collapseSidebar}>
@@ -923,7 +925,9 @@
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
                     <div
-                        class="menu-item menu-item-submenu d-none {$currentPage == 'users' ? 'menu-item-active' : ''} {expandedMenus.users ? 'menu-item-open' : ''}"
+                        class="menu-item menu-item-submenu d-none {$currentPage == 'users'
+                            ? 'menu-item-active'
+                            : ''} {expandedMenus.users ? 'menu-item-open' : ''}"
                         aria-haspopup="true">
                         <span class="menu-link menu-toggle" on:click={() => toggleMenu('users')}>
                             <span class="menu-icon">
@@ -933,10 +937,9 @@
                             <span class="menu-arrow"><ChevronRight class="menu-arrow-icon" size={14} /></span>
                         </span>
                         {#if expandedMenus.users}
-                        <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
-                            <div class="menu-subnav">
+                            <div class="menu-submenu" style="display: block;" transition:slide={{duration: 200}}>
+                                <div class="menu-subnav" />
                             </div>
-                        </div>
                         {/if}
                     </div>
                 {/if}
@@ -957,9 +960,7 @@
                 {#if $role != 'athlete'}
                     {#if canPerformAction('association.courses.attendance.update')}
                         <div
-                            class={$currentPage == 'checkin-attendance'
-                                ? 'menu-item menu-item-active'
-                                : 'menu-item'}
+                            class={$currentPage == 'checkin-attendance' ? 'menu-item menu-item-active' : 'menu-item'}
                             aria-haspopup="true">
                             <a href="/#/attendance-scanner-mode" class="menu-link" on:click={collapseSidebar}>
                                 <span class="menu-icon">
@@ -978,11 +979,7 @@
                         class="menu-item menu-item-submenu"
                         aria-haspopup="true"
                         data-menu-toggle="hover">
-                        <a
-                            href={$oemConfig.manualUrl}
-                            class="menu-link"
-                            target="_blank"
-                            on:click={collapseSidebar}>
+                        <a href={$oemConfig.manualUrl} class="menu-link" target="_blank" on:click={collapseSidebar}>
                             <span class="menu-icon">
                                 <Info size={24} weight="duotone" />
                             </span>
@@ -1120,7 +1117,6 @@
         overflow-y: hidden;
         overscroll-behavior: contain;
     }
-
 
     :global(.menu-nav::-webkit-scrollbar) {
         width: 4px;
