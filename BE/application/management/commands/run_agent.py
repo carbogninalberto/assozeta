@@ -22,7 +22,7 @@ class Command(BaseCommand):
         from application.models import SportAssociation
         from application.agent.core import Agent
         from application.agent.callbacks import CLICallback
-        from application.agent.providers.groq_provider import GroqProvider
+        from application.agent.providers.ai_provider import AIProvider
 
         try:
             sa = await asyncio.to_thread(
@@ -35,7 +35,7 @@ class Command(BaseCommand):
             ))
             return
 
-        provider = GroqProvider()
+        provider = AIProvider()
         callback = CLICallback()
         agent = Agent(
             sport_association_id=str(sa.sport_association_id),

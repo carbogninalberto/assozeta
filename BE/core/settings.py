@@ -103,11 +103,30 @@ DEFAULT_SPORT_ASSOCIATION_ID = env.str('DEFAULT_SPORT_ASSOCIATION_ID', None)
 WHITELABEL_NAME = env.str('WHITELABEL_NAME', 'Bakney Sport')
 RESELLER_NAME = env.str('RESELLER_NAME', 'Bakney Sport')
 
-# GROQ API KEY
-GROQ_API_KEY = env.str('GROQ_API_KEY', None)
-GROQ_MODEL = env.str('GROQ_MODEL', 'openai/gpt-oss-120b')
-GROQ_CHEAP_MODEL = env.str('GROQ_CHEAP_MODEL', 'openai/gpt-oss-20b')
-GROQ_BASE_URL = env.str('GROQ_BASE_URL', 'https://api.groq.com/openai/v1')
+# OpenAI-compatible LLM provider. Keep existing self-host installations on
+# Groq until they explicitly configure the provider-neutral AI variables.
+_configured_ai_api_key = env.str('AI_API_KEY', None)
+_legacy_groq_api_key = env.str('GROQ_API_KEY', None)
+_using_legacy_groq_config = not _configured_ai_api_key and bool(_legacy_groq_api_key)
+AI_API_KEY = _configured_ai_api_key or _legacy_groq_api_key
+AI_MODEL = env.str(
+    'AI_MODEL',
+    env.str('GROQ_MODEL', 'openai/gpt-oss-120b')
+    if _using_legacy_groq_config
+    else 'deepseek-v4-flash',
+)
+AI_CHEAP_MODEL = env.str(
+    'AI_CHEAP_MODEL',
+    env.str('GROQ_CHEAP_MODEL', 'openai/gpt-oss-20b')
+    if _using_legacy_groq_config
+    else 'deepseek-v4-flash',
+)
+AI_BASE_URL = env.str(
+    'AI_BASE_URL',
+    env.str('GROQ_BASE_URL', 'https://api.groq.com/openai/v1')
+    if _using_legacy_groq_config
+    else 'https://api.deepseek.com',
+)
 
 # MCP Agent Settings
 MCP_AGENT_MAX_ITERATIONS = env.int('MCP_AGENT_MAX_ITERATIONS', 15)

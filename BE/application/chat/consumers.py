@@ -174,9 +174,9 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
     async def _init_agent(self):
         """Initialize the AI agent."""
         from application.agent.core import Agent
-        from application.agent.providers.groq_provider import GroqProvider
+        from application.agent.providers.ai_provider import AIProvider
 
-        provider = GroqProvider()
+        provider = AIProvider()
         callback = WebSocketAgentCallback(self)
 
         self.agent = Agent(

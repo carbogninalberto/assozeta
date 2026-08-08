@@ -26,7 +26,7 @@ class LLMResponse:
 
 
 class LLMProvider(Protocol):
-    """Protocol for LLM providers (Groq, OpenAI, etc.)."""
+    """Protocol for normalized LLM provider responses."""
 
     async def chat(
         self,
