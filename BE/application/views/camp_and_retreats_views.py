@@ -24,7 +24,7 @@ def camps_and_retreats_add(request):
     This method is used to add a new camp or retreat
     """
 
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "Only sport associations can add camps or retreats"}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -53,7 +53,7 @@ def camps_and_retreats_add(request):
 def camps_and_retreats_update(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "Only sport associations can update camps or retreats"}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -70,6 +70,8 @@ def camps_and_retreats_update(request, uid):
             "message": "Camp or retreat updated successfully",
             "camp_and_retreat": serializer.data
         }, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreats.DoesNotExist:
         return Response({"error": "Camp or retreat not found"}, status=status.HTTP_404_NOT_FOUND)
     except ValidationError as e:
@@ -83,7 +85,7 @@ def camps_and_retreats_update(request, uid):
 def camps_and_retreats_delete(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "Only sport associations can delete camps or retreats"}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -93,6 +95,8 @@ def camps_and_retreats_delete(request, uid):
 
         camp_and_retreat.delete()
         return Response({"message": "Camp or retreat deleted successfully"}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreats.DoesNotExist:
         return Response({"error": "Camp or retreat not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -106,7 +110,7 @@ def camps_and_retreats_list(request):
     This method is used to get a list of all camps and retreats
     """
 
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "Only sport associations can view camps or retreats"}, status=status.HTTP_403_FORBIDDEN)
 
     camps_and_retreats = CampsAndRetreats.objects.filter(sport_association=request.user.sport_association)
@@ -142,6 +146,8 @@ def camps_and_retreats_info(request, uid):
 
         serializer = CampsAndRetreatsInfoSerializer(camp_and_retreat)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreats.DoesNotExist:
         return Response({"error": "Camp or retreat not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -151,7 +157,7 @@ def camps_and_retreats_info(request, uid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def camps_and_retreats_periods_add(request):
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -178,7 +184,7 @@ def camps_and_retreats_periods_add(request):
 def camps_and_retreats_periods_update(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -195,6 +201,8 @@ def camps_and_retreats_periods_update(request, uid):
             "message": "Updated successfully",
             "period": serializer.data
         }, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsPeriod.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except ValidationError as e:
@@ -208,7 +216,7 @@ def camps_and_retreats_periods_update(request, uid):
 def camps_and_retreats_periods_delete(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -218,6 +226,8 @@ def camps_and_retreats_periods_delete(request, uid):
 
         period.delete()
         return Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsPeriod.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -231,7 +241,7 @@ def camps_and_retreats_periods_info(request, uid):
     This method is used to get a list of all camps and retreats
     """
 
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "Only sport associations can view camps or retreats"}, status=status.HTTP_403_FORBIDDEN)
 
     is_valid_uuid(uid)
@@ -243,6 +253,8 @@ def camps_and_retreats_periods_info(request, uid):
 
         serializer = CampsAndRetreatsPeriodInfoSerializer(period)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsPeriod.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -252,7 +264,7 @@ def camps_and_retreats_periods_info(request, uid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def camps_and_retreats_periods_services_add(request):
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -279,7 +291,7 @@ def camps_and_retreats_periods_services_add(request):
 def camps_and_retreats_periods_services_update(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -326,6 +338,8 @@ def camps_and_retreats_periods_services_update(request, uid):
             "message": "Updated successfully",
             "period": serializer.data
         }, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsPeriodsService.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except ValidationError as e:
@@ -339,7 +353,7 @@ def camps_and_retreats_periods_services_update(request, uid):
 def camps_and_retreats_periods_services_delete(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -349,6 +363,8 @@ def camps_and_retreats_periods_services_delete(request, uid):
 
         service.delete()
         return Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsPeriodsService.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -358,7 +374,7 @@ def camps_and_retreats_periods_services_delete(request, uid):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def camps_and_retreats_subscriptions_list(request, uid):
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association"}, status=status.HTTP_403_FORBIDDEN)
 
     is_valid_uuid(uid)
@@ -410,7 +426,7 @@ def camps_and_retreats_subscriptions_add(request, uid):
 def camps_and_retreats_subscriptions_update(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -454,7 +470,7 @@ def camps_and_retreats_subscriptions_update(request, uid):
 def camps_and_retreats_subscriptions_delete(request, uid):
 
     is_valid_uuid(uid)
-    if request.user.is_sport_association is False:
+    if not request.user.is_sport_association(raise_exception=False):
         return Response({"error": "You are not a sport association."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -467,6 +483,8 @@ def camps_and_retreats_subscriptions_delete(request, uid):
 
         sub.delete()
         return Response({"message": "Deleted successfully"}, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except CampsAndRetreatsSubscription.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
