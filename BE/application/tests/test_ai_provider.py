@@ -26,6 +26,11 @@ class AIProviderTests(SimpleTestCase):
         with self.assertRaisesMessage(ValueError, 'AI_API_KEY is required'):
             AIProvider()
 
+    @override_settings(AI_API_KEY=None, GROQ_API_KEY='legacy-key')
+    def test_does_not_accept_legacy_groq_key(self):
+        with self.assertRaisesMessage(ValueError, 'AI_API_KEY is required'):
+            AIProvider()
+
     @override_settings(
         AI_API_KEY='test-key',
         AI_MODEL='test-model',
