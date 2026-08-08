@@ -382,6 +382,11 @@ class AssociationExportService:
                 models.Q(payment_category_id__in=payment_cat_ids)
             )
 
+        if model_name == 'SportAssociationDocumentsArchive':
+            return qs.filter(
+                sport_association=self.sport_association,
+            ).exclude(document__filename__startswith='export_')
+
         # Direct sport_association FK (check it's a real FK field, not a reverse relation)
         if hasattr(model_class, 'sport_association'):
             # Verify it's a forward FK field by checking _meta
@@ -956,12 +961,15 @@ class AssociationExportService:
         else:
             storage_path = f"exports/{timestamp}/{document.document_id}/{filename}"
 
+        file_size_bytes = os.path.getsize(zip_path)
+
         # Upload to storage
         with open(zip_path, 'rb') as f:
             saved_path = default_storage.save(storage_path, f)
 
         document.filepath = saved_path
-        document.save()
+        document.file_size_bytes = file_size_bytes
+        document.save(update_fields=['filepath', 'file_size_bytes'])
 
         # Create archive entry
         SportAssociationDocumentsArchive.objects.create(

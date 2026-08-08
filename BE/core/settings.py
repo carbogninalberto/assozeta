@@ -377,7 +377,7 @@ SOCIAL_AUTH_PIPELINE = (
 AUTH_USER_MODEL = 'application.User'
 
 MIDDLEWARE = [
-    'django.middleware.gzip.GZipMiddleware',
+    'core.middleware.GZipMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     # "kolo.middleware.KoloMiddleware",

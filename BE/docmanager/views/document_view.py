@@ -11,6 +11,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from application.models.invoices_models import Invoice
+from application.models.user_models import SportAssociationDocumentsArchive, User
 from core.middleware import IsAuthenticated
 from rest_framework.response import Response
 
@@ -22,6 +23,7 @@ import os
 from django.core.files.storage import default_storage
 
 from docmanager.models import Document
+from docmanager.download_tokens import load_document_download_token
 
 logger = logging.getLogger(__name__)
 
@@ -94,14 +96,30 @@ def retrieve_document(request, uid):
     # template = os.path.join(BASE_DIR, 'templates/document/application/subscription.html')
     logger.info('retrieve_document {}'.format(uid))
     token = request.GET.get("token", None)
+    download_token = request.GET.get("download_token", None)
     request.user = _get_authenticated_user(request, query_token=token)
 
+    export_archive = None
+    if download_token:
+        token_payload = load_document_download_token(download_token)
+        if token_payload is None or token_payload['document_id'] != str(uid):
+            return Response({'error': 'Invalid download token.'}, status.HTTP_401_UNAUTHORIZED)
+        export_archive = SportAssociationDocumentsArchive.objects.filter(
+            sport_association_id=token_payload['sport_association_id'],
+            document_id=uid,
+            document__filename__startswith='export_',
+        ).select_related('document', 'sport_association').first()
+        if export_archive is None:
+            return Response({'error': 'Document not found.'}, status.HTTP_404_NOT_FOUND)
+        document = export_archive.document
+    else:
+        document = None
+
     # Check if token matches the document's external access token (UUID)
-    document = None
-    if token:
+    if document is None and token:
         try:
             # Only try UUID lookup if token looks like a valid UUID
-            document = Document.objects.filter(token=token).first()
+            document = Document.objects.filter(document_id=uid, token=token).first()
         except Exception:
             # Token is not a valid UUID (e.g., JWT token), skip this lookup
             pass
@@ -114,6 +132,23 @@ def retrieve_document(request, uid):
                 return Response({'error': 'Document not found.'}, status.HTTP_404_NOT_FOUND)
         else:
             return Response({'error': 'Invalid token. Not Authorized.'}, status.HTTP_401_UNAUTHORIZED)
+
+    if export_archive is None and document.filename.startswith('export_'):
+        export_archive = SportAssociationDocumentsArchive.objects.filter(
+            document=document,
+        ).select_related('sport_association').first()
+        if export_archive is not None:
+            is_owner = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.role == User.ASSOCIATION
+                and request.user.user_id == export_archive.sport_association.user_id
+            )
+            if not is_owner:
+                return Response(
+                    {'error': 'Not authorized to access this export.'},
+                    status.HTTP_403_FORBIDDEN,
+                )
 
     printing_service = PrintingService()
 

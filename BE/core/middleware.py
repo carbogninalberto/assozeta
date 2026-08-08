@@ -5,6 +5,7 @@ import requests
 
 from django.core.cache import cache
 from django.http import JsonResponse
+from django.middleware.gzip import GZipMiddleware as DjangoGZipMiddleware
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied, NotAcceptable
 from rest_framework.permissions import BasePermission
@@ -12,6 +13,13 @@ from auditlog.context import auditlog_value
 from application.models import User
 
 logger = logging.getLogger()
+
+
+class GZipMiddleware(DjangoGZipMiddleware):
+    def process_response(self, request, response):
+        if getattr(response, 'disable_gzip', False):
+            return response
+        return super().process_response(request, response)
 
 
 def get_user_by_id_cached(user_id):

@@ -8,11 +8,11 @@ import os
 import tempfile
 
 from celery.result import AsyncResult
+from django.core.cache import cache
 from django.core.files.storage import default_storage
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
@@ -22,10 +22,24 @@ from application.models.user_models import (
     User,
 )
 from application.services.validators import ImportValidator
-from application.tasks import export_association_data, import_association_data
+from application.tasks import (
+    EXPORT_ACTIVE_CACHE_TIMEOUT,
+    EXPORT_MAX_COUNT,
+    export_active_cache_key,
+    export_association_data,
+    import_association_data,
+)
+from core.middleware import IsAuthenticated
+from docmanager.download_tokens import create_document_download_token
 from instance.permissions import SetupTokenOrAuthenticated
 
 logger = logging.getLogger(__name__)
+
+EXPORT_TASK_CACHE_TIMEOUT = 24 * 60 * 60
+
+
+def _export_task_cache_key(task_id):
+    return f'association-export-task:{task_id}'
 
 
 class AssociationExportViewSet(ViewSet):
@@ -38,13 +52,16 @@ class AssociationExportViewSet(ViewSet):
 
     permission_classes = [IsAuthenticated]
 
-    def _check_export_permission(self, user: User) -> bool:
+    def _check_export_permission(self, request) -> bool:
         """
         Check if user has permission to export data.
 
         Only association owners (not collaborators) can export.
         """
-        return user.role == User.ASSOCIATION
+        return (
+            request.user.role == User.ASSOCIATION
+            and not getattr(request, 'collaborator', False)
+        )
 
     @action(detail=False, methods=['POST'], url_path='start')
     def start_export(self, request):
@@ -65,7 +82,7 @@ class AssociationExportViewSet(ViewSet):
         user = request.user
 
         # Check permissions
-        if not self._check_export_permission(user):
+        if not self._check_export_permission(request):
             return Response(
                 {'error': 'Solo il proprietario può esportare i dati'},
                 status=status.HTTP_403_FORBIDDEN
@@ -79,10 +96,44 @@ class AssociationExportViewSet(ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+        export_count = SportAssociationDocumentsArchive.objects.filter(
+            sport_association=sport_association,
+            document__filename__startswith='export_',
+        ).count()
+        if export_count >= EXPORT_MAX_COUNT:
+            return Response(
+                {'error': 'Elimina un export prima di crearne uno nuovo'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        active_cache_key = export_active_cache_key(sport_association.sport_association_id)
+        if not cache.add(
+            active_cache_key,
+            str(user.user_id),
+            timeout=EXPORT_ACTIVE_CACHE_TIMEOUT,
+        ):
+            return Response(
+                {'error': 'Un export è già in corso'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
         # Start the export task
-        task = export_association_data.delay(
-            sport_association_id=str(sport_association.sport_association_id),
-            user_id=str(user.user_id),
+        try:
+            task = export_association_data.delay(
+                sport_association_id=str(sport_association.sport_association_id),
+                user_id=str(user.user_id),
+            )
+        except Exception:
+            cache.delete(active_cache_key)
+            raise
+
+        cache.set(
+            _export_task_cache_key(task.id),
+            {
+                'sport_association_id': str(sport_association.sport_association_id),
+                'user_id': str(user.user_id),
+            },
+            timeout=EXPORT_TASK_CACHE_TIMEOUT,
         )
 
         logger.info(
@@ -115,12 +166,35 @@ class AssociationExportViewSet(ViewSet):
             "result": {...}  // Only if ready
         }
         """
+        if not self._check_export_permission(request):
+            return Response(
+                {'error': 'Solo il proprietario può visualizzare gli export'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         task_id = request.query_params.get('task_id')
 
         if not task_id:
             return Response(
                 {'error': 'task_id richiesto'},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            sport_association = request.user.sport_association
+        except SportAssociation.DoesNotExist:
+            return Response(
+                {'error': 'Associazione non trovata'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        task_owner = cache.get(_export_task_cache_key(task_id))
+        if not task_owner or task_owner.get('sport_association_id') != str(
+            sport_association.sport_association_id
+        ):
+            return Response(
+                {'error': 'Export non trovato'},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         result = AsyncResult(task_id)
@@ -150,6 +224,12 @@ class AssociationExportViewSet(ViewSet):
         """
         user = request.user
 
+        if not self._check_export_permission(request):
+            return Response(
+                {'error': 'Solo il proprietario può visualizzare gli export'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
             sport_association = user.sport_association
         except SportAssociation.DoesNotExist:
@@ -167,10 +247,27 @@ class AssociationExportViewSet(ViewSet):
         export_list = []
         for archive in exports:
             doc = archive.document
+            file_size_bytes = doc.file_size_bytes
+            if file_size_bytes is None and doc.filepath:
+                try:
+                    file_size_bytes = default_storage.size(doc.filepath)
+                    doc.file_size_bytes = file_size_bytes
+                    doc.save(update_fields=['file_size_bytes'])
+                except Exception:
+                    logger.warning(
+                        'Unable to retrieve export file size',
+                        extra={'document_id': str(doc.document_id)},
+                        exc_info=True,
+                    )
             export_list.append({
                 'archive_id': str(archive.sport_association_documents_archive_id),
                 'document_id': str(doc.document_id),
                 'filename': doc.filename,
+                'file_size_bytes': file_size_bytes,
+                'download_token': create_document_download_token(
+                    doc.document_id,
+                    sport_association.sport_association_id,
+                ),
                 'date': archive.date.isoformat() if archive.date else None,
                 'created_at': doc.creation_date.isoformat() if doc.creation_date else None,
             })
@@ -194,6 +291,12 @@ class AssociationExportViewSet(ViewSet):
         """
         user = request.user
         document_id = request.data.get('document_id')
+
+        if not self._check_export_permission(request):
+            return Response(
+                {'error': 'Solo il proprietario può eliminare gli export'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         if not document_id:
             return Response(
@@ -224,6 +327,8 @@ class AssociationExportViewSet(ViewSet):
 
         # Delete the document and archive entry
         document = archive.document
+        if document.filepath:
+            default_storage.delete(document.filepath)
         archive.delete()
         document.delete()
 

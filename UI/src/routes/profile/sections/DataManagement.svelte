@@ -116,26 +116,22 @@
         }
     }
 
-    async function downloadExport(exp) {
-        try {
-            const response = await fetch(`${__bakney.env.API.DOCUMENT.RETRIEVE}/${exp.document_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('sessionToken'))}`,
-                },
-            });
-            if (!response.ok) throw new Error('Download failed');
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = exp.filename || 'export.zip';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
+    function downloadExport(exp) {
+        if (!exp.download_token) {
             toast.error('Errore durante il download');
+            return;
         }
+
+        const url = `${__bakney.env.API.DOCUMENT.RETRIEVE}/${encodeURIComponent(
+            exp.document_id
+        )}?download=true&download_token=${encodeURIComponent(exp.download_token)}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = exp.filename || 'export.zip';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     function formatDate(dateString) {
@@ -200,7 +196,9 @@
                                 disabled={exporting || !canPerformAction('other.settings.update') || exports.length >= 3}
                                 on:click={startExport}>
                                 {#if exporting}
-                                    <SpinnerGap size={18} class="mr-2 spin" weight="bold" />
+                                    <span class="export-spinner mr-2">
+                                        <SpinnerGap size={18} weight="bold" />
+                                    </span>
                                     Export in corso...
                                 {:else}
                                     <CloudArrowUp size={18} class="mr-2" weight="duotone" />
@@ -255,8 +253,8 @@
                                                 </span>
                                                 <span class="text-muted font-weight-bold font-size-sm">
                                                     {formatDate(exp.created_at || exp.date)}
-                                                    {#if exp.size}
-                                                        <span class="mx-1">•</span> {formatFileSize(exp.size)}
+                                                    {#if exp.file_size_bytes != null}
+                                                        <span class="mx-1">•</span> {formatFileSize(exp.file_size_bytes)}
                                                     {/if}
                                                 </span>
                                             </div>
@@ -292,7 +290,10 @@
 {/if}
 
 <style>
-    .spin {
+    .export-spinner {
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
         animation: spin 1s linear infinite;
     }
     @keyframes spin {

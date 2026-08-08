@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+import mimetypes
 import os
 import re
 from datetime import datetime, timedelta
@@ -10,16 +11,19 @@ from typing import Dict
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import requests
+from asgiref.sync import sync_to_async
 from django.core.files.temp import NamedTemporaryFile
 from django.db.models import Q
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, StreamingHttpResponse
 from django.utils import timezone
+from django.utils.http import content_disposition_header
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4, A3, A2
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
+from storages.utils import clean_name
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -42,6 +46,33 @@ logger = logging.getLogger(__name__)
 
 class PrintingTemplates:
     SUBSCRIPTION = 'document/subscription/{}/view'
+
+
+class _AsyncStreamingBody:
+    def __init__(self, body, chunk_size=1024 * 1024):
+        self.body = body
+        self.chunk_size = chunk_size
+        self.read = sync_to_async(body.read, thread_sensitive=True)
+        self.closed = False
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            chunk = await self.read(self.chunk_size)
+        except BaseException:
+            self.close()
+            raise
+        if not chunk:
+            self.close()
+            raise StopAsyncIteration
+        return chunk
+
+    def close(self):
+        if not self.closed:
+            self.closed = True
+            self.body.close()
 
 
 class Puppeteer:
@@ -168,6 +199,36 @@ class PrintingService:
     puppeteer = Puppeteer()
     fastrender = FastRender()
 
+    def _stream_file_response(self, file_path, filename, as_attachment=None):
+        storage = default_storage
+        object_name = storage._normalize_name(clean_name(file_path))
+        object_response = storage.connection.meta.client.get_object(
+            Bucket=storage.bucket_name,
+            Key=object_name,
+        )
+        body = object_response['Body']
+
+        content_type = (
+            mimetypes.guess_type(filename)[0]
+            or object_response.get('ContentType')
+            or 'application/octet-stream'
+        )
+        response = StreamingHttpResponse(_AsyncStreamingBody(body), content_type=content_type)
+        response.disable_gzip = True
+
+        content_length = object_response.get('ContentLength')
+        if content_length is not None:
+            response['Content-Length'] = str(content_length)
+
+        content_encoding = object_response.get('ContentEncoding')
+        if content_encoding:
+            response['Content-Encoding'] = content_encoding
+
+        if as_attachment is not None:
+            response['Content-Disposition'] = content_disposition_header(as_attachment, filename)
+
+        return response
+
     def fill_pdf_and_store(self, request, document, template, fields: Dict):
         try:
             storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()), str(document.document_id))
@@ -266,23 +327,11 @@ class PrintingService:
                     raise Exception("File not found")
                 self.print_and_store_pdf(request, document, url, headers)
 
-            # open the file in read bytes mode
-            with default_storage.open(file, 'rb') as pdf:
-                content_type = 'application/pdf'
-                # check if document is an image
-                if document.filename.endswith('.jpg') or document.filename.endswith('.jpeg'):
-                    content_type = 'image/jpeg'
-                elif document.filename.endswith('.png'):
-                    content_type = 'image/png'
-                # building the response
-                response = HttpResponse(pdf, content_type=content_type)
-                content = "inline; filename={}".format(document.filename.replace(',', ' '))
-                download = request.GET.get("download")
-                if download:
-                    content = "attachment; filename={}".format(document.filename.replace(',', ' '))
-                response['Content-Disposition'] = content
-                return response
-            raise Exception
+            return self._stream_file_response(
+                file,
+                document.filename.replace(',', ' '),
+                as_attachment=bool(request.GET.get("download")),
+            )
 
         except Exception as e:
             return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -373,17 +422,7 @@ class PrintingService:
                     raise Exception("File not found")
                 self.print_and_store_pdf(request, document, url, headers)
 
-            # Open the file in read bytes mode
-            with default_storage.open(file_path, 'rb') as file:
-                content_type = 'application/pdf'
-                # Check if document is an image
-                if document.filename.endswith(('.jpg', '.jpeg')):
-                    content_type = 'image/jpeg'
-                elif document.filename.endswith('.png'):
-                    content_type = 'image/png'
-                # Build the response
-                response = HttpResponse(file, content_type=content_type)
-                return response
+            return self._stream_file_response(file_path, document.filename)
 
         except Exception as e:
             return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1822,9 +1822,14 @@ def delete_old_audit_logs():
 # Export retention settings
 EXPORT_MAX_AGE_DAYS = 30
 EXPORT_MAX_COUNT = 3
+EXPORT_ACTIVE_CACHE_TIMEOUT = 2 * 60 * 60
 
 
-def cleanup_old_exports(sport_association_id: str = None):
+def export_active_cache_key(sport_association_id):
+    return f'association-export-active:{sport_association_id}'
+
+
+def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPORT_MAX_COUNT):
     """
     Clean up old export files based on retention policy.
 
@@ -1875,11 +1880,8 @@ def cleanup_old_exports(sport_association_id: str = None):
                     try:
                         document = export.document
                         # Delete file from storage
-                        if document.file_path:
-                            try:
-                                default_storage.delete(document.file_path)
-                            except Exception:
-                                pass
+                        if document.filepath:
+                            default_storage.delete(document.filepath)
                         export.delete()
                         document.delete()
                         deleted_count += 1
@@ -1900,16 +1902,13 @@ def cleanup_old_exports(sport_association_id: str = None):
             document__filename__startswith='export_'
         ).select_related('document').order_by('-date')
 
-        exports_to_delete = list(remaining_exports[EXPORT_MAX_COUNT:])
+        exports_to_delete = list(remaining_exports[max_count:])
         for export in exports_to_delete:
             try:
                 document = export.document
                 # Delete file from storage
-                if document and document.file_path:
-                    try:
-                        default_storage.delete(document.file_path)
-                    except Exception:
-                        pass
+                if document and document.filepath:
+                    default_storage.delete(document.filepath)
                 export.delete()
                 if document:
                     document.delete()
@@ -1982,7 +1981,10 @@ def export_association_data(sport_association_id: str, user_id: str, include_fil
 
         # Clean up old exports before creating a new one
         # This enforces: max 30 days retention, max 3 exports per association
-        cleanup_deleted = cleanup_old_exports(sport_association_id)
+        cleanup_deleted = cleanup_old_exports(
+            sport_association_id,
+            max_count=EXPORT_MAX_COUNT - 1,
+        )
         if cleanup_deleted > 0:
             logger.info(
                 "Cleaned up old exports before new export",
@@ -2072,6 +2074,8 @@ Il team {WHITELABEL_NAME}
             'success': False,
             'error': str(e),
         }
+    finally:
+        cache.delete(export_active_cache_key(sport_association_id))
 
 
 @shared_task(name="import_association_data")

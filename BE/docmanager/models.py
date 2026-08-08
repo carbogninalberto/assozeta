@@ -14,6 +14,7 @@ class Document(models.Model):
     creation_date = models.DateTimeField(default=timezone.now)
     filepath = models.CharField(max_length=1000, default=None, null=True, blank=True)
     filename = models.CharField(max_length=255)
+    file_size_bytes = models.PositiveBigIntegerField(null=True, blank=True)
     # this token is used for external sharing
     token = models.UUIDField(default=uuid.uuid4)
 
