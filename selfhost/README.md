@@ -62,7 +62,7 @@ Common optional integrations are disabled by leaving their credentials empty:
 - Google and Apple sign-in
 - Stripe
 - SMSAPI
-- Groq AI agent
+- OpenAI-compatible AI agent
 
 Restart the affected services after editing configuration. This recreates the
 containers so edited environment values are loaded:
