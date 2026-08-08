@@ -935,13 +935,13 @@ def _apply_date_filters(subscriptions, params):
                 return subscriptions
 
             try:
-                period_start_date = datetime.strptime(params['period_start'], '%d/%m/%Y').strftime('%Y-%m-%d')
-                period_end_date = datetime.strptime(params['period_end'], '%d/%m/%Y').strftime('%Y-%m-%d')
+                period_start_date = datetime.strptime(params['period_start'], '%d/%m/%Y').date()
+                period_end_date = datetime.strptime(params['period_end'], '%d/%m/%Y').date()
+                if period_start_date > period_end_date:
+                    return subscriptions.none()
                 subscriptions = subscriptions.filter(
-                    Q(Q(start_date__lte=period_start_date) & Q(end_date__lte=period_end_date)) |
-                    Q(Q(start_date__gte=period_start_date) & Q(end_date__lte=period_end_date)) |
-                    Q(Q(start_date__gte=period_start_date) & Q(end_date__gte=period_end_date)) |
-                    Q(Q(start_date__lte=period_start_date) & Q(end_date__gte=period_end_date))
+                    start_date__lte=period_end_date,
+                    end_date__gte=period_start_date,
                 )
             except (TypeError, ValueError):
                 pass

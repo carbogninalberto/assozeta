@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from unittest.mock import patch
 
@@ -18,6 +19,7 @@ from application.tests.fixtures.factories import (
     create_test_tag,
     create_test_user,
 )
+from application.views.subscriptions_views import _apply_date_filters
 
 
 class SubscriptionViewsTestCase(TestCase):
@@ -69,6 +71,65 @@ class SubscriptionViewsTestCase(TestCase):
             'medical_certificate': {'medical_id': None, 'filename': ''},
             'signature': {'there_is_signature': False, 'data': ''},
         }
+
+
+class SubscriptionCustomPeriodTests(SubscriptionViewsTestCase):
+    def test_custom_period_returns_only_overlapping_subscriptions(self):
+        subscriptions = {
+            'before': self.create_subscription(
+                start_date=datetime.date(2025, 1, 1),
+                end_date=datetime.date(2025, 12, 31),
+            ),
+            'inside': self.create_subscription(
+                start_date=datetime.date(2026, 3, 1),
+                end_date=datetime.date(2026, 3, 31),
+            ),
+            'spanning': self.create_subscription(
+                start_date=datetime.date(2025, 1, 1),
+                end_date=datetime.date(2027, 1, 1),
+            ),
+            'touching': self.create_subscription(
+                start_date=datetime.date(2026, 12, 31),
+                end_date=datetime.date(2027, 1, 31),
+            ),
+            'after': self.create_subscription(
+                start_date=datetime.date(2027, 2, 1),
+                end_date=datetime.date(2027, 12, 31),
+            ),
+        }
+        queryset = Subscription.objects.filter(sport_association=self.sport_association)
+
+        result = _apply_date_filters(queryset, {
+            'status_flag': None,
+            'current_year': '3',
+            'period_start': '01/01/2026',
+            'period_end': '31/12/2026',
+        })
+
+        self.assertSetEqual(
+            set(result.values_list('pk', flat=True)),
+            {
+                subscriptions['inside'].pk,
+                subscriptions['spanning'].pk,
+                subscriptions['touching'].pk,
+            },
+        )
+
+    def test_reversed_custom_period_returns_no_results(self):
+        self.create_subscription(
+            start_date=datetime.date(2026, 1, 1),
+            end_date=datetime.date(2026, 12, 31),
+        )
+        queryset = Subscription.objects.filter(sport_association=self.sport_association)
+
+        result = _apply_date_filters(queryset, {
+            'status_flag': None,
+            'current_year': '3',
+            'period_start': '31/12/2026',
+            'period_end': '01/01/2026',
+        })
+
+        self.assertFalse(result.exists())
 
 
 class SubscriptionTagListTests(SubscriptionViewsTestCase):
