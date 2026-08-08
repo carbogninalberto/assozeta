@@ -2090,7 +2090,7 @@ def import_association_data(
     Args:
         zip_file_path: Path to the uploaded ZIP file in storage
         owner_email: Ignored stale option; archived owner email is retained
-        owner_password: Recovery password for the archived owner account
+        owner_password: Recovery password when the archive has no supported owner password hash
         preserve_uuids: Ignored stale option; source UUIDs are always preserved
         skip_files: Ignored stale option; archive media is always imported
     """
@@ -2145,12 +2145,6 @@ def import_association_data(
         # Run the import
         association = service.import_all()
 
-        # Clean up the temp import file from storage
-        try:
-            default_storage.delete(zip_file_path)
-        except Exception:
-            pass
-
         logger.info(
             "Completed import_association_data task",
             extra={
@@ -2182,6 +2176,10 @@ def import_association_data(
         }
 
     finally:
+        try:
+            default_storage.delete(zip_file_path)
+        except Exception:
+            pass
         # Clean up temp file
         if temp_file and os.path.exists(temp_file.name):
             os.remove(temp_file.name)

@@ -93,6 +93,7 @@ from application.models.user_models import (
     User,
     UsersOnboarding,
 )
+from application.services.validators import is_restorable_password_hash
 from communications.models import (
     AutomationWorkflow,
     CommunicationConfiguration,
@@ -730,7 +731,7 @@ class AssociationImportService:
     def _sanitize_user_data(self, data: Dict[str, Any], *, is_owner: bool) -> Dict[str, Any]:
         """Apply safe auth-field handling while preserving profile/settings data."""
         sanitized = data.copy()
-        sanitized['password'] = make_password(self.options.owner_password) if is_owner else make_password(None)
+        sanitized['password'] = self._owner_password_hash(data) if is_owner else make_password(None)
         sanitized['is_staff'] = False
         sanitized['is_superuser'] = False
         sanitized['two_fa'] = False
@@ -744,6 +745,18 @@ class AssociationImportService:
             sanitized['role'] = User.ASSOCIATION
             sanitized['is_active'] = True
         return sanitized
+
+    def _owner_password_hash(self, owner_data: Dict[str, Any]) -> str:
+        """Keep a supported archived hash or create one from the recovery password."""
+        archived_password = owner_data.get('password')
+        if is_restorable_password_hash(archived_password):
+            return archived_password
+        if self.options.owner_password:
+            return make_password(self.options.owner_password)
+        raise ValueError(
+            "Owner recovery password is required because the archive does not "
+            "contain a supported usable password hash"
+        )
 
     def _ensure_no_pk_collision(
         self,
@@ -843,6 +856,19 @@ class AssociationImportService:
                                 "Owner user already owns another SportAssociation: "
                                 f"{conflicting_association.sport_association_id}"
                             )
+
+                    password_is_available = (
+                        is_restorable_password_hash(owner_data.get('password'))
+                        or (
+                            existing_owner is not None
+                            and is_restorable_password_hash(existing_owner.password)
+                        )
+                    )
+                    if not password_is_available and not self.options.owner_password:
+                        result.add_error(
+                            "Owner recovery password is required because the archive does not "
+                            "contain a supported usable password hash"
+                        )
                 except ValueError as e:
                     result.add_error(str(e))
 
@@ -955,8 +981,8 @@ class AssociationImportService:
                     "cannot import a second association for the same owner user"
                 )
 
-            if not existing_user.has_usable_password():
-                existing_user.set_password(self.options.owner_password)
+            if not is_restorable_password_hash(existing_user.password):
+                existing_user.password = self._owner_password_hash(original_owner)
                 if not self.options.dry_run:
                     existing_user.save(update_fields=['password'])
 
@@ -1650,7 +1676,7 @@ def import_association(
     Args:
         zip_path: Path to the export ZIP file
         owner_email: Ignored stale option; archived owner email is retained
-        owner_password: Recovery password for the archived owner account
+        owner_password: Recovery password when the archive has no supported owner password hash
         preserve_uuids: Ignored stale option; source UUIDs are always preserved
         skip_files: Ignored stale option; archive media is always imported
         dry_run: Whether to validate without making changes

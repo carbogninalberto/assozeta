@@ -34,6 +34,7 @@
         if (file && file.name.endsWith('.zip')) {
             config.file = file;
             config.validationResult = null;
+            config.ownerPassword = '';
         } else {
             error = 'Seleziona un file ZIP valido';
         }
@@ -44,12 +45,14 @@
         if (file) {
             config.file = file;
             config.validationResult = null;
+            config.ownerPassword = '';
         }
     }
 
     function removeFile() {
         config.file = null;
         config.validationResult = null;
+        config.ownerPassword = '';
     }
 
     async function validateFile() {
@@ -68,6 +71,9 @@
             );
 
             config.validationResult = result;
+            if (result.info?.owner_user?.requires_recovery_password === false) {
+                config.ownerPassword = '';
+            }
         } catch (e) {
             error = e.message || 'Errore durante la validazione';
         } finally {
@@ -76,8 +82,10 @@
     }
 
     async function startImportProcess() {
-        if (!config.validationResult?.is_valid || !config.ownerPassword) {
-            error = 'Completa la validazione e inserisci la password';
+        if (!config.validationResult?.is_valid || (requiresOwnerPassword && !config.ownerPassword)) {
+            error = requiresOwnerPassword
+                ? 'Completa la validazione e inserisci la password'
+                : 'Completa la validazione del backup';
             return;
         }
 
@@ -117,7 +125,7 @@
                         config.importResult = status.result;
                         dispatch('next');
                     } else {
-                        error = status.error || 'Import fallito';
+                        error = status.result?.error || status.error || 'Import fallito';
                     }
                 }
             } catch (e) {
@@ -129,7 +137,8 @@
     }
 
     $: canValidate = config.file && !validating;
-    $: canImport = config.validationResult?.is_valid && config.ownerPassword && !importing;
+    $: requiresOwnerPassword = config.validationResult?.info?.owner_user?.requires_recovery_password !== false;
+    $: canImport = config.validationResult?.is_valid && (!requiresOwnerPassword || config.ownerPassword) && !importing;
 </script>
 
 <div class="step-import">
@@ -272,7 +281,7 @@
         </div>
 
         <!-- Password input -->
-        {#if config.validationResult.is_valid}
+        {#if config.validationResult.is_valid && requiresOwnerPassword}
             <div class="form-group">
                 <label class="col-form-label font-weight-bolder">Password di recupero proprietario<b class="text-danger">*</b></label>
                 <input
@@ -284,6 +293,11 @@
                 <small class="text-muted font-size-sm mt-2 d-block">
                     Verrà usata solo per l'account proprietario archiviato, mantenendo email e username originali.
                 </small>
+            </div>
+        {:else if config.validationResult.is_valid}
+            <div class="success-box d-flex align-items-center text-success font-weight-bold rounded-lg">
+                <LucideCheckCircle size={18} weight="duotone" class="mr-2" />
+                <span>La password del proprietario è disponibile e verrà mantenuta.</span>
             </div>
         {/if}
     {/if}

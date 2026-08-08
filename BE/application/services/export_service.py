@@ -93,6 +93,7 @@ from application.models.user_models import (
     User,
     UsersOnboarding,
 )
+from application.services.validators import is_restorable_password_hash
 from communications.models import (
     AutomationWorkflow,
     CommunicationConfiguration,
@@ -613,6 +614,15 @@ class AssociationExportService:
                     except Exception as e:
                         logger.warning(f"Error serializing M2M {m2m_field_name} on {model_name}: {e}")
                         data[f'_m2m_{m2m_field_name}'] = []
+
+        # Preserve only the owner's encoded password for self-host migration.
+        # Other user credentials remain excluded from application exports.
+        if (
+            model_name == 'User'
+            and obj.pk == self.sport_association.user_id
+            and is_restorable_password_hash(obj.password)
+        ):
+            data['password'] = obj.password
 
         # Collect document references for file export
         self._collect_document_references(obj, data)

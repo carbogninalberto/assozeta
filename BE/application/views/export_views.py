@@ -329,7 +329,7 @@ class AssociationImportViewSet(ViewSet):
 
         Request body:
         - file: ZIP file to import
-        - owner_password: Recovery password for archived owner
+        - owner_password: Recovery password when the archive has no supported owner password hash
         Stale owner_email/preserve_uuids/skip_files fields are ignored.
 
         Returns:
@@ -340,7 +340,7 @@ class AssociationImportViewSet(ViewSet):
         }
         """
         uploaded_file = request.FILES.get('file')
-        owner_password = request.data.get('owner_password')
+        owner_password = request.data.get('owner_password', '')
 
         if not uploaded_file:
             return Response(
@@ -348,16 +348,11 @@ class AssociationImportViewSet(ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not owner_password:
-            return Response(
-                {'error': 'Password di recupero proprietario richiesta'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         # Save file to persistent temp location for the task
         import uuid as uuid_module
         temp_filename = f"import_{uuid_module.uuid4()}.zip"
         temp_path = f"temp/imports/{temp_filename}"
+        saved_path = None
 
         try:
             # Save to default storage (S3/local)
@@ -383,6 +378,11 @@ class AssociationImportViewSet(ViewSet):
             }, status=status.HTTP_202_ACCEPTED)
 
         except Exception as e:
+            if saved_path:
+                try:
+                    default_storage.delete(saved_path)
+                except Exception:
+                    pass
             logger.error(f"Error starting import: {e}", exc_info=True)
             return Response(
                 {'error': f'Errore durante avvio import: {str(e)}'},

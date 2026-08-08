@@ -3,6 +3,7 @@ Export/Import Validators
 
 This module contains validation utilities for the export/import system.
 """
+import base64
 import hashlib
 import json
 import logging
@@ -11,10 +12,81 @@ import zipfile
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 
+from django.contrib.auth.hashers import identify_hasher, is_password_usable
 from django.core.files.storage import default_storage
 from django.core.serializers.json import DjangoJSONEncoder
 
 logger = logging.getLogger(__name__)
+
+
+def is_restorable_password_hash(encoded: Any) -> bool:
+    """Return whether Django can authenticate against an archived password hash."""
+    if not isinstance(encoded, str) or not encoded or not is_password_usable(encoded):
+        return False
+
+    try:
+        hasher = identify_hasher(encoded)
+        decoded = hasher.decode(encoded)
+    except Exception:
+        return False
+
+    if not decoded.get('salt'):
+        return False
+
+    digest = decoded.get('hash', decoded.get('checksum'))
+    if not digest:
+        return False
+
+    cost_limits = (
+        ('iterations', 'iterations'),
+        ('work_factor', 'work_factor' if hasher.algorithm == 'scrypt' else 'rounds'),
+        ('block_size', 'block_size'),
+        ('parallelism', 'parallelism'),
+        ('time_cost', 'time_cost'),
+        ('memory_cost', 'memory_cost'),
+    )
+    for decoded_key, hasher_attr in cost_limits:
+        value = decoded.get(decoded_key)
+        limit = getattr(hasher, hasher_attr, None)
+        if value is not None and (value <= 0 or limit is None or value > limit):
+            return False
+
+    if hasher.algorithm.startswith('pbkdf2_'):
+        expected_size = hasher.digest().digest_size
+        try:
+            return len(base64.b64decode(digest, validate=True)) == expected_size
+        except ValueError:
+            return False
+
+    if hasher.algorithm == 'scrypt':
+        work_factor = decoded['work_factor']
+        if work_factor <= 1 or work_factor & (work_factor - 1):
+            return False
+        try:
+            return len(base64.b64decode(digest, validate=True)) == 64
+        except ValueError:
+            return False
+
+    if hasher.algorithm == 'argon2':
+        try:
+            padded_digest = digest + ('=' * (-len(digest) % 4))
+            return len(base64.b64decode(padded_digest, validate=True)) == decoded['params'].hash_len
+        except (KeyError, ValueError):
+            return False
+
+    if hasher.algorithm in ('bcrypt', 'bcrypt_sha256'):
+        bcrypt_chars = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        salt = decoded.get('salt', '')
+        checksum = decoded.get('checksum', '')
+        return (
+            decoded.get('algostr') in ('2a', '2b', '2y')
+            and decoded.get('work_factor', 0) >= 4
+            and len(salt) == 22
+            and len(checksum) == 31
+            and all(char in bcrypt_chars for char in salt + checksum)
+        )
+
+    return True
 
 
 @dataclass
@@ -318,6 +390,9 @@ class ImportValidator:
                     'user_id': owner.get('user_id'),
                     'username': owner.get('username'),
                     'email': owner.get('email'),
+                    'requires_recovery_password': not is_restorable_password_hash(
+                        owner.get('password')
+                    ),
                 }
 
         except json.JSONDecodeError as e:
@@ -360,6 +435,8 @@ class ImportValidator:
         if owner_id:
             existing_owner = User.original_objects.filter(user_id=owner_id).first()
             if existing_owner:
+                if is_restorable_password_hash(existing_owner.password):
+                    result.info['existing_owner_has_restorable_password'] = True
                 conflicting_association = SportAssociation.original_objects.filter(
                     user=existing_owner
                 ).exclude(sport_association_id=assoc_id).first()
@@ -412,6 +489,8 @@ class ImportValidator:
         if identity_result.is_valid:
             uuid_result = self.validate_uuid_conflicts(preserve_uuids)
             result.merge(uuid_result)
+            if result.info.pop('existing_owner_has_restorable_password', False):
+                result.info['owner_user']['requires_recovery_password'] = False
 
         return result
 

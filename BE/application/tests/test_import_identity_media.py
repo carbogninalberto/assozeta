@@ -4,6 +4,7 @@ import tempfile
 import uuid
 import zipfile
 
+from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.test import TestCase, override_settings
@@ -11,7 +12,7 @@ from django.test import TestCase, override_settings
 from application.models import Associate, Family, SportAssociation, Subscription, User
 from application.services.export_service import AssociationExportService
 from application.services.import_service import AssociationImportService, ImportOptions
-from application.services.validators import ImportValidator
+from application.services.validators import ImportValidator, is_restorable_password_hash
 
 
 class AssociationImportIdentityTests(TestCase):
@@ -128,6 +129,142 @@ class AssociationImportIdentityTests(TestCase):
         self.assertFalse(other_user.is_staff)
         self.assertFalse(other_user.is_superuser)
         self.assertFalse(other_user.two_fa)
+
+    def test_archived_owner_password_is_reported_and_preserved_without_recovery_password(self):
+        owner_id = uuid.uuid4()
+        association = self._association_record(uuid.uuid4(), owner_id)
+        archived_password = make_password('ArchivedOwner!123')
+        users = [
+            self._user_record(
+                owner_id,
+                'owner',
+                'owner@example.com',
+                role=User.ASSOCIATION,
+                password=archived_password,
+            ),
+        ]
+
+        with tempfile.NamedTemporaryFile(suffix='.zip') as archive:
+            self._write_archive(archive.name, association, users)
+
+            validation = ImportValidator(archive.name).validate_all()
+            self.assertTrue(validation.is_valid, validation.errors)
+            self.assertFalse(
+                validation.info['owner_user']['requires_recovery_password']
+            )
+
+            service = AssociationImportService(archive.name, ImportOptions())
+            self.assertTrue(service.validate().is_valid)
+            imported = service.import_all()
+
+        self.assertEqual(imported.user.password, archived_password)
+        self.assertTrue(imported.user.check_password('ArchivedOwner!123'))
+
+    def test_backup_without_supported_owner_password_requires_recovery_password(self):
+        owner_id = uuid.uuid4()
+        association = self._association_record(uuid.uuid4(), owner_id)
+        users = [
+            self._user_record(
+                owner_id,
+                'owner',
+                'owner@example.com',
+                role=User.ASSOCIATION,
+                password='pbkdf2_sha256$1000000$salt$AAAA',
+            ),
+        ]
+
+        with tempfile.NamedTemporaryFile(suffix='.zip') as archive:
+            self._write_archive(archive.name, association, users)
+
+            validation = ImportValidator(archive.name).validate_all()
+            self.assertTrue(validation.is_valid, validation.errors)
+            self.assertTrue(
+                validation.info['owner_user']['requires_recovery_password']
+            )
+
+            service = AssociationImportService(archive.name, ImportOptions())
+            service_validation = service.validate()
+
+        self.assertFalse(service_validation.is_valid)
+        self.assertIn(
+            'Owner recovery password is required',
+            service_validation.errors[0],
+        )
+        self.assertFalse(
+            is_restorable_password_hash(
+                'pbkdf2_sha256$999999999$salt$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+            )
+        )
+        self.assertFalse(is_restorable_password_hash('scrypt$3$salt$8$5$digest'))
+        self.assertFalse(
+            is_restorable_password_hash(
+                'bcrypt_sha256$$2b$03$' + ('A' * 53)
+            )
+        )
+
+    def test_existing_owner_password_is_preserved_without_archive_or_recovery_password(self):
+        owner_id = uuid.uuid4()
+        existing_owner = User.original_objects.create_user(
+            user_id=owner_id,
+            username='existing-owner',
+            email='existing-owner@example.com',
+            password='ExistingOwner!123',
+            role=User.ASSOCIATION,
+        )
+        existing_password = existing_owner.password
+        association = self._association_record(uuid.uuid4(), owner_id)
+        users = [
+            self._user_record(
+                owner_id,
+                'archived-owner',
+                'archived-owner@example.com',
+                role=User.ASSOCIATION,
+            ),
+        ]
+
+        with tempfile.NamedTemporaryFile(suffix='.zip') as archive:
+            self._write_archive(archive.name, association, users)
+
+            validation = ImportValidator(archive.name).validate_all()
+            self.assertTrue(validation.is_valid, validation.errors)
+            self.assertFalse(
+                validation.info['owner_user']['requires_recovery_password']
+            )
+
+            service = AssociationImportService(archive.name, ImportOptions())
+            self.assertTrue(service.validate().is_valid)
+            imported = service.import_all()
+
+        existing_owner.refresh_from_db()
+        self.assertEqual(imported.user, existing_owner)
+        self.assertEqual(existing_owner.password, existing_password)
+        self.assertTrue(existing_owner.check_password('ExistingOwner!123'))
+
+    def test_export_includes_only_owner_password_hash(self):
+        owner = User.objects.create_user(
+            username='owner@example.com',
+            email='owner@example.com',
+            password='Owner!123',
+            role=User.ASSOCIATION,
+        )
+        member = User.objects.create_user(
+            username='member@example.com',
+            email='member@example.com',
+            password='Member!123',
+            role=User.ATHLETE,
+        )
+        association = SportAssociation.objects.create(
+            user=owner,
+            denomination='Password Export ASD',
+            tax_code='12345678901',
+        )
+        service = AssociationExportService(association.sport_association_id)
+
+        owner_data = service.serialize_record(owner)
+        member_data = service.serialize_record(member)
+
+        self.assertEqual(owner_data['password'], owner.password)
+        self.assertNotIn('password', member_data)
 
     def test_source_uuids_are_preserved_for_imported_uuid_models(self):
         owner_id = uuid.uuid4()

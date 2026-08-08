@@ -422,7 +422,7 @@ export async function validateImportFile(file, setupToken = '') {
 /**
  * Start import process
  * @param {File} file - ZIP file to import
- * @param {string} ownerPassword - Recovery password for archived owner
+ * @param {string} ownerPassword - Optional recovery password for archived owner
  * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Import task info
  */
@@ -432,7 +432,9 @@ export async function startImport(file, ownerPassword, setupToken = '') {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('owner_password', ownerPassword);
+    if (ownerPassword) {
+        formData.append('owner_password', ownerPassword);
+    }
 
     const response = await fetch(importEndpoints.START, {
         method: 'POST',
