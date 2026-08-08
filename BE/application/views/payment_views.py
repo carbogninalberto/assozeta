@@ -2071,7 +2071,7 @@ def payment_category_add(request):
     # check if the user is a sport association
     if request.user.role != User.ASSOCIATION:
         logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'user not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = PaymentCategorySerializer(data=request.data)
     # get the sport association of the user
@@ -2098,7 +2098,7 @@ def payment_category_update(request, uid):
     # check if the user is a sport association
     if request.user.role != User.ASSOCIATION:
         logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'user not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     # get the sport association of the user
     sport_association = SportAssociation.objects.filter(user=request.user).first()
@@ -2132,7 +2132,7 @@ def payment_category_delete(request, uid):
     # check if the user is a sport association
     if request.user.role != User.ASSOCIATION:
         logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'user not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     # get the sport association of the user
     sport_association = SportAssociation.objects.filter(user=request.user). first()
@@ -2143,7 +2143,7 @@ def payment_category_delete(request, uid):
         sport_association=sport_association
     ).first()
 
-    if payment_category.sport_association != sport_association:
+    if payment_category is None:
         logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
 

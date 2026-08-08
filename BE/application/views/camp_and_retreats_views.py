@@ -437,6 +437,10 @@ def camps_and_retreats_subscriptions_update(request, uid):
         return Response({
             "message": "Updated successfully"
         }, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
+    except CampsAndRetreatsSubscription.DoesNotExist:
+        return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except CampsAndRetreatsPeriodsService.DoesNotExist:
         return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     except ValidationError as e:

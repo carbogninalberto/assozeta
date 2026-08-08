@@ -953,7 +953,7 @@ def course_overview_update(request, uid, uid_subscription):
             course_subscription.save()
 
         # generate installments for the course subscription
-        for idx, e in enumerate(course.events):
+        for idx, e in enumerate(course.events or []):
             course_event = CourseEventsSerializer(data=e)
             try:
                 course_event.is_valid(raise_exception=True)

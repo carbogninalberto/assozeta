@@ -110,6 +110,8 @@ def modules_update(request, module_id):
             "message": "Camp or retreat updated successfully",
             "camp_and_retreat": serializer.data
         }, status=status.HTTP_200_OK)
+    except PermissionDenied:
+        raise
     except Module.DoesNotExist:
         logger.error("Module not found for update", extra={'module_id': module_id}, exc_info=True)
         return Response({"error": "Camp or retreat not found"}, status=status.HTTP_404_NOT_FOUND)
