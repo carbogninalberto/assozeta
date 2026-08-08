@@ -29,6 +29,8 @@ __pycache__/
 
 # Local backend state
 /BE/.env
+/BE/.coverage
+/BE/htmlcov/
 /BE/db.sqlite3
 /BE/test_db.sqlite3
 /BE/staticfiles/

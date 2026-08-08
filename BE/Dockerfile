@@ -36,6 +36,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 FROM base AS development
 
 COPY --from=dependencies /opt/venv /opt/venv
+COPY requirements-test.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /opt/venv/bin/pip install -r requirements-test.txt
 COPY . .
 
 EXPOSE 8000

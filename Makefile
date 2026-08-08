@@ -20,7 +20,7 @@ help:
 		'make dev-db-shell             Open psql' \
 		'make dev-migrate              Run Django migrations' \
 		'make dev-makemigrations       Create Django migrations' \
-		'make dev-test                 Run available application checks' \
+		'make dev-test                 Run backend tests then UI CSS verify' \
 		'make dev-rebuild              Rebuild development images' \
 		'make dev-reset CONFIRM=1      Delete all development data' \
 		'make selfhost-install ARGS="--domain example.org --email admin@example.org"' \
@@ -60,7 +60,7 @@ dev-makemigrations:
 	@$(ASSOZETA) dev-compose run --rm api python manage.py makemigrations
 
 dev-test:
-	@$(ASSOZETA) dev-compose run --rm api python manage.py check
+	@./run_tests.sh
 	@$(ASSOZETA) dev-compose run --rm ui npm run css:verify
 
 dev-rebuild:

@@ -284,7 +284,21 @@ cd UI
 npm run css:verify
 ```
 
-Il comando può segnalare anche classi dinamiche o riferimenti legacy e va quindi usato come supporto alla revisione, non come test automatico. Il backend include test Django mirati per l'affidabilita' delle iscrizioni in `BE/application/tests/`.
+Il comando può segnalare anche classi dinamiche o riferimenti legacy e va quindi usato come supporto alla revisione, non come test automatico.
+
+Il backend include test Django mirati sotto `BE/*/tests/`. I test girano nel container Docker di sviluppo con PostgreSQL reale. Per eseguirli dal repository root:
+
+```bash
+./run_tests.sh                                   # seriale, con coverage
+./run_tests.sh --parallel                        # parallelo via pytest-xdist
+./run_tests.sh -k test_login
+./run_tests.sh --no-coverage -v                  # seriale senza coverage
+./run_tests.sh --open                            # apre il report HTML di coverage
+./run_tests.sh application/tests/test_auth_login.py  # test specifico
+make dev-test                                    # esegue i test backend e poi css:verify
+```
+
+I test richiedono che l'immagine di sviluppo includa le dipendenze installate. Dopo il primo `make dev` o `make dev-rebuild` le dipendenze sono disponibili. Non serve un database di test pre-creato o cleanup manuale: Django crea e distrugge automaticamente il database di test su PostgreSQL.
 
 ## Contribuire
 

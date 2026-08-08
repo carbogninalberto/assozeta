@@ -8,6 +8,7 @@ trap 'rm -rf "$TEMPORARY"' EXIT HUP INT TERM
 sh -n "$ROOT/selfhost/bin/assozeta"
 sh -n "$ROOT/selfhost/tests/smoke.sh"
 sh -n "$ROOT/selfhost/tests/production-smoke.sh"
+sh -n "$ROOT/run_tests.sh"
 
 ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
     "$ROOT/selfhost/bin/assozeta" configure --domain localhost --version test

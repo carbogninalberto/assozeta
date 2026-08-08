@@ -239,6 +239,22 @@ make dev-down
 make dev-reset CONFIRM=1
 ```
 
+Run the backend test suite directly from the repository root with coverage:
+
+```bash
+./run_tests.sh                                   # serial, with coverage
+./run_tests.sh --parallel                        # parallel via pytest-xdist
+./run_tests.sh -k test_login
+./run_tests.sh --no-coverage -v                  # serial without coverage
+./run_tests.sh --open                            # open HTML coverage report (macOS)
+./run_tests.sh application/tests/test_auth_login.py  # specific test file
+```
+
+Tests run inside the development container against a real PostgreSQL database.
+Django creates and tears down the test database automatically; no manual setup or
+cleanup is required. The development image must be built once (`make dev` or
+`make dev-rebuild`) to include pytest and test dependencies.
+
 `make dev-down` keeps development data. `make dev-reset CONFIRM=1` permanently
 deletes the development database, Redis, MinIO, static, and Node dependency
 volumes. It does not delete `selfhost/.env.dev`.
