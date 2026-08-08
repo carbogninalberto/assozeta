@@ -1,5 +1,13 @@
 <script>
-    import {AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle as LucideCheckCircle, Upload as LucideUpload, X} from 'lucide-svelte';
+    import {
+        AlertTriangle,
+        ArrowLeft,
+        ArrowRight,
+        Check,
+        CheckCircle as LucideCheckCircle,
+        Upload as LucideUpload,
+        X,
+    } from 'lucide-svelte';
     import {createEventDispatcher, onDestroy} from 'svelte';
     import {validateImportFile, startImport, checkImportStatus} from 'store/instanceStore.js';
     import {CloudArrowUp, File, Warning} from 'phosphor-svelte';
@@ -9,7 +17,7 @@
         ownerPassword: '',
         validationResult: null,
         importTaskId: null,
-        importResult: null
+        importResult: null,
     };
     export let setupToken = '';
 
@@ -65,10 +73,7 @@
         error = null;
 
         try {
-            const result = await validateImportFile(
-                config.file,
-                setupToken
-            );
+            const result = await validateImportFile(config.file, setupToken);
 
             config.validationResult = result;
             if (result.info?.owner_user?.requires_recovery_password === false) {
@@ -93,21 +98,17 @@
         error = null;
 
         try {
-            const result = await startImport(
-                config.file,
-                config.ownerPassword,
-                setupToken
-            );
+            const result = await startImport(config.file, config.ownerPassword, setupToken);
 
             if (result.task_id) {
                 config.importTaskId = result.task_id;
                 startPolling();
             } else {
-                error = result.error || 'Errore durante l\'avvio dell\'import';
+                error = result.error || "Errore durante l'avvio dell'import";
                 importing = false;
             }
         } catch (e) {
-            error = e.message || 'Errore durante l\'import';
+            error = e.message || "Errore durante l'import";
             importing = false;
         }
     }
@@ -147,9 +148,7 @@
             <LucideUpload size={32} weight="duotone" />
         </div>
         <h2 class="font-weight-bolder mb-2">Importa da Backup</h2>
-        <p class="text-muted font-size-sm">
-            Carica il file ZIP di backup per ripristinare i dati
-        </p>
+        <p class="text-muted font-size-sm">Carica il file ZIP di backup per ripristinare i dati</p>
     </div>
 
     {#if error}
@@ -180,12 +179,11 @@
             <div
                 class="dropzone p-5 border rounded-lg text-center"
                 class:drag-over={dragOver}
-                on:dragover|preventDefault={() => dragOver = true}
-                on:dragleave={() => dragOver = false}
+                on:dragover|preventDefault={() => (dragOver = true)}
+                on:dragleave={() => (dragOver = false)}
                 on:drop={handleDrop}
                 role="button"
-                tabindex="0"
-            >
+                tabindex="0">
                 <CloudArrowUp size={48} weight="duotone" class="text-muted mb-3" />
                 <p class="mb-2 font-weight-bold">Trascina qui il file ZIP oppure</p>
                 <label class="btn btn-light-primary font-weight-bolder mb-0">
@@ -202,10 +200,9 @@
             type="button"
             class="btn btn-outline-primary btn-block mb-4 font-weight-bolder"
             disabled={!canValidate}
-            on:click={validateFile}
-        >
+            on:click={validateFile}>
             {#if validating}
-                <span class="spinner-border spinner-border-sm mr-2"></span>
+                <span class="spinner-border spinner-border-sm mr-2" />
                 Validazione in corso...
             {:else}
                 <Check size={16} class="mr-2" />
@@ -257,23 +254,35 @@
                     <div class="row">
                         <div class="col-6">
                             <small class="text-muted font-size-xs">Associazione</small>
-                            <p class="mb-2 font-weight-bolder">{config.validationResult.info.association?.denomination || 'N/A'}</p>
+                            <p class="mb-2 font-weight-bolder">
+                                {config.validationResult.info.association?.denomination || 'N/A'}
+                            </p>
                         </div>
                         <div class="col-6">
                             <small class="text-muted font-size-xs">Data Export</small>
-                            <p class="mb-2 font-weight-bolder">{config.validationResult.info.export_date ? new Date(config.validationResult.info.export_date).toLocaleDateString('it-IT') : 'N/A'}</p>
+                            <p class="mb-2 font-weight-bolder">
+                                {config.validationResult.info.export_date
+                                    ? new Date(config.validationResult.info.export_date).toLocaleDateString('it-IT')
+                                    : 'N/A'}
+                            </p>
                         </div>
                         <div class="col-6">
                             <small class="text-muted font-size-xs">Dimensione</small>
-                            <p class="mb-0 font-weight-bolder">{config.validationResult.info.file_size_mb?.toFixed(2) || 'N/A'} MB</p>
+                            <p class="mb-0 font-weight-bolder">
+                                {config.validationResult.info.file_size_mb?.toFixed(2) || 'N/A'} MB
+                            </p>
                         </div>
                         <div class="col-6">
                             <small class="text-muted font-size-xs">Email Proprietario</small>
-                            <p class="mb-0 font-weight-bolder">{config.validationResult.info.owner_user?.email || 'N/A'}</p>
+                            <p class="mb-0 font-weight-bolder">
+                                {config.validationResult.info.owner_user?.email || 'N/A'}
+                            </p>
                         </div>
                         <div class="col-6">
                             <small class="text-muted font-size-xs">Username Proprietario</small>
-                            <p class="mb-0 font-weight-bolder">{config.validationResult.info.owner_user?.username || 'N/A'}</p>
+                            <p class="mb-0 font-weight-bolder">
+                                {config.validationResult.info.owner_user?.username || 'N/A'}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -283,13 +292,13 @@
         <!-- Password input -->
         {#if config.validationResult.is_valid && requiresOwnerPassword}
             <div class="form-group">
-                <label class="col-form-label font-weight-bolder">Password di recupero proprietario<b class="text-danger">*</b></label>
+                <label class="col-form-label font-weight-bolder"
+                    >Password di recupero proprietario<b class="text-danger">*</b></label>
                 <input
                     type="password"
                     class="form-control form-control-solid"
                     bind:value={config.ownerPassword}
-                    placeholder="Inserisci una password sicura"
-                />
+                    placeholder="Inserisci una password sicura" />
                 <small class="text-muted font-size-sm mt-2 d-block">
                     Verrà usata solo per l'account proprietario archiviato, mantenendo email e username originali.
                 </small>
@@ -310,6 +319,10 @@
             </div>
             <p class="mb-0 font-weight-bolder">Import in corso...</p>
             <p class="text-muted font-size-sm">Questo potrebbe richiedere alcuni minuti</p>
+            <p
+                class="text-warning font-weight-bolder font-size-lg border border-warning bg-light-warning mx-auto py-2 rounded-lg">
+                NON CHIUDERE QUESTA PAGINA
+            </p>
         </div>
     {/if}
 
@@ -319,8 +332,7 @@
             type="button"
             class="btn btn-light font-weight-bolder"
             on:click={() => dispatch('prev')}
-            disabled={importing}
-        >
+            disabled={importing}>
             <ArrowLeft size={16} class="mr-2" />
             Indietro
         </button>
@@ -330,8 +342,7 @@
                 type="button"
                 class="btn btn-primary font-weight-bolder"
                 disabled={!canImport}
-                on:click={startImportProcess}
-            >
+                on:click={startImportProcess}>
                 Avvia Import
                 <ArrowRight size={16} class="ml-2" />
             </button>
@@ -348,7 +359,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--main-color, #351DC2);
+        color: var(--main-color, #351dc2);
     }
 
     .dropzone {
@@ -359,7 +370,7 @@
 
     .dropzone:hover,
     .dropzone.drag-over {
-        border-color: var(--main-color, #351DC2);
+        border-color: var(--main-color, #351dc2);
         background-color: rgba(53, 29, 194, 0.02);
     }
 
