@@ -250,6 +250,15 @@ env_value() {
     ' "$file"
 }
 
+env_has_key() {
+    key=$1
+    file=$2
+    awk -v key="$key" '
+        index($0, key "=") == 1 { found = 1; exit }
+        END { exit found ? 0 : 1 }
+    ' "$file"
+}
+
 set_env_value() {
     key=$1
     value=$2
@@ -275,6 +284,16 @@ set_env_value() {
 ensure_configuration_values() {
     file=$1
     [ -f "$file" ] || return
+
+    if ! env_has_key STRIPE_PUBLIC_KEY "$file"; then
+        set_env_value STRIPE_PUBLIC_KEY "" "$file"
+        log "added STRIPE_PUBLIC_KEY to $file"
+    fi
+
+    if ! env_has_key STRIPE_WEBHOOK_SECRET "$file"; then
+        set_env_value STRIPE_WEBHOOK_SECRET "" "$file"
+        log "added STRIPE_WEBHOOK_SECRET to $file"
+    fi
 
     value=$(env_value INSTANCE_SETUP_TOKEN "$file")
     case "$value" in
@@ -438,7 +457,6 @@ write_configuration() {
     document_token=$(random_hex 32)
     senja_token=$(random_hex 32)
     crm_token=$(random_hex 32)
-    stripe_webhook_token=$(random_hex 32)
     instance_setup_token=$(random_hex 32)
     admin_path="$(random_hex 12)/"
 
@@ -514,7 +532,6 @@ JWT_PUBLIC_KEY_B64=$jwt_public
 DOCUMENT_BYPASS_TOKEN=$document_token
 SENJA_WEBHOOK_SECRET=$senja_token
 CRM_API_TOKEN=$crm_token
-STRIPE_WEBHOOK_SECRET=$stripe_webhook_token
 ADMIN_URL=$admin_path
 
 DEBUG=$debug
@@ -565,7 +582,9 @@ SOCIAL_AUTH_APPLE_ID_CLIENT=
 SOCIAL_AUTH_APPLE_ID_TEAM=
 SOCIAL_AUTH_APPLE_ID_KEY=
 SOCIAL_AUTH_APPLE_ID_SECRET=
+STRIPE_PUBLIC_KEY=
 STRIPE_KEY=
+STRIPE_WEBHOOK_SECRET=
 EMAIL_HOST=
 EMAIL_PORT=
 EMAIL_HOST_USER=

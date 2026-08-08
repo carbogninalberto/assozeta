@@ -44,7 +44,7 @@ from application.utils.api_utils import is_valid_uuid, KTDatatablePagination
 from application.utils.excel_utils import get_excel_base64
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import calculate_simulation, generate_invoice_description
-from application.utils.stripe_utils import online_payments_available
+from application.utils.stripe_utils import online_payments_available, stripe_direct_credentials_configured
 
 from docmanager.views.printing_views import document_invoice
 from notifications.services import NotificationService
@@ -1177,13 +1177,12 @@ def payment_stats(request):
     # calculate stripe fees with caching
     stripe_charges = {
         'total': 0,
-        'application_fee_amount': 0,
         'stripe_fee': 0,
     }
     
-    if request.user.stripe_account_id and request.user.stripe_on_boarding_completed:
-        # Create cache key based on user, account, and date range
-        cache_key = f"stripe_fees_{request.user.stripe_account_id}_{int(payment_from.timestamp())}_{int(payment_to.timestamp())}"
+    if stripe_direct_credentials_configured():
+        # Create cache key based on direct installation-owned Stripe account and date range
+        cache_key = f"stripe_fees_direct_{int(payment_from.timestamp())}_{int(payment_to.timestamp())}"
         
         # Try to get from cache first
         cached_charges = cache.get(cache_key)
@@ -1192,9 +1191,7 @@ def payment_stats(request):
             stripe_charges = cached_charges
         else:
             # If not in cache, fetch from Stripe API
-            stripe_charges['application_fee_amount'] = 0
             stripe_charges['stripe_fee'] = 0
-            stripe_charges['other'] = 0
             stripe_charges['total'] = 0
 
             try:
@@ -1202,9 +1199,7 @@ def payment_stats(request):
                     created={
                         'gte': int(payment_from.timestamp()),
                         'lte': int(payment_to.timestamp())
-                    },
-                    stripe_account=request.user.stripe_account_id,
-                    cancelation_reason = None,
+                    }
                 )
                 
                 for txn in transactions.auto_paging_iter():
@@ -1215,8 +1210,6 @@ def payment_stats(request):
                     for fee_detail in txn['fee_details']:
                         if fee_detail['type'] == 'stripe_fee':
                             stripe_charges['stripe_fee'] += fee_detail['amount']
-                        elif fee_detail['type'] == 'application_fee':
-                            stripe_charges['application_fee_amount'] += fee_detail['amount']
                         else:
                             logger.info(f"fee_detail: {fee_detail}")
                             continue
@@ -1226,7 +1219,6 @@ def payment_stats(request):
                 # Round charges
                 stripe_charges['total'] = round(float(stripe_charges['total']) / 100, 2)
                 stripe_charges['stripe_fee'] = round(float(stripe_charges['stripe_fee']) / 100, 2)
-                stripe_charges['application_fee_amount'] = round(float(stripe_charges['application_fee_amount']) / 100, 2)
                 
                 # Cache for 5 minutes (300 seconds)
                 cache.set(cache_key, stripe_charges, 300)
@@ -1236,7 +1228,6 @@ def payment_stats(request):
                 # Return empty charges on error but don't cache
                 stripe_charges = {
                     'total': 0,
-                    'application_fee_amount': 0,
                     'stripe_fee': 0,
                 }
 

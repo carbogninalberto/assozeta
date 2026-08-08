@@ -2,11 +2,9 @@
 @ copyright: Bakney SRL
 """
 
-import pytz
 import stripe
 import logging
 
-from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -14,13 +12,13 @@ from application.serializers.payment_serializers import PaymentSerializer
 from core.middleware import IsAuthenticated
 from rest_framework.exceptions import ValidationError, NotFound
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.db import transaction
 
 from stripe.error import InvalidRequestError
 
-from application.models import BillingPayment, User, BillingPlan, BillingSubscription, SportAssociation
+from application.models import SportAssociation
 from application.models.carnet_models import CarnetSubscription
 from application.models.courses_models import CourseSubscription, CourseSubscriptionInstallment
 from application.models.invoices_models import Invoice, InvoiceSuppliers
@@ -28,7 +26,7 @@ from application.models.payment_models import Payment
 from application.utils.api_utils import is_valid_uuid, BalanceSheetData
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import generate_invoice_description
-from application.utils.stripe_utils import online_payments_available
+from application.utils.stripe_utils import online_payments_available, stripe_webhook_secret
 from communications.models import SmsCreditPayment, CommunicationConfiguration
 from notifications.services import NotificationService
 from core import settings
@@ -36,6 +34,13 @@ from django.db.models import Max
 from application.printing_tasks import print_document_invoice
 
 logger = logging.getLogger(__name__)
+
+
+def stripe_connect_disabled_response():
+    return Response(
+        {'error': 'Stripe Connect onboarding is disabled for self-hosted direct Stripe.'},
+        status=status.HTTP_410_GONE,
+    )
 
 
 @api_view(['GET'])
@@ -47,11 +52,8 @@ def stripe_info(request):
     :return:
     """
 
-    logger.info("stripe -> complete-on-boarding -> user: {}".format(request.user.user_id))
-
-    return Response({'data': {
-        "stripe_on_boarding_completed": request.user.stripe_on_boarding_completed,
-    }}, status=status.HTTP_200_OK)
+    logger.info("stripe -> info disabled -> user: {}".format(request.user.user_id))
+    return stripe_connect_disabled_response()
 
 
 @api_view(['POST'])
@@ -63,19 +65,8 @@ def stripe_complete_on_boarding(request):
     :return:
     """
 
-    logger.info("stripe -> complete-on-boarding -> user: {}".format(request.user.user_id))
-
-    stripe_account = stripe.Account.retrieve(request.user.stripe_account_id)
-
-    if request.user.stripe_account_id is not None and \
-            len(request.user.stripe_account_id) > 0 and \
-            stripe_account.charges_enabled is True:
-        request.user.stripe_on_boarding_completed = True
-        request.user.save()
-    else:
-        raise Exception("Stripe account id is not set")
-
-    return Response({'msg': 'On boarding completed!'}, status=status.HTTP_200_OK)
+    logger.info("stripe -> complete-on-boarding disabled -> user: {}".format(request.user.user_id))
+    return stripe_connect_disabled_response()
 
 
 @api_view(['POST'])
@@ -87,59 +78,8 @@ def stripe_on_boarding(request):
     :return:
     """
 
-    logger.info("stripe -> on-boarding -> user: {}".format(request.user.user_id))
-
-    stripe_account = None
-    stripe_account_is_new = False
-
-    if request.user.stripe_account_id is None or \
-            len(request.user.stripe_account_id) == 0:
-
-        stripe_account = stripe.Account.create(
-            type="standard",
-            country="IT",
-            email=request.user.email,
-            business_type='non_profit',
-            company={
-                'tax_id': "000000000",
-            }
-        )
-        stripe_account_is_new = True
-    else:
-        try:
-            stripe_account = stripe.Account.retrieve(request.user.stripe_account_id)
-        except stripe.error.PermissionError as e:
-            if e.json_body['error']['code'] == "account_invalid":
-                stripe_account = stripe.Account.create(
-                    type="standard",
-                    country="IT",
-                    email=request.user.email,
-                    business_type='non_profit',
-                )
-                stripe_account_is_new = True
-            else:
-                return Response({"error": e.json_body['error']['message']},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    if stripe_account is None:
-        return Response({"error": 'Stripe account not found'},
-                        status=status.HTTP_417_EXPECTATION_FAILED)
-    elif stripe_account_is_new:
-        request.user.stripe_account_id = stripe_account.id
-        request.user.stripe_on_boarding_completed = False
-        request.user.save()
-
-    # create onboarding link
-    account_link = stripe.AccountLink.create(
-        account=stripe_account.id,
-        refresh_url=settings.STRIPE_REFRESH_URL,
-        return_url=settings.STRIPE_RETURN_URL,
-        type="account_onboarding",
-    )
-
-    data = {
-        "on_boarding_url": account_link.url
-    }
-    return Response({'data': data}, status=status.HTTP_200_OK)
+    logger.info("stripe -> on-boarding disabled -> user: {}".format(request.user.user_id))
+    return stripe_connect_disabled_response()
 
 
 @api_view(['POST'])
@@ -182,7 +122,6 @@ def stripe_multiple_pay(request):
                 continue
 
             total = 0
-            sport_association_stripe_account = None
             stripe_payments_methods = ['card', 'sepa_debit']
             for payment in payments_groups[sport_association_key]:
                 # retrieve the payment
@@ -192,18 +131,12 @@ def stripe_multiple_pay(request):
                         {'error': 'Online payments are not configured.'},
                         status=status.HTTP_409_CONFLICT,
                     )
-                # let's assure it is not already paid
-                sport_association_stripe_account = payment.sport_association.user.stripe_account_id
                 if payment.sport_association.stripe_available_methods is not None:
                     stripe_payments_methods = payment.sport_association.stripe_available_methods
-                if sport_association_stripe_account is None or \
-                        len(sport_association_stripe_account) == 0:
-                    raise ValidationError('sport association stripe account not set')
 
                 if payment.payment_intent_id and payment.paid is False:
                     payment_intent = stripe.PaymentIntent.retrieve(
                         payment.payment_intent_id,
-                        stripe_account=sport_association_stripe_account,
                     )
                     if payment_intent is not None and \
                             payment_intent.status == 'succeeded' and \
@@ -222,7 +155,6 @@ def stripe_multiple_pay(request):
                 total += payment.amount
 
             amount = int(total * 100)
-            fee = 0
             if True:#payment_intent is None:
                 # create metadata with payment id and payment data
                 metadata = {}
@@ -233,13 +165,11 @@ def stripe_multiple_pay(request):
                     description += f'{payment.associate.first_name[:3]}-{payment.associate.last_name[:3]}-' \
                                    f'€{payment.amount}|'
 
-                logger.info("Creating Stripe PaymentIntent for multiple payments", extra={'amount': amount, 'stripe_account': sport_association_stripe_account, 'payment_count': len(unpaid_payments)})
+                logger.info("Creating Stripe PaymentIntent for multiple payments", extra={'amount': amount, 'payment_count': len(unpaid_payments)})
                 payment_intent = stripe.PaymentIntent.create(
                     amount=amount,
                     currency='eur',
-                    application_fee_amount=fee,
                     description=description,
-                    stripe_account=sport_association_stripe_account,
                     payment_method_types=stripe_payments_methods,
                     metadata=metadata
 
@@ -251,7 +181,6 @@ def stripe_multiple_pay(request):
 
             data = {
                 "client_secret": payment_intent.client_secret or None,
-                "stripe_account": sport_association_stripe_account or None,
                 "info": {
                     "checkout_info": checkout_info,
                 }
@@ -280,7 +209,6 @@ def stripe_pay(request, payment_id):
     - exists
     - belongs to the user
     '''
-    sport_association_stripe_account = None
     payment = None
 
     # check if there is one payment in request
@@ -301,10 +229,8 @@ def stripe_pay(request, payment_id):
                     {'error': 'Online payments are not configured.'},
                     status=status.HTTP_409_CONFLICT,
                 )
-            sport_association_stripe_account = payment.sport_association.user.stripe_account_id
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
-                stripe_account=sport_association_stripe_account,
             )
             # check if there are metadata in the payment
             if payment_intent is not None and \
@@ -337,7 +263,6 @@ def stripe_pay(request, payment_id):
                 {'error': 'Online payments are not configured.'},
                 status=status.HTTP_409_CONFLICT,
             )
-        sport_association_stripe_account = payment.sport_association.user.stripe_account_id
         if payment.paid:
             # already paid the transaction
             data = {
@@ -347,14 +272,12 @@ def stripe_pay(request, payment_id):
             return Response({'data': data}, status=status.HTTP_200_OK)
 
     amount = int(payment.amount * 100)
-    fee = 0
     payment_intent = None
 
     if payment.payment_intent_id:
         try:
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
-                stripe_account=sport_association_stripe_account,
             )
             if payment_intent is not None and \
                 payment_intent.status == 'succeeded' and \
@@ -382,15 +305,13 @@ def stripe_pay(request, payment_id):
             payment_intent = None
 
     if payment_intent is None:
-        logger.info("Creating Stripe PaymentIntent", extra={'payment_id': str(payment.payment_id), 'amount': amount, 'stripe_account': sport_association_stripe_account})
+        logger.info("Creating Stripe PaymentIntent", extra={'payment_id': str(payment.payment_id), 'amount': amount})
         payment_intent = stripe.PaymentIntent.create(
             amount=amount,
             currency='eur',
-            application_fee_amount=fee,
             description=f'Associato: {payment.associate.first_name} {payment.associate.last_name} - '
                         f'Utente: {payment.user.first_name} {payment.user.last_name} - '
                         f'Pagamento di {payment.amount} euro per {payment.sport_association.denomination}',
-            stripe_account=sport_association_stripe_account,
             payment_method_types=payment.sport_association.stripe_available_methods,
         )
         logger.info("Stripe PaymentIntent created successfully", extra={'payment_id': str(payment.payment_id), 'payment_intent_id': payment_intent.stripe_id})
@@ -399,7 +320,6 @@ def stripe_pay(request, payment_id):
 
     data = {
         "client_secret": payment_intent.client_secret or None,
-        "stripe_account": sport_association_stripe_account or None,
     }
 
     return Response({'data': data}, status=status.HTTP_200_OK)
@@ -569,76 +489,37 @@ def mark_payment_as_paid(request, payment, response=True):
 @api_view(['POST'])
 def stripe_webhook(request):
     logger.info("Received Stripe webhook")
-    event = None
     payload = request.body
     sig_header = request.headers.get('stripe-signature')
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    endpoint_secret = stripe_webhook_secret()
+
+    if not endpoint_secret:
+        logger.warning("Stripe webhook received while STRIPE_WEBHOOK_SECRET is not configured")
+        return Response(
+            {'error': 'Stripe webhook is not configured.'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
-    except ValueError as e:
+    except ValueError:
         logger.error("Invalid Stripe webhook payload", exc_info=True)
-        # Invalid payload
-        raise e
-    except stripe.error.SignatureVerificationError as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    except stripe.error.SignatureVerificationError:
         logger.error("Invalid Stripe webhook signature", exc_info=True)
-        # Invalid signature
-        raise e
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     logger.info("Processing Stripe webhook event", extra={'event_type': event['type']})
     # Handle the event
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        # Fulfill the purchase...
-        if session['payment_status'] == 'paid' and \
-            session['client_reference_id'] is not None and \
-                session['subscription'] is not None:
+        metadata = session.get('metadata') or {}
 
-            payment_user = User.objects.filter(user_id=session['client_reference_id']).first()
-            if payment_user is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
-            # mark the payment as paid
-            payment = BillingPayment.objects.create(
-                user=payment_user,
-                subscription_id=session['subscription'],
-                amount=session['amount_total'] / 100
-            )
-            payment.save()
-
-            # get current billing plan paid
-            # NOTE: with discount we should use the subtotal so that plan is mapped correctly
-            # we might explore the mapping with the right subscription type from stripe
-            total_paid = session['amount_subtotal']  # use amount_subtotal for non taxed, amount_total taxed
-            billing_plan = BillingPlan.objects.filter(
-                Q(monthly_fee=total_paid) |
-                Q(annually_fee=total_paid)
-            ).first()
-
-            if billing_plan is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
-            is_monthly = True
-            if billing_plan.annually_fee == total_paid:
-                is_monthly = False
-
-            days = 30 if is_monthly else 365
-
-            # update the user BillingSubscription
-            billing_subscription = BillingSubscription.objects.filter(user=payment_user).first()
-            billing_subscription.billing_plan = billing_plan
-            billing_subscription.renewal_type = BillingSubscription.MONTHLY \
-                if is_monthly else BillingSubscription.ANNUALLY
-            billing_subscription.auto_renewal = True
-            billing_subscription.ends_on = pytz.timezone('Europe/Rome').localize(
-                datetime.now() + timedelta(days=days),
-                is_dst=None
-            )
-            billing_subscription.save()
-
-        elif 'sms_balance' in session['metadata']:
+        # Platform subscription billing is disabled in self-hosted deployments.
+        # Keep direct checkout-session side effects that are not platform plan billing.
+        if 'sms_balance' in metadata:
             sms_payment = SmsCreditPayment.objects.filter(payment_intent_id=session['id']).first()
             if sms_payment is None:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -652,7 +533,7 @@ def stripe_webhook(request):
             if configuration is None:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            configuration.sms_balance += int(session['metadata']['sms_balance'])
+            configuration.sms_balance += int(metadata['sms_balance'])
             configuration.save()
 
             # clear other sms payments that are not paid
@@ -663,171 +544,22 @@ def stripe_webhook(request):
     elif event['type'] == 'charge.succeeded':
         try:
             # get payment from payment_intent
-            payment = Payment.objects.filter(payment_intent_id=event['data']['object']['payment_intent']).first()
-            if payment is None:
+            payments = Payment.objects.filter(payment_intent_id=event['data']['object']['payment_intent'])
+            if not payments.exists():
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            return mark_payment_as_paid(None, payment)
+            for payment in payments:
+                if payment.paid is False:
+                    mark_payment_as_paid(None, payment, response=False)
         except Exception as e:
             logger.error(f"Error in managing charge.succeeded: {e}")
         return Response(status=status.HTTP_200_OK)
 
-    elif event['type'] == 'invoice.payment_succeeded':
-        # Handle automatic subscription renewal
-        invoice = event['data']['object']
-        subscription_id = invoice['subscription']
-        customer_id = invoice['customer']
-
-        # Try to find the user by their subscription_id from previous payments
-        last_payment = BillingPayment.objects.filter(
-            subscription_id=subscription_id
-        ).order_by('-payment_date').first()
-
-        payment_user = None
-
-        if last_payment is None:
-            # No previous payment found - fetch subscription from Stripe to get client_reference_id
-            logger.warning(f"No BillingPayment found for subscription {subscription_id}. Fetching from Stripe API.")
-
-            try:
-                # Retrieve the subscription from Stripe
-                stripe_subscription = stripe.Subscription.retrieve(subscription_id)
-
-                # Retrieve the checkout session that created this subscription
-                # Search for sessions with this subscription ID
-                checkout_sessions = stripe.checkout.Session.list(
-                    subscription=subscription_id,
-                    limit=1
-                )
-
-                if checkout_sessions.data and len(checkout_sessions.data) > 0:
-                    session = checkout_sessions.data[0]
-                    client_reference_id = session.get('client_reference_id')
-
-                    if client_reference_id:
-                        payment_user = User.objects.filter(user_id=client_reference_id).first()
-                        if payment_user:
-                            logger.info(f"Found user {payment_user.user_id} from Stripe checkout session")
-
-                # Fallback: try to find user by customer metadata
-                if payment_user is None:
-                    customer = stripe.Customer.retrieve(customer_id)
-                    if customer.get('metadata') and customer.metadata.get('user_id'):
-                        payment_user = User.objects.filter(user_id=customer.metadata['user_id']).first()
-                        if payment_user:
-                            logger.info(f"Found user {payment_user.user_id} from Stripe customer metadata")
-
-                # Last resort: search by customer email
-                if payment_user is None and stripe_subscription.get('metadata') and stripe_subscription.metadata.get('user_email'):
-                    payment_user = User.objects.filter(email=stripe_subscription.metadata['user_email']).first()
-                    if payment_user:
-                        logger.info(f"Found user {payment_user.user_id} from subscription metadata email")
-
-                if payment_user is None:
-                    logger.error(
-                        f"Unable to find user for subscription {subscription_id}. "
-                        f"Tried: checkout session, customer metadata, subscription metadata."
-                    )
-                    return Response(status=status.HTTP_200_OK)
-
-            except stripe.error.StripeError as e:
-                logger.error(f"Stripe API error while fetching subscription {subscription_id}: {e}")
-                return Response(status=status.HTTP_200_OK)
-        else:
-            payment_user = last_payment.user
-
-        # Get the period end and amount from Stripe invoice
-        period_end = invoice['lines']['data'][0]['period']['end']
-        # Use amount_subtotal (pre-tax) to match initial purchase logic for plan lookup
-        total_paid = invoice['amount_subtotal']
-
-        # Determine the billing plan based on amount paid (same logic as initial purchase)
-        billing_plan = BillingPlan.objects.filter(
-            Q(monthly_fee=total_paid) |
-            Q(annually_fee=total_paid)
-        ).first()
-
-        if billing_plan is None:
-            logger.error(
-                f"No BillingPlan found matching amount {total_paid} for subscription {subscription_id}. "
-                f"Using existing plan from user's subscription."
-            )
-
-        # Determine if monthly or annual renewal
-        is_monthly = True
-        if billing_plan and billing_plan.annually_fee == total_paid:
-            is_monthly = False
-
-        # Create new payment record for this renewal
-        BillingPayment.objects.create(
-            user=payment_user,
-            subscription_id=subscription_id,
-            amount=invoice['amount_paid'] / 100  # Store actual amount paid (with tax)
-        )
-
-        # Update the BillingSubscription with all relevant fields
-        billing_subscription = BillingSubscription.objects.filter(
-            user=payment_user
-        ).order_by('-ends_on').first()
-
-        if billing_subscription:
-            # Update billing plan if we found a matching one (handles plan changes)
-            if billing_plan:
-                billing_subscription.billing_plan = billing_plan
-
-            # Update renewal type (monthly vs annual)
-            billing_subscription.renewal_type = BillingSubscription.MONTHLY \
-                if is_monthly else BillingSubscription.ANNUALLY
-
-            # Sync auto_renewal status from Stripe subscription
-            try:
-                stripe_subscription = stripe.Subscription.retrieve(subscription_id)
-                # Check if subscription is set to cancel at period end
-                billing_subscription.auto_renewal = not stripe_subscription.get('cancel_at_period_end', False)
-            except stripe.error.StripeError as e:
-                logger.warning(f"Could not retrieve subscription status from Stripe: {e}")
-                # Keep existing auto_renewal value if Stripe call fails
-
-            # Update ends_on date from Stripe
-            billing_subscription.ends_on = datetime.fromtimestamp(
-                period_end,
-                tz=pytz.timezone('Europe/Rome')
-            )
-            billing_subscription.save()
-            logger.info(
-                f"Renewed subscription for user {payment_user.user_id}: "
-                f"plan={billing_plan.name if billing_plan else 'unchanged'}, "
-                f"type={'monthly' if is_monthly else 'annual'}, "
-                f"ends_on={billing_subscription.ends_on}"
-            )
-        else:
-            logger.warning(f"No BillingSubscription found for user {payment_user.user_id}")
-
-        return Response(status=status.HTTP_200_OK)
-
-    elif event['type'] == 'invoice.payment_failed':
-        # Handle failed subscription renewal
-        invoice = event['data']['object']
-        subscription_id = invoice['subscription']
-
-        # Find the user
-        payment = BillingPayment.objects.filter(
-            subscription_id=subscription_id
-        ).order_by('-payment_date').first()
-
-        if payment and payment.user:
-            logger.warning(f"Payment failed for subscription {subscription_id}, user {payment.user.user_id}")
-            # TBD: Implement notification email and grace period logic when required
-
-        return Response(status=status.HTTP_200_OK)
-
-    elif event['type'] == 'customer.subscription.updated':
-        # Handle subscription changes (plan upgrades/downgrades)
-        subscription = event['data']['object']
-        subscription_id = subscription['id']
-
-        logger.info(f"Subscription updated: {subscription_id}")
-        # TBD: Implement plan change logic when required (upgrade/downgrade functionality)
-
+    elif event['type'] in (
+        'invoice.payment_succeeded',
+        'invoice.payment_failed',
+        'customer.subscription.updated',
+    ):
+        logger.info("Ignoring disabled platform billing webhook event", extra={'event_type': event['type']})
         return Response(status=status.HTTP_200_OK)
 
     else:

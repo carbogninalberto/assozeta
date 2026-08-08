@@ -33,7 +33,6 @@
     };
     let stripeData = {
         client_secret: '',
-        stripe_account: '',
     };
     let loaded = false;
     let isPaying = false;
@@ -90,27 +89,24 @@
                 sessionStorage.setItem('cartPayments', JSON.stringify(res?.response?.payments));
             }
             stripeData.client_secret = res?.response?.data?.client_secret || '';
-            stripeData.stripe_account = res?.response?.data?.stripe_account || '';
             data.info = res?.response?.data?.info;
         } else {
             replace('/payment/list');
         }
     }
 
-    async function initStripe(stripe_account) {
-        if (!stripe_account)
-            return console.warn('[STRIPE] Cannot load Stripe Component because of missing stripe_account in init');
-        return Stripe(__bakney.STRIPE_KEY, {stripeAccount: stripe_account});
+    async function initStripe() {
+        if (!__bakney.STRIPE_KEY)
+            return console.warn('[STRIPE] Cannot load Stripe Component because of missing public key');
+        return Stripe(__bakney.STRIPE_KEY);
     }
 
     async function loadStripeComponent() {
         const client_secret = stripeData.client_secret || null;
-        const stripe_account = stripeData.stripe_account || null;
-        const stripe = await initStripe(stripe_account);
+        const stripe = await initStripe();
 
-        // check that both values are loaded
-        if (client_secret == null || stripe_account == null)
-            return console.warn('[STRIPE] Cannot load Stripe Component because of client_secret or/and stripe_account');
+        if (client_secret == null)
+            return console.warn('[STRIPE] Cannot load Stripe Component because of missing client_secret');
 
         const options = {
             clientSecret: client_secret,

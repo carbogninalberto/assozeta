@@ -95,9 +95,9 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
 
     def get_stripe(self, obj):
         return {
-            'publicKey': obj.stripe_public_key or None,
-            'pricingTable': obj.stripe_pricing_table or None,
-            'clientPortal': obj.stripe_client_portal or None,
+            'publicKey': getattr(settings, 'STRIPE_PUBLIC_KEY', '') or None,
+            'pricingTable': None,
+            'clientPortal': None,
         }
 
     def get_meta(self, obj):
@@ -252,11 +252,10 @@ class InstanceReconfigureSerializer(serializers.ModelSerializer):
         # Handle nested Stripe data
         stripe_data = validated_data.pop('stripe', None)
         if stripe_data:
-            instance.stripe_public_key = stripe_data.get('publicKey', instance.stripe_public_key)
-            instance.stripe_secret_key = stripe_data.get('secretKey', instance.stripe_secret_key)
-            instance.stripe_webhook_secret = stripe_data.get('webhookSecret', instance.stripe_webhook_secret)
-            instance.stripe_pricing_table = stripe_data.get('pricingTable', instance.stripe_pricing_table)
-            instance.stripe_client_portal = stripe_data.get('clientPortal', instance.stripe_client_portal)
+            # Stripe runtime credentials are environment-owned in self-hosted deployments.
+            # Keep legacy model fields for non-destructive compatibility, but do not let
+            # configuration API input update runtime credential state.
+            pass
 
         # Handle remaining fields
         for attr, value in validated_data.items():

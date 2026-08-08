@@ -19,7 +19,7 @@
     import {onMount} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
 	import { UiApp, UiUtil } from 'shim/ui.js';
-    import {oauthConfig, oemConfig} from 'store/instanceStore.js';
+    import {oauthConfig, oemConfig, isSelfHostedMode} from 'store/instanceStore.js';
     // import {ga} from '@beyonk/svelte-google-analytics';
     // import ApiMiddleware from 'utils/ApiMiddelware.js';
     sessionToken.useLocalStorage();
@@ -677,9 +677,9 @@
             setTimeout(async () => {
                 if (redirectToUpdateTutors) {
                     location.href = '/#/update-tutors';
-                } else if (check_onboarding && !check_onboarded) {
+                } else if (!isSelfHostedMode() && check_onboarding && !check_onboarded) {
                     location.href = '/#/stripe/onboarding';
-                } else if (check_onboarded && !check_onboarding) {
+                } else if (!isSelfHostedMode() && check_onboarded && !check_onboarding) {
                     location.href = '/#/stripe/onboarded';
                 } else {
                     if (response.role == 'association')

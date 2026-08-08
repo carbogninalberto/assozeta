@@ -29,6 +29,7 @@ from application.models.user_models import UserPartial, User, SportAssociation, 
     SportAssociationDocumentsArchive
 from application.utils.api_utils import BalanceSheetData, generate_readable_unique_string, check_email
 from application.utils.printing import PrintingService
+from application.utils.stripe_utils import stripe_direct_credentials_configured
 from application.views.stripe_views import mark_payment_as_paid
 from communications.models import AutomationWorkflow, CommunicationConfiguration
 from core import settings
@@ -333,6 +334,10 @@ def generate_coupon_if_not_exists():
 @shared_task(name="change_type_of_stripe_payments")
 def change_type_of_stripe_payments(batch_size=100, delay_seconds=1):
     try:
+        if not stripe_direct_credentials_configured():
+            print("[change_type_of_stripe_payments] Stripe direct credentials are not configured")
+            return
+
         payments = Payment.objects.filter(
             type=Payment.TYPE_CHOICES[0][0],
             payment_intent_id__isnull=False,
@@ -350,15 +355,9 @@ def change_type_of_stripe_payments(batch_size=100, delay_seconds=1):
             payments_to_update = []
 
             for payment in batch:
-                sport_association_stripe_account = payment.sport_association.user.stripe_account_id
-                if not sport_association_stripe_account:
-                    print(f"[change_type_of_stripe_payments] no stripe account found for {payment.sport_association}")
-                    continue
-
                 try:
                     payment_intent = stripe.PaymentIntent.retrieve(
                         payment.payment_intent_id,
-                        stripe_account=sport_association_stripe_account,
                     )
 
                     if payment_intent and payment_intent.status == 'succeeded':
@@ -394,6 +393,11 @@ def mark_as_paid_payments_checking_stripe():
 
     logger.info("Starting mark_as_paid_payments_checking_stripe task", extra={'task_name': 'mark_as_paid_payments_checking_stripe'})
     try:
+        if not stripe_direct_credentials_configured():
+            logger.info("Stripe direct credentials are not configured", extra={'task_name': 'mark_as_paid_payments_checking_stripe'})
+            print("[mark_as_paid_payments_checking_stripe] Stripe direct credentials are not configured")
+            return
+
         payments = list(Payment.objects.filter(
             paid=False,
             payment_intent_id__isnull=False,
@@ -454,15 +458,9 @@ def _check_and_mark_payment(payment):
                 print(f"[_check_and_mark_payment] Payment {payment.payment_id} already marked as paid")
                 return False
 
-            sport_association_stripe_account = payment.sport_association.user.stripe_account_id
-            if not sport_association_stripe_account:
-                print(f"[_check_and_mark_payment] No stripe account found for {payment.sport_association}")
-                return False
-
             # Retrieve payment intent from Stripe
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
-                stripe_account=sport_association_stripe_account,
             )
 
             # Check if payment intent is succeeded

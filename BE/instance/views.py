@@ -128,12 +128,12 @@ class InstanceSetupView(APIView):
                     # OAuth (convert null to empty string)
                     google_client_id=data.get('oauth', {}).get('googleClientId') or '',
                     apple_client_id=data.get('oauth', {}).get('appleClientId') or '',
-                    # Stripe (convert null to empty string)
-                    stripe_public_key=data.get('stripe', {}).get('publicKey') or '',
-                    stripe_secret_key=data.get('stripe', {}).get('secretKey') or '',
-                    stripe_webhook_secret=data.get('stripe', {}).get('webhookSecret') or '',
-                    stripe_pricing_table=data.get('stripe', {}).get('pricingTable') or '',
-                    stripe_client_portal=data.get('stripe', {}).get('clientPortal') or '',
+                    # Stripe credentials are environment-owned; legacy fields stay inactive.
+                    stripe_public_key='',
+                    stripe_secret_key='',
+                    stripe_webhook_secret='',
+                    stripe_pricing_table='',
+                    stripe_client_portal='',
                     # Flags
                     self_hosted=True,
                     support_multiple_associations=False,

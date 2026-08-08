@@ -3,7 +3,7 @@ import {get} from 'svelte/store';
 import {wrap} from 'svelte-spa-router/wrap';
 import {currentPage, role, subPage, sessionToken} from './store/stores.js';
 import {canPerformAction} from 'utils/Permissions.js';
-
+import {isSelfHostedMode} from './store/instanceStore.js';
 currentPage.useLocalStorage();
 subPage.useLocalStorage();
 role.useLocalStorage();
@@ -1214,6 +1214,7 @@ export default {
         asyncComponent: () => import('./routes/stripe/Onboarding.svelte'),
         conditions: [
             () => {
+                if (isSelfHostedMode()) return false;
                 if (!isPlanActive()) return false;
 
                 if (isLogged()) {
@@ -1232,6 +1233,7 @@ export default {
         asyncComponent: () => import('./routes/stripe/Onboarded.svelte'),
         conditions: [
             () => {
+                if (isSelfHostedMode()) return false;
                 if (!isPlanActive()) return false;
 
                 if (isLogged()) {

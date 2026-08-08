@@ -85,21 +85,8 @@ def billing_checkout(request):
         })
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
-    billing_subscription = BillingSubscription.objects.filter(user=request.user).first()
-    if billing_subscription is None:
-        return Response({'msg': 'No active subscription found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    logger.info("Billing checkout completed", extra={
-        'user_id': str(request.user.user_id),
-        'plan_name': billing_subscription.billing_plan.name,
-        'renewal_type': billing_subscription.renewal_type
-    })
-    data = {
-        "active_plan": {
-            "name": billing_subscription.billing_plan.name
-        },
-        "auto_renewal": billing_subscription.auto_renewal,
-        "renewal_type": billing_subscription.renewal_type,
-        "ends_on": billing_subscription.ends_on,
-    }
-    return Response({'data': data}, status=status.HTTP_200_OK)
+    logger.info("Platform billing checkout is disabled", extra={'user_id': str(request.user.user_id)})
+    return Response(
+        {'msg': 'Platform billing checkout is disabled for self-hosted instances.'},
+        status=status.HTTP_410_GONE,
+    )
