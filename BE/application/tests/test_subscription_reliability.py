@@ -7,6 +7,7 @@ from unittest.mock import patch
 from django.db import transaction
 from django.template.loader import get_template
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from application.exceptions import DuplicateSubscriptionError, InvalidSignatureError, StorageUnavailableError
@@ -199,6 +200,25 @@ class SubscriptionCreationMixin:
 
 @override_settings(ALLOWED_HOSTS=['testserver', 'localhost', '127.0.0.1', 'api'])
 class SubscriptionCreationRollbackTests(SubscriptionCreationMixin, TestCase):
+    def test_list_filter_current_year_custom_period_without_dates(self):
+        """Test custom period filtering before both dates are selected."""
+        user, _ = self.create_association()
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        incomplete_periods = (
+            {},
+            {'query[period_start]': '01/01/2026'},
+            {'query[period_end]': '31/12/2026'},
+        )
+        for period_params in incomplete_periods:
+            with self.subTest(period_params=period_params):
+                response = client.get('/subscription/list', {
+                    'query[current_year]': '3',
+                    **period_params,
+                })
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_duplicate_api_returns_http_409(self):
         user, _ = self.create_association()
         create_subscription(copy.deepcopy(self.payload()), user, None)
