@@ -1,0 +1,3033 @@
+{
+  "generatedAt": "2026-08-17T20:51:19.265Z",
+  "backendByApp": {
+    "application": [
+      "",
+      "association/export/active",
+      "association/export/delete",
+      "association/export/list",
+      "association/export/start",
+      "association/export/status",
+      "association/import/start",
+      "association/import/status",
+      "association/import/validate",
+      "attendance-day/<str:uid>/delete",
+      "attendance-day/<str:uid>/mark-absent",
+      "attendance/<str:uid>/mark",
+      "audit-logs/<int:log_id>/detail",
+      "audit-logs/list",
+      "audit-logs/models",
+      "audit-logs/stats",
+      "balance-sheet",
+      "balance-sheet/accounts-transfer/<str:uid>/delete",
+      "balance-sheet/accounts-transfer/<str:uid>/update",
+      "balance-sheet/accounts-transfer/add",
+      "balance-sheet/accounts-transfer/list",
+      "balance-sheet/accounts/<str:uid>/delete",
+      "balance-sheet/accounts/<str:uid>/update",
+      "balance-sheet/accounts/add",
+      "balance-sheet/accounts/list",
+      "balance-sheet/archived",
+      "billing/active-plan",
+      "billing/checkout",
+      "calendar/events",
+      "calendar/events/export",
+      "calendar/events/update",
+      "camps-and-retreats/<str:uid>/delete",
+      "camps-and-retreats/<str:uid>/info",
+      "camps-and-retreats/<str:uid>/subscriptions/add",
+      "camps-and-retreats/<str:uid>/subscriptions/delete",
+      "camps-and-retreats/<str:uid>/subscriptions/list",
+      "camps-and-retreats/<str:uid>/subscriptions/update",
+      "camps-and-retreats/<str:uid>/update",
+      "camps-and-retreats/add",
+      "camps-and-retreats/list",
+      "camps-and-retreats/periods/<str:uid>/delete",
+      "camps-and-retreats/periods/<str:uid>/info",
+      "camps-and-retreats/periods/<str:uid>/update",
+      "camps-and-retreats/periods/add",
+      "camps-and-retreats/periods/services/<str:uid>/delete",
+      "camps-and-retreats/periods/services/<str:uid>/update",
+      "camps-and-retreats/periods/services/add",
+      "carnet-subscription/<str:uid>/delete/<str:uid_course>",
+      "carnet-subscription/<str:uid>/disable",
+      "carnet-subscription/<str:uid>/enable",
+      "carnet-subscription/<str:uid>/topup",
+      "carnet-subscription/<str:uid>/update",
+      "carnet-subscription/list",
+      "carnet/<str:uid>/assign/<str:uid_subscription>",
+      "carnet/<str:uid>/delete",
+      "carnet/<str:uid>/info",
+      "carnet/<str:uid>/replace/<str:uid_subscription>",
+      "carnet/<str:uid>/unassign/<str:uid_subscription>",
+      "carnet/<str:uid>/update",
+      "carnet/add",
+      "carnet/list",
+      "check-inconsistencies",
+      "collaborators/<str:uid>/delete",
+      "collaborators/<str:uid>/update",
+      "collaborators/add",
+      "collaborators/list",
+      "course-installment/<str:uid>/make-payment",
+      "course-locations",
+      "course-subscriptions",
+      "course-subscriptions/<str:pk>/delete",
+      "course-subscriptions/<str:pk>/update",
+      "course-subscriptions/add",
+      "course-subscriptions/bulk-delete",
+      "course-subscriptions/list",
+      "course/<str:uid>/attendees",
+      "course/<str:uid>/attendees/<str:attendance_day_uid>/update",
+      "course/<str:uid>/calendar",
+      "course/<str:uid>/calendar/update",
+      "course/<str:uid>/delete",
+      "course/<str:uid>/disable",
+      "course/<str:uid>/enable",
+      "course/<str:uid>/overview",
+      "course/<str:uid>/overview/<str:uid_subscription>/add",
+      "course/<str:uid>/overview/<str:uid_subscription>/delete",
+      "course/<str:uid>/overview/<str:uid_subscription>/update",
+      "course/<str:uid>/pin",
+      "course/<str:uid>/update",
+      "course/add",
+      "course/list",
+      "course/locations/<str:pk>/delete",
+      "course/locations/<str:pk>/update",
+      "course/locations/add",
+      "course/locations/list",
+      "course/tags/<str:tag_id>/assign/<str:course_id>",
+      "course/tags/<str:tag_id>/delete",
+      "course/tags/<str:tag_id>/unassign/<str:course_id>",
+      "course/tags/<str:tag_id>/update",
+      "course/tags/add",
+      "course/tags/list",
+      "documents",
+      "documents/<str:pk>/delete",
+      "documents/<str:pk>/move",
+      "documents/<str:pk>/update",
+      "documents/add",
+      "documents/bulk-delete",
+      "documents/list",
+      "export-all-data",
+      "folders",
+      "folders/<str:pk>/delete",
+      "folders/<str:pk>/move",
+      "folders/<str:pk>/update",
+      "folders/add",
+      "folders/list",
+      "google/calendar/<str:course_id>/export",
+      "google/calendar/config",
+      "google/calendar/list",
+      "google/check",
+      "google/oauth2callback",
+      "instructor/<str:uid>/delete",
+      "instructor/<str:uid>/hours/<str:instructor_hours_id>/delete",
+      "instructor/<str:uid>/hours/<str:instructor_hours_id>/update",
+      "instructor/<str:uid>/hours/add",
+      "instructor/<str:uid>/hours/add/compensation",
+      "instructor/<str:uid>/hours/calculate",
+      "instructor/<str:uid>/hours/list",
+      "instructor/<str:uid>/info",
+      "instructor/<str:uid>/update",
+      "instructor/add",
+      "instructor/list",
+      "instructor/report",
+      "invoice-bulk/archive",
+      "invoice-bulk/delete",
+      "invoice-customers/<str:uid>/delete",
+      "invoice-customers/<str:uid>/update",
+      "invoice-customers/add",
+      "invoice-customers/list",
+      "invoice-customers/stats",
+      "invoice-suppliers/<str:uid>/delete",
+      "invoice-suppliers/<str:uid>/update",
+      "invoice-suppliers/add",
+      "invoice-suppliers/list",
+      "invoice-suppliers/stats",
+      "invoice/<str:uid>/delete",
+      "invoice/<str:uid>/invoice-suppliers/list/export",
+      "invoice/<str:uid>/send",
+      "invoice/<str:uid>/update",
+      "invoice/list",
+      "invoice/list/archived",
+      "invoice/list/export",
+      "modules/<str:custom_link>/info",
+      "modules/<str:module_id>/delete",
+      "modules/<str:module_id>/duplicate",
+      "modules/<str:module_id>/export",
+      "modules/<str:module_id>/overview",
+      "modules/<str:module_id>/response/add",
+      "modules/<str:module_id>/update",
+      "modules/add",
+      "modules/check-link",
+      "modules/list",
+      "modules/response/<str:module_response_id>/add-attachment",
+      "modules/response/<str:module_response_id>/approve",
+      "modules/response/<str:module_response_id>/delete",
+      "oauth2/check/email",
+      "oauth2/check/username",
+      "oauth2/delete-account",
+      "oauth2/login",
+      "oauth2/partial-signup",
+      "oauth2/refresh-token",
+      "oauth2/reset",
+      "oauth2/signup",
+      "onboarding/update",
+      "payment-bulk/archive",
+      "payment-bulk/delete",
+      "payment/<str:uid>/approve",
+      "payment/<str:uid>/archive",
+      "payment/<str:uid>/cancel",
+      "payment/<str:uid>/delete",
+      "payment/<str:uid>/generate-invoice",
+      "payment/<str:uid>/info",
+      "payment/<str:uid>/request",
+      "payment/<str:uid>/update",
+      "payment/add",
+      "payment/bulk-add",
+      "payment/category/<str:uid>/delete",
+      "payment/category/<str:uid>/update",
+      "payment/category/add",
+      "payment/category/list",
+      "payment/list",
+      "payment/list/export",
+      "payment/sign",
+      "payment/simulation/partial-quotes",
+      "payment/simulation/partial-quotes-apply",
+      "payment/stats",
+      "personas",
+      "personas-subscriptions",
+      "personas-subscriptions/<str:pk>/list",
+      "personas/<str:pk>/delete",
+      "personas/<str:pk>/info",
+      "personas/<str:pk>/recover",
+      "personas/<str:pk>/update",
+      "personas/add",
+      "personas/all",
+      "personas/all-tutors",
+      "personas/all-with-subscriptions",
+      "personas/bulk-delete",
+      "personas/list",
+      "printing/generate",
+      "profile/associates/course/<str:uid>",
+      "profile/associates/sport-association/<str:uid>",
+      "profile/image/<str:uid>",
+      "profile/info",
+      "profile/integrations",
+      "profile/settings",
+      "profile/settings/tables",
+      "profile/update",
+      "profile/update/password",
+      "profile/update/subscription/template",
+      "saved-reports/<str:pk>/delete",
+      "saved-reports/<str:pk>/info",
+      "saved-reports/<str:pk>/run",
+      "saved-reports/<str:pk>/update",
+      "saved-reports/add",
+      "saved-reports/list",
+      "search/profile/<str:username>",
+      "sport-associations/<uid>/admin-update",
+      "sport-associations/list",
+      "statistic/athlete-dashboard",
+      "statistic/dashboard",
+      "statistic/dashboard/layout",
+      "statistic/report",
+      "stripe/complete-on-boarding",
+      "stripe/info",
+      "stripe/multiple-pay",
+      "stripe/on-boarding",
+      "stripe/pay/<str:payment_id>",
+      "stripe/webhook",
+      "subscription/<str:uid>/approve",
+      "subscription/<str:uid>/archive",
+      "subscription/<str:uid>/attendance",
+      "subscription/<str:uid>/calendar",
+      "subscription/<str:uid>/card",
+      "subscription/<str:uid>/delete",
+      "subscription/<str:uid>/delete-document/<str:subscription_file_id>",
+      "subscription/<str:uid>/edit",
+      "subscription/<str:uid>/info",
+      "subscription/<str:uid>/medical-appointments/<str:medical_appointments_id>/delete",
+      "subscription/<str:uid>/medical-appointments/add",
+      "subscription/<str:uid>/medical-appointments/list",
+      "subscription/<str:uid>/medical-certificate/edit",
+      "subscription/<str:uid>/medical-certificate/send-email-reminder",
+      "subscription/<str:uid>/medical-certificate/set-certificate-expiration",
+      "subscription/<str:uid>/medical-certificate/upload",
+      "subscription/<str:uid>/payments",
+      "subscription/<str:uid>/reject",
+      "subscription/<str:uid>/transfer",
+      "subscription/<str:uid>/update",
+      "subscription/<str:uid>/upload-document",
+      "subscription/add",
+      "subscription/associates-draft/<str:uid>/delete",
+      "subscription/associates-draft/<str:uid>/edit",
+      "subscription/associates-draft/add",
+      "subscription/associates-draft/bulk-delete",
+      "subscription/associates-draft/list",
+      "subscription/associates-draft/list/approve",
+      "subscription/calculate-tax-code",
+      "subscription/generate-token-link",
+      "subscription/get-associations-for-federation",
+      "subscription/import/status",
+      "subscription/import/upload",
+      "subscription/list",
+      "subscription/list/all",
+      "subscription/list/archived",
+      "subscription/list/export",
+      "subscription/memberships",
+      "subscription/memberships/<str:pk>/delete",
+      "subscription/memberships/<str:pk>/update",
+      "subscription/memberships/add",
+      "subscription/memberships/list",
+      "subscription/renew",
+      "subscription/sign",
+      "subscription/tags/<str:tag_id>/assign/<str:subscription_id>",
+      "subscription/tags/<str:tag_id>/delete",
+      "subscription/tags/<str:tag_id>/unassign/<str:subscription_id>",
+      "subscription/tags/<str:tag_id>/update",
+      "subscription/tags/add",
+      "subscription/tags/list",
+      "subscription/validate-token-link-and-get-subscriptions",
+      "supplier/<str:uid>/delete",
+      "supplier/<str:uid>/info",
+      "supplier/<str:uid>/update",
+      "supplier/add",
+      "supplier/bulk-delete",
+      "supplier/list",
+      "templates",
+      "templates/<str:pk>/delete",
+      "templates/<str:pk>/update",
+      "templates/add",
+      "templates/bulk-delete",
+      "templates/list",
+      "testimonials/add",
+      "testimonials/update",
+      "two-fa/info",
+      "two-fa/setup",
+      "two-fa/update"
+    ],
+    "communications": [
+      "communications/email-logs/list",
+      "communications/messages/<str:message_id>/delete",
+      "communications/messages/<str:message_id>/detail",
+      "communications/messages/add",
+      "communications/messages/list",
+      "communications/send/email",
+      "communications/send/post",
+      "communications/settings/smtp/info",
+      "communications/settings/smtp/update",
+      "communications/settings/smtp/verify",
+      "communications/workflows/<str:workflow_id>/delete",
+      "communications/workflows/<str:workflow_id>/details",
+      "communications/workflows/<str:workflow_id>/update",
+      "communications/workflows/add",
+      "communications/workflows/list"
+    ],
+    "docmanager": [
+      "document/<str:uid>/delete",
+      "document/compensation/<str:uid>",
+      "document/compensation/<str:uid>/view/",
+      "document/einvoice/<str:uid>",
+      "document/einvoice/<str:uid>/view/",
+      "document/invoice/<str:uid>",
+      "document/invoice/<str:uid>/view/",
+      "document/medical-appointment/<str:uid>",
+      "document/medical-appointment/<str:uid>/view/",
+      "document/medical/certificate/",
+      "document/retrieve/<str:uid>",
+      "document/subscription/<str:uid>",
+      "document/subscription/<str:uid>/view/",
+      "document/subscription/preview/",
+      "document/template/<str:uid>",
+      "document/template/<str:uid>/view/"
+    ],
+    "chat": [
+      "chat/test/"
+    ],
+    "instance": [
+      "config",
+      "configure",
+      "logo",
+      "logo.png",
+      "manifest.json",
+      "reconfigure",
+      "setup-token/validate",
+      "status"
+    ],
+    "core": [
+      "",
+      "api-auth/",
+      "blog/",
+      "healthz",
+      "instance/",
+      "readyz",
+      "schema/",
+      "schema/redoc/",
+      "schema/swagger-ui/",
+      "silk/"
+    ]
+  },
+  "routerRegs": [
+    {
+      "prefix": "course-locations",
+      "viewset": "CourseLocationViewSet",
+      "basename": "course-location"
+    },
+    {
+      "prefix": "folders",
+      "viewset": "FolderViewSet",
+      "basename": "(inferred)"
+    },
+    {
+      "prefix": "documents",
+      "viewset": "DocumentArchiveViewSet",
+      "basename": "(inferred)"
+    },
+    {
+      "prefix": "templates",
+      "viewset": "SportAssociationModuleTemplatesViewSet",
+      "basename": "(inferred)"
+    },
+    {
+      "prefix": "subscription/memberships",
+      "viewset": "SubscriptionMembershipViewSet",
+      "basename": "subscription-membership"
+    },
+    {
+      "prefix": "course-subscriptions",
+      "viewset": "CourseSubscriptionViewSet",
+      "basename": "course-subscription"
+    },
+    {
+      "prefix": "personas",
+      "viewset": "AssociateViewSet",
+      "basename": "persona"
+    },
+    {
+      "prefix": "personas-subscriptions",
+      "viewset": "AssociateSubscriptionViewSet",
+      "basename": "persona-subscriptions"
+    }
+  ],
+  "apiPatterns": [
+    "",
+    "api-auth",
+    "association/export/active",
+    "association/export/delete",
+    "association/export/list",
+    "association/export/start",
+    "association/export/status",
+    "association/import/start",
+    "association/import/status",
+    "association/import/validate",
+    "attendance-day/*/delete",
+    "attendance-day/*/mark-absent",
+    "attendance/*/mark",
+    "audit-logs/*/detail",
+    "audit-logs/list",
+    "audit-logs/models",
+    "audit-logs/stats",
+    "balance-sheet",
+    "balance-sheet/accounts-transfer/*/delete",
+    "balance-sheet/accounts-transfer/*/update",
+    "balance-sheet/accounts-transfer/add",
+    "balance-sheet/accounts-transfer/list",
+    "balance-sheet/accounts/*/delete",
+    "balance-sheet/accounts/*/update",
+    "balance-sheet/accounts/add",
+    "balance-sheet/accounts/list",
+    "balance-sheet/archived",
+    "billing/active-plan",
+    "billing/checkout",
+    "blog",
+    "calendar/events",
+    "calendar/events/export",
+    "calendar/events/update",
+    "camps-and-retreats/*/delete",
+    "camps-and-retreats/*/info",
+    "camps-and-retreats/*/subscriptions/add",
+    "camps-and-retreats/*/subscriptions/delete",
+    "camps-and-retreats/*/subscriptions/list",
+    "camps-and-retreats/*/subscriptions/update",
+    "camps-and-retreats/*/update",
+    "camps-and-retreats/add",
+    "camps-and-retreats/list",
+    "camps-and-retreats/periods/*/delete",
+    "camps-and-retreats/periods/*/info",
+    "camps-and-retreats/periods/*/update",
+    "camps-and-retreats/periods/add",
+    "camps-and-retreats/periods/services/*/delete",
+    "camps-and-retreats/periods/services/*/update",
+    "camps-and-retreats/periods/services/add",
+    "carnet-subscription/*/delete/*",
+    "carnet-subscription/*/disable",
+    "carnet-subscription/*/enable",
+    "carnet-subscription/*/topup",
+    "carnet-subscription/*/update",
+    "carnet-subscription/list",
+    "carnet/*/assign/*",
+    "carnet/*/delete",
+    "carnet/*/info",
+    "carnet/*/replace/*",
+    "carnet/*/unassign/*",
+    "carnet/*/update",
+    "carnet/add",
+    "carnet/list",
+    "chat/test",
+    "check-inconsistencies",
+    "collaborators/*/delete",
+    "collaborators/*/update",
+    "collaborators/add",
+    "collaborators/list",
+    "communications/email-logs/list",
+    "communications/messages/*/delete",
+    "communications/messages/*/detail",
+    "communications/messages/add",
+    "communications/messages/list",
+    "communications/send/email",
+    "communications/send/post",
+    "communications/settings/smtp/info",
+    "communications/settings/smtp/update",
+    "communications/settings/smtp/verify",
+    "communications/workflows/*/delete",
+    "communications/workflows/*/details",
+    "communications/workflows/*/update",
+    "communications/workflows/add",
+    "communications/workflows/list",
+    "config",
+    "configure",
+    "course-installment/*/make-payment",
+    "course-locations",
+    "course-subscriptions",
+    "course-subscriptions/*/delete",
+    "course-subscriptions/*/update",
+    "course-subscriptions/add",
+    "course-subscriptions/bulk-delete",
+    "course-subscriptions/list",
+    "course/*/attendees",
+    "course/*/attendees/*/update",
+    "course/*/calendar",
+    "course/*/calendar/update",
+    "course/*/delete",
+    "course/*/disable",
+    "course/*/enable",
+    "course/*/overview",
+    "course/*/overview/*/add",
+    "course/*/overview/*/delete",
+    "course/*/overview/*/update",
+    "course/*/pin",
+    "course/*/update",
+    "course/add",
+    "course/list",
+    "course/locations/*/delete",
+    "course/locations/*/update",
+    "course/locations/add",
+    "course/locations/list",
+    "course/tags/*/assign/*",
+    "course/tags/*/delete",
+    "course/tags/*/unassign/*",
+    "course/tags/*/update",
+    "course/tags/add",
+    "course/tags/list",
+    "document/*/delete",
+    "document/compensation/*",
+    "document/compensation/*/view",
+    "document/einvoice/*",
+    "document/einvoice/*/view",
+    "document/invoice/*",
+    "document/invoice/*/view",
+    "document/medical-appointment/*",
+    "document/medical-appointment/*/view",
+    "document/medical/certificate",
+    "document/retrieve/*",
+    "document/subscription/*",
+    "document/subscription/*/view",
+    "document/subscription/preview",
+    "document/template/*",
+    "document/template/*/view",
+    "documents",
+    "documents/*/delete",
+    "documents/*/move",
+    "documents/*/update",
+    "documents/add",
+    "documents/bulk-delete",
+    "documents/list",
+    "export-all-data",
+    "folders",
+    "folders/*/delete",
+    "folders/*/move",
+    "folders/*/update",
+    "folders/add",
+    "folders/list",
+    "google/calendar/*/export",
+    "google/calendar/config",
+    "google/calendar/list",
+    "google/check",
+    "google/oauth2callback",
+    "healthz",
+    "instance",
+    "instructor/*/delete",
+    "instructor/*/hours/*/delete",
+    "instructor/*/hours/*/update",
+    "instructor/*/hours/add",
+    "instructor/*/hours/add/compensation",
+    "instructor/*/hours/calculate",
+    "instructor/*/hours/list",
+    "instructor/*/info",
+    "instructor/*/update",
+    "instructor/add",
+    "instructor/list",
+    "instructor/report",
+    "invoice-bulk/archive",
+    "invoice-bulk/delete",
+    "invoice-customers/*/delete",
+    "invoice-customers/*/update",
+    "invoice-customers/add",
+    "invoice-customers/list",
+    "invoice-customers/stats",
+    "invoice-suppliers/*/delete",
+    "invoice-suppliers/*/update",
+    "invoice-suppliers/add",
+    "invoice-suppliers/list",
+    "invoice-suppliers/stats",
+    "invoice/*/delete",
+    "invoice/*/invoice-suppliers/list/export",
+    "invoice/*/send",
+    "invoice/*/update",
+    "invoice/list",
+    "invoice/list/archived",
+    "invoice/list/export",
+    "logo",
+    "logo.png",
+    "manifest.json",
+    "modules/*/delete",
+    "modules/*/duplicate",
+    "modules/*/export",
+    "modules/*/info",
+    "modules/*/overview",
+    "modules/*/response/add",
+    "modules/*/update",
+    "modules/add",
+    "modules/check-link",
+    "modules/list",
+    "modules/response/*/add-attachment",
+    "modules/response/*/approve",
+    "modules/response/*/delete",
+    "oauth2/check/email",
+    "oauth2/check/username",
+    "oauth2/delete-account",
+    "oauth2/login",
+    "oauth2/partial-signup",
+    "oauth2/refresh-token",
+    "oauth2/reset",
+    "oauth2/signup",
+    "onboarding/update",
+    "payment-bulk/archive",
+    "payment-bulk/delete",
+    "payment/*/approve",
+    "payment/*/archive",
+    "payment/*/cancel",
+    "payment/*/delete",
+    "payment/*/generate-invoice",
+    "payment/*/info",
+    "payment/*/request",
+    "payment/*/update",
+    "payment/add",
+    "payment/bulk-add",
+    "payment/category/*/delete",
+    "payment/category/*/update",
+    "payment/category/add",
+    "payment/category/list",
+    "payment/list",
+    "payment/list/export",
+    "payment/sign",
+    "payment/simulation/partial-quotes",
+    "payment/simulation/partial-quotes-apply",
+    "payment/stats",
+    "personas",
+    "personas-subscriptions",
+    "personas-subscriptions/*/list",
+    "personas/*/delete",
+    "personas/*/info",
+    "personas/*/recover",
+    "personas/*/update",
+    "personas/add",
+    "personas/all",
+    "personas/all-tutors",
+    "personas/all-with-subscriptions",
+    "personas/bulk-delete",
+    "personas/list",
+    "printing/generate",
+    "profile/associates/course/*",
+    "profile/associates/sport-association/*",
+    "profile/image/*",
+    "profile/info",
+    "profile/integrations",
+    "profile/settings",
+    "profile/settings/tables",
+    "profile/update",
+    "profile/update/password",
+    "profile/update/subscription/template",
+    "readyz",
+    "reconfigure",
+    "saved-reports/*/delete",
+    "saved-reports/*/info",
+    "saved-reports/*/run",
+    "saved-reports/*/update",
+    "saved-reports/add",
+    "saved-reports/list",
+    "schema",
+    "schema/redoc",
+    "schema/swagger-ui",
+    "search/profile/*",
+    "setup-token/validate",
+    "silk",
+    "sport-associations/*/admin-update",
+    "sport-associations/list",
+    "statistic/athlete-dashboard",
+    "statistic/dashboard",
+    "statistic/dashboard/layout",
+    "statistic/report",
+    "status",
+    "stripe/complete-on-boarding",
+    "stripe/info",
+    "stripe/multiple-pay",
+    "stripe/on-boarding",
+    "stripe/pay/*",
+    "stripe/webhook",
+    "subscription/*/approve",
+    "subscription/*/archive",
+    "subscription/*/attendance",
+    "subscription/*/calendar",
+    "subscription/*/card",
+    "subscription/*/delete",
+    "subscription/*/delete-document/*",
+    "subscription/*/edit",
+    "subscription/*/info",
+    "subscription/*/medical-appointments/*/delete",
+    "subscription/*/medical-appointments/add",
+    "subscription/*/medical-appointments/list",
+    "subscription/*/medical-certificate/edit",
+    "subscription/*/medical-certificate/send-email-reminder",
+    "subscription/*/medical-certificate/set-certificate-expiration",
+    "subscription/*/medical-certificate/upload",
+    "subscription/*/payments",
+    "subscription/*/reject",
+    "subscription/*/transfer",
+    "subscription/*/update",
+    "subscription/*/upload-document",
+    "subscription/add",
+    "subscription/associates-draft/*/delete",
+    "subscription/associates-draft/*/edit",
+    "subscription/associates-draft/add",
+    "subscription/associates-draft/bulk-delete",
+    "subscription/associates-draft/list",
+    "subscription/associates-draft/list/approve",
+    "subscription/calculate-tax-code",
+    "subscription/generate-token-link",
+    "subscription/get-associations-for-federation",
+    "subscription/import/status",
+    "subscription/import/upload",
+    "subscription/list",
+    "subscription/list/all",
+    "subscription/list/archived",
+    "subscription/list/export",
+    "subscription/memberships",
+    "subscription/memberships/*/delete",
+    "subscription/memberships/*/update",
+    "subscription/memberships/add",
+    "subscription/memberships/list",
+    "subscription/renew",
+    "subscription/sign",
+    "subscription/tags/*/assign/*",
+    "subscription/tags/*/delete",
+    "subscription/tags/*/unassign/*",
+    "subscription/tags/*/update",
+    "subscription/tags/add",
+    "subscription/tags/list",
+    "subscription/validate-token-link-and-get-subscriptions",
+    "supplier/*/delete",
+    "supplier/*/info",
+    "supplier/*/update",
+    "supplier/add",
+    "supplier/bulk-delete",
+    "supplier/list",
+    "templates",
+    "templates/*/delete",
+    "templates/*/update",
+    "templates/add",
+    "templates/bulk-delete",
+    "templates/list",
+    "testimonials/add",
+    "testimonials/update",
+    "two-fa/info",
+    "two-fa/setup",
+    "two-fa/update"
+  ],
+  "permissionRegistry": [
+    {
+      "method": "ANY",
+      "path": "statistic/dashboard",
+      "perm": "association.dashboard.read",
+      "raw": "statistic/dashboard"
+    },
+    {
+      "method": "ANY",
+      "path": "statistic/dashboard/layout",
+      "perm": "association.dashboard.read",
+      "raw": "statistic/dashboard/layout"
+    },
+    {
+      "method": "ANY",
+      "path": "statistic/athlete-dashboard",
+      "perm": "association.dashboard.read",
+      "raw": "statistic/athlete-dashboard"
+    },
+    {
+      "method": "ANY",
+      "path": "statistic/report",
+      "perm": "association.report.read",
+      "raw": "statistic/report"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/list",
+      "perm": "association.personas.read",
+      "raw": "personas/list"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/all",
+      "perm": "association.personas.read",
+      "raw": "personas/all"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/all-tutors",
+      "perm": "association.personas.read",
+      "raw": "personas/all-tutors"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/add",
+      "perm": "association.personas.create",
+      "raw": "personas/add"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/*/update",
+      "perm": "association.personas.update",
+      "raw": "personas/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/*/delete",
+      "perm": "association.personas.delete",
+      "raw": "personas/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/*/info",
+      "perm": "association.personas.read",
+      "raw": "personas/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/*/recover",
+      "perm": "association.personas.update",
+      "raw": "personas/*/recover"
+    },
+    {
+      "method": "ANY",
+      "path": "personas/bulk-delete",
+      "perm": "association.personas.delete",
+      "raw": "personas/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "personas-subscriptions/*/list",
+      "perm": "association.personas.read",
+      "raw": "personas-subscriptions/*/list"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/list/all",
+      "perm": "association.members.read",
+      "raw": "subscription/list/all"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/list/archived",
+      "perm": "association.members.archive.read",
+      "raw": "subscription/list/archived"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/list/export",
+      "perm": "association.members.read",
+      "raw": "subscription/list/export"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/add",
+      "perm": "association.members.create",
+      "raw": "subscription/add"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/renew",
+      "perm": "association.members.create",
+      "raw": "subscription/renew"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/info",
+      "perm": "association.members.read",
+      "raw": "subscription/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/payments",
+      "perm": "association.members.read",
+      "raw": "subscription/*/payments"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/attendance",
+      "perm": "association.members.read",
+      "raw": "subscription/*/attendance"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/calendar",
+      "perm": "association.members.read",
+      "raw": "subscription/*/calendar"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/update",
+      "perm": "association.members.update",
+      "raw": "subscription/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/edit",
+      "perm": "association.members.update",
+      "raw": "subscription/*/edit"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/approve",
+      "perm": "association.members.update",
+      "raw": "subscription/*/approve"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/reject",
+      "perm": "association.members.update",
+      "raw": "subscription/*/reject"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/delete",
+      "perm": "association.members.delete",
+      "raw": "subscription/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/archive",
+      "perm": "association.members.archive.update",
+      "raw": "subscription/*/archive"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/transfer",
+      "perm": "association.members.update",
+      "raw": "subscription/*/transfer"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/upload-document",
+      "perm": "association.members.update",
+      "raw": "subscription/*/upload-document"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/delete-document/*",
+      "perm": "association.members.update",
+      "raw": "subscription/*/delete-document/*"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-certificate/upload",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-certificate/upload"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-certificate/set-certificate-expiration",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-certificate/set-certificate-expiration"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-certificate/send-email-reminder",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-certificate/send-email-reminder"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-certificate/edit",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-certificate/edit"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-appointments/list",
+      "perm": "association.members.read",
+      "raw": "subscription/*/medical-appointments/list"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-appointments/add",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-appointments/add"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/*/medical-appointments/*/delete",
+      "perm": "association.members.update",
+      "raw": "subscription/*/medical-appointments/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/import/upload",
+      "perm": "association.members.create",
+      "raw": "subscription/import/upload"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/import/status",
+      "perm": "association.members.read",
+      "raw": "subscription/import/status"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/add",
+      "perm": "association.members.create",
+      "raw": "subscription/associates-draft/add"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/list",
+      "perm": "association.members.read",
+      "raw": "subscription/associates-draft/list"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/list/approve",
+      "perm": "association.members.create",
+      "raw": "subscription/associates-draft/list/approve"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/*/edit",
+      "perm": "association.members.update",
+      "raw": "subscription/associates-draft/*/edit"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/*/delete",
+      "perm": "association.members.delete",
+      "raw": "subscription/associates-draft/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/associates-draft/bulk-delete",
+      "perm": "association.members.delete",
+      "raw": "subscription/associates-draft/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/sign",
+      "perm": "association.members.update",
+      "raw": "subscription/sign"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/calculate-tax-code",
+      "perm": "association.members.read",
+      "raw": "subscription/calculate-tax-code"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/memberships/list",
+      "perm": "association.members.read",
+      "raw": "subscription/memberships/list"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/memberships/add",
+      "perm": "association.members.create",
+      "raw": "subscription/memberships/add"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/memberships/*/update",
+      "perm": "association.members.update",
+      "raw": "subscription/memberships/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/memberships/*/delete",
+      "perm": "association.members.delete",
+      "raw": "subscription/memberships/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/list",
+      "perm": "association.members.read",
+      "raw": "subscription/tags/list"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/add",
+      "perm": "association.members.update",
+      "raw": "subscription/tags/add"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/*/update",
+      "perm": "association.members.update",
+      "raw": "subscription/tags/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/*/delete",
+      "perm": "association.members.update",
+      "raw": "subscription/tags/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/*/assign/*",
+      "perm": "association.members.update",
+      "raw": "subscription/tags/*/assign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "subscription/tags/*/unassign/*",
+      "perm": "association.members.update",
+      "raw": "subscription/tags/*/unassign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "course/list",
+      "perm": "association.courses.read",
+      "raw": "course/list"
+    },
+    {
+      "method": "ANY",
+      "path": "course/add",
+      "perm": "association.courses.create",
+      "raw": "course/add"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/update",
+      "perm": "association.courses.update",
+      "raw": "course/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/enable",
+      "perm": "association.courses.update",
+      "raw": "course/*/enable"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/disable",
+      "perm": "association.courses.update",
+      "raw": "course/*/disable"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/delete",
+      "perm": "association.courses.delete",
+      "raw": "course/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/pin",
+      "perm": "association.courses.update",
+      "raw": "course/*/pin"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/overview/*/delete",
+      "perm": "association.courses.update",
+      "raw": "course/*/overview/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/overview/*/add",
+      "perm": "association.courses.update",
+      "raw": "course/*/overview/*/add"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/overview/*/update",
+      "perm": "association.courses.update",
+      "raw": "course/*/overview/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/calendar",
+      "perm": "association.courses.read",
+      "raw": "course/*/calendar"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/calendar/update",
+      "perm": "association.courses.update",
+      "raw": "course/*/calendar/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/attendees",
+      "perm": "association.courses.attendance.read",
+      "raw": "course/*/attendees"
+    },
+    {
+      "method": "ANY",
+      "path": "course/*/attendees/*/update",
+      "perm": "association.courses.attendance.update",
+      "raw": "course/*/attendees/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course-subscriptions/list",
+      "perm": "association.courses.read",
+      "raw": "course-subscriptions/list"
+    },
+    {
+      "method": "ANY",
+      "path": "course-subscriptions/add",
+      "perm": "association.courses.create",
+      "raw": "course-subscriptions/add"
+    },
+    {
+      "method": "ANY",
+      "path": "course-subscriptions/*/update",
+      "perm": "association.courses.update",
+      "raw": "course-subscriptions/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course-subscriptions/*/delete",
+      "perm": "association.courses.delete",
+      "raw": "course-subscriptions/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "course-subscriptions/bulk-delete",
+      "perm": "association.courses.delete",
+      "raw": "course-subscriptions/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "course-installment/*/make-payment",
+      "perm": "association.courses.update",
+      "raw": "course-installment/*/make-payment"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/list",
+      "perm": "association.courses.read",
+      "raw": "course/tags/list"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/add",
+      "perm": "association.courses.update",
+      "raw": "course/tags/add"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/*/update",
+      "perm": "association.courses.update",
+      "raw": "course/tags/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/*/delete",
+      "perm": "association.courses.update",
+      "raw": "course/tags/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/*/assign/*",
+      "perm": "association.courses.update",
+      "raw": "course/tags/*/assign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "course/tags/*/unassign/*",
+      "perm": "association.courses.update",
+      "raw": "course/tags/*/unassign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "course/locations/list",
+      "perm": "association.courses.read",
+      "raw": "course/locations/list"
+    },
+    {
+      "method": "ANY",
+      "path": "course/locations/add",
+      "perm": "association.courses.create",
+      "raw": "course/locations/add"
+    },
+    {
+      "method": "ANY",
+      "path": "course/locations/*/update",
+      "perm": "association.courses.update",
+      "raw": "course/locations/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "course/locations/*/delete",
+      "perm": "association.courses.delete",
+      "raw": "course/locations/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/list",
+      "perm": "association.campsandretreats.read",
+      "raw": "camps-and-retreats/list"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/add",
+      "perm": "association.campsandretreats.create",
+      "raw": "camps-and-retreats/add"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/update",
+      "perm": "association.campsandretreats.update",
+      "raw": "camps-and-retreats/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/delete",
+      "perm": "association.campsandretreats.delete",
+      "raw": "camps-and-retreats/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/info",
+      "perm": "association.campsandretreats.read",
+      "raw": "camps-and-retreats/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/subscriptions/list",
+      "perm": "association.campsandretreats.read",
+      "raw": "camps-and-retreats/*/subscriptions/list"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/subscriptions/add",
+      "perm": "association.campsandretreats.create",
+      "raw": "camps-and-retreats/*/subscriptions/add"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/subscriptions/update",
+      "perm": "association.campsandretreats.update",
+      "raw": "camps-and-retreats/*/subscriptions/update"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/*/subscriptions/delete",
+      "perm": "association.campsandretreats.delete",
+      "raw": "camps-and-retreats/*/subscriptions/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/add",
+      "perm": "association.campsandretreats.create",
+      "raw": "camps-and-retreats/periods/add"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/*/update",
+      "perm": "association.campsandretreats.update",
+      "raw": "camps-and-retreats/periods/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/*/delete",
+      "perm": "association.campsandretreats.delete",
+      "raw": "camps-and-retreats/periods/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/*/info",
+      "perm": "association.campsandretreats.read",
+      "raw": "camps-and-retreats/periods/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/services/add",
+      "perm": "association.campsandretreats.create",
+      "raw": "camps-and-retreats/periods/services/add"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/services/*/update",
+      "perm": "association.campsandretreats.update",
+      "raw": "camps-and-retreats/periods/services/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "camps-and-retreats/periods/services/*/delete",
+      "perm": "association.campsandretreats.delete",
+      "raw": "camps-and-retreats/periods/services/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/list",
+      "perm": "association.carnet.read",
+      "raw": "carnet/list"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/add",
+      "perm": "association.carnet.create",
+      "raw": "carnet/add"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/info",
+      "perm": "association.carnet.read",
+      "raw": "carnet/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/update",
+      "perm": "association.carnet.update",
+      "raw": "carnet/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/delete",
+      "perm": "association.carnet.delete",
+      "raw": "carnet/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/assign/*",
+      "perm": "association.carnet.update",
+      "raw": "carnet/*/assign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/replace/*",
+      "perm": "association.carnet.update",
+      "raw": "carnet/*/replace/*"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet/*/unassign/*",
+      "perm": "association.carnet.update",
+      "raw": "carnet/*/unassign/*"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/list",
+      "perm": "association.carnet.read",
+      "raw": "carnet-subscription/list"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/*/enable",
+      "perm": "association.carnet.update",
+      "raw": "carnet-subscription/*/enable"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/*/disable",
+      "perm": "association.carnet.update",
+      "raw": "carnet-subscription/*/disable"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/*/update",
+      "perm": "association.carnet.update",
+      "raw": "carnet-subscription/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/*/topup",
+      "perm": "association.carnet.update",
+      "raw": "carnet-subscription/*/topup"
+    },
+    {
+      "method": "ANY",
+      "path": "carnet-subscription/*/delete/*",
+      "perm": "association.carnet.delete",
+      "raw": "carnet-subscription/*/delete/*"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/list",
+      "perm": "association.instructor.read",
+      "raw": "instructor/list"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/report",
+      "perm": "association.instructor.read",
+      "raw": "instructor/report"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/add",
+      "perm": "association.instructor.create",
+      "raw": "instructor/add"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/info",
+      "perm": "association.instructor.read",
+      "raw": "instructor/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/update",
+      "perm": "association.instructor.update",
+      "raw": "instructor/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/delete",
+      "perm": "association.instructor.delete",
+      "raw": "instructor/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/list",
+      "perm": "association.instructor.hours.read",
+      "raw": "instructor/*/hours/list"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/calculate",
+      "perm": "association.instructor.hours.read",
+      "raw": "instructor/*/hours/calculate"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/add",
+      "perm": "association.instructor.hours.create",
+      "raw": "instructor/*/hours/add"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/add/compensation",
+      "perm": "association.instructor.hours.create",
+      "raw": "instructor/*/hours/add/compensation"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/*/update",
+      "perm": "association.instructor.hours.update",
+      "raw": "instructor/*/hours/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "instructor/*/hours/*/delete",
+      "perm": "association.instructor.hours.delete",
+      "raw": "instructor/*/hours/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "attendance/*/mark",
+      "perm": "association.courses.attendance.update",
+      "raw": "attendance/*/mark"
+    },
+    {
+      "method": "ANY",
+      "path": "attendance-day/*/delete",
+      "perm": "association.courses.attendance.update",
+      "raw": "attendance-day/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "attendance-day/*/mark-absent",
+      "perm": "association.courses.attendance.update",
+      "raw": "attendance-day/*/mark-absent"
+    },
+    {
+      "method": "ANY",
+      "path": "calendar/events/export",
+      "perm": "association.calendar.read",
+      "raw": "calendar/events/export"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/list",
+      "perm": "association.modules.read",
+      "raw": "modules/list"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/add",
+      "perm": "association.modules.create",
+      "raw": "modules/add"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/check-link",
+      "perm": "association.modules.read",
+      "raw": "modules/check-link"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/update",
+      "perm": "association.modules.update",
+      "raw": "modules/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/delete",
+      "perm": "association.modules.delete",
+      "raw": "modules/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/info",
+      "perm": "association.modules.read",
+      "raw": "modules/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/overview",
+      "perm": "association.modules.read",
+      "raw": "modules/*/overview"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/response/add",
+      "perm": "association.modules.create",
+      "raw": "modules/*/response/add"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/*/export",
+      "perm": "association.modules.read",
+      "raw": "modules/*/export"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/response/*/approve",
+      "perm": "association.modules.update",
+      "raw": "modules/response/*/approve"
+    },
+    {
+      "method": "ANY",
+      "path": "modules/response/*/delete",
+      "perm": "association.modules.delete",
+      "raw": "modules/response/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "templates/list",
+      "perm": "association.templates.read",
+      "raw": "templates/list"
+    },
+    {
+      "method": "ANY",
+      "path": "templates/add",
+      "perm": "association.templates.create",
+      "raw": "templates/add"
+    },
+    {
+      "method": "ANY",
+      "path": "templates/*/update",
+      "perm": "association.templates.update",
+      "raw": "templates/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "templates/*/delete",
+      "perm": "association.templates.delete",
+      "raw": "templates/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "templates/bulk-delete",
+      "perm": "association.templates.delete",
+      "raw": "templates/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "folders/list",
+      "perm": "association.archive.read",
+      "raw": "folders/list"
+    },
+    {
+      "method": "ANY",
+      "path": "folders/add",
+      "perm": "association.archive.update",
+      "raw": "folders/add"
+    },
+    {
+      "method": "ANY",
+      "path": "folders/*/update",
+      "perm": "association.archive.update",
+      "raw": "folders/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "folders/*/delete",
+      "perm": "association.archive.update",
+      "raw": "folders/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "folders/*/move",
+      "perm": "association.archive.update",
+      "raw": "folders/*/move"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/list",
+      "perm": "association.archive.read",
+      "raw": "documents/list"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/add",
+      "perm": "association.archive.update",
+      "raw": "documents/add"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/*/update",
+      "perm": "association.archive.update",
+      "raw": "documents/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/*/delete",
+      "perm": "association.archive.update",
+      "raw": "documents/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/*/move",
+      "perm": "association.archive.update",
+      "raw": "documents/*/move"
+    },
+    {
+      "method": "ANY",
+      "path": "documents/bulk-delete",
+      "perm": "association.archive.update",
+      "raw": "documents/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/list",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/list"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/stats",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/stats"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/add",
+      "perm": "bookeeping.payments.create",
+      "raw": "payment/add"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/sign",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/sign"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/simulation/partial-quotes",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/simulation/partial-quotes"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/simulation/partial-quotes-apply",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/simulation/partial-quotes-apply"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/list/export",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/list/export"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/update",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/request",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/*/request"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/info",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/approve",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/*/approve"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/cancel",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/*/cancel"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/delete",
+      "perm": "bookeeping.payments.delete",
+      "raw": "payment/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/archive",
+      "perm": "bookeeping.payments.archive.update",
+      "raw": "payment/*/archive"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/*/generate-invoice",
+      "perm": "bookeeping.documents.invoices.create",
+      "raw": "payment/*/generate-invoice"
+    },
+    {
+      "method": "ANY",
+      "path": "payment-bulk/archive",
+      "perm": "bookeeping.payments.archive.update",
+      "raw": "payment-bulk/archive"
+    },
+    {
+      "method": "ANY",
+      "path": "payment-bulk/delete",
+      "perm": "bookeeping.payments.delete",
+      "raw": "payment-bulk/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/category/list",
+      "perm": "bookeeping.payments.read",
+      "raw": "payment/category/list"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/category/add",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/category/add"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/category/*/update",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/category/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "payment/category/*/delete",
+      "perm": "bookeeping.payments.update",
+      "raw": "payment/category/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/list",
+      "perm": "bookeeping.documents.invoices.read",
+      "raw": "invoice/list"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/list/archived",
+      "perm": "bookeeping.documents.invoices.archive.read",
+      "raw": "invoice/list/archived"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/list/export",
+      "perm": "bookeeping.documents.invoices.read",
+      "raw": "invoice/list/export"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/*/update",
+      "perm": "bookeeping.documents.invoices.update",
+      "raw": "invoice/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/*/delete",
+      "perm": "bookeeping.documents.invoices.delete",
+      "raw": "invoice/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice/*/send",
+      "perm": "bookeeping.documents.invoices.update",
+      "raw": "invoice/*/send"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-bulk/delete",
+      "perm": "bookeeping.documents.invoices.delete",
+      "raw": "invoice-bulk/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-bulk/archive",
+      "perm": "bookeeping.documents.invoices.archive.update",
+      "raw": "invoice-bulk/archive"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-suppliers/list",
+      "perm": "bookeeping.documents.supplierinvoices.read",
+      "raw": "invoice-suppliers/list"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-suppliers/stats",
+      "perm": "bookeeping.documents.supplierinvoices.read",
+      "raw": "invoice-suppliers/stats"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-suppliers/add",
+      "perm": "bookeeping.documents.supplierinvoices.create",
+      "raw": "invoice-suppliers/add"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-suppliers/*/update",
+      "perm": "bookeeping.documents.supplierinvoices.update",
+      "raw": "invoice-suppliers/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-suppliers/*/delete",
+      "perm": "bookeeping.documents.supplierinvoices.delete",
+      "raw": "invoice-suppliers/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-customers/list",
+      "perm": "bookeeping.documents.clientinvoices.read",
+      "raw": "invoice-customers/list"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-customers/stats",
+      "perm": "bookeeping.documents.clientinvoices.read",
+      "raw": "invoice-customers/stats"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-customers/add",
+      "perm": "bookeeping.documents.clientinvoices.create",
+      "raw": "invoice-customers/add"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-customers/*/update",
+      "perm": "bookeeping.documents.clientinvoices.update",
+      "raw": "invoice-customers/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "invoice-customers/*/delete",
+      "perm": "bookeeping.documents.clientinvoices.delete",
+      "raw": "invoice-customers/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/list",
+      "perm": "bookeeping.management.suppliers.read",
+      "raw": "supplier/list"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/*/info",
+      "perm": "bookeeping.management.suppliers.read",
+      "raw": "supplier/*/info"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/add",
+      "perm": "bookeeping.management.suppliers.create",
+      "raw": "supplier/add"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/*/update",
+      "perm": "bookeeping.management.suppliers.update",
+      "raw": "supplier/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/*/delete",
+      "perm": "bookeeping.management.suppliers.delete",
+      "raw": "supplier/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "supplier/bulk-delete",
+      "perm": "bookeeping.management.suppliers.delete",
+      "raw": "supplier/bulk-delete"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/archived",
+      "perm": "bookeeping.management.balancesheet.read",
+      "raw": "balance-sheet/archived"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts/list",
+      "perm": "bookeeping.management.accounts.read",
+      "raw": "balance-sheet/accounts/list"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts/add",
+      "perm": "bookeeping.management.accounts.create",
+      "raw": "balance-sheet/accounts/add"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts/*/update",
+      "perm": "bookeeping.management.accounts.update",
+      "raw": "balance-sheet/accounts/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts/*/delete",
+      "perm": "bookeeping.management.accounts.delete",
+      "raw": "balance-sheet/accounts/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts-transfer/list",
+      "perm": "bookeeping.management.accountstransfers.read",
+      "raw": "balance-sheet/accounts-transfer/list"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts-transfer/add",
+      "perm": "bookeeping.management.accountstransfers.create",
+      "raw": "balance-sheet/accounts-transfer/add"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts-transfer/*/update",
+      "perm": "bookeeping.management.accountstransfers.update",
+      "raw": "balance-sheet/accounts-transfer/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "balance-sheet/accounts-transfer/*/delete",
+      "perm": "bookeeping.management.accountstransfers.delete",
+      "raw": "balance-sheet/accounts-transfer/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "collaborators/list",
+      "perm": "other.users.collaborators.read",
+      "raw": "collaborators/list"
+    },
+    {
+      "method": "ANY",
+      "path": "collaborators/add",
+      "perm": "other.users.collaborators.create",
+      "raw": "collaborators/add"
+    },
+    {
+      "method": "ANY",
+      "path": "collaborators/*/update",
+      "perm": "other.users.collaborators.update",
+      "raw": "collaborators/*/update"
+    },
+    {
+      "method": "ANY",
+      "path": "collaborators/*/delete",
+      "perm": "other.users.collaborators.delete",
+      "raw": "collaborators/*/delete"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/update",
+      "perm": "other.settings.update",
+      "raw": "profile/update"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/associates/*/disable",
+      "perm": "other.users.connectedathletes.delete",
+      "raw": "profile/associates/*/disable"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/associates/course/*",
+      "perm": "other.users.connectedathletes.read",
+      "raw": "profile/associates/course/*"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/associates/sport-association/*",
+      "perm": "other.users.connectedathletes.read",
+      "raw": "profile/associates/sport-association/*"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/image/*",
+      "perm": "other.settings.update",
+      "raw": "profile/image/*"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/update/password",
+      "perm": "other.settings.update",
+      "raw": "profile/update/password"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/info",
+      "perm": "other.settings.read",
+      "raw": "profile/info"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/settings/tables",
+      "perm": "other.settings.update",
+      "raw": "profile/settings/tables"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/integrations",
+      "perm": "other.settings.read",
+      "raw": "profile/integrations"
+    },
+    {
+      "method": "ANY",
+      "path": "profile/update/subscription/template",
+      "perm": "other.settings.update",
+      "raw": "profile/update/subscription/template"
+    },
+    {
+      "method": "ANY",
+      "path": "onboarding/update",
+      "perm": "other.settings.update",
+      "raw": "onboarding/update"
+    },
+    {
+      "method": "ANY",
+      "path": "testimonials/add",
+      "perm": "other.settings.update",
+      "raw": "testimonials/add"
+    },
+    {
+      "method": "ANY",
+      "path": "testimonials/update",
+      "perm": "other.settings.update",
+      "raw": "testimonials/update"
+    },
+    {
+      "method": "ANY",
+      "path": "google/check",
+      "perm": "other.settings.read",
+      "raw": "google/check"
+    },
+    {
+      "method": "ANY",
+      "path": "google/oauth2callback",
+      "perm": "other.settings.update",
+      "raw": "google/oauth2callback"
+    },
+    {
+      "method": "ANY",
+      "path": "google/calendar/list",
+      "perm": "association.calendar.read",
+      "raw": "google/calendar/list"
+    },
+    {
+      "method": "ANY",
+      "path": "google/calendar/*/export",
+      "perm": "association.calendar.read",
+      "raw": "google/calendar/*/export"
+    },
+    {
+      "method": "ANY",
+      "path": "printing/generate",
+      "perm": "association.members.read",
+      "raw": "printing/generate"
+    },
+    {
+      "method": "ANY",
+      "path": "two-fa/info",
+      "perm": "other.settings.read",
+      "raw": "two-fa/info"
+    },
+    {
+      "method": "ANY",
+      "path": "two-fa/setup",
+      "perm": "other.settings.update",
+      "raw": "two-fa/setup"
+    },
+    {
+      "method": "ANY",
+      "path": "two-fa/update",
+      "perm": "other.settings.update",
+      "raw": "two-fa/update"
+    }
+  ],
+  "permissionExclusions": [
+    "oauth2/login",
+    "oauth2/signup",
+    "oauth2/refresh-token",
+    "oauth2/reset",
+    "oauth2/check/email",
+    "oauth2/check/username",
+    "oauth2/partial-signup",
+    "oauth2/delete-account",
+    "stripe/webhook",
+    "stripe/on-boarding",
+    "stripe/complete-on-boarding",
+    "stripe/info",
+    "stripe/pay/*",
+    "stripe/multiple-pay",
+    "health",
+    "check-inconsistencies",
+    "sport-associations/list",
+    "sport-associations/*/admin-update",
+    "subscription/generate-token-link",
+    "subscription/validate-token-link-and-get-subscriptions",
+    "subscription/get-associations-for-federation",
+    "search/profile/*",
+    "billing/active-plan",
+    "billing/checkout",
+    "signature/convert/picture",
+    "export-all-data"
+  ],
+  "frontendRoutes": [
+    {
+      "route": "",
+      "routeRaw": "/",
+      "permissions": [
+        "association.dashboard.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "calendar",
+      "routeRaw": "/calendar",
+      "permissions": [
+        "association.calendar.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "connected-collaborators",
+      "routeRaw": "/connected-collaborators",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "profile",
+      "routeRaw": "/profile",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "search",
+      "routeRaw": "/search",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "search/profile/*?/*?",
+      "routeRaw": "/search/profile/:username?/:subscribe?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "personas/list",
+      "routeRaw": "/personas/list",
+      "permissions": [
+        "association.personas.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/list",
+      "routeRaw": "/members/list",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/members-book",
+      "routeRaw": "/members/members-book",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/list-draft",
+      "routeRaw": "/members/list-draft",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/list/detail/*/*?",
+      "routeRaw": "/members/list/detail/:subscriptionId/:page?",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "card/*/*?/*?",
+      "routeRaw": "/card/:subscriptionId/:token?/:print?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "members/archive",
+      "routeRaw": "/members/archive",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/import",
+      "routeRaw": "/members/import",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/modules",
+      "routeRaw": "/members/modules",
+      "permissions": [
+        "association.modules.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/modules/composer/*?",
+      "routeRaw": "/members/modules/composer/:id?",
+      "permissions": [
+        "association.modules.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/modules/overview/*?",
+      "routeRaw": "/members/modules/overview/:module_id?",
+      "permissions": [
+        "association.modules.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "forms/*/*?",
+      "routeRaw": "/forms/:custom_link/:response_id?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "members/add",
+      "routeRaw": "/members/add",
+      "permissions": [
+        "association.members.create"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/subscription/template",
+      "routeRaw": "/members/subscription/template",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "members/subscription/share-module-link",
+      "routeRaw": "/members/subscription/share-module-link",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "payment/list/*?",
+      "routeRaw": "/payment/list/:id?",
+      "permissions": [
+        "bookeeping.payments.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "payment/archive",
+      "routeRaw": "/payment/archive",
+      "permissions": [
+        "bookeeping.payments.archive.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "payment/category/list",
+      "routeRaw": "/payment/category/list",
+      "permissions": [
+        "bookeeping.payments.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "subscribe/*?",
+      "routeRaw": "/subscribe/:sportAssociationUsername?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscribe/*/*",
+      "routeRaw": "/subscribe/:sportAssociationUsername/:preregistration",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscribe-multiple/*?/*?/*?",
+      "routeRaw": "/subscribe-multiple/:sportAssociationUsername?/:preregistration?/:token?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "invite/*",
+      "routeRaw": "/invite/:token",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "error",
+      "routeRaw": "/error",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/list/*?",
+      "routeRaw": "/subscription/list/:tab?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "carnet/list",
+      "routeRaw": "/carnet/list",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/detail/*",
+      "routeRaw": "/subscription/detail/:subscriptionId",
+      "permissions": [
+        "association.members.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/list/detail/*/attendance?",
+      "routeRaw": "/subscription/list/detail/:subscriptionId/attendance?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/list/detail/*/calendar?",
+      "routeRaw": "/subscription/list/detail/:subscriptionId/calendar?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/list/detail/*/carnet?",
+      "routeRaw": "/subscription/list/detail/:subscriptionId/carnet?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "invoice/list",
+      "routeRaw": "/invoice/list",
+      "permissions": [
+        "bookeeping.documents.invoices.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "invoice/archive",
+      "routeRaw": "/invoice/archive",
+      "permissions": [
+        "bookeeping.documents.invoices.archive.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "customers-invoice/list",
+      "routeRaw": "/customers-invoice/list",
+      "permissions": [
+        "bookeeping.documents.clientinvoices.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "suppliers-invoice/list",
+      "routeRaw": "/suppliers-invoice/list",
+      "permissions": [
+        "bookeeping.documents.supplierinvoices.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "balance-sheet/list",
+      "routeRaw": "/balance-sheet/list",
+      "permissions": [
+        "bookeeping.management.balancesheet.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "accounting/list",
+      "routeRaw": "/accounting/list",
+      "permissions": [
+        "bookeeping.management.accounts.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "suppliers-and-customers/list",
+      "routeRaw": "/suppliers-and-customers/list",
+      "permissions": [
+        "bookeeping.management.suppliers.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "accounting-transfer/list",
+      "routeRaw": "/accounting-transfer/list",
+      "permissions": [
+        "bookeeping.management.accountstransfers.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/list",
+      "routeRaw": "/course/list",
+      "permissions": [
+        "association.courses.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/archive",
+      "routeRaw": "/course/archive",
+      "permissions": [
+        "association.courses.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/locations",
+      "routeRaw": "/course/locations",
+      "permissions": [
+        "association.courses.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "camps-and-retreats/forms/*?",
+      "routeRaw": "/camps-and-retreats/forms/:id?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "course/camps-and-retreats/list",
+      "routeRaw": "/course/camps-and-retreats/list",
+      "permissions": [
+        "association.campsandretreats.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/camps-and-retreats/overview/*?",
+      "routeRaw": "/course/camps-and-retreats/overview/:id?",
+      "permissions": [
+        "association.campsandretreats.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/camps-and-retreats/overview/*?/detail/*?",
+      "routeRaw": "/course/camps-and-retreats/overview/:id?/detail/:periodId?",
+      "permissions": [
+        "association.campsandretreats.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/carnet/list",
+      "routeRaw": "/course/carnet/list",
+      "permissions": [
+        "association.carnet.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/carnet/list/detail/*/*?",
+      "routeRaw": "/course/carnet/list/detail/:carnetId/:page?",
+      "permissions": [
+        "association.carnet.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/instructor/list",
+      "routeRaw": "/course/instructor/list",
+      "permissions": [
+        "association.instructor.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/instructor/info/*",
+      "routeRaw": "/course/instructor/info/:id",
+      "permissions": [
+        "association.instructor.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/instructor/add",
+      "routeRaw": "/course/instructor/add",
+      "permissions": [
+        "association.instructor.create"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "archive",
+      "routeRaw": "/archive",
+      "permissions": [
+        "association.archive.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "audit/list",
+      "routeRaw": "/audit/list",
+      "permissions": [
+        "other.audit.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "templates/list",
+      "routeRaw": "/templates/list",
+      "permissions": [
+        "association.templates.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "report",
+      "routeRaw": "/report",
+      "permissions": [
+        "association.report.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "saved-reports",
+      "routeRaw": "/saved-reports",
+      "permissions": [
+        "association.report.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/carnet/add",
+      "routeRaw": "/course/carnet/add",
+      "permissions": [
+        "association.carnet.create"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "course/overview/*?/*?",
+      "routeRaw": "/course/overview/:id?/:page?",
+      "permissions": [
+        "association.courses.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "communication/messages",
+      "routeRaw": "/communication/messages",
+      "permissions": [
+        "association.communication.messages.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "communication/automation",
+      "routeRaw": "/communication/automation",
+      "permissions": [
+        "association.communication.workflows.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "communication/automation/editor/*?",
+      "routeRaw": "/communication/automation/editor/:workflow_id?",
+      "permissions": [
+        "association.communication.workflows.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "communication/configuration",
+      "routeRaw": "/communication/configuration",
+      "permissions": [
+        "association.communication.settings.read"
+      ],
+      "hasExplicitPermissionCheck": true,
+      "hasComponent": true
+    },
+    {
+      "route": "shared-calendar/*?",
+      "routeRaw": "/shared-calendar/:id?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "third-party-licenses",
+      "routeRaw": "/third-party-licenses",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "login",
+      "routeRaw": "/login",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "stripe/onboarding",
+      "routeRaw": "/stripe/onboarding",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "stripe/onboarded",
+      "routeRaw": "/stripe/onboarded",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "stripe/pay/*?/*?",
+      "routeRaw": "/stripe/pay/:id?/:one_fee_payment?",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "stripe/cart-pay",
+      "routeRaw": "/stripe/cart-pay",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "stripe/payment/done",
+      "routeRaw": "/stripe/payment/done",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "update-tutors",
+      "routeRaw": "/update-tutors",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription",
+      "routeRaw": "/subscription",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "billing-checkout",
+      "routeRaw": "/billing-checkout",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscription/upgrade",
+      "routeRaw": "/subscription/upgrade",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "tools/sport-associations-manager",
+      "routeRaw": "/tools/sport-associations-manager",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "welcome",
+      "routeRaw": "/welcome",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "attendance-scanner-mode",
+      "routeRaw": "/attendance-scanner-mode",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "email-builder/*/*",
+      "routeRaw": "/email-builder/:id/:workflow_id",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "subscribefamily/*/*",
+      "routeRaw": "/subscribefamily/:sportAssociationUsername/:token",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "reset",
+      "routeRaw": "/reset",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    },
+    {
+      "route": "*",
+      "routeRaw": "*",
+      "permissions": [],
+      "hasExplicitPermissionCheck": false,
+      "hasComponent": true
+    }
+  ],
+  "unmappedBackend": [
+    "",
+    "api-auth",
+    "association/export/active",
+    "association/export/delete",
+    "association/export/list",
+    "association/export/start",
+    "association/export/status",
+    "association/import/start",
+    "association/import/status",
+    "association/import/validate",
+    "audit-logs/*/detail",
+    "audit-logs/list",
+    "audit-logs/models",
+    "audit-logs/stats",
+    "balance-sheet",
+    "blog",
+    "calendar/events",
+    "calendar/events/update",
+    "chat/test",
+    "communications/email-logs/list",
+    "communications/messages/*/delete",
+    "communications/messages/*/detail",
+    "communications/messages/add",
+    "communications/messages/list",
+    "communications/send/email",
+    "communications/send/post",
+    "communications/settings/smtp/info",
+    "communications/settings/smtp/update",
+    "communications/settings/smtp/verify",
+    "communications/workflows/*/delete",
+    "communications/workflows/*/details",
+    "communications/workflows/*/update",
+    "communications/workflows/add",
+    "communications/workflows/list",
+    "config",
+    "configure",
+    "course-locations",
+    "course-subscriptions",
+    "course/*/overview",
+    "document/*/delete",
+    "document/compensation/*",
+    "document/compensation/*/view",
+    "document/einvoice/*",
+    "document/einvoice/*/view",
+    "document/invoice/*",
+    "document/invoice/*/view",
+    "document/medical-appointment/*",
+    "document/medical-appointment/*/view",
+    "document/medical/certificate",
+    "document/retrieve/*",
+    "document/subscription/*",
+    "document/subscription/*/view",
+    "document/subscription/preview",
+    "document/template/*",
+    "document/template/*/view",
+    "documents",
+    "folders",
+    "google/calendar/config",
+    "healthz",
+    "instance",
+    "invoice/*/invoice-suppliers/list/export",
+    "logo",
+    "logo.png",
+    "manifest.json",
+    "modules/*/duplicate",
+    "modules/response/*/add-attachment",
+    "payment/bulk-add",
+    "personas",
+    "personas-subscriptions",
+    "personas/all-with-subscriptions",
+    "profile/settings",
+    "readyz",
+    "reconfigure",
+    "saved-reports/*/delete",
+    "saved-reports/*/info",
+    "saved-reports/*/run",
+    "saved-reports/*/update",
+    "saved-reports/add",
+    "saved-reports/list",
+    "schema",
+    "schema/redoc",
+    "schema/swagger-ui",
+    "setup-token/validate",
+    "silk",
+    "status",
+    "subscription/*/card",
+    "subscription/list",
+    "subscription/memberships",
+    "templates"
+  ],
+  "permissionsWithoutBackend": [
+    "profile/associates/*/disable"
+  ]
+}

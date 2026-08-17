@@ -1,0 +1,575 @@
+# Backend Route Inventory (literal)
+
+## application.py
+- 
+- association/export/active
+- association/export/delete
+- association/export/list
+- association/export/start
+- association/export/status
+- association/import/start
+- association/import/status
+- association/import/validate
+- attendance-day/<str:uid>/delete
+- attendance-day/<str:uid>/mark-absent
+- attendance/<str:uid>/mark
+- audit-logs/<int:log_id>/detail
+- audit-logs/list
+- audit-logs/models
+- audit-logs/stats
+- balance-sheet
+- balance-sheet/accounts-transfer/<str:uid>/delete
+- balance-sheet/accounts-transfer/<str:uid>/update
+- balance-sheet/accounts-transfer/add
+- balance-sheet/accounts-transfer/list
+- balance-sheet/accounts/<str:uid>/delete
+- balance-sheet/accounts/<str:uid>/update
+- balance-sheet/accounts/add
+- balance-sheet/accounts/list
+- balance-sheet/archived
+- billing/active-plan
+- billing/checkout
+- calendar/events
+- calendar/events/export
+- calendar/events/update
+- camps-and-retreats/<str:uid>/delete
+- camps-and-retreats/<str:uid>/info
+- camps-and-retreats/<str:uid>/subscriptions/add
+- camps-and-retreats/<str:uid>/subscriptions/delete
+- camps-and-retreats/<str:uid>/subscriptions/list
+- camps-and-retreats/<str:uid>/subscriptions/update
+- camps-and-retreats/<str:uid>/update
+- camps-and-retreats/add
+- camps-and-retreats/list
+- camps-and-retreats/periods/<str:uid>/delete
+- camps-and-retreats/periods/<str:uid>/info
+- camps-and-retreats/periods/<str:uid>/update
+- camps-and-retreats/periods/add
+- camps-and-retreats/periods/services/<str:uid>/delete
+- camps-and-retreats/periods/services/<str:uid>/update
+- camps-and-retreats/periods/services/add
+- carnet-subscription/<str:uid>/delete/<str:uid_course>
+- carnet-subscription/<str:uid>/disable
+- carnet-subscription/<str:uid>/enable
+- carnet-subscription/<str:uid>/topup
+- carnet-subscription/<str:uid>/update
+- carnet-subscription/list
+- carnet/<str:uid>/assign/<str:uid_subscription>
+- carnet/<str:uid>/delete
+- carnet/<str:uid>/info
+- carnet/<str:uid>/replace/<str:uid_subscription>
+- carnet/<str:uid>/unassign/<str:uid_subscription>
+- carnet/<str:uid>/update
+- carnet/add
+- carnet/list
+- check-inconsistencies
+- collaborators/<str:uid>/delete
+- collaborators/<str:uid>/update
+- collaborators/add
+- collaborators/list
+- course-installment/<str:uid>/make-payment
+- course-locations
+- course-subscriptions
+- course-subscriptions/<str:pk>/delete
+- course-subscriptions/<str:pk>/update
+- course-subscriptions/add
+- course-subscriptions/bulk-delete
+- course-subscriptions/list
+- course/<str:uid>/attendees
+- course/<str:uid>/attendees/<str:attendance_day_uid>/update
+- course/<str:uid>/calendar
+- course/<str:uid>/calendar/update
+- course/<str:uid>/delete
+- course/<str:uid>/disable
+- course/<str:uid>/enable
+- course/<str:uid>/overview
+- course/<str:uid>/overview/<str:uid_subscription>/add
+- course/<str:uid>/overview/<str:uid_subscription>/delete
+- course/<str:uid>/overview/<str:uid_subscription>/update
+- course/<str:uid>/pin
+- course/<str:uid>/update
+- course/add
+- course/list
+- course/locations/<str:pk>/delete
+- course/locations/<str:pk>/update
+- course/locations/add
+- course/locations/list
+- course/tags/<str:tag_id>/assign/<str:course_id>
+- course/tags/<str:tag_id>/delete
+- course/tags/<str:tag_id>/unassign/<str:course_id>
+- course/tags/<str:tag_id>/update
+- course/tags/add
+- course/tags/list
+- documents
+- documents/<str:pk>/delete
+- documents/<str:pk>/move
+- documents/<str:pk>/update
+- documents/add
+- documents/bulk-delete
+- documents/list
+- export-all-data
+- folders
+- folders/<str:pk>/delete
+- folders/<str:pk>/move
+- folders/<str:pk>/update
+- folders/add
+- folders/list
+- google/calendar/<str:course_id>/export
+- google/calendar/config
+- google/calendar/list
+- google/check
+- google/oauth2callback
+- instructor/<str:uid>/delete
+- instructor/<str:uid>/hours/<str:instructor_hours_id>/delete
+- instructor/<str:uid>/hours/<str:instructor_hours_id>/update
+- instructor/<str:uid>/hours/add
+- instructor/<str:uid>/hours/add/compensation
+- instructor/<str:uid>/hours/calculate
+- instructor/<str:uid>/hours/list
+- instructor/<str:uid>/info
+- instructor/<str:uid>/update
+- instructor/add
+- instructor/list
+- instructor/report
+- invoice-bulk/archive
+- invoice-bulk/delete
+- invoice-customers/<str:uid>/delete
+- invoice-customers/<str:uid>/update
+- invoice-customers/add
+- invoice-customers/list
+- invoice-customers/stats
+- invoice-suppliers/<str:uid>/delete
+- invoice-suppliers/<str:uid>/update
+- invoice-suppliers/add
+- invoice-suppliers/list
+- invoice-suppliers/stats
+- invoice/<str:uid>/delete
+- invoice/<str:uid>/invoice-suppliers/list/export
+- invoice/<str:uid>/send
+- invoice/<str:uid>/update
+- invoice/list
+- invoice/list/archived
+- invoice/list/export
+- modules/<str:custom_link>/info
+- modules/<str:module_id>/delete
+- modules/<str:module_id>/duplicate
+- modules/<str:module_id>/export
+- modules/<str:module_id>/overview
+- modules/<str:module_id>/response/add
+- modules/<str:module_id>/update
+- modules/add
+- modules/check-link
+- modules/list
+- modules/response/<str:module_response_id>/add-attachment
+- modules/response/<str:module_response_id>/approve
+- modules/response/<str:module_response_id>/delete
+- oauth2/check/email
+- oauth2/check/username
+- oauth2/delete-account
+- oauth2/login
+- oauth2/partial-signup
+- oauth2/refresh-token
+- oauth2/reset
+- oauth2/signup
+- onboarding/update
+- payment-bulk/archive
+- payment-bulk/delete
+- payment/<str:uid>/approve
+- payment/<str:uid>/archive
+- payment/<str:uid>/cancel
+- payment/<str:uid>/delete
+- payment/<str:uid>/generate-invoice
+- payment/<str:uid>/info
+- payment/<str:uid>/request
+- payment/<str:uid>/update
+- payment/add
+- payment/bulk-add
+- payment/category/<str:uid>/delete
+- payment/category/<str:uid>/update
+- payment/category/add
+- payment/category/list
+- payment/list
+- payment/list/export
+- payment/sign
+- payment/simulation/partial-quotes
+- payment/simulation/partial-quotes-apply
+- payment/stats
+- personas
+- personas-subscriptions
+- personas-subscriptions/<str:pk>/list
+- personas/<str:pk>/delete
+- personas/<str:pk>/info
+- personas/<str:pk>/recover
+- personas/<str:pk>/update
+- personas/add
+- personas/all
+- personas/all-tutors
+- personas/all-with-subscriptions
+- personas/bulk-delete
+- personas/list
+- printing/generate
+- profile/associates/course/<str:uid>
+- profile/associates/sport-association/<str:uid>
+- profile/image/<str:uid>
+- profile/info
+- profile/integrations
+- profile/settings
+- profile/settings/tables
+- profile/update
+- profile/update/password
+- profile/update/subscription/template
+- saved-reports/<str:pk>/delete
+- saved-reports/<str:pk>/info
+- saved-reports/<str:pk>/run
+- saved-reports/<str:pk>/update
+- saved-reports/add
+- saved-reports/list
+- search/profile/<str:username>
+- sport-associations/<uid>/admin-update
+- sport-associations/list
+- statistic/athlete-dashboard
+- statistic/dashboard
+- statistic/dashboard/layout
+- statistic/report
+- stripe/complete-on-boarding
+- stripe/info
+- stripe/multiple-pay
+- stripe/on-boarding
+- stripe/pay/<str:payment_id>
+- stripe/webhook
+- subscription/<str:uid>/approve
+- subscription/<str:uid>/archive
+- subscription/<str:uid>/attendance
+- subscription/<str:uid>/calendar
+- subscription/<str:uid>/card
+- subscription/<str:uid>/delete
+- subscription/<str:uid>/delete-document/<str:subscription_file_id>
+- subscription/<str:uid>/edit
+- subscription/<str:uid>/info
+- subscription/<str:uid>/medical-appointments/<str:medical_appointments_id>/delete
+- subscription/<str:uid>/medical-appointments/add
+- subscription/<str:uid>/medical-appointments/list
+- subscription/<str:uid>/medical-certificate/edit
+- subscription/<str:uid>/medical-certificate/send-email-reminder
+- subscription/<str:uid>/medical-certificate/set-certificate-expiration
+- subscription/<str:uid>/medical-certificate/upload
+- subscription/<str:uid>/payments
+- subscription/<str:uid>/reject
+- subscription/<str:uid>/transfer
+- subscription/<str:uid>/update
+- subscription/<str:uid>/upload-document
+- subscription/add
+- subscription/associates-draft/<str:uid>/delete
+- subscription/associates-draft/<str:uid>/edit
+- subscription/associates-draft/add
+- subscription/associates-draft/bulk-delete
+- subscription/associates-draft/list
+- subscription/associates-draft/list/approve
+- subscription/calculate-tax-code
+- subscription/generate-token-link
+- subscription/get-associations-for-federation
+- subscription/import/status
+- subscription/import/upload
+- subscription/list
+- subscription/list/all
+- subscription/list/archived
+- subscription/list/export
+- subscription/memberships
+- subscription/memberships/<str:pk>/delete
+- subscription/memberships/<str:pk>/update
+- subscription/memberships/add
+- subscription/memberships/list
+- subscription/renew
+- subscription/sign
+- subscription/tags/<str:tag_id>/assign/<str:subscription_id>
+- subscription/tags/<str:tag_id>/delete
+- subscription/tags/<str:tag_id>/unassign/<str:subscription_id>
+- subscription/tags/<str:tag_id>/update
+- subscription/tags/add
+- subscription/tags/list
+- subscription/validate-token-link-and-get-subscriptions
+- supplier/<str:uid>/delete
+- supplier/<str:uid>/info
+- supplier/<str:uid>/update
+- supplier/add
+- supplier/bulk-delete
+- supplier/list
+- templates
+- templates/<str:pk>/delete
+- templates/<str:pk>/update
+- templates/add
+- templates/bulk-delete
+- templates/list
+- testimonials/add
+- testimonials/update
+- two-fa/info
+- two-fa/setup
+- two-fa/update
+
+## communications.py
+- communications/email-logs/list
+- communications/messages/<str:message_id>/delete
+- communications/messages/<str:message_id>/detail
+- communications/messages/add
+- communications/messages/list
+- communications/send/email
+- communications/send/post
+- communications/settings/smtp/info
+- communications/settings/smtp/update
+- communications/settings/smtp/verify
+- communications/workflows/<str:workflow_id>/delete
+- communications/workflows/<str:workflow_id>/details
+- communications/workflows/<str:workflow_id>/update
+- communications/workflows/add
+- communications/workflows/list
+
+## docmanager.py
+- document/<str:uid>/delete
+- document/compensation/<str:uid>
+- document/compensation/<str:uid>/view/
+- document/einvoice/<str:uid>
+- document/einvoice/<str:uid>/view/
+- document/invoice/<str:uid>
+- document/invoice/<str:uid>/view/
+- document/medical-appointment/<str:uid>
+- document/medical-appointment/<str:uid>/view/
+- document/medical/certificate/
+- document/retrieve/<str:uid>
+- document/subscription/<str:uid>
+- document/subscription/<str:uid>/view/
+- document/subscription/preview/
+- document/template/<str:uid>
+- document/template/<str:uid>/view/
+
+## chat.py
+- chat/test/
+
+## instance.py
+- config
+- configure
+- logo
+- logo.png
+- manifest.json
+- reconfigure
+- setup-token/validate
+- status
+
+## core.py
+- 
+- api-auth/
+- blog/
+- healthz
+- instance/
+- readyz
+- schema/
+- schema/redoc/
+- schema/swagger-ui/
+- silk/
+
+## DRF Router registrations (application)
+
+- `course-locations` → CourseLocationViewSet (basename: course-location)
+- `folders` → FolderViewSet (basename: (inferred))
+- `documents` → DocumentArchiveViewSet (basename: (inferred))
+- `templates` → SportAssociationModuleTemplatesViewSet (basename: (inferred))
+- `subscription/memberships` → SubscriptionMembershipViewSet (basename: subscription-membership)
+- `course-subscriptions` → CourseSubscriptionViewSet (basename: course-subscription)
+- `personas` → AssociateViewSet (basename: persona)
+- `personas-subscriptions` → AssociateSubscriptionViewSet (basename: persona-subscriptions)
+
+## WebSocket routes
+- `/ws/notifications/`
+- `/ws/health/`
+- `/ws/updates/`
+- `/ws/agent/`
+
+# Frontend Route Inventory
+
+- Total routes: 85
+- Route entries with explicit permission checks:
+- / → `association.dashboard.read`
+- /calendar → `association.calendar.read`
+- /connected-collaborators → -
+- /profile → -
+- /search → -
+- /search/profile/:username?/:subscribe? → -
+- /personas/list → `association.personas.read`
+- /members/list → `association.members.read`
+- /members/members-book → `association.members.read`
+- /members/list-draft → `association.members.read`
+- /members/list/detail/:subscriptionId/:page? → `association.members.read`
+- /card/:subscriptionId/:token?/:print? → -
+- /members/archive → `association.members.read`
+- /members/import → `association.members.read`
+- /members/modules → `association.modules.read`
+- /members/modules/composer/:id? → `association.modules.read`
+- /members/modules/overview/:module_id? → `association.modules.read`
+- /forms/:custom_link/:response_id? → -
+- /members/add → `association.members.create`
+- /members/subscription/template → `association.members.read`
+- /members/subscription/share-module-link → `association.members.read`
+- /payment/list/:id? → `bookeeping.payments.read`
+- /payment/archive → `bookeeping.payments.archive.read`
+- /payment/category/list → `bookeeping.payments.read`
+- /subscribe/:sportAssociationUsername? → -
+- /subscribe/:sportAssociationUsername/:preregistration → -
+- /subscribe-multiple/:sportAssociationUsername?/:preregistration?/:token? → -
+- /invite/:token → -
+- /error → -
+- /subscription/list/:tab? → -
+- /carnet/list → -
+- /subscription/detail/:subscriptionId → `association.members.read`
+- /subscription/list/detail/:subscriptionId/attendance? → -
+- /subscription/list/detail/:subscriptionId/calendar? → -
+- /subscription/list/detail/:subscriptionId/carnet? → -
+- /invoice/list → `bookeeping.documents.invoices.read`
+- /invoice/archive → `bookeeping.documents.invoices.archive.read`
+- /customers-invoice/list → `bookeeping.documents.clientinvoices.read`
+- /suppliers-invoice/list → `bookeeping.documents.supplierinvoices.read`
+- /balance-sheet/list → `bookeeping.management.balancesheet.read`
+- /accounting/list → `bookeeping.management.accounts.read`
+- /suppliers-and-customers/list → `bookeeping.management.suppliers.read`
+- /accounting-transfer/list → `bookeeping.management.accountstransfers.read`
+- /course/list → `association.courses.read`
+- /course/archive → `association.courses.read`
+- /course/locations → `association.courses.read`
+- /camps-and-retreats/forms/:id? → -
+- /course/camps-and-retreats/list → `association.campsandretreats.read`
+- /course/camps-and-retreats/overview/:id? → `association.campsandretreats.read`
+- /course/camps-and-retreats/overview/:id?/detail/:periodId? → `association.campsandretreats.read`
+- /course/carnet/list → `association.carnet.read`
+- /course/carnet/list/detail/:carnetId/:page? → `association.carnet.read`
+- /course/instructor/list → `association.instructor.read`
+- /course/instructor/info/:id → `association.instructor.read`
+- /course/instructor/add → `association.instructor.create`
+- /archive → `association.archive.read`
+- /audit/list → `other.audit.read`
+- /templates/list → `association.templates.read`
+- /report → `association.report.read`
+- /saved-reports → `association.report.read`
+- /course/carnet/add → `association.carnet.create`
+- /course/overview/:id?/:page? → `association.courses.read`
+- /communication/messages → `association.communication.messages.read`
+- /communication/automation → `association.communication.workflows.read`
+- /communication/automation/editor/:workflow_id? → `association.communication.workflows.read`
+- /communication/configuration → `association.communication.settings.read`
+- /shared-calendar/:id? → -
+- /third-party-licenses → -
+- /login → -
+- /stripe/onboarding → -
+- /stripe/onboarded → -
+- /stripe/pay/:id?/:one_fee_payment? → -
+- /stripe/cart-pay → -
+- /stripe/payment/done → -
+- /update-tutors → -
+- /subscription → -
+- /billing-checkout → -
+- /subscription/upgrade → -
+- /tools/sport-associations-manager → -
+- /welcome → -
+- /attendance-scanner-mode → -
+- /email-builder/:id/:workflow_id → -
+- /subscribefamily/:sportAssociationUsername/:token → -
+- /reset → -
+- * → -
+
+# Permissions Registry Coverage
+- Total backend endpoint patterns: 353
+- Total registry patterns: 241
+- Excluded by default: 26
+- Registry unmatched by endpoint list: 1
+- Unmapped backend endpoints: 89
+
+## Unmapped backend endpoints (check required registry entries or exclusion)
+- 
+- api-auth
+- association/export/active
+- association/export/delete
+- association/export/list
+- association/export/start
+- association/export/status
+- association/import/start
+- association/import/status
+- association/import/validate
+- audit-logs/*/detail
+- audit-logs/list
+- audit-logs/models
+- audit-logs/stats
+- balance-sheet
+- blog
+- calendar/events
+- calendar/events/update
+- chat/test
+- communications/email-logs/list
+- communications/messages/*/delete
+- communications/messages/*/detail
+- communications/messages/add
+- communications/messages/list
+- communications/send/email
+- communications/send/post
+- communications/settings/smtp/info
+- communications/settings/smtp/update
+- communications/settings/smtp/verify
+- communications/workflows/*/delete
+- communications/workflows/*/details
+- communications/workflows/*/update
+- communications/workflows/add
+- communications/workflows/list
+- config
+- configure
+- course-locations
+- course-subscriptions
+- course/*/overview
+- document/*/delete
+- document/compensation/*
+- document/compensation/*/view
+- document/einvoice/*
+- document/einvoice/*/view
+- document/invoice/*
+- document/invoice/*/view
+- document/medical-appointment/*
+- document/medical-appointment/*/view
+- document/medical/certificate
+- document/retrieve/*
+- document/subscription/*
+- document/subscription/*/view
+- document/subscription/preview
+- document/template/*
+- document/template/*/view
+- documents
+- folders
+- google/calendar/config
+- healthz
+- instance
+- invoice/*/invoice-suppliers/list/export
+- logo
+- logo.png
+- manifest.json
+- modules/*/duplicate
+- modules/response/*/add-attachment
+- payment/bulk-add
+- personas
+- personas-subscriptions
+- personas/all-with-subscriptions
+- profile/settings
+- readyz
+- reconfigure
+- saved-reports/*/delete
+- saved-reports/*/info
+- saved-reports/*/run
+- saved-reports/*/update
+- saved-reports/add
+- saved-reports/list
+- schema
+- schema/redoc
+- schema/swagger-ui
+- setup-token/validate
+- silk
+- status
+- subscription/*/card
+- subscription/list
+- subscription/memberships
+- templates
+
+## Permissions without backend endpoint match
+- profile/associates/*/disable

@@ -1,0 +1,29 @@
+flowchart TD
+    User["User Browser"] --> UI["UI (Svelte SPA)"]
+    UI -->|HTTP APIs| APIGW["Django API Gateway"]
+    UI -->|WebSocket channels| WSGW["Django Channels"]
+    APIGW --> APPCORE["BE/application"]
+    APIGW --> COMM["BE/communications"]
+    APIGW --> DOC["BE/docmanager"]
+    APIGW --> INST["BE/instance"]
+    APPCORE --> PERM["Permission middleware + registry"]
+    APPCORE --> TASKS["Celery task dispatcher"]
+    APPCORE --> DB[(PostgreSQL)]
+    APPCORE --> REDIS[(Redis)]
+    APPCORE --> FS["Object storage"]
+    WSGW --> REDIS
+    TASKS --> CELERYW["worker"]
+    TASKS --> BEAT["beat"]
+    CELERYW --> MAIL["SMTP / Mail sender"]
+    CELERYW --> RENDER["Renderer (PDF)"]
+    CELERYW --> STRIPE["Stripe webhooks"]
+    APPCORE --> GOOGLE["Google services"]
+    APPCORE --> AI["AI / MCP tools"]
+    CELERYW --> DB
+    WSGW --> DB
+    CELERYW --> REDIS
+    APPCORE --> DOCSTATIC["Template + document output"]
+    APPCORE --> NOTIF["Notifications WS consumers"]
+    WebProxy["Caddy / web layer"] --> UI
+    WebProxy --> APIGW
+    WebProxy --> DOCSTATIC

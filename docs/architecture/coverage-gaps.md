@@ -1,0 +1,186 @@
+# Coverage gaps and documentation risk register
+
+This file is generated from `docs/matrix/architecture-inventory.json`.
+
+## Baseline numbers
+
+- Backend patterns: 353
+- Permission entries: 241
+- Unmapped backend patterns (missing permission registry entry): 89
+- Permission entries without backend pattern match: 1
+- Frontend route entries: 85
+- Frontend entries with explicit permission route checks: 49
+- Frontend entries without explicit permission route checks: 36
+
+## Backend routes without permission mapping
+
+- **document** (16)
+  - `document/*/delete`
+  - `document/compensation/*`
+  - `document/compensation/*/view`
+  - `document/einvoice/*`
+  - `document/einvoice/*/view`
+  - `document/invoice/*`
+  - `document/invoice/*/view`
+  - `document/medical-appointment/*`
+  - `document/medical-appointment/*/view`
+  - `document/medical/certificate`
+  - `document/retrieve/*`
+  - `document/subscription/*`
+  - `document/subscription/*/view`
+  - `document/subscription/preview`
+  - `document/template/*`
+  - `document/template/*/view`
+- **communications** (15)
+  - `communications/email-logs/list`
+  - `communications/messages/*/delete`
+  - `communications/messages/*/detail`
+  - `communications/messages/add`
+  - `communications/messages/list`
+  - `communications/send/email`
+  - `communications/send/post`
+  - `communications/settings/smtp/info`
+  - `communications/settings/smtp/update`
+  - `communications/settings/smtp/verify`
+  - `communications/workflows/*/delete`
+  - `communications/workflows/*/details`
+  - `communications/workflows/*/update`
+  - `communications/workflows/add`
+  - `communications/workflows/list`
+- **association** (8)
+  - `association/export/active`
+  - `association/export/delete`
+  - `association/export/list`
+  - `association/export/start`
+  - `association/export/status`
+  - `association/import/start`
+  - `association/import/status`
+  - `association/import/validate`
+- **saved-reports** (6)
+  - `saved-reports/*/delete`
+  - `saved-reports/*/info`
+  - `saved-reports/*/run`
+  - `saved-reports/*/update`
+  - `saved-reports/add`
+  - `saved-reports/list`
+- **audit-logs** (4)
+  - `audit-logs/*/detail`
+  - `audit-logs/list`
+  - `audit-logs/models`
+  - `audit-logs/stats`
+- **schema** (3)
+  - `schema`
+  - `schema/redoc`
+  - `schema/swagger-ui`
+- **subscription** (3)
+  - `subscription/*/card`
+  - `subscription/list`
+  - `subscription/memberships`
+- **calendar** (2)
+  - `calendar/events`
+  - `calendar/events/update`
+- **modules** (2)
+  - `modules/*/duplicate`
+  - `modules/response/*/add-attachment`
+- **personas** (2)
+  - `personas`
+  - `personas/all-with-subscriptions`
+- **(root)** (1)
+  - ``
+- **api-auth** (1)
+  - `api-auth`
+- **balance-sheet** (1)
+  - `balance-sheet`
+- **blog** (1)
+  - `blog`
+- **chat** (1)
+  - `chat/test`
+- **config** (1)
+  - `config`
+- **configure** (1)
+  - `configure`
+- **course** (1)
+  - `course/*/overview`
+- **course-locations** (1)
+  - `course-locations`
+- **course-subscriptions** (1)
+  - `course-subscriptions`
+- **documents** (1)
+  - `documents`
+- **folders** (1)
+  - `folders`
+- **google** (1)
+  - `google/calendar/config`
+- **healthz** (1)
+  - `healthz`
+- **instance** (1)
+  - `instance`
+- **invoice** (1)
+  - `invoice/*/invoice-suppliers/list/export`
+- **logo** (1)
+  - `logo`
+- **logo.png** (1)
+  - `logo.png`
+- **manifest.json** (1)
+  - `manifest.json`
+- **payment** (1)
+  - `payment/bulk-add`
+- **personas-subscriptions** (1)
+  - `personas-subscriptions`
+- **profile** (1)
+  - `profile/settings`
+- **readyz** (1)
+  - `readyz`
+- **reconfigure** (1)
+  - `reconfigure`
+- **setup-token** (1)
+  - `setup-token/validate`
+- **silk** (1)
+  - `silk`
+- **status** (1)
+  - `status`
+- **templates** (1)
+  - `templates`
+
+## Permissions defined without backend endpoint match
+
+- `profile/associates/*/disable`
+
+## Frontend routes without explicit route-level permission checks
+
+- `connected-collaborators`
+- `profile`
+- `search`
+- `search/profile/*?/*?`
+- `card/*/*?/*?`
+- `forms/*/*?`
+- `subscribe/*?`
+- `subscribe/*/*`
+- `subscribe-multiple/*?/*?/*?`
+- `invite/*`
+- `error`
+- `subscription/list/*?`
+- `carnet/list`
+- `subscription/list/detail/*/attendance?`
+- `subscription/list/detail/*/calendar?`
+- `subscription/list/detail/*/carnet?`
+- `camps-and-retreats/forms/*?`
+- `shared-calendar/*?`
+- `third-party-licenses`
+- `login`
+- `stripe/onboarding`
+- `stripe/onboarded`
+- `stripe/pay/*?/*?`
+- `stripe/cart-pay`
+- `stripe/payment/done`
+- `update-tutors`
+- `subscription`
+- `billing-checkout`
+- `subscription/upgrade`
+- `tools/sport-associations-manager`
+- `welcome`
+- `attendance-scanner-mode`
+- `email-builder/*/*`
+- `subscribefamily/*/*`
+- `reset`
+- `*`

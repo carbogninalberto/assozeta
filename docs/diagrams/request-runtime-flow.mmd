@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant U as User
+    participant UI as Frontend Route Guard
+    participant API as Django API
+    participant M as Permission Middleware
+    participant DB as PostgreSQL
+    participant WS as Channels
+    participant R as Redis
+
+    U->>UI: open /#/subscription/list
+    UI->>UI: local state checks (role, plan, isExpired, localStorage)
+    UI->>API: GET /api/subscription/list
+    API->>M: check request.path and method
+    alt collaborator session
+        M->>M: resolve connected user + collaborator permissions
+        M->>M: evaluate permission registry
+        alt permission mapped + granted
+            M->>DB: query data
+            DB-->>API: results
+            API-->>UI: JSON response
+            UI-->>U: render list
+        else denied / unmapped
+            M-->>API: PermissionDenied
+            API-->>UI: 403/denied payload
+            UI-->>U: error / access blocked
+        end
+    else athlete/private user
+        API->>DB: query allowed public/athlete paths
+        DB-->>API: results
+        API-->>UI: response
+    end
+
+    Note over U,UI: WebSocket flows
+    U->>UI: open websocket URL /ws/notifications/?token=...
+    UI->>WS: JWT from token/cookie
+    WS->>R: consume/publish updates (notifications, agent events)
+    WS-->>UI: broadcast updates
