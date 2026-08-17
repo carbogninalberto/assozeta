@@ -1,4 +1,5 @@
 import {getWebSocketUrl} from './websocketUrl.js';
+import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
  * HealthWebSocket - Application health status via WebSocket
@@ -25,6 +26,9 @@ class HealthWebSocket {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 3;
         this.reconnectDelay = 2000;
+        this.reconnectTimer = null;
+        this.manualCloseSockets = new WeakSet();
+        this.heartbeat = new WebSocketHeartbeat(() => this.ws);
 
         this.onHealth = null;
         this.onError = null;
@@ -36,14 +40,17 @@ class HealthWebSocket {
      * Connect to the health WebSocket
      */
     connect() {
+        if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
         const wsPath = __bakney.env.WS.HEALTH;
         const url = getWebSocketUrl(wsPath);
 
         this.ws = new WebSocket(url);
+        const socket = this.ws;
 
         this.ws.onopen = () => {
             console.log('[HealthWebSocket] Connected');
             this.reconnectAttempts = 0;
+            this.heartbeat.start();
             this.onConnect?.();
             // Health status is sent automatically on connect
         };
@@ -51,6 +58,7 @@ class HealthWebSocket {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
+                if (this.heartbeat.handlePong(data)) return;
                 this.handleMessage(data);
             } catch (error) {
                 console.error('[HealthWebSocket] Failed to parse message:', error);
@@ -58,8 +66,14 @@ class HealthWebSocket {
         };
 
         this.ws.onclose = (event) => {
+            if (this.ws === socket) {
+                this.ws = null;
+                this.heartbeat.stop();
+            }
             console.log('[HealthWebSocket] Closed:', event.code);
             this.onDisconnect?.(event.code);
+
+            if (this.manualCloseSockets.has(socket)) return;
 
             // Attempt reconnection
             this.attemptReconnect();
@@ -110,7 +124,11 @@ class HealthWebSocket {
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
         console.log(`[HealthWebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
-        setTimeout(() => this.connect(), delay);
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            this.connect();
+        }, delay);
     }
 
     /**
@@ -172,8 +190,15 @@ class HealthWebSocket {
      * Disconnect from the WebSocket
      */
     disconnect() {
+        this.heartbeat.stop();
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
         if (this.ws) {
-            this.ws.close();
+            const socket = this.ws;
+            this.manualCloseSockets.add(socket);
+            socket.close();
             this.ws = null;
         }
     }

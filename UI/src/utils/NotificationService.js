@@ -22,7 +22,9 @@
  */
 
 import NotificationWebSocket from './NotificationWebSocket.js';
-import { get } from 'svelte/store';
+import {get} from 'svelte/store';
+import {apiFetch} from './ApiMiddleware.js';
+import {exportProgress} from 'store/exportProgressStore.js';
 
 class NotificationService {
     constructor() {
@@ -32,6 +34,7 @@ class NotificationService {
         this.isInitialized = false;
         this.onNewNotificationCallback = null;
         this.visibilityHandler = null;
+        this.activeExportSync = null;
     }
 
     /**
@@ -58,7 +61,7 @@ class NotificationService {
         });
 
         // Handle new notification push
-        this.ws.setOnNewNotification((notification) => {
+        this.ws.setOnNewNotification(notification => {
             const currentNotifications = get(this.notificationsStore) || [];
             this.notificationsStore.set([notification, ...currentNotifications]);
 
@@ -69,11 +72,16 @@ class NotificationService {
             this.onNewNotificationCallback?.(notification);
         });
 
+        this.ws.setOnExportProgress(event => exportProgress.applyProgress(event));
+        this.ws.setOnExportCompleted(event => exportProgress.applyCompleted(event));
+        this.ws.setOnExportFailed(event => exportProgress.applyFailed(event));
+        this.ws.setOnConnect(() => this.syncActiveExport());
+
         // Handle read confirmation - update local state
-        this.ws.setOnReadConfirmed((notificationId) => {
+        this.ws.setOnReadConfirmed(notificationId => {
             const currentNotifications = get(this.notificationsStore) || [];
             const updatedNotifications = currentNotifications.map(n =>
-                n.id === notificationId ? { ...n, read: true } : n
+                n.id === notificationId ? {...n, read: true} : n
             );
             this.notificationsStore.set(updatedNotifications);
 
@@ -84,7 +92,7 @@ class NotificationService {
         // Handle all read confirmation
         this.ws.setOnAllReadConfirmed(() => {
             const currentNotifications = get(this.notificationsStore) || [];
-            const updatedNotifications = currentNotifications.map(n => ({ ...n, read: true }));
+            const updatedNotifications = currentNotifications.map(n => ({...n, read: true}));
             this.notificationsStore.set(updatedNotifications);
             this.unreadCounterStore.set(0);
         });
@@ -136,6 +144,37 @@ class NotificationService {
             return;
         }
         this.ws.fetch();
+    }
+
+    async syncActiveExport() {
+        if (this.activeExportSync) return this.activeExportSync;
+        this.activeExportSync = (async () => {
+            try {
+                const endpoint = __bakney.env.API.ASSOCIATION.EXPORT.ACTIVE;
+                const response = await apiFetch(endpoint);
+                if (!response.error) {
+                    if (response.response.active) {
+                        exportProgress.applySnapshot(response.response);
+                    } else if (response.response.terminal) {
+                        const terminal = response.response.terminal;
+                        if (terminal.status === 'SUCCESS') {
+                            exportProgress.applyCompleted(terminal, false);
+                        } else {
+                            exportProgress.applyFailed(terminal, false);
+                        }
+                    } else {
+                        exportProgress.reset();
+                    }
+                }
+                return response;
+            } catch (error) {
+                console.warn('[NotificationService] Unable to synchronize export state:', error);
+                return {error: true, response: {}};
+            } finally {
+                this.activeExportSync = null;
+            }
+        })();
+        return this.activeExportSync;
     }
 
     /**

@@ -1,32 +1,55 @@
+<script context="module">
+    const handledTerminalTasks = new Set();
+</script>
+
 <script>
-    import {onMount, onDestroy} from 'svelte';
+    import {onMount} from 'svelte';
     import {scale} from 'svelte/transition';
     import {apiFetch} from 'utils/ApiMiddleware.js';
     import {sessionToken, subPage, userData} from 'store/stores.js';
     import {toast} from 'svelte-sonner';
     import {canPerformAction} from 'utils/Permissions';
-    import {FileArrowDown, TrashSimple, FileDashed, File, CloudArrowUp, SpinnerGap, Info, Warning} from 'phosphor-svelte';
+    import notificationService from 'utils/NotificationService.js';
+    import {exportProgress} from 'store/exportProgressStore.js';
+    import {
+        FileArrowDown,
+        TrashSimple,
+        FileDashed,
+        File,
+        CloudArrowUp,
+        SpinnerGap,
+        Info,
+        Warning,
+    } from 'phosphor-svelte';
 
     sessionToken.useLocalStorage();
     subPage.useLocalStorage();
     userData.useLocalStorage();
 
     // Export state
-    let exporting = false;
-    let exportTaskId = null;
-    let exportStatus = null;
     let exports = [];
     let loadingExports = false;
+    let startingExport = false;
 
-    // Polling
-    let pollInterval = null;
+    $: exporting = $exportProgress.active;
+    $: exportTaskId = $exportProgress.taskId;
+    $: exportStatus = $exportProgress.status;
+    $: progress = $exportProgress.progress;
+    $: announceTerminal = $exportProgress.announceTerminal;
+    $: visibleExportPercent = startingExport ? 0 : Math.max(0, Math.min(100, progress?.percent ?? 0));
+    $: visibleExportLabel = startingExport ? 'Avvio export...' : progress?.label || 'Export in corso...';
+    $: if (
+        exportTaskId &&
+        !exporting &&
+        ['SUCCESS', 'FAILURE'].includes(exportStatus) &&
+        !handledTerminalTasks.has(exportTaskId)
+    ) {
+        handledTerminalTasks.add(exportTaskId);
+        handleTerminalExport(exportStatus, announceTerminal);
+    }
 
     onMount(async () => {
-        await loadExports();
-    });
-
-    onDestroy(() => {
-        if (pollInterval) clearInterval(pollInterval);
+        await Promise.all([loadExports(), notificationService.syncActiveExport()]);
     });
 
     async function loadExports() {
@@ -41,44 +64,32 @@
     }
 
     async function startExport() {
-        exporting = true;
-        exportStatus = 'STARTED';
-        let res = await apiFetch(__bakney.env.API.ASSOCIATION.EXPORT.START, {
-            method: 'POST',
-        });
-        if (!res.error) {
-            exportTaskId = res.response.task_id;
-            toast.info('Export avviato. Riceverai una notifica al completamento.');
-            startExportPolling();
-        } else {
-            toast.error(res.response?.msg || 'Errore durante l\'avvio dell\'export');
-            exporting = false;
-            exportStatus = null;
+        startingExport = true;
+        try {
+            let res = await apiFetch(__bakney.env.API.ASSOCIATION.EXPORT.START, {
+                method: 'POST',
+            });
+            if (!res.error) {
+                exportProgress.applySnapshot({
+                    ...res.response,
+                    status: 'PENDING',
+                });
+                toast.info('Export avviato. Riceverai una notifica al completamento.');
+            } else {
+                toast.error(res.response?.msg || res.response?.error || "Errore durante l'avvio dell'export");
+            }
+        } finally {
+            startingExport = false;
         }
     }
 
-    function startExportPolling() {
-        pollInterval = setInterval(async () => {
-            let res = await apiFetch(
-                `${__bakney.env.API.ASSOCIATION.EXPORT.STATUS}?task_id=${exportTaskId}`
-            );
-            if (!res.error) {
-                exportStatus = res.response.status;
-                if (res.response.ready) {
-                    clearInterval(pollInterval);
-                    pollInterval = null;
-                    exporting = false;
-                    if (res.response.result?.success) {
-                        toast.success('Export completato!');
-                        await loadExports();
-                    } else {
-                        toast.error(res.response.error || 'Export fallito');
-                    }
-                    exportStatus = null;
-                    exportTaskId = null;
-                }
-            }
-        }, 5000);
+    async function handleTerminalExport(status, shouldAnnounce) {
+        if (status === 'SUCCESS') {
+            if (shouldAnnounce) toast.success('Export completato!');
+            await loadExports();
+        } else if (shouldAnnounce) {
+            toast.error($exportProgress.error || 'Export fallito');
+        }
     }
 
     function confirmDelete(exp) {
@@ -95,7 +106,7 @@
                 confirmButton: 'btn btn-danger font-weight-bolder',
                 cancelButton: 'btn btn-secondary font-weight-bolder mr-2',
             },
-        }).then(async (result) => {
+        }).then(async result => {
             if (result.isConfirmed) {
                 await deleteExport(exp);
             }
@@ -112,7 +123,7 @@
             toast.success('Export eliminato');
             await loadExports();
         } else {
-            toast.error(res.response?.msg || 'Errore durante l\'eliminazione');
+            toast.error(res.response?.msg || "Errore durante l'eliminazione");
         }
     }
 
@@ -181,57 +192,54 @@
                             <div class="d-flex align-items-start p-4 bg-light-primary rounded-lg">
                                 <Info size={26} class="text-primary mr-3 my-auto flex-shrink-0" weight="duotone" />
                                 <div class="font-size-sm text-primary">
-                                    Gli export scadono dopo <strong>30 giorni</strong> e puoi conservarne massimo <strong>3</strong> contemporaneamente.
-                                    Riceverai una email quando l'export sarà pronto per il download.
+                                    Gli export scadono dopo <strong>30 giorni</strong> e puoi conservarne massimo
+                                    <strong>3</strong> contemporaneamente. Riceverai una email quando l'export sarà pronto
+                                    per il download.
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Export button and status -->
-                    <div in:scale={{duration: 150, start: 0.98}} class="form-group row my-4">
-                        <div class="col-12 d-flex flex-column align-items-center">
-                            <button
-                                class="btn btn-primary font-weight-bold px-6"
-                                disabled={exporting || !canPerformAction('other.settings.update') || exports.length >= 3}
-                                on:click={startExport}>
-                                {#if exporting}
-                                    <span class="export-spinner mr-2">
-                                        <SpinnerGap size={18} weight="bold" />
-                                    </span>
-                                    Export in corso...
+                    {#if exports.length >= 3 || (!startingExport && !exporting)}
+                        <div in:scale={{duration: 150, start: 0.98}} class="form-group row my-4">
+                            <div class="col-12">
+                                {#if exports.length >= 3}
+                                    <div
+                                        class="export-limit-alert alert alert-custom alert-light-warning fade show rounded-lg mb-0 py-4 px-5"
+                                        role="alert">
+                                        <div class="alert-icon text-warning">
+                                            <Warning size={24} weight="duotone" />
+                                        </div>
+                                        <div class="alert-text text-warning font-weight-bold">
+                                            Hai raggiunto il limite di 3 export. Elimina un export per crearne uno
+                                            nuovo.
+                                        </div>
+                                    </div>
                                 {:else}
-                                    <CloudArrowUp size={18} class="mr-2" weight="duotone" />
-                                    Avvia Export
+                                    <div class="d-flex justify-content-center">
+                                        <button
+                                            class="btn btn-primary font-weight-bold px-6"
+                                            disabled={!canPerformAction('other.settings.update')}
+                                            on:click={startExport}>
+                                            <CloudArrowUp size={18} class="mr-2" weight="duotone" />
+                                            Avvia Export
+                                        </button>
+                                    </div>
                                 {/if}
-                            </button>
-
-                            {#if exports.length >= 3}
-                                <div class="d-flex align-items-center mt-4">
-                                    <span class="text-warning font-weight-bold font-size-sm d-flex align-items-center">
-                                        <Warning size={18} class="mr-2" weight="duotone" />
-                                        Hai raggiunto il limite di 3 export. Elimina un export per crearne uno nuovo.
-                                    </span>
-                                </div>
-                            {/if}
-
-                            {#if exporting}
-                                <small class="text-muted mt-3 d-block text-center">
-                                    L'export potrebbe richiedere alcuni minuti. Riceverai una email al completamento.
-                                </small>
-                            {/if}
+                            </div>
                         </div>
-                    </div>
+                    {/if}
 
                     <!-- Export History Title -->
-                    <div in:scale={{duration: 150, start: 0.98}} class="form-group row mb-0 mt-0">
+                    <div in:scale={{duration: 150, start: 0.98}} class="form-group row mb-0 mt-8">
                         <h1 class="col-12 font-weight-boldest text-dark">Storico Export</h1>
                     </div>
 
                     <!-- Export History List -->
                     <div in:scale={{duration: 150, start: 0.98}} class="form-group row">
                         <div class="col-12">
-                            {#if exports.length === 0}
+                            {#if exports.length === 0 && !startingExport && !exporting}
                                 <div class="d-flex justify-content-center flex-column align-items-center py-12">
                                     <div>
                                         <File size={64} weight="duotone" class="mb-4 text-muted" />
@@ -242,6 +250,44 @@
                                     </div>
                                 </div>
                             {:else}
+                                {#if startingExport || exporting}
+                                    <div
+                                        class="export-running-row d-flex flex-column p-4 my-3 mx-0 rounded-lg"
+                                        aria-live="polite">
+                                        <div class="d-flex align-items-center w-100">
+                                            <div
+                                                class="export-status-icon d-flex align-items-center justify-content-center rounded-circle bg-white mr-4 flex-shrink-0">
+                                                <span class="export-spinner text-primary">
+                                                    <SpinnerGap size={22} weight="bold" />
+                                                </span>
+                                            </div>
+                                            <div class="export-row-content flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="font-weight-boldest text-dark d-block"
+                                                        >Export in corso...</span>
+                                                    <span
+                                                        class="label label-light-primary label-inline font-weight-bolder ml-3 flex-shrink-0">
+                                                        {visibleExportPercent}%
+                                                    </span>
+                                                </div>
+                                                <span class="text-primary font-weight-bold font-size-sm d-block mt-1">
+                                                    {visibleExportLabel}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="progress export-progress mt-4 w-100"
+                                            aria-label="Avanzamento export">
+                                            <div
+                                                class="progress-bar bg-primary"
+                                                role="progressbar"
+                                                style={`width: ${visibleExportPercent}%`}
+                                                aria-valuenow={visibleExportPercent}
+                                                aria-valuemin="0"
+                                                aria-valuemax="100" />
+                                        </div>
+                                    </div>
+                                {/if}
                                 {#each exports as exp}
                                     <div
                                         class="d-flex align-items-center justify-content-between p-4 my-3 mx-0 border rounded-lg">
@@ -254,7 +300,8 @@
                                                 <span class="text-muted font-weight-bold font-size-sm">
                                                     {formatDate(exp.created_at || exp.date)}
                                                     {#if exp.file_size_bytes != null}
-                                                        <span class="mx-1">•</span> {formatFileSize(exp.file_size_bytes)}
+                                                        <span class="mx-1">•</span>
+                                                        {formatFileSize(exp.file_size_bytes)}
                                                     {/if}
                                                 </span>
                                             </div>
@@ -281,7 +328,7 @@
                     </div>
                 {:else}
                     <div class="d-flex justify-content-center py-10">
-                        <div class="spinner spinner-primary spinner-lg"></div>
+                        <div class="spinner spinner-primary spinner-lg" />
                     </div>
                 {/if}
             </div>
@@ -296,8 +343,30 @@
         vertical-align: middle;
         animation: spin 1s linear infinite;
     }
+    .export-progress {
+        height: 0.75rem;
+        background-color: var(--white, #fff);
+    }
+    .export-status-icon {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+    .export-row-content {
+        min-width: 0;
+    }
+    .export-running-row {
+        background: color-mix(in srgb, var(--primary, #351dc2) 4%, transparent);
+    }
+    .export-limit-alert {
+        background: color-mix(in srgb, var(--warning, #ffa800) 8%, transparent) !important;
+        border: 0 !important;
+    }
     @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>

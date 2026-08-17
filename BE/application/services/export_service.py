@@ -14,7 +14,7 @@ import uuid
 import zipfile
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.core.files.storage import default_storage
 from django.core.serializers.json import DjangoJSONEncoder
@@ -280,7 +280,11 @@ class AssociationExportService:
         'User': ['preview_and_custom_features'],
     }
 
-    def __init__(self, sport_association_id: uuid.UUID):
+    def __init__(
+        self,
+        sport_association_id: uuid.UUID,
+        progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+    ):
         """
         Initialize the export service.
 
@@ -294,6 +298,35 @@ class AssociationExportService:
         self.document_ids: Set[uuid.UUID] = set()
         self.stats: Dict[str, int] = {}
         self.errors: List[str] = []
+        self.progress_callback = progress_callback
+        self._last_progress_percent = -1
+
+    def _report_progress(
+        self,
+        percent: int,
+        phase: str,
+        label: str,
+        completed: Optional[int] = None,
+        total: Optional[int] = None,
+        **details,
+    ) -> None:
+        """Publish monotonic, non-fatal progress to an optional caller."""
+        last_percent = getattr(self, '_last_progress_percent', -1)
+        percent = max(last_percent, min(99, max(0, int(percent))))
+        self._last_progress_percent = percent
+        if getattr(self, 'progress_callback', None) is None:
+            return
+        try:
+            self.progress_callback({
+                'percent': percent,
+                'phase': phase,
+                'label': label,
+                'completed': completed,
+                'total': total,
+                **details,
+            })
+        except Exception:
+            logger.warning('Unable to report export progress', exc_info=True)
 
     def get_queryset_for_model(self, model_class: type, is_system: bool = False) -> models.QuerySet:
         """
@@ -782,11 +815,21 @@ class AssociationExportService:
             ),
         )
 
+        document_total = len(self.document_ids)
+        document_completed = 0
         for doc in documents.iterator(chunk_size=100):
             filepath = self._get_document_filepath(doc)
             if not filepath:
                 logger.debug(f"No filepath found for document {doc.document_id}")
                 skipped += 1
+                document_completed += 1
+                self._report_progress(
+                    55 + int(25 * document_completed / max(document_total, 1)),
+                    'file_retrieval',
+                    'Recupero allegati',
+                    document_completed,
+                    document_total,
+                )
                 continue
 
             try:
@@ -817,6 +860,18 @@ class AssociationExportService:
                     # Only report generic error without details
                     self.errors.append(f"Failed to export document {doc.document_id}")
                     failed += 1
+            finally:
+                document_completed += 1
+                document_percent = 55 + int(
+                    25 * document_completed / max(document_total, 1)
+                )
+                self._report_progress(
+                    document_percent,
+                    'file_retrieval',
+                    'Recupero allegati',
+                    document_completed,
+                    document_total,
+                )
 
         # Export private subscription signatures tracked outside Document.
         signature_count, signature_failed = self._export_subscription_signatures(files_dir)
@@ -826,6 +881,13 @@ class AssociationExportService:
         self.stats['files_exported'] = count
         self.stats['files_failed'] = failed
         self.stats['files_skipped'] = skipped
+        self._report_progress(
+            85,
+            'file_retrieval',
+            'Recupero allegati completato',
+            count + failed + skipped,
+            None,
+        )
         logger.info(
             "Export phase file_retrieval files=%d failed=%d skipped=%d duration_seconds=%.3f",
             count,
@@ -887,6 +949,13 @@ class AssociationExportService:
                         f"Failed to export signature for subscription {subscription.subscription_id}"
                     )
                 failed += 1
+            self._report_progress(
+                82,
+                'file_retrieval',
+                'Recupero firme iscrizioni',
+                count + failed,
+                None,
+            )
 
         self.stats['signature_files_exported'] = count
         self.stats['signature_files_failed'] = failed
@@ -959,12 +1028,22 @@ class AssociationExportService:
         started_at = time.perf_counter()
         zip_path = os.path.join(tempfile.gettempdir(), zip_filename)
 
+        zip_entries = []
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                zip_entries.append(os.path.join(root, file))
+
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(source_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, source_dir)
-                    zf.write(file_path, arcname)
+            for index, file_path in enumerate(zip_entries, start=1):
+                arcname = os.path.relpath(file_path, source_dir)
+                zf.write(file_path, arcname)
+                self._report_progress(
+                    87 + int(8 * index / max(len(zip_entries), 1)),
+                    'zip_creation',
+                    'Creazione archivio ZIP',
+                    index,
+                    len(zip_entries),
+                )
 
         # Calculate checksum
         sha256 = hashlib.sha256()
@@ -1008,6 +1087,13 @@ class AssociationExportService:
         file_size_bytes = os.path.getsize(zip_path)
 
         # Upload to storage
+        self._report_progress(
+            96,
+            'storage_upload',
+            'Caricamento archivio',
+            0,
+            1,
+        )
         upload_started_at = time.perf_counter()
         with open(zip_path, 'rb') as f:
             saved_path = default_storage.save(storage_path, f)
@@ -1021,6 +1107,13 @@ class AssociationExportService:
         SportAssociationDocumentsArchive.objects.create(
             sport_association=self.sport_association,
             document=document,
+        )
+        self._report_progress(
+            99,
+            'storage_upload',
+            'Archivio caricato',
+            1,
+            1,
         )
 
         logger.info(
@@ -1042,6 +1135,7 @@ class AssociationExportService:
             Document instance for the created export file
         """
         logger.info(f"Starting export for association {self.sport_association_id}")
+        self._report_progress(5, 'preparing', 'Preparazione dati')
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create directory structure
@@ -1050,7 +1144,8 @@ class AssociationExportService:
             os.makedirs(os.path.join(temp_dir, 'files'), exist_ok=True)
 
             # Export all models in order
-            for item in self.EXPORT_ORDER:
+            model_total = len(self.EXPORT_ORDER)
+            for model_index, item in enumerate(self.EXPORT_ORDER, start=1):
                 model_class = item[0]
                 filename_prefix = item[1]
                 is_system = len(item) > 2 and item[2] == 'system'
@@ -1066,12 +1161,21 @@ class AssociationExportService:
                     logger.error(f"Error exporting {model_class.__name__}: {e}")
                     # Only report generic error without details
                     self.errors.append(f"Failed to export {model_class.__name__}")
+                self._report_progress(
+                    5 + int(50 * model_index / max(model_total, 1)),
+                    'model_serialization',
+                    f'Esportazione dati: {model_class.__name__}',
+                    model_index,
+                    model_total,
+                    model=model_class.__name__,
+                )
 
             # Export binary files.  Media is always included in new backups.
             self.export_files(temp_dir)
 
             # Create manifest
             self.create_manifest(temp_dir)
+            self._report_progress(87, 'zip_creation', 'Preparazione archivio ZIP')
 
             # Create ZIP file
             timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')

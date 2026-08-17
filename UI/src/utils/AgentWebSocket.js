@@ -1,4 +1,5 @@
 import {getWebSocketUrl} from './websocketUrl.js';
+import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
  * AgentWebSocket - AI Agent chat via WebSocket
@@ -35,7 +36,8 @@ class AgentWebSocket {
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 2000;
         this.reconnectTimer = null;
-        this._disconnecting = false;
+        this.manualCloseSockets = new WeakSet();
+        this.heartbeat = new WebSocketHeartbeat(() => this.ws);
 
         // Callbacks
         this.onStatus = null;
@@ -61,16 +63,19 @@ class AgentWebSocket {
         const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
 
         this.ws = new WebSocket(url);
+        const socket = this.ws;
 
         this.ws.onopen = () => {
             console.log('[AgentWebSocket] Connected');
             this.reconnectAttempts = 0;
+            this.heartbeat.start();
             this.onConnect?.();
         };
 
         this.ws.onmessage = event => {
             try {
                 const data = JSON.parse(event.data);
+                if (this.heartbeat.handlePong(data)) return;
                 this.handleMessage(data);
             } catch (error) {
                 console.error('[AgentWebSocket] Failed to parse message:', error);
@@ -78,14 +83,15 @@ class AgentWebSocket {
         };
 
         this.ws.onclose = event => {
+            if (this.ws === socket) {
+                this.ws = null;
+                this.heartbeat.stop();
+            }
             console.log('[AgentWebSocket] Closed:', event.code);
             this.onDisconnect?.(event.code);
 
             // Manual disconnect — don't reconnect
-            if (this._disconnecting) {
-                this._disconnecting = false;
-                return;
-            }
+            if (this.manualCloseSockets.has(socket)) return;
 
             // Terminal close codes – don't reconnect
             if (TERMINAL_CODES[event.code]) {
@@ -173,7 +179,11 @@ class AgentWebSocket {
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
         console.log(`[AgentWebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
-        this.reconnectTimer = setTimeout(() => this.connect(), delay);
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            this.connect();
+        }, delay);
     }
 
     send(data) {
@@ -206,13 +216,15 @@ class AgentWebSocket {
     }
 
     disconnect() {
-        this._disconnecting = true;
+        this.heartbeat.stop();
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
         }
         if (this.ws) {
-            this.ws.close();
+            const socket = this.ws;
+            this.manualCloseSockets.add(socket);
+            socket.close();
             this.ws = null;
         }
     }

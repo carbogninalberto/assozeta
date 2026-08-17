@@ -203,7 +203,12 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         """Handle incoming WebSocket messages."""
         msg_type = content.get('type')
 
-        if msg_type == 'user_message':
+        if msg_type == 'ping':
+            await self.send_json({
+                'type': 'pong',
+                'timestamp': content.get('timestamp'),
+            })
+        elif msg_type == 'user_message':
             await self._handle_user_message(content)
         elif msg_type == 'cancel':
             await self._handle_cancel()

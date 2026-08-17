@@ -15,6 +15,8 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils import timezone
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from django.db import transaction, OperationalError
 
@@ -30,6 +32,14 @@ from application.models.user_models import UserPartial, User, SportAssociation, 
 from application.utils.api_utils import BalanceSheetData, generate_readable_unique_string, check_email
 from application.utils.printing import PrintingService
 from application.utils.stripe_utils import stripe_direct_credentials_configured
+from application.export_progress import (
+    EXPORT_ACTIVE_CACHE_TIMEOUT,
+    build_export_snapshot,
+    clear_active_export,
+    export_active_cache_key,
+    set_active_export,
+    set_last_export,
+)
 from application.views.stripe_views import mark_payment_as_paid
 from communications.models import AutomationWorkflow, CommunicationConfiguration
 from core import settings
@@ -1822,13 +1832,6 @@ def delete_old_audit_logs():
 # Export retention settings
 EXPORT_MAX_AGE_DAYS = 30
 EXPORT_MAX_COUNT = 3
-EXPORT_ACTIVE_CACHE_TIMEOUT = 2 * 60 * 60
-
-
-def export_active_cache_key(sport_association_id):
-    return f'association-export-active:{sport_association_id}'
-
-
 def cleanup_old_exports(sport_association_id: str = None, max_count: int = EXPORT_MAX_COUNT):
     """
     Clean up old export files based on retention policy.
@@ -1948,8 +1951,78 @@ def cleanup_old_exports_task():
         return {'error': str(e)}
 
 
-@shared_task(name="export_association_data")
-def export_association_data(sport_association_id: str, user_id: str, include_files: bool = True):
+class ExportProgressPublisher:
+    """Persist and push throttled progress for one Celery export task."""
+
+    MIN_UPDATE_INTERVAL_SECONDS = 1.0
+
+    def __init__(self, task, sport_association_id: str, user_id: str):
+        self.task = task
+        self.task_id = str(task.request.id)
+        self.sport_association_id = str(sport_association_id)
+        self.user_id = str(user_id)
+        self.last_percent = -1
+        self.last_phase = None
+        self.last_published_at = 0.0
+
+    def __call__(self, progress):
+        self.publish(progress)
+
+    def publish(self, progress, *, event_type='export_progress', status='PROGRESS', force=False, **extra):
+        percent = max(0, min(100, int(progress.get('percent', 0))))
+        phase = progress.get('phase') or 'preparing'
+        now = time.monotonic()
+        phase_changed = phase != self.last_phase
+
+        if percent < self.last_percent:
+            return False
+        if not force:
+            if percent == self.last_percent and not phase_changed:
+                return False
+            if not phase_changed and now - self.last_published_at < self.MIN_UPDATE_INTERVAL_SECONDS:
+                return False
+
+        snapshot = build_export_snapshot(
+            task_id=self.task_id,
+            sport_association_id=self.sport_association_id,
+            user_id=self.user_id,
+            status=status,
+            progress=progress,
+        )
+        snapshot.update(extra)
+
+        try:
+            if status == 'PROGRESS':
+                self.task.update_state(state='PROGRESS', meta=snapshot)
+        except Exception:
+            logger.warning('Unable to update Celery export progress', exc_info=True)
+
+        try:
+            if status == 'PROGRESS':
+                set_active_export(snapshot)
+            elif status in {'SUCCESS', 'FAILURE'}:
+                set_last_export(snapshot)
+        except Exception:
+            logger.warning('Unable to cache active export progress', exc_info=True)
+
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer is not None:
+                async_to_sync(channel_layer.group_send)(
+                    f'notifications_user_{self.user_id}',
+                    {'type': event_type, 'payload': snapshot},
+                )
+        except Exception:
+            logger.warning('Unable to push export progress over WebSocket', exc_info=True)
+
+        self.last_percent = percent
+        self.last_phase = phase
+        self.last_published_at = now
+        return True
+
+
+@shared_task(bind=True, name="export_association_data")
+def export_association_data(self, sport_association_id: str, user_id: str, include_files: bool = True):
     """
     Background task to export all association data to a ZIP file.
 
@@ -1963,6 +2036,15 @@ def export_association_data(sport_association_id: str, user_id: str, include_fil
     """
     import uuid
     from application.services.export_service import AssociationExportService
+
+    publisher = ExportProgressPublisher(self, sport_association_id, user_id)
+    publisher.publish({
+        'percent': 1,
+        'phase': 'preparing',
+        'label': 'Preparazione export',
+        'completed': None,
+        'total': None,
+    }, force=True)
 
     logger.info(
         "Starting export_association_data task",
@@ -1994,8 +2076,19 @@ def export_association_data(sport_association_id: str, user_id: str, include_fil
                 }
             )
 
+        publisher.publish({
+            'percent': 5,
+            'phase': 'preparing',
+            'label': 'Preparazione dati completata',
+            'completed': None,
+            'total': None,
+        }, force=True)
+
         # Create and run export service
-        service = AssociationExportService(uuid.UUID(sport_association_id))
+        service = AssociationExportService(
+            uuid.UUID(sport_association_id),
+            progress_callback=publisher,
+        )
         document = service.export()
 
         # Send notification email
@@ -2042,6 +2135,23 @@ Il team {WHITELABEL_NAME}
         )
         print(f"[export_association_data] Export completed: {document.filename}")
 
+        publisher.publish(
+            {
+                'percent': 100,
+                'phase': 'completed',
+                'label': 'Export completato',
+                'completed': 1,
+                'total': 1,
+            },
+            event_type='export_completed',
+            status='SUCCESS',
+            force=True,
+            document={
+                'document_id': str(document.document_id),
+                'filename': document.filename,
+            },
+        )
+
         return {
             'success': True,
             'document_id': str(document.document_id),
@@ -2056,6 +2166,20 @@ Il team {WHITELABEL_NAME}
             exc_info=True
         )
         print(f"[export_association_data] error {e}")
+
+        publisher.publish(
+            {
+                'percent': max(publisher.last_percent, 0),
+                'phase': 'failed',
+                'label': 'Export non riuscito',
+                'completed': None,
+                'total': None,
+            },
+            event_type='export_failed',
+            status='FAILURE',
+            force=True,
+            error='Si è verificato un errore durante l’export dei dati.',
+        )
 
         # Try to notify user of failure
         try:
@@ -2075,7 +2199,12 @@ Il team {WHITELABEL_NAME}
             'error': str(e),
         }
     finally:
-        cache.delete(export_active_cache_key(sport_association_id))
+        try:
+            clear_active_export(sport_association_id, publisher.task_id)
+        except Exception:
+            # Cache availability must not turn a successfully-created archive
+            # into a failed Celery result. The active key also has a bounded TTL.
+            logger.warning('Unable to clear active export cache', exc_info=True)
 
 
 @shared_task(name="import_association_data")

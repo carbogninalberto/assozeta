@@ -88,7 +88,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         msg_type = content.get('type')
 
         try:
-            if msg_type == 'fetch':
+            if msg_type == 'ping':
+                await self.send_json({
+                    'type': 'pong',
+                    'timestamp': content.get('timestamp'),
+                })
+            elif msg_type == 'fetch':
                 await self._handle_fetch()
             elif msg_type == 'mark_read':
                 notification_id = content.get('id')
@@ -151,6 +156,15 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             'type': 'notification_push',
             'notification': event['notification']
         })
+
+    async def export_progress(self, event):
+        await self.send_json({'type': 'export_progress', **event['payload']})
+
+    async def export_completed(self, event):
+        await self.send_json({'type': 'export_completed', **event['payload']})
+
+    async def export_failed(self, event):
+        await self.send_json({'type': 'export_failed', **event['payload']})
 
     # Database operations (wrapped with database_sync_to_async)
     @database_sync_to_async

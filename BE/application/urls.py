@@ -406,6 +406,7 @@ urlpatterns = [
     # Association Export endpoints
     path(r'association/export/start', AssociationExportViewSet.as_view({'post': 'start_export'}), name='association_export_start'),
     path(r'association/export/status', AssociationExportViewSet.as_view({'get': 'export_status'}), name='association_export_status'),
+    path(r'association/export/active', AssociationExportViewSet.as_view({'get': 'active_export'}), name='association_export_active'),
     path(r'association/export/list', AssociationExportViewSet.as_view({'get': 'list_exports'}), name='association_export_list'),
     path(r'association/export/delete', AssociationExportViewSet.as_view({'delete': 'delete_export'}), name='association_export_delete'),
     # Association Import endpoints

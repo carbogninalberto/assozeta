@@ -1,4 +1,5 @@
 import {getWebSocketUrl} from './websocketUrl.js';
+import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
  * NotificationWebSocket - Real-time notification management via WebSocket
@@ -28,6 +29,9 @@ class NotificationWebSocket {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         this.reconnectDelay = 1000;
+        this.reconnectTimer = null;
+        this.manualCloseSockets = new WeakSet();
+        this.heartbeat = new WebSocketHeartbeat(() => this.ws);
 
         this.onNotifications = null;
         this.onNewNotification = null;
@@ -36,21 +40,27 @@ class NotificationWebSocket {
         this.onError = null;
         this.onConnect = null;
         this.onDisconnect = null;
+        this.onExportProgress = null;
+        this.onExportCompleted = null;
+        this.onExportFailed = null;
     }
 
     /**
      * Connect to the notifications WebSocket
      */
     connect() {
+        if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
         const wsPath = __bakney.env.WS.NOTIFICATIONS;
         const baseUrl = getWebSocketUrl(wsPath);
         const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
 
         this.ws = new WebSocket(url);
+        const socket = this.ws;
 
         this.ws.onopen = () => {
             console.log('[NotificationWebSocket] Connected');
             this.reconnectAttempts = 0;
+            this.heartbeat.start();
             this.onConnect?.();
             // Fetch initial notifications
             this.fetch();
@@ -59,6 +69,7 @@ class NotificationWebSocket {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
+                if (this.heartbeat.handlePong(data)) return;
                 this.handleMessage(data);
             } catch (error) {
                 console.error('[NotificationWebSocket] Failed to parse message:', error);
@@ -66,8 +77,14 @@ class NotificationWebSocket {
         };
 
         this.ws.onclose = (event) => {
+            if (this.ws === socket) {
+                this.ws = null;
+                this.heartbeat.stop();
+            }
             console.log('[NotificationWebSocket] Closed:', event.code);
             this.onDisconnect?.(event.code);
+
+            if (this.manualCloseSockets.has(socket)) return;
 
             // Don't reconnect if auth failed (4001)
             if (event.code === 4001) {
@@ -98,6 +115,18 @@ class NotificationWebSocket {
 
             case 'notification_push':
                 this.onNewNotification?.(data.notification);
+                break;
+
+            case 'export_progress':
+                this.onExportProgress?.(data);
+                break;
+
+            case 'export_completed':
+                this.onExportCompleted?.(data);
+                break;
+
+            case 'export_failed':
+                this.onExportFailed?.(data);
                 break;
 
             case 'read_confirmed':
@@ -135,7 +164,11 @@ class NotificationWebSocket {
         const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
 
         console.log(`[NotificationWebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
-        setTimeout(() => this.connect(), delay);
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            this.connect();
+        }, delay);
     }
 
     /**
@@ -192,6 +225,18 @@ class NotificationWebSocket {
         this.onNewNotification = handler;
     }
 
+    setOnExportProgress(handler) {
+        this.onExportProgress = handler;
+    }
+
+    setOnExportCompleted(handler) {
+        this.onExportCompleted = handler;
+    }
+
+    setOnExportFailed(handler) {
+        this.onExportFailed = handler;
+    }
+
     /**
      * Set handler for read confirmation
      * @param {function(string): void} handler - (notificationId) => {}
@@ -236,8 +281,15 @@ class NotificationWebSocket {
      * Disconnect from the WebSocket
      */
     disconnect() {
+        this.heartbeat.stop();
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
         if (this.ws) {
-            this.ws.close();
+            const socket = this.ws;
+            this.manualCloseSockets.add(socket);
+            socket.close();
             this.ws = null;
         }
     }

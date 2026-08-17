@@ -6,6 +6,7 @@ API endpoints for association data export and import functionality.
 import logging
 import os
 import tempfile
+import uuid
 
 from celery.result import AsyncResult
 from django.core.cache import cache
@@ -22,10 +23,18 @@ from application.models.user_models import (
     User,
 )
 from application.services.validators import ImportValidator
-from application.tasks import (
+from application.export_progress import (
     EXPORT_ACTIVE_CACHE_TIMEOUT,
-    EXPORT_MAX_COUNT,
+    EXPORT_TASK_CACHE_TIMEOUT,
+    build_export_snapshot,
+    clear_active_export,
     export_active_cache_key,
+    export_task_cache_key,
+    get_active_export,
+    get_last_export,
+)
+from application.tasks import (
+    EXPORT_MAX_COUNT,
     export_association_data,
     import_association_data,
 )
@@ -35,11 +44,9 @@ from instance.permissions import SetupTokenOrAuthenticated
 
 logger = logging.getLogger(__name__)
 
-EXPORT_TASK_CACHE_TIMEOUT = 24 * 60 * 60
-
-
 def _export_task_cache_key(task_id):
-    return f'association-export-task:{task_id}'
+    """Backward-compatible alias for existing callers and tests."""
+    return export_task_cache_key(task_id)
 
 
 class AssociationExportViewSet(ViewSet):
@@ -106,10 +113,18 @@ class AssociationExportViewSet(ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        active_cache_key = export_active_cache_key(sport_association.sport_association_id)
+        task_id = str(uuid.uuid4())
+        association_id = str(sport_association.sport_association_id)
+        user_id = str(user.user_id)
+        active_cache_key = export_active_cache_key(association_id)
+        initial_snapshot = build_export_snapshot(
+            task_id=task_id,
+            sport_association_id=association_id,
+            user_id=user_id,
+        )
         if not cache.add(
             active_cache_key,
-            str(user.user_id),
+            initial_snapshot,
             timeout=EXPORT_ACTIVE_CACHE_TIMEOUT,
         ):
             return Response(
@@ -117,37 +132,51 @@ class AssociationExportViewSet(ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        # Start the export task
+        task_owner_key = _export_task_cache_key(task_id)
         try:
-            task = export_association_data.delay(
-                sport_association_id=str(sport_association.sport_association_id),
-                user_id=str(user.user_id),
+            cache.set(
+                task_owner_key,
+                {
+                    'sport_association_id': association_id,
+                    'user_id': user_id,
+                },
+                timeout=EXPORT_TASK_CACHE_TIMEOUT,
+            )
+
+            # Register state before dispatch so a fast worker cannot race recovery.
+            export_association_data.apply_async(
+                kwargs={
+                    'sport_association_id': association_id,
+                    'user_id': user_id,
+                },
+                task_id=task_id,
             )
         except Exception:
-            cache.delete(active_cache_key)
+            try:
+                cache.delete_many([active_cache_key, task_owner_key])
+            except Exception:
+                logger.warning(
+                    'Unable to roll back export cache registration',
+                    extra={'task_id': task_id},
+                    exc_info=True,
+                )
             raise
-
-        cache.set(
-            _export_task_cache_key(task.id),
-            {
-                'sport_association_id': str(sport_association.sport_association_id),
-                'user_id': str(user.user_id),
-            },
-            timeout=EXPORT_TASK_CACHE_TIMEOUT,
-        )
 
         logger.info(
             f"Export task started",
             extra={
-                'task_id': task.id,
-                'sport_association_id': str(sport_association.sport_association_id),
-                'user_id': str(user.user_id),
+                'task_id': task_id,
+                'sport_association_id': association_id,
+                'user_id': user_id,
             }
         )
 
         return Response({
-            'task_id': task.id,
+            'task_id': task_id,
             'status': 'started',
+            'estimate': '0%',
+            'progress': initial_snapshot['progress'],
+            'updated_at': initial_snapshot['updated_at'],
             'message': 'Export avviato. Riceverai una email quando sarà completato.',
         }, status=status.HTTP_202_ACCEPTED)
 
@@ -205,6 +234,26 @@ class AssociationExportViewSet(ViewSet):
             'ready': result.ready(),
         }
 
+        active_snapshot = get_active_export(sport_association.sport_association_id)
+        if active_snapshot and active_snapshot.get('task_id') == task_id:
+            response_data['status'] = active_snapshot.get('status', result.status)
+            response_data['estimate'] = active_snapshot.get('estimate', '0%')
+            response_data['progress'] = active_snapshot.get('progress')
+            response_data['updated_at'] = active_snapshot.get('updated_at')
+        elif (
+            (terminal_snapshot := get_last_export(sport_association.sport_association_id))
+            and terminal_snapshot.get('task_id') == task_id
+        ):
+            response_data['status'] = terminal_snapshot.get('status', result.status)
+            response_data['ready'] = True
+            response_data['estimate'] = terminal_snapshot.get('estimate', '100%')
+            response_data['progress'] = terminal_snapshot.get('progress')
+            response_data['updated_at'] = terminal_snapshot.get('updated_at')
+        elif isinstance(result.info, dict) and result.info.get('task_id') == task_id:
+            response_data['estimate'] = result.info.get('estimate', '0%')
+            response_data['progress'] = result.info.get('progress')
+            response_data['updated_at'] = result.info.get('updated_at')
+
         if result.ready():
             if result.successful():
                 response_data['result'] = result.result
@@ -212,6 +261,53 @@ class AssociationExportViewSet(ViewSet):
                 response_data['error'] = str(result.result)
 
         return Response(response_data)
+
+    @action(detail=False, methods=['GET'], url_path='active')
+    def active_export(self, request):
+        """Return the current association export snapshot for UI recovery."""
+        if not self._check_export_permission(request):
+            return Response(
+                {'error': 'Solo il proprietario può visualizzare gli export'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            sport_association = request.user.sport_association
+        except SportAssociation.DoesNotExist:
+            return Response(
+                {'error': 'Associazione non trovata'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        snapshot = get_active_export(sport_association.sport_association_id)
+        if not snapshot:
+            terminal = get_last_export(sport_association.sport_association_id)
+            if (
+                terminal
+                and terminal.get('user_id') == str(request.user.user_id)
+                and terminal.get('status') in {'SUCCESS', 'FAILURE'}
+            ):
+                return Response({'active': False, 'terminal': terminal})
+            return Response({'active': False})
+
+        if (
+            snapshot.get('sport_association_id') != str(sport_association.sport_association_id)
+            or snapshot.get('user_id') != str(request.user.user_id)
+        ):
+            return Response({'active': False})
+
+        result = AsyncResult(snapshot['task_id'])
+        if result.ready():
+            clear_active_export(
+                sport_association.sport_association_id,
+                snapshot['task_id'],
+            )
+            terminal = get_last_export(sport_association.sport_association_id)
+            if terminal and terminal.get('task_id') == snapshot['task_id']:
+                return Response({'active': False, 'terminal': terminal})
+            return Response({'active': False})
+
+        return Response({'active': True, **snapshot})
 
     @action(detail=False, methods=['GET'], url_path='list')
     def list_exports(self, request):

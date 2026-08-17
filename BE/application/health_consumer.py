@@ -37,7 +37,12 @@ class HealthConsumer(AsyncJsonWebsocketConsumer):
         """Handle incoming messages."""
         msg_type = content.get('type')
 
-        if msg_type == 'check':
+        if msg_type == 'ping':
+            await self.send_json({
+                'type': 'pong',
+                'timestamp': content.get('timestamp'),
+            })
+        elif msg_type == 'check':
             await self._send_health_status()
         else:
             await self.send_json({

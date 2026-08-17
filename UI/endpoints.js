@@ -496,6 +496,7 @@ export const buildConfig = function(config={
                         EXPORT: {
                             START: `${apiHost}/association/export/start`,
                             STATUS: `${apiHost}/association/export/status`,
+                            ACTIVE: `${apiHost}/association/export/active`,
                             LIST: `${apiHost}/association/export/list`,
                             DELETE: `${apiHost}/association/export/delete`,
                         },

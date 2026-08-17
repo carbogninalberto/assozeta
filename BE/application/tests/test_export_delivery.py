@@ -105,21 +105,21 @@ class ExportDeliveryTests(TestCase):
         self.assertFalse(Document.objects.filter(pk=self.document.pk).exists())
 
     @patch('application.views.export_views.AsyncResult')
-    @patch('application.views.export_views.export_association_data.delay')
-    def test_export_status_is_scoped_to_requesting_association(self, task_delay, async_result):
-        task_delay.return_value = SimpleNamespace(id='task-123')
+    @patch('application.views.export_views.export_association_data.apply_async')
+    def test_export_status_is_scoped_to_requesting_association(self, task_apply, async_result):
         async_result.return_value.status = 'PENDING'
         async_result.return_value.ready.return_value = False
         start_response = self.client.post('/association/export/start', {}, format='json')
+        task_id = start_response.data['task_id']
 
         self.assertEqual(start_response.status_code, status.HTTP_202_ACCEPTED)
-        owner_response = self.client.get('/association/export/status?task_id=task-123')
+        owner_response = self.client.get(f'/association/export/status?task_id={task_id}')
         self.assertEqual(owner_response.status_code, status.HTTP_200_OK)
 
         foreign_owner = create_test_user(role=User.ASSOCIATION)
         create_test_sport_association(user=foreign_owner)
         self.client.force_authenticate(user=foreign_owner)
-        foreign_response = self.client.get('/association/export/status?task_id=task-123')
+        foreign_response = self.client.get(f'/association/export/status?task_id={task_id}')
         self.assertEqual(foreign_response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_export_queryset_excludes_previous_backups(self):
