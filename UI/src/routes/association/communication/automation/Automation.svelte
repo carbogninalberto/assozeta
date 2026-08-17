@@ -167,6 +167,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Stato',
             sortable: true,
             width: 150,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 // if row.enabled set label-success else label-primary
                 return (
@@ -183,6 +187,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Data',
             sortable: true,
             width: 150,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 return (
                     '<p class="text-dark-75 font-weight-bolder mb-0">' +

@@ -111,6 +111,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             sortable: true,
             width: 90,
             minWidth: '100%',
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return categoryDictionary[row.expense ? 1 : 0];
             },
@@ -120,6 +124,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Informazioni fiscali',
             sortable: true,
             minWidth: '100%',
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 return (
                     '<div class="d-flex" style="gap: .5rem;">' +

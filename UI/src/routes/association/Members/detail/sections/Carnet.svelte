@@ -181,6 +181,10 @@
             title: 'Corso',
             minWidth: '100%',
             width: 200,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 let contentText = '';
                 if (row.course.length == 0) {
@@ -267,7 +271,10 @@
             textAlign: 'right',
             width: 70,
             minWidth: '100%',
-            autoHide: false,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return (
                     '<span class="font-weight-bolder text-primary" style="word-break: keep-all;">' +

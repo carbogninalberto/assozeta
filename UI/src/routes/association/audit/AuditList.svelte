@@ -199,7 +199,10 @@
             title: 'Tipo',
             width: 120,
             sortable: true,
-            autoHide: false,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 const val = row.model_verbose_name || row.model_name;
                 if (!val || val === 'null') return '<span class="font-weight-bold">-</span>';
@@ -211,7 +214,6 @@
             title: 'Utente',
             width: 150,
             sortable: false,
-            autoHide: false,
             responsive: {
                 visible: 'lg',
                 hidden: 'md',
@@ -230,7 +232,6 @@
             title: 'Oggetto',
             width: 180,
             sortable: false,
-            autoHide: false,
             responsive: {
                 visible: 'lg',
                 hidden: 'md',
@@ -247,7 +248,6 @@
             title: 'Modifiche',
             width: 180,
             sortable: false,
-            autoHide: false,
             responsive: {
                 visible: 'xl',
                 hidden: 'lg',

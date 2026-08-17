@@ -647,8 +647,8 @@
         return `width: max(100%, ${minWidth}px)`;
     }
 
-    function getResponsiveBreakpoint(column) {
-        if (!responsive || column.autoHide === false) return null;
+    function getResponsiveBreakpoint(column, isResponsive = responsive) {
+        if (!isResponsive || column.autoHide === false) return null;
         const breakpointSource = column.responsive?.visible || column.responsive?.hidden;
         if (!breakpointSource) return null;
         const bp = String(breakpointSource).toLowerCase();
@@ -665,8 +665,8 @@
         return `datatable-detail-visible-below-${getResponsiveBreakpoint(column)}`;
     }
 
-    function getResponsiveDetailColumns() {
-        return columns.filter(column => !column.selector && getResponsiveBreakpoint(column));
+    function getResponsiveDetailColumns(cols, isResponsive) {
+        return (cols || []).filter(column => !column.selector && getResponsiveBreakpoint(column, isResponsive));
     }
 
     function getDetailToggleBreakpoint(detailColumns) {
@@ -818,7 +818,7 @@
     $: spinnerMessage = getSpinnerMessage();
     $: spinnerState = spinnerConfig?.state || 'primary';
     $: loaderStyle = getLoaderStyle();
-    $: responsiveDetailColumns = getResponsiveDetailColumns();
+    $: responsiveDetailColumns = getResponsiveDetailColumns(columns, responsive);
     $: detailToggleBreakpoint = getDetailToggleBreakpoint(responsiveDetailColumns);
     $: hasResponsiveDetails = responsiveDetailColumns.length > 0 && detailToggleBreakpoint;
     $: tableLayout = computeTableLayout(columns, hasResponsiveDetails, viewportWidth, dataSet, tableWidth);
@@ -1134,25 +1134,38 @@
                                                     on:change={event => toggleRow(rowIndex, event.currentTarget.checked)} />
                                                 <span />
                                             </label>
-                                        {:else}
+                                        {:else if !isColumnHiddenAtViewport(column, viewportWidth)}
                                             {@html renderCell(column, row)}
                                         {/if}
                                     </span>
                                 </span>
                             {/each}
                         </div>
-                        {#if hasResponsiveDetails && expandedRows.has(rowIndex)}
-                            <div class="datatable-row-detail" style={getRowStyle(rowMinWidth)}>
+                        {#if hasResponsiveDetails}
+                            <div
+                                class="datatable-row-detail {expandedRows.has(rowIndex) &&
+                                responsiveDetailColumns.some(detailColumn =>
+                                    isColumnHiddenAtViewport(detailColumn, viewportWidth)
+                                )
+                                    ? 'datatable-row-detail-expanded'
+                                    : ''}"
+                                style={getRowStyle(rowMinWidth)}
+                                aria-hidden={!expandedRows.has(rowIndex) ||
+                                !responsiveDetailColumns.some(detailColumn =>
+                                    isColumnHiddenAtViewport(detailColumn, viewportWidth)
+                                )}>
                                 <div class="datatable-detail">
                                     {#each responsiveDetailColumns as detailColumn}
-                                        <div class="datatable-detail-row {getDetailVisibilityClass(detailColumn)}">
-                                            <span class="datatable-detail-label">
-                                                {detailColumn.title || detailColumn.field || ''}
-                                            </span>
-                                            <span class="datatable-detail-value">
-                                                {@html renderCell(detailColumn, row)}
-                                            </span>
-                                        </div>
+                                        {#if isColumnHiddenAtViewport(detailColumn, viewportWidth)}
+                                            <div class="datatable-detail-row {getDetailVisibilityClass(detailColumn)}">
+                                                <span class="datatable-detail-label">
+                                                    {detailColumn.title || detailColumn.field || ''}
+                                                </span>
+                                                <span class="datatable-detail-value">
+                                                    {@html renderCell(detailColumn, row)}
+                                                </span>
+                                            </div>
+                                        {/if}
                                     {/each}
                                 </div>
                             </div>
@@ -1420,10 +1433,14 @@
     }
 
     .datatable-row-detail {
-        display: block;
+        display: none;
         width: 100%;
         border-bottom: 1px solid #ebedf3;
         background-color: #f9fbfd;
+    }
+
+    .datatable-row-detail.datatable-row-detail-expanded {
+        display: block;
     }
 
     .datatable-detail {

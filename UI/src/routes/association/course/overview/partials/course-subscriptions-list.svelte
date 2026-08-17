@@ -350,6 +350,10 @@
                     fireClick: false,
                     width: 250,
                     sortable: false,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: function (row) {
                         let rowLabels =
                             row.installments?.length > 0 || info.multi_payments == true

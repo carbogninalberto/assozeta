@@ -195,9 +195,12 @@
                     field: 'periods',
                     title: 'Iscritto ai seguenti periodi',
                     sortable: true,
-                    autoHide: false,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return `
                                     <div class="d-flex flex-wrap gap-2">

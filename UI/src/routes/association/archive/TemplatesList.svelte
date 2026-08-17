@@ -162,11 +162,14 @@
                             field: 'footer_header',
                             title: 'Informazioni',
                             sortable: true,
-                            autoHide: false,
                             width: 150,
                             fireClick: true,
                             minWidth: '100%',
                             textAlign: 'left',
+                            responsive: {
+                                visible: 'lg',
+                                hidden: 'md',
+                            },
                             template: row => {
                                 return `<div class="d-flex flex-row flex-wrap">
                                     ${

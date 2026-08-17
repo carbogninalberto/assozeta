@@ -227,9 +227,7 @@
                             field: 'tutors',
                             title: 'Tutori',
                             sortable: true,
-                            autoHide: false,
                             fireClick: true,
-                            autoHide: false,
                             responsive: {
                                 visible: 'lg',
                                 hidden: 'md',
@@ -255,11 +253,9 @@
                             field: 'age',
                             title: 'Età',
                             sortable: true,
-                            autoHide: false,
                             textAlign: 'right',
                             fireClick: true,
                             minWidth: '100%',
-                            autoHide: false,
                             responsive: {
                                 visible: 'md',
                                 hidden: 'sm',

@@ -369,9 +369,12 @@
             title: 'Info',
             checked: true,
             sortable: false,
-            autoHide: false,
             overflow: 'visible',
             width: 120,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 let pdfLink =
                     __bakney.env.API.DOCUMENT.RETRIEVE +

@@ -81,7 +81,6 @@
             field: 'enabled',
             title: 'Abilitato',
             sortable: false,
-            autoHide: false,
             width: 100,
             responsive: {
                 visible: 'lg',

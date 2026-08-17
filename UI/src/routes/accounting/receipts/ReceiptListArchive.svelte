@@ -76,10 +76,6 @@
             width: 200,
             autoHide: false,
             sortable: false,
-            responsive: {
-                visible: 'lg',
-                hidden: 'md',
-            },
             template: function (row) {
                 if (row.payment?.imported_from_associami)
                     return `<div class="font-size-md font-weight-boldest text-dark" style="line-height:1.2;">${row.payment?.customer_name}</div>`;

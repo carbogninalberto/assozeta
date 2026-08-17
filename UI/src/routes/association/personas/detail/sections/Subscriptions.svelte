@@ -338,6 +338,10 @@
                     sortable: false,
                     width: 150,
                     fireClick: true,
+                    responsive: {
+                        visible: 'xl',
+                        hidden: 'lg',
+                    },
                     template: function (row) {
                         const currentDate = new Date();
                         const expirationDate = new Date(row.medical_expiration_date);
@@ -365,6 +369,10 @@
                     field: 'start_date',
                     title: 'Data Inizio',
                     sortable: true,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return `<div>${moment(row.start_date).format('DD/MM/YYYY')}</div>`;
                     },
@@ -373,6 +381,10 @@
                     field: 'end_date',
                     title: 'Data Fine',
                     sortable: true,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return `<div>${moment(row.end_date).format('DD/MM/YYYY')}</div>`;
                     },
@@ -381,6 +393,10 @@
                     field: 'created_at',
                     title: 'Creata il',
                     sortable: true,
+                    responsive: {
+                        visible: 'xl',
+                        hidden: 'lg',
+                    },
                     template: row => {
                         return `<div>${moment(row.creation_date).format('DD/MM/YYYY')}</div>`;
                     },
@@ -389,6 +405,7 @@
                     field: 'status',
                     title: 'Stato',
                     sortable: true,
+                    autoHide: false,
                     template: row => {
                         return statusTextDictionary[row.status_flag];
                     },

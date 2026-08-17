@@ -293,6 +293,10 @@
             sortable: false,
             width: 150,
             fireClick: true,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 const currentDate = new Date();
                 const expirationDate = new Date(row.medical_expiration_date);
@@ -392,10 +396,10 @@
             width: 250,
             minWidth: '100%',
             fireClick: true,
-            // responsive: {
-            //     visible: 'xl',
-            //     hidden: 'lg',
-            // },
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 let tags = '';
                 row.tags.forEach(tag => {
@@ -473,10 +477,13 @@
                       title: 'Palestra',
                       checked: true,
                       sortable: false,
-                      autoHide: false,
                       overflow: 'visible',
                       width: 150,
                       fireClick: true,
+                      responsive: {
+                          visible: 'xl',
+                          hidden: 'lg',
+                      },
                       template: function (row) {
                           return row.custom_data?.school_name || '-';
                       },
@@ -488,9 +495,12 @@
             title: 'Info',
             checked: true,
             sortable: false,
-            autoHide: false,
             overflow: 'visible',
             width: 120,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 let pdfLink =
                     __bakney.env.API.DOCUMENT.RETRIEVE +
@@ -2574,7 +2584,6 @@
                     url={__bakney.env.API.SUBSCRIPTION.LIST}
                     dataKey="data.subscriptions"
                     params={$subscriptionListFilterDatatable || {}}
-                    responsive={false}
                     spinnerConfig={{opacity: 0}}
                     showSearch={false}
                     showDividerFilter={false}

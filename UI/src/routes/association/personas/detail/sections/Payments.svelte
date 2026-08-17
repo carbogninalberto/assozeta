@@ -568,7 +568,6 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                             fireClick: true,
                             checked: true,
                             width: 70,
-                            autoHide: false,
                             sortable: true,
                             responsive: {
                                 visible: 'xxl',
@@ -584,7 +583,6 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                             checked: true,
                             fireClick: true,
                             width: 50,
-                            autoHide: false,
                             sortable: true,
                             responsive: {
                                 visible: 'lg',
@@ -600,7 +598,6 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                             checked: true,
                             fireClick: true,
                             width: 70,
-                            autoHide: false,
                             sortable: false,
                             minWidth: '100%',
                             responsive: {
@@ -706,7 +703,6 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                             fireClick: true,
                             width: 65,
                             minWidth: '100%',
-                            autoHide: false,
                             responsive: {
                                 visible: 'sm',
                                 hidden: 'xs',

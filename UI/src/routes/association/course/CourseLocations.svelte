@@ -88,10 +88,13 @@
                             field: 'address',
                             title: 'Indirizzo',
                             sortable: true,
-                            autoHide: false,
                             fireClick: true,
                             minWidth: '100%',
                             textAlign: 'left',
+                            responsive: {
+                                visible: 'lg',
+                                hidden: 'md',
+                            },
                             template: row => {
                                 return row.address || '-';
                             },
@@ -101,9 +104,12 @@
                             title: 'Descrizione',
                             sortable: true,
                             fireClick: true,
-                            autoHide: false,
                             minWidth: '100%',
                             textAlign: 'left',
+                            responsive: {
+                                visible: 'xl',
+                                hidden: 'lg',
+                            },
                             template: row => {
                                 return row.description || '-';
                             },
@@ -112,9 +118,12 @@
                             field: 'documents',
                             title: 'Documenti',
                             sortable: true,
-                            autoHide: false,
                             minWidth: '100%',
                             textAlign: 'left',
+                            responsive: {
+                                visible: 'md',
+                                hidden: 'sm',
+                            },
                             template: row => {
                                 if (!row.documents || row.documents.length === 0) return '-';
                                 return (

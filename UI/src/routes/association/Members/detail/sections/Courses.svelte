@@ -72,9 +72,12 @@
         {
             field: 'description',
             title: 'Descrizione',
-            autoHide: false,
             minWidth: '100%',
             sortable: false,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 return `<div class="description-course text-truncate" data-toggle="tooltip" data-html="true" title="${
                     row.description
@@ -90,6 +93,10 @@
             title: 'Tipo',
             width: 150,
             sortable: false,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return courseTypeDictionary[row.course_type];
             },

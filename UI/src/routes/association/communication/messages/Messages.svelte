@@ -175,6 +175,10 @@ datatable.reload();
             title: 'Tipo',
             sortable: true,
             width: 60,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return typeDictionary[row.type];
             },
@@ -183,8 +187,11 @@ datatable.reload();
             field: 'subject',
             title: 'Oggetto',
             sortable: true,
-            autoHide: false,
             width: 150,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 let subject = String(row.subject || '-').toUpperCase();
                 // slice message if it's too long
@@ -203,6 +210,10 @@ datatable.reload();
             title: 'Data',
             sortable: true,
             width: 150,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return (
                     '<p class="text-dark-75 font-weight-bolder mb-0">' +

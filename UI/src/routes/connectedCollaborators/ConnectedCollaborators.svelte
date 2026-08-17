@@ -94,6 +94,10 @@ datatable.reload();
             title: 'Email',
             sortable: true,
             width: 250,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 return '<p class="text-dark-75 font-weight-bolder mb-0">' + row.email + '</p>';
             },
@@ -104,6 +108,10 @@ datatable.reload();
             sortable: true,
             width: 100,
             minWidth: '100%',
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 // if is an invite make unaccepted else accepted
                 if (row.is_invite) {
@@ -136,6 +144,10 @@ datatable.reload();
             sortable: true,
             width: 120,
             minWidth: '100%',
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return (
                     '<p class="text-dark-75 font-weight-bolder mb-0">' +

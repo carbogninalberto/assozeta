@@ -217,7 +217,6 @@
             fireClick: true,
             checked: true,
             width: 70,
-            autoHide: false,
             sortable: true,
             responsive: {
                 visible: 'xxl',
@@ -233,7 +232,6 @@
             checked: true,
             fireClick: true,
             width: 50,
-            autoHide: false,
             sortable: true,
             responsive: {
                 visible: 'lg',
@@ -249,7 +247,6 @@
             checked: true,
             fireClick: true,
             width: 70,
-            autoHide: false,
             sortable: false,
             minWidth: '100%',
             responsive: {
@@ -355,7 +352,6 @@
             fireClick: true,
             width: 65,
             minWidth: '100%',
-            autoHide: false,
             responsive: {
                 visible: 'sm',
                 hidden: 'xs',

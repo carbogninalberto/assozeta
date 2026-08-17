@@ -111,6 +111,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Dal conto',
             sortable: true,
             width: 150,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return (
                     '<p class="text-dark-50 font-weight-bolder mb-0">' +
@@ -124,6 +128,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Al conto',
             sortable: true,
             width: 150,
+            responsive: {
+                visible: 'lg',
+                hidden: 'md',
+            },
             template: function (row) {
                 return (
                     '<p class="text-dark-50 font-weight-bolder mb-0">' +

@@ -193,9 +193,12 @@
                     field: 'queue_position',
                     title: 'Coda',
                     sortable: true,
-                    autoHide: false,
                     width: 60,
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return `
                         <span class="font-weight-boldest">
@@ -208,9 +211,12 @@
                     field: 'approved',
                     title: 'Approvata',
                     sortable: true,
-                    autoHide: false,
                     width: 100,
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return `
                         <span class="font-weight-boldest">

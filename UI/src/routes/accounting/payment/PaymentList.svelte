@@ -260,7 +260,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Stato',
             checked: true,
             width: 70,
-            autoHide: false,
             sortable: true,
             fireClick: true,
             responsive: {
@@ -276,7 +275,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Metodo',
             checked: true,
             width: 70,
-            autoHide: false,
             fireClick: true,
             sortable: true,
             minWidth: '100%',
@@ -295,7 +293,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Tipo',
             checked: true,
             width: 50,
-            autoHide: false,
             fireClick: true,
             sortable: true,
             responsive: {
@@ -382,7 +379,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Conto',
             checked: true,
             width: 70,
-            autoHide: false,
             fireClick: true,
             sortable: false,
             responsive: {
@@ -401,7 +397,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             title: 'Intestato a',
             checked: true,
             width: 130,
-            autoHide: false,
             sortable: false,
             fireClick: true,
             responsive: {
@@ -468,7 +463,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             field: 'notes',
             title: 'Note',
             checked: false,
-            autoHide: false,
             sortable: false,
             fireClick: true,
             minWidth: '100%',

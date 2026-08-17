@@ -164,8 +164,11 @@
                     title: 'Canone',
                     fireClick: true,
                     width: 80,
-                    autoHide: true,
                     minWidth: '100%',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: function (row) {
                         return `<span class="text-success font-weight-boldest">${String(
                             row?.membership_fee ?? 0
@@ -230,9 +233,12 @@
                     field: 'membership_active',
                     title: 'Stato',
                     width: 80,
-                    autoHide: true,
                     minWidth: '100%',
                     fireClick: true,
+                    responsive: {
+                        visible: 'md',
+                        hidden: 'sm',
+                    },
                     template: function (row) {
                         return activeTextDictionary[row.membership_active];
                     },
@@ -241,9 +247,12 @@
                     field: 'auto_renewal',
                     title: 'Rinnovo',
                     width: 100,
-                    autoHide: true,
                     minWidth: '100%',
                     fireClick: true,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: function (row) {
                         return autoRenewalTextDictionary[row.auto_renewal];
                     },
@@ -252,9 +261,12 @@
                     field: 'billed_frequency',
                     title: 'Frequenza',
                     width: 100,
-                    autoHide: true,
                     minWidth: '100%',
                     fireClick: true,
+                    responsive: {
+                        visible: 'xl',
+                        hidden: 'lg',
+                    },
                     template: function (row) {
                         return row.billed_frequency + ' mes' + (row.billed_frequency > 1 ? 'i' : 'e');
                     },
@@ -263,9 +275,12 @@
                     field: 'billed_from',
                     title: 'Data inizio',
                     width: 100,
-                    autoHide: true,
                     minWidth: '100%',
                     fireClick: true,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: function (row) {
                         return new Date(row.billed_from).toLocaleDateString('it-IT');
                     },
@@ -274,9 +289,12 @@
                     field: 'billed_to',
                     title: 'Scade il',
                     width: 100,
-                    autoHide: true,
                     minWidth: '100%',
                     fireClick: true,
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: function (row) {
                         return new Date(row.billed_until).toLocaleDateString('it-IT');
                     },

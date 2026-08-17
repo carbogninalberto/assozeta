@@ -313,10 +313,13 @@ toast.success('Eliminazione avvenuta con Successo.');
         {
             field: 'description',
             title: 'Descrizione',
-            autoHide: false,
             minWidth: '100%',
             fireClick: true,
             sortable: false,
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 const desc = row.description || '';
                 return `<div class="description-course text-truncate" data-toggle="tooltip" data-html="true" title="${desc}">${desc
@@ -461,10 +464,10 @@ toast.success('Eliminazione avvenuta con Successo.');
             fireClick: true,
             sortable: false,
             width: 130,
-            // responsive: {
-            //     visible: 'xl',
-            //     hidden: 'lg',
-            // },
+            responsive: {
+                visible: 'xl',
+                hidden: 'lg',
+            },
             template: function (row) {
                 let tags = '';
                 row.tags?.forEach(tag => {

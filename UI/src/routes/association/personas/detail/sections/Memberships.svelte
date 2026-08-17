@@ -79,11 +79,14 @@
                     field: 'membership_number',
                     title: 'Numero',
                     sortable: true,
-                    autoHide: false,
                     width: 100,
                     fireClick: true,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'xl',
+                        hidden: 'lg',
+                    },
                     template: row => {
                         return row.membership_number || '-';
                     },
@@ -93,10 +96,13 @@
                     title: 'Data Inizio',
                     sortable: true,
                     fireClick: true,
-                    autoHide: false,
                     width: 80,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return row.start_date ? moment(row.start_date).format('DD/MM/YYYY') : '-';
                     },
@@ -105,11 +111,14 @@
                     field: 'end_date',
                     title: 'Data Fine',
                     sortable: true,
-                    autoHide: false,
                     fireClick: true,
                     width: 80,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return row.end_date ? moment(row.end_date).format('DD/MM/YYYY') : '-';
                     },
@@ -118,11 +127,14 @@
                     field: 'price',
                     title: 'Prezzo',
                     sortable: true,
-                    autoHide: false,
                     width: 80,
                     fireClick: true,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'lg',
+                        hidden: 'md',
+                    },
                     template: row => {
                         return row.price ? `<span class="text-success font-weight-boldest">€ ${row.price}</span>` : '-';
                     },
@@ -131,11 +143,14 @@
                     field: 'paid',
                     title: 'Stato',
                     sortable: true,
-                    autoHide: false,
                     width: 65,
                     fireClick: true,
                     minWidth: '100%',
                     textAlign: 'left',
+                    responsive: {
+                        visible: 'md',
+                        hidden: 'sm',
+                    },
                     template: row => {
                         if (row.paid == null) return '-';
                         return `<div>
