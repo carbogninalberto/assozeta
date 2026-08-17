@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import tempfile
+import time
 import uuid
 import zipfile
 from datetime import datetime
@@ -18,7 +19,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from django.core.files.storage import default_storage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Model
+from django.db.models import Exists, Model, OuterRef
 from django.utils import timezone
 
 from application.models import (
@@ -582,13 +583,16 @@ class AssociationExportService:
                 continue
 
             try:
-                value = getattr(obj, field.name, None)
-
                 # Handle FK and OneToOne fields - store the ID
                 if field.is_relation and (field.many_to_one or field.one_to_one):
-                    fk_id = getattr(obj, f'{field.name}_id', None)
+                    # ``attname`` is the raw column attribute (normally
+                    # ``<field>_id``), so this never dereferences the related
+                    # object and cannot trigger a relation query.
+                    attname = getattr(field, 'attname', f'{field.name}_id')
+                    fk_id = getattr(obj, attname, None)
                     data[f'{field.name}_id'] = str(fk_id) if fk_id else None
                 else:
+                    value = getattr(obj, field.name, None)
                     # Handle special types
                     if isinstance(value, uuid.UUID):
                         data[field.name] = str(value)
@@ -614,7 +618,10 @@ class AssociationExportService:
                 if hasattr(obj, m2m_field_name):
                     try:
                         m2m_manager = getattr(obj, m2m_field_name)
-                        related_pks = list(m2m_manager.values_list('pk', flat=True))
+                        # ``all()`` consumes Django's prefetch cache. Calling
+                        # ``values_list()`` here would bypass it and issue one
+                        # query for every exported record.
+                        related_pks = [related.pk for related in m2m_manager.all()]
                         data[f'_m2m_{m2m_field_name}'] = [str(pk) for pk in related_pks]
                     except Exception as e:
                         logger.warning(f"Error serializing M2M {m2m_field_name} on {model_name}: {e}")
@@ -653,13 +660,9 @@ class AssociationExportService:
         ]
 
         for field_name in document_m2m_fields:
-            if hasattr(obj, field_name):
-                try:
-                    m2m_manager = getattr(obj, field_name)
-                    for doc in m2m_manager.all():
-                        self.document_ids.add(doc.document_id)
-                except Exception:
-                    pass
+            # These IDs were already serialized from the prefetched relation.
+            # Reusing them avoids traversing each document relationship twice.
+            self.document_ids.update(data.get(f'_m2m_{field_name}', []))
 
     def export_model_to_json(
         self,
@@ -683,6 +686,7 @@ class AssociationExportService:
             Number of records exported
         """
         model_name = model_class.__name__
+        started_at = time.perf_counter()
         filename = f"{filename_prefix}.json"
 
         dest_dir = 'system' if is_system else 'data'
@@ -690,6 +694,9 @@ class AssociationExportService:
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
         qs = self.get_queryset_for_model(model_class, is_system)
+        m2m_fields = self.M2M_FIELDS.get(model_name, [])
+        if m2m_fields:
+            qs = qs.prefetch_related(*m2m_fields)
         count = 0
 
         with open(filepath, 'w', encoding='utf-8') as f:
@@ -708,7 +715,12 @@ class AssociationExportService:
             f.write(']')
 
         self.stats[model_name] = count
-        logger.info(f"Exported {count} {model_name} records")
+        logger.info(
+            "Export phase model_serialization model=%s records=%d duration_seconds=%.3f",
+            model_name,
+            count,
+            time.perf_counter() - started_at,
+        )
         return count
 
     def _get_document_filepath(self, doc: Document) -> Optional[str]:
@@ -732,9 +744,10 @@ class AssociationExportService:
             else:
                 reconstructed = f"{timestamp}/{doc.document_id}/{doc.filename}"
 
-            if default_storage.exists(reconstructed):
-                logger.info(f"Reconstructed filepath for document {doc.document_id}: {reconstructed}")
-                return reconstructed
+            # Opening the reconstructed key is the authoritative existence
+            # check and avoids a separate storage round trip.
+            logger.info(f"Reconstructed filepath for document {doc.document_id}: {reconstructed}")
+            return reconstructed
 
         return None
 
@@ -748,6 +761,7 @@ class AssociationExportService:
         Returns:
             Number of files exported
         """
+        started_at = time.perf_counter()
         files_dir = os.path.join(output_dir, 'files')
         os.makedirs(files_dir, exist_ok=True)
 
@@ -756,7 +770,17 @@ class AssociationExportService:
         skipped = 0
 
         # Export documents
-        documents = Document.objects.filter(document_id__in=self.document_ids)
+        documents = Document.objects.filter(document_id__in=self.document_ids).annotate(
+            export_is_medical_certificate=Exists(
+                MedicalCertificate.objects.filter(document_id=OuterRef('pk'))
+            ),
+            export_is_invoice=Exists(
+                Invoice.objects.filter(document_pdf_id=OuterRef('pk'))
+            ),
+            export_is_subscription_file=Exists(
+                SubscriptionFile.objects.filter(document_id=OuterRef('pk'))
+            ),
+        )
 
         for doc in documents.iterator(chunk_size=100):
             filepath = self._get_document_filepath(doc)
@@ -771,26 +795,28 @@ class AssociationExportService:
                 doc_dir = os.path.join(files_dir, category, str(doc.document_id))
                 os.makedirs(doc_dir, exist_ok=True)
 
-                # Download from S3
-                if default_storage.exists(filepath):
-                    with default_storage.open(filepath, 'rb') as src:
-                        dest_path = os.path.join(doc_dir, doc.filename or 'file')
-                        with open(dest_path, 'wb') as dest:
-                            for chunk in iter(lambda: src.read(8192), b''):
-                                dest.write(chunk)
-                    count += 1
-                else:
-                    logger.warning(f"File not found in storage: {filepath}")
-                    failed += 1
-            except FileNotFoundError as e:
-                # Don't report file not found errors (Errno 2) to user, just log them
-                logger.warning(f"File not found for document {doc.document_id}: {e}")
-                failed += 1
+                # Opening is the only storage existence check.
+                with default_storage.open(filepath, 'rb') as src:
+                    dest_path = os.path.join(doc_dir, doc.filename or 'file')
+                    with open(dest_path, 'wb') as dest:
+                        for chunk in iter(lambda: src.read(8192), b''):
+                            dest.write(chunk)
+                count += 1
             except Exception as e:
-                logger.error(f"Error exporting document {doc.document_id}: {e}")
-                # Only report generic error without details
-                self.errors.append(f"Failed to export document {doc.document_id}")
-                failed += 1
+                if self._is_missing_storage_file(e):
+                    # Preserve the previous accounting: a missing reconstructed
+                    # path was skipped, while an explicit missing path failed.
+                    if doc.filepath:
+                        logger.warning(f"File not found for document {doc.document_id}: {e}")
+                        failed += 1
+                    else:
+                        logger.debug(f"No filepath found for document {doc.document_id}")
+                        skipped += 1
+                else:
+                    logger.error(f"Error exporting document {doc.document_id}: {e}")
+                    # Only report generic error without details
+                    self.errors.append(f"Failed to export document {doc.document_id}")
+                    failed += 1
 
         # Export private subscription signatures tracked outside Document.
         signature_count, signature_failed = self._export_subscription_signatures(files_dir)
@@ -800,8 +826,28 @@ class AssociationExportService:
         self.stats['files_exported'] = count
         self.stats['files_failed'] = failed
         self.stats['files_skipped'] = skipped
-        logger.info(f"Exported {count} files, {failed} failed, {skipped} skipped (no filepath)")
+        logger.info(
+            "Export phase file_retrieval files=%d failed=%d skipped=%d duration_seconds=%.3f",
+            count,
+            failed,
+            skipped,
+            time.perf_counter() - started_at,
+        )
         return count
+
+    @staticmethod
+    def _is_missing_storage_file(error: Exception) -> bool:
+        """Return whether a local or object-storage error means a missing key."""
+        if isinstance(error, FileNotFoundError):
+            return True
+
+        response = getattr(error, 'response', None)
+        if isinstance(response, dict):
+            error_details = response.get('Error', {})
+            return str(error_details.get('Code')) in {
+                '404', 'NoSuchKey', 'NoSuchFile', 'NotFound',
+            }
+        return False
 
     def _export_subscription_signatures(self, files_dir: str) -> Tuple[int, int]:
         """Export private Subscription.signature_storage_key binaries."""
@@ -814,11 +860,6 @@ class AssociationExportService:
         for subscription in subscriptions.iterator(chunk_size=100):
             storage_key = subscription.signature_storage_key
             try:
-                if not default_storage.exists(storage_key):
-                    logger.warning(f"Signature file not found in storage: {storage_key}")
-                    failed += 1
-                    continue
-
                 filename = os.path.basename(storage_key) or 'signature.png'
                 signature_dir = os.path.join(
                     files_dir,
@@ -833,18 +874,18 @@ class AssociationExportService:
                         for chunk in iter(lambda: src.read(8192), b''):
                             dest.write(chunk)
                 count += 1
-            except FileNotFoundError as e:
-                logger.warning(
-                    f"Signature file not found for subscription {subscription.subscription_id}: {e}"
-                )
-                failed += 1
             except Exception as e:
-                logger.error(
-                    f"Error exporting signature for subscription {subscription.subscription_id}: {e}"
-                )
-                self.errors.append(
-                    f"Failed to export signature for subscription {subscription.subscription_id}"
-                )
+                if self._is_missing_storage_file(e):
+                    logger.warning(
+                        f"Signature file not found for subscription {subscription.subscription_id}: {e}"
+                    )
+                else:
+                    logger.error(
+                        f"Error exporting signature for subscription {subscription.subscription_id}: {e}"
+                    )
+                    self.errors.append(
+                        f"Failed to export signature for subscription {subscription.subscription_id}"
+                    )
                 failed += 1
 
         self.stats['signature_files_exported'] = count
@@ -853,16 +894,13 @@ class AssociationExportService:
 
     def _categorize_document(self, doc: Document) -> str:
         """Categorize a document based on its usage."""
-        # Check if it's a medical certificate
-        if MedicalCertificate.objects.filter(document=doc).exists():
+        if doc.export_is_medical_certificate:
             return 'medical_certificates'
 
-        # Check if it's an invoice
-        if Invoice.objects.filter(document_pdf=doc).exists():
+        if doc.export_is_invoice:
             return 'invoices'
 
-        # Check if it's a subscription file
-        if SubscriptionFile.objects.filter(document=doc).exists():
+        if doc.export_is_subscription_file:
             return 'subscription_documents'
 
         return 'general_documents'
@@ -918,6 +956,7 @@ class AssociationExportService:
         Returns:
             Path to the created ZIP file
         """
+        started_at = time.perf_counter()
         zip_path = os.path.join(tempfile.gettempdir(), zip_filename)
 
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -933,7 +972,12 @@ class AssociationExportService:
             for chunk in iter(lambda: f.read(8192), b''):
                 sha256.update(chunk)
 
-        logger.info(f"Created ZIP file: {zip_path} (SHA256: {sha256.hexdigest()})")
+        logger.info(
+            "Export phase zip_creation path=%s sha256=%s duration_seconds=%.3f",
+            zip_path,
+            sha256.hexdigest(),
+            time.perf_counter() - started_at,
+        )
         return zip_path
 
     def save_to_storage(self, zip_path: str, filename: str) -> Document:
@@ -964,8 +1008,10 @@ class AssociationExportService:
         file_size_bytes = os.path.getsize(zip_path)
 
         # Upload to storage
+        upload_started_at = time.perf_counter()
         with open(zip_path, 'rb') as f:
             saved_path = default_storage.save(storage_path, f)
+        upload_duration = time.perf_counter() - upload_started_at
 
         document.filepath = saved_path
         document.file_size_bytes = file_size_bytes
@@ -977,7 +1023,12 @@ class AssociationExportService:
             document=document,
         )
 
-        logger.info(f"Saved export to storage: {saved_path}")
+        logger.info(
+            "Export phase storage_upload path=%s bytes=%d duration_seconds=%.3f",
+            saved_path,
+            file_size_bytes,
+            upload_duration,
+        )
         return document
 
     def export(self, include_files: bool = True) -> Document:
