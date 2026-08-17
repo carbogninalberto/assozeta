@@ -1,5 +1,7 @@
 # Deployment and runtime behavior
 
+ [Docs hub](../README.md) · [Architecture overview](./architecture-overview.md) · [Functionality map](./functionality-map.md) · [Permissions](./permissions-and-access.md) · [Coverage gaps](./coverage-gaps.md)
+
 ## Stack surface
 
 Self-hosted deployments are coordinated from `selfhost/compose.yml` and `selfhost/compose.dev.yml`:

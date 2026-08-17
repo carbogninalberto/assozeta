@@ -1,5 +1,7 @@
 # Functional map: what the product currently does
 
+ [Docs hub](../README.md) · [Architecture overview](./architecture-overview.md) · [Permissions](./permissions-and-access.md) · [Deployment/runtime](./deployment-runtime.md) · [Coverage gaps](./coverage-gaps.md)
+
 This document maps major features to backend/API prefixes, frontend route families, and code surfaces.
 
 ## Core domain: Members and subscriptions

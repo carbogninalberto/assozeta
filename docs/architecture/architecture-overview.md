@@ -1,5 +1,7 @@
 # Architecture overview
 
+[Docs hub](../README.md) · [Functionality map](./functionality-map.md) · [Permissions](./permissions-and-access.md) · [Deployment/runtime](./deployment-runtime.md) · [Coverage gaps](./coverage-gaps.md) · [Coverage metrics](./coverage-metrics.md)
+
 ## System shape
 
 Assozeta is a full-stack web platform with a Django backend + DRF API and a Svelte single-page frontend.
@@ -61,32 +63,32 @@ Most common API prefixes (from current inventory):
 
 ```mermaid
 flowchart LR
-    subgraph Browser[Browser / Client]
-        U[UI bundle / SPA]
+    subgraph Browser["Browser / Client"]
+        U["UI bundle / SPA"]
     end
 
-    subgraph Frontend[Frontend services]
-        Nginx[Caddy / Web layer]
-        UI[UI (Svelte/Vite)]
+    subgraph Frontend["Frontend services"]
+        Nginx["Caddy / Web layer"]
+        UI["UI (Svelte/Vite)"]
     end
 
-    subgraph API[Django API / Core]
+    subgraph API["Django API / Core"]
         ASGI["Django ASGI app (Channels)"]
-        HTTP[Django HTTP routes (core/urls.py)]
-        WS[WebSocket routes (/ws/*)]
-        Perm[Permission middleware + registry]
-        CQ[Background queue bootstrap]
+        HTTP["Django HTTP routes (core/urls.py)"]
+        WS["WebSocket routes (/ws/*)"]
+        Perm["Permission middleware + registry"]
+        CQ["Background queue bootstrap"]
     end
 
-    subgraph Services[Platform services]
+    subgraph Services["Platform services"]
         DB[(PostgreSQL)]
         Cache[(Redis)]
-        Obj[Object storage (S3/minio-compatible)]
-        Renderer[PDF renderer]
-        SMTP[SMTP provider]
-        Stripe[Stripe]
-        Google[Google OAuth/Calendar]
-        AI[AI provider (optional)]
+        Obj["Object storage (S3/minio-compatible)"]
+        Renderer["PDF renderer"]
+        SMTP["SMTP provider"]
+        Stripe["Stripe"]
+        Google["Google OAuth/Calendar"]
+        AI["AI provider (optional)"]
     end
 
     U -->|/api + /ws| Nginx

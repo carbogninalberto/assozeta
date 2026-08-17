@@ -1,5 +1,7 @@
 # Coverage gaps and documentation risk register
 
+ [Docs hub](../README.md) · [Architecture overview](./architecture-overview.md) · [Functionality map](./functionality-map.md) · [Permissions](./permissions-and-access.md) · [Deployment/runtime](./deployment-runtime.md) · [Coverage metrics](./coverage-metrics.md)
+
 This file is generated from `docs/matrix/architecture-inventory.json`.
 
 ## Baseline numbers

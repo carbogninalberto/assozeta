@@ -1,5 +1,7 @@
 # Permissions and access control
 
+ [Docs hub](../README.md) · [Architecture overview](./architecture-overview.md) · [Functionality map](./functionality-map.md) · [Deployment/runtime](./deployment-runtime.md) · [Coverage gaps](./coverage-gaps.md)
+
 ## Authentication stack
 
 Assozeta uses JWT-based authentication for API and browser session handoff:
