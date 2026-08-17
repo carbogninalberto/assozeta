@@ -19,6 +19,16 @@ phase() {
     printf '\n=== %s ===\n' "$1" >&2
 }
 
+remove_temporary_directory() {
+    if [ -f "$ENV_FILE" ]; then
+        compose --profile tools run --rm --no-deps --user 0 \
+            -v "$TEMPORARY:/cleanup:rw,z" \
+            --entrypoint /bin/sh \
+            minio-init -c 'rm -rf /cleanup' >/dev/null 2>&1 || true
+    fi
+    rm -rf "$TEMPORARY"
+}
+
 cleanup() {
     status=$?
     trap - EXIT HUP INT TERM
@@ -30,7 +40,7 @@ cleanup() {
     if [ -f "$ENV_FILE" ]; then
         ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" uninstall --volumes --yes >/dev/null 2>&1 || true
     fi
-    rm -rf "$TEMPORARY"
+    remove_temporary_directory
     exit "$status"
 }
 trap cleanup EXIT HUP INT TERM
