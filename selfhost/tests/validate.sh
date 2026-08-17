@@ -10,6 +10,11 @@ sh -n "$ROOT/selfhost/tests/smoke.sh"
 sh -n "$ROOT/selfhost/tests/production-smoke.sh"
 sh -n "$ROOT/run_tests.sh"
 
+if grep -Eq 'prod_compose up -d --wait( --force-recreate)? api worker beat web' "$ROOT/selfhost/bin/assozeta"; then
+    printf 'Production lifecycle must not wait on worker/beat without health checks.\n' >&2
+    exit 1
+fi
+
 ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
     "$ROOT/selfhost/bin/assozeta" configure --domain localhost --version test
 ASSOZETA_DEV_ENV_FILE="$TEMPORARY/dev.env" \

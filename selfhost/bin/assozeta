@@ -757,6 +757,35 @@ require_public_readiness() {
     wait_public_readiness || die "public web/API readiness checks failed"
 }
 
+require_background_services_running() {
+    running=$(prod_compose ps --status running --services worker beat 2>/dev/null) || return 1
+
+    for service in worker beat; do
+        if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
+            continue
+        fi
+
+        log "$service did not remain running after startup"
+        prod_compose ps "$service" >&2 || true
+        prod_compose logs --no-color --tail=100 "$service" >&2 || true
+        return 1
+    done
+}
+
+start_prod_app_services() {
+    force_recreate=${1:-false}
+
+    if [ "$force_recreate" = true ]; then
+        prod_compose up -d --force-recreate worker beat || return $?
+        prod_compose up -d --wait --force-recreate api web || return $?
+    else
+        prod_compose up -d worker beat || return $?
+        prod_compose up -d --wait api web || return $?
+    fi
+
+    require_background_services_running
+}
+
 initialise_prod() {
     force_recreate=${1:-false}
 
@@ -791,7 +820,7 @@ migrate_prod() {
     fi
 
     if [ "$app_was_running" = true ]; then
-        if ! prod_compose up -d --wait api worker beat web; then
+        if ! start_prod_app_services; then
             migrate_status=1
         elif ! wait_public_readiness; then
             migrate_status=1
@@ -806,7 +835,7 @@ install_prod() {
     validate_prod
     prod_compose pull
     initialise_prod
-    prod_compose up -d --wait api worker beat web
+    start_prod_app_services
     require_public_readiness
     status_prod
     log "installation complete: $(env_value APP_URL "$PROD_ENV")"
@@ -816,7 +845,7 @@ install_prod() {
 start_prod() {
     validate_prod
     initialise_prod
-    prod_compose up -d --wait api worker beat web
+    start_prod_app_services
     require_public_readiness
     status_prod
 }
@@ -824,7 +853,7 @@ start_prod() {
 restart_prod() {
     validate_prod
     initialise_prod true
-    prod_compose up -d --wait --force-recreate api worker beat web
+    start_prod_app_services true
     require_public_readiness
     status_prod
 }
@@ -859,7 +888,7 @@ backup_cleanup() {
 
     if [ "${backup_app_stopped:-false}" = true ] && [ "${backup_app_was_running:-false}" = true ]; then
         log "restarting application services"
-        if ! prod_compose up -d --wait api worker beat web; then
+        if ! start_prod_app_services; then
             log "failed to restart application services after backup"
             [ "$status" -eq 0 ] && status=1
         fi
@@ -942,7 +971,7 @@ restore_cleanup() {
 
     if [ "$status" -ne 0 ] && [ "${restore_app_stopped:-false}" = true ] && [ "${restore_app_was_running:-false}" = true ]; then
         log "restarting application services"
-        if ! prod_compose up -d --wait api worker beat web || ! wait_public_readiness; then
+        if ! start_prod_app_services || ! wait_public_readiness; then
             log "failed to restart application services after restore failure"
             status=1
         fi
@@ -1300,7 +1329,7 @@ restore_prod() {
         redis redis-cli FLUSHALL >/dev/null
 
     prod_compose --profile tools run --rm --no-deps migrate
-    prod_compose up -d --wait api worker beat web
+    start_prod_app_services
     require_public_readiness
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
@@ -1325,7 +1354,7 @@ upgrade_prod() {
         die "failed to pull version $version; restored configured version $previous"
     fi
     initialise_prod
-    prod_compose up -d --wait api worker beat web
+    start_prod_app_services
     require_public_readiness
     status_prod
     log "upgrade complete; previous version was $previous"

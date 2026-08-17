@@ -15,12 +15,17 @@ export ASSOZETA_WEB_IMAGE=invalid.example.invalid/conflicting-web
 export ASSOZETA_RENDERER_IMAGE=invalid.example.invalid/conflicting-renderer
 export POSTGRES_IMAGE=invalid.example.invalid/conflicting-postgres
 
+phase() {
+    printf '\n=== %s ===\n' "$1" >&2
+}
+
 cleanup() {
     status=$?
     trap - EXIT HUP INT TERM
     if [ "$status" -ne 0 ] && [ -f "$ENV_FILE" ]; then
+        printf '\n=== production smoke failure diagnostics ===\n' >&2
         compose ps >&2 || true
-        compose logs --no-color postgres redis minio renderer >&2 || true
+        compose logs --no-color api web worker beat postgres redis minio renderer >&2 || true
     fi
     if [ -f "$ENV_FILE" ]; then
         ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" uninstall --volumes --yes >/dev/null 2>&1 || true
@@ -159,6 +164,7 @@ create_corrupt_object_archive() {
     rm -rf "$corrupt_directory"
 }
 
+phase "configure production environment"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version test
 set_value COMPOSE_PROJECT_NAME assozeta-production-smoke
 set_value ASSOZETA_BACKEND_IMAGE assozeta-backend
@@ -182,8 +188,10 @@ if ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" stop; then
 fi
 rm -rf "$ROOT/selfhost/.lifecycle.lock"
 
+phase "start production stack"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" start
 
+phase "verify public production endpoints"
 curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \
     http://localhost:58080/ >/dev/null
 curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \
@@ -193,9 +201,11 @@ curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 
 curl --fail --silent --show-error http://localhost:58080/static/css/bootstrap.min.css >/dev/null
 curl --fail --silent --show-error http://localhost:58080/static/rest_framework/css/default.css >/dev/null
 
+phase "run migrations"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" migrate
 curl_ready
 
+phase "configure instance and verify protections"
 setup_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
     --request POST \
     --header 'content-type: application/json' \
@@ -269,6 +279,7 @@ done
 write_db_sentinel before-backup
 write_object_sentinel before-backup
 
+phase "create and validate backup"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" backup "$TEMPORARY/backups"
 archive=
 archive_count=0
@@ -289,6 +300,7 @@ assert_object_sentinel after-backup
 
 corrupt_db_archive="$TEMPORARY/backups/assozeta-corrupt-db.tar.gz"
 create_corrupt_db_archive "$archive" "$corrupt_db_archive"
+phase "reject corrupt database backup and preserve live data"
 if ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$corrupt_db_archive" --yes; then
     printf 'Expected corrupt production database backup to be rejected.\n' >&2
     exit 1
@@ -299,6 +311,7 @@ assert_object_sentinel after-backup
 
 corrupt_object_archive="$TEMPORARY/backups/assozeta-corrupt-objects.tar.gz"
 create_corrupt_object_archive "$archive" "$corrupt_object_archive"
+phase "reject corrupt object backup and preserve live data"
 if ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$corrupt_object_archive" --yes; then
     printf 'Expected corrupt production object backup to be rejected.\n' >&2
     exit 1
@@ -309,6 +322,7 @@ assert_object_sentinel after-backup
 
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$archive" --yes
 
+phase "verify valid restore"
 curl_ready
 assert_db_sentinel before-backup
 assert_object_sentinel before-backup
