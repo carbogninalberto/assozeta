@@ -27,7 +27,6 @@ from application.utils.api_utils import is_valid_uuid, BalanceSheetData
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import generate_invoice_description
 from application.utils.stripe_utils import online_payments_available, stripe_webhook_secret
-from communications.models import SmsCreditPayment, CommunicationConfiguration
 from notifications.services import NotificationService
 from core import settings
 from django.db.models import Max
@@ -514,33 +513,9 @@ def stripe_webhook(request):
     logger.info("Processing Stripe webhook event", extra={'event_type': event['type']})
     # Handle the event
     if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        metadata = session.get('metadata') or {}
+        # Direct checkout side effects are no longer handled here.
+        pass
 
-        # Platform subscription billing is disabled in self-hosted deployments.
-        # Keep direct checkout-session side effects that are not platform plan billing.
-        if 'sms_balance' in metadata:
-            sms_payment = SmsCreditPayment.objects.filter(payment_intent_id=session['id']).first()
-            if sms_payment is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
-            sms_payment.paid = True
-            sms_payment.save()
-            # update the sms balance
-            configuration = CommunicationConfiguration.objects.filter(
-                sport_association=sms_payment.sport_association
-            ).first()
-            if configuration is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
-            configuration.sms_balance += int(metadata['sms_balance'])
-            configuration.save()
-
-            # clear other sms payments that are not paid
-            SmsCreditPayment.objects.filter(
-                sport_association=sms_payment.sport_association,
-                paid=False
-            ).delete()
     elif event['type'] == 'charge.succeeded':
         try:
             # get payment from payment_intent

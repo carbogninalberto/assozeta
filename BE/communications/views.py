@@ -8,16 +8,12 @@ from application.models.user_models import EmailLog
 from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
-from core import settings
-from core.settings import APP_URL
-from .models import Message, CommunicationConfiguration, SmsCreditPayment, MessageTransaction, AutomationWorkflow
+from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow
 from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
-    CommunicationConfigurationPatchSerializer, SmsSerializer, SmsCreditPaymentSerializer, PostSerializer, \
+    CommunicationConfigurationPatchSerializer, PostSerializer, \
     EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer
 from core.middleware import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from smsapi.client import SmsApiComClient
-import stripe
 
 
 logger = logging.getLogger(__name__)
@@ -63,25 +59,9 @@ def configuration_smtp_verify(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def configuration_history_sms(request):
-
-    # get the sms credit payments for the sport association filtered by only paid
-    sms_credit_payments = SmsCreditPayment.objects.filter(
-        sport_association=request.user.sport_association,
-        paid=True
-    ).order_by('-payment_date')
-
-    # create the serializer
-    serializer = SmsCreditPaymentSerializer(sms_credit_payments, many=True)
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def communication_email_logs_list(request):
 
-    # get the sms credit payments for the sport association filtered by only paid
+    # get the email logs for the sport association
     email_logs = EmailLog.objects.filter(
         sport_association=request.user.sport_association,
         sent_at__gte=datetime.datetime.now() - datetime.timedelta(days=90)
@@ -98,80 +78,6 @@ def communication_email_logs_list(request):
         'total_count': len(serializer.data),
         'results': serializer.data,
     }, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def configuration_send_sms(request):
-
-    logger.info("Sending SMS", extra={'user_id': str(request.user.user_id), 'sport_association_id': str(request.user.sport_association.sport_association_id)})
-    data = request.data
-
-    if 'message_id' in data and data['message_id']:
-        message = Message.objects.filter(message_id=data['message_id']).first()
-        if not message:
-            return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
-        data['message'] = message.message
-        serializer = SmsSerializer(data=data)
-        if not serializer.is_valid(raise_exception=True):
-            return Response({'msg': 'invalid data.'}, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        serializer = SmsSerializer(data=data)
-        if not serializer.is_valid(raise_exception=True):
-            return Response({'msg': 'invalid data.'}, status=status.HTTP_400_BAD_REQUEST)
-        # create a Message and a MessageTransaction associated
-        message = Message.objects.create(
-            sport_association=request.user.sport_association,
-            type=Message.SMS,
-            message=serializer.data['message'],
-        )
-
-    configuration = CommunicationConfiguration.objects.filter(
-        sport_association=request.user.sport_association
-    ).first()
-    if not configuration:
-        return Response({'msg': 'info not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    # check balance is enough
-    sms_to_send = len(serializer.data['phone_number'].split(','))
-
-    logger.debug("Checking SMS balance", extra={'sms_to_send': sms_to_send, 'current_balance': configuration.sms_balance, 'sport_association_id': str(request.user.sport_association.sport_association_id)})
-    if configuration.sms_balance < sms_to_send:
-        logger.warning("Insufficient SMS balance", extra={'sms_to_send': sms_to_send, 'current_balance': configuration.sms_balance})
-        return Response({'msg': 'not enough sms balance.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # verify phone_number is not a list of phone_numbers separated by comma
-    # if it is, split the phone_numbers and create a MessageTransaction for each one
-    if ',' in serializer.data['phone_number']:
-        phone_numbers = serializer.data['phone_number'].split(',')
-        for phone_number in phone_numbers:
-            message_transaction = MessageTransaction.objects.create(
-                message=message,
-                recipient=phone_number,
-            )
-    else:
-        # associate a MessageTransaction
-        message_transaction = MessageTransaction.objects.create(
-            message=message,
-            recipient=serializer.data['phone_number'],
-        )
-
-    # send the sms
-    logger.info("Calling SMS API", extra={'recipient_count': sms_to_send, 'message_id': str(message.message_id)})
-    client = SmsApiComClient(access_token=settings.SMSAPI_TOKEN)
-    send_results = client.sms.send(to=serializer.data['phone_number'], message=serializer.data['message'])
-
-    sms_sent_count = 0
-    for result in send_results:
-        # decrease the sms balance
-        if result.points > 0:
-            configuration.sms_balance -= 1
-            sms_sent_count += 1
-        if result.error:
-            logger.error("SMS sending error", extra={'result_id': result.id, 'error': result.error})
-    configuration.save()
-    logger.info("SMS sent successfully", extra={'sent_count': sms_sent_count, 'new_balance': configuration.sms_balance})
-    return Response({'msg': 'sms sent.'}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -261,70 +167,6 @@ def configuration_send_post(request):
     return Response({'msg': 'post sent.'}, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def configuration_buy_sms(request):
-
-    logger.info("Purchasing SMS credits", extra={'user_id': str(request.user.user_id), 'sport_association_id': str(request.user.sport_association.sport_association_id)})
-    data = request.data
-
-    # get amount of sms to buy
-    amount = data.get('amount', 0)
-
-    if amount != 100 and amount != 200 and amount != 300:
-        logger.warning("Invalid SMS purchase amount", extra={'amount': amount})
-        return Response({'msg': 'invalid amount.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # get the line item based on the amount
-    line_item = None
-    if amount == 100:
-        line_item = settings.SMS_100_LINE_ITEM
-    elif amount == 200:
-        line_item = settings.SMS_200_LINE_ITEM
-    elif amount == 300:
-        line_item = settings.SMS_300_LINE_ITEM
-
-    if not line_item:
-        return Response({'msg': 'invalid amount.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    logger.info("Creating Stripe checkout session for SMS purchase", extra={'amount': amount, 'line_item': line_item})
-    checkout_session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        line_items=[{
-            'price': line_item,
-            'quantity': 1,
-        }],
-        mode='payment',
-        custom_fields=[
-            {
-                "key": "taxcode",
-                "label": {"type": "custom", "custom": "Codice Fiscale / Partita IVA"},
-                "type": "text",
-            },
-        ],
-        success_url=f"{APP_URL}/#/communication/configuration",
-        cancel_url=f"{APP_URL}/#/cancel",
-        metadata={
-            'sms_balance': int(amount),
-            'sport_association': request.user.sport_association.sport_association_id,
-            'denomination': request.user.sport_association.denomination,
-        }
-    )
-
-    # get payment intent id
-    checkout_session_id = checkout_session.id
-
-    logger.info("Stripe checkout session created", extra={'checkout_session_id': checkout_session_id, 'amount': amount})
-    # create the payment in the db
-    SmsCreditPayment.objects.create(
-        sport_association=request.user.sport_association,
-        amount=amount,
-        payment_intent_id=checkout_session_id,
-    )
-    # return with the url to redirect the user
-    return Response({'url': checkout_session.url}, status=status.HTTP_200_OK)
-
-
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def configuration_smtp_update(request):
@@ -352,7 +194,8 @@ def communication_messages_list(request):
     request.user.is_sport_association()
 
     messages = Message.objects.filter(
-        sport_association=request.user.sport_association
+        sport_association=request.user.sport_association,
+        type__in=[Message.EMAIL, Message.INSIDE_APP],
     ).order_by('-created_at')
 
     serializer = MessageSerializer(messages, many=True)
@@ -371,6 +214,7 @@ def communication_messages_detail(request, message_id):
     message = Message.objects.filter(
         sport_association=request.user.sport_association,
         message_id=message_id,
+        type__in=[Message.EMAIL, Message.INSIDE_APP],
     ).first()
 
     if not message:

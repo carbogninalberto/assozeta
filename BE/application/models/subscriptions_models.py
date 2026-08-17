@@ -761,11 +761,9 @@ class SubscriptionMembership(models.Model):
 class NotificationTemplates(models.Model):
 
     EMAIL = 1
-    SMS = 2
 
     NOTIFICATION_TYPE = (
         (EMAIL, 'email'),
-        (SMS, 'sms')
     )
 
     notification_template_id = models.UUIDField(primary_key=True, default=uuid.uuid4)

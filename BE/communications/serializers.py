@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from django.utils.html import escape
 from application.utils.api_utils import check_email
-from .models import Message, CommunicationConfiguration, SmsCreditPayment, MessageTransaction, AutomationWorkflow
+from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow
 
 
 class CommunicationConfigurationSerializer(serializers.ModelSerializer):
@@ -15,52 +15,8 @@ class CommunicationConfigurationSerializer(serializers.ModelSerializer):
             'email_sender_name',
             'email_encryption',
             'daily_email_limit',
-            'daily_email_limit',
             'daily_email_balance',
-            'sms_balance',
         )
-
-
-class SmsCreditPaymentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = SmsCreditPayment
-        fields = (
-            'sms_credit_payment_id',
-            'amount',
-            'payment_date',
-            'paid'
-        )
-
-
-# create sms serializer for sending sms
-class SmsSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
-    message = serializers.CharField(max_length=160)
-
-    def validate_phone_number(self, value):
-        phones = value.split(',')
-        fixed_phones = []
-        for phone in phones:
-            # check if is a valid phone number, if it does not have italian prefix, add it
-            if not phone.startswith('+39') and not phone.startswith('0039') and len(phone) == 10:
-                phone = '+39' + phone
-            if not phone.startswith('+'):
-                raise serializers.ValidationError('Phone number must start with +')
-            fixed_phones.append(phone)
-        return ','.join(fixed_phones)
-
-    def validate_message(self, value):
-        if len(value) > 160:
-            raise serializers.ValidationError('Message must be less than 160 characters')
-        return value
-
-    def is_valid(self, *, raise_exception=False):
-        if not self.initial_data.get('phone_number'):
-            raise serializers.ValidationError('Phone number is required')
-        if not self.initial_data.get('message'):
-            raise serializers.ValidationError('Message is required')
-        return super().is_valid(raise_exception=raise_exception)
 
 
 # create the EmailSerializer for sending emails
@@ -135,6 +91,21 @@ class MessageTransactionSerializer(serializers.ModelSerializer):
 
 
 class AutomationWorkflowSerializer(serializers.ModelSerializer):
+
+    def validate_automation_tree(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError('Il flusso dell’automazione non è valido.')
+
+        unsupported_message_nodes = [
+            node for node in value
+            if isinstance(node, dict)
+            and node.get('id') == 'message'
+            and node.get('value') != 'email'
+        ]
+        if unsupported_message_nodes:
+            raise serializers.ValidationError('Le automazioni possono inviare solo email.')
+
+        return value
 
     class Meta:
         model = AutomationWorkflow

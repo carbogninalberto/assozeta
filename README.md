@@ -69,7 +69,7 @@ Il backend implementa export e import completi nel formato applicativo `bakney_s
 
 ### Comunicazioni e controllo
 
-- Invio email tramite SMTP e SMS tramite SMSAPI
+- Invio email tramite SMTP
 - Automazioni basate su eventi e pianificazione, con azioni email
 - Dashboard, report, grafici ed esportazioni CSV/XLSX
 - Notifiche in tempo reale tramite WebSocket
@@ -100,7 +100,7 @@ Il backend implementa export e import completi nel formato applicativo `bakney_s
 | Autenticazione | JWT con chiavi EdDSA, TOTP |
 | Documentazione API | OpenAPI, Swagger UI, ReDoc |
 
-Le integrazioni opzionali comprendono Stripe, SMTP, SMSAPI, Google Calendar e un servizio esterno di rendering PDF. Le funzioni che le utilizzano richiedono credenziali e processi dedicati.
+Le integrazioni opzionali comprendono Stripe, SMTP, Google Calendar e un servizio esterno di rendering PDF. Le funzioni che le utilizzano richiedono credenziali e processi dedicati.
 
 ## Struttura del repository
 
@@ -108,7 +108,7 @@ Le integrazioni opzionali comprendono Stripe, SMTP, SMSAPI, Google Calendar e un
 assozeta/
 ├── BE/                        # Backend Django e API applicative
 │   ├── application/           # API e dominio applicativo
-│   ├── communications/        # Email, SMS e automazioni
+│   ├── communications/        # Email, notifiche interne e automazioni
 │   ├── core/                  # Configurazione Django, ASGI e Celery
 │   ├── docmanager/            # Documenti e rendering
 │   ├── instance/              # Configurazione dell'istanza self-hosted

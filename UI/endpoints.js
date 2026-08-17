@@ -90,15 +90,8 @@ export const buildConfig = function(config={
                             }
                         },
                         SEND: {
-                            SMS: `${apiHost}/communications/send/sms`,
                             EMAIL: `${apiHost}/communications/send/email`,
                             POST: `${apiHost}/communications/send/post`,
-                        },
-                        BUY: {
-                            SMS: `${apiHost}/communications/buy/sms`,
-                        },
-                        HISTORY: {
-                            SMS: `${apiHost}/communications/history/sms`,
                         },
                         AUTOMATION: {
                             LIST: `${apiHost}/communications/automation/list`,

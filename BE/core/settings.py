@@ -314,12 +314,6 @@ GOOGLE_CALENDAR_SCOPES = [
 GOOGLE_CALENDAR_API_SERVICE_NAME = 'calendar'
 GOOGLE_CALENDAR_API_VERSION = 'v3'
 
-SMSAPI_TOKEN = os.environ.get('SMSAPI_TOKEN', None)
-
-SMS_100_LINE_ITEM = os.environ.get('SMS_100_LINE_ITEM', None)
-SMS_200_LINE_ITEM = os.environ.get('SMS_200_LINE_ITEM', None)
-SMS_300_LINE_ITEM = os.environ.get('SMS_300_LINE_ITEM', None)
-
 INSTALLED_APPS = [
     'corsheaders',
     'docmanager',

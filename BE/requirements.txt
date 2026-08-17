@@ -78,7 +78,6 @@ segno==1.6.6
 stripe==11.6.0
 # xhtml2pdf removed - not used
 XlsxWriter==3.2.2
-smsapi-client==2.9.6
 # replicate removed - not used
 # pytesseract removed - not used
 # pdf2image removed - not used

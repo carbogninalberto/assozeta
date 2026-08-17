@@ -126,8 +126,7 @@
                                     </span>
                                     <span class="option-body">
                                         Scegliendo questo tipo di pagamento potrai effettuare bonifici SEPA direttamente
-                                        dall'app, tuttavia ogni operazione richiederà un codice OTP inviato via email o
-                                        tramite SMS.
+                                        dall'app, tuttavia ogni operazione richiederà un codice OTP inviato via email.
                                     </span>
                                 </span>
                             </label>

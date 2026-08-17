@@ -504,7 +504,6 @@
                                         {#if canPerformAction('association.communication.settings.read')}
                                             <div
                                                 class="menu-item menu-item-submenu {$subPage == 'email' ||
-                                                $subPage == 'sms' ||
                                                 $subPage == 'stats'
                                                     ? 'menu-item-active'
                                                     : ''}"

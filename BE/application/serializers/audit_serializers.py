@@ -546,9 +546,7 @@ def get_model_description(content_type, object_pk):
         CampsAndRetreats, CampsAndRetreatsPeriod, CampsAndRetreatsSubscription
     )
     from application.models.user_models import SportAssociation
-    from communications.models import (
-        Message, AutomationWorkflow, CommunicationConfiguration, SmsCreditPayment
-    )
+    from communications.models import Message, AutomationWorkflow, CommunicationConfiguration
 
     # Model-specific description resolvers
     MODEL_DESCRIPTION_RESOLVERS = {
@@ -685,12 +683,7 @@ def get_model_description(content_type, object_pk):
         'communicationconfiguration': (
             CommunicationConfiguration,
             'communication_configuration_id',
-            lambda obj: f"Configurazione Email/SMS"
-        ),
-        'smscreditpayment': (
-            SmsCreditPayment,
-            'sms_credit_payment_id',
-            lambda obj: f"Acquisto {obj.amount} crediti SMS"
+            lambda obj: f"Configurazione Email"
         ),
     }
 
@@ -879,7 +872,6 @@ class AuditLogEntrySerializer(serializers.ModelSerializer):
         'automationworkflow': 'Automazione',
         'messagetransaction': 'Invio Messaggio',
         'communicationconfiguration': 'Configurazione Comunicazioni',
-        'smscreditpayment': 'Acquisto Crediti SMS',
     }
 
     # Italian labels for field names

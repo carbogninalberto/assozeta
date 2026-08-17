@@ -2,7 +2,7 @@
     import {onMount} from 'svelte';
     import {querystring} from 'svelte-spa-router';
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
-    import {Envelope, ChatCenteredText, ChartBarHorizontal, Checks} from 'phosphor-svelte';
+    import {Envelope, Checks} from 'phosphor-svelte';
 
     sessionToken.useLocalStorage();
     refreshToken.useLocalStorage();
@@ -12,7 +12,7 @@
     userData.useLocalStorage();
     subPage.useLocalStorage();
 
-    let pages = ['email', 'sms', 'stats'];
+    let pages = ['email', 'stats'];
 
     function checkParams() {
         let splittedQuery = $querystring.split('&');
@@ -52,17 +52,6 @@
                             <Envelope size="24" weight="duotone" />
                         </span>
                         <span class="navi-text font-size-lg">Email SMTP</span>
-                    </a>
-                </div>
-                <div class="navi-item mb-2">
-                    <a
-                        href="/#/communication/configuration"
-                        on:click={() => changeSubPage('sms')}
-                        class="navi-link py-4 {$subPage == 'sms' ? 'active' : ''}">
-                        <span class="menu-icon m-0 mr-md-3">
-                            <ChatCenteredText size="24" weight="duotone" />
-                        </span>
-                        <span class="navi-text font-size-lg">SMS e utlizzo</span>
                     </a>
                 </div>
                 <div class="navi-item mb-2">

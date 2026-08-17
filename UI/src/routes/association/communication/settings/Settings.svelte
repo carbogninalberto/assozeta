@@ -4,7 +4,6 @@
     import {subPage, role} from 'store/stores.js';
     import * as easing from 'svelte/easing';
     import EmailSmtp from './sections/EmailSMTP.svelte';
-    import Sms from './sections/Sms.svelte';
     import Stats from './sections/Stats.svelte';
 
     role.useLocalStorage();
@@ -22,8 +21,6 @@
             <div class="col-lg-9 p-0 pb-24 pb-md-0 pl-md-2">
                 {#if $subPage == 'email'}
                     <EmailSmtp />
-                {:else if $subPage == 'sms'}
-                    <Sms />
                 {:else if $subPage == 'stats'}
                     <Stats />
                 {/if}

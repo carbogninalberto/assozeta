@@ -595,8 +595,6 @@ EMAIL_USE_SSL=False
 AI_API_KEY=
 AI_MODEL=deepseek-v4-flash
 AI_BASE_URL=https://api.deepseek.com
-SMSAPI_TOKEN=
-
 WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
 TZ=Europe/Rome

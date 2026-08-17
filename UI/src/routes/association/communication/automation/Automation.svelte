@@ -14,7 +14,7 @@
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
     import PauseButton from 'components/buttons/PauseButton.svelte';
     import PlayButton from 'components/buttons/PlayButton.svelte';
-    import {getAthletesEmails, getAthletesPhones} from 'utils/Functions';
+    import {getAthletesEmails} from 'utils/Functions';
     import {push} from 'svelte-spa-router';
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
@@ -33,7 +33,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
 
     const typeDictionary = {
         EMAIL: '<span class="label label-light-primary label-inline font-weight-bolder label-lg">Email</span>',
-        SMS: '<span class="label label-light-warning label-inline font-weight-bolder label-lg">SMS</span>',
         INSIDE_APP: '<span class="label label-light-success label-inline font-weight-bolder label-lg">Post</span>',
     };
 
@@ -55,34 +54,9 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             message: 'Creazione...',
         });
 
-        let url = null;
-
-        if (data.type == 'SMS' && sendNow) {
-            url = __bakney.env.API.COMMUNICATIONS.SEND.SMS;
-        } else if (data.type == 'SMS' && !sendNow) {
-            url = __bakney.env.API.COMMUNICATIONS.MESSAGES.ADD;
-        } else if (data.type == 'EMAIL' && sendNow) {
-            url = __bakney.env.API.COMMUNICATIONS.SEND.EMAIL;
-        } else if (data.type == 'EMAIL' && !sendNow) {
-            url = __bakney.env.API.COMMUNICATIONS.MESSAGES.ADD;
-        }
-
-        if (!url) {
-            unblockPage();
-            return swal
-                .fire({
-                    text: 'Scusa, ho individuato degli errori, riprova.',
-                    icon: 'error',
-                    buttonsStyling: false,
-                    confirmButtonText: 'Ok, capito!',
-                    customClass: {
-                        confirmButton: 'btn font-weight-bold btn-light-primary',
-                    },
-                })
-                .then(function () {
-                    scrollToTop();
-                });
-        }
+        const url = sendNow
+            ? __bakney.env.API.COMMUNICATIONS.SEND.EMAIL
+            : __bakney.env.API.COMMUNICATIONS.MESSAGES.ADD;
 
         const res = await apiFetch(url, {
             method: 'POST',
@@ -398,12 +372,7 @@ toast.success('Eliminato!');
     });
 
     function initForm() {
-        // check type of message
-        let validationFields = {};
-
-        if (type == 'SMS') {
-            // type can only be SMS or EMAIL
-            validationFields = {
+        let validationFields = {
                 type: {
                     validators: {
                         notEmpty: {
@@ -412,48 +381,7 @@ toast.success('Eliminato!');
                         callback: {
                             message: 'Tipo non valido',
                             callback: function (input) {
-                                return input.value == 'SMS' || input.value == 'EMAIL';
-                            },
-                        },
-                    },
-                },
-                message: {
-                    validators: {
-                        notEmpty: {
-                            message: 'Contenuto obbligatorio',
-                        },
-                        stringLength: {
-                            min: 20,
-                            max: 160,
-                            message: 'Il messaggio deve essere almeno di 20 caratteri e non può superare i 160',
-                        },
-                    },
-                },
-            };
-            if (sendNow) {
-                validationFields['phone_number'] = {
-                    validators: {
-                        notEmpty: {
-                            message: 'Lista numeri obbligatoria',
-                        },
-                        regexp: {
-                            regexp: /^[0-9,+\s]*$/,
-                            message: 'Inserisci una lista di numeri valida',
-                        },
-                    },
-                };
-            }
-        } else {
-            validationFields = {
-                type: {
-                    validators: {
-                        notEmpty: {
-                            message: 'Tipo obbligatorio',
-                        },
-                        callback: {
-                            message: 'Tipo non valido',
-                            callback: function (input) {
-                                return input.value == 'SMS' || input.value == 'EMAIL';
+                                return input.value == 'EMAIL';
                             },
                         },
                     },
@@ -482,7 +410,7 @@ toast.success('Eliminato!');
                         },
                     },
                 },
-            };
+        };
 
             if (sendNow) {
                 validationFields['email'] = {
@@ -497,7 +425,6 @@ toast.success('Eliminato!');
                     },
                 };
             }
-        }
 
         messageForm?.destroy();
         messageForm = FormValidation.formValidation(document.getElementById('communications_form'), {
@@ -636,74 +563,8 @@ toast.success('Eliminato!');
                                 bind:value={type}
                                 required>
                                 <option value="EMAIL">Email</option>
-                                <option value="SMS">SMS</option>
                             </select>
                         </div>
-                        {#if type == 'SMS'}
-                            <div class="form-group mb-0">
-                                <!-- svelte-ignore a11y-label-has-associated-control -->
-                                <label>Contenuto (max 160 caratteri)<b>*</b></label>
-                                <textarea
-                                    name="message"
-                                    style="resize: none;"
-                                    rows="4"
-                                    class="form-control form-control-solid form-control-lg margin-t-2"
-                                    placeholder="Scrivi cosa devi comunicare ai tuoi atleti..." />
-                            </div>
-                            <div class="msg-container">
-                                <!-- add input to ask if sending message right away, if selected show another text area which will be a list of phone numbers -->
-                                <div class="form-group d-flex align-items-center justify-content-between mb-2">
-                                    <!-- svelte-ignore a11y-label-has-associated-control -->
-                                    <label class="col-form-label font-weight-bold"
-                                        >Inviare subito ad una lista numeri?</label>
-                                    <div>
-                                        <span class="switch switch-sm switch-icon">
-                                            <label>
-                                                <input type="checkbox" name="select" bind:checked={sendNow} />
-                                                <span />
-                                            </label>
-                                        </span>
-                                    </div>
-                                </div>
-                                {#if sendNow}
-                                    <!-- list of phone numbers with validation on change, pattern should be +39NUMBER,+39NUMBER -->
-                                    <div class="form-group">
-                                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                                        <div class="d-flex justify-content-between">
-                                            <label>Lista numeri<b>*</b></label>
-                                            <button
-                                                on:click|preventDefault={getAthletesPhones}
-                                                class="btn btn-sm btn-light-primary font-weight-bold"
-                                                >importa atleti</button>
-                                        </div>
-                                        <textarea
-                                            id="phone-textarea"
-                                            name="phone_number"
-                                            style="resize: y;"
-                                            on:keypress={e => {
-                                                if (e.key == 'Enter') e.preventDefault();
-                                                // check pattern is valid, only numbers and commas and + are allowed
-                                                if (!/^[0-9,+\s]*$/.test(e.target.value)) e.target.value = '';
-                                                // check is valid +39NUMBER,+39NUMBER,...etc pattern
-                                            }}
-                                            on:change={e => {
-                                                // check pattern is valid, only numbers and commas and + are allowed
-                                                if (!/^[0-9,+\s]*$/.test(e.target.value)) e.target.value = '';
-                                                // check if there is a comma at the end of the string
-                                                if (e.target.value.slice(-1) == ',')
-                                                    e.target.value = e.target.value.slice(0, -1);
-                                            }}
-                                            rows="4"
-                                            class="form-control form-control-solid form-control-lg margin-t-2"
-                                            placeholder="Inserisci i numeri di telefono separati da una virgola...(ad esempio: +393406601516,+390000000000" />
-                                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                                        <label style="font-size: 1rem;" class="text-muted text-center"
-                                            >Scrivi una lista di numeri col +39 separati da virgola, ad esempio:
-                                            +393406601516,+390000000000</label>
-                                    </div>
-                                {/if}
-                            </div>
-                        {:else}
                             <!-- Subject -->
                             <div class="form-group mb-0">
                                 <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -765,7 +626,6 @@ toast.success('Eliminato!');
                                     </div>
                                 {/if}
                             </div>
-                        {/if}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal"

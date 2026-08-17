@@ -46,7 +46,6 @@ class CommunicationConfiguration(models.Model):
     )
     daily_email_limit = models.PositiveIntegerField(default=1000)  # This could be reduced with each email sent
     daily_email_balance = models.PositiveIntegerField(default=0)  # This could be reduced with each email sent
-    sms_balance = models.PositiveIntegerField(default=10)  # This could be reduced with each SMS sent
 
     class Meta:
         indexes = [
@@ -181,23 +180,12 @@ class CommunicationConfiguration(models.Model):
             return False, e
 
 
-class SmsCreditPayment(models.Model):
-    sms_credit_payment_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()
-    payment_date = models.DateTimeField(auto_now_add=True)
-    payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
-    paid = models.BooleanField(default=False)
-
-
 class Message(models.Model):
     # Constants for communication types
     EMAIL = 'EMAIL'
-    SMS = 'SMS'
     INSIDE_APP = 'INSIDE_APP'
     COMMUNICATION_TYPES = [
         (EMAIL, 'Email'),
-        (SMS, 'SMS'),
         (INSIDE_APP, 'Inside App Message'),
     ]
 
@@ -350,6 +338,5 @@ class AutomationWorkflow(models.Model):
 
 # Register models with auditlog
 auditlog.register(CommunicationConfiguration)
-auditlog.register(SmsCreditPayment)
 auditlog.register(Message)
 auditlog.register(AutomationWorkflow)

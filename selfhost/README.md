@@ -61,7 +61,6 @@ Common optional integrations are disabled by leaving their credentials empty:
 - SMTP email
 - Google and Apple sign-in
 - Stripe
-- SMSAPI
 - OpenAI-compatible AI agent
 
 Restart the affected services after editing configuration. This recreates the

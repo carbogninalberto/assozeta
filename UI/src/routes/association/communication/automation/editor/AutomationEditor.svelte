@@ -7,7 +7,6 @@
     import {onDestroy, onMount} from 'svelte';
     import {
         ArrowDown,
-        ChatDots,
         ClockCountdown,
         EnvelopeSimple,
         Bell,
@@ -237,23 +236,6 @@
                     automationTree = [
                         ...automationTree,
                         {
-                            id: 'sms',
-                            connections: [],
-                            label: 'SMS',
-                            bgColor: '#fff',
-                            tree: true,
-                        },
-                    ];
-                }}
-                class="btn btn-sm btn-primary font-weight-boldest mr-2 mb-0 mt-0 d-flex align-items-center"
-                ><ChatDots size="18" class="mr-2" weight="duotone" />SMS</button>
-            <button
-                disabled={triggerAvailable || automationTree.length == 2}
-                on:click={e => {
-                    e.preventDefault();
-                    automationTree = [
-                        ...automationTree,
-                        {
                             id: 'email',
                             connections: [],
                             label: 'Email',
@@ -431,8 +413,6 @@
                                     style="width: 3rem; height: 3rem;">
                                     {#if node.value == 'email'}
                                         <EnvelopeSimple size="20" class="text-primary" weight="duotone" />
-                                    {:else if node.value == 'sms'}
-                                        <ChatDots size="20" class="text-primary" weight="duotone" />
                                     {:else if node.value == 'push'}
                                         <Bell size="20" class="text-primary" weight="duotone" />
                                     {/if}
@@ -446,8 +426,6 @@
                                     <span class="font-weight-boldest text-dark">
                                         {#if node.value == 'email'}
                                             EMAIL
-                                        {:else if node.value == 'sms'}
-                                            SMS
                                         {:else if node.value == 'push'}
                                             NOTIFICA PUSH
                                         {:else}
@@ -494,14 +472,14 @@
                                             <div
                                                 class="d-flex align-items-center justify-content-center bg-light-primary rounded-circle"
                                                 style="width: 3rem; height: 3rem;">
-                                                <ChatDots size="20" class="text-primary" weight="duotone" />
+                                                <EnvelopeSimple size="20" class="text-primary" weight="duotone" />
                                             </div>
                                         </div>
                                         <div class="d-none d-md-block text-center mb-4 mt-4">
                                             <h1 class="font-weight-boldest m-0">Messaggio</h1>
                                             <p class="font-size-sm m-0 mt-2">
                                                 Il messaggio che verrà inviato all'utente. <br />
-                                                Puoi decidere se inviare un SMS o una email.
+                                                L’email che verrà inviata all’utente.
                                             </p>
                                         </div>
                                         <div class="d-block d-md-none mr-4">
@@ -511,7 +489,6 @@
                                     <div class="d-flex align-items-center">
                                         <select bind:value={node.value} class="form-control form-control-sm mr-2">
                                             <option value="email">Email</option>
-                                            <option value="sms" disabled>SMS (in arrivo)</option>
                                             <option value="push" disabled>Notifica push (in arrivo)</option>
                                         </select>
                                     </div>
@@ -591,14 +568,6 @@
                                                     </div>
                                                 {/if}
                                             </div>
-                                        {/if}
-                                        {#if node.value == 'sms'}
-                                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                                            <label class="font-weight-boldest">Testo</label>
-                                            <textarea
-                                                bind:value={node.data.content}
-                                                class="form-control form-control-sm"
-                                                rows="4" />
                                         {/if}
                                     </div>
                                 {/if}
@@ -720,7 +689,7 @@
                 <div
                     class="d-flex p-4 justify-content-center"
                     style={automationTree[0].value == '' ? 'opacity:0.5;pointer-events:none;' : ''}>
-                    <!-- centerd msg to add an action (only send message of type SMS or EMAIL) -->
+                    <!-- centered message action -->
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <div
                         class="d-flex flex-column align-items-center justify-content-center cursor-pointer btn"

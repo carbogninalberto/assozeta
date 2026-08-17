@@ -825,12 +825,10 @@ class SportAssociationDocumentsArchive(models.Model):
 
 class Reminder(models.Model):
     EMAIL = 1
-    SMS = 2
     PUSH = 3
 
     REMINDER_TYPES = (
         (EMAIL, 'email'),
-        (SMS, 'sms'),
         (PUSH, 'push')
     )
 
