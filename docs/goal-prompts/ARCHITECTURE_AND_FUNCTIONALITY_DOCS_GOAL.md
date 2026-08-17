@@ -113,7 +113,8 @@ Produce a comprehensive, structured `docs/` set that fully describes:
 9. `docs/scripts/capture_system_screenshots.mjs`
 10. `docs/scripts/generate_docs_summary.mjs`
 11. `docs/scripts/render_mermaid_diagrams.mjs`
-12. `docs/matrix/*` inventory outputs refreshed
+12. `docs/scripts/generate_coverage_gaps.mjs`
+13. `docs/matrix/*` inventory outputs refreshed
 
 ---
 
