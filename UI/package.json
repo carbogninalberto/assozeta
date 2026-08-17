@@ -20,6 +20,7 @@
     "start": "sirv public --no-clear",
     "css:vendor-bootstrap": "node scripts/vendor-bootstrap-css.mjs",
     "css:verify": "node scripts/verify-css-classes.mjs",
+    "test": "node --test",
     "test:websocket": "node --test src/utils/WebSocketHeartbeat.test.js src/store/exportProgressStore.test.js src/routes/profile/sections/DataManagement.test.js"
   },
   "devDependencies": {

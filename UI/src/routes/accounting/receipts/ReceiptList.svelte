@@ -17,7 +17,7 @@
     import {toast} from 'svelte-sonner';
     import InvoicePreviewModal from 'components/modals/InvoicePreviewModal.svelte';
     import SimpleButton from 'components/buttons/simple-button.svelte';
-    import { onMount, onDestroy } from 'svelte';
+    import {onMount, onDestroy, tick} from 'svelte';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {blockPage, unblockPage} from 'store/loadingStore.js';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
@@ -25,6 +25,14 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     import {initSelectpicker} from 'shim/select.js';
     import {showModal} from 'shim/modal.js';
 	import { UiUtil } from 'shim/ui.js';
+    import {
+        INVOICE_DIALOG_TYPES,
+        buildInvoiceDocumentUrl,
+        closeInvoiceDialog,
+        getInvoiceActionAvailability,
+        openInvoiceDialog,
+        reloadInvoiceList,
+    } from './invoiceActionState.js';
 
     sessionToken.useLocalStorage();
     permissions.useLocalStorage();
@@ -32,6 +40,28 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     let selectedCounter = 0;
     let visibleMultiaction = false;
     let datatable;
+    let invoiceDialog = closeInvoiceDialog();
+
+    async function showInvoiceDialog(type, row) {
+        invoiceDialog = openInvoiceDialog(invoiceDialog, type, row);
+        await tick();
+
+        if (invoiceDialog.type !== type || invoiceDialog.row?.invoice_id !== row.invoice_id) return;
+        if (type === INVOICE_DIALOG_TYPES.SHARE) showModal(`shareModal-${row.invoice_id}`);
+        if (type === INVOICE_DIALOG_TYPES.EDIT) showModal(`editModal-${row.invoice_id}`);
+    }
+
+    function dismissInvoiceDialog() {
+        invoiceDialog = closeInvoiceDialog(invoiceDialog);
+    }
+
+    function getInvoiceDocumentUrl(row, download) {
+        return buildInvoiceDocumentUrl(__bakney.env.API.DOCUMENT.RETRIEVE, row, download);
+    }
+
+    function handleInvoiceUpdated() {
+        reloadInvoiceList(() => datatable.reload());
+    }
 
     // Track all component instances to prevent memory leaks
     let componentInstances = [];
@@ -248,113 +278,76 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             autoHide: false,
             minWidth: '100%',
             template: function (row) {
-                let pdfLink = __bakney.env.API.DOCUMENT.RETRIEVE + '/' + row.document_pdf;
+                const availability = getInvoiceActionAvailability(row, {
+                    canUpdate: canPerformAction('bookeeping.documents.invoices.update'),
+                    canDelete: canPerformAction('bookeeping.documents.invoices.delete'),
+                });
                 // clear action column
                 if (document.querySelector(`#action-col-${row.invoice_id}`))
                     document.querySelector(`#action-col-${row.invoice_id}`).innerHTML = '';
 
-                waitForElementAndExecute(`#action-col-${row.invoice_id}`, () => {
-                    if (document.querySelector(`#action-col-${row.invoice_id}`))
-                        document.querySelector(`#action-col-${row.invoice_id}`).innerHTML = '';
+                waitForElementAndExecute(`#action-col-${row.invoice_id}`, target => {
+                    if (!target.isConnected) return;
+                    target.innerHTML = '';
 
                     let shareBtn = new ShareButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: row.document_token === null || row.imported_from_associami,
+                            disabled: availability.shareDisabled,
                             hidden: false,
                             popover_text: 'Condividi ricevuta',
                         },
                     });
                     componentInstances.push(shareBtn);
 
-                    let shareModal = new ShareModal({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
-                        intro: true,
-                        props: {
-                            id: row.invoice_id,
-                            row: row,
-                            pdfLink: pdfLink + '?download=true&token=' + row.document_token || '',
-                        },
-                    });
-                    componentInstances.push(shareModal);
-
-                    shareBtn.$on('open', data => {
-                        showModal(`shareModal-${row.invoice_id}`);
+                    shareBtn.$on('open', () => {
+                        showInvoiceDialog(INVOICE_DIALOG_TYPES.SHARE, row);
                     });
 
                     let editBtn = new EditButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled:
-                                !row.payment ||
-                                !canPerformAction('bookeeping.documents.invoices.update') ||
-                                row.imported_from_associami,
+                            disabled: availability.editDisabled,
                             hidden: false,
                         },
                     });
                     componentInstances.push(editBtn);
 
-                    if (row.payment) {
-                        let editModal = new EditModal({
-                            target: document.querySelector(`#action-col-${row.invoice_id}`),
-                            intro: true,
-                            props: {
-                                id: row.invoice_id,
-                                row: row,
-                                datatableHandle: {reload: () => datatable.reload()},
-                            },
-                        });
-                        componentInstances.push(editModal);
-
-                        editBtn.$on('open', data => {
-                            showModal(`editModal-${row.invoice_id}`);
-                        });
-                        editModal.$on('update', () => {
-                            datatable.reload();
-                        });
-                    }
+                    editBtn.$on('open', () => {
+                        showInvoiceDialog(INVOICE_DIALOG_TYPES.EDIT, row);
+                    });
 
                     let documentButton = new DocumentButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: false,
+                            disabled: availability.previewDisabled,
                             popover_text: `Ricevuta n.${row.number}`,
                         },
                     });
                     componentInstances.push(documentButton);
 
-                    documentButton.$on('open', data => {
+                    documentButton.$on('open', () => {
                         // dispatch onboarding-checklist-event
                         document.dispatchEvent(
                             new CustomEvent('onboarding-checklist-event', {detail: {key: 'download_invoice'}})
                         );
-                        let filePreview = new InvoicePreviewModal({
-                            target: document.querySelector(`#action-col-${row.invoice_id}`),
-                            intro: true,
-                            props: {
-                                pdfLink: pdfLink + '?download=false&token=' + row?.document_token,
-                                row: row,
-                                id: row.invoice_id,
-                                title: `Ricevuta n.${row.number}`,
-                            },
-                        });
-                        componentInstances.push(filePreview);
+                        showInvoiceDialog(INVOICE_DIALOG_TYPES.PREVIEW, row);
                     });
 
                     let deleteBtn = new DeleteButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: !canPerformAction('bookeeping.documents.invoices.delete'),
+                            disabled: availability.deleteDisabled,
                             popover_text: 'Elimina Ricevuta',
                         },
                     });
                     componentInstances.push(deleteBtn);
 
-                    deleteBtn.$on('open', data => {
+                    deleteBtn.$on('open', () => {
                         deleteInvoice(row.invoice_id);
                     });
                 });
@@ -752,6 +745,31 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
     </div>
     <!--end::Container-->
 </div>
+
+{#if invoiceDialog.row}
+    {#key `${invoiceDialog.type}-${invoiceDialog.row.invoice_id}`}
+        {#if invoiceDialog.type === INVOICE_DIALOG_TYPES.SHARE}
+            <ShareModal
+                id={invoiceDialog.row.invoice_id}
+                row={invoiceDialog.row}
+                pdfLink={getInvoiceDocumentUrl(invoiceDialog.row, true)}
+                on:close={dismissInvoiceDialog} />
+        {:else if invoiceDialog.type === INVOICE_DIALOG_TYPES.EDIT && invoiceDialog.row.payment}
+            <EditModal
+                id={invoiceDialog.row.invoice_id}
+                row={invoiceDialog.row}
+                on:update={handleInvoiceUpdated}
+                on:close={dismissInvoiceDialog} />
+        {:else if invoiceDialog.type === INVOICE_DIALOG_TYPES.PREVIEW}
+            <InvoicePreviewModal
+                pdfLink={getInvoiceDocumentUrl(invoiceDialog.row, false)}
+                row={invoiceDialog.row}
+                id={invoiceDialog.row.invoice_id}
+                title={`Ricevuta n.${invoiceDialog.row.number}`}
+                on:close={dismissInvoiceDialog} />
+        {/if}
+    {/key}
+{/if}
 
 <!--end::Entry-->
 <style>

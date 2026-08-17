@@ -6,7 +6,10 @@
     import Clipboard from 'svelte-clipboard';
     import {WhatsappLogo, PaperPlaneRight, Printer, Copy, PaperPlaneTilt, EnvelopeSimple} from 'phosphor-svelte';
     import {toast} from 'svelte-sonner';
-    import { onDestroy } from 'svelte';
+    import {createEventDispatcher, onDestroy, onMount} from 'svelte';
+    import {hideModal} from 'shim/modal.js';
+
+    const dispatch = createEventDispatcher();
 
     userData.useLocalStorage();
 
@@ -53,8 +56,19 @@
     };
 
     let copied = false;
+    let modalElement;
+
+    function handleHidden() {
+        dispatch('close');
+    }
+
+    onMount(() => {
+        modalElement?.addEventListener('hidden.bs.modal', handleHidden);
+    });
 
     onDestroy(() => {
+        if (modalElement?.classList.contains('show')) hideModal(`shareModal-${id}`);
+        modalElement?.removeEventListener('hidden.bs.modal', handleHidden);
         dispatch('destroy');
     });
 </script>
@@ -64,6 +78,7 @@
     <!-- Modal-->
     <form class="form" id="form_edit_{id}">
         <div
+            bind:this={modalElement}
             class="modal fade"
             id="shareModal-{id}"
             tabindex="-1"

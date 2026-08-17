@@ -1,6 +1,6 @@
 <script>
 	import { FileText } from 'lucide-svelte';
-    import {onMount} from 'svelte';
+    import {onDestroy, onMount, tick} from 'svelte';
     import ShareButton from '../../../components/buttons/ShareButton.svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
     import {sessionToken, userData, permissions} from 'store/stores.js';
@@ -17,11 +17,41 @@
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import {showModal} from 'shim/modal.js';
 	import { UiUtil } from 'shim/ui.js';
+    import {
+        INVOICE_DIALOG_TYPES,
+        buildInvoiceDocumentUrl,
+        closeInvoiceDialog,
+        getInvoiceActionAvailability,
+        openInvoiceDialog,
+    } from './invoiceActionState.js';
 
     sessionToken.useLocalStorage();
     permissions.useLocalStorage();
 
     let datatable;
+    let invoiceDialog = closeInvoiceDialog();
+    let componentInstances = [];
+
+    function cleanupComponents() {
+        componentInstances.forEach(instance => instance.$destroy?.());
+        componentInstances = [];
+    }
+
+    async function showInvoiceDialog(type, row) {
+        invoiceDialog = openInvoiceDialog(invoiceDialog, type, row);
+        await tick();
+
+        if (invoiceDialog.type !== type || invoiceDialog.row?.invoice_id !== row.invoice_id) return;
+        if (type === INVOICE_DIALOG_TYPES.SHARE) showModal(`shareModal-${row.invoice_id}`);
+    }
+
+    function dismissInvoiceDialog() {
+        invoiceDialog = closeInvoiceDialog(invoiceDialog);
+    }
+
+    function getInvoiceDocumentUrl(row, download) {
+        return buildInvoiceDocumentUrl(__bakney.env.API.DOCUMENT.RETRIEVE, row, download);
+    }
 
     let mobileCols = UiUtil.isMobileDevice()
         ? [
@@ -210,71 +240,58 @@
             minWidth: '100%',
             template: function (row) {
                 let canDelete = Date.now() < new Date(row.creation_date).getTime() + 24 * 7 * 60 * 60 * 1000;
-                let pdfLink = __bakney.env.API.DOCUMENT.RETRIEVE + '/' + row.document_pdf;
-                waitForElementAndExecute(`#action-col-${row.invoice_id}`, () => {
-                    if (document.querySelector(`#action-col-${row.invoice_id}`))
-                        document.querySelector(`#action-col-${row.invoice_id}`).innerHTML = '';
+                const availability = getInvoiceActionAvailability(row, {
+                    archived: true,
+                    canDelete: canPerformAction('bookeeping.documents.invoices.delete'),
+                });
+                waitForElementAndExecute(`#action-col-${row.invoice_id}`, target => {
+                    if (!target.isConnected) return;
+                    target.innerHTML = '';
 
                     let shareBtn = new ShareButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: row.document_token === null,
+                            disabled: availability.shareDisabled,
                             hidden: false,
                             popover_text: 'Condividi ricevuta',
                         },
                     });
+                    componentInstances.push(shareBtn);
 
-                    let shareModal = new ShareModal({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
-                        intro: true,
-                        props: {
-                            id: row.invoice_id,
-                            row: row,
-                            pdfLink: pdfLink + '?download=true&token=' + row.document_token || '',
-                        },
-                    });
-
-                    shareBtn.$on('open', data => {
-                        showModal(`shareModal-${row.invoice_id}`);
+                    shareBtn.$on('open', () => {
+                        showInvoiceDialog(INVOICE_DIALOG_TYPES.SHARE, row);
                     });
 
                     let documentButton = new DocumentButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: false,
+                            disabled: availability.previewDisabled,
                             popover_text: `Ricevuta n.${row.number}`,
                         },
                     });
+                    componentInstances.push(documentButton);
 
-                    documentButton.$on('open', data => {
+                    documentButton.$on('open', () => {
                         // dispatch onboarding-checklist-event
                         document.dispatchEvent(
                             new CustomEvent('onboarding-checklist-event', {detail: {key: 'download_invoice'}})
                         );
-                        let filePreview = new InvoicePreviewModal({
-                            target: document.querySelector(`#action-col-${row.invoice_id}`),
-                            intro: true,
-                            props: {
-                                pdfLink: pdfLink + '?download=false&token=' + row?.document_token,
-                                row: row,
-                                id: row.invoice_id,
-                                title: `Ricevuta n.${row.number}`,
-                            },
-                        });
+                        showInvoiceDialog(INVOICE_DIALOG_TYPES.PREVIEW, row);
                     });
 
                     let deleteBtn = new DeleteButton({
-                        target: document.querySelector(`#action-col-${row.invoice_id}`),
+                        target,
                         intro: true,
                         props: {
-                            disabled: !canPerformAction('bookeeping.documents.invoices.delete'),
+                            disabled: availability.deleteDisabled,
                             popover_text: 'Elimina Ricevuta',
                         },
                     });
+                    componentInstances.push(deleteBtn);
 
-                    deleteBtn.$on('open', data => {
+                    deleteBtn.$on('open', () => {
                         let id = row.invoice_id;
                         swal.fire({
                             text: 'Vuoi eliminare definitivamente la ricevuta?',
@@ -297,6 +314,7 @@
                                 apiFetch(url, {method: 'POST'})
                                     .then(() => {
                                         toast.success('Eliminazione avvenuta con Successo.');
+                                        cleanupComponents();
                                         datatable.reload();
                                         initTooltips(document.body);
                                     })
@@ -354,6 +372,10 @@
 
     onMount(() => {
         initTooltips(document.body);
+    });
+
+    onDestroy(() => {
+        cleanupComponents();
     });
 </script>
 
@@ -468,6 +490,25 @@
     </div>
     <!--end::Container-->
 </div>
+
+{#if invoiceDialog.row}
+    {#key `${invoiceDialog.type}-${invoiceDialog.row.invoice_id}`}
+        {#if invoiceDialog.type === INVOICE_DIALOG_TYPES.SHARE}
+            <ShareModal
+                id={invoiceDialog.row.invoice_id}
+                row={invoiceDialog.row}
+                pdfLink={getInvoiceDocumentUrl(invoiceDialog.row, true)}
+                on:close={dismissInvoiceDialog} />
+        {:else if invoiceDialog.type === INVOICE_DIALOG_TYPES.PREVIEW}
+            <InvoicePreviewModal
+                pdfLink={getInvoiceDocumentUrl(invoiceDialog.row, false)}
+                row={invoiceDialog.row}
+                id={invoiceDialog.row.invoice_id}
+                title={`Ricevuta n.${invoiceDialog.row.number}`}
+                on:close={dismissInvoiceDialog} />
+        {/if}
+    {/key}
+{/if}
 
 <!--end::Entry-->
 <style>

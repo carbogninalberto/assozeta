@@ -5,8 +5,10 @@
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import Clipboard from 'svelte-clipboard';
     import {WhatsappLogo, PaperPlaneRight, Printer, Copy, PaperPlaneTilt, EnvelopeSimple} from 'phosphor-svelte';
-    import {onDestroy, onMount} from 'svelte';
+    import {createEventDispatcher, onDestroy, onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
+
+    const dispatch = createEventDispatcher();
 
     export let id;
     export let title = 'Anteprima Ricevuta';
@@ -36,6 +38,11 @@
         document.body.style = 'overflow:auto;';
     }
 
+    function close() {
+        clearBody();
+        dispatch('close');
+    }
+
     onDestroy(() => {
         clearBody();
     });
@@ -56,8 +63,8 @@
     {alignFooterCenter}
     {modalSize}
     {target}
-    on:cancel={clearBody}
-    on:confirm={clearBody}>
+    on:close={close}
+    on:confirm={close}>
     <div class="my-4">
         <h1>{title}</h1>
     </div>

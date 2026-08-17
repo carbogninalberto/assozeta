@@ -5,7 +5,7 @@
 import {blockPage, unblockPage} from 'store/loadingStore.js';
     import Portal from 'svelte-portal';
     import {getDataFromForm} from 'utils/Functions';
-    import {createEventDispatcher, onMount} from 'svelte';
+    import {createEventDispatcher, onDestroy, onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
     import {hideModal} from 'shim/modal.js';
 
@@ -13,10 +13,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
 
     export let id;
     export let row;
-    export let datatableHandle;
 
     let editForm;
     let selectedTutor;
+    let modalElement;
 
     function initForm() {
         editForm?.destroy();
@@ -74,33 +74,45 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
         } else {
             toast.error('Si è verificato un errore.');
         }
-        datatableHandle?.reload();
     }
 
-    function handleValidation(e) {
+    async function handleValidation(e) {
         if (!editForm) initForm();
-        editForm?.validate().then(function (status) {
-            if (status === 'Valid') {
-                update(getDataFromForm(e));
+        const status = await editForm?.validate();
+        if (status === 'Valid') {
+            try {
+                await update(getDataFromForm(e));
+            } finally {
                 hideModal('editModal-' + id);
-            } else {
-                swal.fire({
-                    text: 'Per favore, inserisci tutti i dati e riprova.',
-                    icon: 'error',
-                    buttonsStyling: false,
-                    confirmButtonText: 'Ok, capito!',
-                    customClass: {
-                        confirmButton: 'btn font-weight-bold btn-light-primary',
-                    },
-                }).then(function () {
-                    scrollToTop();
-                });
             }
-        });
+        } else {
+            swal.fire({
+                text: 'Per favore, inserisci tutti i dati e riprova.',
+                icon: 'error',
+                buttonsStyling: false,
+                confirmButtonText: 'Ok, capito!',
+                customClass: {
+                    confirmButton: 'btn font-weight-bold btn-light-primary',
+                },
+            }).then(function () {
+                scrollToTop();
+            });
+        }
+    }
+
+    function handleHidden() {
+        dispatch('close');
     }
 
     onMount(() => {
         row.payment.payment_date = moment(row.payment.payment_date).format('YYYY-MM-DD');
+        modalElement?.addEventListener('hidden.bs.modal', handleHidden);
+    });
+
+    onDestroy(() => {
+        if (modalElement?.classList.contains('show')) hideModal(`editModal-${id}`);
+        modalElement?.removeEventListener('hidden.bs.modal', handleHidden);
+        editForm?.destroy();
     });
 </script>
 
@@ -109,6 +121,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     <!-- Modal-->
     <form class="form" id="form_edit_{id}" on:submit|preventDefault={handleValidation}>
         <div
+            bind:this={modalElement}
             class="modal fade"
             id="editModal-{id}"
             tabindex="-1"

@@ -1,5 +1,6 @@
 import {apiFetch} from './ApiMiddleware';
 import {isMobileSidebarOpen} from 'store/stores.js';
+export {waitForElementAndExecute} from './waitForElement.js';
 
 export const getAthletesEmails = async function () {
     let res = await apiFetch(__bakney.env.API.SUBSCRIPTION.LIST + '?field=email');
@@ -99,22 +100,6 @@ export const getDataFromForm = e => {
         }
     }
     return data;
-};
-
-export const waitForElementAndExecute = function (id, callback) {
-    return new Promise(resolve => {
-        function checkElement() {
-            const element = document.querySelector(id);
-            if (element) {
-                resolve(element);
-            } else {
-                requestAnimationFrame(checkElement);
-            }
-        }
-        checkElement();
-    }).then(element => {
-        callback(element);
-    });
 };
 
 export const debounce = (func, wait, immediate) => {
