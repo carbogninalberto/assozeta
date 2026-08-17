@@ -15,8 +15,9 @@ Start here for architecture exploration:
 
 Artifacts and evidence:
 
+- [Architecture index](./architecture/README.md)
 - [Coverage metrics](./architecture/coverage-metrics.md)
-- [Mermaid diagrams (sources)](./diagrams)
+- [Diagrams index](./diagrams/README.md)
 - [Rendered Mermaid artifacts](./diagrams/rendered)
 - [Screenshot capture guide](./scripts/capture_system_screenshots.mjs)
 - Rendered screenshot manifest: `docs/screenshots/index.md` (generated when capture runs)
@@ -25,10 +26,12 @@ Data and automation:
 
 - [Inventory JSON](./matrix/architecture-inventory.json)
 - [Inventory markdown](./matrix/architecture-inventory.md)
+- [Matrix index](./matrix/README.md)
 - [Architecture matrix scripts](./scripts/analyze_architecture.mjs)
 - [Docs summary generator](./scripts/generate_docs_summary.mjs)
 - [Gap generator](./scripts/generate_coverage_gaps.mjs)
 - [Mermaid renderer](./scripts/render_mermaid_diagrams.mjs)
+- [Scripts index](./scripts/README.md)
 
 ## Current structure (reference)
 
