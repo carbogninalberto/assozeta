@@ -16,7 +16,6 @@
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import {showModal} from 'shim/modal.js';
-	import { UiUtil } from 'shim/ui.js';
     import {
         INVOICE_DIALOG_TYPES,
         buildInvoiceDocumentUrl,
@@ -53,53 +52,7 @@
         return buildInvoiceDocumentUrl(__bakney.env.API.DOCUMENT.RETRIEVE, row, download);
     }
 
-    let mobileCols = UiUtil.isMobileDevice()
-        ? [
-              {
-                  field: 'informazioni',
-                  title: 'Informazioni',
-                  width: 150,
-                  sortable: false,
-                  autoHide: false,
-                  template: function (row) {
-                      let amount =
-                          "<span style='font-weight:700;color:#2eb132'>€ " +
-                          (parseFloat(row.membership_fee) + parseFloat(row.activity_fee))
-                              .toFixed(2)
-                              .replace(',', '-')
-                              .replace('.', ',')
-                              .replace('-', '.') +
-                          '</span>';
-                      let invoiceNumber = "<span style='font-weight:700;'>" + row.number + '</span>';
-
-                      let url = `/#/search/profile/${row.payment?.user?.username}`;
-                      // if user is not defined we open the associate details
-                      if (row.payment?.subscription_id)
-                          url = `/#/members/list/detail/${row.payment?.subscription_id}/info`;
-
-                      let nameInfo =
-                          `<a href="${url}">` +
-                          '<b>' +
-                          (row.payment?.associate?.first_name + ' ' + row.payment?.associate?.last_name).toUpperCase() +
-                          '</b></a>';
-
-                      let composeHtml = `
-                            <div class="d-flex" style="flex-direction: column;">
-                                <div class="mb-2">
-                                    ${invoiceNumber} (${amount})
-                                </div>
-                                <div>
-                                    ${nameInfo}
-                                </div>
-                            </div>`;
-                      return composeHtml;
-                  },
-              },
-          ]
-        : [];
-
     const columns = [
-        ...mobileCols,
         {
             field: 'user',
             title: 'Intestato a',

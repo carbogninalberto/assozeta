@@ -24,7 +24,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import {initSelectpicker} from 'shim/select.js';
     import {showModal} from 'shim/modal.js';
-	import { UiUtil } from 'shim/ui.js';
     import {
         INVOICE_DIALOG_TYPES,
         buildInvoiceDocumentUrl,
@@ -77,53 +76,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
         componentInstances = [];
     }
 
-    let mobileCols = UiUtil.isMobileDevice()
-        ? [
-              {
-                  field: 'informazioni',
-                  title: 'Informazioni',
-                  width: 150,
-                  sortable: false,
-                  autoHide: false,
-                  template: function (row) {
-                      if (row.payment?.imported_from_associami)
-                          return `<div class="font-size-sm font-weight-boldest text-dark" style="line-height:1.2;">${row.payment?.customer_name}</div>`;
-                      let amount =
-                          "<span style='font-weight:700;color:#2eb132'>€ " +
-                          (parseFloat(row.membership_fee) + parseFloat(row.activity_fee))
-                              .toFixed(2)
-                              .replace(',', '-')
-                              .replace('.', ',')
-                              .replace('-', '.') +
-                          '</span>';
-                      let invoiceNumber = "<span style='font-weight:700;'>" + row.number + '</span>';
-
-                      let url = `/#/search/profile/${row.payment?.user?.username}`;
-                      // if user is not defined we open the associate details
-                      if (row.payment?.subscription_id)
-                          url = `/#/members/list/detail/${row.payment?.subscription_id}/info`;
-
-                      let nameInfo =
-                          `<a href="${url}">` +
-                          '<b>' +
-                          (row.payment?.associate?.first_name + ' ' + row.payment?.associate?.last_name).toUpperCase() +
-                          '</b></a>';
-
-                      let composeHtml = `
-                        <div class="d-flex" style="flex-direction: column;">
-                            <div class="mb-2">
-                                ${invoiceNumber} (${amount})
-                            </div>
-                            <div>
-                                ${nameInfo}
-                            </div>
-                        </div>`;
-                      return composeHtml;
-                  },
-              },
-          ]
-        : [];
-
     const columns = [
         {
             field: 'invoice_id',
@@ -136,7 +88,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             },
             textAlign: 'center',
         },
-        ...mobileCols,
         {
             field: 'user',
             title: 'Intestato a',

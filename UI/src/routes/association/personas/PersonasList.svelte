@@ -21,7 +21,7 @@
     import {personasListFilter, personasListFilterDatatable} from 'store/stores.js';
     import AddPersonaDrawer from './detail/AddPersonaDrawer.svelte';
     import NotesButton from 'components/buttons/NotesButton.svelte';
-    import {UiApp, UiUtil} from 'shim/ui.js';
+    import {UiApp} from 'shim/ui.js';
     sessionToken.useLocalStorage();
     userData.useLocalStorage();
 
@@ -177,7 +177,7 @@
                             title: '#',
                             sortable: false,
                             autoHide: false,
-                            width: UiUtil.isMobileDevice() ? 15 : 5,
+                            width: 5,
                             minWidth: '100%',
                             selector: {
                                 class: '',
@@ -190,7 +190,7 @@
                             sortable: false,
                             autoHide: false,
                             fireClick: true,
-                            width: UiUtil.isMobileDevice() ? 28 : 8,
+                            width: 8,
                             textAlign: 'left',
                             minWidth: '100%',
                             template: row => {
@@ -275,7 +275,6 @@
                         {
                             field: '',
                             title: '',
-                            width: UiUtil.isMobileDevice() ? 80 : 30,
                             sortable: false,
                             overflow: 'visible',
                             textAlign: 'right',
