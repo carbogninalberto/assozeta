@@ -1,0 +1,31 @@
+flowchart TB
+    Internet["Browser / Internet"] --> Web["web: Caddy + UI image"]
+    Web -->|"/api/*"| API["api: Django ASGI"]
+    Web -->|"/ws/*"| API
+    Web -->|"SPA fallback"| UI["Svelte build"]
+    API --> DB[("postgres")]
+    API --> Redis[("redis")]
+    API --> Storage[("minio")]
+    API --> Renderer["renderer: Chromium PDF"]
+    API --> Worker["worker: Celery"]
+    Worker --> Redis
+    Worker --> DB
+    Worker --> Storage
+    Beat["beat: Celery Beat"] --> Redis
+    Beat --> Worker
+    Migrate["migrate: one-shot init"] --> DB
+    Migrate --> Storage
+    MinioInit["minio-init: bucket init"] --> Storage
+    subgraph Internal["Docker internal network"]
+        API
+        DB
+        Redis
+        Storage
+        Renderer
+        Worker
+        Beat
+        Migrate
+        MinioInit
+    end
+    External["SMTP / Stripe / Google / AI"] --> API
+    Worker --> External
