@@ -11,6 +11,7 @@ Start here for architecture exploration:
 - [Functionality map](./architecture/functionality-map.md)
 - [Permissions & access control](./architecture/permissions-and-access.md)
 - [Deployment/runtime model](./architecture/deployment-runtime.md)
+- [Frontend/backend contract](./architecture/frontend-backend-contract.md)
 - [Coverage gaps and risks](./architecture/coverage-gaps.md)
 
 Artifacts and evidence:
@@ -19,8 +20,7 @@ Artifacts and evidence:
 - [Coverage metrics](./architecture/coverage-metrics.md)
 - [Diagrams index](./diagrams/README.md)
 - [Rendered Mermaid artifacts](./diagrams/rendered)
-- [Screenshot capture guide](./scripts/capture_system_screenshots.mjs)
-- Rendered screenshot manifest: `docs/screenshots/index.md` (generated when capture runs)
+- [Deployment stack diagram](./diagrams/deployment-stack.mmd)
 
 Data and automation:
 
@@ -40,7 +40,6 @@ Data and automation:
 - `docs/diagrams/rendered/`: rendered Mermaid SVG artifacts
 - `docs/matrix/`: machine-readable and machine-generated route/permission inventory
 - `docs/scripts/`: reproducible documentation scripts
-- `docs/screenshots/`: UI route screenshots and generated manifest
 - `docs/goal-prompts/`: actionable goal prompt for docs remediation
 
 ## How to keep docs in sync
@@ -69,19 +68,7 @@ node docs/scripts/render_mermaid_diagrams.mjs
 node docs/scripts/generate_coverage_gaps.mjs
 ```
 
-5. Capture UI screenshots (requires app running on `--base-url`):
-
-```bash
-node docs/scripts/capture_system_screenshots.mjs --base-url=http://localhost:5001
-```
-
-If Playwright is not already available in this checkout, install it locally before running screenshots:
-
-```bash
-npm install -D playwright
-```
-
-6. If UI routes evolve, rerun inventory/summary/gaps and review:
+5. If UI routes evolve, rerun inventory/summary/gaps and review:
    - `docs/architecture/coverage-gaps.md`
    - `docs/architecture/functionality-map.md` for route mapping deltas.
 
@@ -92,13 +79,6 @@ node docs/scripts/analyze_architecture.mjs \
 && node docs/scripts/generate_docs_summary.mjs \
 && node docs/scripts/generate_coverage_gaps.mjs \
 && node docs/scripts/render_mermaid_diagrams.mjs
-```
-
-If you also maintain screenshots:
-
-```bash
-npm install -D playwright
-node docs/scripts/capture_system_screenshots.mjs --base-url=http://localhost:5001
 ```
 
 ## Conventions used

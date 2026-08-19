@@ -14,6 +14,8 @@ Use this directory to understand system behavior from a technical and operations
   Route/permission mismatches and review risk points.
 - [coverage-metrics.md](./coverage-metrics.md)  
   Current route and permission coverage numbers.
+- [frontend-backend-contract.md](./frontend-backend-contract.md)
+  Browser navigation, HTTP, WebSocket, async, and data-boundary contract.
 
 Run order for architecture docs:
 
@@ -21,3 +23,10 @@ Run order for architecture docs:
 2. `generate_docs_summary.mjs`
 3. `generate_coverage_gaps.mjs`
 4. Review `coverage-gaps.md` before changes to auth, routing, or permissions.
+
+## Recommended reading paths
+
+- **Understand the whole system:** overview → frontend/backend contract → deployment/runtime.
+- **Understand product behavior:** functionality map → permissions/access → coverage gaps.
+- **Operate self-hosting:** deployment/runtime → [`selfhost/README.md`](../../selfhost/README.md) → deployment-stack diagram.
+- **Automate documentation:** matrix → scripts → rendered Mermaid diagrams.

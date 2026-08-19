@@ -53,6 +53,7 @@ From `BE/core/celery.py` and application task definitions:
   - `install`, `status`, `logs`, `backup`, `restore`, `upgrade`, `start`, `stop`
 - `Makefile` targets in repo root (`make dev`, `make dev-reset`, `make dev-test`, etc.).
 - `docs/scripts/render_mermaid_diagrams.mjs` for rendered Mermaid snapshots.
+- [`../diagrams/deployment-stack.mmd`](../diagrams/deployment-stack.mmd) for Compose dependency relationships.
 
 ## Development mode notes
 
@@ -65,5 +66,4 @@ From `BE/core/celery.py` and application task definitions:
 ## Documentation evidence tasks (required)
 
 - Keep this file updated whenever infrastructure-level services or compose definitions change.
-- Capture screenshot evidence for both dev (`UI` from Vite) and prod (`web` reverse proxy) contexts when possible.
 - Regenerate matrix artifacts before updating deployment claims.

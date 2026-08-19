@@ -12,7 +12,7 @@ Produce a comprehensive, structured `docs/` set that fully describes:
 - functional domains (memberships, courses, accounting, communications, billing, documents, exports, imports, integrations, AI),
 - route and permission surface alignment,
 - deployment and operations behavior,
-- and a reproducible screenshot and diagram workflow using Playwright + Mermaid.
+- and a reproducible diagram workflow using Mermaid.
 
 ## Scope
 
@@ -72,10 +72,9 @@ Produce a comprehensive, structured `docs/` set that fully describes:
      - collaborator impersonation/permission fallback behavior,
      - explicit “not enforced” and “explicitly excluded” paths.
 
-6. **Capture and link documentation evidence assets**
-   - Add a Playwright script to collect screenshot evidence for UI route families.
+6. **Validate documentation evidence assets**
    - Add a Mermaid rendering workflow and executable script using `@mermaid-js/mermaid-cli`.
-   - Generate and version a screenshot manifest, and link visual artifacts in docs.
+   - Verify rendered diagrams are non-empty and linked from the documentation index.
 
 7. **Close the loop with a gap report**
    - Add a gap file documenting:
@@ -97,7 +96,6 @@ Produce a comprehensive, structured `docs/` set that fully describes:
   - topology,
   - request/auth/runtime flow,
   - deployment stack.
-- A Playwright capture script is present and runnable with clear auth and non-auth modes.
 - Gap report is explicit about current mismatch numbers and file-level sources.
 
 ## Concrete expected outputs
@@ -110,11 +108,10 @@ Produce a comprehensive, structured `docs/` set that fully describes:
 6. `docs/architecture/coverage-gaps.md`
 7. `docs/diagrams/system-topology.mmd`
 8. `docs/diagrams/request-runtime-flow.mmd`
-9. `docs/scripts/capture_system_screenshots.mjs`
-10. `docs/scripts/generate_docs_summary.mjs`
-11. `docs/scripts/render_mermaid_diagrams.mjs`
-12. `docs/scripts/generate_coverage_gaps.mjs`
-13. `docs/matrix/*` inventory outputs refreshed
+9. `docs/scripts/generate_docs_summary.mjs`
+10. `docs/scripts/render_mermaid_diagrams.mjs`
+11. `docs/scripts/generate_coverage_gaps.mjs`
+12. `docs/matrix/*` inventory outputs refreshed
 
 ---
 
