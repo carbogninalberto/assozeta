@@ -2881,7 +2881,7 @@ class Migration(migrations.Migration):
                 ('group_id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=150)),
                 ('description', models.CharField(blank=True, max_length=250, null=True)),
-                ('sport_association', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('sport_association', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='application.sportassociation')),
             ],
         ),
         migrations.AddField(
@@ -3163,11 +3163,6 @@ class Migration(migrations.Migration):
             model_name='productsandservices',
             name='product_price',
             field=models.DecimalField(blank=True, decimal_places=2, default=0.0, max_digits=9, null=True),
-        ),
-        migrations.AlterField(
-            model_name='group',
-            name='sport_association',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='application.sportassociation'),
         ),
         # Data transformation - not needed for fresh DB (add meta data to course payments)
         migrations.RunPython(migrations.RunPython.noop),
