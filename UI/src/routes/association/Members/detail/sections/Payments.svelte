@@ -298,8 +298,8 @@
                 return newData;
             },
             template: function (row) {
-                // format row.creation_date to dd/mm/yyyy with moment
-                let date = moment(row.creation_date).format('DD/MM/YYYY');
+                // Keep this compact in the enrollment payment tab.
+                let date = moment(row.creation_date).format('DD/MM');
                 return date;
             },
         },
@@ -342,8 +342,8 @@
             },
             template: function (row) {
                 if (row.payment_date == null) return '-';
-                // format row.payment_date to dd/mm/yyyy with moment
-                return moment(row.payment_date).format('DD/MM/YYYY');
+                // Keep this compact in the enrollment payment tab.
+                return moment(row.payment_date).format('DD/MM');
             },
         },
         {

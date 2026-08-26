@@ -16,6 +16,7 @@
     import {File, FileText, TrashSimple} from 'phosphor-svelte';
     import MetaPaymentCategories from './partials/meta-payment-categories.svelte';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
+    import {normalizeDateForApi} from 'utils/dateValues.js';
 
     const dispatch = createEventDispatcher();
 
@@ -49,10 +50,8 @@
             });
         }
 
-        formData.creation_date = moment(formData.creation_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-        if (formData.payment_date)
-            formData.payment_date = moment(formData.payment_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-        else formData.payment_date = null;
+        formData.creation_date = normalizeDateForApi(formData.creation_date);
+        formData.payment_date = normalizeDateForApi(formData.payment_date);
 
         formData.custom_accounts = JSON.parse(formData.custom_accounts)?.value;
         formData.expense = JSON.parse(formData.expense)?.value;
