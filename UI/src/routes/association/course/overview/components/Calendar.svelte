@@ -18,6 +18,7 @@
     import DateInput from 'components/inputs/DateInput.svelte';
     import { UiApp } from 'shim/ui.js';
     import {normalizeCalendarEvents} from 'utils/eventCalendar.js';
+    import {recurringDates} from 'utils/dateValues.js';
 
     const EventCalendar = window.EventCalendar;
 
@@ -101,7 +102,7 @@
 
         var calendarEl = document.getElementById('course_attendance_calendar');
 
-        createEvent = function (
+        createEvent = async function (
             startDate,
             title,
             endDate,
@@ -124,7 +125,8 @@
 
             calendar.addEvent(event);
             let updatedEvents = calendar.getEvents();
-            saveCalendarDirectly(updatedEvents);
+            await saveCalendarDirectly(updatedEvents);
+            dispatch('refresh');
         };
 
         calendar = EventCalendar.create(calendarEl, {
@@ -147,10 +149,10 @@
                         },
                     },
                 });
-                addEventModal.$on('save', data => {
+                addEventModal.$on('save', async data => {
                     // destroy addEventModal
                     addEventModal.$destroy();
-                    createEvent(
+                    await createEvent(
                         moment(data.detail.event_start).format(),
                         data.detail.event_title,
                         data.detail.event_end ? moment(data.detail.event_end).format() : null,
@@ -419,17 +421,6 @@
         });
     }
 
-    function getDates(startDate, endDate) {
-        let dates = [];
-        let currentDate = moment(startDate);
-
-        while (currentDate <= endDate) {
-            dates.push(moment(currentDate).format('YYYY-MM-DD'));
-            currentDate = moment(currentDate).add(1, 'days');
-        }
-
-        return dates;
-    }
 </script>
 
 {#if calendarVisible}
@@ -586,21 +577,25 @@
                             style={openNewEventModal && String(currentEventName).length < 3
                                 ? 'opacity: 0.6;pointer-events:none'
                                 : ''}
-                            on:click={() => {
+                            on:click={async () => {
                                 if (openNewEventModal) {
                                     // generate events based on the selected days, the event name and the end date
                                     const selectedDays = document.querySelectorAll(
                                         '#days-checkboxes input[type="checkbox"]:checked'
                                     );
 
-                                    // get a list of all the dates between the start date and the end date + 30 days
-                                    const dates = getDates(moment(), moment(eventDate));
                                     // get the selected days
                                     const days = Array.from(selectedDays).map(d => d.name);
-                                    // get the dates that match the selected days
-                                    const selectedDates = dates.filter(d =>
-                                        days.includes(moment(d).format('dddd').toLowerCase())
+                                    const selectedDates = recurringDates(
+                                        moment().format('YYYY-MM-DD'),
+                                        eventDate,
+                                        days
                                     );
+
+                                    if (selectedDates.length === 0) {
+                                        toast.error('Seleziona almeno un giorno e una data finale valida.');
+                                        return;
+                                    }
 
                                     let groupId = uuidv4();
                                     // create the events
@@ -642,7 +637,8 @@
                                     openNewEventModal = false;
                                     currentEventName = 'Lezione';
                                     instructor = null;
-                                    saveCalendarDirectly(calendar.getEvents());
+                                    await saveCalendarDirectly(calendar.getEvents());
+                                    dispatch('refresh');
                                 } else {
                                     openNewEventModal = true;
                                 }
