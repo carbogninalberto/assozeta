@@ -191,7 +191,7 @@
             field: 'amount',
             title: 'Importo',
             fireClick: true,
-            width: 60,
+            width: 90,
             minWidth: '100%',
             sortable: false,
             responsive: {
@@ -202,10 +202,10 @@
                 // TODO: red or green color if positive or negative
                 let amount =
                     parseFloat(row.amount) >= 0
-                        ? '<span class="text-success" style=\'font-weight:700;\'>€ ' +
+                        ? '<span class="text-success" style=\'font-weight:700; white-space:nowrap;\'>€ ' +
                           row.amount.replace('.', ',') +
                           '</span>'
-                        : '<span class="text-danger" style=\'font-weight:700;\'>€ ' +
+                        : '<span class="text-danger" style=\'font-weight:700; white-space:nowrap;\'>€ ' +
                           row.amount.replace('.', ',') +
                           '</span>';
                 return amount;
@@ -264,7 +264,7 @@
             field: 'creation_date',
             title: 'Data',
             fireClick: true,
-            width: 70,
+            width: 90,
             type: 'date',
             minWidth: '100%',
             responsive: {
@@ -298,16 +298,14 @@
                 return newData;
             },
             template: function (row) {
-                // Keep this compact in the enrollment payment tab.
-                let date = moment(row.creation_date).format('DD/MM');
-                return date;
+                return `<span style="white-space:nowrap;">${moment(row.creation_date).format('DD/MM/YY')}</span>`;
             },
         },
         {
             field: 'payment_date',
             title: 'Pagato',
             fireClick: true,
-            width: 70,
+            width: 90,
             type: 'date',
             minWidth: '100%',
             responsive: {
@@ -342,8 +340,7 @@
             },
             template: function (row) {
                 if (row.payment_date == null) return '-';
-                // Keep this compact in the enrollment payment tab.
-                return moment(row.payment_date).format('DD/MM');
+                return `<span style="white-space:nowrap;">${moment(row.payment_date).format('DD/MM/YY')}</span>`;
             },
         },
         {
