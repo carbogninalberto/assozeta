@@ -4,6 +4,7 @@
     import {onMount, onDestroy, createEventDispatcher, tick} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {UiUtil} from 'shim/ui.js';
+    import {estimateHeaderMinimumWidth} from './datatableColumnLayout.js';
 
     const dispatch = createEventDispatcher();
     const responsiveBreakpoints = ['xxxxl', 'xxxl', 'xxl', 'xl', 'lg', 'md', 'sm'];
@@ -513,23 +514,34 @@
         return 80;
     }
 
+    function getHeaderMinimumWidth(column) {
+        return estimateHeaderMinimumWidth(column.title, {
+            selector: Boolean(column.selector),
+            action: isActionColumn(column),
+        });
+    }
+
     function getColumnPreferredWidth(column, rows = dataSet) {
         const configuredWidth = getConfiguredColumnWidth(column);
-        if (configuredWidth) return Math.max(configuredWidth, getReadableMinimumWidth(column, configuredWidth));
-        return estimateColumnWidth(column, rows);
+        const readableMinimumWidth = getReadableMinimumWidth(column, configuredWidth);
+        const headerMinimumWidth = getHeaderMinimumWidth(column);
+
+        if (configuredWidth) return Math.max(configuredWidth, readableMinimumWidth, headerMinimumWidth);
+        return Math.max(estimateColumnWidth(column, rows), headerMinimumWidth);
     }
 
     function getColumnMinimumWidth(column, rows = dataSet) {
         const explicitMinWidth = getPixelWidth(column.minWidth);
         const preferredWidth = getColumnPreferredWidth(column, rows);
+        const headerMinimumWidth = getHeaderMinimumWidth(column);
 
         if (column.selector) return 40;
-        if (explicitMinWidth) return explicitMinWidth;
+        if (explicitMinWidth) return Math.max(explicitMinWidth, headerMinimumWidth);
         if (isActionColumn(column)) return preferredWidth;
         if (!shouldWrapColumn(column)) return preferredWidth;
 
         const shrinkTarget = preferredWidth * 0.55;
-        return Math.round(clampNumber(shrinkTarget, 72, preferredWidth));
+        return Math.round(clampNumber(shrinkTarget, Math.max(72, headerMinimumWidth), preferredWidth));
     }
 
     function isGrowableColumn(column) {
@@ -1355,6 +1367,14 @@
     .datatable.datatable-default > .datatable-table > .datatable-body .datatable-row > .datatable-cell.datatable-cell-wrap > span {
         white-space: normal;
         overflow-wrap: anywhere;
+        word-break: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .datatable.datatable-default > .datatable-table > .datatable-head .datatable-row > .datatable-cell > span {
+        white-space: nowrap;
+        overflow-wrap: normal;
         word-break: normal;
         overflow: visible;
         text-overflow: clip;
