@@ -448,14 +448,14 @@ def oauth2_reset_password(request):
     data = request.data
     # serializing data
     if 'email' in data.keys() and len(data.keys()) == 1:
-        # there is a email
-        user = User.objects.filter(email__iexact=data['email']).first()
-        if not user:
-            logger.warning("Password reset requested for non-existent email", extra={'email': data['email']})
+        # Legacy data may contain multiple accounts with the same email. Issue a
+        # distinct link for each one rather than resetting an arbitrary first row.
+        email = str(data['email']).strip()
+        users = list(User.objects.filter(email__iexact=email).order_by('user_id'))
+        if not users:
+            logger.warning("Password reset requested for non-existent email", extra={'email': email})
             return Response({'msg': 'Email sent to the user if the email exists.'}, status=status.HTTP_200_OK)
-        # set reset in Redis db
-        logger.info("Generating password reset token", extra={'user_id': str(user.user_id)})
-        token = str(secrets.token_hex(16))
+
         r = redis.Redis(
             host=settings.REDIS_HOST,
             port=settings.REDIS_PORT,
@@ -465,11 +465,15 @@ def oauth2_reset_password(request):
             ssl_certfile=settings.REDIS_SSLCERT,
             db=2
         )
-        r.set(name=token, value=str(user.user_id), ex=3600)
-        r.close()
-        # sending reset email
-        logger.info("Sending password reset email", extra={'user_id': str(user.user_id), 'email': user.email})
-        AuthUtils.send_reset_email(user, token)
+        try:
+            for user in users:
+                logger.info("Generating password reset token", extra={'user_id': str(user.user_id)})
+                token = str(secrets.token_hex(16))
+                r.set(name=token, value=str(user.user_id), ex=3600)
+                logger.info("Sending password reset email", extra={'user_id': str(user.user_id), 'email': user.email})
+                AuthUtils.send_reset_email(user, token)
+        finally:
+            r.close()
 
         return Response({'msg': 'Email sent to the user if the email exists.'}, status=status.HTTP_200_OK)
 
@@ -668,6 +672,7 @@ class AuthUtils:
         data = {
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'username': user.username,
             'token': token,
             'app_host': settings.APP_URL,
             'settings': {

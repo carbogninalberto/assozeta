@@ -75,3 +75,36 @@ class DuplicateEmailLoginTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+
+class DuplicateEmailPasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.owner = User.objects.create_user(
+            username='owner-account',
+            email='shared@example.com',
+            password='owner-password',
+            role=User.ASSOCIATION,
+        )
+        self.instructor = User.objects.create_user(
+            username='cristina-instructor',
+            email='SHARED@example.com',
+            password='instructor-password',
+            role=User.COLLABORATOR,
+        )
+
+    @patch('application.views.auth_views.AuthUtils.send_reset_email')
+    @patch('application.views.auth_views.redis.Redis')
+    def test_reset_sends_a_distinct_link_for_every_matching_account(self, redis_class, send_reset_email):
+        response = self.client.post(
+            '/oauth2/reset',
+            {'email': '  shared@example.com  '},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(redis_class.return_value.set.call_count, 2)
+        self.assertEqual(send_reset_email.call_count, 2)
+        reset_users = {call.args[0].user_id for call in send_reset_email.call_args_list}
+        self.assertEqual(reset_users, {self.owner.user_id, self.instructor.user_id})
+        redis_class.return_value.close.assert_called_once()
