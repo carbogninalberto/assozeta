@@ -731,7 +731,11 @@ class AssociationImportService:
     def _sanitize_user_data(self, data: Dict[str, Any], *, is_owner: bool) -> Dict[str, Any]:
         """Apply safe auth-field handling while preserving profile/settings data."""
         sanitized = data.copy()
-        sanitized['password'] = self._owner_password_hash(data) if is_owner else make_password(None)
+        sanitized['password'] = (
+            self._owner_password_hash(data)
+            if is_owner
+            else self._imported_user_password_hash(data)
+        )
         sanitized['is_staff'] = False
         sanitized['is_superuser'] = False
         sanitized['two_fa'] = False
@@ -745,6 +749,14 @@ class AssociationImportService:
             sanitized['role'] = User.ASSOCIATION
             sanitized['is_active'] = True
         return sanitized
+
+    @staticmethod
+    def _imported_user_password_hash(user_data: Dict[str, Any]) -> str:
+        """Keep a supported archived hash; disable login when none can be restored."""
+        archived_password = user_data.get('password')
+        if is_restorable_password_hash(archived_password):
+            return archived_password
+        return make_password(None)
 
     def _owner_password_hash(self, owner_data: Dict[str, Any]) -> str:
         """Keep a supported archived hash or create one from the recovery password."""

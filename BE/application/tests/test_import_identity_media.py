@@ -160,6 +160,48 @@ class AssociationImportIdentityTests(TestCase):
         self.assertEqual(imported.user.password, archived_password)
         self.assertTrue(imported.user.check_password('ArchivedOwner!123'))
 
+    def test_archived_non_owner_password_is_preserved_when_supported(self):
+        owner_id = uuid.uuid4()
+        collaborator_id = uuid.uuid4()
+        association = self._association_record(uuid.uuid4(), owner_id)
+        archived_password = make_password('Collaborator!123')
+        users = [
+            self._user_record(owner_id, 'owner', 'owner@example.com', role=User.ASSOCIATION),
+            self._user_record(
+                collaborator_id,
+                'collaborator',
+                'collaborator@example.com',
+                role=User.COLLABORATOR,
+                password=archived_password,
+            ),
+        ]
+
+        self._import_archive(association, users)
+
+        collaborator = User.original_objects.get(user_id=collaborator_id)
+        self.assertEqual(collaborator.password, archived_password)
+        self.assertTrue(collaborator.check_password('Collaborator!123'))
+
+    def test_non_owner_without_supported_password_remains_unusable(self):
+        owner_id = uuid.uuid4()
+        collaborator_id = uuid.uuid4()
+        association = self._association_record(uuid.uuid4(), owner_id)
+        users = [
+            self._user_record(owner_id, 'owner', 'owner@example.com', role=User.ASSOCIATION),
+            self._user_record(
+                collaborator_id,
+                'collaborator',
+                'collaborator@example.com',
+                role=User.COLLABORATOR,
+                password='unsupported-password-value',
+            ),
+        ]
+
+        self._import_archive(association, users)
+
+        collaborator = User.original_objects.get(user_id=collaborator_id)
+        self.assertFalse(collaborator.has_usable_password())
+
     def test_backup_without_supported_owner_password_requires_recovery_password(self):
         owner_id = uuid.uuid4()
         association = self._association_record(uuid.uuid4(), owner_id)
