@@ -194,7 +194,7 @@
         <div class="shared-calendar-shell">
             {#if loading}
                 <div class="shared-calendar-loader">
-                    <ContentLoader width="100%" height="700">
+                    <ContentLoader width={1200} height={700}>
                         <rect x="0" y="15" rx="4" ry="4" width="100%" height="50" />
                         <rect x="0" y="80" rx="2" ry="2" width="100%" height="620" />
                     </ContentLoader>
@@ -241,6 +241,10 @@
             inset: 0;
             position: absolute;
             z-index: 2;
+        }
+        .shared-calendar-loader :global(svg) {
+            height: 700px;
+            width: 100%;
         }
         #course_attendance_calendar.calendar-loading {
             visibility: hidden;

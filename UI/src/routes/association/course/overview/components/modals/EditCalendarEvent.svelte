@@ -4,7 +4,7 @@
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import Portal from 'svelte-portal';
     import {getDataFromForm} from 'utils/Functions';
-    import {onMount, createEventDispatcher} from 'svelte';
+    import {onDestroy, onMount, createEventDispatcher} from 'svelte';
     import Select from 'svelte-select';
     import {Info} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
@@ -17,6 +17,8 @@ import Portal from 'svelte-portal';
 
     let selectedInstructor = null;
     let form;
+    let modalElement;
+    let hiddenHandler;
 
     function initForm() {
         form?.destroy();
@@ -53,8 +55,8 @@ import Portal from 'svelte-portal';
         if (!form) initForm();
         form?.validate().then(function (status) {
             if (status === 'Valid') {
-                hideModal('editEventElement');
                 save(getDataFromForm(e));
+                requestClose();
             } else {
                 swal.fire({
                     text: 'Per favore, inserisci tutti i dati e riprova.',
@@ -71,8 +73,13 @@ import Portal from 'svelte-portal';
         });
     }
 
-    function closeModal() {
-        dispatch('close');
+    function requestClose() {
+        hideModal('editEventElement');
+    }
+
+    function requestDelete(groupId, before) {
+        deleteEvent(groupId, before);
+        requestClose();
     }
 
     onMount(async () => {
@@ -85,12 +92,20 @@ import Portal from 'svelte-portal';
         } else if (row.extendedProps?.instructor) {
             selectedInstructor = [row.extendedProps?.instructor] || [];
         }
-        showModal('editEventElement');
-        document.getElementById('editEventElement')?.addEventListener('hidden.bs.modal', function () {
+        modalElement = document.getElementById('editEventElement');
+        hiddenHandler = () => {
             document.querySelectorAll('#form_add_calendar_event').forEach(item => {
                 item.remove();
             });
-        });
+            dispatch('close');
+        };
+        modalElement?.addEventListener('hidden.bs.modal', hiddenHandler);
+        showModal('editEventElement');
+    });
+
+    onDestroy(() => {
+        modalElement?.removeEventListener('hidden.bs.modal', hiddenHandler);
+        form?.destroy();
     });
 </script>
 
@@ -108,7 +123,7 @@ import Portal from 'svelte-portal';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Lezione</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" on:click={closeModal}>
+                    <button type="button" class="close" aria-label="Close" on:click={requestClose}>
                         <X size={16} aria-hidden="true" />
                     </button>
                 </div>
@@ -175,27 +190,17 @@ import Portal from 'svelte-portal';
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-light-danger font-weight-bold mb-0 mt-2"
-                                    data-dismiss="modal"
-                                    on:click={() => {
-                                        deleteEvent(row.extendedProps?.groupId);
-                                        closeModal();
-                                    }}>Tutti</button>
+                                    on:click={() => requestDelete(row.extendedProps?.groupId)}>Tutti</button>
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-light-danger font-weight-bold mb-0 mt-2"
-                                    data-dismiss="modal"
-                                    on:click={() => {
-                                        deleteEvent(row.extendedProps?.groupId, false);
-                                        closeModal();
-                                    }}>Questo e successivi</button>
+                                    on:click={() => requestDelete(row.extendedProps?.groupId, false)}
+                                    >Questo e successivi</button>
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-light-danger font-weight-bold mb-0 mt-2"
-                                    data-dismiss="modal"
-                                    on:click={() => {
-                                        deleteEvent(row.extendedProps?.groupId, true);
-                                        closeModal();
-                                    }}>Questo e precedenti</button>
+                                    on:click={() => requestDelete(row.extendedProps?.groupId, true)}
+                                    >Questo e precedenti</button>
                             </div>
                         </div>
                     {/if}
@@ -205,12 +210,8 @@ import Portal from 'svelte-portal';
                         type="button"
                         disabled={!canPerformAction('association.courses.update')}
                         class="btn btn-light-danger font-weight-bold"
-                        data-dismiss="modal"
-                        on:click={() => {
-                            deleteEvent();
-                            closeModal();
-                        }}>Elimina</button>
-                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal"
+                        on:click={() => requestDelete()}>Elimina</button>
+                    <button type="button" class="btn btn-light-primary font-weight-bold" on:click={requestClose}
                         >Chiudi</button>
                     <button
                         disabled={!canPerformAction('association.courses.update')}

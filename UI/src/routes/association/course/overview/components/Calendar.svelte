@@ -17,7 +17,7 @@
     import {toast} from 'svelte-sonner';
     import DateInput from 'components/inputs/DateInput.svelte';
     import { UiApp } from 'shim/ui.js';
-    import {normalizeCalendarEvents} from 'utils/eventCalendar.js';
+    import {normalizeCalendarEvents, serializeCalendarEvents} from 'utils/eventCalendar.js';
     import {recurringDates} from 'utils/dateValues.js';
 
     const EventCalendar = window.EventCalendar;
@@ -53,18 +53,7 @@
             message: 'Salvataggio in corso...',
         });
 
-        // alert(JSON.stringify(calendar.getEvents()));
-        let events = [];
-        for (let i = 0; i < updateEvents.length; i++) {
-            events.push({
-                event_id: updateEvents[i].id,
-                start: updateEvents[i].start,
-                end: updateEvents[i].end,
-                allDay: updateEvents[i].allDay,
-                title: updateEvents[i].title,
-                extendedProps: updateEvents[i].extendedProps || {},
-            });
-        }
+        const events = serializeCalendarEvents(updateEvents);
         const response = await apiFetch(replaceUID(__bakney.env.API.COURSE.CALENDAR_UPDATE, id), {
             method: 'POST',
             body: JSON.stringify({
@@ -175,7 +164,7 @@
                         instructors: instructors,
                     },
                 });
-                editEventModal.$on('save', data => {
+                editEventModal.$on('save', async data => {
                     info.event.title = data.detail.event_title;
                     info.event.extendedProps.description = data.detail?.description;
                     try {
@@ -185,8 +174,7 @@
                     }
 
                     let updatedEvents = calendar.getEvents();
-                    saveCalendarDirectly(updatedEvents);
-                    editEventModal.$destroy();
+                    await saveCalendarDirectly(updatedEvents);
 
                     dispatch('refresh');
                 });
@@ -231,13 +219,11 @@
                             UiApp.unblockPage();
 
                             if (!response.error) {
-                                calendar.removeEventById(info.event.id);
-                                initPage();
+                                await initPage();
                                 toast.success('Evento eliminato!');
                             } else {
                                 toast.error('Qualcosa è andato storto.');
                             }
-                            editEventModal.$destroy();
                             dispatch('refresh');
                         }
                     });

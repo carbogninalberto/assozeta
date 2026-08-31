@@ -4,7 +4,7 @@
     import {createEventDispatcher, onMount} from 'svelte';
     import {sessionToken} from 'store/stores.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
-    import {ArrowSquareOut, FileArrowUp, PaperPlaneTilt, FileArrowDown, PlusCircle, Trash} from 'phosphor-svelte';
+    import {ArrowSquareOut, FileArrowUp, PaperPlaneTilt, FileArrowDown, PlusCircle, Trash, WarningCircle} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
@@ -120,7 +120,7 @@
                                 ({getRemainingDays(info)} giorni rimanenti).
                             </span>
                         {:else}
-                            <span class="text-dark-75">scadenza non presente, </span>
+                            <span class="text-dark-75">{info.plain_medical_label || 'Scadenza certificato mancante'}, </span>
                             <!-- svelte-ignore a11y-missing-attribute -->
                             <!-- svelte-ignore a11y-click-events-have-key-events -->
                             <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -278,6 +278,19 @@
     </div>
 {:else}
     <div class="row pt-4 pb-4">
+        <div class="col-12 d-flex justify-content-center mb-4">
+            <div
+                class="medical-missing-status border border-warning bg-light-warning rounded-xl d-flex align-items-center px-5 py-4 mb-0 shadow-xs"
+                role="status">
+                <WarningCircle size={24} weight="fill" class="text-warning mr-3" />
+                <div class="text-left">
+                    <div class="font-size-sm font-weight-bold text-warning">Certificato medico</div>
+                    <div class="font-size-h4 font-weight-boldest text-dark">
+                        {info.plain_medical_label || 'Conteggio non disponibile'}
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="col-12 d-flex">
             <img
                 src="static/empty_state.png"
@@ -285,10 +298,6 @@
                 alt="no medical certificate"
                 style="filter:hue-rotate(251deg);max-width: 15rem;" />
         </div>
-        <div class="col-12 d-flex">
-            <span class="font-weight-bolder text-black m-auto"> nessun certificato medico presente </span>
-        </div>
-
         <div class="col-12 d-flex mt-4">
             {#if !info.archived}
                 <!-- svelte-ignore a11y-missing-attribute -->

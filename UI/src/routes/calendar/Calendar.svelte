@@ -6,7 +6,11 @@
     import ContentLoader from 'svelte-content-loader';
     import {Export, Printer} from 'phosphor-svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
-    import {getCalendarClassName, normalizeCalendarEvents} from 'utils/eventCalendar.js';
+    import {
+        getCalendarClassName,
+        normalizeCalendarEvents,
+        serializeCalendarEvents,
+    } from 'utils/eventCalendar.js';
     import Upgrade from 'routes/Upgrade.svelte';
     import AddCalendarEvent from './modals/AddCalendarEvent.svelte';
     import {v4 as uuidv4} from 'uuid';
@@ -64,19 +68,10 @@
             message: 'Salvataggio in corso...',
         });
 
-        let events = [];
-        for (let i = 0; i < updateEvents.length; i++) {
-            // Preserve local time and append Z suffix, matching the original FullCalendar convention
-            events.push({
-                event_id: updateEvents[i].id,
-                start: moment(updateEvents[i].start).format('YYYY-MM-DDTHH:mm:ss') + '.000Z',
-                end: updateEvents[i].end ? moment(updateEvents[i].end).format('YYYY-MM-DDTHH:mm:ss') + '.000Z' : null,
-                className: getClassNameFromEvent(updateEvents[i]),
-                allDay: updateEvents[i].allDay,
-                title: updateEvents[i].title,
-                extendedProps: updateEvents[i].extendedProps || {},
-            });
-        }
+        const events = serializeCalendarEvents(updateEvents).map((event, index) => ({
+            ...event,
+            className: getClassNameFromEvent(updateEvents[index]),
+        }));
         let response;
         if (id) {
             response = await apiFetch(replaceUID(__bakney.env.API.COURSE.CALENDAR_UPDATE, id), {
@@ -325,7 +320,9 @@
                             );
 
                             if (!res.error) {
-                                let events = normalizeCalendarEvents(res.response);
+                                let events = normalizeCalendarEvents(res.response, {
+                                    legacyTimezone: 'auto',
+                                });
                                 UiApp.unblock('#general_calendar');
                                 return events.map(mapEventForCalendar);
                             } else {

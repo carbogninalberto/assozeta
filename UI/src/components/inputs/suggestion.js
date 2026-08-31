@@ -1,9 +1,10 @@
 import tippy from 'tippy.js';
 import MentionList from './MentionList.svelte';
+import {filterMentionSuggestions} from './mentionSuggestions.js';
 
 export default {
     items: ({ query }) => {
-        return [
+        const items = [
             // sport association
             {label: "Denominazione", value: 'sport_association.denomination', group: "Organizzazione"},
             {label: "Codice Fiscale", value: 'sport_association.tax_code', group: "Organizzazione"}, 
@@ -22,8 +23,8 @@ export default {
             {label: 'Federazione', value: 'sport_association.federation', group: "Organizzazione"},
             {label: 'Sport', value: 'sport_association.sport', group: "Organizzazione"},
             // associate
-            {label: "Nome", value: 'associate.first_name', group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
-            {label: "Cognome", value: 'associate.last_name', group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
+            {label: "Nome", value: 'associate.first_name', aliases: ['nome'], group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
+            {label: "Cognome", value: 'associate.last_name', aliases: ['cognome'], group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
             {label: "Codice Fiscale", value: 'associate.tax_code', group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
             {label: "Data di Nascita", value: 'associate.born_date', group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
             {label: "Città di Nascita", value: 'associate.born_city', group: "Associato", ignoreInFooter: true, ignoreInHeader: true},
@@ -70,10 +71,10 @@ export default {
             {label: "Importo Iscrizione Ricevuta", value: 'invoice.membership_fee', group: "Ricevuta"},
             {label: "Importo Totale Ricevuta", value: 'invoice.total_amount', group: "Ricevuta"},
             // Other
-            {label: "Data Odierna", value: 'other.today', group: "Altro"},
-            {label: "Lista corsi", value: 'other.courses_list', group: "Altro", ignoreInFooter: true, ignoreInHeader: true},
-        ]
-            .filter(item => item.label.toLowerCase().startsWith(query.toLowerCase()));
+            {label: "Data Odierna", value: 'other.today', aliases: ['dataodierna'], group: "Altro"},
+            {label: "Lista corsi", value: 'other.courses_list', aliases: ['listacorsi'], group: "Altro", ignoreInFooter: true, ignoreInHeader: true},
+        ];
+        return filterMentionSuggestions(items, query);
     },
 
     render: (ignoreInFooter=false, ignoreInHeader=false) => {
