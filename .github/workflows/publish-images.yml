@@ -143,6 +143,7 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
+          RELEASE_TAG="${RELEASE_TAG#v}"
 
           images=(assozeta-backend assozeta-web assozeta-renderer)
           failures=()
