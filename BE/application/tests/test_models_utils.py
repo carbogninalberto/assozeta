@@ -171,6 +171,34 @@ class FilterMentionsTests(TestCase):
         result = filter_mentions(html, context)
         self.assertIsNotNone(result)
 
+    def test_filter_mentions_replaces_legacy_aliases_in_text_nodes(self):
+        html = (
+            '<p>@nome @cognome — @dataodierna — @listacorsi</p>'
+            '<a href="/@nome">Profilo @nome</a>'
+            '<script>const token = "@nome";</script>'
+        )
+        context = {
+            'associate': {'first_name': 'Giulia', 'last_name': 'Rossi'},
+            'other': {'today': '31/08/2026', 'courses_list': 'Yoga, Pilates'},
+        }
+
+        result = filter_mentions(html, context)
+
+        self.assertIn('Giulia Rossi — 31/08/2026 — Yoga, Pilates', result)
+        self.assertIn('href="/@nome"', result)
+        self.assertIn('Profilo Giulia', result)
+        self.assertIn('const token = "@nome"', result)
+
+    def test_filter_mentions_does_not_replace_alias_inside_email_or_unknown_command(self):
+        result = filter_mentions(
+            '<p>segreteria@nome.it @sconosciuto @nome.</p>',
+            {'associate': {'first_name': 'Luca'}},
+        )
+
+        self.assertIn('segreteria@nome.it', result)
+        self.assertIn('@sconosciuto', result)
+        self.assertIn('Luca.', result)
+
 
 class ExtractValuesTests(TestCase):
     """Tests for extract_values function."""

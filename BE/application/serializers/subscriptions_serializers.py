@@ -482,7 +482,11 @@ class SubscriptionInfoSerializer(serializers.ModelSerializer):
     subscription_files = serializers.SerializerMethodField()
     is_current = serializers.BooleanField(read_only=True)
     is_next_year = serializers.BooleanField(read_only=True)
+    plain_medical_label = serializers.SerializerMethodField(read_only=True)
     signature_present = serializers.SerializerMethodField(read_only=True)
+
+    def get_plain_medical_label(self, obj):
+        return obj.get_plain_medical_label()
 
     def get_signature_present(self, obj):
         return obj.has_signature

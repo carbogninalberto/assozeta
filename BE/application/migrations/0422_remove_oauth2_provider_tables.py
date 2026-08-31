@@ -16,6 +16,24 @@ Note: social_auth_* tables are KEPT as they're still used for Google/Apple login
 from django.db import migrations
 
 
+OAUTH_TABLES = (
+    'oauth2_provider_accesstoken',
+    'oauth2_provider_refreshtoken',
+    'oauth2_provider_grant',
+    'oauth2_provider_idtoken',
+    'oauth2_provider_application',
+)
+
+
+def drop_oauth_tables(apps, schema_editor):
+    cascade = ' CASCADE' if schema_editor.connection.vendor == 'postgresql' else ''
+    quote_name = schema_editor.quote_name
+    for table_name in OAUTH_TABLES:
+        schema_editor.execute(
+            f'DROP TABLE IF EXISTS {quote_name(table_name)}{cascade};'
+        )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -25,24 +43,8 @@ class Migration(migrations.Migration):
     operations = [
         # Drop tables in correct order (respecting foreign key constraints)
         # accesstoken and refreshtoken reference application
-        migrations.RunSQL(
-            sql="DROP TABLE IF EXISTS oauth2_provider_accesstoken CASCADE;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="DROP TABLE IF EXISTS oauth2_provider_refreshtoken CASCADE;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="DROP TABLE IF EXISTS oauth2_provider_grant CASCADE;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="DROP TABLE IF EXISTS oauth2_provider_idtoken CASCADE;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="DROP TABLE IF EXISTS oauth2_provider_application CASCADE;",
-            reverse_sql=migrations.RunSQL.noop,
+        migrations.RunPython(
+            code=drop_oauth_tables,
+            reverse_code=migrations.RunPython.noop,
         ),
     ]

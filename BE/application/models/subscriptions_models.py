@@ -4,6 +4,7 @@ import binascii
 import posixpath
 import logging
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 
 from auditlog.registry import auditlog
@@ -25,6 +26,8 @@ from docmanager.models import Document
 from django.db.models import Q
 
 logger = logging.getLogger(__name__)
+
+ROME_TIMEZONE = ZoneInfo('Europe/Rome')
 
 
 class MedicalCertificate(models.Model):
@@ -497,31 +500,54 @@ class Subscription(GroupModelMixin):
         course_subscriptions = CourseSubscription.objects.filter(subscription=self, deleted=False).select_related('course')
         return ", ".join([cs.course.title for cs in course_subscriptions])
 
+    @staticmethod
+    def _days_text(days):
+        return f"{days} {'giorno' if days == 1 else 'giorni'}"
+
+    def _medical_today(self):
+        current = timezone.now()
+        if timezone.is_naive(current):
+            current = timezone.make_aware(current, ROME_TIMEZONE)
+        return current.astimezone(ROME_TIMEZONE).date()
+
+    def get_missing_medical_days(self):
+        today = self._medical_today()
+        creation_date = self.creation_date
+        if timezone.is_naive(creation_date):
+            creation_date = timezone.make_aware(creation_date, ROME_TIMEZONE)
+        enrollment_date = creation_date.astimezone(ROME_TIMEZONE).date()
+        return max((today - enrollment_date).days, 0)
+
+    def get_missing_medical_label(self):
+        return f"Mancante da {self._days_text(self.get_missing_medical_days())}"
+
     def get_plain_medical_label(self):
+        today = self._medical_today()
         if self.get_age() < 6:
             remaining_days = self.associate.calculate_days_to_age()
-            return f"Esente per {remaining_days} giorni"
+            return f"Esente per {self._days_text(remaining_days)}"
         elif self.medical is None or self.medical.expiration_date is None:
-            return 'Scadenza mancante'
-        elif self.medical.expiration_date < timezone.now().date():
-            return f"Scaduto da {(timezone.now().date() - self.medical.expiration_date).days} giorni"
+            return self.get_missing_medical_label()
+        elif self.medical.expiration_date < today:
+            return f"Scaduto da {self._days_text((today - self.medical.expiration_date).days)}"
         else:
-            return f"{(self.medical.expiration_date - timezone.now().date()).days} giorni rimanenti"
+            return f"{self._days_text((self.medical.expiration_date - today).days)} rimanenti"
 
     def get_medical_label(self):
+        today = self._medical_today()
         ag_tag = ''
         if self.medical is not None and self.medical.competitive_medical_certificate:
             ag_tag = '<span class="badge badge-info ml-1" title="Certificato Medico Agonistico">AG</span>'
 
         if self.get_age() < 6:
             remaining_days = self.associate.calculate_days_to_age()
-            return f"<span class=\"text-success font-weight-boldest\">Esente per {remaining_days} giorni</span>{ag_tag}"
+            return f"<span class=\"text-success font-weight-boldest\">Esente per {self._days_text(remaining_days)}</span>{ag_tag}"
         elif self.medical is None or self.medical.expiration_date is None:
-            return f'<span class="text-warning font-weight-boldest"></i>Scadenza mancante</span>{ag_tag}'
-        elif self.medical.expiration_date < timezone.now().date():
-            return f"<span class=\"text-danger font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>Scaduto da {(timezone.now().date() - self.medical.expiration_date).days} giorni</span>{ag_tag}"
+            return f'<span class="text-warning font-weight-boldest">{self.get_missing_medical_label()}</span>{ag_tag}'
+        elif self.medical.expiration_date < today:
+            return f"<span class=\"text-danger font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>Scaduto da {self._days_text((today - self.medical.expiration_date).days)}</span>{ag_tag}"
         else:
-            return f"<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{(self.medical.expiration_date - timezone.now().date()).days} giorni rimanenti</span>{ag_tag}"
+            return f"<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{self._days_text((self.medical.expiration_date - today).days)} rimanenti</span>{ag_tag}"
 
     @property
     def get_signature(self):

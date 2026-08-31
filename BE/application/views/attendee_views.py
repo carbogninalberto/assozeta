@@ -27,6 +27,7 @@ import logging
 from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation, IsAthleteUser
 from application.utils.api_utils import is_valid_uuid, ColorPalette, get_seconds_from_reminder_units, \
     REMINDER_UNITS_MAP_TEXT
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -49,117 +50,102 @@ def calendar_update(request, uid):
         logger.info("calendar_update -> delete -> user: {}".format(request.user.user_id))
         sport_association = SportAssociation.objects.get(user=request.user)
         course = Course.objects.filter(sport_association=sport_association, course_id=uid).first()
-        course_attendance_registry = AttendanceRegistry.objects.filter(course=course).first()
+        with transaction.atomic():
+            course_attendance_registry = AttendanceRegistry.objects.select_for_update().filter(
+                course=course,
+            ).first()
 
-        if course_attendance_registry is not None \
-                and course_attendance_registry.status == AttendanceRegistry.PUBLISHED:
-            events = AttendanceDay.objects.filter(attendance_registry=course_attendance_registry)
+            if course_attendance_registry is None or \
+                    course_attendance_registry.status != AttendanceRegistry.PUBLISHED:
+                return Response({'msg': 'cannot delete a draft.'}, status.HTTP_400_BAD_REQUEST)
 
-            if 'event_id' in request.data.keys() and request.data['event_id'] is not None:
-                # get current event
-                current_event = None
-                for event in course_attendance_registry.events:
-                    if event['event_id'] == request.data['event_id']:
-                        current_event = event
-                        course_attendance_registry.events.remove(event)
-                        # delete also the registry event
-                        for e in events:
-                            # set event['start'] to datetime and tzinfo is UTC
-                            current_event_date = datetime.strptime(
-                                event['start'], '%Y-%m-%dT%H:%M:%S.%fZ',
-                            ).replace(tzinfo=datetime.now().astimezone().tzinfo)
-                            logger.info(f"current_event_date: {current_event_date}")
-                            if e.title == event['title'] and e.date == current_event_date:
-                                e.delete()
-                                break
-                        break
-                course_attendance_registry.save()
-                events_list = [e for e in course_attendance_registry.events]
+            registry_events = list(course_attendance_registry.events or [])
+            requested_event_id = request.data.get('event_id')
 
-                '''
-                Update events based on before and groupId:
-                - if groupId is not None and before is None, delete all the groupId events of the current event
-                - if groupId is not None and before is true, delete all the groupId events before the current event
-                - if groupId is not None and before is false, delete all the groupId events after the current event
-                - if groupId is None, delete the current event
-                '''
-                if 'groupId' in request.data.keys() and request.data['groupId'] is not None:
-                    # delete all the groupId events of the current event
-                    if 'before' not in request.data.keys() or (
-                            'before' in request.data.keys() and request.data['before'] is None):
-                        for e in events_list:
-                            if 'extendedProps' in e.keys() and \
-                                    'groupId' in e['extendedProps'].keys() and \
-                                    e['extendedProps']['groupId'] == request.data['groupId']:
-                                course_attendance_registry.events.remove(e)
-                                for ev in events:
-                                    # set event['start'] to datetime and tzinfo is UTC
-                                    current_event_date = datetime.strptime(
-                                        e['start'], '%Y-%m-%dT%H:%M:%S.%fZ',
-                                    ).replace(tzinfo=datetime.now().astimezone().tzinfo)
-                                    logger.info(f"current_event_date: {current_event_date}")
-                                    if ev.title == event['title'] and ev.date == current_event_date:
-                                        ev.delete()
-                                        break
-                    # delete all the groupId events before the current event
-                    elif request.data['before'] is True and current_event:
-                        for e in events_list:
-                            if 'extendedProps' in e.keys() and \
-                                    'groupId' in e['extendedProps'].keys() and \
-                                    e['extendedProps']['groupId'] == request.data['groupId'] and \
-                                    datetime.strptime(
-                                        e['start'], '%Y-%m-%dT%H:%M:%S.%fZ'
-                                    ) <= datetime.strptime(
-                                        current_event['start'], '%Y-%m-%dT%H:%M:%S.%fZ'
-                                    ):
-                                course_attendance_registry.events.remove(e)
-                                for ev in events:
-                                    # set event['start'] to datetime and tzinfo is UTC
-                                    current_event_date = datetime.strptime(
-                                        e['start'], '%Y-%m-%dT%H:%M:%S.%fZ',
-                                    ).replace(tzinfo=datetime.now().astimezone().tzinfo)
-                                    logger.info(f"current_event_date: {current_event_date}")
-                                    if ev.title == event['title'] and ev.date == current_event_date:
-                                        ev.delete()
-                                        break
-
-                    # delete all the groupId events after the current event
-                    elif request.data['before'] is False and current_event:
-                        for e in events_list:
-                            if 'extendedProps' in e.keys() and \
-                                    'groupId' in e['extendedProps'].keys() and \
-                                    e['extendedProps']['groupId'] == request.data['groupId'] and \
-                                    datetime.strptime(
-                                        e['start'], '%Y-%m-%dT%H:%M:%S.%fZ'
-                                    ) >= datetime.strptime(
-                                        current_event['start'], '%Y-%m-%dT%H:%M:%S.%fZ'
-                                    ):
-                                course_attendance_registry.events.remove(e)
-                                for ev in events:
-                                    # set event['start'] to datetime and tzinfo is UTC
-                                    current_event_date = datetime.strptime(
-                                        e['start'], '%Y-%m-%dT%H:%M:%S.%fZ',
-                                    ).replace(tzinfo=datetime.now().astimezone().tzinfo)
-                                    logger.info(f"current_event_date: {current_event_date}")
-                                    if ev.title == event['title'] and ev.date == current_event_date:
-                                        ev.delete()
-                                        break
-                course_attendance_registry.save()
-
-                return Response({"message": "Event deleted."}, status=status.HTTP_200_OK)
-            else:
-                for event in events:
-                    event.delete()
+            if requested_event_id is None:
+                event_ids = [event['event_id'] for event in registry_events if event.get('event_id')]
+                Reminders.objects.filter(
+                    event_id__in=event_ids,
+                    sport_association=sport_association,
+                ).delete()
                 course_attendance_registry.delete()
+                AttendanceRegistry.objects.create(
+                    course=course,
+                    events=[],
+                    status=AttendanceRegistry.DRAFT,
+                )
+                return Response({"message": "Calendar updated."}, status=status.HTTP_200_OK)
 
-                course_attendance_registry.events = []
-                course_attendance_registry.status = AttendanceRegistry.DRAFT
-                course_attendance_registry.save()
+            current_event = next(
+                (
+                    event for event in registry_events
+                    if str(event.get('event_id')) == str(requested_event_id)
+                ),
+                None,
+            )
+            if current_event is None:
+                return Response({"message": "Event deleted."}, status=status.HTTP_200_OK)
 
-            return Response({"message": "Calendar updated."}, status=status.HTTP_200_OK)
-        else:
-            # cannot delete a draft
-            return Response({'msg': 'cannot delete a draft.'}, status.HTTP_400_BAD_REQUEST)
+            selected_events = [current_event]
+            group_id = request.data.get('groupId')
+            if group_id is not None:
+                group_events = [
+                    event for event in registry_events
+                    if event.get('extendedProps', {}).get('groupId') == group_id
+                ]
+                before = request.data.get('before')
+                current_start = parse_datetime(str(current_event['start']))
+                if before is True:
+                    selected_events = [
+                        event for event in group_events
+                        if parse_datetime(str(event['start'])) <= current_start
+                    ]
+                elif before is False:
+                    selected_events = [
+                        event for event in group_events
+                        if parse_datetime(str(event['start'])) >= current_start
+                    ]
+                else:
+                    selected_events = group_events
+
+                if current_event not in selected_events:
+                    selected_events.append(current_event)
+
+            deleted_event_ids = [
+                event['event_id'] for event in selected_events if event.get('event_id')
+            ]
+            deleted_event_id_strings = {str(event_id) for event_id in deleted_event_ids}
+
+            attendance_days = AttendanceDay.objects.filter(
+                attendance_registry=course_attendance_registry,
+            )
+            attendance_days.filter(associated_event__in=deleted_event_ids).delete()
+
+            # Historical attendance rows may predate associated_event. Keep an exact
+            # title/date fallback for those rows only; current rows are deleted by ID.
+            legacy_attendance = Q()
+            for event in selected_events:
+                event_start = parse_datetime(str(event.get('start', '')))
+                if event_start is not None:
+                    legacy_attendance |= Q(
+                        associated_event__isnull=True,
+                        title=event.get('title'),
+                        date=event_start,
+                    )
+            if legacy_attendance:
+                attendance_days.filter(legacy_attendance).delete()
+
+            Reminders.objects.filter(
+                event_id__in=deleted_event_ids,
+                sport_association=sport_association,
+            ).delete()
+            course_attendance_registry.events = [
+                event for event in registry_events
+                if str(event.get('event_id')) not in deleted_event_id_strings
+            ]
+            course_attendance_registry.save(update_fields=['events'])
+
+            return Response({"message": "Event deleted."}, status=status.HTTP_200_OK)
 
     # getting body
     data = request.data
@@ -187,7 +173,7 @@ def calendar_update(request, uid):
         if current_reminder is None and 'extendedProps' in event.keys() and \
                 'reminder_enabled' in event['extendedProps'] and \
                 event['extendedProps']['reminder_enabled']:
-            start_date = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            start_date = parse_datetime(event['start'])
             subtract_seconds = get_seconds_from_reminder_units(
                 event['extendedProps']['reminder_amount'],
                 event['extendedProps']['reminder_unit']
@@ -224,7 +210,7 @@ def calendar_update(request, uid):
         # update reminder
         elif current_reminder is not None and 'extendedProps' in event.keys() and \
                 'reminder_enabled' in event['extendedProps']:
-            start_date = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            start_date = parse_datetime(event['start'])
             subtract_seconds = get_seconds_from_reminder_units(
                 event['extendedProps']['reminder_amount'],
                 event['extendedProps']['reminder_unit']
@@ -851,7 +837,7 @@ def full_events_calendar_update(request):
         if current_reminder is None and 'extendedProps' in event.keys() and \
                 'reminder_enabled' in event['extendedProps'] and \
                 event['extendedProps']['reminder_enabled']:
-            start_date = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            start_date = parse_datetime(event['start'])
             subtract_seconds = get_seconds_from_reminder_units(
                 event['extendedProps']['reminder_amount'],
                 event['extendedProps']['reminder_unit']
@@ -885,7 +871,7 @@ def full_events_calendar_update(request):
         # update reminder
         elif current_reminder is not None and 'extendedProps' in event.keys() and \
                 'reminder_enabled' in event['extendedProps']:
-            start_date = datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            start_date = parse_datetime(event['start'])
             subtract_seconds = get_seconds_from_reminder_units(
                 event['extendedProps']['reminder_amount'],
                 event['extendedProps']['reminder_unit']

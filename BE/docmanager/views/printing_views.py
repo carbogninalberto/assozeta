@@ -4,6 +4,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from django.http.response import HttpResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils import translation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from rest_framework import status
@@ -347,24 +348,6 @@ def document_invoice_view(request, uid):
     footer = invoice.sport_association.invoice_footer
     header = invoice.sport_association.document_header
 
-    # need to filter_mentions the header
-    header = filter_mentions(header, context_objects={
-        'sport_association': invoice.sport_association,
-        'invoice': invoice,
-        'other': {
-            'today': datetime.now().strftime('%d/%m/%Y')
-        }
-    })
-
-    # filter_mentions the footer
-    footer = filter_mentions(footer, context_objects={
-        'sport_association': invoice.sport_association,
-        'invoice': invoice,
-        'other': {
-            'today': datetime.now().strftime('%d/%m/%Y')
-        }
-    })
-
     # assure footer is a string
     if footer is None:
         footer = ''
@@ -438,7 +421,7 @@ def document_invoice_view(request, uid):
         payment.associate.is_minor = True
 
     # check if the payment is a subscription payment
-    sub = Subscription.objects.filter(payment=payment).first()
+    sub = payment.get_subscription
     sub_memebership = SubscriptionMembership.objects.filter(subscription=sub).first()
 
     sub_period = sub.get_period() if sub else ""
@@ -495,8 +478,26 @@ def document_invoice_view(request, uid):
     logger.info('got_membership_plan: {}'.format(got_membership_plan))
 
     invoice_template = invoice.sport_association.get_invoice_template()
+    courses_list = sub.get_courses_list() if sub else ''
+    mention_context = {
+        'sport_association': invoice.sport_association,
+        'invoice': invoice,
+        'payment': payment,
+        'associate': payment.associate,
+        'main_tutor': getattr(payment.associate, 'tutor', None),
+        'other': {
+            'today': timezone.localdate().strftime('%d/%m/%Y'),
+            'courses_list': courses_list,
+        },
+    }
+    header = filter_mentions(header, context_objects=mention_context)
+    footer = filter_mentions(footer, context_objects=mention_context)
     extra_text_invoices = invoice.sport_association.extra_text_invoices
     if extra_text_invoices:
+        extra_text_invoices = filter_mentions(
+            extra_text_invoices,
+            context_objects=mention_context,
+        )
         # Remove HTML tags and check if any content remains
         cleaned_text = BeautifulSoup(extra_text_invoices, "html.parser").get_text().strip()
         if not cleaned_text:

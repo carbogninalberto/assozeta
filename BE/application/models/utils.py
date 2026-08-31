@@ -1,8 +1,38 @@
 import logging
+import re
 from bs4 import BeautifulSoup
 from typing import Dict, Any, List
 
 logger = logging.getLogger(__name__)
+
+LEGACY_MENTION_ALIASES = {
+    'nome': 'associate.first_name',
+    'cognome': 'associate.last_name',
+    'codicefiscale': 'associate.tax_code',
+    'cf': 'associate.tax_code',
+    'datadinascita': 'associate.born_date',
+    'datanascita': 'associate.born_date',
+    'cittadinascita': 'associate.born_city',
+    'indirizzo': 'associate.address',
+    'citta': 'associate.address_city',
+    'cap': 'associate.address_cap',
+    'nazionalita': 'associate.nationality',
+    'email': 'associate.email',
+    'telefono': 'associate.phone',
+    'note': 'associate.notes',
+    'nometutore': 'main_tutor.first_name',
+    'cognometutore': 'main_tutor.last_name',
+    'codicefiscaletutore': 'main_tutor.tax_code',
+    'emailtutore': 'main_tutor.email',
+    'telefonotutore': 'main_tutor.phone',
+    'numeroricevuta': 'invoice.number',
+    'dataricevuta': 'invoice.creation_date',
+    'importoattivita': 'invoice.activity_fee',
+    'importoiscrizione': 'invoice.membership_fee',
+    'importototale': 'invoice.total_amount',
+    'dataodierna': 'other.today',
+    'listacorsi': 'other.courses_list',
+}
 
 DEFAULT_ADDITIONAL_SECTIONS = [
     {
@@ -104,6 +134,20 @@ def get_nested_attr(obj, attr_path):
 
     return str(current_obj) if current_obj is not None else ""
 
+
+def _format_mention_value(value):
+    value = '' if value is None else str(value).strip()
+    if len(value) == 10 and value[4] == '-' and value[7] == '-':
+        return f'{value[8:10]}/{value[5:7]}/{value[0:4]}'
+    return value
+
+
+def _resolve_mention(key, context_objects):
+    obj_name, separator, attr_name = key.partition('.')
+    if not separator or obj_name not in context_objects:
+        return ''
+    return _format_mention_value(get_nested_attr(context_objects[obj_name], attr_name))
+
 def filter_mentions(html_content: str, context_objects: Dict[str, Any] = None) -> str:
     """
     Filter HTML content by replacing mention spans with their corresponding Django object values.
@@ -143,50 +187,31 @@ def filter_mentions(html_content: str, context_objects: Dict[str, Any] = None) -
         if not key:
             continue
 
-        # Split the key into object and attribute
-        parts = key.split('.')
-        logger.info(f"Split mention key into parts: {parts}")
-        if len(parts) < 2:
+        # Replace the span with the value
+        span.replace_with(_resolve_mention(key, context_objects))
+
+    alias_pattern = re.compile(
+        r'(?<![\w@])@(' + '|'.join(
+            sorted(map(re.escape, LEGACY_MENTION_ALIASES), key=len, reverse=True)
+        ) + r')\b',
+        flags=re.IGNORECASE,
+    )
+    for text_node in list(soup.find_all(string=True)):
+        parent = text_node.parent
+        if parent is None or parent.name in {'script', 'style'}:
+            continue
+        if parent.name == 'span' and 'mention' in (parent.get('class') or []):
             continue
 
-        # if more than 2 parts, group the first parts and leave the last part as attribute
-        if len(parts) > 2:
-            obj_name = parts[0]
-            attr_name = ".".join(parts[1:])
-            print("TEST", obj_name, attr_name)
-        else:
-            obj_name, attr_name = parts
-
-        # Get the value from the context objects
-        replacement_value = ""
-        if obj_name in context_objects:
-            obj = context_objects[obj_name]
-            # if obj is a dictionary, get the value from the dictionary
-            if obj and isinstance(obj, dict):
-                replacement_value = obj.get(attr_name, "")
-                print("TEST replacement_value", replacement_value)
-            # if obj is an object, get the value from the object attribute
-            elif obj and hasattr(obj, attr_name):
-                logger.info(f"Replacing mention {key} {attr_name} with value {getattr(obj, attr_name)}")
-                replacement_value = str(getattr(obj, attr_name))
-                if str(replacement_value) == 'None':
-                    replacement_value = ''
-            else:
-                logger.info(f"Object {obj_name} not found in the context objects")
-                replacement_value = get_nested_attr(obj, attr_name)
-                if replacement_value == 'None':
-                    replacement_value = ''
-
-        replacement_value = str(replacement_value).strip()
-        try:
-            if replacement_value and len(replacement_value) == 10 and replacement_value[4] == '-' and replacement_value[7] == '-':
-                replacement_value= replacement_value[8:10] + '/' + replacement_value[5:7] + '/' + replacement_value[0:4]
-        except Exception as e:
-            logger.info(f"Error converting date: {e}")
-            pass
-
-        # Replace the span with the value
-        span.replace_with(replacement_value)
+        replaced = alias_pattern.sub(
+            lambda match: _resolve_mention(
+                LEGACY_MENTION_ALIASES[match.group(1).lower()],
+                context_objects,
+            ),
+            str(text_node),
+        )
+        if replaced != str(text_node):
+            text_node.replace_with(replaced)
 
     return str(soup)
 

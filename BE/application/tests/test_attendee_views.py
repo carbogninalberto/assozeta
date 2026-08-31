@@ -6,6 +6,7 @@ Self-host port: adapted from SaaS test_attendee_views.py.
 import uuid
 from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
+from unittest.mock import patch
 
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -67,6 +68,16 @@ def create_test_attendance_day(attendance_registry, **kwargs):
     }
     defaults.update(kwargs)
     return AttendanceDay.objects.create(**defaults)
+
+
+def create_test_reminder(user, sport_association, event):
+    return Reminders.objects.create(
+        event_id=event['event_id'],
+        event_title=event['title'],
+        send_at=timezone.now(),
+        user=user,
+        sport_association=sport_association,
+    )
 
 
 def create_test_carnet(sport_association, subscription, course_subscription=None,
@@ -287,11 +298,15 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         create_test_attendance_day(
             registry, title='Lesson 1',
             date=datetime.strptime(event1['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+            associated_event=event1['event_id'],
         )
         create_test_attendance_day(
             registry, title='Lesson 2',
             date=datetime.strptime(event2['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+            associated_event=event2['event_id'],
         )
+        create_test_reminder(self.user, self.sport_association, event1)
+        create_test_reminder(self.user, self.sport_association, event2)
 
         response = self.client.delete(f'/course/{course.course_id}/calendar/update', {
             'event_id': event1['event_id'],
@@ -300,6 +315,14 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         registry.refresh_from_db()
         self.assertEqual(len(registry.events), 1)
         self.assertEqual(registry.events[0]['title'], 'Lesson 2')
+        self.assertSetEqual(
+            set(AttendanceDay.objects.values_list('associated_event', flat=True)),
+            {uuid.UUID(event2['event_id'])},
+        )
+        self.assertSetEqual(
+            set(Reminders.objects.values_list('event_id', flat=True)),
+            {uuid.UUID(event2['event_id'])},
+        )
 
     def test_delete_all_events_deletes_registry(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -308,7 +331,9 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         create_test_attendance_day(
             registry, title='Single Lesson',
             date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+            associated_event=event['event_id'],
         )
+        create_test_reminder(self.user, self.sport_association, event)
 
         original_registry_id = registry.attendance_registry_id
         response = self.client.delete(f'/course/{course.course_id}/calendar/update', format='json')
@@ -320,6 +345,7 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         self.assertIsNotNone(new_registry)
         self.assertEqual(new_registry.events, [])
         self.assertEqual(new_registry.status, AttendanceRegistry.DRAFT)
+        self.assertFalse(Reminders.objects.filter(event_id=event['event_id']).exists())
 
     def test_delete_events_by_group_id_all(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -333,7 +359,9 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
             create_test_attendance_day(
                 registry, title=event['title'],
                 date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+                associated_event=event['event_id'],
             )
+            create_test_reminder(self.user, self.sport_association, event)
 
         response = self.client.delete(f'/course/{course.course_id}/calendar/update', {
             'event_id': event1['event_id'],
@@ -344,6 +372,14 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         registry.refresh_from_db()
         self.assertEqual(len(registry.events), 1)
         self.assertEqual(registry.events[0]['title'], 'Other Event')
+        self.assertSetEqual(
+            set(AttendanceDay.objects.values_list('associated_event', flat=True)),
+            {uuid.UUID(event3['event_id'])},
+        )
+        self.assertSetEqual(
+            set(Reminders.objects.values_list('event_id', flat=True)),
+            {uuid.UUID(event3['event_id'])},
+        )
 
     def test_delete_events_by_group_id_before(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -357,7 +393,9 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
             create_test_attendance_day(
                 registry, title=event['title'],
                 date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+                associated_event=event['event_id'],
             )
+            create_test_reminder(self.user, self.sport_association, event)
 
         response = self.client.delete(f'/course/{course.course_id}/calendar/update', {
             'event_id': event2['event_id'],
@@ -368,6 +406,14 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         registry.refresh_from_db()
         self.assertEqual(len(registry.events), 1)
         self.assertEqual(registry.events[0]['title'], 'Recurring 3')
+        self.assertSetEqual(
+            set(AttendanceDay.objects.values_list('associated_event', flat=True)),
+            {uuid.UUID(event3['event_id'])},
+        )
+        self.assertSetEqual(
+            set(Reminders.objects.values_list('event_id', flat=True)),
+            {uuid.UUID(event3['event_id'])},
+        )
 
     def test_delete_events_by_group_id_after(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -381,7 +427,9 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
             create_test_attendance_day(
                 registry, title=event['title'],
                 date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+                associated_event=event['event_id'],
             )
+            create_test_reminder(self.user, self.sport_association, event)
 
         response = self.client.delete(f'/course/{course.course_id}/calendar/update', {
             'event_id': event2['event_id'],
@@ -392,6 +440,37 @@ class CalendarUpdateDeleteTests(BaseAPITestCase):
         registry.refresh_from_db()
         self.assertEqual(len(registry.events), 1)
         self.assertEqual(registry.events[0]['title'], 'Recurring 1')
+        self.assertSetEqual(
+            set(AttendanceDay.objects.values_list('associated_event', flat=True)),
+            {uuid.UUID(event1['event_id'])},
+        )
+        self.assertSetEqual(
+            set(Reminders.objects.values_list('event_id', flat=True)),
+            {uuid.UUID(event1['event_id'])},
+        )
+
+    def test_delete_event_rolls_back_related_deletions_when_registry_save_fails(self):
+        course = create_test_course(sport_association=self.sport_association)
+        event = create_test_event(title='Atomic lesson')
+        registry = create_test_attendance_registry(course, events=[event])
+        create_test_attendance_day(
+            registry,
+            title=event['title'],
+            date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+            associated_event=event['event_id'],
+        )
+        create_test_reminder(self.user, self.sport_association, event)
+
+        with patch.object(AttendanceRegistry, 'save', side_effect=RuntimeError('save failed')):
+            with self.assertRaises(RuntimeError):
+                self.client.delete(f'/course/{course.course_id}/calendar/update', {
+                    'event_id': event['event_id'],
+                }, format='json')
+
+        registry.refresh_from_db()
+        self.assertEqual(registry.events, [event])
+        self.assertTrue(AttendanceDay.objects.filter(associated_event=event['event_id']).exists())
+        self.assertTrue(Reminders.objects.filter(event_id=event['event_id']).exists())
 
     def test_delete_draft_calendar_fails(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -430,6 +509,36 @@ class AttendeesViewTests(BaseAPITestCase):
         response = self.client.get(f'/course/{course.course_id}/attendees')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['data']['events']), 1)
+
+    @patch('application.models.subscriptions_models.timezone.now')
+    def test_get_attendees_exposes_missing_medical_countdown_to_instructor(self, now_mock):
+        now_mock.return_value = datetime(2026, 8, 31, 10, 0, tzinfo=dt_timezone.utc)
+        course = create_test_course(sport_association=self.sport_association)
+        associate = create_test_associate(
+            sport_association=self.sport_association,
+            born_date=datetime(1990, 1, 1).date(),
+        )
+        subscription = create_test_subscription(
+            sport_association=self.sport_association,
+            associate=associate,
+            creation_date=datetime(2026, 8, 21, 10, 0, tzinfo=dt_timezone.utc),
+        )
+        CourseSubscription.objects.create(course=course, subscription=subscription)
+        event = create_test_event(title='Lesson with new member')
+        registry = create_test_attendance_registry(course, events=[event])
+        create_test_attendance_day(
+            registry,
+            title=event['title'],
+            date=datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.000Z').replace(tzinfo=dt_timezone.utc),
+            associated_event=event['event_id'],
+        )
+
+        response = self.client.get(f'/course/{course.course_id}/attendees')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        attendee = response.data['data']['events'][0]['extended_props']['potential_attendees'][0]
+        label = attendee['subscription']['associate']['medical_label']
+        self.assertIn('Mancante da 10 giorni', label)
 
     def test_get_attendees_no_registry(self):
         course = create_test_course(sport_association=self.sport_association)
@@ -804,6 +913,8 @@ class CalendarExportTests(BaseAPITestCase):
     def test_export_calendar_with_events(self):
         course = create_test_course(sport_association=self.sport_association)
         event = create_test_event(title='Exportable Event')
+        event['start'] = '2026-08-27T13:00:00.000Z'
+        event['end'] = '2026-08-27T14:00:00.000Z'
         create_test_attendance_registry(course, events=[event])
 
         response = self.client.get('/calendar/events/export')
@@ -811,6 +922,8 @@ class CalendarExportTests(BaseAPITestCase):
         self.assertEqual(response['Content-Type'], 'text/calendar')
         self.assertIn(b'BEGIN:VCALENDAR', response.content)
         self.assertIn(b'Exportable Event', response.content)
+        self.assertIn(b'DTSTART:20260827T130000Z', response.content)
+        self.assertIn(b'DTEND:20260827T140000Z', response.content)
 
     def test_export_calendar_filter_by_course(self):
         course1 = create_test_course(

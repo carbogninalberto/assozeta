@@ -3958,6 +3958,10 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='Ticket',
         ),
+        migrations.RemoveIndex(
+            model_name='eventsubscription',
+            name='application_event_i_46528d_idx',
+        ),
         migrations.RemoveField(
             model_name='eventsubscription',
             name='event',

@@ -18,6 +18,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def calendar_datetime_in_rome(value):
+    """Convert a canonical calendar timestamp to the Google calendar zone."""
+    parsed = parse_datetime(value) if isinstance(value, str) else value
+    if parsed is None:
+        raise ValueError(f'Invalid calendar datetime: {value!r}')
+    if parsed.tzinfo is None:
+        parsed = pytz.UTC.localize(parsed)
+    return parsed.astimezone(pytz.timezone('Europe/Rome'))
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def google_check(request):
@@ -283,12 +293,8 @@ def google_calendar_export_course(request, course_id):
             },
         }
 
-        # assume both start and end are in UTC and convert them to Europe/Rome
-        rome_tz = pytz.timezone('Europe/Rome')
-        start_dt_utc = start_dt.replace(tzinfo=pytz.UTC)
-        end_dt_utc = end_dt.replace(tzinfo=pytz.UTC)
-        start_dt = start_dt_utc.astimezone(rome_tz)
-        end_dt = end_dt_utc.astimezone(rome_tz)
+        start_dt = calendar_datetime_in_rome(start_dt)
+        end_dt = calendar_datetime_in_rome(end_dt)
 
         if all_day:
             event_body['start'] = {
@@ -316,5 +322,4 @@ def google_calendar_export_course(request, course_id):
 
     logger.info("Course exported to Google Calendar successfully", extra={'course_id': str(course_id), 'calendar_id': course.google_calendar_id, 'event_count': len(registry.events)})
     return Response({'msg': 'exported.', 'google_calendar_id': course.google_calendar_id}, status.HTTP_200_OK)
-
 
