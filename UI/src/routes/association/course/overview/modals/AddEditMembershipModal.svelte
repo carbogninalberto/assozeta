@@ -330,6 +330,11 @@
                                 }}
                             />
                         {/key}
+                        <!-- Hidden inputs so getDataFromForm picks up billed_from/billed_until -->
+                        <input type="hidden" name="billed_from" value={data.billed_from || defaultBilledFrom ? moment(data.billed_from || defaultBilledFrom, 'YYYY-MM-DD').format('DD/MM/YYYY') : ''} />
+                        {#if info.billed_duration_is_sport_season}
+                            <input type="hidden" name="billed_until" value={data.billed_until || defaultBilledUntil ? moment(data.billed_until || defaultBilledUntil, 'YYYY-MM-DD').format('DD/MM/YYYY') : ''} />
+                        {/if}
                     </div>
                     <h5 class="font-weight-bolder font-size-h4 mb-4 mt-4">Opzioni</h5>
                     <div class="d-flex flex-wrap justify-content-between mb-4" style="gap: 1.5rem;">
