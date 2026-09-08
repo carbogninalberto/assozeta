@@ -8,6 +8,7 @@ import base64
 import json
 import logging
 import re
+from asgiref.sync import sync_to_async
 from datetime import date
 
 from mcp.server import Server
@@ -1109,28 +1110,34 @@ def create_mcp_server(sport_association_id: str) -> Server:
     @server.call_tool()
     async def call_tool(name: str, arguments: dict):
         try:
+            # Tool functions use the synchronous Django ORM: wrap them with
+            # sync_to_async so they run in a thread instead of raising
+            # SynchronousOnlyOperation inside the async MCP handler.
+            async def _call(fn, **kwargs):
+                return await sync_to_async(fn)(**kwargs)
+
             if name == 'get_schema':
-                result = tool_get_schema(sport_association_id, **arguments)
+                result = await _call(tool_get_schema, sport_association_id=sport_association_id, **arguments)
             elif name == 'query_data':
-                result = tool_query_data(sport_association_id, **arguments)
+                result = await _call(tool_query_data, sport_association_id=sport_association_id, **arguments)
             elif name == 'count_data':
-                result = tool_count_data(sport_association_id, **arguments)
+                result = await _call(tool_count_data, sport_association_id=sport_association_id, **arguments)
             elif name == 'get_field_values':
-                result = tool_get_field_values(sport_association_id, **arguments)
+                result = await _call(tool_get_field_values, sport_association_id=sport_association_id, **arguments)
             elif name == 'export_data':
-                result = tool_export_data(sport_association_id, **arguments)
+                result = await _call(tool_export_data, sport_association_id=sport_association_id, **arguments)
             elif name == 'aggregate_data':
-                result = tool_aggregate_data(sport_association_id, **arguments)
+                result = await _call(tool_aggregate_data, sport_association_id=sport_association_id, **arguments)
             elif name == 'get_attendance_matrix':
-                result = tool_get_attendance_matrix(sport_association_id, **arguments)
+                result = await _call(tool_get_attendance_matrix, sport_association_id=sport_association_id, **arguments)
             elif name == 'export_multi_sheet':
-                result = tool_export_multi_sheet(sport_association_id, **arguments)
+                result = await _call(tool_export_multi_sheet, sport_association_id=sport_association_id, **arguments)
             elif name == 'sanitize_text':
-                result = tool_sanitize_text(**arguments)
+                result = await _call(tool_sanitize_text, **arguments)
             elif name == 'save_report':
-                result = tool_save_report(sport_association_id, **arguments)
+                result = await _call(tool_save_report, sport_association_id=sport_association_id, **arguments)
             elif name == 'list_reports':
-                result = tool_list_reports(sport_association_id, **arguments)
+                result = await _call(tool_list_reports, sport_association_id=sport_association_id, **arguments)
             else:
                 result = {'error': f'Unknown tool: {name}'}
 

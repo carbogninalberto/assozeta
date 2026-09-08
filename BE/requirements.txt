@@ -106,5 +106,5 @@ websockets==14.1  # WebSocket support for uvicorn
 fuzzywuzzy==0.18.0
 # python-Levenshtein removed - not used
 # rapidfuzz removed - not used (fuzzywuzzy used instead)
-mcp>=1.0.0
+mcp>=1.6.0,<2.0.0
 openai>=2.0.0,<3.0.0
