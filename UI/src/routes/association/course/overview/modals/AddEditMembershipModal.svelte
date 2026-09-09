@@ -41,7 +41,12 @@
                 .format('YYYY-MM-DD');
         }
 
-        formData.billed_from = moment(formData.billed_from, 'DD/MM/YYYY').format('YYYY-MM-DD');
+        const billedFromMoment = moment(formData.billed_from, 'DD/MM/YYYY', true);
+        if (!billedFromMoment.isValid()) {
+            toast.error('Data inizio abbonamento non valida: ricontrolla il periodo selezionato.');
+            return null;
+        }
+        formData.billed_from = billedFromMoment.format('YYYY-MM-DD');
 
         formData.auto_renewal = formData.auto_renewal === 'on' ? true : false;
         formData.membership_active = formData.membership_active === 'on' ? true : false;
@@ -80,6 +85,12 @@
 
         let subs = await prepareJSONData(formData);
 
+        if (!subs) {
+            // date di fatturazione non valide: errore gia' mostrato da prepareJSONData
+            unblockPage();
+            return;
+        }
+
         if (subs.length == 0) {
             unblockPage();
             toast.error('Seleziona almeno un tesserato.');
@@ -110,6 +121,12 @@
         });
 
         let subs = await prepareJSONData(formData);
+
+        if (!subs) {
+            // date di fatturazione non valide: errore gia' mostrato da prepareJSONData
+            unblockPage();
+            return;
+        }
 
         if (subs.length == 0 || subs.length > 1) {
             unblockPage();
@@ -184,6 +201,20 @@
             .subtract(1, 'days')
             .format('DD/MM/YYYY')
         : '';
+
+    // Normalizzazione per gli hidden input del form.
+    // data.billed_from/billed_until sono ISO (YYYY-MM-DD) quando impostati (picker o edit),
+    // mentre defaultBilledFrom/defaultBilledUntil sono gia' DD/MM/YYYY.
+    // NON riparsare mai i default con 'YYYY-MM-DD': il parsing non-strict di moment
+    // su "01/09/2026" produceva 2001-09-20 (date fantasma negli abbonamenti).
+    $: parsedBilledFrom = data?.billed_from ? moment(data.billed_from, 'YYYY-MM-DD') : null;
+    $: normalizedBilledFrom = parsedBilledFrom && parsedBilledFrom.isValid()
+        ? parsedBilledFrom.format('DD/MM/YYYY')
+        : defaultBilledFrom;
+    $: parsedBilledUntil = data?.billed_until ? moment(data.billed_until, 'YYYY-MM-DD') : null;
+    $: normalizedBilledUntil = parsedBilledUntil && parsedBilledUntil.isValid()
+        ? parsedBilledUntil.format('DD/MM/YYYY')
+        : defaultBilledUntil;
 </script>
 
 <div>
@@ -330,6 +361,12 @@
                                 }}
                             />
                         {/key}
+                        <!-- Hidden inputs so getDataFromForm picks up billed_from/billed_until.
+                             I valori arrivano gia' normalizzati a DD/MM/YYYY (normalizedBilledFrom/Until). -->
+                        <input type="hidden" name="billed_from" data-marker="billed-format-v2" value={normalizedBilledFrom} />
+                        {#if info.billed_duration_is_sport_season}
+                            <input type="hidden" name="billed_until" value={normalizedBilledUntil} />
+                        {/if}
                     </div>
                     <h5 class="font-weight-bolder font-size-h4 mb-4 mt-4">Opzioni</h5>
                     <div class="d-flex flex-wrap justify-content-between mb-4" style="gap: 1.5rem;">
