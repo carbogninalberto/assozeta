@@ -36,7 +36,7 @@ from .views.supplier_views import supplier_delete, supplier_list, supplier_add, 
     supplier_info
 from .views.instructor_views import instructor_list, instructor_add, instructor_info, instructor_update, \
     instructor_delete, instructor_hours_list, instructor_hours_add, instructor_hours_delete, instructor_hours_update, \
-    instructor_hours_add_compensation, instructor_hours_calculate, instructor_report
+    instructor_hours_add_compensation, instructor_hours_calculate, instructor_report, instructor_lessons_hours
 from .views.invoice_views import invoice_list, invoice_list_export, invoice_list_archived, invoice_delete, \
     invoice_update, invoice_suppliers_list, invoice_suppliers_update, invoice_suppliers_add, invoice_suppliers_delete, \
     invoice_suppliers_stats, invoice_bulk_delete, invoice_bulk_archive, invoice_customers_list, invoice_customers_add, \
@@ -360,6 +360,8 @@ urlpatterns = [
     path(r'instructor/report', instructor_report),
     path(r'instructor/add', instructor_add),
     path(r'instructor/<str:uid>/info', instructor_info),
+    path(r'instructor/lessons-hours', instructor_lessons_hours),
+    path(r'instructor/<str:uid>/lessons-hours', instructor_lessons_hours),
     path(r'instructor/<str:uid>/hours/list', instructor_hours_list),
     path(r'instructor/<str:uid>/hours/calculate', instructor_hours_calculate),
     path(r'instructor/<str:uid>/hours/add', instructor_hours_add),

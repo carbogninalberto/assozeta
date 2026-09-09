@@ -14,6 +14,97 @@ from typing import Optional, Union
 logger = logging.getLogger(__name__)
 
 
+def get_instructor_lessons_hours(instructor, sport_association_id, start_date=None, end_date=None):
+    """
+    Compute lesson hours for an instructor from the course calendar.
+
+    Lesson events are stored as JSON on AttendanceRegistry.events; each event
+    carries start/end timestamps and the assigned instructor(s) under
+    extendedProps.instructor (a dict or a list of dicts with instructor_id).
+    Hours are computed from the event duration (end - start).
+
+    Args:
+        instructor: Instructor instance
+        sport_association_id: UUID of the scoping sport association
+        start_date: optional tz-aware datetime, inclusive lower bound (UTC)
+        end_date: optional tz-aware datetime, inclusive upper bound (UTC)
+
+    Returns:
+        dict with:
+            total_hours: Decimal (2 dp) sum of lesson durations
+            lessons_count: number of lessons taught
+            courses: list of {course_id, course_title, lessons_count, hours}
+    """
+    from datetime import datetime, timezone as dt_timezone
+
+    instructor_id = str(instructor.instructor_id)
+    total_seconds = 0
+    lessons_count = 0
+    courses_map = {}
+
+    registries = AttendanceRegistry.objects.filter(
+        course__sport_association_id=sport_association_id,
+    ).select_related('course')
+
+    for registry in registries:
+        course = registry.course
+        course_hours = 0
+        course_lessons = 0
+
+        for event in registry.events or []:
+            try:
+                event_start = datetime.fromisoformat(event['start'].replace('Z', '+00:00'))
+                event_end = datetime.fromisoformat(event['end'].replace('Z', '+00:00'))
+            except (KeyError, AttributeError, ValueError, TypeError):
+                logger.warning(
+                    "Skipping calendar event with invalid start/end in registry %s",
+                    registry.attendance_registry_id,
+                )
+                continue
+
+            if start_date is not None:
+                if start_date.tzinfo is None:
+                    start_date = start_date.replace(tzinfo=dt_timezone.utc)
+                if event_end < start_date:
+                    continue
+            if end_date is not None:
+                if end_date.tzinfo is None:
+                    end_date = end_date.replace(tzinfo=dt_timezone.utc)
+                if event_start > end_date:
+                    continue
+
+            instructors = (event.get('extendedProps') or {}).get('instructor')
+            if instructors is None:
+                continue
+            if isinstance(instructors, dict):
+                instructors = [instructors]
+            if not any(str(inst.get('instructor_id')) == instructor_id for inst in instructors):
+                continue
+
+            duration = (event_end - event_start).total_seconds()
+            if duration <= 0:
+                continue
+
+            course_hours += duration
+            course_lessons += 1
+
+        if course_lessons:
+            courses_map[course.course_id] = {
+                'course_id': str(course.course_id),
+                'course_title': course.title,
+                'lessons_count': course_lessons,
+                'hours': round(course_hours / 3600, 2),
+            }
+            total_seconds += course_hours
+            lessons_count += course_lessons
+
+    return {
+        'total_hours': round(total_seconds / 3600, 2),
+        'lessons_count': lessons_count,
+        'courses': sorted(courses_map.values(), key=lambda c: c['course_title']),
+    }
+
+
 def generate_xlsx_report_from_data(data: list, schema: dict) -> Optional[bytes]:
     """
     Generate an Excel file from a list of dictionaries.

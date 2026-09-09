@@ -196,6 +196,8 @@ PERMISSIONS_REGISTRY = {
     'instructor/report': 'association.instructor.read',
     'instructor/add': 'association.instructor.create',
     'instructor/*/info': 'association.instructor.read',
+    'instructor/lessons-hours': 'association.instructor.read',
+    'instructor/*/lessons-hours': 'association.instructor.read',
     'instructor/*/update': 'association.instructor.update',
     'instructor/*/delete': 'association.instructor.delete',
     'instructor/*/hours/list': 'association.instructor.hours.read',

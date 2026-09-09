@@ -1,0 +1,177 @@
+"""
+Tests for instructor_lessons_hours endpoint: lesson hours computed
+from the course calendar (AttendanceRegistry events).
+
+Covers:
+- association admin querying a single instructor and the whole list
+- period filtering (start_date/end_date)
+- instructor-tied user authorized only on their own hours
+- foreign instructor / other association isolation
+"""
+import uuid
+
+from rest_framework.test import APIClient
+from rest_framework import status
+
+from application.models import User
+from application.models.user_models import Instructor
+from application.models.attendee_models import AttendanceRegistry
+from application.tests.base import BaseTransactionTestCase
+from application.tests.fixtures.factories import (
+    create_test_user,
+    create_test_sport_association,
+    create_test_course,
+)
+
+
+def create_lessons_hours_instructor(user, **kwargs):
+    defaults = {
+        'user': user,
+        'first_name': f'Instructor{uuid.uuid4().hex[:6]}',
+        'last_name': f'Test{uuid.uuid4().hex[:6]}',
+        'email': f'instructor_{uuid.uuid4().hex[:6]}@test.com',
+        'tax_code': f'{uuid.uuid4().hex[:16].upper()}',
+        'role': 'Istruttore',
+        'draft': False,
+        'is_volunteer': True,
+        'default_hourly_billing': 20,
+    }
+    defaults.update(kwargs)
+    return Instructor.objects.create(**defaults)
+
+
+def make_lesson_event(instructor_id, start, end, event_id=None):
+    return {
+        'event_id': event_id or str(uuid.uuid4()),
+        'title': 'Lezione',
+        'start': start,
+        'end': end,
+        'allDay': False,
+        'extendedProps': {
+            'instructor': [{'instructor_id': str(instructor_id), 'label': 'Test', 'value': str(instructor_id)}],
+        },
+    }
+
+
+class InstructorLessonsHoursTests(BaseTransactionTestCase):
+    """Tests for instructor_lessons_hours: GET /instructor/lessons-hours and /instructor/<uid>/lessons-hours"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_test_user(role=User.ASSOCIATION)
+        self.sport_association = create_test_sport_association(user=self.user)
+        self.client.force_authenticate(user=self.user)
+
+        self.instructor = create_lessons_hours_instructor(self.user)
+        self.course = create_test_course(sport_association=self.sport_association)
+
+    def _create_registry(self, events):
+        return AttendanceRegistry.objects.create(
+            course=self.course,
+            status=AttendanceRegistry.PUBLISHED,
+            events=events,
+        )
+
+    def test_single_instructor_hours(self):
+        self._create_registry([
+            make_lesson_event(self.instructor.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+            make_lesson_event(self.instructor.instructor_id, '2026-09-02T18:00:00Z', '2026-09-02T20:00:00Z'),
+        ])
+        response = self.client.get(f'/instructor/{self.instructor.instructor_id}/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()['data']
+        self.assertEqual(data['lessons_count'], 2)
+        self.assertEqual(float(data['total_hours']), 3.0)
+        self.assertEqual(len(data['courses']), 1)
+        self.assertEqual(data['courses'][0]['lessons_count'], 2)
+        self.assertEqual(float(data['courses'][0]['hours']), 3.0)
+
+    def test_ignores_events_of_other_instructors(self):
+        other = create_lessons_hours_instructor(self.user)
+        self._create_registry([
+            make_lesson_event(self.instructor.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+            make_lesson_event(other.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+        ])
+        response = self.client.get(f'/instructor/{self.instructor.instructor_id}/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()['data']
+        self.assertEqual(data['lessons_count'], 1)
+        self.assertEqual(float(data['total_hours']), 1.0)
+
+    def test_period_filter(self):
+        self._create_registry([
+            make_lesson_event(self.instructor.instructor_id, '2026-08-01T18:00:00Z', '2026-08-01T19:00:00Z'),
+            make_lesson_event(self.instructor.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+        ])
+        response = self.client.get(
+            f'/instructor/{self.instructor.instructor_id}/lessons-hours',
+            {'start_date': '15/08/2026', 'end_date': '15/09/2026'},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()['data']
+        self.assertEqual(data['lessons_count'], 1)
+        self.assertEqual(float(data['total_hours']), 1.0)
+
+    def test_instructor_list_mode_for_association(self):
+        other = create_lessons_hours_instructor(self.user)
+        self._create_registry([
+            make_lesson_event(self.instructor.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+            make_lesson_event(other.instructor_id, '2026-09-02T18:00:00Z', '2026-09-02T19:30:00Z'),
+        ])
+        response = self.client.get('/instructor/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.json()['data']
+        self.assertEqual(len(results), 2)
+        by_id = {r['instructor_id']: r for r in results}
+        self.assertEqual(float(by_id[str(self.instructor.instructor_id)]['total_hours']), 1.0)
+        self.assertEqual(float(by_id[str(other.instructor_id)]['total_hours']), 1.5)
+
+    def test_instructor_tied_user_sees_own_hours(self):
+        athlete_user = create_test_user(role=User.ATHLETE)
+        athlete_user.sport_association = self.sport_association
+        athlete_user.save()
+        self.instructor.associated_user_id = athlete_user.user_id
+        self.instructor.save()
+
+        self._create_registry([
+            make_lesson_event(self.instructor.instructor_id, '2026-09-01T18:00:00Z', '2026-09-01T19:00:00Z'),
+        ])
+
+        client = APIClient()
+        client.force_authenticate(user=athlete_user)
+        response = client.get('/instructor/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()['data']
+        self.assertEqual(data['instructor_id'], str(self.instructor.instructor_id))
+        self.assertEqual(float(data['total_hours']), 1.0)
+
+    def test_instructor_tied_user_cannot_query_others(self):
+        other = create_lessons_hours_instructor(self.user)
+
+        athlete_user = create_test_user(role=User.ATHLETE)
+        athlete_user.sport_association = self.sport_association
+        athlete_user.save()
+        self.instructor.associated_user_id = athlete_user.user_id
+        self.instructor.save()
+
+        client = APIClient()
+        client.force_authenticate(user=athlete_user)
+        response = client.get(f'/instructor/{other.instructor_id}/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_not_found_instructor(self):
+        response = self.client.get(f'/instructor/{uuid.uuid4()}/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get('/instructor/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_empty_registry(self):
+        response = self.client.get(f'/instructor/{self.instructor.instructor_id}/lessons-hours')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()['data']
+        self.assertEqual(data['lessons_count'], 0)
+        self.assertEqual(float(data['total_hours']), 0.0)
+        self.assertEqual(data['courses'], [])
