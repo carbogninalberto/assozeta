@@ -22,6 +22,8 @@
     function clickOutside(node) {
         const handleClick = event => {
             if (node && !node.contains(event.target) && !event.defaultPrevented) {
+                // Ignore clicks on portaled elements (e.g. DateRangePicker panel)
+                if (event.target.closest && event.target.closest('.drp-panel')) return;
                 node.dispatchEvent(new CustomEvent('click_outside', {detail: event}));
             }
         };
