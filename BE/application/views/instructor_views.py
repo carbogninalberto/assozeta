@@ -129,6 +129,16 @@ def instructor_info(request, uid):
     if not instructor:
         return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    # the instructor must belong to the requesting user's association
+    instructor_association = SportAssociation.objects.filter(user=instructor.user).first()
+    try:
+        requesting_association = SportAssociation.objects.get(user=request.user)
+    except SportAssociation.DoesNotExist:
+        requesting_association = None
+    if requesting_association is None or instructor_association is None or \
+            str(instructor_association.sport_association_id) != str(requesting_association.sport_association_id):
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+
     data = InstructorSerializer(instructor).data
 
     stats = {
@@ -172,7 +182,7 @@ def instructor_info(request, uid):
     )
 
     if len(instructor_hours) > 0:
-        stats['hours'] = sum([x.amount for x in instructor_hours])
+        stats['hours'] = sum([x.hours for x in instructor_hours])
         stats['total_amount'] = sum([x.amount for x in instructor_hours])
         stats['total_amount_paid'] = sum([x.amount for x in instructor_hours if x.paid])
         stats['total_amount_to_pay'] = sum([x.amount for x in instructor_hours if not x.paid])

@@ -164,6 +164,25 @@ class InstructorInfoTests(BaseTransactionTestCase):
         data = response.json()
         self.assertIn('hours', data['stats'])
 
+    def test_get_instructor_info_hours_sum_hours_not_amount(self):
+        # two rows: 4 hours each, hourly billing 20 -> amount 80 each
+        # stats.hours must sum hours (8), not amounts (160)
+        create_test_instructor_hours(self.instructor)
+        create_test_instructor_hours(self.instructor, paid=True)
+        response = self.client.get(f'/instructor/{self.instructor.instructor_id}/info')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        stats = response.json()['stats']
+        self.assertEqual(float(stats['hours']), 8.0)
+        self.assertEqual(float(stats['total_amount']), 160.0)
+
+    def test_get_instructor_info_other_association_forbidden(self):
+        other_user = create_test_user(role=User.ASSOCIATION)
+        create_test_sport_association(user=other_user)
+        other_client = APIClient()
+        other_client.force_authenticate(user=other_user)
+        response = other_client.get(f'/instructor/{self.instructor.instructor_id}/info')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
 
 class InstructorUpdateTests(BaseTransactionTestCase):
     """Tests for instructor_update endpoint: PATCH /instructor/<uid>/update"""
