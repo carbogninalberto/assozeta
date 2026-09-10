@@ -892,13 +892,13 @@
 <div >
     {#if !isFreePlan()}
         <div class="row mt-2">
-            <div class="col-10">
+            <div class="col-8 col-md-10">
                 <h3 class="card-label font-size-h2">
                     Pagamenti
                     <span class="d-block text-muted pt-2 font-size-sm">Storico dei pagamenti dell'iscrizione.</span>
                 </h3>
             </div>
-            <div class="col-2 d-flex justify-content-end px-0">
+            <div class="col-4 col-md-2 d-flex justify-content-end px-0">
                 {#if !info.archived && canPerformAction('bookeeping.payments.create')}
                     <button
                         on:click={() => {

@@ -390,14 +390,14 @@
 <!--begin::Entry-->
 <div >
     <div class="row">
-        <div class="col-10 mt-2">
+        <div class="col-8 col-md-10 mt-2">
             <h3 class="card-label font-size-h2">
                 Carnet
                 <span class="d-block text-muted pt-2 font-size-sm"
                     >Lista dei carnet assegnati a questa anagrafica.</span>
             </h3>
         </div>
-        <div class="col-2 mt-2 d-flex justify-content-end align-items-center">
+        <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
             <button
                 disabled={!canPerformAction('association.carnet.create')}
                 on:click={() => {

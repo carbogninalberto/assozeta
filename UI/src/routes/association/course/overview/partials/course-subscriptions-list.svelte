@@ -232,7 +232,7 @@
                 <span class="d-block text-muted pt-2 font-size-sm">Iscritti al corso.</span>
             </h3>
         </div>
-        <div class="col-2 mt-2 d-flex justify-content-end align-items-center">
+        <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
             {#if canPerformAction('association.courses.update')}
                 <button
                     class="btn btn-sm btn-primary font-weight-bolder d-flex align-items-center"
@@ -251,7 +251,7 @@
                         });
                     }}>
                     <PlusCircle size={16} class="mr-1" weight="bold" />
-                    Tesserato
+                    <span class="d-none d-md-inline-block">Tesserato</span>
                 </button>
             {/if}
         </div>
