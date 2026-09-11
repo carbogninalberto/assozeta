@@ -16,6 +16,25 @@
     export let row;
     export let edit = false;
 
+    // Permission gates depend on the event type:
+    // - edit of course event (extendedProps.course set) -> association.courses.update
+    // - edit of global event (course == null) -> association.events.*
+    // - creation -> type is chosen inside the form (course select), so either
+    //   courses.update or events.* must be held; entry points gate the rest.
+    const isCourseEvent = !!row?.extendedProps?.course;
+    const canSaveEvent = edit
+        ? (isCourseEvent
+            ? canPerformAction('association.courses.update')
+            : canPerformAction('association.events.update'))
+        : (canPerformAction('association.courses.update') ||
+            canPerformAction('association.events.create') ||
+            canPerformAction('association.events.update'));
+    const canDeleteEvent = edit
+        ? (isCourseEvent
+            ? canPerformAction('association.courses.update')
+            : canPerformAction('association.events.delete'))
+        : false;
+
     let form;
     let courses = [];
     let selectedInstructor = [];
@@ -313,7 +332,7 @@
                                     <label class="font-size-h6 font-weight-bold">Corso</label>
                                     <Select
                                         hideEmptyState={true}
-                                        disabled={edit}
+                                        disabled={edit || !canPerformAction('association.courses.update')}
                                         value={row.extendedProps?.course}
                                         name="course"
                                         bind:items={courses}
@@ -439,7 +458,7 @@
                         <div>
                             {#if edit}
                                 <button
-                                    disabled={!canPerformAction('association.courses.update')}
+                                    disabled={!canDeleteEvent}
                                     type="button"
                                     class="btn btn-light-danger font-weight-bold mr-1"
                                     on:click={() => {
@@ -464,7 +483,7 @@
                                 class="btn btn-light-primary font-weight-bold mr-1"
                                 on:click={closeModal}>Chiudi</button>
                             <button
-                                disabled={!canPerformAction('association.courses.update')}
+                                disabled={!canSaveEvent}
                                 type="submit"
                                 class="btn btn-primary font-weight-bold">Salva</button>
                         </div>

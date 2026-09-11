@@ -799,7 +799,14 @@ def full_events_calendar(request):
                 event['id'] = event['event_id']
                 events.append(event)
 
-    if not is_instructor:
+    can_read_global_events = True
+    if hasattr(request, 'original_user') and request.original_user is not None and request.original_user.is_collaborator:
+        # collaborators only see global events if granted the events permission
+        can_read_global_events = 'association.events.read' in set(
+            request.original_user.collaborator_permissions or []
+        )
+
+    if can_read_global_events:
         global_calendar_events, _ = GlobalCalendarEvents.objects.get_or_create(sport_association=sport_association)
         if global_calendar_events.events:
             for event in global_calendar_events.events:

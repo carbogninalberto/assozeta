@@ -4,7 +4,7 @@
     import * as easing from 'svelte/easing';
     import {slide, scale} from 'svelte/transition';
     import ContentLoader from 'svelte-content-loader';
-    import {Export, Printer} from 'phosphor-svelte';
+    import {Export, Plus, Printer} from 'phosphor-svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import {
         getCalendarClassName,
@@ -99,6 +99,59 @@
         } else {
             toast.error('Qualcosa è andato storto.');
         }
+    }
+
+    // Opens the add-event modal for a given ISO date string (YYYY-MM-DDTHH:mm:ss).
+    // Shared by the calendar dateClick handler and the "Nuovo evento" toolbar button.
+    function openAddEventModal(dateStr) {
+        document.querySelectorAll('#addElement').forEach(n => {
+            n.remove();
+        });
+
+        if (!dateStr || !dateStr.includes('T')) {
+            dateStr = (dateStr || moment().format('YYYY-MM-DD')) + 'T08:00';
+        }
+        let startDate = moment(dateStr).format('YYYY-MM-DDTHH:mm:ss');
+        let endDate = moment(dateStr).add(1, 'hours').format('YYYY-MM-DDTHH:mm:ss');
+        let addEventModal = new AddCalendarEvent({
+            target: document.querySelector(`body`),
+            intro: true,
+            props: {
+                instructors: instructors,
+                row: {
+                    title: '',
+                    start: startDate,
+                    end: endDate,
+                    extendedProps: {
+                        instructor: [],
+                        course: null,
+                        description: null,
+                    },
+                },
+            },
+        });
+        addEventModal.$on('save', data => {
+            addEventModal.$destroy();
+            createEvent(
+                moment(data.detail.event_start).format(),
+                data.detail.event_title,
+                data.detail.event_end ? moment(data.detail.event_end).format() : null,
+                JSON.parse(data.detail?.instructor || null),
+                data.detail.event_allday,
+                JSON.parse(data.detail.course || null),
+                data.detail?.color,
+                data.detail.description,
+                data.detail.reminder_amount,
+                data.detail.reminder_enabled,
+                data.detail.reminder_unit
+            );
+        });
+
+        addEventModal.$on('close', () => {
+            addEventModal.$destroy();
+        });
+
+        addEventModal.$on('refresh', async data => {});
     }
 
     let CalendarListView = (function () {
@@ -334,55 +387,8 @@
                     }],
 
                     dateClick: async function (dateClickInfo) {
-                        if (!canPerformAction('association.courses.update')) return;
-                        document.querySelectorAll('#addElement').forEach(n => {
-                            n.remove();
-                        });
-
-                        dateClickInfo.dateStr = dateClickInfo.dateStr.includes('T')
-                            ? dateClickInfo.dateStr
-                            : dateClickInfo.dateStr + 'T08:00';
-                        let startDate = moment(dateClickInfo.dateStr).format('YYYY-MM-DDTHH:mm:ss');
-                        let endDate = moment(dateClickInfo.dateStr).add(1, 'hours').format('YYYY-MM-DDTHH:mm:ss');
-                        let addEventModal = new AddCalendarEvent({
-                            target: document.querySelector(`body`),
-                            intro: true,
-                            props: {
-                                instructors: instructors,
-                                row: {
-                                    title: '',
-                                    start: startDate,
-                                    end: endDate,
-                                    extendedProps: {
-                                        instructor: [],
-                                        course: null,
-                                        description: null,
-                                    },
-                                },
-                            },
-                        });
-                        addEventModal.$on('save', data => {
-                            addEventModal.$destroy();
-                            createEvent(
-                                moment(data.detail.event_start).format(),
-                                data.detail.event_title,
-                                data.detail.event_end ? moment(data.detail.event_end).format() : null,
-                                JSON.parse(data.detail?.instructor || null),
-                                data.detail.event_allday,
-                                JSON.parse(data.detail.course || null),
-                                data.detail?.color,
-                                data.detail.description,
-                                data.detail.reminder_amount,
-                                data.detail.reminder_enabled,
-                                data.detail.reminder_unit
-                            );
-                        });
-
-                        addEventModal.$on('close', () => {
-                            addEventModal.$destroy();
-                        });
-
-                        addEventModal.$on('refresh', async data => {});
+                        if (!canPerformAction('association.events.create')) return;
+                        openAddEventModal(dateClickInfo.dateStr);
                     },
 
                     eventDragStop: async function (info) {
@@ -392,6 +398,13 @@
                     eventDrop: async function (info) {
                         const event = info.event;
                         const courseId = event.extendedProps?.course;
+
+                        // global events require association.events.update
+                        if (!courseId && !canPerformAction('association.events.update')) {
+                            info.revert?.();
+                            toast.error('Non hai i permessi per modificare gli eventi.');
+                            return;
+                        }
 
                         let updatedEvents = calendar.getEvents();
                         if (courseId) {
@@ -442,6 +455,13 @@
                     eventResize: async function (info) {
                         const event = info.event;
                         const courseId = event.extendedProps?.course;
+
+                        // global events require association.events.update
+                        if (!courseId && !canPerformAction('association.events.update')) {
+                            info.revert?.();
+                            toast.error('Non hai i permessi per modificare gli eventi.');
+                            return;
+                        }
 
                         let updatedEvents = calendar.getEvents();
                         if (courseId) {
@@ -759,7 +779,27 @@
                     <div class="card-toolbar m-0">
                         <h3 class="card-title font-size-h2">Eventi e Promemoria</h3>
                     </div>
+                    <div class="card-toolbar m-0">
+                        {#if canPerformAction('association.events.create')}
+                            <button
+                                type="button"
+                                on:click={() => openAddEventModal()}
+                                class="btn btn-light-success font-weight-bold d-flex align-items-center mb-0 mr-2 d-md-none"
+                                title="Nuovo evento">
+                                <Plus size={18} weight="duotone" />
+                            </button>
+                        {/if}
+                    </div>
                     <div class="card-toolbar m-0 d-none d-md-flex">
+                        {#if canPerformAction('association.events.create')}
+                            <button
+                                type="button"
+                                on:click={() => openAddEventModal()}
+                                class="btn btn-light-success font-weight-bold d-flex align-items-center mb-0 mr-2">
+                                <Plus size={18} weight="duotone" />
+                                <span class="d-none d-md-block ml-md-2">Nuovo evento</span>
+                            </button>
+                        {/if}
                         <button
                             type="button"
                             on:click={() => {
