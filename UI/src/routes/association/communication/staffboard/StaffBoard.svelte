@@ -4,7 +4,7 @@
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
     import ContentLoader from 'svelte-content-loader';
-    import {Pin, PencilSimple, TrashSimple, Check, X, PushPin} from 'phosphor-svelte';
+    import {PencilSimple, TrashSimple, Check, X, PushPin} from 'phosphor-svelte';
     import {scale, slide} from 'svelte/transition';
 
     let loading = true;
@@ -176,7 +176,7 @@
                                     <div class="d-flex align-items-center justify-content-between flex-wrap">
                                         <div class="d-flex align-items-center">
                                             {#if message.pinned}
-                                                <Pin size={20} weight="fill" class="text-warning mr-2" />
+                                                <PushPin size={20} weight="fill" class="text-warning mr-2" />
                                             {/if}
                                             <span class="font-weight-bolder text-dark-75">
                                                 {message.author_name}
@@ -192,7 +192,7 @@
                                                     class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
                                                     title={message.pinned ? 'Togli pin' : 'Metti in evidenza'}
                                                     on:click={() => togglePin(message)}>
-                                                    <Pin size={16}
+                                                    <PushPin size={16}
                                                          weight={message.pinned ? 'fill' : 'duotone'}
                                                          class={message.pinned ? 'text-warning' : ''} />
                                                 </button>
