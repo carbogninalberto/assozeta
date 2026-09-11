@@ -415,9 +415,16 @@ def staff_board_messages_add(request):
     if not data.get('content') or not str(data.get('content')).strip():
         return Response({'error': 'Il messaggio è obbligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    # collaborators are swapped to their connected admin user by the middleware;
+    # keep the real author on the board message. Superuser impersonation keeps
+    # request.user (the impersonated account) on purpose.
+    author = request.user
+    if getattr(request, 'collaborator', False) and getattr(request, 'original_user', None) is not None:
+        author = request.original_user
+
     message = StaffBoardMessage.objects.create(
         sport_association=request.user.sport_association,
-        author=request.user,
+        author=author,
         content=str(data.get('content')).strip(),
         pinned=bool(data.get('pinned', False)),
     )

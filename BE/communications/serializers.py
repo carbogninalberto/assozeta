@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from django.utils.html import escape
+from application.models import SportAssociation
 from application.utils.api_utils import check_email
 from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 
@@ -120,7 +121,14 @@ class StaffBoardMessageSerializer(serializers.ModelSerializer):
         if obj.author is None:
             return 'Utente eliminato'
         full_name = f"{obj.author.first_name} {obj.author.last_name}".strip()
-        return full_name if full_name else obj.author.username
+        if full_name:
+            return full_name
+        # association admin accounts often have generated usernames (hash-like);
+        # fall back to the association denomination for a readable name
+        sport_association = SportAssociation.objects.filter(user=obj.author).first()
+        if sport_association:
+            return sport_association.denomination
+        return obj.author.username
 
     def get_content(self, obj):
         return escape(obj.content)
