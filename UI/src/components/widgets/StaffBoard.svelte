@@ -1,14 +1,12 @@
 <script>
     import {PushPin} from 'phosphor-svelte';
     import {onMount} from 'svelte';
-    import {push, link} from 'svelte-spa-router';
+    import {link} from 'svelte-spa-router';
     import moment from 'moment';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {canPerformAction} from 'utils/Permissions.js';
 
-    let data = {
-        staff_board_messages: [],
-    };
+    let messages = [];
     let loading = true;
 
     // show the widget only to users who can read the staff board;
@@ -21,12 +19,10 @@
         });
         loading = false;
         if (!res.error) {
-            data.staff_board_messages = res.response;
+            // the endpoint wraps the list in {data: [...]}; be defensive about the shape
+            const list = res.response?.data || res.response || [];
+            messages = Array.isArray(list) ? list : [];
         }
-    }
-
-    function goToStaffBoard() {
-        push('/communication/staff-board');
     }
 
     onMount(async () => {
@@ -60,7 +56,7 @@
                 style="margin: auto !important;">
                 <div class="spinner-border text-primary" role="status"></div>
             </div>
-        {:else if data.staff_board_messages.length === 0}
+        {:else if messages.length === 0}
             <div
                 class="d-flex flex-column align-items-center justify-content-center m-auto"
                 style="margin: auto !important;">
@@ -71,9 +67,9 @@
                     use:link
                     class="btn btn-sm btn-outline-secondary font-weight-boldest mt-4">Vai alla bacheca</a>
             </div>
-   {:else}
+        {:else}
             <div class="d-flex flex-column w-100">
-                {#each data.staff_board_messages.slice(0, 5) as message (message.staff_board_message_id)}
+                {#each messages.slice(0, 5) as message (message.staff_board_message_id)}
                     <div class="d-flex flex-column border-bottom border-light py-2 px-4">
                         <div class="d-flex align-items-center justify-content-between">
                             <span class="font-weight-boldest text-primary font-size-md text-truncate">
@@ -83,7 +79,7 @@
                             <span class="font-size-xs text-muted">
                                 {moment(message.created_at).format('DD/MM HH:mm')}
                             </span>
-    </div>
+                        </div>
                         <div class="d-flex flex-column align-items-start">
                             <span class="font-size-sm text-dark-75 text-break">{message.content}</span>
                         </div>
