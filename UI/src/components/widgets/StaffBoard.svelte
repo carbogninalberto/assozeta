@@ -73,7 +73,7 @@
             </div>
    {:else}
             <div class="d-flex flex-column w-100">
-                {#each data.staff_board_messages as message (message.staff_board_message_id)}
+                {#each data.staff_board_messages.slice(0, 5) as message (message.staff_board_message_id)}
                     <div class="d-flex flex-column border-bottom border-light py-2 px-4">
                         <div class="d-flex align-items-center justify-content-between">
                             <span class="font-weight-boldest text-primary font-size-md text-truncate">
