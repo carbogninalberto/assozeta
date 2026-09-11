@@ -20,6 +20,7 @@
     import {userData} from 'store/stores';
     import IncomeAndExpenses from 'components/widgets/IncomeAndExpenses.svelte';
     import ExpiredMedicalCertificates from 'components/widgets/ExpiredMedicalCertificates.svelte';
+    import StaffBoard from 'components/widgets/StaffBoard.svelte';
     import {toast} from 'svelte-sonner';
     sessionToken.useLocalStorage();
 
@@ -101,6 +102,13 @@
             defaultSize: 4,
             supportedSizes: [4, 6, 8, 12],
         },
+        staffboard: {
+            component: StaffBoard,
+            title: 'Bacheca Staff',
+            description: 'Gli ultimi messaggi lasciati in bacheca dai collaboratori.',
+            defaultSize: 4,
+            supportedSizes: [4, 6, 8, 12],
+        },
     };
 
     let dragDisabled = true;
@@ -134,6 +142,10 @@
                 },
                 {
                     id: 'todaylessons',
+                    size: 4,
+                },
+                {
+                    id: 'staffboard',
                     size: 4,
                 },
             ],
