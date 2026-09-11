@@ -557,17 +557,9 @@ def course_list(request):
             "filename": filename
         }, status=status.HTTP_200_OK)
 
-    original_user = request.original_user if hasattr(request, 'original_user') else None
-    if original_user and original_user.role == User.COLLABORATOR:
-        attentance_registries = AttendanceRegistry.objects.filter(
-            course__in=courses,
-        )
-        instructor = Instructor.objects.filter(associated_user_id=original_user.user_id).first()
-        if instructor:
-            instructor_id = str(instructor.instructor_id)
-            # Cast JSONField to text and search within it
-            attentance_registries = attentance_registries.filter(events__iregex=instructor_id)
-            courses = courses.filter(attendanceregistry__in=attentance_registries)
+    # Instructors (collaborators with an Instructor profile) see all the
+    # association courses in the list; their own lessons only filter the
+    # calendar (full_events_calendar), which keeps its dedicated filter.
 
     courses = paginator.paginate_queryset(queryset=courses, request=request)
 
