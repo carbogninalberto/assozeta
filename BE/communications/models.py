@@ -216,6 +216,26 @@ class MessageTransaction(models.Model):
         ]
 
 
+class StaffBoardMessage(models.Model):
+    """
+    Internal staff board: messages exchanged between admins and collaborators
+    of a sport association. Not visible to athletes.
+    """
+    staff_board_message_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
+    author = models.ForeignKey('application.User', on_delete=models.SET_NULL, blank=True, null=True)
+    content = models.TextField()
+    pinned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-pinned', '-created_at']
+        indexes = [
+            models.Index(fields=['sport_association', 'pinned', 'created_at']),
+        ]
+
+
 class AutomationWorkflow(models.Model):
     automation_workflow_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)

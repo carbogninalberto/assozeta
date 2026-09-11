@@ -5,7 +5,8 @@ from communications.views import configuration_smtp_update, configuration_smtp_i
     configuration_send_post, communication_messages_list, communication_messages_detail, communication_messages_delete, \
     communication_messages_add, communication_workflows_list, communication_workflows_delete, \
     communication_workflows_update, communication_workflows_add, communication_workflows_details, \
-    communication_email_logs_list
+    communication_email_logs_list, staff_board_messages_list, staff_board_messages_add, \
+    staff_board_messages_update, staff_board_messages_delete
 
 urlpatterns = [
     path(r'communications/settings/smtp/update', configuration_smtp_update),
@@ -17,6 +18,10 @@ urlpatterns = [
     path(r'communications/messages/list', communication_messages_list),
     path(r'communications/messages/<str:message_id>/detail', communication_messages_detail),
     path(r'communications/messages/<str:message_id>/delete', communication_messages_delete),
+    path(r'communications/staff-board/list', staff_board_messages_list),
+    path(r'communications/staff-board/add', staff_board_messages_add),
+    path(r'communications/staff-board/<str:staff_board_message_id>/update', staff_board_messages_update),
+    path(r'communications/staff-board/<str:staff_board_message_id>/delete', staff_board_messages_delete),
     path(r'communications/workflows/list', communication_workflows_list),
     path(r'communications/workflows/add', communication_workflows_add),
     path(r'communications/workflows/<str:workflow_id>/delete', communication_workflows_delete),

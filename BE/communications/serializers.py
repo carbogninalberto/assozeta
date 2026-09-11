@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from django.utils.html import escape
 from application.utils.api_utils import check_email
-from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow
+from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 
 
 class CommunicationConfigurationSerializer(serializers.ModelSerializer):
@@ -110,3 +110,30 @@ class AutomationWorkflowSerializer(serializers.ModelSerializer):
     class Meta:
         model = AutomationWorkflow
         fields = '__all__'
+
+
+class StaffBoardMessageSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField(read_only=True)
+    content = serializers.SerializerMethodField(read_only=True)
+
+    def get_author_name(self, obj):
+        if obj.author is None:
+            return 'Utente eliminato'
+        full_name = f"{obj.author.first_name} {obj.author.last_name}".strip()
+        return full_name if full_name else obj.author.username
+
+    def get_content(self, obj):
+        return escape(obj.content)
+
+    class Meta:
+        model = StaffBoardMessage
+        fields = (
+            'staff_board_message_id',
+            'sport_association',
+            'author',
+            'author_name',
+            'content',
+            'pinned',
+            'created_at',
+            'updated_at',
+        )
