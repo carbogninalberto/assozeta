@@ -30,7 +30,7 @@
         username: $userData.username,
         email: $userData.email,
         avatar_image: null,
-        sport_association: $userData.sport_association ? {...$userData.sport_association} : null,
+        sport_association: $userData.sport_association ? JSON.parse(JSON.stringify($userData.sport_association)) : null,
     };
 
     let files;
@@ -39,6 +39,7 @@
     let signatureComponent;
     let signatureComponentShow = false;
     let initialData = JSON.stringify(profileData);
+    $: changes = JSON.stringify(profileData) !== initialData || !!files?.length;
 
     $: profileData, (profileData.username = profileData.username.replace(/\s/g, ''));
 
@@ -81,6 +82,8 @@
 
                 let res;
                 let response;
+                const submittedData = JSON.stringify(profileData);
+                const submittedFiles = files;
 
                 try {
                     const url = __bakney.env.API.PROFILE.UPDATE;
@@ -102,7 +105,9 @@
                 }
 
                 if (res.status == 200) {
-userData.set(response.user_data);
+                    userData.set(response.user_data);
+                    initialData = submittedData;
+                    if (files === submittedFiles) files = undefined;
 
                     toast.success('Informazioni Salvate con Successo.');
                 } else {
@@ -1115,7 +1120,7 @@ userData.set(response.user_data);
         </div>
     </div>
 
-    <BottomBarFixedSave on:save={updateAccountInformation} autoShow={true} visible={false}>
+    <BottomBarFixedSave disabled={!changes} on:save={updateAccountInformation} autoShow={true} visible={false}>
         <div slot="left" class="d-flex align-items-center">
             <Warning weight={'duotone'} size={18} class="mr-2 text-warning" />
             <p class="font-weight-boldest mb-0 text-warning text-xs">

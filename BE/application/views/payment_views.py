@@ -44,7 +44,7 @@ from application.utils.api_utils import is_valid_uuid, KTDatatablePagination
 from application.utils.excel_utils import get_excel_base64
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import calculate_simulation, generate_invoice_description
-from application.utils.stripe_utils import online_payments_available, stripe_direct_credentials_configured
+from application.utils.stripe_utils import online_payments_available, stripe_direct_credentials_configured, stripe_request_options, stripe_cache_identity
 
 from docmanager.views.printing_views import document_invoice
 from notifications.services import NotificationService
@@ -1181,8 +1181,9 @@ def payment_stats(request):
     }
     
     if stripe_direct_credentials_configured():
+        stripe_options = stripe_request_options()
         # Create cache key based on direct installation-owned Stripe account and date range
-        cache_key = f"stripe_fees_direct_{int(payment_from.timestamp())}_{int(payment_to.timestamp())}"
+        cache_key = f"stripe_fees_direct_{stripe_cache_identity(stripe_options['api_key'])}_{int(payment_from.timestamp())}_{int(payment_to.timestamp())}"
         
         # Try to get from cache first
         cached_charges = cache.get(cache_key)
@@ -1196,6 +1197,7 @@ def payment_stats(request):
 
             try:
                 transactions = stripe.BalanceTransaction.list(
+                    **stripe_options,
                     created={
                         'gte': int(payment_from.timestamp()),
                         'lte': int(payment_to.timestamp())

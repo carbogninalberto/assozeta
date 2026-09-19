@@ -16,7 +16,7 @@
         billingData,
     } from 'store/stores.js';
     import {getBase64FromUrl} from 'utils/Functions.js';
-    import {onMount} from 'svelte';
+    import {onMount, tick} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
 	import { UiApp, UiUtil } from 'shim/ui.js';
     import {oauthConfig, oemConfig, isSelfHostedMode} from 'store/instanceStore.js';
@@ -226,27 +226,28 @@
         }
     };
 
+    let initializedGoogleClient = '';
+    $: googleLoginClient = $oauthConfig?.googleClientId;
+    $: googleLoginEnabled = $oauthConfig?.googleEnabled ?? $oemConfig?.displaySettings?.login?.allowOauthLogin;
+    $: if (googleLoginClient && googleLoginEnabled) tick().then(initSignleSingOn);
+
     function initSignleSingOn() {
-        if (!$oemConfig?.displaySettings?.login?.allowOauthLogin || !$oauthConfig?.googleClientId) return;
-        google.accounts.id.initialize({
-            client_id: $oauthConfig.googleClientId,
-            callback: data => {
-                // console.info('data', data);
-                singleSignOn(data.credential, 'google-oauth2');
-            },
-        });
+        if (!($oauthConfig?.googleEnabled ?? $oemConfig?.displaySettings?.login?.allowOauthLogin) || !$oauthConfig?.googleClientId) return;
+        if (typeof google === 'undefined' || typeof document === 'undefined') return;
+        const button = document.getElementById('login-with-google');
+        if (!button) return;
+        if (initializedGoogleClient !== $oauthConfig.googleClientId) {
+            google.accounts.id.initialize({
+                client_id: $oauthConfig.googleClientId,
+                callback: data => singleSignOn(data.credential, 'google-oauth2'),
+            });
+            initializedGoogleClient = $oauthConfig.googleClientId;
+            google.accounts.id.prompt();
+        }
         google.accounts.id.renderButton(
-            document.getElementById('login-with-google'),
+            button,
             {theme: 'outline', size: 'large'} // customization attributes
         );
-        google.accounts.id.prompt(); // also display the One Tap dialog
-
-        const state = Math.random().toString(36);
-        const nonce = Math.random().toString(36);
-
-        // LOGIN WITH APPLE
-        // TODO: support the callback via URL and not via callback
-        // Apple login can be enabled when the runtime OAuth configuration includes an Apple client id.
     }
 
     const handleLoginValidation = function () {
@@ -917,7 +918,7 @@
                                                     Accedi
                                                 </button>
                                             </div>
-                                            {#if $oemConfig?.displaySettings?.login?.allowOauthLogin && $oauthConfig?.googleClientId && !Capacitor.isNative}
+                                            {#if ($oauthConfig?.googleEnabled ?? $oemConfig?.displaySettings?.login?.allowOauthLogin) && $oauthConfig?.googleClientId && !Capacitor.isNative}
                                                 <!--end::Action-->
                                                 <!-- {#if __bakney.env.DEPLOY_ENV != 'production'} -->
                                                 <div
@@ -1313,6 +1314,11 @@
 {/if}
 
 <style>
+    #logo {
+        max-width: 100%;
+        object-fit: contain;
+    }
+
     .no-display {
         display: none;
     }

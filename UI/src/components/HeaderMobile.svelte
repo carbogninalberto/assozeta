@@ -22,9 +22,8 @@
     </span>
     <!--end::Aside Mobile Toggle-->
     <!--begin::Logo-->
-    <a href="/" style="position:relative; top:.1rem;left:.6rem;">
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <img id="logo" class="h-30px" src={$oemConfig?.logo || ''} />
+    <a href="/" class="mobile-brand">
+        <img id="logo" src={$oemConfig?.logo || ''} alt={$oemConfig?.name || 'Logo'} />
     </a>
 
     <!--end::Logo-->
@@ -104,6 +103,19 @@
 <NotificationsDrawer bind:isOpen={$isNotificationsPanelOpen} />
 
 <style>
+    .mobile-brand {
+        flex: 1;
+        min-width: 0;
+        margin: 0 1rem;
+    }
+
+    .mobile-brand img {
+        display: block;
+        width: 100%;
+        height: 30px;
+        object-fit: contain;
+    }
+
     :global(.drawer-left) {
         border-radius: 0 1.5rem 1.5rem 0 !important;
         width: 280px !important;

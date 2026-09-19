@@ -92,6 +92,11 @@ supports public-ACL providers outside this bundled lifecycle: for example,
 `AWS_S3_PUBLIC_BASE_URL` can override the derived public bucket origin with a
 DigitalOcean CDN or custom domain.
 
+## Release quality
+
+See [release quality automation](QUALITY.md) for the Linux/browser publication
+gates, real published-artifact rehearsal, evidence, and remaining rollout checks.
+
 ## Operations
 
 ```bash
@@ -102,15 +107,27 @@ DigitalOcean CDN or custom domain.
 ./selfhost/bin/assozeta migrate
 ```
 
-Upgrade to an exact release:
+For an installation already carrying the Self Instance updater, upgrade to an
+exact release:
 
 ```bash
 ./selfhost/bin/assozeta upgrade 1.3.0
 ```
 
+**Installing Self Instance on an older installation:** first run the
+[one-time bootstrap update](UPDATES.md#one-time-update-for-existing-installations)
+from inside `selfhost/`. It fetches the release's update script and automatically
+installs the updater as part of the upgrade. No manual environment or Compose
+configuration is required. Do not run `git pull` over the live installation
+before this step: the updater must back up the existing deployment files before
+replacing them. Subsequent updates are available in **Profile → Self Instance**
+for the instance owner, or through the CLI above.
+
 The upgrade command creates a backup before changing the configured image
-version. Database migrations may not be reversible, so retain that backup when
-rolling back application images.
+version. Retain that backup: restoring older application images alone does not
+roll back database migrations. See [instance updates](UPDATES.md) for the owner
+interface, runner privileges, distribution handling, recovery commands, and
+rollout requirements and verification limits.
 
 Mutating production lifecycle commands are serialized with
 `selfhost/.lifecycle.lock/` so concurrent install, start, stop, backup, restore,
@@ -268,6 +285,7 @@ filesystem notifications do not trigger Vite HMR.
 - `ghcr.io/<repository-owner>/assozeta-backend`
 - `ghcr.io/<repository-owner>/assozeta-web`
 - `ghcr.io/<repository-owner>/assozeta-renderer`
+- `ghcr.io/<repository-owner>/assozeta-updater`
 
 Pull requests build without pushing. Main publishes `edge` and commit tags.
 GitHub releases publish semantic-version and `latest` tags and attach this
@@ -282,3 +300,7 @@ self-host distribution as a release archive.
 - Treat `INSTANCE_SETUP_TOKEN` as a secret until first-run setup is complete.
 - Keep Docker and the host operating system patched.
 - Configure SMTP before depending on password-reset email.
+
+## Owner diagnostics and configuration
+
+See [OPERATIONS.md](OPERATIONS.md) for Self Instance sections, persisted system email settings, diagnostic evidence levels, upgrade adoption, and troubleshooting.

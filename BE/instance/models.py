@@ -1,6 +1,7 @@
 """
 Instance configuration model for self-hosted deployments.
 """
+from copy import deepcopy
 from django.db import models
 
 from .defaults import DEFAULT_DISPLAY_SETTINGS, DEFAULT_PRIMARY_COLOR
@@ -40,6 +41,14 @@ class InstanceConfiguration(models.Model):
     primary_color = models.CharField(max_length=7, default=DEFAULT_PRIMARY_COLOR)
     support_email = models.EmailField(blank=True, default='')
     logo_path = models.CharField(max_length=255, blank=True, default='')
+
+    # Empty settings preserve the host's existing email environment configuration.
+    email_settings = models.JSONField(default=dict, blank=True)
+    email_password_encrypted = models.TextField(default='', blank=True)
+    email_revision = models.PositiveIntegerField(default=0)
+    diagnostic_results = models.JSONField(default=dict, blank=True)
+    # Per-provider revisions and encrypted overrides; absent overrides use environment.
+    integration_settings = models.JSONField(default=dict, blank=True)
 
     # Display settings (JSON for flexibility)
     display_settings = models.JSONField(default=dict)
@@ -90,7 +99,7 @@ class InstanceConfiguration(models.Model):
 
         # Set default display settings if empty
         if not self.display_settings:
-            self.display_settings = DEFAULT_DISPLAY_SETTINGS.copy()
+            self.display_settings = deepcopy(DEFAULT_DISPLAY_SETTINGS)
 
         super().save(*args, **kwargs)
 
@@ -106,7 +115,7 @@ class InstanceConfiguration(models.Model):
 
     def get_display_settings(self):
         """Get display settings with defaults for missing keys."""
-        settings = DEFAULT_DISPLAY_SETTINGS.copy()
+        settings = deepcopy(DEFAULT_DISPLAY_SETTINGS)
         if self.display_settings:
             # Deep merge
             for key, value in self.display_settings.items():

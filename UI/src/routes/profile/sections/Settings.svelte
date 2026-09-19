@@ -37,12 +37,12 @@
         subscription_start_day: 1,
         auto_paid_payment: false,
     };
-    let fetchedData = {};
+    let fetchedData = null;
     let fetching = false;
     let paymentCategories = [];
 
     $: {
-        if (JSON.stringify(settings) != fetchedData) validButton = true;
+        if (fetchedData !== null && JSON.stringify(settings) != fetchedData) validButton = true;
         else validButton = false;
     }
 
@@ -112,7 +112,7 @@
                 fetching = false;
             } else {
                 let modalText =
-                    response.status == 403
+                    res.status == 403
                         ? 'Operazione non permessa.'
                         : 'Scusa, ho individuato degli errori, riprova.';
                 toast.error(modalText);
@@ -132,7 +132,7 @@ toast.success('Impostazioni generali aggiornate.');
             $userData.sport_association.membership_card_configuration = settings.membership_card_configuration;
         } else {
             let modalText =
-                response.status == 403 ? 'Operazione non permessa.' : 'Scusa, ho individuato degli errori, riprova.';
+                res.status == 403 ? 'Operazione non permessa.' : 'Scusa, ho individuato degli errori, riprova.';
             toast.error(modalText);
         }
     }
@@ -1071,7 +1071,7 @@ toast.success('Impostazioni generali aggiornate.');
             <!--end::Form-->
         </div>
     </div>
-    <BottomBarFixedSave on:save={updateSettings} autoShow={true}>
+    <BottomBarFixedSave disabled={!changes || !canPerformAction('other.settings.update')} on:save={updateSettings} autoShow={true}>
         <div slot="left" class="d-flex align-items-center">
             <Warning weight={'duotone'} size={18} class="mr-2 text-warning" />
             <p class="font-weight-boldest mb-0 text-warning text-xs">

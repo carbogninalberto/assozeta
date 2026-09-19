@@ -134,6 +134,7 @@ class StripeAvailabilityTests(TestCase):
             },
         })
         create_payment_intent.assert_called_once_with(
+            api_key='sk_test_direct',
             amount=2000,
             currency='eur',
             description='Associato: Mario Rossi - Utente: Athlete Buyer - '
@@ -351,7 +352,8 @@ class StripeAvailabilityTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         _, kwargs = list_balance_transactions.call_args
-        self.assertEqual(set(kwargs.keys()), {'created'})
+        self.assertEqual(set(kwargs.keys()), {'created', 'api_key'})
+        self.assertEqual(kwargs['api_key'], 'sk_test_direct')
         self.assertNotIn('stripe_account', kwargs)
         self.assertEqual(response.data['data']['stripe_charges'], {
             'total': 1.23,
@@ -376,3 +378,42 @@ class StripeAvailabilityTests(TestCase):
             'stripe_fee': 0,
         })
         list_balance_transactions.assert_not_called()
+
+    @override_settings(STRIPE_KEY='sk_test_environment', STRIPE_PUBLIC_KEY='pk_test_environment', STRIPE_WEBHOOK_SECRET='whsec_environment')
+    @patch('application.views.stripe_views.stripe.Webhook.construct_event', return_value={'type': 'fixture.unhandled'})
+    @patch('application.tasks.stripe.PaymentIntent.retrieve', return_value=SimpleNamespace(status='processing'))
+    @patch('application.views.stripe_views.stripe.PaymentIntent.create')
+    def test_saved_keys_apply_to_checkout_worker_and_webhook_without_restart(self, create, retrieve, webhook):
+        self.client.force_authenticate(self.owner)
+        response = self.client.put('/instance/admin/integrations/stripe', {
+            'revision': 0, 'enabled': True, 'public_key': 'pk_test_saved',
+            'secret_key': 'sk_test_saved', 'webhook_secret': 'whsec_saved',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        create.return_value = SimpleNamespace(stripe_id='pi_saved', client_secret='pi_saved_secret')
+        self.client.force_authenticate(self.athlete)
+        self.assertEqual(self.client.post(f'/stripe/pay/{self.payment.payment_id}').status_code, 200)
+        self.assertEqual(create.call_args.kwargs['api_key'], 'sk_test_saved')
+        self.payment.refresh_from_db()
+        from application.tasks import _check_and_mark_payment
+        self.assertFalse(_check_and_mark_payment(self.payment))
+        retrieve.assert_called_once_with('pi_saved', api_key='sk_test_saved')
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.post('/stripe/webhook', b'{}', content_type='application/json', HTTP_STRIPE_SIGNATURE='fixture').status_code, 200)
+        self.assertEqual(webhook.call_args.args[2], 'whsec_saved')
+
+    @override_settings(STRIPE_KEY='sk_test_environment', STRIPE_PUBLIC_KEY='pk_test_environment', STRIPE_WEBHOOK_SECRET='whsec_environment')
+    @patch('application.views.payment_views.stripe.BalanceTransaction.list')
+    def test_account_key_change_does_not_reuse_cached_fees(self, list_transactions):
+        cache.clear()
+        list_transactions.return_value = SimpleNamespace(auto_paging_iter=lambda: iter([]))
+        self.client.force_authenticate(self.owner)
+        self.assertEqual(self.client.get('/payment/stats').status_code, 200)
+        self.assertEqual(list_transactions.call_args.kwargs['api_key'], 'sk_test_environment')
+        response = self.client.put('/instance/admin/integrations/stripe', {
+            'revision': 0, 'enabled': True, 'public_key': 'pk_test_saved', 'secret_key': 'sk_test_saved',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get('/payment/stats').status_code, 200)
+        self.assertEqual(list_transactions.call_count, 2)
+        self.assertEqual(list_transactions.call_args.kwargs['api_key'], 'sk_test_saved')

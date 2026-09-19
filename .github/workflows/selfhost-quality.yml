@@ -1,0 +1,93 @@
+name: Self-host release quality
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  operations:
+    name: Owner settings and diagnostics
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      ASSOZETA_BROWSER_OUTPUT: ${{ github.workspace }}/quality-reports/operations-ui
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            UI/package-lock.json
+            selfhost/tests/browser/package-lock.json
+      - name: Prepare isolated backend test dependencies
+        run: |
+          ./selfhost/bin/assozeta dev-config
+          docker build --target development -t assozeta-backend-dev BE
+          ./selfhost/bin/assozeta dev-compose up -d --wait postgres redis minio
+      - name: Verify owner APIs, integrations, migrations, email and diagnostic failures
+        run: |
+          ./selfhost/bin/assozeta dev-compose run --rm --no-deps api python -m pytest instance/tests/ application/tests/test_stripe_availability.py application/tests/test_auth_views.py application/tests/test_signup_policy.py -q
+          python3 -m unittest discover -s selfhost/tests -p test_operational_diagnostics.py
+      - name: Verify forms and responsive operational settings
+        run: |
+          npm ci --prefix UI
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+          cd UI
+          node --test src/routes/profile/sections/formChanges.test.js src/routes/profile/sections/selfInstanceRendering.test.js
+          cd ..
+          node selfhost/tests/browser/operations-ui.mjs
+      - name: Retain fixture screenshots and acceptance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selfhost-operations-${{ github.sha }}
+          path: |
+            quality-reports/operations-ui/*.json
+            quality-reports/operations-ui/*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Remove isolated services
+        if: always()
+        run: ./selfhost/bin/assozeta dev-compose down -v --remove-orphans
+
+  upgrade:
+    name: Linux ${{ matrix.scenario }} and browser checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [legacy, recovery]
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/quality-browsers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - name: Run disposable upgrade and browser verification
+        env:
+          ASSOZETA_QUALITY_REPORT_DIR: ${{ github.workspace }}/quality-reports
+        run: ./selfhost/tests/quality.sh '${{ matrix.scenario }}'
+      - name: Retain safe evidence and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selfhost-quality-${{ matrix.scenario }}-${{ github.sha }}
+          path: |
+            quality-reports/*.json
+            quality-reports/**/*.png
+          if-no-files-found: warn
+          retention-days: 14

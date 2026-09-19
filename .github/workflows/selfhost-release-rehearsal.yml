@@ -1,0 +1,72 @@
+name: Rehearse published self-host release
+
+on:
+  workflow_run:
+    workflows: [Build and publish images]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_version:
+        description: Existing published stable version (for example 1.0.2)
+        required: true
+        type: string
+      target_version:
+        description: Published stable version to verify
+        required: true
+        type: string
+      release_commit:
+        description: Full Git commit SHA expected in all four published images
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rehearsal:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'release' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/quality-browsers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - name: Select and validate published releases
+        id: releases
+        env:
+          SOURCE_VERSION: ${{ inputs.source_version || '' }}
+          TARGET_VERSION: ${{ inputs.target_version || '' }}
+          RELEASE_COMMIT: ${{ inputs.release_commit || github.event.workflow_run.head_sha }}
+        run: python3 selfhost/tests/select_rehearsal.py
+      - name: Install browser checks
+        run: |
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+      - name: Verify real release on a disposable Linux installation
+        env:
+          SOURCE_VERSION: ${{ steps.releases.outputs.source }}
+          TARGET_VERSION: ${{ steps.releases.outputs.target }}
+          RELEASE_COMMIT: ${{ steps.releases.outputs.commit }}
+          ASSOZETA_QUALITY_REPORT_DIR: ${{ github.workspace }}/quality-reports
+        run: >-
+          sudo -E env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0="$GITHUB_WORKSPACE"
+          python3 selfhost/tests/release-rehearsal.py
+          --source "$SOURCE_VERSION" --target "$TARGET_VERSION"
+          --commit "$RELEASE_COMMIT" --browser
+      - name: Retain safe release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-release-quality-${{ github.run_id }}
+          path: |
+            quality-reports/*.json
+            quality-reports/**/*.png
+          if-no-files-found: warn
+          retention-days: 30
