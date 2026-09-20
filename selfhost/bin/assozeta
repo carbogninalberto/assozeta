@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SELFHOST_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+SELFHOST_DIR=${ASSOZETA_INSTALL_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
 PROD_ENV=${ASSOZETA_ENV_FILE:-"$SELFHOST_DIR/.env"}
 DEV_ENV=${ASSOZETA_DEV_ENV_FILE:-"$SELFHOST_DIR/.env.dev"}
 PROD_COMPOSE="$SELFHOST_DIR/compose.yml"
@@ -38,6 +38,8 @@ Production commands:
   logs [SERVICE]
   backup [DIRECTORY]
   restore ARCHIVE [--yes]
+  recover-upgrade ARCHIVE [--yes]
+  reconcile-updates
   upgrade VERSION
   uninstall [--volumes] [--yes]
 
@@ -155,12 +157,25 @@ acquire_prod_lock() {
     lock_command=$1
     [ "${prod_lock_held:-false}" = true ] && return 0
 
+    # Advisory locks coordinate host CLI and controller containers independently
+    # of PID namespaces. Retain the directory for older CLI compatibility.
+    if command -v flock >/dev/null 2>&1; then
+        exec 9>"$SELFHOST_DIR/.lifecycle.flock"
+        flock -x 9
+        if [ -f "$PROD_LOCK_DIR/flock-managed" ]; then
+            rm -rf "$PROD_LOCK_DIR"
+        fi
+    fi
+
     waited=false
     while :; do
         if mkdir "$PROD_LOCK_DIR" 2>/dev/null; then
             prod_lock_held=true
             printf '%s\n' "$$" > "$PROD_LOCK_DIR/pid"
             printf '%s\n' "$lock_command" > "$PROD_LOCK_DIR/command"
+            if command -v flock >/dev/null 2>&1; then
+                : > "$PROD_LOCK_DIR/flock-managed"
+            fi
             date -u +%Y-%m-%dT%H:%M:%SZ > "$PROD_LOCK_DIR/created_at" 2>/dev/null || true
             chmod 700 "$PROD_LOCK_DIR" 2>/dev/null || true
             set_prod_lock_traps
@@ -213,6 +228,10 @@ compose_with_env() {
         done < "$compose_env_file"
 
         ASSOZETA_ENV_FILE=$compose_env_file; export ASSOZETA_ENV_FILE
+        ASSOZETA_SELFHOST_DIR=$SELFHOST_DIR; export ASSOZETA_SELFHOST_DIR
+        compose_application_project=$(env_value COMPOSE_PROJECT_NAME "$compose_env_file")
+        ASSOZETA_UPDATER_API_VOLUME="${compose_application_project:-assozeta}_updater_api"; export ASSOZETA_UPDATER_API_VOLUME
+        ASSOZETA_UPDATER_STATUS_VOLUME="${compose_application_project:-assozeta}_updater_status"; export ASSOZETA_UPDATER_STATUS_VOLUME
         docker compose --env-file "$compose_env_file" -f "$compose_file" "$@"
     )
 }
@@ -729,7 +748,7 @@ wait_url_ready() {
 
     attempt=1
     while [ "$attempt" -le "$READINESS_ATTEMPTS" ]; do
-        if curl --fail --silent --show-error "$url" >/dev/null 2>&1; then
+        if curl --connect-timeout 5 --max-time 15 --fail --silent --show-error "$url" >/dev/null 2>&1; then
             log "$label readiness check passed"
             return 0
         fi
@@ -770,6 +789,14 @@ require_background_services_running() {
     done
 }
 
+stop_prod_data_services() {
+    if [ "${managed_update:-false}" = true ] || [ "${recover_upgrade_active:-false}" = true ]; then
+        prod_compose stop api worker beat
+    else
+        prod_compose stop web api worker beat
+    fi
+}
+
 start_prod_app_services() {
     force_recreate=${1:-false}
 
@@ -787,7 +814,7 @@ start_prod_app_services() {
 initialise_prod() {
     force_recreate=${1:-false}
 
-    prod_compose stop web api worker beat || return $?
+    stop_prod_data_services || return $?
     if [ "$force_recreate" = true ]; then
         prod_compose up -d --wait --force-recreate postgres redis minio renderer || return $?
     else
@@ -811,7 +838,7 @@ migrate_prod() {
     initialise_prod || migrate_status=$?
 
     if [ "$migrate_status" -ne 0 ]; then
-        prod_compose stop web api worker beat >/dev/null 2>&1 \
+        stop_prod_data_services >/dev/null 2>&1 \
             || log "failed to confirm application services are stopped after migration failure"
         log "migration failed; application services remain stopped"
         return "$migrate_status"
@@ -832,6 +859,11 @@ install_prod() {
     configure "$@"
     validate_prod
     prod_compose pull
+    if supports_self_update; then
+        updater_install_version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+        updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:${updater_install_version#v}"
+        run_updater_tool /runner/provision.py "$SELFHOST_DIR" "$PROD_ENV"
+    fi
     initialise_prod
     start_prod_app_services
     require_public_readiness
@@ -884,7 +916,8 @@ backup_cleanup() {
         rm -rf "$backup_working" || true
     fi
 
-    if [ "${backup_app_stopped:-false}" = true ] && [ "${backup_app_was_running:-false}" = true ]; then
+    if [ "${backup_app_stopped:-false}" = true ] && [ "${backup_app_was_running:-false}" = true ] && \
+       { [ "${backup_keep_stopped:-false}" != true ] || [ "$status" -ne 0 ]; }; then
         log "restarting application services"
         if ! start_prod_app_services; then
             log "failed to restart application services after backup"
@@ -967,7 +1000,7 @@ restore_cleanup() {
         fi
     fi
 
-    if [ "$status" -ne 0 ] && [ "${restore_app_stopped:-false}" = true ] && [ "${restore_app_was_running:-false}" = true ]; then
+    if [ "$status" -ne 0 ] && [ "${recover_upgrade_active:-false}" != true ] && [ "${restore_app_stopped:-false}" = true ] && [ "${restore_app_was_running:-false}" = true ]; then
         log "restarting application services"
         if ! start_prod_app_services || ! wait_public_readiness; then
             log "failed to restart application services after restore failure"
@@ -989,6 +1022,10 @@ restore_on_exit() {
     restore_cleanup "$status" || cleanup_status=$?
     if [ "$status" -eq 0 ]; then
         status=$cleanup_status
+    fi
+    if [ "$status" -ne 0 ] && [ "${recover_upgrade_active:-false}" = true ]; then
+        stop_prod_data_services >/dev/null 2>&1 || true
+        log "upgrade recovery failed; application services remain stopped and recovery artifacts are retained"
     fi
     release_prod_lock
     exit "$status"
@@ -1065,7 +1102,7 @@ restore_rollback_live_data() {
     rollback_status=0
 
     prod_compose up -d --wait postgres redis minio || return 1
-    prod_compose stop web api worker beat >/dev/null 2>&1 || return 1
+    stop_prod_data_services >/dev/null 2>&1 || return 1
 
     if [ "${restore_rollback_database_needed:-false}" = true ]; then
         rollback_exists=$(postgres_database_exists "$restore_database_user" "$restore_rollback_database") || return 1
@@ -1152,7 +1189,7 @@ backup_prod() {
 
     log "stopping application services for consistent backup"
     backup_app_stopped=true
-    prod_compose stop web api worker beat
+    stop_prod_data_services
 
     log "backing up PostgreSQL"
     prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"
@@ -1206,7 +1243,8 @@ restore_prod() {
     ensure_configuration_values "$PROD_ENV"
     require_command tar
     umask 077
-    temporary=$(mktemp -d)
+    # Helpers run outside the app but share this exact host path with Docker.
+    temporary=$(mktemp -d "$SELFHOST_DIR/.restore-XXXXXX")
     restore_temporary=$temporary
     restore_validation_database_created=false
     restore_rollback_database_created=false
@@ -1292,7 +1330,7 @@ restore_prod() {
 
     log "stopping application services"
     restore_app_stopped=true
-    prod_compose stop web api worker beat
+    stop_prod_data_services
     prod_compose up -d --wait postgres redis minio
 
     log "snapshotting current object storage for rollback"
@@ -1327,7 +1365,7 @@ restore_prod() {
         redis redis-cli FLUSHALL >/dev/null
 
     prod_compose --profile tools run --rm --no-deps migrate
-    start_prod_app_services
+    start_prod_app_services "${recover_upgrade_active:-false}"
     require_public_readiness
     cleanup_status=0
     restore_cleanup 0 || cleanup_status=$?
@@ -1336,26 +1374,163 @@ restore_prod() {
     log "restore completed"
 }
 
+supports_self_update() {
+    [ "$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-backend ] || return 1
+    [ "$(env_value ASSOZETA_WEB_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-web ] || return 1
+    [ "$(env_value ASSOZETA_RENDERER_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-renderer ] || return 1
+    env_value ASSOZETA_VERSION "$PROD_ENV" | grep -Eq '^v?[0-9]+\.[0-9]+\.[0-9]+$'
+}
+
+run_updater_tool() {
+    # A killed controller can leave a Docker helper alive. Label helpers that
+    # mutate the installation under the lifecycle lock so the next CLI can
+    # refuse overlapping work after the parent lock disappears.
+    if [ "${prod_lock_held:-false}" = true ]; then
+        set -- --label "org.assozeta.lifecycle.installation=$SELFHOST_DIR" "$updater_tool_image" "$@"
+    else
+        set -- "$updater_tool_image" "$@"
+    fi
+    case "$PROD_ENV" in
+        "$SELFHOST_DIR"/*)
+            docker run --rm -v "$SELFHOST_DIR:$SELFHOST_DIR" -v /var/run/docker.sock:/var/run/docker.sock \
+                "$@"
+            ;;
+        *)
+            updater_env_directory=$(CDPATH= cd -- "$(dirname -- "$PROD_ENV")" && pwd)
+            docker run --rm -v "$SELFHOST_DIR:$SELFHOST_DIR" -v "$updater_env_directory:$updater_env_directory" \
+                -v /var/run/docker.sock:/var/run/docker.sock "$@"
+            ;;
+    esac
+}
+
+require_no_surviving_lifecycle_helpers() {
+    [ -f "$PROD_ENV" ] && [ -d "$SELFHOST_DIR/.updater" ] || return 0
+    lifecycle_project=$(env_value COMPOSE_PROJECT_NAME "$PROD_ENV")
+    lifecycle_project=${lifecycle_project:-assozeta}
+    surviving_helpers=$(docker ps -q --filter "label=org.assozeta.lifecycle.installation=$SELFHOST_DIR") \
+        || die "cannot inspect surviving lifecycle helpers"
+    surviving_compose=$(docker ps -q --filter "label=com.docker.compose.project=$lifecycle_project" \
+        --filter 'label=com.docker.compose.oneoff=True') || die "cannot inspect surviving Compose tasks"
+    [ -z "$surviving_helpers$surviving_compose" ] \
+        || die "a lifecycle helper is still running after an interruption; wait for it to finish or inspect and stop it before retrying (containers: $surviving_helpers $surviving_compose)"
+}
+
+reconcile_updates_prod() {
+    [ "$#" -eq 0 ] || die "reconcile-updates does not accept arguments"
+    preflight
+    updater_tool_image=$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")
+    [ -n "$updater_tool_image" ] || die "the verified updater image is unavailable"
+    run_updater_tool /runner/recovery.py reconcile "$SELFHOST_DIR" "$PROD_ENV"
+    run_updater_tool /runner/provision.py "$SELFHOST_DIR" "$PROD_ENV"
+    log "interrupted update state verified"
+}
+
 upgrade_prod() {
     version=${1:-}
     [ -n "$version" ] || die "upgrade requires a version"
     [ -f "$PROD_ENV" ] || die "run configure first"
     previous=$(env_value ASSOZETA_VERSION "$PROD_ENV")
     [ "$previous" != "$version" ] || die "already configured for version $version"
+    if [ "${ASSOZETA_RUNNER_ACTIVE:-false}" = 1 ]; then
+        updater_expected_source=${ASSOZETA_EXPECTED_SOURCE:-}
+        [ "${previous#v}" = "${updater_expected_source#v}" ] || die "installed version changed while the update was queued"
+    fi
     ensure_configuration_values "$PROD_ENV"
 
+    printf '%s\n' '@@ASSOZETA_STAGE checking'
+    managed_update=false
+    if supports_self_update; then
+        case "$version" in v*) version=${version#v} ;; esac
+        printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "upgrade requires an exact stable version"
+        managed_update=true
+        updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-"ghcr.io/carbogninalberto/assozeta-updater:$version"}
+        docker pull "$updater_tool_image"
+    fi
+    printf '%s\n' '@@ASSOZETA_STAGE backup'
+    backup_keep_stopped=true
     backup_prod
+    printf '%s\n' '@@ASSOZETA_STAGE downloading'
+    if [ "$managed_update" = true ]; then
+        if ! run_updater_tool /runner/distribution.py prepare "$SELFHOST_DIR" "$PROD_ENV" "$version" "$archive" "${ASSOZETA_OPERATION_ID:-}"; then
+            start_prod_app_services || true
+            die "release distribution preparation failed; existing configuration retained"
+        fi
+        run_updater_tool /runner/provision.py "$SELFHOST_DIR" "$PROD_ENV" --files-only
+    fi
     set_env_value ASSOZETA_VERSION "$version" "$PROD_ENV"
     log "upgrading from $previous to $version"
     if ! prod_compose pull; then
-        set_env_value ASSOZETA_VERSION "$previous" "$PROD_ENV"
+        if [ "$managed_update" = true ]; then
+            run_updater_tool /runner/distribution.py rollback "$SELFHOST_DIR"
+        else
+            set_env_value ASSOZETA_VERSION "$previous" "$PROD_ENV"
+        fi
+        start_prod_app_services || true
         die "failed to pull version $version; restored configured version $previous"
     fi
+    printf '%s\n' '@@ASSOZETA_STAGE migrating'
+    if [ "$managed_update" = true ]; then
+        run_updater_tool /runner/distribution.py migration_started "$SELFHOST_DIR"
+    fi
     initialise_prod
-    start_prod_app_services
+    printf '%s\n' '@@ASSOZETA_STAGE restarting'
+    # Recreate even unchanged images: replaced host bind files (e.g. Caddyfile)
+    # otherwise remain attached to the old inode in an existing container.
+    start_prod_app_services "$managed_update"
+    printf '%s\n' '@@ASSOZETA_STAGE health_check'
     require_public_readiness
+    if [ "$managed_update" = true ]; then
+        run_updater_tool /runner/engine.py "$SELFHOST_DIR" "$PROD_ENV" "$version" "${ASSOZETA_OPERATION_ID:-}"
+        run_updater_tool /runner/distribution.py commit "$SELFHOST_DIR"
+        if [ "${ASSOZETA_RUNNER_ACTIVE:-false}" != 1 ]; then
+            run_updater_tool /runner/provision.py "$SELFHOST_DIR" "$PROD_ENV"
+        fi
+    fi
     status_prod
     log "upgrade complete; previous version was $previous"
+}
+
+bootstrap_upgrade_prod() {
+    [ "$#" -eq 1 ] || die "upgrade requires one exact stable version"
+    bootstrap_version=${1#v}
+    printf '%s\n' "$bootstrap_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "upgrade requires an exact stable version"
+    preflight
+    updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:$bootstrap_version"
+    docker pull "$updater_tool_image"
+    # The verified target CLI acquires the lifecycle lock. Holding it in this
+    # parent would deadlock the child controller in a different PID namespace.
+    run_updater_tool /runner/bootstrap.py "$SELFHOST_DIR" "$PROD_ENV" "$bootstrap_version"
+}
+
+recover_upgrade_prod() {
+    recovery_archive=${1:-}
+    [ -n "$recovery_archive" ] && [ -f "$recovery_archive" ] || die "recover-upgrade requires the pre-update backup archive"
+    shift
+    recovery_assume_yes=false
+    [ "$#" -le 1 ] || die "unknown recover-upgrade options"
+    case "${1:-}" in ''|--yes) ;; *) die "unknown recover-upgrade option: $1" ;; esac
+    [ "${1:-}" = --yes ] && recovery_assume_yes=true
+    confirm_destructive "Restore the pre-update release, configuration and database/object data from $recovery_archive?" "$recovery_assume_yes"
+    preflight
+    [ -f "$SELFHOST_DIR/.updater/pending-distribution/transaction.json" ] || die "no pending release transaction exists"
+    updater_tool_image=${ASSOZETA_RECOVERY_UPDATER_REF:-$(env_value ASSOZETA_UPDATER_REF "$PROD_ENV")}
+    [ -n "$updater_tool_image" ] || die "the verified recovery helper image is unavailable"
+    # Use a host-shared path even when invoked from the controller container.
+    recovery_archive_directory=$(CDPATH= cd -- "$(dirname -- "$recovery_archive")" && pwd)
+    recovery_archive="$recovery_archive_directory/$(basename -- "$recovery_archive")"
+    case "$recovery_archive" in
+        "$SELFHOST_DIR"/*) ;;
+        *) die "copy the backup beneath the installation directory before recovery" ;;
+    esac
+    run_updater_tool /runner/recovery.py validate "$SELFHOST_DIR" "$recovery_archive"
+    recover_upgrade_active=true
+    stop_prod_data_services
+    run_updater_tool /runner/recovery.py restore_files "$SELFHOST_DIR" "$recovery_archive"
+    log "if recovery is interrupted, resume with $SELFHOST_DIR/.updater/recover-upgrade and the same backup"
+    restore_prod "$recovery_archive" --yes
+    run_updater_tool /runner/recovery.py finish "$SELFHOST_DIR" "$PROD_ENV"
+    run_updater_tool /runner/provision.py "$SELFHOST_DIR" "$PROD_ENV"
+    log "upgrade recovery completed; restored distribution, configuration, and data have passed health and version checks"
 }
 
 prepare_dev() {
@@ -1373,6 +1548,7 @@ run_locked_prod_command() {
     shift
 
     acquire_prod_lock "$locked_command"
+    require_no_surviving_lifecycle_helpers
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;
@@ -1383,6 +1559,8 @@ run_locked_prod_command() {
         restart) restart_prod ;;
         backup) backup_prod "$@" ;;
         restore) restore_prod "$@" ;;
+        recover-upgrade) recover_upgrade_prod "$@" ;;
+        reconcile-updates) reconcile_updates_prod "$@" ;;
         upgrade) upgrade_prod "$@" ;;
         uninstall)
             preflight
@@ -1397,6 +1575,10 @@ run_locked_prod_command() {
                 esac
                 shift
             done
+            if [ -f "$SELFHOST_DIR/compose.updater.yml" ] && [ -f "$SELFHOST_DIR/.updater/provisioning.json" ]; then
+                uninstall_updater_project=$(env_value COMPOSE_PROJECT_NAME "$PROD_ENV")
+                compose_with_env "$PROD_ENV" "$SELFHOST_DIR/compose.updater.yml" --project-name "${uninstall_updater_project:-assozeta}-updater" down --remove-orphans
+            fi
             if [ "$volumes" = true ]; then
                 confirm_destructive "Delete all Assozeta production data volumes?" "$assume_yes"
                 prod_compose down --volumes --remove-orphans
@@ -1415,7 +1597,14 @@ command=${1:-help}
 
 case "$command" in
     help|-h|--help) usage ;;
-    configure|install|pull|migrate|start|stop|restart|backup|restore|upgrade|uninstall) run_locked_prod_command "$command" "$@" ;;
+    upgrade)
+        if [ -z "${ASSOZETA_VERIFIED_UPDATER_REF:-}" ] && [ -f "$PROD_ENV" ] && supports_self_update; then
+            bootstrap_upgrade_prod "$@"
+        else
+            run_locked_prod_command "$command" "$@"
+        fi
+        ;;
+    configure|install|pull|migrate|start|stop|restart|backup|restore|recover-upgrade|reconcile-updates|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
     status) preflight; status_prod ;;
     logs) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose logs --follow --tail=200 "$@" ;;

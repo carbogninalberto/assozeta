@@ -29,6 +29,7 @@
     import SetupWizard from './routes/setup/SetupWizard.svelte';
     import AgentChatWidget from 'components/agent/AgentChatWidget.svelte';
     import LoadingOverlay from 'components/loading/LoadingOverlay.svelte';
+    import InstanceUnavailable from './routes/profile/sections/InstanceUnavailable.svelte';
 
     sessionToken.useLocalStorage();
     refreshToken.useLocalStorage();
@@ -46,6 +47,7 @@
     // Self-hosted instance configuration state
     let instanceLoading = true;
     let instanceConfigured = true; // Default to true for non-self-hosted mode
+    let instanceUnavailable = false;
 
     // Dark mode - system preference listener
     let prefersDarkMedia;
@@ -112,7 +114,9 @@
         if (isSelfHostedMode()) {
             instanceLoading = true;
             instanceConfigured = await loadInstanceConfig();
+            instanceUnavailable = !!$instanceStatus.error;
             instanceLoading = false;
+            if (instanceUnavailable) return;
 
             // If not configured, show setup wizard (don't continue with app initialization)
             if (!instanceConfigured) {
@@ -289,6 +293,7 @@
     }
 
     beforeUpdate(() => {
+        if (instanceLoading || instanceUnavailable) return;
         if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
@@ -296,6 +301,7 @@
     });
 
     afterUpdate(() => {
+        if (instanceLoading || instanceUnavailable) return;
         if ($location != '/error') {
             checkUserData();
         }
@@ -453,6 +459,8 @@
         <p class="text-muted">Caricamento configurazione...</p>
     </div>
     <!-- Show setup wizard if instance is not configured (self-hosted mode) -->
+{:else if instanceUnavailable}
+    <InstanceUnavailable />
 {:else if !instanceConfigured}
     <SetupWizard />
     <!-- Normal app flow -->

@@ -9,6 +9,25 @@ from rest_framework.permissions import BasePermission
 from .models import InstanceConfiguration
 
 
+def is_instance_owner(user, config=None):
+    """Instance administration is for the actual owner, without a superuser bypass."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False
+    if config is None:
+        config = InstanceConfiguration.objects.select_related('primary_association').first()
+    return bool(
+        config and config.self_hosted and config.primary_association_id
+        and str(config.primary_association.user_id) == str(user.pk)
+    )
+
+
+class IsInstanceOwner(BasePermission):
+    message = 'Only the instance owner can administer this installation.'
+
+    def has_permission(self, request, view):
+        return is_instance_owner(getattr(request, 'original_user', request.user))
+
+
 def is_primary_association_owner_or_superuser(user, config=None):
     """Return True only for the configured instance owner or a superuser."""
     if not user or not getattr(user, 'is_authenticated', False):

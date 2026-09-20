@@ -7,9 +7,11 @@ x-logging: &default-logging
     max-file: "5"
 
 x-backend: &backend
-  image: ${ASSOZETA_BACKEND_IMAGE:-ghcr.io/carbogninalberto/assozeta-backend}:${ASSOZETA_VERSION:-latest}
+  image: ${ASSOZETA_BACKEND_REF:-${ASSOZETA_BACKEND_IMAGE:-ghcr.io/carbogninalberto/assozeta-backend}:${ASSOZETA_VERSION:-latest}}
   env_file:
     - ${ASSOZETA_ENV_FILE:-.env}
+  environment:
+    ASSOZETA_DEPLOYMENT_MODE: production
   init: true
   volumes:
     - django_static:/app/staticfiles
@@ -98,7 +100,7 @@ services:
     logging: *default-logging
 
   renderer:
-    image: ${ASSOZETA_RENDERER_IMAGE:-ghcr.io/carbogninalberto/assozeta-renderer}:${ASSOZETA_VERSION:-latest}
+    image: ${ASSOZETA_RENDERER_REF:-${ASSOZETA_RENDERER_IMAGE:-ghcr.io/carbogninalberto/assozeta-renderer}:${ASSOZETA_VERSION:-latest}}
     environment:
       RENDER_ALLOWED_HOSTS: api,minio,cdn.jsdelivr.net
     init: true
@@ -134,6 +136,9 @@ services:
 
   api:
     <<: *backend
+    volumes:
+      - django_static:/app/staticfiles
+      - updater_api:/run/assozeta-updater:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -181,7 +186,7 @@ services:
       disable: true
 
   web:
-    image: ${ASSOZETA_WEB_IMAGE:-ghcr.io/carbogninalberto/assozeta-web}:${ASSOZETA_VERSION:-latest}
+    image: ${ASSOZETA_WEB_REF:-${ASSOZETA_WEB_IMAGE:-ghcr.io/carbogninalberto/assozeta-web}:${ASSOZETA_VERSION:-latest}}
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS}
       ACME_EMAIL: ${ACME_EMAIL:-localhost@example.invalid}
@@ -193,6 +198,7 @@ services:
       - django_static:/django-static:ro
       - caddy_data:/data
       - caddy_config:/config
+      - updater_status:/run/assozeta-update-status:ro
     networks:
       - internal
     depends_on:
@@ -212,6 +218,10 @@ networks:
   internal:
 
 volumes:
+  updater_status:
+    name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_status
+  updater_api:
+    name: ${COMPOSE_PROJECT_NAME:-assozeta}_updater_api
   postgres_data:
   redis_data:
   minio_data:

@@ -7,6 +7,8 @@ on:
       - "UI/**"
       - "selfhost/**"
       - ".github/workflows/publish-images.yml"
+      - ".github/workflows/selfhost-quality.yml"
+      - ".github/workflows/selfhost-release-rehearsal.yml"
   push:
     branches: [main]
     paths:
@@ -14,6 +16,8 @@ on:
       - "UI/**"
       - "selfhost/**"
       - ".github/workflows/publish-images.yml"
+      - ".github/workflows/selfhost-quality.yml"
+      - ".github/workflows/selfhost-release-rehearsal.yml"
   release:
     types: [published]
   workflow_dispatch:
@@ -22,6 +26,9 @@ permissions:
   contents: read
 
 jobs:
+  selfhost-quality:
+    uses: ./.github/workflows/selfhost-quality.yml
+
   validate:
     name: Validate self-host stack
     runs-on: ubuntu-latest
@@ -52,7 +59,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.name }}
     if: github.event_name != 'pull_request'
-    needs: [validate, production-smoke]
+    needs: [validate, production-smoke, selfhost-quality]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -76,6 +83,11 @@ jobs:
             image: assozeta-renderer
             context: ./selfhost/renderer
             file: ./selfhost/renderer/Dockerfile
+            target: ""
+          - name: updater
+            image: assozeta-updater
+            context: .
+            file: ./selfhost/updater/Dockerfile
             target: ""
 
     steps:
@@ -145,7 +157,7 @@ jobs:
           set -euo pipefail
           RELEASE_TAG="${RELEASE_TAG#v}"
 
-          images=(assozeta-backend assozeta-web assozeta-renderer)
+          images=(assozeta-backend assozeta-web assozeta-renderer assozeta-updater)
           failures=()
 
           for image in "${images[@]}"; do
@@ -169,15 +181,16 @@ jobs:
             printf '\nAnonymous pull verification failed for:\n' >&2
             printf '  - %s\n' "${failures[@]}" >&2
             printf '\nGHCR container packages are private by default, but the self-host installer\n' >&2
-            printf 'pulls images without credentials. Set all three packages to Public\n' >&2
+            printf 'pulls images without credentials. Set all four packages to Public\n' >&2
             printf '(Package settings > Change visibility > Public), then rerun this workflow:\n' >&2
             printf '  - ghcr.io/%s/assozeta-backend\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-web\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-renderer\n' "${IMAGE_OWNER}" >&2
+            printf '  - ghcr.io/%s/assozeta-updater\n' "${IMAGE_OWNER}" >&2
             exit 1
           fi
 
-          echo "All three release images are anonymously pullable."
+          echo "All four release images are anonymously pullable."
 
   release-bundle:
     name: Attach self-host bundle
@@ -218,3 +231,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ github.event.release.tag_name }}" "assozeta-selfhost-${{ github.event.release.tag_name }}.tar.gz" --clobber
+
+      - name: Publish verified update manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          PYTHONPATH: BE/instance
+        run: |
+          python3 selfhost/updater/build_manifest.py "$RELEASE_TAG" "assozeta-selfhost-$RELEASE_TAG.tar.gz" assozeta-update.json
+          gh release upload "$RELEASE_TAG" assozeta-update.json --clobber

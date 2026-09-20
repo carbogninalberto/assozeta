@@ -92,6 +92,9 @@ def _get_running_version():
     return env.str('RUNNING_VERSION', 'v0.0.0')
 
 RUNNING_VERSION = _get_running_version()
+ASSOZETA_DEPLOYMENT_MODE = env.str('ASSOZETA_DEPLOYMENT_MODE', 'development')
+ASSOZETA_CONFIGURED_VERSION = env.str('ASSOZETA_VERSION', '')
+ASSOZETA_UPDATER_DIRECTORY = env.str('ASSOZETA_UPDATER_DIRECTORY', '/run/assozeta-updater')
 
 # 250 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 262144000
@@ -137,7 +140,7 @@ CELERY_BROKER_URL = f'{REDIS_PROTOCOL}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDI
 # save Celery task results in Django's database
 CELERY_RESULT_BACKEND = "django-db"
 # this allows you to schedule items in the Django admin.
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'instance.scheduler.InstanceScheduler'
 # useful for mitigating memory leaks
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 
@@ -284,7 +287,7 @@ SOCIAL_AUTH_APPLE_ID_SCOPE = ['email', 'name']
 SOCIAL_AUTH_APPLE_ID_EMAIL_AS_USERNAME = True   # If you want to use email as username
 
 # email server settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'instance.email_configuration.EmailBackend'
 
 # Use in-memory backend during tests (no real emails sent)
 import sys
@@ -393,6 +396,11 @@ MIDDLEWARE = [
     'auditlog.middleware.AuditlogMiddleware',  # Required for audit logging
     'application.mixin.GroupSelectionMiddleware',
 ]
+
+# Operational forms contain SMTP credentials; exclude them from the development
+# request profiler as well as the production API audit logger.
+SILKY_IGNORE_PATHS = ['/instance/admin/email', '/instance/admin/email/test', '/instance/admin/diagnostics',
+                     '/instance/admin/integrations/stripe', '/instance/admin/integrations/google', '/instance/admin/integrations/apple']
 
 if DEBUG:
     MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
@@ -679,7 +687,7 @@ DRF_API_LOGGER_PATH_TYPE = 'ABSOLUTE'
 #DRF_API_LOGGER_MAX_RESPONSE_BODY_SIZE = 1024  # default to -1, no limit.
 DRF_LOGGER_QUEUE_MAX_SIZE = 1 # Default to 50 if not specified.
 DRF_LOGGER_INTERVAL = 1 # In Seconds, Default to 10 seconds if not specified.
-DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health']
+DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health', 'instance-email-settings', 'instance-email-test', 'instance-diagnostics', 'instance-integration-settings']
 DRF_API_LOGGER_SLOW_API_ABOVE = 300
 DRF_API_LOGGER_METHODS = ['PATCH', 'POST', 'DELETE', 'PUT']
 

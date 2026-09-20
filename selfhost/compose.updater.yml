@@ -1,0 +1,29 @@
+name: ${COMPOSE_PROJECT_NAME:-assozeta}-updater
+
+services:
+  updater:
+    image: ${ASSOZETA_UPDATER_REF:-ghcr.io/carbogninalberto/assozeta-updater:${ASSOZETA_VERSION:-latest}}
+    command: [/runner/server.py, "${ASSOZETA_SELFHOST_DIR:?Installation path is required}", "${ASSOZETA_ENV_FILE:?Environment path is required}"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30m
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR}:${ASSOZETA_SELFHOST_DIR}
+      - updater_api:/run/assozeta-updater
+      - updater_status:/run/assozeta-update-status
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  updater_status:
+    external: true
+    name: ${ASSOZETA_UPDATER_STATUS_VOLUME:?Shared read-only status volume is required}
+  updater_api:
+    external: true
+    name: ${ASSOZETA_UPDATER_API_VOLUME:?Shared application updater volume is required}
