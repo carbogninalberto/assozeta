@@ -1,7 +1,7 @@
 <script>
 	import { X } from 'lucide-svelte';
     import swal from 'sweetalert2';
-    import {afterUpdate, onDestroy, onMount} from 'svelte';
+    import {onDestroy, onMount} from 'svelte';
     import {scale} from 'svelte/transition';
     import {apiFetch} from 'utils/ApiMiddleware.js';
     import {subPage, userData} from 'store/stores.js';
@@ -15,7 +15,12 @@
 
     export let changes = false;
     let googleCheckInterval = null;
-    let fetchedData = {};
+    let fetchedData = null;
+    $: integrationData = {
+        review_url: $userData.sport_association?.review_url,
+        review_url_enabled: $userData.sport_association?.review_url_enabled,
+    };
+    $: changes = fetchedData !== null && JSON.stringify(integrationData) !== fetchedData;
 
     async function fetchIntegrationSettings() {
         let res = await apiFetch(`${__bakney.env.API.PROFILE.INTEGRATIONS}`);
@@ -23,21 +28,21 @@
         if (!res.error) {
             $userData.sport_association.review_url = res.response.review_url;
             $userData.sport_association.review_url_enabled = res.response.review_url_enabled;
+            fetchedData = JSON.stringify({review_url: res.response.review_url, review_url_enabled: res.response.review_url_enabled});
         } else {
             toast.error('Si sono verificati degli errori, contatta il supporto immediatamente!');
         }
     }
 
     async function updateIntegrationSettings() {
+        const submittedData = JSON.stringify(integrationData);
         let res = await apiFetch(`${__bakney.env.API.PROFILE.INTEGRATIONS}`, {
             method: 'PATCH',
-            body: JSON.stringify({
-                review_url: $userData.sport_association.review_url,
-                review_url_enabled: $userData.sport_association.review_url_enabled,
-            }),
+            body: submittedData,
         });
 
         if (!res.error) {
+            fetchedData = submittedData;
             toast.success('Impostazioni salvate con successo.');
         } else {
             toast.error('Si sono verificati degli errori, contatta il supporto immediatamente!');
@@ -53,19 +58,12 @@
             }
         }, 2000);
         await fetchIntegrationSettings();
-        fetchedData = JSON.stringify($userData);
-        if (JSON.stringify($userData) != fetchedData) changes = true;
-        else changes = false;
     });
 
     onDestroy(() => {
         clearInterval(googleCheckInterval);
     });
 
-    afterUpdate(() => {
-        if (JSON.stringify($userData) != fetchedData) changes = true;
-        else changes = false;
-    });
 </script>
 
 {#if $subPage == 'integrations'}
@@ -258,7 +256,7 @@
             <!--end::Form-->
         </div>
     </div>
-    <BottomBarFixedSave on:save={updateIntegrationSettings} autoShow={true}>
+    <BottomBarFixedSave disabled={!changes || !canPerformAction('other.settings.update')} on:save={updateIntegrationSettings} autoShow={true}>
         <div slot="left" class="d-flex align-items-center">
             <Warning weight={'duotone'} size={18} class="mr-2 text-warning" />
             <p class="font-weight-boldest mb-0 text-warning text-xs">

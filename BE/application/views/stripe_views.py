@@ -26,7 +26,7 @@ from application.models.payment_models import Payment
 from application.utils.api_utils import is_valid_uuid, BalanceSheetData
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import generate_invoice_description
-from application.utils.stripe_utils import online_payments_available, stripe_webhook_secret
+from application.utils.stripe_utils import online_payments_available, stripe_webhook_secret, stripe_request_options
 from notifications.services import NotificationService
 from core import settings
 from django.db.models import Max
@@ -136,6 +136,7 @@ def stripe_multiple_pay(request):
                 if payment.payment_intent_id and payment.paid is False:
                     payment_intent = stripe.PaymentIntent.retrieve(
                         payment.payment_intent_id,
+                        **stripe_request_options(),
                     )
                     if payment_intent is not None and \
                             payment_intent.status == 'succeeded' and \
@@ -166,6 +167,7 @@ def stripe_multiple_pay(request):
 
                 logger.info("Creating Stripe PaymentIntent for multiple payments", extra={'amount': amount, 'payment_count': len(unpaid_payments)})
                 payment_intent = stripe.PaymentIntent.create(
+                    **stripe_request_options(),
                     amount=amount,
                     currency='eur',
                     description=description,
@@ -230,6 +232,7 @@ def stripe_pay(request, payment_id):
                 )
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
+                **stripe_request_options(),
             )
             # check if there are metadata in the payment
             if payment_intent is not None and \
@@ -277,6 +280,7 @@ def stripe_pay(request, payment_id):
         try:
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
+                **stripe_request_options(),
             )
             if payment_intent is not None and \
                 payment_intent.status == 'succeeded' and \
@@ -306,6 +310,7 @@ def stripe_pay(request, payment_id):
     if payment_intent is None:
         logger.info("Creating Stripe PaymentIntent", extra={'payment_id': str(payment.payment_id), 'amount': amount})
         payment_intent = stripe.PaymentIntent.create(
+            **stripe_request_options(),
             amount=amount,
             currency='eur',
             description=f'Associato: {payment.associate.first_name} {payment.associate.last_name} - '

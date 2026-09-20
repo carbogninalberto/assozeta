@@ -40,4 +40,12 @@ __pycache__/
 /selfhost/.env
 /selfhost/.env.dev
 /selfhost/.lifecycle.lock/
+/selfhost/.lifecycle.flock
+/selfhost/.updater/
+/selfhost/.restore-*/
 /selfhost/backups/
+
+# Disposable release-quality evidence and browser output
+quality-reports/
+selfhost/tests/browser/test-results/
+selfhost/tests/browser/node_modules/

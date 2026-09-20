@@ -31,7 +31,7 @@ from application.models.user_models import UserPartial, User, SportAssociation, 
     SportAssociationDocumentsArchive
 from application.utils.api_utils import BalanceSheetData, generate_readable_unique_string, check_email
 from application.utils.printing import PrintingService
-from application.utils.stripe_utils import stripe_direct_credentials_configured
+from application.utils.stripe_utils import stripe_direct_credentials_configured, stripe_request_options
 from application.export_progress import (
     EXPORT_ACTIVE_CACHE_TIMEOUT,
     build_export_snapshot,
@@ -323,11 +323,13 @@ def generate_coupon_if_not_exists():
             coupon = generate_readable_unique_string()
             # generate the coupon in stripe
             coupon_stripe = stripe.Coupon.create(
+                **stripe_request_options(),
                 percent_off=10.0,
                 duration="once",
                 name="{}".format(sport_association.denomination)[:40],
             )
             stripe.PromotionCode.create(
+                **stripe_request_options(),
                 coupon=coupon_stripe.id,
                 code=coupon,
                 active=True,
@@ -368,6 +370,7 @@ def change_type_of_stripe_payments(batch_size=100, delay_seconds=1):
                 try:
                     payment_intent = stripe.PaymentIntent.retrieve(
                         payment.payment_intent_id,
+                        **stripe_request_options(),
                     )
 
                     if payment_intent and payment_intent.status == 'succeeded':
@@ -471,6 +474,7 @@ def _check_and_mark_payment(payment):
             # Retrieve payment intent from Stripe
             payment_intent = stripe.PaymentIntent.retrieve(
                 payment.payment_intent_id,
+                **stripe_request_options(),
             )
 
             # Check if payment intent is succeeded

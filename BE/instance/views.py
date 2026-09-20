@@ -379,7 +379,8 @@ class InstanceLogoUploadView(APIView):
             config = InstanceConfiguration.get_config()
             if config:
                 config.logo_path = logo_url
-                config.save()
+                config.save(update_fields=['logo_path', 'updated_at'])
+                logo_url = InstanceConfigSerializer(config).data['oem']['logo']
 
             logger.info(f"Logo uploaded: {saved_path}")
 
@@ -421,7 +422,7 @@ class InstanceLogoServeView(APIView):
                         file,
                         content_type=content_types.get(ext, 'image/png')
                     )
-                    response['Cache-Control'] = 'public, max-age=86400'
+                    response['Cache-Control'] = 'no-cache'
                     return response
                 except Exception:
                     pass

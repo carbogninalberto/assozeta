@@ -16,6 +16,10 @@
         respond 200
     }
 
+    handle /instance-update-status {
+        reverse_proxy unix//run/assozeta-update-status/status.sock
+    }
+
     handle_path /api/* {
         reverse_proxy api:8000
     }

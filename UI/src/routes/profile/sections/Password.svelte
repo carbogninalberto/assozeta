@@ -32,9 +32,9 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
 
     $: passwordData,
         (changes =
-            passwordData.newPassword.value != null ||
-            passwordData.confirmPassword.value != null ||
-            passwordData.currentPassword.value != null);
+            !!passwordData.newPassword.value ||
+            !!passwordData.confirmPassword.value ||
+            !!passwordData.currentPassword.value);
 
     const togglePasswordInput = (id, type) => {
         passwordData[type].visibility = !passwordData[type].visibility;
@@ -343,7 +343,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             <!--end::Form-->
         </div>
     </div>
-    <BottomBarFixedSave on:save={updateAccountPassword} autoShow={true}>
+    <BottomBarFixedSave disabled={!changes} on:save={updateAccountPassword} autoShow={true}>
         <div slot="left" class="d-flex align-items-center">
             <Warning weight={'duotone'} size={18} class="mr-2 text-warning" />
             <p class="font-weight-boldest mb-0 text-warning text-xs">

@@ -6,7 +6,7 @@ ASSOZETA := ./selfhost/bin/assozeta
 	dev-migrate dev-makemigrations dev-test dev-rebuild dev-reset \
 	selfhost-configure selfhost-install selfhost-validate selfhost-start \
 	selfhost-stop selfhost-status selfhost-logs selfhost-backup selfhost-restore \
-	selfhost-upgrade selfhost-test selfhost-smoke selfhost-production-smoke
+	selfhost-upgrade selfhost-test selfhost-smoke selfhost-production-smoke selfhost-quality
 
 help:
 	@printf '%s\n' \
@@ -25,9 +25,10 @@ help:
 		'make dev-reset CONFIRM=1      Delete all development data' \
 		'make selfhost-install ARGS="--domain example.org --email admin@example.org"' \
 		'make selfhost-status          Show production status' \
-		'make selfhost-test            Validate scripts, Compose, and Python syntax' \
+		'make selfhost-test            Validate scripts, Compose, and updater regressions' \
 		'make selfhost-smoke           Start and smoke-test the development stack' \
-		'make selfhost-production-smoke Build and test the production stack'
+		'make selfhost-production-smoke Build and test the production stack' \
+		'make selfhost-quality SCENARIO=legacy Run release and browser checks in Docker'
 
 dev-config:
 	@$(ASSOZETA) dev-config
@@ -113,3 +114,6 @@ selfhost-production-smoke:
 	@docker build --target production -t assozeta-web:test ./UI
 	@docker build -t assozeta-renderer:test ./selfhost/renderer
 	@./selfhost/tests/production-smoke.sh
+
+selfhost-quality:
+	@./selfhost/tests/quality.sh "$(or $(SCENARIO),legacy)"
