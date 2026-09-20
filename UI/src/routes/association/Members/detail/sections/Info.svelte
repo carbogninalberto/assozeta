@@ -1014,6 +1014,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
 </form>
 
 <BottomBarFixedSave
+    disabled={!changes || info.archived || !canPerformAction('association.members.update')}
     target="#portal-save-foreground"
     visible={true}
     customStyle={$isMobile ? '' : `width: 85vw;right: 0;left: auto;`}

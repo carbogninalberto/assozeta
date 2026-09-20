@@ -161,8 +161,7 @@
     <div class="brand flex-column-auto" id="bkn_brand">
         <!--begin::Logo-->
         <a href="/" class="brand-logo mx-auto">
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <img id="logo" class="h-30px" style={visibleLogo ? '' : 'display:none;'} src={brandLogo} />
+            <img id="logo" class="brand-image" style={visibleLogo ? '' : 'display:none;'} src={brandLogo} alt={$oemConfig?.name || 'Logo'} />
             <!-- svelte-ignore missing-declaration -->
             {#if IS_BETA}
                 <div class="beta-banner">beta</div>
@@ -1121,6 +1120,19 @@
 <!--end::Aside-->
 
 <style>
+    .brand-logo {
+        min-width: 0;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .brand-image {
+        display: block;
+        width: 100%;
+        height: 30px;
+        object-fit: contain;
+    }
+
     /* Hide scrollbar on all parent containers - only menu-nav should scroll */
     :global(.aside),
     :global(.aside-menu-wrapper),

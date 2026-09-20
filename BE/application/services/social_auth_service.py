@@ -9,7 +9,7 @@ import jwt
 import requests
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from django.conf import settings
+from instance.integration_configuration import provider_client_id
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +32,15 @@ class SocialAuthService:
         Returns:
             Tuple of (success: bool, user_info: dict or None)
         """
+        client_id = provider_client_id('google')
+        if not client_id:
+            return False, None
         try:
             # First try to verify as ID token
             idinfo = id_token.verify_oauth2_token(
                 token,
                 google_requests.Request(),
-                settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+                client_id
             )
 
             if idinfo['iss'] not in cls.GOOGLE_ISSUERS:
@@ -54,14 +57,18 @@ class SocialAuthService:
             }
         except ValueError as e:
             # Token might be an access token, not an ID token
-            logger.debug("Google ID token verification failed, trying access token",
-                        extra={'error': str(e)})
-            return cls._verify_google_access_token(token)
+            logger.debug("Google ID token verification failed, trying access token")
+            return cls._verify_google_access_token(token, client_id)
 
     @classmethod
-    def _verify_google_access_token(cls, access_token: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    def _verify_google_access_token(cls, access_token: str, client_id: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
         """Verify Google access token by calling userinfo endpoint."""
         try:
+            # Bind fallback access tokens to this installation's OAuth client too.
+            token_info = requests.get('https://oauth2.googleapis.com/tokeninfo',
+                                      params={'access_token': access_token}, timeout=10)
+            if token_info.status_code != 200 or token_info.json().get('aud') != client_id:
+                return False, None
             response = requests.get(
                 'https://www.googleapis.com/oauth2/v3/userinfo',
                 headers={'Authorization': f'Bearer {access_token}'},
@@ -82,9 +89,8 @@ class SocialAuthService:
                 'picture': data.get('picture'),
                 'sub': data.get('sub'),
             }
-        except Exception as e:
-            logger.error("Google access token verification failed",
-                        extra={'error': str(e)}, exc_info=True)
+        except Exception:
+            logger.warning("Google access token verification failed")
             return False, None
 
     @classmethod
@@ -98,6 +104,9 @@ class SocialAuthService:
         Returns:
             Tuple of (success: bool, user_info: dict or None)
         """
+        client_id = provider_client_id('apple')
+        if not client_id:
+            return False, None
         try:
             # Fetch Apple's public keys
             keys_response = requests.get(cls.APPLE_KEYS_URL, timeout=10)
@@ -122,7 +131,7 @@ class SocialAuthService:
                 identity_token,
                 public_key,
                 algorithms=['RS256'],
-                audience=settings.SOCIAL_AUTH_APPLE_ID_CLIENT,
+                audience=client_id,
                 issuer=cls.APPLE_ISSUER
             )
 

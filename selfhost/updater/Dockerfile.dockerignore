@@ -1,0 +1,8 @@
+**
+!selfhost/
+!selfhost/updater/
+!selfhost/updater/*.py
+!selfhost/updater/Dockerfile
+!BE/
+!BE/instance/
+!BE/instance/release_catalog.py

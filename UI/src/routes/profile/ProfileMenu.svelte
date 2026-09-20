@@ -15,8 +15,9 @@
     userData.useLocalStorage();
     subPage.useLocalStorage();
 
-    let pages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'data-management'];
+    let pages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'data-management', 'self-instance'];
     export let changes = false;
+    export let instanceOwner = false;
 
     function checkParams() {
         let splittedQuery = $querystring.split('&');
@@ -24,7 +25,7 @@
         let page = splittedQuery[0].split('=')[1];
 
         if (pages.includes(page) && queryKey == 'page') subPage.set(page);
-        else subPage.set('info');
+        else if (!pages.includes($subPage)) subPage.set('info');
     }
 
     onMount(async () => {
@@ -44,6 +45,7 @@
                 }
             }
         }
+        if ($subPage === page) window.history.replaceState(null, '', `/#/profile?page=${page}`);
     };
 </script>
 
@@ -65,9 +67,7 @@
                     {:else}
                         <div class="symbol symbol-35 symbol-light-info flex-shrink-0 mr-3">
                             <span class="symbol-label font-weight-bolder font-size-h1"
-                                >{$userData?.first_name.charAt(0).toUpperCase()}{$userData?.last_name
-                                    .charAt(0)
-                                    .toUpperCase()}</span>
+                                >{($userData?.first_name || '').charAt(0).toUpperCase()}{($userData?.last_name || '').charAt(0).toUpperCase()}</span>
                         </div>
                     {/if}
                     <!-- <div class="symbol-label" style="background-image:url('{$userData.avatar_image != null ? $userData.avatar_image : ""}')"></div> -->
@@ -75,7 +75,7 @@
                 </div>
                 <div>
                     <a href="#" class="font-weight-bolder font-size-h5 text-dark-75 text-hover-primary"
-                        >{$userData.first_name} {$userData.last_name}</a>
+                        >{$userData?.first_name || ''} {$userData?.last_name || ''}</a>
                 </div>
             </div>
             <!--end::User-->
@@ -171,6 +171,15 @@
             <!--end::Contacts-->
             <!--begin::Nav-->
             <div class="navi navi-bold navi-hover navi-active navi-link-rounded navi-settings">
+                {#if instanceOwner}
+                    <div class="navi-item mb-2">
+                        <a href="/#/profile?page=self-instance" on:click|preventDefault={() => changeSubPage('self-instance')}
+                            class="navi-link py-4 {$subPage === 'self-instance' ? 'active' : ''}">
+                            <span class="menu-icon m-0 mr-md-3"><Database size="24" weight="duotone" /></span>
+                            <span class="navi-text font-size-lg">Self Instance</span>
+                        </a>
+                    </div>
+                {/if}
                 <div class="navi-item mb-2">
                     <a
                         href="/#/profile"

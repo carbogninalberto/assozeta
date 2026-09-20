@@ -20,16 +20,16 @@
         enable: false,
         otp: null,
     };
-    let fetchedData = {};
+    let fetchedData = null;
     let setupData = writable({
         qrcode_uri: null,
         otp_secret: null,
     });
 
     $: {
-        if (twoFaData?.enable == true && twoFaData.otp && String(twoFaData.otp).length == 6) {
+        if (fetchedData !== null && twoFaData?.enable == true && twoFaData.otp && String(twoFaData.otp).length == 6) {
             validButton = true;
-        } else if (twoFaData?.enable == false && twoFaData.otp == null && JSON.stringify(twoFaData) != fetchedData) {
+        } else if (fetchedData !== null && twoFaData?.enable == false && twoFaData.otp == null && JSON.stringify(twoFaData) != fetchedData) {
             validButton = true;
         } else {
             validButton = false;
@@ -41,7 +41,7 @@
     });
 
     afterUpdate(() => {
-        if (JSON.stringify(twoFaData) != fetchedData) {
+        if (fetchedData !== null && JSON.stringify(twoFaData) != fetchedData) {
             changes = true;
         } else {
             changes = false;

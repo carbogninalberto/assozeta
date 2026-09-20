@@ -1,0 +1,35 @@
+#!/bin/sh
+# Standalone bootstrap for installations whose old CLI cannot update host tooling.
+set -eu
+
+installation=
+version=
+environment_file=
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --directory) installation=$2; shift 2 ;;
+        --version) version=${2#v}; shift 2 ;;
+        --env-file) environment_file=$2; shift 2 ;;
+        *) printf 'Usage: update --directory /path/to/selfhost --version X.Y.Z [--env-file PATH]\n' >&2; exit 1 ;;
+    esac
+done
+[ -n "$installation" ] && [ -n "$version" ] || { printf 'Installation directory and release version are required.\n' >&2; exit 1; }
+printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { printf 'Use an exact stable release version.\n' >&2; exit 1; }
+installation=$(CDPATH= cd -- "$installation" && pwd)
+environment_file=${environment_file:-"$installation/.env"}
+environment_directory=$(CDPATH= cd -- "$(dirname -- "$environment_file")" && pwd)
+environment_file="$environment_directory/$(basename -- "$environment_file")"
+[ -f "$environment_file" ] && [ -f "$installation/bin/assozeta" ] || { printf 'Configured installation not found.\n' >&2; exit 1; }
+image="ghcr.io/carbogninalberto/assozeta-updater:$version"
+docker pull "$image"
+case "$environment_file" in
+    "$installation"/*)
+        exec docker run --rm -v "$installation:$installation" -v /var/run/docker.sock:/var/run/docker.sock \
+            "$image" /runner/bootstrap.py "$installation" "$environment_file" "$version"
+        ;;
+    *)
+        exec docker run --rm -v "$installation:$installation" -v "$environment_directory:$environment_directory" \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$image" /runner/bootstrap.py "$installation" "$environment_file" "$version"
+        ;;
+esac
