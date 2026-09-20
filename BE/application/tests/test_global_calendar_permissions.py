@@ -1,4 +1,8 @@
 from uuid import uuid4
+from types import SimpleNamespace
+from django.test import SimpleTestCase
+from rest_framework.exceptions import ValidationError
+from application.utils.global_calendar import mutate_events
 from django.utils import timezone
 from application.tests.base import BaseAPITestCase
 from application.tests.fixtures.factories import create_test_user, create_test_sport_association, create_test_course
@@ -8,6 +12,13 @@ from application.models import User, GlobalCalendarEvents, Reminders, Instructor
 def event(month=9, **extra):
     return dict(event_id=str(uuid4()), title='Session', start=f'2026-{month:02}-20T10:00:00Z',
                 end=f'2026-{month:02}-20T11:00:00Z', extendedProps={}, **extra)
+
+
+class CalendarPayloadValidationTests(SimpleTestCase):
+    def test_non_object_payload_returns_validation_error(self):
+        for payload in ([], None, 'invalid'):
+            with self.assertRaises(ValidationError):
+                mutate_events(SimpleNamespace(data=payload), [])
 
 
 class GlobalCalendarPermissionTests(BaseAPITestCase):

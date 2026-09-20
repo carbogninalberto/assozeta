@@ -23,6 +23,8 @@ def event_datetime(value):
 
 def mutate_events(request, existing):
     data = request.data
+    if not isinstance(data, dict):
+        raise ValidationError('Calendar payload must be an object.')
     action = data.get('action')
     incoming = data.get('events', [])
     if not isinstance(incoming, list) or any(not isinstance(e, dict) for e in incoming):

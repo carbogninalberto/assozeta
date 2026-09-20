@@ -711,19 +711,22 @@
                         el.setAttribute('data-placement', 'top');
 
                         if (info.event.extendedProps && info.event.extendedProps.description) {
+                            const description = document.createElement('div');
+                            description.className = 'ec-description';
+                            description.textContent = info.event.extendedProps.description;
                             if (info.view.type === 'dayGridMonth') {
                                 el.dataset.content = info.event.extendedProps.description;
                                 el.dataset.placement = 'top';
-                                UiApp.initPopover(el, { content: info.event.extendedProps.description, trigger: 'hover' });
+                                UiApp.initPopover(el, { content: description.innerHTML, trigger: 'hover' });
                             } else if (info.view.type.startsWith('timeGrid')) {
                                 var titleEl = el.querySelector('.ec-event-title');
                                 if (titleEl) {
-                                    titleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
+                                    titleEl.appendChild(description);
                                 }
                             } else {
                                 var listTitleEl = el.querySelector('.ec-event-title') || el.querySelector('.ec-list-item-title');
                                 if (listTitleEl) {
-                                    listTitleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
+                                    listTitleEl.appendChild(description);
                                 }
                             }
                         }
