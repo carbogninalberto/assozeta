@@ -26,8 +26,8 @@
             return;
         }
 
-        // Basic domain validation
-        const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$|^localhost$/;
+        // Allow digits and internal hyphens in every label before the top-level domain.
+        const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$|^localhost$/;
         if (!domainRegex.test(config.domain) && config.domain !== 'localhost') {
             // Allow IP addresses too
             const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;

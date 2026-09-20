@@ -78,24 +78,33 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
         fields = ['oem', 'oauth', 'stripe', 'meta', 'features', 'setup']
 
     def get_oem(self, obj):
+        logo_url = obj.logo_path or DEFAULT_LOGO_URL
+        if logo_url == CANONICAL_LOGO_URL:
+            logo_url = f'{logo_url}?v={obj.updated_at.strftime("%Y%m%d%H%M%S%f")}'
         return {
             'name': obj.name,
             'abbreviation': obj.abbreviation,
-            'logo': obj.logo_path or DEFAULT_LOGO_URL,
+            'logo': logo_url,
             'supportEmail': obj.support_email,
             'primaryColor': obj.primary_color,
             'displaySettings': obj.get_display_settings(),
         }
 
     def get_oauth(self, obj):
+        from .integration_configuration import effective_integration
+        google = effective_integration('google', obj)
+        apple = effective_integration('apple', obj)
         return {
-            'googleClientId': obj.google_client_id or None,
-            'appleClientId': obj.apple_client_id or None,
+            'googleClientId': ((google['client_id'] if google['source'] == 'instance' else obj.google_client_id or google['client_id']) or None) if google['enabled'] else None,
+            'appleClientId': ((apple['client_id'] if apple['source'] == 'instance' else obj.apple_client_id or apple['client_id']) or None) if apple['enabled'] else None,
+            'googleEnabled': google['enabled'] and (google['source'] == 'instance' or obj.get_display_settings().get('login', {}).get('allowOauthLogin', False)),
         }
 
     def get_stripe(self, obj):
+        from .integration_configuration import effective_integration
+        value = effective_integration('stripe', obj, decrypt=False)
         return {
-            'publicKey': getattr(settings, 'STRIPE_PUBLIC_KEY', '') or None,
+            'publicKey': (value['public_key'] or None) if value['enabled'] else None,
             'pricingTable': None,
             'clientPortal': None,
         }
@@ -130,7 +139,7 @@ class OEMInputSerializer(serializers.Serializer):
     """Input serializer for OEM configuration."""
     name = serializers.CharField(max_length=255)
     abbreviation = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
-    primaryColor = serializers.CharField(max_length=7, required=False, default='#351DC2')
+    primaryColor = serializers.RegexField(r'^#[0-9a-fA-F]{6}$', required=False, default='#351DC2')
     supportEmail = serializers.EmailField(required=False, allow_blank=True, default='')
 
 
@@ -235,6 +244,9 @@ class InstanceReconfigureSerializer(serializers.ModelSerializer):
         }
 
     def update(self, instance, validated_data):
+        # Limit writes to edited fields so branding cannot overwrite concurrent
+        # email settings or diagnostic results on the singleton row.
+        updated_fields = {'updated_at'}
         # Handle nested OEM data
         oem_data = validated_data.pop('oem', None)
         if oem_data:
@@ -242,12 +254,14 @@ class InstanceReconfigureSerializer(serializers.ModelSerializer):
             instance.abbreviation = oem_data.get('abbreviation', instance.abbreviation)
             instance.primary_color = oem_data.get('primaryColor', instance.primary_color)
             instance.support_email = oem_data.get('supportEmail', instance.support_email)
+            updated_fields.update({'name': 'name', 'abbreviation': 'abbreviation', 'primaryColor': 'primary_color', 'supportEmail': 'support_email'}[key] for key in oem_data)
 
         # Handle nested OAuth data (convert null to empty string for DB)
         oauth_data = validated_data.pop('oauth', None)
         if oauth_data:
             instance.google_client_id = oauth_data.get('googleClientId') or ''
             instance.apple_client_id = oauth_data.get('appleClientId') or ''
+            updated_fields.update(['google_client_id', 'apple_client_id'])
 
         # Handle nested Stripe data
         stripe_data = validated_data.pop('stripe', None)
@@ -260,6 +274,7 @@ class InstanceReconfigureSerializer(serializers.ModelSerializer):
         # Handle remaining fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+            updated_fields.add(attr)
 
-        instance.save()
+        instance.save(update_fields=sorted(updated_fields))
         return instance

@@ -26,6 +26,9 @@ export function applyRuntimeConfig(config) {
 
     if (config.oem) {
         __bakney.OEM_CONFIG = config.oem;
+        if (typeof document !== 'undefined' && /^#[0-9a-f]{6}$/i.test(config.oem.primaryColor || '')) {
+            document.documentElement.style.setProperty('--primary', config.oem.primaryColor);
+        }
     }
     if (config.oauth) {
         __bakney.CLIENT_ID = config.oauth.googleClientId || '';
@@ -197,6 +200,12 @@ export function clearInstanceCache() {
     } catch (e) {
         console.warn('Failed to clear instance cache:', e);
     }
+}
+
+export function saveRuntimeConfig(config) {
+    applyRuntimeConfig(config);
+    instanceConfig.set(config);
+    setCachedConfig(config);
 }
 
 /**
@@ -376,13 +385,13 @@ export async function saveInstanceConfig(config, setupToken = '') {
  * @param {string} setupToken - First-run setup token
  * @returns {Promise<Object>} - Response with logo URL
  */
-export async function uploadInstanceLogo(file, setupToken = '') {
+export async function uploadInstanceLogo(file, setupToken = '', ownerUpload = false) {
     const apiHost = getApiHost();
 
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(getEndpoint('INSTANCE', 'LOGO', apiHost), {
+    const response = await fetch(ownerUpload ? `${apiHost}/instance/admin/logo` : getEndpoint('INSTANCE', 'LOGO', apiHost), {
         method: 'POST',
         headers: getSetupTokenHeaders(setupToken),
         body: formData
@@ -392,6 +401,17 @@ export async function uploadInstanceLogo(file, setupToken = '') {
 
     if (!response.ok || !result.success || !result.logo_url) {
         throw new Error(result.error || result.detail || 'Logo upload failed');
+    }
+
+    const currentConfig = get(instanceConfig);
+    if (currentConfig) {
+        const updatedConfig = {
+            ...currentConfig,
+            oem: {...currentConfig.oem, logo: result.logo_url}
+        };
+        applyRuntimeConfig(updatedConfig);
+        instanceConfig.set(updatedConfig);
+        setCachedConfig(updatedConfig);
     }
 
     return result;

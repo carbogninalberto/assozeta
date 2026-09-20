@@ -1,6 +1,6 @@
 <script>
 	import { Table as LucideTable } from 'lucide-svelte';
-    import {onMount, onDestroy, afterUpdate} from 'svelte';
+    import {onMount, onDestroy} from 'svelte';
     import {Editor, Node} from '@tiptap/core';
     import StarterKit from '@tiptap/starter-kit';
     import Placeholder from '@tiptap/extension-placeholder';
@@ -88,12 +88,6 @@
         renderHTML() {
             return ['div', {class: 'page-break-before'}];
         },
-    });
-
-    afterUpdate(() => {
-        if (editor) {
-            value = editor.getHTML();
-        }
     });
 
     onMount(() => {

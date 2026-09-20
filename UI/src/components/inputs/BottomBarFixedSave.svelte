@@ -6,6 +6,7 @@
     const dispatch = createEventDispatcher();
 
     export let autoShow = false;
+    export let disabled = false;
     export let visible = true;
     export let customStyle = '';
     export let target = '#portal-elements';
@@ -40,7 +41,7 @@
             </div>
             <button
                 type="button"
-                disabled={saving}
+                disabled={saving || disabled}
                 class="btn btn-primary font-weight-boldest m-0 btn-always-text-visible"
                 on:click={async () => {
                     try {
