@@ -10,6 +10,7 @@ import logging
 import re
 from asgiref.sync import sync_to_async
 from datetime import date
+from django.db import close_old_connections
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -1114,7 +1115,15 @@ def create_mcp_server(sport_association_id: str) -> Server:
             # sync_to_async so they run in a thread instead of raising
             # SynchronousOnlyOperation inside the async MCP handler.
             async def _call(fn, **kwargs):
-                return await sync_to_async(fn)(**kwargs)
+                def invoke():
+                    # A stdio process has no HTTP request lifecycle to recycle
+                    # stale connections. Do this in the same thread as the ORM.
+                    close_old_connections()
+                    try:
+                        return fn(**kwargs)
+                    finally:
+                        close_old_connections()
+                return await sync_to_async(invoke)()
 
             if name == 'get_schema':
                 result = await _call(tool_get_schema, sport_association_id=sport_association_id, **arguments)
