@@ -13,6 +13,8 @@ from rest_framework.decorators import api_view, permission_classes
 from application.utils.attendance_utils import get_extended_prop_for_attendance_day, map_unlinked_attendance, \
     get_course_colors
 from core.middleware import IsAuthenticated
+from application.permissions_registry import check_collaborator_permission
+from application.utils.global_calendar import can_manage_events, event_datetime, mutate_events
 from rest_framework.permissions import AllowAny
 
 from application.models import AttendanceRegistry, AttendanceDay, GlobalCalendarEvents, Reminders
@@ -42,6 +44,7 @@ def calendar_update(request, uid):
     """
 
 
+    check_collaborator_permission(request)
     is_valid_uuid(uid)
 
     logger.info("calendar_update -> init -> user: {}".format(request.user.user_id))
@@ -722,6 +725,7 @@ def full_events_calendar(request):
     """
     API endpoint to get the attendance registry for the current course
     """
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -731,11 +735,12 @@ def full_events_calendar(request):
     get_lesson = request.query_params.get('get_lesson', 'true').lower() in ('true', 't', 'yes', 'y', '1')
     event_id = request.query_params.get('event_id', None)
     is_instructor = False
+    instructor_id = None
 
     if start is not None:
-        start = datetime.fromisoformat(start)
+        start = event_datetime(start)
     if end is not None:
-        end = datetime.fromisoformat(end)
+        end = event_datetime(end)
 
     sport_association = SportAssociation.objects.get(user=request.user)
     # get course subscriptions for the current subscription
@@ -745,7 +750,7 @@ def full_events_calendar(request):
 
     if hasattr(request, 'original_user') and request.original_user is not None and request.original_user.is_collaborator:
         # check if it's an instructor
-        instructor = Instructor.objects.filter(associated_user_id=str(request.original_user.user_id)).first()
+        instructor = Instructor.objects.filter(user=request.user, associated_user_id=str(request.original_user.user_id)).first()
         instructor_id = str(instructor.instructor_id) if instructor is not None else None
         if instructor_id is not None:
             is_instructor = True
@@ -764,13 +769,17 @@ def full_events_calendar(request):
     for registry in registries:
         if registry.events:
             for event in registry.events:
+                assigned = event.get('extendedProps', {}).get('instructor') or []
+                if isinstance(assigned, dict):
+                    assigned = [assigned]
+                if instructor_id and not any(isinstance(item, dict) and str(item.get('instructor_id')) == instructor_id for item in assigned):
+                    continue
                 if event_id is not None and event_id != event['event_id']:
                     continue
                 # apply filter by start and end date if present
                 if start is not None and end is not None:
                     # check if the event is in the range otherwise go to the next event
-                    if datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ') < start or \
-                            datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ') > end:
+                    if not start <= event_datetime(event['start']) < end:
                         continue
                     # filter attendance days by date
                     # registry_attendance_day = attendace_days.filter(
@@ -799,22 +808,17 @@ def full_events_calendar(request):
                 event['id'] = event['event_id']
                 events.append(event)
 
-    can_read_global_events = True
-    if hasattr(request, 'original_user') and request.original_user is not None and request.original_user.is_collaborator:
-        # collaborators only see global events if granted the events permission
-        can_read_global_events = 'association.events.read' in set(
-            request.original_user.collaborator_permissions or []
-        )
-
-    if can_read_global_events:
+    if can_manage_events(request, 'read'):
         global_calendar_events, _ = GlobalCalendarEvents.objects.get_or_create(sport_association=sport_association)
         if global_calendar_events.events:
             for event in global_calendar_events.events:
-                # compare if start date is before the end date and after the start date
-                if start is not None and end is not None:
-                    if start <= datetime.strptime(event['start'], '%Y-%m-%dT%H:%M:%S.%fZ') <= end:
-                        event['id'] = event['event_id']
-                        events.append(event)
+                if event_id is not None and event.get('event_id') != event_id:
+                    continue
+                event_start = event_datetime(event['start'])
+                if (start is not None and event_start < start) or (end is not None and event_start >= end):
+                    continue
+                event['id'] = event['event_id']
+                events.append(event)
 
     data = {
         'events': events,
@@ -825,19 +829,18 @@ def full_events_calendar(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@transaction.atomic
 def full_events_calendar_update(request):
-    data = request.data
-
-    if 'events' not in data.keys():
-        raise ValidationError("Missing or wrong events data.")
-
-    sport_association = SportAssociation.objects.get(user=request.user)
+    # Lock the association as well as existing rows so concurrent first writes
+    # cannot create duplicate calendars or lose an unrelated event.
+    sport_association = SportAssociation.objects.select_for_update().get(user=request.user)
     global_calendar_events, _ = GlobalCalendarEvents.objects.get_or_create(sport_association=sport_association)
-
-    global_calendar_events.events = data['events']
+    previous_ids = {event['event_id'] for event in global_calendar_events.events or []}
+    global_calendar_events.events = mutate_events(request, global_calendar_events.events or [])
 
     events_ids = [event['event_id'] for event in global_calendar_events.events]
-    reminders = Reminders.objects.filter(event_id__in=events_ids)
+    Reminders.objects.filter(sport_association=sport_association, event_id__in=previous_ids-set(events_ids)).delete()
+    reminders = Reminders.objects.filter(sport_association=sport_association, event_id__in=events_ids)
     # loop through events to update reminders
     for event in global_calendar_events.events:
         current_reminder = reminders.filter(event_id=event['event_id']).first()
@@ -855,7 +858,7 @@ def full_events_calendar_update(request):
             if 'extendedProps' in event.keys() and 'instructor' in event['extendedProps']:
                 try:
                     instructor_id = event['extendedProps']['instructor']['instructor_id']
-                    instructor = Instructor.objects.filter(instructor_id=instructor_id).first()
+                    instructor = Instructor.objects.filter(user=request.user, instructor_id=instructor_id).first()
                 except Exception as e:
                     logger.error(f"Error getting instructor: {e}")
 
@@ -888,7 +891,7 @@ def full_events_calendar_update(request):
             if 'extendedProps' in event.keys() and 'instructor' in event['extendedProps']:
                 try:
                     instructor_id = event['extendedProps']['instructor']['instructor_id']
-                    instructor = Instructor.objects.filter(instructor_id=instructor_id).first()
+                    instructor = Instructor.objects.filter(user=request.user, instructor_id=instructor_id).first()
                 except Exception as e:
                     logger.error(f"Error getting instructor: {e}")
 

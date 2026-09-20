@@ -61,7 +61,7 @@
         return COLOR_MAP[oldCls] || (oldCls.startsWith('ec-event-') ? oldCls : 'ec-event-solid-primary');
     }
 
-    async function saveCalendarDirectly(updateEvents, id) {
+    async function saveCalendarDirectly(updateEvents, id, action = 'update', eventId = null) {
         UiApp.blockPage({
             overlayColor: '#000000',
             state: 'primary',
@@ -85,7 +85,9 @@
             response = await apiFetch(__bakney.env.API.CALENDAR.UPDATE, {
                 method: 'POST',
                 body: JSON.stringify({
-                    events: events,
+                    action,
+                    event_id: eventId,
+                    events: events.filter(event => event.event_id === eventId),
                 }),
             });
         }
@@ -97,6 +99,7 @@
             await fetchInstructors();
             toast.success('Successo.', 'Calendario aggiornato con successo!');
         } else {
+            calendar.refetchEvents();
             toast.error('Qualcosa è andato storto.');
         }
     }
@@ -296,7 +299,7 @@
                             }
                         });
 
-                        saveCalendarDirectly(updatedEvents, null);
+                        saveCalendarDirectly(updatedEvents, null, 'create', event.id);
                     }
                 };
 
@@ -387,7 +390,7 @@
                     }],
 
                     dateClick: async function (dateClickInfo) {
-                        if (!canPerformAction('association.events.create')) return;
+                        if (!canPerformAction('association.events.create') && !canPerformAction('association.courses.update')) return;
                         openAddEventModal(dateClickInfo.dateStr);
                     },
 
@@ -400,7 +403,7 @@
                         const courseId = event.extendedProps?.course;
 
                         // global events require association.events.update
-                        if (!courseId && !canPerformAction('association.events.update')) {
+                        if (!canPerformAction(courseId ? 'association.courses.update' : 'association.events.update')) {
                             info.revert?.();
                             toast.error('Non hai i permessi per modificare gli eventi.');
                             return;
@@ -448,7 +451,7 @@
                                     reminder_unit: e.extendedProps.reminder_unit || null,
                                 },
                             }));
-                            saveCalendarDirectly(updatedEvents, null);
+                            saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                         }
                     },
 
@@ -457,7 +460,7 @@
                         const courseId = event.extendedProps?.course;
 
                         // global events require association.events.update
-                        if (!courseId && !canPerformAction('association.events.update')) {
+                        if (!canPerformAction(courseId ? 'association.courses.update' : 'association.events.update')) {
                             info.revert?.();
                             toast.error('Non hai i permessi per modificare gli eventi.');
                             return;
@@ -505,7 +508,7 @@
                                     reminder_unit: e.extendedProps.reminder_unit || null,
                                 },
                             }));
-                            saveCalendarDirectly(updatedEvents, null);
+                            saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                         }
                     },
 
@@ -635,7 +638,7 @@
                                     }
                                 });
 
-                                saveCalendarDirectly(updatedEvents, null);
+                                saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                             }
                         });
 
@@ -682,8 +685,7 @@
                                     return e.extendedProps?.course == null;
                                 });
 
-                                saveCalendarDirectly(updatedEvents, null);
-                                toast.success('Evento eliminato!');
+                                await saveCalendarDirectly([], null, 'delete', data.detail.id);
                             }
                             editEventModal.$destroy();
                         });
@@ -780,7 +782,7 @@
                         <h3 class="card-title font-size-h2">Eventi e Promemoria</h3>
                     </div>
                     <div class="card-toolbar m-0">
-                        {#if canPerformAction('association.events.create')}
+                        {#if canPerformAction('association.events.create') || canPerformAction('association.courses.update')}
                             <button
                                 type="button"
                                 on:click={() => openAddEventModal()}
@@ -791,7 +793,7 @@
                         {/if}
                     </div>
                     <div class="card-toolbar m-0 d-none d-md-flex">
-                        {#if canPerformAction('association.events.create')}
+                        {#if canPerformAction('association.events.create') || canPerformAction('association.courses.update')}
                             <button
                                 type="button"
                                 on:click={() => openAddEventModal()}

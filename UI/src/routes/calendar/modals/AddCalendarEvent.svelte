@@ -21,15 +21,12 @@
     // - edit of global event (course == null) -> association.events.*
     // - creation -> type is chosen inside the form (course select), so either
     //   courses.update or events.* must be held; entry points gate the rest.
-    const isCourseEvent = !!row?.extendedProps?.course;
-    const canSaveEvent = edit
-        ? (isCourseEvent
-            ? canPerformAction('association.courses.update')
-            : canPerformAction('association.events.update'))
-        : (canPerformAction('association.courses.update') ||
-            canPerformAction('association.events.create') ||
-            canPerformAction('association.events.update'));
-    const canDeleteEvent = edit
+    let selectedCourse = row?.extendedProps?.course || null;
+    $: isCourseEvent = !!selectedCourse;
+    $: canSaveEvent = isCourseEvent
+        ? canPerformAction('association.courses.update')
+        : canPerformAction(edit ? 'association.events.update' : 'association.events.create');
+    $: canDeleteEvent = edit
         ? (isCourseEvent
             ? canPerformAction('association.courses.update')
             : canPerformAction('association.events.delete'))
@@ -67,8 +64,9 @@
     }
 
     async function fetchCourses() {
+        if (!canPerformAction('association.courses.update')) return;
         let res = await apiFetch(__bakney.env.API.COURSE.LIST + '?all=1');
-        let response = res.response.data;
+        let response = res.response?.data || [];
         // convert the dict to an array
         response = Object.keys(response).map(key => response[key]);
         let tmpCourses = response || [];
@@ -86,6 +84,7 @@
     }
 
     async function save(data) {
+        if (!canSaveEvent) return;
         data.reminder_enabled = row.extendedProps.reminder_enabled || false;
         data.color = selectedColor?.value || selectedColor || 'ec-event-solid-primary';
         dispatch('save', data);
@@ -333,7 +332,7 @@
                                     <Select
                                         hideEmptyState={true}
                                         disabled={edit || !canPerformAction('association.courses.update')}
-                                        value={row.extendedProps?.course}
+                                        bind:value={selectedCourse}
                                         name="course"
                                         bind:items={courses}
                                         placeholder="Seleziona il corso" />
