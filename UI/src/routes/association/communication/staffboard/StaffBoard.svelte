@@ -143,6 +143,8 @@
                     {#if canPerformAction('association.communication.messages.create')}
                         <div class="form-group mb-8">
                             <textarea
+                                aria-label="Nuovo messaggio per lo staff"
+                                maxlength="10000"
                                 bind:value={newContent}
                                 class="form-control form-control-solid form-control-lg"
                                 rows="3"
@@ -219,6 +221,8 @@
                                     {#if editingId == message.staff_board_message_id}
                                         <div class="mt-4">
                                             <textarea
+                                                aria-label="Modifica messaggio per lo staff"
+                                                maxlength="10000"
                                                 bind:value={editingContent}
                                                 class="form-control form-control-solid"
                                                 rows="3"

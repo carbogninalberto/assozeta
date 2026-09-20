@@ -8,16 +8,20 @@
 
     let messages = [];
     let loading = true;
+    let failed = false;
 
     // show the widget only to users who can read the staff board;
     // keep the container card even without permission so layout does not break
     const canRead = canPerformAction('association.communication.messages.read');
 
     async function fetchData() {
+        loading = true;
+        failed = false;
         const res = await apiFetch(`${__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.LIST}`, {
             method: 'GET',
         });
         loading = false;
+        failed = !!res.error;
         if (!res.error) {
             // the endpoint wraps the list in {data: [...]}; be defensive about the shape
             const list = res.response?.data || res.response || [];
@@ -55,6 +59,11 @@
                 class="d-flex flex-column align-items-center justify-content-center m-auto"
                 style="margin: auto !important;">
                 <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        {:else if failed}
+            <div class="text-center p-4" role="alert">
+                <p>Impossibile caricare la bacheca.</p>
+                <button type="button" class="btn btn-sm btn-light-primary" on:click={fetchData}>Riprova</button>
             </div>
         {:else if messages.length === 0}
             <div

@@ -6,12 +6,13 @@ from rest_framework.response import Response
 
 from application.models.user_models import EmailLog, User
 from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions_registry import check_collaborator_permission
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
 from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
     CommunicationConfigurationPatchSerializer, PostSerializer, \
-    EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer, StaffBoardMessageSerializer
+    EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer, StaffBoardMessageSerializer, StaffBoardMessageInputSerializer
 from core.middleware import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
@@ -394,12 +395,13 @@ def staff_board_messages_list(request):
     Internal staff board: list all messages of the association, pinned first.
     Visible to admins and collaborators with association.communication.messages.read.
     """
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
     messages = StaffBoardMessage.objects.filter(
         sport_association=request.user.sport_association
-    )
+    ).select_related('author', 'sport_association')
 
     serializer = StaffBoardMessageSerializer(messages, many=True)
     return Response({'data': serializer.data}, status=status.HTTP_200_OK)
@@ -408,12 +410,13 @@ def staff_board_messages_list(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
 def staff_board_messages_add(request):
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
-    data = request.data
-    if not data.get('content') or not str(data.get('content')).strip():
-        return Response({'error': 'Il messaggio è obbligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+    payload = StaffBoardMessageInputSerializer(data=request.data)
+    payload.is_valid(raise_exception=True)
+    data = payload.validated_data
 
     # collaborators are swapped to their connected admin user by the middleware;
     # keep the real author on the board message. Superuser impersonation keeps
@@ -425,8 +428,8 @@ def staff_board_messages_add(request):
     message = StaffBoardMessage.objects.create(
         sport_association=request.user.sport_association,
         author=author,
-        content=str(data.get('content')).strip(),
-        pinned=bool(data.get('pinned', False)),
+        content=data['content'],
+        pinned=data.get('pinned', False),
     )
 
     serializer = StaffBoardMessageSerializer(message)
@@ -436,6 +439,7 @@ def staff_board_messages_add(request):
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
 def staff_board_messages_update(request, staff_board_message_id):
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -449,13 +453,13 @@ def staff_board_messages_update(request, staff_board_message_id):
     if not message:
         return Response({'error': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    data = request.data
+    payload = StaffBoardMessageInputSerializer(data=request.data, partial=True)
+    payload.is_valid(raise_exception=True)
+    data = payload.validated_data
     if 'content' in data:
-        if not str(data.get('content')).strip():
-            return Response({'error': 'Il messaggio è obbligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
-        message.content = str(data.get('content')).strip()
+        message.content = data['content']
     if 'pinned' in data:
-        message.pinned = bool(data.get('pinned'))
+        message.pinned = data['pinned']
 
     message.save()
 
@@ -466,6 +470,7 @@ def staff_board_messages_update(request, staff_board_message_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
 def staff_board_messages_delete(request, staff_board_message_id):
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 

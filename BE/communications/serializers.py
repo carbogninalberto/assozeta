@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from django.utils.html import escape
-from application.models import SportAssociation
 from application.utils.api_utils import check_email
 from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 
@@ -115,7 +114,6 @@ class AutomationWorkflowSerializer(serializers.ModelSerializer):
 
 class StaffBoardMessageSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField(read_only=True)
-    content = serializers.SerializerMethodField(read_only=True)
 
     def get_author_name(self, obj):
         if obj.author is None:
@@ -125,13 +123,9 @@ class StaffBoardMessageSerializer(serializers.ModelSerializer):
             return full_name
         # association admin accounts often have generated usernames (hash-like);
         # fall back to the association denomination for a readable name
-        sport_association = SportAssociation.objects.filter(user=obj.author).first()
-        if sport_association:
-            return sport_association.denomination
+        if obj.sport_association.user_id == obj.author_id:
+            return obj.sport_association.denomination
         return obj.author.username
-
-    def get_content(self, obj):
-        return escape(obj.content)
 
     class Meta:
         model = StaffBoardMessage
@@ -145,3 +139,13 @@ class StaffBoardMessageSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
+
+
+class StaffBoardMessageInputSerializer(serializers.Serializer):
+    content = serializers.CharField(max_length=10000, allow_blank=False)
+    pinned = serializers.BooleanField(required=False)
+
+    def validate_content(self, value):
+        if not isinstance(self.initial_data.get('content'), str):
+            raise serializers.ValidationError('Il messaggio deve essere un testo.')
+        return value
