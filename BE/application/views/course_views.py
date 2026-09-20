@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from application.permissions_registry import check_collaborator_permission
 
 from application.models import AttendanceRegistry
 from application.serializers.payment_serializers import PaymentSerializer
@@ -475,6 +476,7 @@ def course_tags_unassign(request, tag_id, course_id):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def course_list(request):
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         sport_association_id = request.GET.get('sport_association_id', None)
         if sport_association_id is None:
