@@ -278,7 +278,7 @@
             </div>
             <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
                 {#if canPerformAction('association.members.create')}
-                    <button
+                    <button aria-label="Aggiungi iscrizione" style="min-width: 44px; min-height: 44px;"
                         class="btn btn-sm btn-primary font-weight-bolder d-flex align-items-center"
                         on:click={async () => {
                             let associate = await fetchData();

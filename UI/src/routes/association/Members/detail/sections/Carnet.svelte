@@ -398,7 +398,7 @@
             </h3>
         </div>
         <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
-            <button
+            <button aria-label="Assegna carnet" style="min-width: 44px; min-height: 44px;"
                 disabled={!canPerformAction('association.carnet.create')}
                 on:click={() => {
                     let addCarnetModal = new AddCarnetModal({

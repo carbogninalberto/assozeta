@@ -428,7 +428,7 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
             </div>
             <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
                 {#if canPerformAction('bookeeping.payments.create')}
-                    <button
+                    <button aria-label="Aggiungi pagamento" style="min-width: 44px; min-height: 44px;"
                         on:click={() => {
                             let addModal = new AddEditModal({
                                 target: document.querySelector(`#portal-elements-foreground`),

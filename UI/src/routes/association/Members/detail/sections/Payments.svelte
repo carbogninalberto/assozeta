@@ -900,7 +900,7 @@
             </div>
             <div class="col-4 col-md-2 d-flex justify-content-end px-0">
                 {#if !info.archived && canPerformAction('bookeeping.payments.create')}
-                    <button
+                    <button aria-label="Aggiungi pagamento" style="min-width: 44px; min-height: 44px;"
                         on:click={() => {
                             // perform tasks
 
