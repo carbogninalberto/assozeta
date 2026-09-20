@@ -15,6 +15,7 @@ from rest_framework.decorators import api_view, permission_classes
 from application.models.courses_models import Course, CourseSubscription, CourseSubscriptionInstallment
 from application.models.payment_models import PaymentCategory, Payment
 from application.utils.instructors_utils import get_report, get_instructor_lessons_hours
+from application.permissions_registry import check_collaborator_permission
 from core.middleware import IsAuthenticated
 from application.models.user_models import SportAssociation, Instructor, InstructorHours, User
 
@@ -116,6 +117,7 @@ def instructor_add(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def instructor_info(request, uid):
+    check_collaborator_permission(request)
 
     logger.info("instructor_info -> init -> user: {}".format(request.user.user_id))
 
@@ -137,6 +139,10 @@ def instructor_info(request, uid):
         requesting_association = None
     if requesting_association is None or instructor_association is None or \
             str(instructor_association.sport_association_id) != str(requesting_association.sport_association_id):
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+    original_user = getattr(request, 'original_user', request.user)
+    own = Instructor.objects.filter(user=request.user, associated_user_id=original_user.pk).first()
+    if own is not None and own.pk != instructor.pk:
         return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
 
     data = InstructorSerializer(instructor).data
@@ -170,7 +176,7 @@ def instructor_info(request, uid):
     else:
         # extract hours of this month
         start_date = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end_date = datetime.datetime.now().replace(day=1, month=datetime.datetime.now().month + 1, hour=0, minute=0, second=0, microsecond=0)
+        end_date = (start_date + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
     # format date to be YYYY-MM-DD
     start_date = start_date.strftime('%Y-%m-%d')
     end_date = end_date.strftime('%Y-%m-%d')
@@ -629,6 +635,7 @@ def instructor_lessons_hours(request, uid=None):
     Query params:
         start_date, end_date: optional DD/MM/YYYY period filter
     """
+    check_collaborator_permission(request)
     user = request.user
 
     # Resolve the association of the requesting user (owner account)
@@ -639,9 +646,8 @@ def instructor_lessons_hours(request, uid=None):
 
     # Resolve the requesting user's own instructor profile, if any
     original_user_id = getattr(getattr(request, 'original_user', None), 'user_id', None) or user.user_id
-    requesting_instructor = Instructor.objects.filter(
-        associated_user_id=str(original_user_id),
-    ).first()
+    requesting_instructor = Instructor.objects.filter(associated_user_id=original_user_id,
+        **({'user': user} if sport_association is not None else {})).first()
 
     # Parse optional period
     start_date = request.GET.get('start_date', None)
@@ -650,21 +656,29 @@ def instructor_lessons_hours(request, uid=None):
     period_start = period_end = None
     if start_date:
         try:
-            period_start = parser.parse(start_date, dayfirst=True)
+            period_start = datetime.datetime.strptime(start_date, '%d/%m/%Y').replace(tzinfo=datetime.timezone.utc)
         except (ValueError, OverflowError):
             return Response({'error': 'Invalid start_date'}, status=status.HTTP_400_BAD_REQUEST)
     if end_date:
         try:
-            period_end = parser.parse(end_date, dayfirst=True)
+            period_end = datetime.datetime.strptime(end_date, '%d/%m/%Y').replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(days=1)
         except (ValueError, OverflowError):
             return Response({'error': 'Invalid end_date'}, status=status.HTTP_400_BAD_REQUEST)
 
     is_association = user.role == User.ASSOCIATION
     is_collaborator = user.role == User.COLLABORATOR
-    can_read_all = (is_association or is_collaborator) and sport_association is not None
+    if period_start and period_end and period_start >= period_end:
+        return Response({'error': 'Invalid date range'}, status=status.HTTP_400_BAD_REQUEST)
+    can_read_all = (is_association or is_collaborator) and sport_association is not None and requesting_instructor is None
+
+    from application.models import AttendanceRegistry
+    registries_by_association = {}
 
     def serialize(instructor, association_id):
-        item = get_instructor_lessons_hours(instructor, association_id, period_start, period_end)
+        if association_id not in registries_by_association:
+            registries_by_association[association_id] = list(AttendanceRegistry.objects.filter(
+                course__sport_association_id=association_id, status=AttendanceRegistry.PUBLISHED).select_related('course'))
+        item = get_instructor_lessons_hours(instructor, association_id, period_start, period_end, registries_by_association[association_id])
         item['instructor_id'] = str(instructor.instructor_id)
         item['first_name'] = instructor.first_name
         item['last_name'] = instructor.last_name
@@ -685,7 +699,7 @@ def instructor_lessons_hours(request, uid=None):
             association_id = sport_association.sport_association_id
         else:
             # non-admin users: only their own instructor profile
-            if requesting_instructor is None or str(requesting_instructor.instructor_id) != uid:
+            if requesting_instructor is None or str(requesting_instructor.instructor_id) != str(uid):
                 return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
             # the instructor's owner user carries the association scope
             instructor_association = SportAssociation.objects.filter(user=instructor.user).first()

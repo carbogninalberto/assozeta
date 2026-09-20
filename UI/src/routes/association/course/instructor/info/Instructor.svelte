@@ -29,6 +29,9 @@
 
     let data = {};
     let lessonsData = null;
+    let lessonsLoading = true;
+    let lessonsError = false;
+    let lessonsRequest = 0;
     let loading = true;
     let visibleMultiaction = false;
     let selectedCounter = 0;
@@ -370,15 +373,24 @@
     }
 
     async function fetchLessonsHours() {
-        const response = await apiFetch(
+        const requestId = ++lessonsRequest;
+        lessonsLoading = true;
+        lessonsError = false;
+        await apiFetch(
             `${replaceUID(__bakney.env.API.INSTRUCTOR.LESSONS_HOURS, id)}?start_date=${currentFilterStart}&end_date=${currentFilterEnd}`,
             {
                 method: 'GET',
             }
         ).then(res => {
+            if (requestId !== lessonsRequest) return;
+            lessonsError = !!res.error;
             lessonsData = res.response?.data || null;
         }).catch(() => {
+            if (requestId !== lessonsRequest) return;
+            lessonsError = true;
             lessonsData = null;
+        }).finally(() => {
+            if (requestId === lessonsRequest) lessonsLoading = false;
         });
     }
 
@@ -440,7 +452,7 @@
                                 <div class="card-body p-4">
                                     <div class="mb-0">
                                         <h6 class="font-weight-boldest text-center mb-0" style="font-size: 1rem;">
-                                            ORE LEZIONE
+                                            ORE A CALENDARIO
                                             <br />
                                         </h6>
                                     </div>
@@ -448,13 +460,13 @@
                                         class="text-center font-weight-bolder text-primary"
                                         style="font-size: 1.75rem;">
                                         <span class="text-primary"
-                                            title="Ore di lezione tenute secondo il calendario dei corsi"
-                                            >{Number(lessonsData?.total_hours || 0).toLocaleString('it-IT', {
+                                            title="Durata delle lezioni pubblicate nel periodo, incluse quelle future; non certifica la presenza"
+                                            >{lessonsLoading ? '…' : lessonsError ? 'Non disponibili' : Number(lessonsData?.total_hours || 0).toLocaleString('it-IT', {
                                                 maximumFractionDigits: 2,
                                                 minimumFractionDigits: 2,
                                             })}</span>
                                     </div>
-                                    {#if lessonsData?.courses?.length}
+                                    {#if !lessonsLoading && !lessonsError && lessonsData?.courses?.length}
                                         <div class="text-center text-muted font-size-sm">
                                             {lessonsData.lessons_count} lezioni ·
                                             {#each lessonsData.courses as c, i}

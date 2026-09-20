@@ -175,3 +175,39 @@ class InstructorLessonsHoursTests(BaseTransactionTestCase):
         self.assertEqual(data['lessons_count'], 0)
         self.assertEqual(float(data['total_hours']), 0.0)
         self.assertEqual(data['courses'], [])
+
+    def test_naive_dates_and_last_day_are_included(self):
+        self._create_registry([
+            make_lesson_event(self.instructor.pk, '2026-09-30T18:00:00', '2026-09-30T20:00:00'),
+            make_lesson_event(self.instructor.pk, '2026-10-01T00:00:00Z', '2026-10-01T01:00:00Z'),
+        ])
+        response = self.client.get(f'/instructor/{self.instructor.pk}/lessons-hours', {'start_date':'01/09/2026','end_date':'30/09/2026'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['data']['total_hours'], 2)
+
+    def test_drafts_malformed_events_and_negative_durations(self):
+        event = make_lesson_event(self.instructor.pk, '2026-09-01T18:00:00Z', '2026-09-01T20:00:00Z')
+        AttendanceRegistry.objects.create(course=self.course, status=AttendanceRegistry.DRAFT, events=[event])
+        self._create_registry([None, 'invalid', {'start': None}, {**event,'extendedProps':[]},
+            {**event,'extendedProps':{'instructor':['invalid']}}, {**event,'end':event['start']}, event])
+        response = self.client.get(f'/instructor/{self.instructor.pk}/lessons-hours')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['data']['total_hours'], 2)
+
+    def test_invalid_and_reversed_dates(self):
+        for params in ({'start_date':'invalid'}, {'end_date':'31/02/2026'}, {'start_date':'02/09/2026','end_date':'01/09/2026'}):
+            self.assertEqual(self.client.get('/instructor/lessons-hours', params).status_code, 400)
+
+    def test_instructor_collaborator_cannot_read_other_instructor(self):
+        collaborator = create_test_user(role=User.COLLABORATOR, connected_user=self.user,
+            collaborator_role=User.CUSTOM_COLLABORATOR_ROLE, collaborator_permissions=['association.instructor.read'])
+        self.instructor.associated_user_id = collaborator.pk
+        self.instructor.save()
+        other = create_lessons_hours_instructor(self.user)
+        self.client.force_authenticate(user=collaborator)
+        self.assertEqual(self.client.get(f'/instructor/{other.pk}/lessons-hours').status_code, 403)
+        self.assertEqual(self.client.get(f'/instructor/{other.pk}/info').status_code, 403)
+        self.assertEqual(self.client.get('/instructor/lessons-hours').json()['data']['instructor_id'], str(self.instructor.pk))
+        collaborator.collaborator_permissions = []
+        collaborator.save()
+        self.assertEqual(self.client.get('/instructor/lessons-hours').status_code, 403)

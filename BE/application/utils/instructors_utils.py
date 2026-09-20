@@ -14,7 +14,7 @@ from typing import Optional, Union
 logger = logging.getLogger(__name__)
 
 
-def get_instructor_lessons_hours(instructor, sport_association_id, start_date=None, end_date=None):
+def get_instructor_lessons_hours(instructor, sport_association_id, start_date=None, end_date=None, registries=None):
     """
     Compute lesson hours for an instructor from the course calendar.
 
@@ -27,12 +27,12 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
         instructor: Instructor instance
         sport_association_id: UUID of the scoping sport association
         start_date: optional tz-aware datetime, inclusive lower bound (UTC)
-        end_date: optional tz-aware datetime, inclusive upper bound (UTC)
+        end_date: optional tz-aware datetime, exclusive upper bound (UTC)
 
     Returns:
         dict with:
-            total_hours: Decimal (2 dp) sum of lesson durations
-            lessons_count: number of lessons taught
+            total_hours: rounded sum of published calendar durations within the period
+            lessons_count: number of scheduled lessons overlapping the period
             courses: list of {course_id, course_title, lessons_count, hours}
     """
     from datetime import datetime, timezone as dt_timezone
@@ -42,19 +42,29 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
     lessons_count = 0
     courses_map = {}
 
-    registries = AttendanceRegistry.objects.filter(
-        course__sport_association_id=sport_association_id,
-    ).select_related('course')
+    if registries is None:
+        registries = AttendanceRegistry.objects.filter(
+            course__sport_association_id=sport_association_id,
+            status=AttendanceRegistry.PUBLISHED,
+        ).select_related('course')
+
+    def aware(value):
+        return value.replace(tzinfo=dt_timezone.utc) if value.tzinfo is None else value
+
+    start_date = aware(start_date) if start_date is not None else None
+    end_date = aware(end_date) if end_date is not None else None
 
     for registry in registries:
         course = registry.course
         course_hours = 0
         course_lessons = 0
 
-        for event in registry.events or []:
+        for event in registry.events if isinstance(registry.events, list) else []:
+            if not isinstance(event, dict) or event.get('allDay'):
+                continue
             try:
-                event_start = datetime.fromisoformat(event['start'].replace('Z', '+00:00'))
-                event_end = datetime.fromisoformat(event['end'].replace('Z', '+00:00'))
+                event_start = aware(datetime.fromisoformat(event['start'].replace('Z', '+00:00')))
+                event_end = aware(datetime.fromisoformat(event['end'].replace('Z', '+00:00')))
             except (KeyError, AttributeError, ValueError, TypeError):
                 logger.warning(
                     "Skipping calendar event with invalid start/end in registry %s",
@@ -63,25 +73,23 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
                 continue
 
             if start_date is not None:
-                if start_date.tzinfo is None:
-                    start_date = start_date.replace(tzinfo=dt_timezone.utc)
-                if event_end < start_date:
+                if event_end <= start_date:
                     continue
             if end_date is not None:
-                if end_date.tzinfo is None:
-                    end_date = end_date.replace(tzinfo=dt_timezone.utc)
-                if event_start > end_date:
+                if event_start >= end_date:
                     continue
 
-            instructors = (event.get('extendedProps') or {}).get('instructor')
+            props = event.get('extendedProps')
+            instructors = props.get('instructor') if isinstance(props, dict) else None
             if instructors is None:
                 continue
             if isinstance(instructors, dict):
                 instructors = [instructors]
-            if not any(str(inst.get('instructor_id')) == instructor_id for inst in instructors):
+            if not isinstance(instructors, list) or not any(isinstance(inst, dict) and str(inst.get('instructor_id')) == instructor_id for inst in instructors):
                 continue
 
-            duration = (event_end - event_start).total_seconds()
+            duration = (min(event_end, end_date) if end_date else event_end) - (max(event_start, start_date) if start_date else event_start)
+            duration = duration.total_seconds()
             if duration <= 0:
                 continue
 
@@ -89,15 +97,19 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
             course_lessons += 1
 
         if course_lessons:
-            courses_map[course.course_id] = {
+            entry = courses_map.setdefault(course.course_id, {
                 'course_id': str(course.course_id),
                 'course_title': course.title,
-                'lessons_count': course_lessons,
-                'hours': round(course_hours / 3600, 2),
-            }
+                'lessons_count': 0,
+                'seconds': 0,
+            })
+            entry['lessons_count'] += course_lessons
+            entry['seconds'] += course_hours
             total_seconds += course_hours
             lessons_count += course_lessons
 
+    for entry in courses_map.values():
+        entry['hours'] = round(entry.pop('seconds') / 3600, 2)
     return {
         'total_hours': round(total_seconds / 3600, 2),
         'lessons_count': lessons_count,
