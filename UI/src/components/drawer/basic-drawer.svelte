@@ -133,6 +133,7 @@
     export let closeOnClickOutside = true;
     export let closeOnEsc = true;
     export let title = '';
+    export let modalChild = false;
 
     let drawer;
     let backdrop;
@@ -143,6 +144,7 @@
 
     function handleKeydown(event) {
         if (closeOnEsc && event.key === 'Escape' && isOpen) {
+            if (modalChild) event.stopPropagation();
             close();
         }
     }
@@ -210,6 +212,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
         class="drawer-backdrop"
+        data-modal-child={modalChild || undefined}
         on:click={handleBackdropClick}
         bind:this={backdrop}
         transition:fly={{duration: 200, opacity: 0}}>

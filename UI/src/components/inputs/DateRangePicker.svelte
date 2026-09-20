@@ -279,6 +279,7 @@
     // ---- Escape / click-outside ----
     function handleGlobalKeydown(e) {
         if (e.key === 'Escape' && open) {
+            e.stopPropagation();
             cancelPanel();
         }
     }
@@ -367,7 +368,7 @@
             class="drp-panel"
             bind:this={panelEl}
             style={panelStyle}
-            on:keydown={(e) => { if (e.key === 'Escape') cancelPanel(); }}
+            on:keydown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); cancelPanel(); } }}
         >
             <div class="drp-panel-body">
                 {#if showPresets}
@@ -410,6 +411,7 @@
 <!-- ===== MOBILE DRAWER ===== -->
 {#if isMobile}
     <BasicDrawer
+        modalChild={true}
         bind:isOpen={open}
         position="bottom"
         title="Seleziona periodo"

@@ -8,6 +8,7 @@
         SmartMultiSelect,
     } from 'components/formBuilder/preview-blocks/index.js';
     import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
+    import {membershipDisplayDate, membershipBillingDates} from 'utils/membershipDates.js';
     import {getDataFromForm} from 'utils/Functions.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
     import {toast} from 'svelte-sonner';
@@ -27,26 +28,17 @@
     let availableAssociates = [];
 
     async function prepareJSONData(formData) {
-        console.log(formData);
-        if (info.billed_duration_is_sport_season) {
-            formData.billed_until = moment(formData.billed_until, 'DD/MM/YYYY').format('YYYY-MM-DD');
-            formData.billed_frequency = 12;
-        } else {
-            formData.billed_frequency = JSON.parse(formData.billed_frequency)?.value || null;
-            if (!info.billed_from_subscription_date) {
-                formData.billed_from_day_of_month = JSON.parse(formData.billed_from_day_of_month)?.value || null;
+        try {
+            const frequency = info.billed_duration_is_sport_season ? 12 : JSON.parse(formData.billed_frequency || 'null')?.value;
+            Object.assign(formData, membershipBillingDates({from: formData.billed_from,
+                until: formData.billed_until, seasonal: info.billed_duration_is_sport_season, frequency}));
+            if (!info.billed_duration_is_sport_season && !info.billed_from_subscription_date) {
+                formData.billed_from_day_of_month = JSON.parse(formData.billed_from_day_of_month || 'null')?.value || null;
             }
-            formData.billed_until = moment(formData.billed_from, 'DD/MM/YYYY')
-                .add(formData.billed_frequency, 'months')
-                .format('YYYY-MM-DD');
-        }
-
-        const billedFromMoment = moment(formData.billed_from, 'DD/MM/YYYY', true);
-        if (!billedFromMoment.isValid()) {
-            toast.error('Data inizio abbonamento non valida: ricontrolla il periodo selezionato.');
+        } catch (error) {
+            toast.error(error.message);
             return null;
         }
-        formData.billed_from = billedFromMoment.format('YYYY-MM-DD');
 
         formData.auto_renewal = formData.auto_renewal === 'on' ? true : false;
         formData.membership_active = formData.membership_active === 'on' ? true : false;
@@ -180,9 +172,7 @@
 
     $: currentYear = new Date().getFullYear();
     $: currentMonth = new Date().getMonth() + 1;
-    $: defaultBilledFrom = data?.billed_from
-        ? moment(data.billed_from, 'YYYY-MM-DD').format('DD/MM/YYYY')
-        : info?.billed_duration_is_sport_season
+    $: defaultBilledFrom = info?.billed_duration_is_sport_season
             ? moment(
                 `${$userData.subscription_start_day}/${$userData.subscription_start_month}/${currentYear}`,
                 'DD/MM/YYYY'
@@ -207,14 +197,8 @@
     // mentre defaultBilledFrom/defaultBilledUntil sono gia' DD/MM/YYYY.
     // NON riparsare mai i default con 'YYYY-MM-DD': il parsing non-strict di moment
     // su "01/09/2026" produceva 2001-09-20 (date fantasma negli abbonamenti).
-    $: parsedBilledFrom = data?.billed_from ? moment(data.billed_from, 'YYYY-MM-DD') : null;
-    $: normalizedBilledFrom = parsedBilledFrom && parsedBilledFrom.isValid()
-        ? parsedBilledFrom.format('DD/MM/YYYY')
-        : defaultBilledFrom;
-    $: parsedBilledUntil = data?.billed_until ? moment(data.billed_until, 'YYYY-MM-DD') : null;
-    $: normalizedBilledUntil = parsedBilledUntil && parsedBilledUntil.isValid()
-        ? parsedBilledUntil.format('DD/MM/YYYY')
-        : defaultBilledUntil;
+    $: normalizedBilledFrom = membershipDisplayDate(data?.billed_from, defaultBilledFrom);
+    $: normalizedBilledUntil = membershipDisplayDate(data?.billed_until, defaultBilledUntil);
 </script>
 
 <div>
@@ -347,8 +331,8 @@
                                 sizeClass="form-control-lg"
                                 startPlaceholder="Data inizio"
                                 endPlaceholder={info.billed_duration_is_sport_season ? 'Data fine' : 'Data fine (auto)'}
-                                startValue={defaultBilledFrom}
-                                endValue={defaultBilledUntil}
+                                startValue={normalizedBilledFrom}
+                                endValue={normalizedBilledUntil}
                                 on:change={e => {
                                     data.billed_from = e.detail.start
                                         ? moment(e.detail.start, 'DD/MM/YYYY').format('YYYY-MM-DD')
