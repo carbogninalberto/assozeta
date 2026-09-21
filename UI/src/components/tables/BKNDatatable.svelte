@@ -1147,7 +1147,11 @@
                                                 <span />
                                             </label>
                                         {:else if !isColumnHiddenAtViewport(column, viewportWidth)}
-                                            {@html renderCell(column, row)}
+                                            {#if column.component}
+                                                <svelte:component this={column.component} {row} {datatable} />
+                                            {:else}
+                                                {@html renderCell(column, row)}
+                                            {/if}
                                         {/if}
                                     </span>
                                 </span>
@@ -1174,7 +1178,11 @@
                                                     {detailColumn.title || detailColumn.field || ''}
                                                 </span>
                                                 <span class="datatable-detail-value">
-                                                    {@html renderCell(detailColumn, row)}
+                                                    {#if detailColumn.component}
+                                                        <svelte:component this={detailColumn.component} {row} {datatable} />
+                                                    {:else}
+                                                        {@html renderCell(detailColumn, row)}
+                                                    {/if}
                                                 </span>
                                             </div>
                                         {/if}

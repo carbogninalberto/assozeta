@@ -6,6 +6,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     import Portal from 'svelte-portal';
     import PermissionsComponent from 'components/PermissionsComponent.svelte';
     import {onMount} from 'svelte';
+    import {hideModal} from 'shim/modal.js';
     import {toast} from 'svelte-sonner';
     export let id;
     export let row;
@@ -39,7 +40,8 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
         }
 
         if (res.status == 200) {
-datatable.reload();
+            hideModal(`editModal-${id}`);
+            datatable.reload();
             toast.success('Collaboratore con successo.');
         } else {
             swal.fire({
