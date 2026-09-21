@@ -47,7 +47,16 @@ def rehearse(source, target, revision, browser=False):
     installation.mkdir()
     project = f'assozeta-release-quality-{uuid4().hex[:10]}'
     env_file = installation / '.env'
-    environment = {**os.environ, 'ASSOZETA_ENV_FILE': str(env_file), 'ASSOZETA_SELFHOST_DIR': str(installation)}
+    environment = {
+        **os.environ,
+        'ASSOZETA_ENV_FILE': str(env_file),
+        'ASSOZETA_SELFHOST_DIR': str(installation),
+        # The updater Compose file declares these as required external-volume
+        # variables. The lifecycle CLI normally exports them; this rehearsal
+        # invokes Compose directly for its image-identity assertion and cleanup.
+        'ASSOZETA_UPDATER_API_VOLUME': f'{project}_updater_api',
+        'ASSOZETA_UPDATER_STATUS_VOLUME': f'{project}_updater_status',
+    }
     log = directory / 'execution.log'
     log.touch(mode=0o600)
     host, port = docker_host(), free_port()
