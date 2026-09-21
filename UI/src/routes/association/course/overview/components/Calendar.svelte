@@ -15,6 +15,8 @@
     import Select from 'svelte-select';
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
+    import {querystring} from 'svelte-spa-router';
+    import {openCalendarLesson} from 'utils/calendarLessonNavigation.js';
     import DateInput from 'components/inputs/DateInput.svelte';
     import { UiApp } from 'shim/ui.js';
     import {normalizeCalendarEvents, serializeCalendarEvents} from 'utils/eventCalendar.js';
@@ -76,6 +78,98 @@
         } else {
             toast.error('Qualcosa è andato storto.');
         }
+    }
+
+    let linkedEventHandled = null;
+    let calendarReady = false;
+    let calendarDestroyed = false;
+    let calendarLoad = 0;
+
+    $: if (calendarReady && $querystring) openLinkedLesson($querystring);
+
+    function openLinkedLesson(query) {
+        const eventId = new URLSearchParams(query).get('event_id');
+        if (!eventId || linkedEventHandled === eventId) return;
+        linkedEventHandled = eventId;
+        if (!openCalendarLesson(calendar, eventId, openLessonDetail)) {
+            toast.error('La lezione non è più disponibile nel calendario.');
+        }
+    }
+
+    function openLessonDetail(event) {
+        let editEventModal = new EditCalendarEvent({
+            target: document.querySelector(`body`),
+            intro: true,
+            props: {
+                row: event,
+                instructors: instructors,
+            },
+        });
+        editEventModal.$on('save', async data => {
+            event.title = data.detail.event_title;
+            event.extendedProps.description = data.detail?.description;
+            try {
+                event.extendedProps.instructor = JSON.parse(data.detail?.instructor);
+            } catch (e) {
+                event.extendedProps.instructor = data.detail?.instructor;
+            }
+
+            calendar.updateEvent(event);
+            let updatedEvents = calendar.getEvents();
+            await saveCalendarDirectly(updatedEvents);
+
+            dispatch('refresh');
+        });
+
+        editEventModal.$on('close', () => {
+            editEventModal.$destroy();
+        });
+
+        editEventModal.$on('delete', async data => {
+            swal.fire({
+                text: `Sei sicuro di procedere all'eliminazione? Saranno eliminate anche le presenze.`,
+                icon: 'warning',
+                showCancelButton: true,
+                buttonsStyling: false,
+                confirmButtonText: 'Elimina',
+                cancelButtonText: 'Annulla',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'btn font-weight-bold btn-light-danger',
+                    cancelButton: 'btn font-weight-bold btn-light-primary',
+                },
+            }).then(async function (result) {
+                if (result.value) {
+                    UiApp.blockPage({
+                        overlayColor: '#000000',
+                        state: 'primary',
+                        message: 'Eliminazione in corso...',
+                    });
+
+                    const response = await apiFetch(
+                        replaceUID(__bakney.env.API.COURSE.CALENDAR_UPDATE, id),
+                        {
+                            method: 'DELETE',
+                            body: JSON.stringify({
+                                event_id: event.id,
+                                before: data.detail.before,
+                                groupId: data.detail.groupId,
+                            }),
+                        }
+                    );
+
+                    UiApp.unblockPage();
+
+                    if (!response.error) {
+                        await initPage();
+                        toast.success('Evento eliminato!');
+                    } else {
+                        toast.error('Qualcosa è andato storto.');
+                    }
+                    dispatch('refresh');
+                }
+            });
+        });
     }
 
     function initCalendar() {
@@ -155,80 +249,7 @@
                     addEventModal.$destroy();
                 });
             },
-            eventClick: async function (info) {
-                let editEventModal = new EditCalendarEvent({
-                    target: document.querySelector(`body`),
-                    intro: true,
-                    props: {
-                        row: info.event,
-                        instructors: instructors,
-                    },
-                });
-                editEventModal.$on('save', async data => {
-                    info.event.title = data.detail.event_title;
-                    info.event.extendedProps.description = data.detail?.description;
-                    try {
-                        info.event.extendedProps.instructor = JSON.parse(data.detail?.instructor);
-                    } catch (e) {
-                        info.event.extendedProps.instructor = data.detail?.instructor;
-                    }
-
-                    let updatedEvents = calendar.getEvents();
-                    await saveCalendarDirectly(updatedEvents);
-
-                    dispatch('refresh');
-                });
-
-                editEventModal.$on('close', () => {
-                    editEventModal.$destroy();
-                });
-
-                editEventModal.$on('delete', async data => {
-                    swal.fire({
-                        text: `Sei sicuro di procedere all'eliminazione? Saranno eliminate anche le presenze.`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        buttonsStyling: false,
-                        confirmButtonText: 'Elimina',
-                        cancelButtonText: 'Annulla',
-                        reverseButtons: true,
-                        customClass: {
-                            confirmButton: 'btn font-weight-bold btn-light-danger',
-                            cancelButton: 'btn font-weight-bold btn-light-primary',
-                        },
-                    }).then(async function (result) {
-                        if (result.value) {
-                            UiApp.blockPage({
-                                overlayColor: '#000000',
-                                state: 'primary',
-                                message: 'Eliminazione in corso...',
-                            });
-
-                            const response = await apiFetch(
-                                replaceUID(__bakney.env.API.COURSE.CALENDAR_UPDATE, id),
-                                {
-                                    method: 'DELETE',
-                                    body: JSON.stringify({
-                                        event_id: info.event.id,
-                                        before: data.detail.before,
-                                        groupId: data.detail.groupId,
-                                    }),
-                                }
-                            );
-
-                            UiApp.unblockPage();
-
-                            if (!response.error) {
-                                await initPage();
-                                toast.success('Evento eliminato!');
-                            } else {
-                                toast.error('Qualcosa è andato storto.');
-                            }
-                            dispatch('refresh');
-                        }
-                    });
-                });
-            },
+            eventClick: ({event}) => openLessonDetail(event),
             allDaySlot: true,
             locale: 'it',
             firstDay: 1,
@@ -348,6 +369,8 @@
     }
 
     onDestroy(() => {
+        calendarDestroyed = true;
+        calendarReady = false;
         if (calendar) {
             EventCalendar.destroy(calendar);
             calendar = null;
@@ -355,26 +378,22 @@
     });
 
     async function initPage() {
-        // remove the calendar if it exists
+        const requestId = ++calendarLoad;
+        calendarReady = false;
         if (calendar) EventCalendar.destroy(calendar);
+        calendar = null;
         const response = await apiFetch(replaceUID(__bakney.env.API.COURSE.CALENDAR, id));
-
-        if (!response.error) {
-            let waitMountCalendarPoller;
-            waitMountCalendarPoller = setInterval(() => {
-                if (calendar) {
-                    clearInterval(waitMountCalendarPoller);
-                    normalizeCalendarEvents(response.response).forEach(event => {
-                        calendar.addEvent(event);
-                    });
-                    calendarStatus = response.response.data.status;
-                    google_calendar_id = response.response.data.google_calendar_id;
-                    google_sync_enabled = response.response.data.google_sync_enabled;
-                }
-            }, 100);
-        }
-        initCalendar();
+        if (calendarDestroyed || requestId !== calendarLoad) return;
         await fetchInstructors();
+        if (calendarDestroyed || requestId !== calendarLoad) return;
+        initCalendar();
+        if (!response.error) {
+            normalizeCalendarEvents(response.response).forEach(event => calendar.addEvent(event));
+            calendarStatus = response.response.data.status;
+            google_calendar_id = response.response.data.google_calendar_id;
+            google_sync_enabled = response.response.data.google_sync_enabled;
+            calendarReady = true;
+        }
     }
 
     onMount(async () => {

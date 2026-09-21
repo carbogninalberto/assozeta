@@ -865,7 +865,7 @@
         refreshSelectpicker(document.getElementById('bkn_datatable_search_type_' + uuid));
 
         if (update) {
-            document.getElementById('bkn_datatable_search_query_' + uuid).dispatchEvent(new Event('keyup'));
+            searchKey = '';
             datatableKey++;
         }
     }
@@ -876,15 +876,6 @@
         if (canPerformAction('bookeeping.payments.read')) ready = true;
         initTooltips(document.body);
 
-        if (searchKey && searchKey != 'payments') {
-            setTimeout(() => {
-                let searchInput = document.getElementById('bkn_datatable_search_query_' + uuid);
-                if (searchInput) {
-                    searchInput.value = searchKey;
-                    searchInput.dispatchEvent(new Event('keyup'));
-                }
-            }, 500);
-        }
         // stop scroll of body
         //document.body.style.overflow = 'hidden';
     });

@@ -211,3 +211,58 @@ class InstructorLessonsHoursTests(BaseTransactionTestCase):
         collaborator.collaborator_permissions = []
         collaborator.save()
         self.assertEqual(self.client.get('/instructor/lessons-hours').status_code, 403)
+
+    def test_period_uses_rome_calendar_dates(self):
+        self._create_registry([
+            make_lesson_event(self.instructor.pk, '2026-09-01T00:30:00+02:00', '2026-09-01T01:30:00+02:00', 'included'),
+            make_lesson_event(self.instructor.pk, '2026-10-01T00:30:00+02:00', '2026-10-01T02:30:00+02:00', 'excluded'),
+        ])
+        response = self.client.get(f'/instructor/{self.instructor.pk}/lessons-hours', {
+            'start_date': '01/09/2026', 'end_date': '30/09/2026', 'include_lessons': 'true',
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(data['total_hours'], 1)
+        self.assertEqual([lesson['event_id'] for lesson in data['courses'][0]['lessons']], ['included'])
+
+    def test_period_respects_daylight_saving_transitions(self):
+        for day, start, end, hours in [
+            ('29/03/2026', '2026-03-29T00:00:00+01:00', '2026-03-30T00:00:00+02:00', 23),
+            ('25/10/2026', '2026-10-25T00:00:00+02:00', '2026-10-26T00:00:00+01:00', 25),
+        ]:
+            with self.subTest(day=day):
+                registry = self._create_registry([make_lesson_event(self.instructor.pk, start, end)])
+                response = self.client.get(f'/instructor/{self.instructor.pk}/lessons-hours', {'start_date': day, 'end_date': day})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()['data']['total_hours'], hours)
+                registry.delete()
+
+    def test_lesson_details_are_opt_in_scoped_sorted_and_clipped(self):
+        other = create_lessons_hours_instructor(self.user)
+        self._create_registry([
+            make_lesson_event(self.instructor.pk, '2026-09-02T18:00:00Z', '2026-09-02T20:00:00Z', 'later'),
+            make_lesson_event(other.pk, '2026-09-02T18:00:00Z', '2026-09-02T20:00:00Z', 'other-instructor'),
+            make_lesson_event(self.instructor.pk, '2026-08-31T21:00:00Z', '2026-08-31T23:00:00Z', 'overlap'),
+        ])
+        other_user = create_test_user(role=User.ASSOCIATION)
+        foreign_association = create_test_sport_association(user=other_user)
+        foreign_course = create_test_course(sport_association=foreign_association)
+        AttendanceRegistry.objects.create(course=foreign_course, status=AttendanceRegistry.PUBLISHED, events=[
+            make_lesson_event(self.instructor.pk, '2026-09-02T18:00:00Z', '2026-09-02T20:00:00Z', 'foreign'),
+        ])
+        path = f'/instructor/{self.instructor.pk}/lessons-hours'
+        params = {'start_date': '01/09/2026', 'end_date': '30/09/2026'}
+        summary = self.client.get(path, params).json()['data']
+        self.assertNotIn('lessons', summary['courses'][0])
+        data = self.client.get(path, {**params, 'include_lessons': 'true'}).json()['data']
+        self.assertEqual(data['total_hours'], 3)
+        lessons = data['courses'][0]['lessons']
+        self.assertEqual([lesson['event_id'] for lesson in lessons], ['overlap', 'later'])
+        self.assertEqual(lessons[0]['hours'], 1)
+        self.assertEqual(lessons[0]['start'], '2026-08-31T21:00:00+00:00')
+        self.assertEqual(lessons[0]['title'], 'Lezione')
+        self.assertEqual(lessons[1]['end'], '2026-09-02T20:00:00+00:00')
+        listing = self.client.get('/instructor/lessons-hours', {'include_lessons': 'true'}).json()['data']
+        self.assertTrue(all('lessons' not in course for item in listing for course in item['courses']))
+        self.client.force_authenticate(user=other_user)
+        self.assertEqual(self.client.get(path, {'include_lessons': 'true'}).status_code, 403)

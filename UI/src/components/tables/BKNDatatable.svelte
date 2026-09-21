@@ -876,6 +876,7 @@
                 dispatch('reload');
             },
             search(value, key = 'generalSearch') {
+                if (getClientFilterKey(key) === 'generalSearch') searchValue = String(value ?? '');
                 if (serverFiltering) {
                     params = {...params, [getQueryKey(key)]: value};
                     currentPage = 1;
@@ -940,6 +941,7 @@
 
     export let BKNDatatable = (function () {
         var loadDatatable = function () {
+            searchValue = String(getQueryParams().generalSearch ?? '');
             const defaultSortColumn = columns.find(
                 column => column.field && (column.sortable === 'asc' || column.sortable === 'desc')
             );
@@ -1004,8 +1006,11 @@
                                 style="max-width: 28rem;width: 28rem"
                                 placeholder="Cerca..."
                                 id={searchId}
-                                on:input={e => (searchValue = e.target.value)}
-                                on:keyup={() => debouncedSearch(searchValue)} />
+                                bind:value={searchValue}
+                                on:keyup={e => {
+                                    searchValue = e.currentTarget.value;
+                                    debouncedSearch(searchValue);
+                                }} />
                             <span>
                                 <Search size={16} class="text-muted" />
                             </span>
@@ -1014,11 +1019,8 @@
                                 class="btn btn-icon btn-ghost mb-0"
                                 class:d-none={searchValue === ''}
                                 on:click={() => {
-                                    searchValue = '';
-                                    document.getElementById(searchId).value = '';
-                                    setTimeout(() => {
-                                        document.getElementById(searchId).dispatchEvent(new Event('keyup'));
-                                    }, 200);
+                                    clearTimeout(searchTimeout);
+                                    datatable?.search('', 'generalSearch');
                                 }}>
                                 <XCircle size={19} weight="duotone" />
                             </button>

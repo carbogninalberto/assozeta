@@ -19,22 +19,6 @@
         '[tabindex]:not([tabindex="-1"])',
     ].join(',');
 
-    function clickOutside(node) {
-        const handleClick = event => {
-            if (node && !node.contains(event.target) && !event.defaultPrevented) {
-                node.dispatchEvent(new CustomEvent('click_outside', {detail: event}));
-            }
-        };
-
-        document.addEventListener('click', handleClick, true);
-
-        return {
-            destroy() {
-                document.removeEventListener('click', handleClick, true);
-            },
-        };
-    }
-
     function focusTrap(node, active = true) {
         let previouslyFocused = null;
 
@@ -200,9 +184,9 @@
         releaseScrollLock?.();
     });
 
-    // add event listener to close modal on click outside
-    const handleClickOutside = () => {
-        if (hideOnClickOutside) {
+    // Only the modal backdrop dismisses it; body-mounted pickers are separate overlays.
+    const handleClickOutside = event => {
+        if (hideOnClickOutside && !event.defaultPrevented) {
             close('close');
         }
     };
@@ -213,11 +197,13 @@
 <!-- svelte-ignore missing-declaration -->
 {#if show}
     <Portal target={target ? document.getElementById(target.replace('#', '')) : document.body}>
-        <!-- Modal-->
+        <!-- Backdrop clicks dismiss; keyboard dismissal is handled on window. -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
             in:fade={{duration: 500, easing: easing.cubicInOut}}
             out:fade={{duration: 50}}
             class="modal fade show"
+            on:click|self={handleClickOutside}
             {id}
             tabindex="-1"
             role="dialog"
@@ -225,8 +211,6 @@
             aria-hidden={show ? 'false' : 'true'}
             style="display:block; overflow-y:auto;">
             <div
-                use:clickOutside
-                on:click_outside={handleClickOutside}
                 use:focusTrap={show}
                 class="modal-dialog modal-{modalSize} modal-dialog-centered {scrollable
                     ? 'modal-dialog-scrollable'

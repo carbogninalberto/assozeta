@@ -14,7 +14,7 @@ from typing import Optional, Union
 logger = logging.getLogger(__name__)
 
 
-def get_instructor_lessons_hours(instructor, sport_association_id, start_date=None, end_date=None, registries=None):
+def get_instructor_lessons_hours(instructor, sport_association_id, start_date=None, end_date=None, registries=None, include_lessons=False):
     """
     Compute lesson hours for an instructor from the course calendar.
 
@@ -28,6 +28,7 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
         sport_association_id: UUID of the scoping sport association
         start_date: optional tz-aware datetime, inclusive lower bound (UTC)
         end_date: optional tz-aware datetime, exclusive upper bound (UTC)
+        include_lessons: include assigned event details for calendar navigation
 
     Returns:
         dict with:
@@ -58,6 +59,7 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
         course = registry.course
         course_hours = 0
         course_lessons = 0
+        lesson_details = []
 
         for event in registry.events if isinstance(registry.events, list) else []:
             if not isinstance(event, dict) or event.get('allDay'):
@@ -95,6 +97,14 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
 
             course_hours += duration
             course_lessons += 1
+            if include_lessons:
+                lesson_details.append({
+                    'event_id': str(event.get('event_id') or event.get('id') or ''),
+                    'title': event.get('title') or 'Lezione',
+                    'start': event_start.astimezone(dt_timezone.utc).isoformat(),
+                    'end': event_end.astimezone(dt_timezone.utc).isoformat(),
+                    'hours': round(duration / 3600, 2),
+                })
 
         if course_lessons:
             entry = courses_map.setdefault(course.course_id, {
@@ -105,11 +115,15 @@ def get_instructor_lessons_hours(instructor, sport_association_id, start_date=No
             })
             entry['lessons_count'] += course_lessons
             entry['seconds'] += course_hours
+            if include_lessons:
+                entry.setdefault('lessons', []).extend(lesson_details)
             total_seconds += course_hours
             lessons_count += course_lessons
 
     for entry in courses_map.values():
         entry['hours'] = round(entry.pop('seconds') / 3600, 2)
+        if include_lessons:
+            entry['lessons'].sort(key=lambda lesson: (lesson['start'], lesson['event_id']))
     return {
         'total_hours': round(total_seconds / 3600, 2),
         'lessons_count': lessons_count,

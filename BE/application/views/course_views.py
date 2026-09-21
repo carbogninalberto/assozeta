@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
+from django.db import transaction
 from django.db.models import Q, Prefetch
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1211,6 +1212,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return instances
 
+    @transaction.atomic
     def add(self, request):
         """
         Create a new course subscription
@@ -1249,37 +1251,38 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @transaction.atomic
     def update(self, request, pk=None):
         """
         Update a course subscription
         """
         instance = self.get_object()
-        old_billed_From = instance.billed_from
+        old_billed_from = instance.billed_from
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        # update the related payment for instances of type membership
-        if instance.type == CourseSubscription.MEMBERSHIP_TYPE:
-            for payment in instance.membership_payments.all():
-                if not payment.paid and \
-                    str(payment.meta.get('billed_from')) == old_billed_From.strftime('%Y-%m-%d'):
-                    payment.amount = serializer.validated_data['membership_fee']
-                    payment.creation_date = serializer.validated_data['billed_from']
-                    payment.payment_date = serializer.validated_data['billed_from']
-                    payment.description = f"Abbonamento: {serializer.validated_data['course'].title} dal {serializer.validated_data['billed_from'].strftime('%d/%m/%Y')} al {serializer.validated_data['billed_until'].strftime('%d/%m/%Y')}"
-                    payment.meta = {
-                        'description': f"Abbonamento: {serializer.validated_data['course'].title} dal {serializer.validated_data['billed_from'].strftime('%d/%m/%Y')} al {serializer.validated_data['billed_until'].strftime('%d/%m/%Y')}",
-                        'course_id': str(serializer.validated_data['course'].course_id),
-                        'course_title': serializer.validated_data['course'].title,
-                        'course_subscription_id': str(serializer.validated_data['course_subscription_id']),
-                        'billed_from': serializer.validated_data['billed_from'].strftime('%Y-%m-%d'),
-                        'billed_until': serializer.validated_data['billed_until'].strftime('%Y-%m-%d'),
-                        'amount': str(serializer.validated_data['membership_fee'])
-
-                    }
-                    payment.save()
-                    break
+        # Use the saved instance so PATCH works without resending every billing field.
+        if instance.type == CourseSubscription.MEMBERSHIP_TYPE and old_billed_from:
+            for payment in instance.membership_payments.filter(paid=False):
+                if str((payment.meta or {}).get('billed_from')) != old_billed_from.strftime('%Y-%m-%d'):
+                    continue
+                payment.amount = instance.membership_fee
+                payment.creation_date = instance.billed_from
+                payment.payment_date = instance.billed_from
+                payment.description = f"Abbonamento: {instance.course.title} dal {instance.billed_from.strftime('%d/%m/%Y')} al {instance.billed_until.strftime('%d/%m/%Y')}"
+                payment.meta = {
+                    **(payment.meta or {}),
+                    'description': payment.description,
+                    'course_id': str(instance.course_id),
+                    'course_title': instance.course.title,
+                    'course_subscription_id': str(instance.pk),
+                    'billed_from': instance.billed_from.strftime('%Y-%m-%d'),
+                    'billed_until': instance.billed_until.strftime('%Y-%m-%d'),
+                    'amount': str(instance.membership_fee),
+                }
+                payment.save()
+                break
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

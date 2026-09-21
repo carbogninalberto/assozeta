@@ -2,6 +2,7 @@
 @ copyright: Bakney srl
 """
 import datetime
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 
 from dateutil import parser
@@ -633,7 +634,8 @@ def instructor_lessons_hours(request, uid=None):
           may only query their own hours
 
     Query params:
-        start_date, end_date: optional DD/MM/YYYY period filter
+        start_date, end_date: optional Europe/Rome DD/MM/YYYY period filter
+        include_lessons: true adds event details in single-instructor mode
     """
     check_collaborator_permission(request)
     user = request.user
@@ -654,14 +656,15 @@ def instructor_lessons_hours(request, uid=None):
     end_date = request.GET.get('end_date', None)
 
     period_start = period_end = None
+    calendar_timezone = ZoneInfo('Europe/Rome')
     if start_date:
         try:
-            period_start = datetime.datetime.strptime(start_date, '%d/%m/%Y').replace(tzinfo=datetime.timezone.utc)
+            period_start = datetime.datetime.strptime(start_date, '%d/%m/%Y').replace(tzinfo=calendar_timezone).astimezone(datetime.timezone.utc)
         except (ValueError, OverflowError):
             return Response({'error': 'Invalid start_date'}, status=status.HTTP_400_BAD_REQUEST)
     if end_date:
         try:
-            period_end = datetime.datetime.strptime(end_date, '%d/%m/%Y').replace(tzinfo=datetime.timezone.utc) + datetime.timedelta(days=1)
+            period_end = (datetime.datetime.strptime(end_date, '%d/%m/%Y') + datetime.timedelta(days=1)).replace(tzinfo=calendar_timezone).astimezone(datetime.timezone.utc)
         except (ValueError, OverflowError):
             return Response({'error': 'Invalid end_date'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -678,7 +681,10 @@ def instructor_lessons_hours(request, uid=None):
         if association_id not in registries_by_association:
             registries_by_association[association_id] = list(AttendanceRegistry.objects.filter(
                 course__sport_association_id=association_id, status=AttendanceRegistry.PUBLISHED).select_related('course'))
-        item = get_instructor_lessons_hours(instructor, association_id, period_start, period_end, registries_by_association[association_id])
+        item = get_instructor_lessons_hours(
+            instructor, association_id, period_start, period_end, registries_by_association[association_id],
+            include_lessons=bool(uid) and request.GET.get('include_lessons') == 'true',
+        )
         item['instructor_id'] = str(instructor.instructor_id)
         item['first_name'] = instructor.first_name
         item['last_name'] = instructor.last_name

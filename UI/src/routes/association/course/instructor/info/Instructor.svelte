@@ -6,6 +6,7 @@
     import {onDestroy, onMount} from 'svelte';
     import {Calculator, Clock} from 'phosphor-svelte';
     import AddEditModal from './modals/AddEditModal.svelte';
+    import LessonsHoursCard from './LessonsHoursCard.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
     import EditButton from 'components/buttons/EditButton.svelte';
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
@@ -377,7 +378,7 @@
         lessonsLoading = true;
         lessonsError = false;
         await apiFetch(
-            `${replaceUID(__bakney.env.API.INSTRUCTOR.LESSONS_HOURS, id)}?start_date=${currentFilterStart}&end_date=${currentFilterEnd}`,
+            `${replaceUID(__bakney.env.API.INSTRUCTOR.LESSONS_HOURS, id)}?include_lessons=true&start_date=${currentFilterStart}&end_date=${currentFilterEnd}`,
             {
                 method: 'GET',
             }
@@ -448,34 +449,12 @@
                         class="d-none d-md-flex justify-content-start mb-2 mt-2 mt-md-0 pb-2 pb-md-0 overflow-auto"
                         style="flex-wrap: wrap;">
                         <div class="col-12 col-md-3 p-2 pr-md-4" in:scale={{duration: 250, start: 0.92}}>
-                            <div class="card-widget card p-0 m-0">
-                                <div class="card-body p-4">
-                                    <div class="mb-0">
-                                        <h6 class="font-weight-boldest text-center mb-0" style="font-size: 1rem;">
-                                            ORE A CALENDARIO
-                                            <br />
-                                        </h6>
-                                    </div>
-                                    <div
-                                        class="text-center font-weight-bolder text-primary"
-                                        style="font-size: 1.75rem;">
-                                        <span class="text-primary"
-                                            title="Durata delle lezioni pubblicate nel periodo, incluse quelle future; non certifica la presenza"
-                                            >{lessonsLoading ? '…' : lessonsError ? 'Non disponibili' : Number(lessonsData?.total_hours || 0).toLocaleString('it-IT', {
-                                                maximumFractionDigits: 2,
-                                                minimumFractionDigits: 2,
-                                            })}</span>
-                                    </div>
-                                    {#if !lessonsLoading && !lessonsError && lessonsData?.courses?.length}
-                                        <div class="text-center text-muted font-size-sm">
-                                            {lessonsData.lessons_count} lezioni ·
-                                            {#each lessonsData.courses as c, i}
-                                                {c.course_title} ({Number(c.hours).toLocaleString('it-IT', {maximumFractionDigits: 2})}h){i < lessonsData.courses.length - 1 ? ' · ' : ''}
-                                            {/each}
-                                        </div>
-                                    {/if}
-                                </div>
-                            </div>
+                            <LessonsHoursCard
+                                instructorId={id}
+                                data={lessonsData}
+                                loading={lessonsLoading}
+                                error={lessonsError}
+                                canOpenCalendar={canPerformAction('association.courses.read')} />
                         </div>
                         <div class="col-12 col-md-3 p-2 pr-md-4" in:scale={{duration: 250, start: 0.92}}>
                             <div class="card-widget card p-0 m-0">
@@ -629,6 +608,8 @@
     <!--end::Container-->
 </div>
 <!--end::Entry-->
+
+
 
 <AddEditModal
     edit={false}
