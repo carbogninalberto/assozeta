@@ -180,3 +180,14 @@ test('NotificationWebSocket routes export events as business events', () => {
     assert.deepEqual(received, ['export_progress', 'export_completed', 'export_failed']);
     notifications.disconnect();
 });
+
+test('NotificationWebSocket routes staff-board changes without altering notifications', () => {
+    const socket = new NotificationWebSocket('token');
+    let changes = 0;
+    let notifications = 0;
+    socket.setOnStaffBoardChanged(() => changes++);
+    socket.setOnNotifications(() => notifications++);
+    socket.handleMessage({type: 'staff_board_changed'});
+    assert.equal(changes, 1);
+    assert.equal(notifications, 0);
+});

@@ -1129,6 +1129,26 @@ export default {
             // add another call
         ],
     }),
+    '/communication/staff-board': wrap({
+        asyncComponent: () => import('./routes/association/communication/staffboard/StaffBoard.svelte'),
+
+        // Condition is logged and staff (admins and collaborators)
+        conditions: [
+            () => {
+                if (!isAssociation()) return false;
+                if (!canPerformAction('association.communication.messages.read')) return false;
+
+                if (!isPlanActive()) return false;
+
+                if (isLogged()) {
+                    currentPage.set('communication');
+                    subPage.set('staff-board');
+                    return true;
+                }
+            },
+            // add another call
+        ],
+    }),
     '/communication/automation': wrap({
         asyncComponent: () => import('./routes/association/communication/automation/Automation.svelte'),
 

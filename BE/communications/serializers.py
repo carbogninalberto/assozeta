@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from django.utils.html import escape
 from application.utils.api_utils import check_email
-from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow
+from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 
 
 class CommunicationConfigurationSerializer(serializers.ModelSerializer):
@@ -110,3 +110,70 @@ class AutomationWorkflowSerializer(serializers.ModelSerializer):
     class Meta:
         model = AutomationWorkflow
         fields = '__all__'
+
+
+from .staff_board import message_actor, validate_document
+
+
+class StaffBoardMessageSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField(read_only=True)
+    author_avatar = serializers.SerializerMethodField(read_only=True)
+    is_owner = serializers.SerializerMethodField(read_only=True)
+
+    def get_author_avatar(self, obj):
+        return obj.author.avatar_image if obj.author else None
+
+    def get_is_owner(self, obj):
+        request = self.context.get('request')
+        return bool(request and obj.author_id == message_actor(request).pk)
+
+
+    def get_author_name(self, obj):
+        if obj.author is None:
+            return 'Utente eliminato'
+        full_name = f"{obj.author.first_name} {obj.author.last_name}".strip()
+        if full_name:
+            return full_name
+        # association admin accounts often have generated usernames (hash-like);
+        # fall back to the association denomination for a readable name
+        if obj.sport_association.user_id == obj.author_id:
+            return obj.sport_association.denomination
+        return obj.author.username
+
+    class Meta:
+        model = StaffBoardMessage
+        fields = (
+            'staff_board_message_id',
+            'sport_association',
+            'author',
+            'author_name',
+            'author_avatar',
+            'is_owner',
+            'document',
+            'content',
+            'pinned',
+            'created_at',
+            'updated_at',
+        )
+
+
+class StaffBoardMessageInputSerializer(serializers.Serializer):
+    content = serializers.CharField(max_length=10000, allow_blank=False, required=False)
+    document = serializers.JSONField(required=False)
+    pinned = serializers.BooleanField(required=False)
+
+    def validate_content(self, value):
+        if not isinstance(self.initial_data.get('content'), str):
+            raise serializers.ValidationError('Il messaggio deve essere un testo.')
+        return value
+
+
+    def validate(self, attrs):
+        if 'document' in attrs:
+            attrs['document'], attrs['content'] = validate_document(attrs['document'])
+        elif 'content' in attrs:
+            # Editing a legacy text message explicitly replaces its rich document, if any.
+            attrs['document'] = None
+        elif not self.partial:
+            raise serializers.ValidationError('Scrivi un messaggio o aggiungi un’immagine.')
+        return attrs

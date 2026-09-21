@@ -52,6 +52,7 @@
         IdentificationCard,
         AddressBook,
         ClipboardText,
+        PushPin,
     } from 'phosphor-svelte';
     import Portal from 'svelte-portal';
     import {toast} from 'svelte-sonner';
@@ -477,6 +478,26 @@
                                                         >Messaggi
                                                         <!-- <sup><div class="coming-soon-badge">In Arrivo</div></sup> -->
                                                     </span>
+                                                </a>
+                                            </div>
+                                        {/if}
+                                        {#if canPerformAction('association.communication.messages.read')}
+                                            <div
+                                                class="menu-item menu-item-submenu {$subPage == 'staff-board'
+                                                    ? 'menu-item-active'
+                                                    : ''}"
+                                                aria-haspopup="true"
+                                                data-menu-toggle="hover">
+                                                <a
+                                                    href={isFreePlan()
+                                                        ? '/#/subscription/upgrade'
+                                                        : '/#/communication/staff-board'}
+                                                    class="menu-link"
+                                                    on:click={collapseSidebar}>
+                                                    <span class="menu-icon">
+                                                        <PushPin size={24} weight="duotone" />
+                                                    </span>
+                                                    <span class="menu-text">Bacheca Staff</span>
                                                 </a>
                                             </div>
                                         {/if}

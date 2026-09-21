@@ -40,6 +40,7 @@ class NotificationWebSocket {
         this.onError = null;
         this.onConnect = null;
         this.onDisconnect = null;
+        this.onStaffBoardChanged = null;
         this.onExportProgress = null;
         this.onExportCompleted = null;
         this.onExportFailed = null;
@@ -115,6 +116,10 @@ class NotificationWebSocket {
 
             case 'notification_push':
                 this.onNewNotification?.(data.notification);
+                break;
+
+            case 'staff_board_changed':
+                this.onStaffBoardChanged?.();
                 break;
 
             case 'export_progress':
@@ -223,6 +228,10 @@ class NotificationWebSocket {
      */
     setOnNewNotification(handler) {
         this.onNewNotification = handler;
+    }
+
+    setOnStaffBoardChanged(handler) {
+        this.onStaffBoardChanged = handler;
     }
 
     setOnExportProgress(handler) {

@@ -35,6 +35,7 @@ class NotificationService {
         this.onNewNotificationCallback = null;
         this.visibilityHandler = null;
         this.activeExportSync = null;
+        this.staffBoardListeners = new Set();
     }
 
     /**
@@ -75,7 +76,11 @@ class NotificationService {
         this.ws.setOnExportProgress(event => exportProgress.applyProgress(event));
         this.ws.setOnExportCompleted(event => exportProgress.applyCompleted(event));
         this.ws.setOnExportFailed(event => exportProgress.applyFailed(event));
-        this.ws.setOnConnect(() => this.syncActiveExport());
+        this.ws.setOnStaffBoardChanged(() => this.notifyStaffBoard());
+        this.ws.setOnConnect(() => {
+            this.syncActiveExport();
+            this.notifyStaffBoard(); // Refetch changes missed while disconnected.
+        });
 
         // Handle read confirmation - update local state
         this.ws.setOnReadConfirmed(notificationId => {
@@ -116,6 +121,15 @@ class NotificationService {
      * Mark a single notification as read
      * @param {string} notificationId - The notification UUID
      */
+    subscribeStaffBoard(callback) {
+        this.staffBoardListeners.add(callback);
+        return () => this.staffBoardListeners.delete(callback);
+    }
+
+    notifyStaffBoard() {
+        for (const callback of this.staffBoardListeners) callback();
+    }
+
     markRead(notificationId) {
         if (!this.ws) {
             console.warn('[NotificationService] Not initialized');

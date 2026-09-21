@@ -170,6 +170,8 @@ test('rich-text initialization and selection do not mark pristine forms dirty; c
         isActive() { return false; }
         setOptions() {}
         getHTML() { return content; }
+        getJSON() { return {type: 'doc', content: [{type: 'paragraph', content: [{type: 'text', text: 'Edited'}]}]}; }
+        setEditable(_editable, emitUpdate) { assert.equal(emitUpdate, false); }
     };
     f.run('value = null');
     f.mount();
@@ -181,6 +183,7 @@ test('rich-text initialization and selection do not mark pristine forms dirty; c
     content = '<p>Edited</p>';
     options.onUpdate({editor: f.run('editor')});
     assert.equal(f.run('value'), content);
+    assert.equal(f.run('json.content[0].content[0].text'), 'Edited');
 });
 
 const emailFixture = {source: 'environment', revision: 0, host: 'smtp.example.test', port: 465,

@@ -105,6 +105,12 @@ export const buildConfig = function(config={
                             DELETE: `${apiHost}/communications/messages/<uid>/delete`,
                             DETAILS: `${apiHost}/communications/messages/<uid>/details`,
                         },
+                        STAFF_BOARD: {
+                            LIST: `${apiHost}/communications/staff-board/list`,
+                            ADD: `${apiHost}/communications/staff-board/add`,
+                            UPDATE: `${apiHost}/communications/staff-board/<uid>/update`,
+                            DELETE: `${apiHost}/communications/staff-board/<uid>/delete`,
+                        },
                         WORKFLOWS: {
                             LIST: `${apiHost}/communications/workflows/list`,
                             ADD: `${apiHost}/communications/workflows/add`,

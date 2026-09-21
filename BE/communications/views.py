@@ -4,14 +4,16 @@ import datetime
 from rest_framework import status
 from rest_framework.response import Response
 
-from application.models.user_models import EmailLog
+from application.models.user_models import EmailLog, User
 from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions_registry import check_collaborator_permission
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
-from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow
+from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
 from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
     CommunicationConfigurationPatchSerializer, PostSerializer, \
-    EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer
+    EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer, StaffBoardMessageSerializer, StaffBoardMessageInputSerializer
+from .staff_board import message_actor, publish_staff_board_change
 from core.middleware import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
@@ -384,4 +386,112 @@ def communication_workflows_details(request, workflow_id):
 
     serializer = AutomationWorkflowSerializer(workflow)
 
-    return Response(serializer.data, status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+def staff_board_messages_list(request):
+    """
+    Internal staff board: list all messages of the association, pinned first.
+    Visible to admins and collaborators with association.communication.messages.read.
+    """
+    check_collaborator_permission(request)
+    if request.user.role == User.ATHLETE:
+        return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+
+    messages = StaffBoardMessage.objects.filter(
+        sport_association=request.user.sport_association
+    ).select_related('author', 'sport_association')
+
+    serializer = StaffBoardMessageSerializer(messages, many=True, context={'request': request})
+    return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+def staff_board_messages_add(request):
+    check_collaborator_permission(request)
+    if request.user.role == User.ATHLETE:
+        return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+
+    payload = StaffBoardMessageInputSerializer(data=request.data)
+    payload.is_valid(raise_exception=True)
+    data = payload.validated_data
+
+    author = message_actor(request)
+
+    message = StaffBoardMessage.objects.create(
+        sport_association=request.user.sport_association,
+        author=author,
+        content=data['content'],
+        document=data.get('document'),
+        pinned=data.get('pinned', False),
+    )
+
+    publish_staff_board_change(message.sport_association_id)
+    serializer = StaffBoardMessageSerializer(message, context={'request': request})
+    return Response({'data': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+def staff_board_messages_update(request, staff_board_message_id):
+    check_collaborator_permission(request)
+    if request.user.role == User.ATHLETE:
+        return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+
+    is_valid_uuid(staff_board_message_id)
+
+    message = StaffBoardMessage.objects.filter(
+        sport_association=request.user.sport_association,
+        staff_board_message_id=staff_board_message_id,
+    ).first()
+
+    if not message:
+        return Response({'error': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if ('content' in request.data or 'document' in request.data) and message.author_id != message_actor(request).pk:
+        return Response({'error': 'Solo l’autore può modificare questo messaggio.'}, status=status.HTTP_403_FORBIDDEN)
+
+    payload = StaffBoardMessageInputSerializer(data=request.data, partial=True)
+    payload.is_valid(raise_exception=True)
+    data = payload.validated_data
+    if 'content' in data:
+        message.content = data['content']
+    if 'document' in data:
+        message.document = data['document']
+    if 'pinned' in data:
+        message.pinned = data['pinned']
+
+    message.save()
+
+    publish_staff_board_change(message.sport_association_id)
+    serializer = StaffBoardMessageSerializer(message, context={'request': request})
+    return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+def staff_board_messages_delete(request, staff_board_message_id):
+    check_collaborator_permission(request)
+    if request.user.role == User.ATHLETE:
+        return Response({'error': 'not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+
+    is_valid_uuid(staff_board_message_id)
+
+    message = StaffBoardMessage.objects.filter(
+        sport_association=request.user.sport_association,
+        staff_board_message_id=staff_board_message_id,
+    ).first()
+
+    if not message:
+        return Response({'error': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if message.author_id != message_actor(request).pk:
+        return Response({'error': 'Solo l’autore può eliminare questo messaggio.'}, status=status.HTTP_403_FORBIDDEN)
+
+    association_id = message.sport_association_id
+    message.delete()
+    publish_staff_board_change(association_id)
+    return Response({'msg': 'message deleted.'}, status=status.HTTP_200_OK)

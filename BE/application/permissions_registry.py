@@ -229,6 +229,14 @@ PERMISSIONS_REGISTRY = {
     ('DELETE', 'course/*/calendar/update'): 'association.courses.update',
 
     # ============================================
+    # Staff board (internal messages between admins and collaborators)
+    # ============================================
+    ('GET', 'communications/staff-board/list'): 'association.communication.messages.read',
+    ('POST', 'communications/staff-board/add'): 'association.communication.messages.create',
+    ('PATCH', 'communications/staff-board/*/update'): 'association.communication.messages.update',
+    ('DELETE', 'communications/staff-board/*/delete'): 'association.communication.messages.delete',
+
+    # ============================================
     # Modules (Forms/Documents)
     # ============================================
     'modules/list': 'association.modules.read',
