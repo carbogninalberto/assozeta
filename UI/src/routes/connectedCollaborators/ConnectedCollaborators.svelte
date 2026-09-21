@@ -5,15 +5,12 @@
     import {scale} from 'svelte/transition';
     import * as easing from 'svelte/easing';
     import {onMount, onDestroy} from 'svelte';
-    import {replaceUID} from 'utils/ApiMiddleware.js';
     import {Plus} from 'phosphor-svelte';
-    import {getDataFromForm, waitForElementAndExecute} from 'utils/Functions';
+    import {getDataFromForm} from 'utils/Functions';
     import {apiFetch} from 'utils/ApiMiddleware';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {blockPage, unblockPage} from 'store/loadingStore.js';
-    import EditButton from 'components/buttons/EditButton.svelte';
-    import DeleteButton from 'components/buttons/DeleteButton.svelte';
-    import EditModal from './modals/EditModal.svelte';
+    import CollaboratorActions from './CollaboratorActions.svelte';
     import PermissionsComponent from 'components/PermissionsComponent.svelte';
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
@@ -21,7 +18,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import {initSelectpicker} from 'shim/select.js';
     import { initPopovers, destroyPopovers } from 'shim/popover.js';
-    import {showModal, hideModal} from 'shim/modal.js';
+    import {hideModal} from 'shim/modal.js';
 
     sessionToken.useLocalStorage();
 
@@ -163,91 +160,8 @@ datatable.reload();
             textAlign: 'right',
             autoHide: false,
             minWidth: '100%',
-            // minWidth: '100%',
-            template: function (row) {
-                waitForElementAndExecute(`#action-col-${row.collaboration_invite_id || row.user_id}`, () => {
-                    if (document.querySelector(`#action-col-${row.collaboration_invite_id}`))
-                        document.querySelector(`#action-col-${row.collaboration_invite_id}`).innerHTML = '';
-
-                    if (row.user_id) {
-                        let editBtn = new EditButton({
-                            target: document.querySelector(`#action-col-${row.user_id}`),
-                            intro: true,
-                            props: {
-                                disabled: !row.user_id || !canPerformAction('other.users.collaborators.update'),
-                                hidden: !row.user_id,
-                            },
-                        });
-
-                        let editModal = new EditModal({
-                            target: document.querySelector(`#action-col-${row.user_id}`),
-                            intro: true,
-                            props: {
-                                id: row.user_id,
-                                row: row,
-                                datatable: datatable,
-                            },
-                        });
-
-                        editBtn.$on('open', data => {
-                            showModal(`editModal-${row.user_id}`);
-                        });
-                    }
-
-                    let deleteBtn = new DeleteButton({
-                        target: document.querySelector(
-                            `#action-col-${row.collaboration_invite_id || row.user_id}`
-                        ),
-                        intro: true,
-                        props: {
-                            disabled: !canPerformAction('other.users.collaborators.delete'),
-                            // hidden: !row.editable,
-                        },
-                    });
-
-                    deleteBtn.$on('open', data => {
-                        swal.fire({
-                            text: 'Vuoi eliminare il collaboratore?',
-                            icon: 'warning',
-                            buttonsStyling: true,
-                            showCancelButton: true,
-                            cancelButtonText: 'Annulla',
-                            confirmButtonText: 'Elimina',
-                            reverseButtons: true,
-                            confirmButtonColor: '#d63030',
-                        }).then(async function (result) {
-                            if (!result.isConfirmed) return;
-
-                            blockPage({message: 'Eliminazione in corso...'});
-
-                            let id = row.collaboration_invite_id || row.user_id;
-
-                            let response;
-
-                            try {
-                                response = await apiFetch(
-                                    replaceUID(__bakney.env.API.COLLABORATORS.DELETE, id),
-                                    {
-                                        method: 'DELETE',
-                                    }
-                                );
-                            } finally {
-                                unblockPage();
-                            }
-
-                            if (!response.error) {
-toast.success('Collaboratore eliminato!');
-                                datatable.reload();
-                            } else {
-                                toast.error('Qualcosa è andato storto.');
-                            }
-                        });
-                    });
-                });
-                return `<div id="action-col-${
-                    row.collaboration_invite_id || row.user_id
-                }" class="action-column pr-4"></div>`;
-            },
+            isAction: true,
+            component: CollaboratorActions,
         },
     ];
 

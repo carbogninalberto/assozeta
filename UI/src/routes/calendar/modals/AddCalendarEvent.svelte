@@ -16,6 +16,22 @@
     export let row;
     export let edit = false;
 
+    // Permission gates depend on the event type:
+    // - edit of course event (extendedProps.course set) -> association.courses.update
+    // - edit of global event (course == null) -> association.events.*
+    // - creation -> type is chosen inside the form (course select), so either
+    //   courses.update or events.* must be held; entry points gate the rest.
+    let selectedCourse = row?.extendedProps?.course || null;
+    $: isCourseEvent = !!selectedCourse;
+    $: canSaveEvent = isCourseEvent
+        ? canPerformAction('association.courses.update')
+        : canPerformAction(edit ? 'association.events.update' : 'association.events.create');
+    $: canDeleteEvent = edit
+        ? (isCourseEvent
+            ? canPerformAction('association.courses.update')
+            : canPerformAction('association.events.delete'))
+        : false;
+
     let form;
     let courses = [];
     let selectedInstructor = [];
@@ -48,8 +64,9 @@
     }
 
     async function fetchCourses() {
+        if (!canPerformAction('association.courses.update')) return;
         let res = await apiFetch(__bakney.env.API.COURSE.LIST + '?all=1');
-        let response = res.response.data;
+        let response = res.response?.data || [];
         // convert the dict to an array
         response = Object.keys(response).map(key => response[key]);
         let tmpCourses = response || [];
@@ -67,6 +84,7 @@
     }
 
     async function save(data) {
+        if (!canSaveEvent) return;
         data.reminder_enabled = row.extendedProps.reminder_enabled || false;
         data.color = selectedColor?.value || selectedColor || 'ec-event-solid-primary';
         dispatch('save', data);
@@ -313,8 +331,8 @@
                                     <label class="font-size-h6 font-weight-bold">Corso</label>
                                     <Select
                                         hideEmptyState={true}
-                                        disabled={edit}
-                                        value={row.extendedProps?.course}
+                                        disabled={edit || !canPerformAction('association.courses.update')}
+                                        bind:value={selectedCourse}
                                         name="course"
                                         bind:items={courses}
                                         placeholder="Seleziona il corso" />
@@ -439,7 +457,7 @@
                         <div>
                             {#if edit}
                                 <button
-                                    disabled={!canPerformAction('association.courses.update')}
+                                    disabled={!canDeleteEvent}
                                     type="button"
                                     class="btn btn-light-danger font-weight-bold mr-1"
                                     on:click={() => {
@@ -464,7 +482,7 @@
                                 class="btn btn-light-primary font-weight-bold mr-1"
                                 on:click={closeModal}>Chiudi</button>
                             <button
-                                disabled={!canPerformAction('association.courses.update')}
+                                disabled={!canSaveEvent}
                                 type="submit"
                                 class="btn btn-primary font-weight-bold">Salva</button>
                         </div>

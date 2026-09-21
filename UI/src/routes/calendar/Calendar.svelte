@@ -4,7 +4,7 @@
     import * as easing from 'svelte/easing';
     import {slide, scale} from 'svelte/transition';
     import ContentLoader from 'svelte-content-loader';
-    import {Export, Printer} from 'phosphor-svelte';
+    import {Export, Plus, Printer} from 'phosphor-svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import {
         getCalendarClassName,
@@ -61,7 +61,7 @@
         return COLOR_MAP[oldCls] || (oldCls.startsWith('ec-event-') ? oldCls : 'ec-event-solid-primary');
     }
 
-    async function saveCalendarDirectly(updateEvents, id) {
+    async function saveCalendarDirectly(updateEvents, id, action = 'update', eventId = null) {
         UiApp.blockPage({
             overlayColor: '#000000',
             state: 'primary',
@@ -85,7 +85,9 @@
             response = await apiFetch(__bakney.env.API.CALENDAR.UPDATE, {
                 method: 'POST',
                 body: JSON.stringify({
-                    events: events,
+                    action,
+                    event_id: eventId,
+                    events: events.filter(event => event.event_id === eventId),
                 }),
             });
         }
@@ -97,8 +99,62 @@
             await fetchInstructors();
             toast.success('Successo.', 'Calendario aggiornato con successo!');
         } else {
+            calendar.refetchEvents();
             toast.error('Qualcosa è andato storto.');
         }
+    }
+
+    // Opens the add-event modal for a given ISO date string (YYYY-MM-DDTHH:mm:ss).
+    // Shared by the calendar dateClick handler and the "Nuovo evento" toolbar button.
+    function openAddEventModal(dateStr) {
+        document.querySelectorAll('#addElement').forEach(n => {
+            n.remove();
+        });
+
+        if (!dateStr || !dateStr.includes('T')) {
+            dateStr = (dateStr || moment().format('YYYY-MM-DD')) + 'T08:00';
+        }
+        let startDate = moment(dateStr).format('YYYY-MM-DDTHH:mm:ss');
+        let endDate = moment(dateStr).add(1, 'hours').format('YYYY-MM-DDTHH:mm:ss');
+        let addEventModal = new AddCalendarEvent({
+            target: document.querySelector(`body`),
+            intro: true,
+            props: {
+                instructors: instructors,
+                row: {
+                    title: '',
+                    start: startDate,
+                    end: endDate,
+                    extendedProps: {
+                        instructor: [],
+                        course: null,
+                        description: null,
+                    },
+                },
+            },
+        });
+        addEventModal.$on('save', data => {
+            addEventModal.$destroy();
+            createEvent(
+                moment(data.detail.event_start).format(),
+                data.detail.event_title,
+                data.detail.event_end ? moment(data.detail.event_end).format() : null,
+                JSON.parse(data.detail?.instructor || null),
+                data.detail.event_allday,
+                JSON.parse(data.detail.course || null),
+                data.detail?.color,
+                data.detail.description,
+                data.detail.reminder_amount,
+                data.detail.reminder_enabled,
+                data.detail.reminder_unit
+            );
+        });
+
+        addEventModal.$on('close', () => {
+            addEventModal.$destroy();
+        });
+
+        addEventModal.$on('refresh', async data => {});
     }
 
     let CalendarListView = (function () {
@@ -243,7 +299,7 @@
                             }
                         });
 
-                        saveCalendarDirectly(updatedEvents, null);
+                        saveCalendarDirectly(updatedEvents, null, 'create', event.id);
                     }
                 };
 
@@ -334,55 +390,8 @@
                     }],
 
                     dateClick: async function (dateClickInfo) {
-                        if (!canPerformAction('association.courses.update')) return;
-                        document.querySelectorAll('#addElement').forEach(n => {
-                            n.remove();
-                        });
-
-                        dateClickInfo.dateStr = dateClickInfo.dateStr.includes('T')
-                            ? dateClickInfo.dateStr
-                            : dateClickInfo.dateStr + 'T08:00';
-                        let startDate = moment(dateClickInfo.dateStr).format('YYYY-MM-DDTHH:mm:ss');
-                        let endDate = moment(dateClickInfo.dateStr).add(1, 'hours').format('YYYY-MM-DDTHH:mm:ss');
-                        let addEventModal = new AddCalendarEvent({
-                            target: document.querySelector(`body`),
-                            intro: true,
-                            props: {
-                                instructors: instructors,
-                                row: {
-                                    title: '',
-                                    start: startDate,
-                                    end: endDate,
-                                    extendedProps: {
-                                        instructor: [],
-                                        course: null,
-                                        description: null,
-                                    },
-                                },
-                            },
-                        });
-                        addEventModal.$on('save', data => {
-                            addEventModal.$destroy();
-                            createEvent(
-                                moment(data.detail.event_start).format(),
-                                data.detail.event_title,
-                                data.detail.event_end ? moment(data.detail.event_end).format() : null,
-                                JSON.parse(data.detail?.instructor || null),
-                                data.detail.event_allday,
-                                JSON.parse(data.detail.course || null),
-                                data.detail?.color,
-                                data.detail.description,
-                                data.detail.reminder_amount,
-                                data.detail.reminder_enabled,
-                                data.detail.reminder_unit
-                            );
-                        });
-
-                        addEventModal.$on('close', () => {
-                            addEventModal.$destroy();
-                        });
-
-                        addEventModal.$on('refresh', async data => {});
+                        if (!canPerformAction('association.events.create') && !canPerformAction('association.courses.update')) return;
+                        openAddEventModal(dateClickInfo.dateStr);
                     },
 
                     eventDragStop: async function (info) {
@@ -393,6 +402,13 @@
                         const event = info.event;
                         const courseId = event.extendedProps?.course;
 
+                        // global events require association.events.update
+                        if (!canPerformAction(courseId ? 'association.courses.update' : 'association.events.update')) {
+                            info.revert?.();
+                            toast.error('Non hai i permessi per modificare gli eventi.');
+                            return;
+                        }
+
                         let updatedEvents = calendar.getEvents();
                         if (courseId) {
                             updatedEvents = updatedEvents.filter(e => {
@@ -435,7 +451,7 @@
                                     reminder_unit: e.extendedProps.reminder_unit || null,
                                 },
                             }));
-                            saveCalendarDirectly(updatedEvents, null);
+                            saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                         }
                     },
 
@@ -443,6 +459,13 @@
                         const event = info.event;
                         const courseId = event.extendedProps?.course;
 
+                        // global events require association.events.update
+                        if (!canPerformAction(courseId ? 'association.courses.update' : 'association.events.update')) {
+                            info.revert?.();
+                            toast.error('Non hai i permessi per modificare gli eventi.');
+                            return;
+                        }
+
                         let updatedEvents = calendar.getEvents();
                         if (courseId) {
                             updatedEvents = updatedEvents.filter(e => {
@@ -485,7 +508,7 @@
                                     reminder_unit: e.extendedProps.reminder_unit || null,
                                 },
                             }));
-                            saveCalendarDirectly(updatedEvents, null);
+                            saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                         }
                     },
 
@@ -615,7 +638,7 @@
                                     }
                                 });
 
-                                saveCalendarDirectly(updatedEvents, null);
+                                saveCalendarDirectly(updatedEvents, null, 'update', info.event.id);
                             }
                         });
 
@@ -662,8 +685,7 @@
                                     return e.extendedProps?.course == null;
                                 });
 
-                                saveCalendarDirectly(updatedEvents, null);
-                                toast.success('Evento eliminato!');
+                                await saveCalendarDirectly([], null, 'delete', data.detail.id);
                             }
                             editEventModal.$destroy();
                         });
@@ -689,19 +711,22 @@
                         el.setAttribute('data-placement', 'top');
 
                         if (info.event.extendedProps && info.event.extendedProps.description) {
+                            const description = document.createElement('div');
+                            description.className = 'ec-description';
+                            description.textContent = info.event.extendedProps.description;
                             if (info.view.type === 'dayGridMonth') {
                                 el.dataset.content = info.event.extendedProps.description;
                                 el.dataset.placement = 'top';
-                                UiApp.initPopover(el, { content: info.event.extendedProps.description, trigger: 'hover' });
+                                UiApp.initPopover(el, { content: description.innerHTML, trigger: 'hover' });
                             } else if (info.view.type.startsWith('timeGrid')) {
                                 var titleEl = el.querySelector('.ec-event-title');
                                 if (titleEl) {
-                                    titleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
+                                    titleEl.appendChild(description);
                                 }
                             } else {
                                 var listTitleEl = el.querySelector('.ec-event-title') || el.querySelector('.ec-list-item-title');
                                 if (listTitleEl) {
-                                    listTitleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
+                                    listTitleEl.appendChild(description);
                                 }
                             }
                         }
@@ -759,7 +784,27 @@
                     <div class="card-toolbar m-0">
                         <h3 class="card-title font-size-h2">Eventi e Promemoria</h3>
                     </div>
+                    <div class="card-toolbar m-0">
+                        {#if canPerformAction('association.events.create') || canPerformAction('association.courses.update')}
+                            <button
+                                type="button"
+                                on:click={() => openAddEventModal()}
+                                class="btn btn-light-success font-weight-bold d-flex align-items-center mb-0 mr-2 d-md-none"
+                                title="Nuovo evento">
+                                <Plus size={18} weight="duotone" />
+                            </button>
+                        {/if}
+                    </div>
                     <div class="card-toolbar m-0 d-none d-md-flex">
+                        {#if canPerformAction('association.events.create') || canPerformAction('association.courses.update')}
+                            <button
+                                type="button"
+                                on:click={() => openAddEventModal()}
+                                class="btn btn-light-success font-weight-bold d-flex align-items-center mb-0 mr-2">
+                                <Plus size={18} weight="duotone" />
+                                <span class="d-none d-md-block ml-md-2">Nuovo evento</span>
+                            </button>
+                        {/if}
                         <button
                             type="button"
                             on:click={() => {

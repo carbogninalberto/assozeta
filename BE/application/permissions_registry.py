@@ -215,10 +215,13 @@ PERMISSIONS_REGISTRY = {
     # ============================================
     # Calendar & Events
     # ============================================
+    # NOTE: 'calendar/events' (full_events_calendar) returns BOTH course lessons
+    # AND global events in one payload, so its read gate stays on
+    # association.calendar.read. Global-event visibility for collaborators is
+    # enforced inside the view via association.events.read.
     ('GET', 'calendar/events'): 'association.calendar.read',
-    ('POST', 'calendar/events'): 'association.calendar.read',  # Creating events
-    ('POST', 'calendar/events/update'): 'association.calendar.read',
-    ('DELETE', 'calendar/events/update'): 'association.calendar.read',
+    ('POST', 'calendar/events/update'): 'association.events.update',
+    ('DELETE', 'calendar/events/update'): 'association.events.delete',
     'calendar/events/export': 'association.calendar.read',
 
     # Course calendar
