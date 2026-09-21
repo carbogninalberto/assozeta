@@ -147,6 +147,7 @@
 
     export let id;
     export let show = false;
+    export let closeDisabled = false;
     export let title = 'Modal Title';
     export let showTitle = false;
     export let cancelButton = 'Chiudi';
@@ -167,6 +168,7 @@
     let releaseScrollLock;
 
     function close(reason = 'close') {
+        if (closeDisabled) return;
         show = false;
 
         if (reason === 'confirm') {
@@ -182,7 +184,7 @@
     }
 
     const handleKeydown = e => {
-        if (!show) return;
+        if (!show || e.defaultPrevented || document.querySelector('.swal2-container')) return;
 
         if (e.key === 'Escape') {
             close('cancel');
@@ -221,7 +223,8 @@
             {id}
             tabindex="-1"
             role="dialog"
-            aria-labelledby="staticBackdrop"
+            aria-label={title}
+            aria-modal="true"
             aria-hidden={show ? 'false' : 'true'}
             style="display:block; overflow-y:auto;">
             <div
@@ -240,13 +243,16 @@
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <div class="w-24 h-24" style="position:absolute;right:0;z-index:999999">
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <span
+                        <button
+                            type="button"
+                            aria-label="Chiudi"
+                            disabled={closeDisabled}
                             class="btn btn-sm btn-icon btn-ghost m-1"
                             on:click={() => {
                                 close('cancel');
                             }}>
                             <X weight="bold" size={20} class="m-2" />
-                        </span>
+                        </button>
                     </div>
                     {#if showTitle}
                         <div class="modal-header d-flex justify-content-left">

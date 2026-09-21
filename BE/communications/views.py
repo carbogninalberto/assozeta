@@ -13,6 +13,7 @@ from .models import Message, CommunicationConfiguration, MessageTransaction, Aut
 from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
     CommunicationConfigurationPatchSerializer, PostSerializer, \
     EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer, StaffBoardMessageSerializer, StaffBoardMessageInputSerializer
+from .staff_board import message_actor, publish_staff_board_change
 from core.middleware import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 
@@ -403,7 +404,7 @@ def staff_board_messages_list(request):
         sport_association=request.user.sport_association
     ).select_related('author', 'sport_association')
 
-    serializer = StaffBoardMessageSerializer(messages, many=True)
+    serializer = StaffBoardMessageSerializer(messages, many=True, context={'request': request})
     return Response({'data': serializer.data}, status=status.HTTP_200_OK)
 
 
@@ -418,21 +419,18 @@ def staff_board_messages_add(request):
     payload.is_valid(raise_exception=True)
     data = payload.validated_data
 
-    # collaborators are swapped to their connected admin user by the middleware;
-    # keep the real author on the board message. Superuser impersonation keeps
-    # request.user (the impersonated account) on purpose.
-    author = request.user
-    if getattr(request, 'collaborator', False) and getattr(request, 'original_user', None) is not None:
-        author = request.original_user
+    author = message_actor(request)
 
     message = StaffBoardMessage.objects.create(
         sport_association=request.user.sport_association,
         author=author,
         content=data['content'],
+        document=data.get('document'),
         pinned=data.get('pinned', False),
     )
 
-    serializer = StaffBoardMessageSerializer(message)
+    publish_staff_board_change(message.sport_association_id)
+    serializer = StaffBoardMessageSerializer(message, context={'request': request})
     return Response({'data': serializer.data}, status=status.HTTP_201_CREATED)
 
 
@@ -453,17 +451,23 @@ def staff_board_messages_update(request, staff_board_message_id):
     if not message:
         return Response({'error': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    if ('content' in request.data or 'document' in request.data) and message.author_id != message_actor(request).pk:
+        return Response({'error': 'Solo l’autore può modificare questo messaggio.'}, status=status.HTTP_403_FORBIDDEN)
+
     payload = StaffBoardMessageInputSerializer(data=request.data, partial=True)
     payload.is_valid(raise_exception=True)
     data = payload.validated_data
     if 'content' in data:
         message.content = data['content']
+    if 'document' in data:
+        message.document = data['document']
     if 'pinned' in data:
         message.pinned = data['pinned']
 
     message.save()
 
-    serializer = StaffBoardMessageSerializer(message)
+    publish_staff_board_change(message.sport_association_id)
+    serializer = StaffBoardMessageSerializer(message, context={'request': request})
     return Response({'data': serializer.data}, status=status.HTTP_200_OK)
 
 
@@ -484,5 +488,10 @@ def staff_board_messages_delete(request, staff_board_message_id):
     if not message:
         return Response({'error': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    if message.author_id != message_actor(request).pk:
+        return Response({'error': 'Solo l’autore può eliminare questo messaggio.'}, status=status.HTTP_403_FORBIDDEN)
+
+    association_id = message.sport_association_id
     message.delete()
+    publish_staff_board_change(association_id)
     return Response({'msg': 'message deleted.'}, status=status.HTTP_200_OK)

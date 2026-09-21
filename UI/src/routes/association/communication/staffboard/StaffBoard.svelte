@@ -4,97 +4,115 @@
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
     import ContentLoader from 'svelte-content-loader';
-    import {PencilSimple, TrashSimple, Check, X, PushPin} from 'phosphor-svelte';
-    import {scale, slide} from 'svelte/transition';
+    import {NotePencil, ChatsCircle} from 'phosphor-svelte';
+    import MessageModal from 'components/staffboard/MessageModal.svelte';
+    import MessageContent from 'components/staffboard/MessageContent.svelte';
+    import AuthorAvatar from 'components/staffboard/AuthorAvatar.svelte';
+    import notificationService from 'utils/NotificationService.js';
+    import swal from 'sweetalert2';
+    import EditButton from 'components/buttons/EditButton.svelte';
+    import DeleteButton from 'components/buttons/DeleteButton.svelte';
+    import PinButton from 'components/buttons/PinButton.svelte';
 
     let loading = true;
     let loadError = false;
     let messages = [];
-    let newContent = '';
-    let submitting = false;
+    let showComposer = false;
+    let editingMessage = null;
+    let refreshQueued = false;
+    let disposed = false;
+    let pendingAction = null;
+    let fetching = false;
+    const canRead = canPerformAction('association.communication.messages.read');
 
-    // edit state
-    let editingId = null;
-    let editingContent = '';
-
-    async function fetchMessages() {
-        loading = true;
+    async function fetchMessages(background = false) {
+        if (!canRead || disposed) return;
+        if (fetching) {
+            refreshQueued = true;
+            return;
+        }
+        fetching = true;
+        if (!background) loading = true;
         loadError = false;
-        let res = await apiFetch(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.LIST);
-        if (!res.error) {
-            messages = res.response.data || [];
-        } else {
+        try {
+            const res = await apiFetch(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.LIST);
+            if (res.error) throw new Error('Unable to load staff board');
+            const list = res.response?.data || res.response || [];
+            messages = Array.isArray(list) ? list : [];
+        } catch {
             loadError = true;
-        }
-        loading = false;
-    }
-
-    async function submitMessage() {
-        if (!newContent.trim() || submitting) return;
-        submitting = true;
-        let res = await apiFetch(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.ADD, {
-            method: 'POST',
-            body: JSON.stringify({content: newContent.trim()}),
-        });
-        if (!res.error) {
-            toast.success('Messaggio pubblicato.');
-            newContent = '';
-            await fetchMessages();
-        } else {
-            toast.error('Qualcosa è andato storto.');
-        }
-        submitting = false;
-    }
-
-    function startEdit(message) {
-        editingId = message.staff_board_message_id;
-        editingContent = message.content;
-    }
-
-    async function saveEdit() {
-        if (!editingContent.trim()) return;
-        let res = await apiFetch(
-            replaceUID(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.UPDATE, editingId),
-            {
-                method: 'PATCH',
-                body: JSON.stringify({content: editingContent.trim()}),
+        } finally {
+            loading = false;
+            fetching = false;
+            if (refreshQueued && !disposed) {
+                refreshQueued = false;
+                await fetchMessages(true);
             }
-        );
-        if (!res.error) {
-            toast.success('Messaggio aggiornato.');
-            editingId = null;
-            await fetchMessages();
-        } else {
-            toast.error('Qualcosa è andato storto.');
         }
+    }
+
+    async function mutateMessage(url, method, body, successText, onSuccess = () => {}) {
+        const res = await apiFetch(url, {
+            method,
+            ...(body ? {body: JSON.stringify(body)} : {}),
+        });
+        if (res.error) throw new Error('Unable to save staff board');
+        if (successText) toast.success(successText);
+        onSuccess();
+        await fetchMessages();
+    }
+
+    function openComposer(message = null) {
+        if (message && !message.is_owner) return;
+        editingMessage = message;
+        showComposer = true;
     }
 
     async function togglePin(message) {
-        let res = await apiFetch(
-            replaceUID(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.UPDATE, message.staff_board_message_id),
-            {
-                method: 'PATCH',
-                body: JSON.stringify({pinned: !message.pinned}),
-            }
-        );
-        if (!res.error) {
-            await fetchMessages();
-        } else {
-            toast.error('Qualcosa è andato storto.');
+        if (!canPerformAction('association.communication.messages.update') || pendingAction) return;
+        pendingAction = 'pin';
+        try {
+            await mutateMessage(
+                replaceUID(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.UPDATE, message.staff_board_message_id),
+                'PATCH',
+                {pinned: !message.pinned}
+            );
+        } catch {
+            toast.error('Impossibile aggiornare il messaggio. Riprova.');
+        } finally {
+            pendingAction = null;
         }
     }
 
     async function deleteMessage(message) {
-        if (!confirm('Eliminare questo messaggio dalla bacheca?')) return;
-        let res = await apiFetch(
-            replaceUID(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.DELETE, message.staff_board_message_id),
-            {method: 'DELETE'}
-        );
-        if (!res.error) {
-            toast.success('Messaggio eliminato.');
-            await fetchMessages();
-        } else {
-            toast.error('Qualcosa è andato storto.');
+        if (!canPerformAction('association.communication.messages.delete') || pendingAction) return;
+        if (!message.is_owner) return;
+        pendingAction = 'delete';
+        try {
+            const result = await swal.fire({
+                text: 'Vuoi eliminare il messaggio dalla bacheca?',
+                icon: 'warning',
+                showCancelButton: true,
+                cancelButtonText: 'Annulla',
+                confirmButtonText: 'Elimina',
+                reverseButtons: true,
+                buttonsStyling: false,
+                customClass: {
+                    confirmButton: 'btn btn-danger font-weight-bold mx-2',
+                    cancelButton: 'btn btn-light-primary font-weight-bold mx-2',
+                },
+            });
+            if (!result.isConfirmed) return;
+            await mutateMessage(
+                replaceUID(__bakney.env.API.COMMUNICATIONS.STAFF_BOARD.DELETE, message.staff_board_message_id),
+                'DELETE',
+                null,
+                'Messaggio eliminato.'
+            );
+        } catch {
+            toast.error('Impossibile eliminare il messaggio. Riprova.');
+        } finally {
+            pendingAction = null;
         }
     }
 
@@ -109,154 +127,212 @@
         });
     }
 
-    onMount(async () => {
-        await fetchMessages();
+    onMount(() => {
+        const unsubscribe = canRead ? notificationService.subscribeStaffBoard(() => fetchMessages(true)) : () => {};
+        if (canRead) fetchMessages();
+        else loading = false;
+        return () => {
+            disposed = true;
+            unsubscribe();
+        };
     });
 </script>
 
-<!--begin::Entry-->
-<div class="d-flex flex-column-fluid">
-    <!--begin::Container-->
+<div class="d-flex flex-column-fluid font-weight-bold text-dark-50 staff-board">
     <div class="container">
-        <!--begin::Card-->
         <div class="card card-custom gutter-b">
-            <div
-                class="card-header px-0 pt-0 pb-0 mb-6 header-mobile-btn-back border-0"
-                style="padding-bottom: 0 !important;min-height: auto !important;">
-                <div class="card-toolbar m-0">
-                    <h3 class="card-title font-size-h2">Bacheca Staff</h3>
+            <div class="card-header flex-wrap border-0 p-0">
+                <div class="card-title">
+                    <h3 class="card-label font-size-h2">
+                        Bacheca Staff
+                        <span class="d-block text-muted pt-2 font-size-sm"
+                            >Messaggi e aggiornamenti per il tuo staff.</span>
+                    </h3>
                 </div>
-            </div>
-            <div class="card-body pt-0 px-4">
-                {#if loading}
-                    <ContentLoader width="100%" height="400">
-                        <rect x="15" y="15" rx="4" ry="4" width="100%" height="80" />
-                        <rect x="15" y="110" rx="4" ry="4" width="100%" height="80" />
-                        <rect x="15" y="205" rx="4" ry="4" width="100%" height="80" />
-                    </ContentLoader>
-                {:else if loadError}
-                    <div class="text-center py-10">
-                        <p class="text-muted">Impossibile caricare la bacheca.</p>
+                {#if canRead && canPerformAction('association.communication.messages.create')}
+                    <div class="card-toolbar ml-auto">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-primary font-weight-bolder d-flex align-items-center"
+                            on:click={() => openComposer()}>
+                            <NotePencil size={18} weight="duotone" class="mr-2" /> Nuovo messaggio
+                        </button>
                     </div>
+                {/if}
+            </div>
+            <div class="card-body p-0" aria-busy={loading || !!pendingAction}>
+                {#if !canRead}
+                    <div class="text-center py-10 text-muted" role="status">Permessi insufficienti</div>
                 {:else}
-                    <!--begin::Nuovo messaggio-->
-                    {#if canPerformAction('association.communication.messages.create')}
-                        <div class="form-group mb-8">
-                            <textarea
-                                aria-label="Nuovo messaggio per lo staff"
-                                maxlength="10000"
-                                bind:value={newContent}
-                                class="form-control form-control-solid form-control-lg"
-                                rows="3"
-                                style="resize: vertical;"
-                                placeholder="Scrivi un messaggio per il tuo staff..." />
-                            <div class="d-flex justify-content-end mt-2">
+                    {#if loading}
+                        <div role="status" aria-label="Caricamento bacheca in corso">
+                            <ContentLoader
+                                width="100%"
+                                height="260"
+                                backgroundColor="var(--bg-surface-secondary)"
+                                foregroundColor="var(--border-color)">
+                                <rect x="0" y="15" rx="4" ry="4" width="40%" height="16" />
+                                <rect x="0" y="45" rx="4" ry="4" width="100%" height="45" />
+                                <rect x="0" y="125" rx="4" ry="4" width="40%" height="16" />
+                                <rect x="0" y="155" rx="4" ry="4" width="100%" height="45" />
+                            </ContentLoader>
+                        </div>
+                    {:else if loadError}
+                        <div class="text-center py-10" role="alert">
+                            <p class="text-muted">Impossibile caricare la bacheca.</p>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-light-primary font-weight-bold"
+                                on:click={() => fetchMessages()}>Riprova</button>
+                        </div>
+                    {:else if messages.length === 0}
+                        <div class="empty-board text-center py-10 px-4" role="status">
+                            <span class="empty-icon bg-light-primary text-primary mb-5"
+                                ><ChatsCircle size={48} weight="duotone" /></span>
+                            <h4 class="font-weight-bolder text-dark mb-3">Uno spazio per il tuo staff</h4>
+                            <p class="text-muted mb-5">
+                                Condividi novità, foto e promemoria.<br />I messaggi del team appariranno qui.
+                            </p>
+                            {#if canPerformAction('association.communication.messages.create')}
                                 <button
                                     type="button"
-                                    class="btn btn-primary font-weight-bold"
-                                    disabled={!newContent.trim() || submitting}
-                                    on:click={submitMessage}>
-                                    Pubblica
-                                </button>
-                            </div>
-                        </div>
-                    {/if}
-                    <!--end::Nuovo messaggio-->
-
-                    {#if messages.length === 0}
-                        <div class="text-center py-10">
-                            <PushPin size={48} weight="duotone" class="text-muted" />
-                            <p class="text-muted mt-4">Nessun messaggio. La bacheca è vuota.</p>
+                                    class="btn btn-light-primary font-weight-bold"
+                                    on:click={() => openComposer()}>Scrivi il primo messaggio</button>
+                            {/if}
                         </div>
                     {:else}
-                        {#each messages as message (message.staff_board_message_id)}
-                            <div
-                                class="card card-custom mb-4 {message.pinned ? 'border-left-warning' : ''}"
-                                in:slide={{duration: 200}}
-                                out:scale={{duration: 200}}>
-                                <div class="card-body p-6">
-                                    <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                        <div class="d-flex align-items-center">
-                                            {#if message.pinned}
-                                                <PushPin size={20} weight="fill" class="text-warning mr-2" />
-                                            {/if}
-                                            <span class="font-weight-bolder text-dark-75">
-                                                {message.author_name}
-                                            </span>
-                                            <span class="text-muted ml-3" style="font-size: 0.85rem;">
-                                                {formatDate(message.created_at)}
-                                            </span>
+                        <div class="message-feed">
+                            {#each messages as message (message.staff_board_message_id)}
+                                <article
+                                    class="message-card"
+                                    class:pinned={message.pinned}
+                                    aria-label="Messaggio di {message.author_name}">
+                                    <div class="message-header">
+                                        <div class="d-flex message-identity">
+                                            <AuthorAvatar name={message.author_name} image={message.author_avatar} />
+                                            <div class="message-meta ml-3">
+                                                <span
+                                                    class="font-weight-bolder text-dark-75 message-author"
+                                                    title={message.author_name}>{message.author_name}</span>
+                                                <time
+                                                    class="text-muted font-size-sm d-block mt-1"
+                                                    datetime={message.created_at}
+                                                    >{formatDate(message.created_at)}</time>
+                                            </div>
                                         </div>
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center message-actions">
                                             {#if canPerformAction('association.communication.messages.update')}
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
-                                                    title={message.pinned ? 'Togli pin' : 'Metti in evidenza'}
-                                                    on:click={() => togglePin(message)}>
-                                                    <PushPin size={16}
-                                                         weight={message.pinned ? 'fill' : 'duotone'}
-                                                         class={message.pinned ? 'text-warning' : ''} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-icon btn-light btn-hover-primary btn-sm mr-1"
-                                                    title="Modifica"
-                                                    on:click={() => startEdit(message)}>
-                                                    <PencilSimple size={16} />
-                                                </button>
+                                                <PinButton
+                                                    pinned={message.pinned}
+                                                    popover_text={message.pinned
+                                                        ? 'Togli dai messaggi in evidenza'
+                                                        : 'Metti in evidenza'}
+                                                    disabled={!!pendingAction}
+                                                    on:open={() => togglePin(message)} />
                                             {/if}
-                                            {#if canPerformAction('association.communication.messages.delete')}
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-icon btn-light btn-hover-danger btn-sm"
-                                                    title="Elimina"
-                                                    on:click={() => deleteMessage(message)}>
-                                                    <TrashSimple size={16} />
-                                                </button>
+                                            {#if message.is_owner && canPerformAction('association.communication.messages.update')}
+                                                <EditButton
+                                                    disabled={!!pendingAction}
+                                                    on:open={() => openComposer(message)} />
+                                            {/if}
+                                            {#if message.is_owner && canPerformAction('association.communication.messages.delete')}
+                                                <DeleteButton
+                                                    disabled={!!pendingAction}
+                                                    on:open={() => deleteMessage(message)} />
                                             {/if}
                                         </div>
                                     </div>
-
-                                    {#if editingId == message.staff_board_message_id}
-                                        <div class="mt-4">
-                                            <textarea
-                                                aria-label="Modifica messaggio per lo staff"
-                                                maxlength="10000"
-                                                bind:value={editingContent}
-                                                class="form-control form-control-solid"
-                                                rows="3"
-                                                style="resize: vertical;" />
-                                            <div class="d-flex justify-content-end mt-2">
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-light-primary font-weight-bold mr-2"
-                                                    on:click={() => (editingId = null)}>
-                                                    <X size={16} /> Annulla
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-primary font-weight-bold"
-                                                    disabled={!editingContent.trim()}
-                                                    on:click={saveEdit}>
-                                                    <Check size={16} /> Salva
-                                                </button>
-                                            </div>
-                                        </div>
-                                    {:else}
-                                        <p class="mt-4 mb-0 text-dark-75" style="white-space: pre-line;">
-                                            {message.content}
-                                        </p>
-                                    {/if}
-                                </div>
-                            </div>
-                        {/each}
+                                    <div class="mt-4"><MessageContent {message} /></div>
+                                </article>
+                            {/each}
+                        </div>
                     {/if}
+                    <span class="sr-only" role="status">{pendingAction ? 'Operazione in corso...' : ''}</span>
                 {/if}
             </div>
         </div>
-        <!--end::Card-->
     </div>
-    <!--end::Container-->
 </div>
-<!--end::Entry-->
+
+{#if showComposer}
+    <MessageModal
+        message={editingMessage}
+        on:close={() => (showComposer = false)}
+        on:saved={() => fetchMessages(true)} />
+{/if}
+
+<style>
+    .staff-board,
+    .message-meta,
+    .message-identity {
+        min-width: 0;
+    }
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .message-author {
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .message-identity {
+        flex: 1;
+    }
+    .message-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        margin: 1.5rem auto 0;
+        max-width: 64rem;
+    }
+    .message-card {
+        padding: 1.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.85rem;
+        background: var(--bg-surface);
+    }
+    .message-card.pinned {
+        border-left: 3px solid var(--primary);
+    }
+    .message-actions {
+        flex-shrink: 0;
+    }
+    .staff-board :global(button:focus-visible) {
+        outline: 2px solid var(--primary) !important;
+        outline-offset: 3px;
+    }
+    @media (max-width: 575px) {
+        .message-card {
+            padding: 1.25rem;
+        }
+        .message-header {
+            gap: 0.5rem;
+        }
+        .message-meta {
+            margin-left: 0.75rem !important;
+        }
+    }
+    .empty-board {
+        background: var(--bg-surface-secondary);
+        border-radius: 0.85rem;
+        margin-top: 1.5rem;
+        min-height: 24rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 7rem;
+        height: 7rem;
+        border-radius: 50%;
+    }
+</style>

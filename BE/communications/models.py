@@ -225,6 +225,7 @@ class StaffBoardMessage(models.Model):
     sport_association = models.ForeignKey(SportAssociation, on_delete=models.CASCADE)
     author = models.ForeignKey('application.User', on_delete=models.SET_NULL, blank=True, null=True)
     content = models.TextField()
+    document = models.JSONField(null=True, blank=True)
     pinned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

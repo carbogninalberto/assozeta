@@ -1,6 +1,7 @@
 <script>
 	import { Table as LucideTable } from 'lucide-svelte';
     import {onMount, onDestroy} from 'svelte';
+    import {toast} from 'svelte-sonner';
     import {Editor, Node} from '@tiptap/core';
     import StarterKit from '@tiptap/starter-kit';
     import Placeholder from '@tiptap/extension-placeholder';
@@ -53,6 +54,10 @@
     import suggestion from './suggestion.js';
 
     export let value = '';
+    export let json = null;
+    export let accessibleLabel = 'Testo del messaggio';
+    export let disabled = false;
+    export let validateImage = () => true;
     export let placeholder = 'Inserisci il testo...';
     export let mentions = true;
     export let isFooter = false;
@@ -233,9 +238,11 @@
                         },
                     }),
             ],
-            content: value || '',
+            content: json || value || '',
+            editable: !disabled,
             onUpdate: ({editor}) => {
                 value = editor.getHTML();
+                json = editor.getJSON();
                 updateTableMenuVisibility();
             },
             onSelectionUpdate: ({editor}) => {
@@ -251,10 +258,13 @@
                 return getOnTransaction(editor)(...args);
             },
             editorProps: {
-                handlePaste: getHandlePaste(editor),
+                attributes: {role: 'textbox', 'aria-label': accessibleLabel, 'aria-multiline': 'true'},
+                handlePaste: getHandlePaste(editor, {validateImage, onError: message => toast.error(message)}),
             },
         });
     });
+
+    $: if (editor) editor.setEditable(!disabled, false);
 
     onDestroy(() => {
         if (editor) {
@@ -266,36 +276,36 @@
 <div class="my-4">
     {#if editor}
         <div class="editor-toolbar bg-light px-3">
-            <button
+            <button type="button" aria-label="Annulla modifica"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().undo().run()}>
                 <ArrowUUpLeft size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Ripeti modifica"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().redo().run()}>
                 <ArrowUUpRight size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Grassetto"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleBold().run()}
                 class:text-primary={editor.isActive('bold')}>
                 <TextB size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Corsivo"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleItalic().run()}
                 class:text-primary={editor.isActive('italic')}>
                 <TextItalic size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Sottolineato"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleUnderline().run()}
                 class:text-primary={editor.isActive('underline')}>
                 <TextUnderline size={18} weight="bold" />
             </button>
             <div class="dropdown dropdown-inline">
-                <button
+                <button aria-label="Stile del testo"
                     type="button"
                     class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                     data-toggle="dropdown"
@@ -304,7 +314,7 @@
                     <TextH size={18} weight="bold" />
                 </button>
                 <div class="dropdown-menu dropdown-menu-sm py-0">
-                    <button
+                    <button type="button"
                         class="dropdown-item d-flex align-items-center font-weight-bold"
                         on:click={() => {
                             editor.chain().focus().setHeading({level: 1}).run();
@@ -312,7 +322,7 @@
                         class:active={editor.isActive('heading', {level: 1})}>
                         <TextHOne size={18} weight="bold" class="mr-2" /> Intestazione 1
                     </button>
-                    <button
+                    <button type="button"
                         class="dropdown-item d-flex align-items-center font-weight-bold"
                         on:click={() => {
                             editor.chain().focus().setHeading({level: 2}).run();
@@ -320,7 +330,7 @@
                         class:active={editor.isActive('heading', {level: 2})}>
                         <TextHTwo size={18} weight="bold" class="mr-2" /> Intestazione 2
                     </button>
-                    <button
+                    <button type="button"
                         class="dropdown-item d-flex align-items-center font-weight-bold"
                         on:click={() => {
                             editor.chain().focus().setHeading({level: 3}).run();
@@ -328,7 +338,7 @@
                         class:active={editor.isActive('heading', {level: 3})}>
                         <TextHThree size={18} weight="bold" class="mr-2" /> Intestazione 3
                     </button>
-                    <button
+                    <button type="button"
                         class="dropdown-item d-flex align-items-center font-weight-bold"
                         on:click={() => {
                             editor.chain().focus().setParagraph().run();
@@ -336,7 +346,7 @@
                         class:active={editor.isActive('paragraph')}>
                         <ParagraphIcon size={18} weight="bold" class="mr-2" /> Paragrafo
                     </button>
-                    <button
+                    <button type="button"
                         class="dropdown-item d-flex align-items-center font-weight-bold"
                         class:active={editor.isActive('paragraph') &&
                             editor.getAttributes('paragraph').class === 'no-padding'}
@@ -348,7 +358,7 @@
                 </div>
             </div>
             <!-- svelte-ignore missing-declaration -->
-            <button
+            <button type="button" aria-label="Inserisci link"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => {
                     const selection = editor.state.selection;
@@ -384,25 +394,25 @@
                 class:text-primary={editor.isActive('link')}>
                 <LinkSimple size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Elenco puntato"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleBulletList().run()}
                 class:text-primary={editor.isActive('bulletList')}>
                 <ListBullets size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Elenco numerato"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleOrderedList().run()}
                 class:text-primary={editor.isActive('orderedList')}>
                 <ListNumbers size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Elenco attività"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().toggleTaskList().run()}
                 class:text-primary={editor.isActive('taskList')}>
                 <CheckSquare size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Aggiungi immagine"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => {
                     const input = document.createElement('input');
@@ -410,6 +420,7 @@
                     input.accept = 'image/*';
                     input.onchange = async e => {
                         const file = e.target.files[0];
+                        if (!file || !validateImage(file)) return;
                         const reader = new FileReader();
                         reader.onload = e => {
                             const base64 = e.target.result;
@@ -417,6 +428,7 @@
                             editor.chain().focus().setImage({src: base64, width: 200}).run();
                             editor.chain().focus().setParagraph().run();
                         };
+                        reader.onerror = () => toast.error('Impossibile leggere l’immagine. Riprova.');
                         reader.readAsDataURL(file);
                     };
                     input.click();
@@ -424,7 +436,7 @@
                 class:text-primary={editor.isActive('image')}>
                 <Image size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Inserisci tabella"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => {
                     editor.chain().focus().insertTable({rows: 3, cols: 3, withHeaderRow: true}).run();
@@ -433,31 +445,31 @@
                 class:text-primary={editor.isActive('table')}>
                 <LucideTable size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Allinea a sinistra"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().setTextAlign('left').run()}
                 class:text-primary={editor.isActive({textAlign: 'left'})}>
                 <TextAlignLeft size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Allinea al centro"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().setTextAlign('center').run()}
                 class:text-primary={editor.isActive({textAlign: 'center'})}>
                 <TextAlignCenter size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Allinea a destra"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().setTextAlign('right').run()}
                 class:text-primary={editor.isActive({textAlign: 'right'})}>
                 <TextAlignRight size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Giustifica"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => editor.chain().focus().setTextAlign('justify').run()}
                 class:text-primary={editor.isActive({textAlign: 'justify'})}>
                 <TextAlignJustify size={18} weight="bold" />
             </button>
-            <button
+            <button type="button" aria-label="Interruzione di pagina"
                 class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                 on:click={() => {
                     editor.commands.insertContent({
@@ -467,7 +479,7 @@
                 <ArrowLineDown size={18} weight="bold" />
             </button>
             {#if mentions}
-                <button
+                <button type="button" aria-label="Inserisci campo"
                     class="btn btn-clean btn-xl font-weight-boldest btn-light p-1 my-2 mb-0"
                     on:click={() => {
                         const {view} = editor;
@@ -490,7 +502,7 @@
             class="bubble-menu px-2 py-2"
             data-tiptap-bubble-menu
             style="display: {isTableMenuVisible ? 'flex' : 'none'}; gap: 0.5rem;">
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0"
                 on:click={() => {
                     editor.chain().focus().deleteTable().run();
@@ -498,33 +510,33 @@
                 }}>
                 <TrashSimple size={14} weight="bold" class="text-danger" />
             </button>
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                 on:click={() => editor.chain().focus().addRowAfter().run()}>
                 <PlusCircle size={14} weight="bold" class="mr-1" /> Riga
             </button>
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                 on:click={() => editor.chain().focus().addColumnAfter().run()}>
                 <PlusCircle size={14} weight="bold" class="mr-1" /> Colonna
             </button>
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                 on:click={() => editor.chain().focus().deleteRow().run()}>
                 <MinusCircle size={14} weight="bold" class="mr-1" /> Riga
             </button>
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                 on:click={() => editor.chain().focus().deleteColumn().run()}>
                 <MinusCircle size={14} weight="bold" class="mr-1" /> Colonna
             </button>
-            <button
+            <button type="button"
                 class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                 on:click={() => editor.chain().focus().mergeCells().run()}>
                 <UniteSquare size={14} weight="bold" class="mr-1" /> Unisci celle
             </button>
             <div class="border-controls d-flex gap-2">
-                <button
+                <button type="button" aria-label="Inserisci tabella"
                     class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                     on:click={() => {
                         // get the table
@@ -564,7 +576,7 @@
                 </button>
 
                 <div class="dropdown">
-                    <button
+                    <button type="button"
                         class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2 dropdown-toggle"
                         data-toggle="dropdown"
                         aria-haspopup="true"
@@ -577,7 +589,7 @@
                                 <div class="border-type-group m-0 d-flex align-items-center" style="gap: 0.5rem;">
                                     <small class="text-dark font-weight-boldest min-w-2 mb-1">Superiore</small>
                                     <div class="btn-group">
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderTop', 'solid').run()}>
@@ -585,7 +597,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-top: 3px solid var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderTop', 'dashed').run()}>
@@ -593,7 +605,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-top: 3px dashed var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderTop', 'dotted').run()}>
@@ -601,7 +613,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-top: 3px dotted var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderTop', null).run()}>
@@ -612,7 +624,7 @@
                                 <div class="border-type-group m-0 d-flex align-items-center" style="gap: 0.5rem;">
                                     <small class="text-dark font-weight-boldest min-w-2 mb-1">Inferiore</small>
                                     <div class="btn-group">
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderBottom', 'solid').run()}>
@@ -620,7 +632,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-bottom: 3px solid var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor
@@ -632,7 +644,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-bottom: 3px dashed var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor
@@ -644,7 +656,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-bottom: 3px dotted var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderBottom', null).run()}>
@@ -655,7 +667,7 @@
                                 <div class="border-type-group m-0 d-flex align-items-center" style="gap: 0.5rem;">
                                     <small class="text-dark font-weight-boldest min-w-2 mb-1">Sinistra</small>
                                     <div class="btn-group">
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderLeft', 'solid').run()}>
@@ -663,7 +675,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-left: 3px solid var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderLeft', 'dashed').run()}>
@@ -671,7 +683,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-left: 3px dashed var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderLeft', 'dotted').run()}>
@@ -679,7 +691,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-left: 3px dotted var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderLeft', null).run()}>
@@ -690,7 +702,7 @@
                                 <div class="border-type-group d-flex align-items-center" style="gap: 0.5rem;">
                                     <small class="text-dark font-weight-boldest min-w-2 mb-1">Destra</small>
                                     <div class="btn-group">
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderRight', 'solid').run()}>
@@ -698,7 +710,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-right: 3px solid var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderRight', 'dashed').run()}>
@@ -706,7 +718,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-right: 3px dashed var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderRight', 'dotted').run()}>
@@ -714,7 +726,7 @@
                                                 class="m-auto"
                                                 style="width: 15px; height: 15px; background: var(--bg-surface-secondary);border-right: 3px dotted var(--text-primary);" />
                                         </button>
-                                        <button
+                                        <button type="button"
                                             class="mb-0 btn btn-icon btn-sm btn-ghost p-0"
                                             on:click={() =>
                                                 editor.chain().focus().setCellAttribute('borderRight', null).run()}>
@@ -727,7 +739,7 @@
                     </ul>
                 </div>
 
-                <button
+                <button type="button" aria-label="Inserisci tabella"
                     class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2"
                     on:click={() => {
                         editor

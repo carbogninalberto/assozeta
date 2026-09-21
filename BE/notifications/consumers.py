@@ -26,6 +26,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 
 from notifications.services import NotificationService
+from communications.staff_board import readable_association_id, staff_board_group
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         self.user = None
         self.user_group = None
         self.broadcast_groups = []
+        self.staff_board_association = None
 
     async def connect(self):
         """Handle WebSocket connection."""
@@ -49,12 +51,15 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=4001)
             return
 
-        # Accept connection
-        await self.accept()
-
         # Join user-specific notification group
         self.user_group = f"notifications_user_{self.user.user_id}"
         await self.channel_layer.group_add(self.user_group, self.channel_name)
+
+        self.staff_board_association = await database_sync_to_async(readable_association_id)(self.user.pk)
+        if self.staff_board_association:
+            group = staff_board_group(self.staff_board_association)
+            self.broadcast_groups.append(group)
+            await self.channel_layer.group_add(group, self.channel_name)
 
         # Join broadcast groups the user is subscribed to
         broadcasts = await self._get_user_broadcasts()
@@ -62,6 +67,9 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             group_name = f"notifications_broadcast_{broadcast}"
             self.broadcast_groups.append(group_name)
             await self.channel_layer.group_add(group_name, self.channel_name)
+
+        # Join groups before accepting so the client’s initial refetch cannot miss an update.
+        await self.accept()
 
         logger.info(
             f"WebSocket connected: user={self.user.user_id}, "
@@ -156,6 +164,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             'type': 'notification_push',
             'notification': event['notification']
         })
+
+    async def staff_board_changed(self, event):
+        # Permissions may have changed since this socket connected.
+        association = await database_sync_to_async(readable_association_id)(self.user.pk)
+        if association and association == self.staff_board_association:
+            await self.send_json({'type': 'staff_board_changed'})
 
     async def export_progress(self, event):
         await self.send_json({'type': 'export_progress', **event['payload']})
