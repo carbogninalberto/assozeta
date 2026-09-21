@@ -3,7 +3,8 @@
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
     import {scale} from 'svelte/transition';
-    import {querystring} from 'svelte-spa-router';
+    import {querystring, push} from 'svelte-spa-router';
+    import {clearAuthentication} from 'store/stores.js';
     import {setPermissions} from 'utils/Permissions';
     import {
         refreshToken,
@@ -99,54 +100,39 @@
     $: termsAndConditionsUrl =
         $oemConfig?.displaySettings?.login?.termsAndConditionsUrl || $oemConfig?.termsOfServiceUrl || '';
 
+    let collaboratorToken = null;
+    function clearInvitation() {
+        sessionStorage.removeItem('collaboratorToken');
+        sessionStorage.removeItem('isCollaborator');
+        collaboratorToken = null;
+    }
+
+    function applyLoginQuery(query) {
+        const params = new URLSearchParams(query);
+        const signup = ['signup', 'signup_athlete', 'signup_association'].includes(params.get('page')) || params.get('type') === 'association';
+        currentShown = signup ? 4 : params.get('page') === 'forgot' ? 3 : 1;
+        if (signup && params.get('collaborator') === '1') {
+            // Empty context must fail explicitly, never silently create an athlete.
+            collaboratorToken = sessionStorage.getItem('collaboratorToken') || '';
+        } else {
+            clearInvitation();
+        }
+        if (params.has('email_reset')) email = params.get('email_reset');
+        if (params.has('email')) {
+            userInfo.email = params.get('email');
+            const partial = JSON.parse(localStorage.getItem('partialOnBoarding')) || {};
+            localStorage.setItem('partialOnBoarding', JSON.stringify({...partial, email: userInfo.email}));
+            apiFetch(__bakney.env.API.OAUTH2.PARTIAL_SIGNUP, {
+                method: 'POST', body: JSON.stringify({email: userInfo.email}),
+            });
+        }
+    }
+    $: applyLoginQuery($querystring);
+
     onMount(() => {
-        var urlParams;
-        localStorage.clear();
-        (window.onpopstate = function () {
-            var match,
-                pl = /\+/g, // Regex for replacing addition symbol with a space
-                search = /([^&=]+)=?([^&]*)/g,
-                decode = function (s) {
-                    return decodeURIComponent(s.replace(pl, ' '));
-                };
-
-            urlParams = {};
-            while ((match = search.exec($querystring))) urlParams[decode(match[1])] = decode(match[2]);
-
-            if (urlParams.page) {
-                if (
-                    urlParams.page == 'signup' ||
-                    urlParams.page == 'signup_athlete' ||
-                    urlParams.page == 'signup_association'
-                ) {
-                    currentShown = 4;
-                } else if (urlParams.page == 'login') {
-                    currentShown = 1;
-                } else if (urlParams.page == 'forgot') {
-                    currentShown = 3;
-                    email = urlParams?.email_reset || null;
-                }
-            }
-
-            if (urlParams.type == 'association') {
-                currentShown = 4;
-            }
-
-            if (urlParams.email) {
-                userInfo.email = urlParams.email;
-                let partialOnBoarding = JSON.parse(localStorage.getItem('partialOnBoarding')) || {};
-                partialOnBoarding.email = urlParams.email;
-                localStorage.setItem('partialOnBoarding', JSON.stringify(partialOnBoarding));
-                apiFetch(__bakney.env.API.OAUTH2.PARTIAL_SIGNUP, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        email: urlParams.email,
-                    }),
-                });
-            }
-
-        })();
-        setTimeout(initSignleSingOn, 500);
+        clearAuthentication();
+        const timer = setTimeout(initSignleSingOn, 500);
+        return () => clearTimeout(timer);
     });
 
     function gtag_report_conversion() {
@@ -197,6 +183,8 @@
 
     // toggle view of pages
     let toggleView = id => {
+        clearInvitation();
+        push(`/login?page=${id === 'reset' ? 'forgot' : id}`);
         switch (id) {
             case 'login':
                 currentShown = 1;
@@ -405,7 +393,7 @@
     };
 
     async function signup(data = {}) {
-        localStorage.clear();
+        clearAuthentication();
         UiApp.blockPage({
             overlayColor: '#000000',
             state: 'primary',
@@ -432,9 +420,7 @@
             body.last_name = String(data.name).split(' ')[1].trim().toLowerCase();
         }
 
-        if (sessionStorage.getItem('collaboratorToken')) {
-            body.collaboratorToken = sessionStorage.getItem('collaboratorToken');
-        }
+        if (collaboratorToken !== null) body.collaboratorToken = collaboratorToken;
 
         const url = __bakney.env.API.OAUTH2.SIGNUP;
         const res = await window.fetch(url, {
@@ -462,9 +448,8 @@
                     confirmButton: 'btn font-weight-bold btn-light-primary',
                 },
             }).then(async function () {
-                let collaboratorToken = sessionStorage.getItem('collaboratorToken');
-                let collaborator = collaboratorToken && collaboratorToken.length > 0 ? true : false;
-                sessionStorage.removeItem('collaboratorToken');
+                const collaborator = collaboratorToken !== null;
+                clearInvitation();
                 sessionToken.set(response.access_token);
                 refreshToken.set(response.refresh_token);
                 expires.set(Date.now() + parseInt(response.expires_in) * 1000);
@@ -499,10 +484,8 @@
                 // replace('/');
             });
         } else {
-            // TODO: manage specifically the error
-
             swal.fire({
-                text: 'Scusa, ho individuato degli errori, controlla di non aver già utilizzato questa email e riprova.',
+                text: response.msg || 'Controlla i dati inseriti e riprova.',
                 icon: 'error',
                 buttonsStyling: false,
                 confirmButtonText: 'Ok, capito!',
@@ -516,7 +499,7 @@
     }
 
     async function reset() {
-        localStorage.clear();
+        clearAuthentication();
         validationForgot?.destroy();
 
         // Init form validation rules. For more info check the FormValidation plugin's official documentation:https://formvalidation.io/
@@ -595,12 +578,9 @@
     }
 
     async function login(data = {otp: null, backend: null, token: null, username: null}) {
-        localStorage.clear();
+        clearAuthentication();
         // extracting data from the object parameter
         const {otp, backend, token, username} = data;
-
-        // clear local storage
-        localStorage.clear();
 
         UiApp.blockPage({
             overlayColor: '#000000',
@@ -737,7 +717,7 @@
     };
 
     async function singleSignOn(e, backend = 'facebook') {
-        localStorage.clear();
+        clearAuthentication();
         // alert("ok " + backend)
         if (backend === 'facebook') {
             console.warn('Not implemented yet');
@@ -777,7 +757,7 @@
         } else if (backend === 'google-oauth2') {
             const responseInfo = jose.decodeJwt(e);
             const res = await apiFetch(`${__bakney.env.API.OAUTH2.CHECK.EMAIL}?email=${responseInfo.email}`);
-            if (!res?.response?.valid && res?.response?.exception === 'email already taken.') {
+            if (collaboratorToken === null && !res?.response?.valid && res?.response?.exception === 'email already taken.') {
                 login({
                     backend: backend,
                     token: e,
@@ -974,7 +954,7 @@
                                                 <div class="pt-lg-0 pt-5 pb-5">
                                                     <h3
                                                         class="font-weight-bolder text-dark font-size-h1 font-size-h1-lg">
-                                                        Crea un account {sessionStorage.getItem('collaboratorToken')
+                                                        Crea un account {collaboratorToken !== null
                                                             ? 'collaboratore'
                                                             : 'atleta'}
                                                     </h3>
@@ -988,7 +968,7 @@
                                                 <div class="pt-lg-0 pt-5 pb-5">
                                                     <h3
                                                         class="font-weight-bolder text-dark font-size-h1 font-size-h1-lg">
-                                                        Crea un account {sessionStorage.getItem('collaboratorToken')
+                                                        Crea un account {collaboratorToken !== null
                                                             ? 'collaboratore'
                                                             : 'atleta'}
                                                     </h3>
@@ -1141,14 +1121,12 @@
                                             <!--end::Form group-->
                                             <!--begin::Form group-->
                                             <div class="form-group d-flex flex-wrap pb-lg-0 pb-3">
-                                                {#if !sessionStorage.getItem('collaboratorToken')}
-                                                    <button
-                                                        type="button"
-                                                        id="bkn_login_signup_cancel"
-                                                        class="btn btn-sm btn-light-primary font-weight-bolder font-size-sm px-8 py-4 my-3 mr-4"
-                                                        on:click|preventDefault={() => toggleView('login')}
-                                                        >Indietro</button>
-                                                {/if}
+                                                <button
+                                                    type="button"
+                                                    id="bkn_login_signup_cancel"
+                                                    class="btn btn-sm btn-light-primary font-weight-bolder font-size-sm px-8 py-4 my-3 mr-4"
+                                                    on:click|preventDefault={() => toggleView('login')}
+                                                    >Indietro</button>
                                                 <button
                                                     type="button"
                                                     disabled={!agreeCheckbox && !ageCheckbox}

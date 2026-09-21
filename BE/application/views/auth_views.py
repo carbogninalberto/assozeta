@@ -13,7 +13,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 import pyotp
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from instance.email_branding import email_branding
 from django.template.loader import render_to_string
 
 from application.models.subscriptions_models import SubscriptionTransfer
@@ -247,6 +248,75 @@ def oauth2_delete_account(request):
     return Response({"msg": "Account will be deleted in 30 days."}, status=status.HTTP_200_OK)
 
 
+def _signup_collaborator(data):
+    """Redeem an invitation once, with identical rules for password and social signup."""
+    def error(code, message):
+        return Response({'code': code, 'msg': message}, status=status.HTTP_400_BAD_REQUEST)
+
+    payload = dict(data)
+    social = 'backend' in payload or 'token' in payload
+    if social:
+        backend = payload.get('backend')
+        if backend in ('google-oauth2', 'google-identity', 'google'):
+            success, identity = SocialAuthService.verify_google_token(payload.get('token'))
+        elif backend in ('apple-id', 'apple'):
+            success, identity = SocialAuthService.verify_apple_token(payload.get('token'))
+        else:
+            return error('invalid_social_identity', 'Accesso social non valido.')
+        if not success or identity.get('email_verified') not in (True, 'true'):
+            return error('invalid_social_identity', 'Il provider deve verificare il tuo indirizzo email.')
+        payload['email'] = identity.get('email', '')
+        payload['first_name'] = identity.get('first_name') or payload.get('first_name', '')
+        payload['last_name'] = identity.get('last_name') or payload.get('last_name', '')
+
+    token = payload.get('collaboratorToken')
+    if not isinstance(token, str) or not token.strip():
+        return error('invite_not_found', 'Invito non valido. Apri nuovamente il link ricevuto.')
+    email = str(payload.get('email', '')).strip().lower()
+    payload['email'] = email
+    payload['username'] = str(payload.get('username', '')).strip().upper()
+
+    try:
+        with transaction.atomic():
+            invite = CollaborationInvites.objects.select_for_update().filter(token=token).first()
+            if invite is None:
+                return error('invite_not_found', 'Invito non valido o già utilizzato.')
+            if invite.accepted:
+                return error('invite_used', 'Questo invito è già stato utilizzato.')
+            if invite.expiration_date is None or invite.expiration_date <= timezone.now():
+                return error('invite_expired', 'Questo invito è scaduto. Richiedi un nuovo invito.')
+            if email != invite.email.strip().lower():
+                return error('invite_email_mismatch', 'Usa lo stesso indirizzo email che ha ricevuto l’invito.')
+            if User.objects.filter(email__iexact=email).exists():
+                return error('account_exists', 'Esiste già un account con questa email. Contatta l’associazione.')
+
+            serializer = UserSerializer(data=payload) if social else UserSerializerSignup(data=payload)
+            if not serializer.is_valid():
+                return Response({'msg': 'Controlla i dati inseriti.', 'details': serializer.errors}, status=400)
+            user = User.objects.create_user(
+                first_name=serializer.validated_data.get('first_name', ''),
+                last_name=serializer.validated_data.get('last_name', ''),
+                username=payload['username'], email=email,
+                password=None if social else serializer.validated_data['password'],
+                role=User.COLLABORATOR, connected_user=invite.user,
+                collaborator_role=invite.collaborator_role,
+                collaborator_permissions=invite.collaborator_permissions,
+            )
+            UserPartial.objects.filter(email__iexact=email).delete()
+            tokens = JWTTokenService.generate_tokens_for_user(user)
+            content = JWTTokenService.build_login_response(user, tokens)
+            association = user.connected_user.sport_association
+            content['user_data']['sport_association'] = SportAssociationSerializer(association).data
+            if not association.regulation or not association.demand:
+                content['user_data']['sport_association']['empty_sections'] = True
+            content['user_data']['requires_welcome'] = False
+            invite.delete()
+            transaction.on_commit(lambda: AuthUtils.send_welcome_email(user), robust=True)
+        return Response(content, status=status.HTTP_200_OK)
+    except (IntegrityError, ValueError):
+        return error('signup_failed', 'Impossibile creare l’account. Controlla i dati e riprova; l’invito resta valido.')
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def oauth2_signup(request):
@@ -289,6 +359,9 @@ def oauth2_signup(request):
             },
         }, status=status.HTTP_403_FORBIDDEN)
 
+    if 'collaboratorToken' in data:
+        return _signup_collaborator(data)
+
     # check if there is a sub transfer token in data
     subscription_transfer = False
     subscription_transfer_token = None
@@ -304,9 +377,6 @@ def oauth2_signup(request):
     except ValidationError:
         logger.warning("Signup blocked - disposable email detected", extra={'email': data.get('email', 'unknown')})
         return Response({"msg": "You are nasty 🖕( •_• )🖕"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if 'collaboratorToken' in data.keys():
-        role = User.COLLABORATOR
 
     # check in data
     if 'subscription_transfer' in data.keys() and \
@@ -373,19 +443,6 @@ def oauth2_signup(request):
                 connected_user = None
                 collaborator_role = User.FULL
                 collaborator_permissions = None
-                if role == User.COLLABORATOR:
-                    collaboration_invite = CollaborationInvites.objects.filter(token=data['collaboratorToken']).first()
-                    if collaboration_invite is None:
-                        return Response({"msg": "Collaboration invite not found."}, status=status.HTTP_400_BAD_REQUEST)
-                    connected_user = collaboration_invite.user
-                    # set the collaboration invite parameters
-                    collaborator_role = collaboration_invite.collaborator_role
-                    collaborator_permissions = collaboration_invite.collaborator_permissions
-
-                    # delete invite
-                    collaboration_invite.delete()
-                    if collaboration_invite.expiration_date < timezone.now():
-                        return Response({"msg": "Collaboration invite expired."}, status=status.HTTP_400_BAD_REQUEST)
                 user = User.objects.create_user(
                     first_name=serialized.validated_data['first_name'],
                     last_name=serialized.validated_data['last_name'],
@@ -622,9 +679,10 @@ class AuthUtils:
                 'IS_WHITELABEL': settings.IS_WHITELABEL
             }
         }
+        data.update(email_branding())
         recipient_list = [f"{user.email}".lower()]
         message = render_to_string('email/account/email_welcome_message.html', data)
-        subject = f"{settings.WHITELABEL_NAME} | Benvenuto"
+        subject = f"{data['brand_name']} | Benvenuto"
 
         send_mail_async.apply_async(
             kwargs={
@@ -652,9 +710,10 @@ class AuthUtils:
                 'IS_WHITELABEL': settings.IS_WHITELABEL
             }
         }
+        data.update(email_branding())
         recipient_list = [user.email]
         message = render_to_string('email/account/email_welcome_password_message.html', data)
-        subject = f"{settings.WHITELABEL_NAME} | Benvenuto"
+        subject = f"{data['brand_name']} | Benvenuto"
 
         send_mail_async.apply_async(
             kwargs={

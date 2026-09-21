@@ -1,6 +1,7 @@
 <script>
     import {
         sessionToken,
+        clearAuthentication,
         notifications,
         refreshToken,
         expires,
@@ -130,7 +131,7 @@
             instanceConfigured = true;
         }
 
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome' && $location != '/login' && !$location.startsWith('/invite/')) {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -196,8 +197,9 @@
         document.querySelector('link[rel="manifest"]')?.setAttribute('href', manifestUrl);
 
         if (localStorage.getItem('sessionToken') == 'null' || localStorage.getItem('sessionToken') == null) {
-            localStorage.clear();
+            clearAuthentication();
             if (
+                $location !== '/login' &&
                 !$location.includes('/stripe/payment/done') &&
                 !$location.includes('/stripe/pay/') &&
                 !$location.includes('/stripe/cart-pay') &&
@@ -294,7 +296,7 @@
 
     beforeUpdate(() => {
         if (instanceLoading || instanceUnavailable) return;
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome' && $location != '/login' && !$location.startsWith('/invite/')) {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -330,6 +332,7 @@
             parsedUserData = null;
         }
 
+        if ($location === '/login' || $location.startsWith('/invite/')) return;
         if ($sessionToken) {
             // Valid data exists for current user - skip reload
             if (parsedUserData?.user_id) {
@@ -359,6 +362,7 @@
         ) {
             localStorage.clear();
             if (
+                $location !== '/login' &&
                 !$location.includes('/stripe/payment/done') &&
                 !$location.includes('/stripe/pay/') &&
                 !$location.includes('/stripe/cart-pay') &&
@@ -428,6 +432,7 @@
             } else {
                 localStorage.clear();
                 if (
+                    $location !== '/login' &&
                     !$location.includes('/stripe/payment/done') &&
                     !$location.includes('/stripe/pay') &&
                     !$location.includes('/stripe/cart-pay') &&

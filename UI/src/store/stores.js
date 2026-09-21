@@ -182,3 +182,17 @@ export const courseListFilterDatatable = derived(courseListFilter, $courseListFi
     'query[tags]': $courseListFilter.tags ?? '',
     'query[tags_and]': $courseListFilter.tags_and ?? 0,
 }));
+// Reset authentication consistently in storage and live Svelte subscribers.
+export function clearAuthentication() {
+    sessionToken.set(null);
+    refreshToken.set(null);
+    expires.set(null);
+    role.set(null);
+    userData.set({});
+    billingData.set(null);
+    tablesSettings.set({});
+    permissions.set([]);
+    currentPage.set('login');
+    for (const key of ['sessionToken', 'refreshToken', 'expires', 'role', 'userData', 'billingData',
+        'tablesSettings', 'permissions', 'switched_superuser', 'USER_ID']) localStorage.removeItem(key);
+}

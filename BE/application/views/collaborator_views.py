@@ -1,4 +1,5 @@
 import secrets
+from instance.email_branding import email_branding
 
 from django.utils import timezone
 
@@ -108,9 +109,10 @@ def collaborators_add(request):
             'IS_WHITELABEL': settings.IS_WHITELABEL
         }
     }
+    email_data.update(email_branding())
     recipient_list = [email]
     message = render_to_string('email/account/email_welcome_collaborator_message.html', email_data)
-    subject = f"{settings.WHITELABEL_NAME} | Invito a collaborare"
+    subject = f"{email_data['brand_name']} | Invito a collaborare"
 
     send_mail_async.apply_async(
         kwargs={

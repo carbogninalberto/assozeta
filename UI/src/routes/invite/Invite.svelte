@@ -1,14 +1,15 @@
 <script>
-    import {onMount} from 'svelte';
+    import {clearAuthentication} from 'store/stores.js';
+    import {push} from 'svelte-spa-router';
     import {oemConfig} from 'store/instanceStore.js';
 
     export let params;
 
-    onMount(() => {
-        localStorage.clear();
+    $: if (params?.token) {
+        clearAuthentication();
         sessionStorage.setItem('collaboratorToken', params?.token);
-        sessionStorage.setItem('isCollaborator', true);
-    });
+        sessionStorage.removeItem('isCollaborator');
+    }
 </script>
 
 <div class="row" style="height: 100%;overflow-x:hidden">
@@ -26,7 +27,7 @@
             <button
                 class="btn btn-primary btn-lg font-weight-bolder m-auto"
                 on:click={() => {
-                    window.location.href = '/#/login?page=signup_athlete';
+                    push('/login?page=signup_athlete&collaborator=1');
                 }}
                 style="width: 80%;">Crea un account collaboratore</button>
         </div>
