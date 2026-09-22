@@ -1,14 +1,6 @@
 name: Build and publish images
 
 on:
-  pull_request:
-    paths:
-      - "BE/**"
-      - "UI/**"
-      - "selfhost/**"
-      - ".github/workflows/publish-images.yml"
-      - ".github/workflows/selfhost-quality.yml"
-      - ".github/workflows/selfhost-release-rehearsal.yml"
   push:
     branches: [main]
     paths:

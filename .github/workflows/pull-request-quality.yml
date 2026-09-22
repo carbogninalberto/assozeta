@@ -1,0 +1,122 @@
+name: Pull request quality
+
+on:
+  pull_request:
+    # Always report the final check, including for documentation-only PRs.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-quality-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Select affected checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      ui: ${{ steps.filter.outputs.ui }}
+      selfhost: ${{ steps.filter.outputs.selfhost }}
+      stack: ${{ steps.filter.outputs.stack }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          predicate-quantifier: every
+          filters: |
+            backend:
+              - '{BE/**,run_tests.sh,selfhost/compose.dev.yml,selfhost/bin/assozeta,selfhost/config/**,selfhost/.env*,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '!**/*.md'
+            ui:
+              - '{UI/**,selfhost/tests/browser/**,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '!**/*.md'
+            selfhost:
+              - '{selfhost/**,BE/instance/**,BE/Dockerfile,BE/entrypoint.sh,UI/Dockerfile,UI/Caddyfile,Makefile,run_tests.sh,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '!**/*.md'
+              - '!selfhost/tests/browser/**'
+            stack:
+              # Stack/upgrade changes require integration coverage; ordinary
+              # BE/UI changes run only their component suites.
+              - '{selfhost/**,Makefile}'
+              - '!**/*.md'
+              # Browser dependencies/config and self-instance.spec.js also
+              # exercise the upgrade suite; standalone fixtures do not.
+              - '!selfhost/tests/browser/{operations-ui.mjs,staff-board-ui.mjs,calendar-security.mjs}'
+              - '!selfhost/tests/test_*.py'
+            workflows:
+              - '.github/workflows/**'
+
+  quality:
+    name: Run affected quality checks
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.ui == 'true' || needs.changes.outputs.stack == 'true'
+    uses: ./.github/workflows/selfhost-quality.yml
+    with:
+      run_operations: ${{ needs.changes.outputs.backend == 'true' }}
+      run_ui: ${{ needs.changes.outputs.ui == 'true' }}
+      run_upgrade: ${{ needs.changes.outputs.stack == 'true' }}
+
+  selfhost:
+    name: Self-host static validation
+    needs: changes
+    if: needs.changes.outputs.selfhost == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: make selfhost-test
+
+  stack:
+    name: Self-host development and production smoke
+    needs: changes
+    if: needs.changes.outputs.stack == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: make selfhost-smoke
+      - run: make selfhost-production-smoke
+
+  workflows:
+    name: Validate GitHub Actions workflows
+    needs: changes
+    if: needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: false
+      - run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -shellcheck= -pyflakes=
+
+  result:
+    name: PR quality
+    if: always()
+    needs: [changes, quality, selfhost, stack, workflows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every selected check to pass
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          results = json.loads(os.environ['RESULTS'])
+          assert results['changes']['result'] == 'success', results
+          assert all(job['result'] in ('success', 'skipped') for job in results.values()), results
+          PY

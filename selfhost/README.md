@@ -287,7 +287,9 @@ filesystem notifications do not trigger Vite HMR.
 - `ghcr.io/<repository-owner>/assozeta-renderer`
 - `ghcr.io/<repository-owner>/assozeta-updater`
 
-Pull requests build without pushing. Main publishes `edge` and commit tags.
+Pull requests run checks selected by changed paths and never publish images.
+See [PR checks](../docs/ci.md) for the selection matrix and required check.
+Main publishes `edge` and commit tags.
 GitHub releases publish semantic-version and `latest` tags and attach this
 self-host distribution as a release archive.
 
