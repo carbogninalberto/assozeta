@@ -1745,6 +1745,13 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 	}
 }
 
+/* Reserve space for the fixed mobile header after the shared padding reset. */
+@media (max-width: 991.98px) {
+	.header-mobile-fixed .wrapper {
+		padding-top: 25px !important;
+	}
+}
+
 /* mobile width */
 @media (max-width: 992px) {
 	.ec-toolbar {
@@ -1786,7 +1793,6 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 	}
 	.content > *:not(.container-overlay) {
 		position: relative;
-		top: -40px !important;
 	}
 	.card-header {
 		padding: 1.5rem !important;
