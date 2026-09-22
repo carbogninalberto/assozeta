@@ -1265,6 +1265,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         payment = None
+        recovering_initial_period = False
         if instance.type == CourseSubscription.MEMBERSHIP_TYPE and old_billed_until:
             # Renewal advances only billed_until. billed_from remains the original
             # membership start and cannot identify the current payment.
@@ -1274,6 +1275,20 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
             if len(payments) > 1:
                 raise ValidationError({'billed_until': 'Più pagamenti corrispondono al periodo corrente. Verifica i pagamenti prima di modificare l’abbonamento.'})
             payment = payments[0] if payments else None
+            if payment is None and not instance.membership_payments.filter(
+                meta__billed_until=old_billed_until.strftime('%Y-%m-%d'),
+            ).exists():
+                # Older non-atomic updates could save membership dates and then
+                # fail before saving the payment. Recover only an explicit period
+                # edit with exactly one unpaid payment and no billing history.
+                existing_payments = list(instance.membership_payments.select_for_update().all()[:2])
+                if len(existing_payments) == 1 and not existing_payments[0].paid and all(
+                    field in serializer.validated_data for field in ('billed_from', 'billed_until')
+                ):
+                    payment = existing_payments[0]
+                    recovering_initial_period = True
+                elif instance.membership_payments.filter(paid=False).exists():
+                    raise ValidationError({'billed_until': 'Il periodo dell’abbonamento non corrisponde ai pagamenti. Verifica i periodi prima di salvare.'})
 
         if payment:
             try:
@@ -1282,7 +1297,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
                 raise ValidationError({'billed_from': 'Il pagamento corrente non contiene una data di inizio valida.'})
             new_billed_from = serializer.validated_data.get('billed_from', old_billed_from)
             # The form also resends unchanged membership dates on a fee-only edit.
-            start_changed = new_billed_from != old_billed_from
+            start_changed = recovering_initial_period or new_billed_from != old_billed_from
             if start_changed:
                 payment_start = new_billed_from
             payment_end = serializer.validated_data.get('billed_until', old_billed_until)

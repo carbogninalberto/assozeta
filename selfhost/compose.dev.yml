@@ -122,7 +122,9 @@ services:
 
   api:
     <<: *backend-dev
-    command: ["gunicorn", "core.asgi:application", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "1", "--bind", "0.0.0.0:8000", "--reload", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+    # Use Uvicorn's process reloader: Gunicorn's reload thread does not stop
+    # UvicornWorker's async server, leaving old Python code running after edits.
+    command: ["uvicorn", "core.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
     ports:
       - 127.0.0.1:${DEV_API_PORT:-8000}:8000
     depends_on:

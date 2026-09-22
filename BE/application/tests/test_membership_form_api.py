@@ -191,3 +191,40 @@ class MembershipFormAPITests(BaseAPITestCase):
         membership.refresh_from_db()
         self.assertEqual(membership.membership_fee, Decimal('25.50'))
         self.assertEqual([self.payment_snapshot(payment) for payment in (original, current)], before)
+
+    def test_full_form_repairs_single_unpaid_payment_after_legacy_partial_save(self):
+        self.payload.update(billed_from='2026-10-04', billed_until='2027-01-04',
+                            billed_frequency=3, membership_fee='150.00')
+        membership = self.create_membership()
+        payment = membership.membership_payments.get()
+        # Reproduce the old handler saving the subscription before its KeyError.
+        CourseSubscription.objects.filter(pk=membership.pk).update(
+            billed_from=datetime(2026, 10, 25, tzinfo=timezone.utc),
+            billed_until=datetime(2027, 1, 25, tzinfo=timezone.utc),
+        )
+        response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', {
+            **self.payload, 'billed_from': '2026-10-25', 'billed_until': '2027-01-25',
+        }, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(membership.membership_payments.count(), 1)
+        payment.refresh_from_db()
+        self.assertEqual(payment.meta['billed_from'], '2026-10-25')
+        self.assertEqual(payment.meta['billed_until'], '2027-01-25')
+        self.assertEqual(payment.meta['course_subscription_id'], str(membership.pk))
+        self.assertEqual(payment.payment_date.date().isoformat(), '2026-10-25')
+        self.assertEqual(payment.amount, Decimal('150.00'))
+
+    def test_mismatched_renewed_period_is_rejected_without_guessing_payment(self):
+        membership, original, current = self.renew_membership()
+        before = [self.payment_snapshot(payment) for payment in (original, current)]
+        CourseSubscription.objects.filter(pk=membership.pk).update(
+            billed_until=datetime(2026, 11, 25, tzinfo=timezone.utc),
+        )
+        response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', {
+            **self.payload, 'billed_until': '2026-11-25', 'membership_fee': '38.00',
+        }, format='json')
+        self.assertEqual(response.status_code, 400, response.data)
+        self.assertIn('billed_until', response.data)
+        membership.refresh_from_db()
+        self.assertEqual(membership.membership_fee, Decimal('25.50'))
+        self.assertEqual([self.payment_snapshot(payment) for payment in (original, current)], before)
