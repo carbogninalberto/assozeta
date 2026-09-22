@@ -559,10 +559,6 @@ def course_list(request):
             "filename": filename
         }, status=status.HTTP_200_OK)
 
-    # Instructors (collaborators with an Instructor profile) see all the
-    # association courses in the list; their own lessons only filter the
-    # calendar (full_events_calendar), which keeps its dedicated filter.
-
     courses = paginator.paginate_queryset(queryset=courses, request=request)
 
 
