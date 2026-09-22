@@ -58,7 +58,7 @@ From `BE/core/celery.py` and application task definitions:
 ## Development mode notes
 
 - `make dev` and `make dev-config` generate `.env.dev` and start a local service mesh.
-- In dev compose, UI routes through Vite and API via Django/gunicorn+uvicorn.
+- In dev compose, UI routes through Vite and the Django API runs under Uvicorn with its process reloader. This replaces the API process when mounted Python files change; Gunicorn's reload thread with UvicornWorker could leave stale code running.
 - Browser access defaults to:
   - UI: `http://localhost:5001`
   - API: `http://127.0.0.1:8000`

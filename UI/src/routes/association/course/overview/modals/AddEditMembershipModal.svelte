@@ -1,390 +1,157 @@
 <script>
-    import moment from 'moment';
     import BasicModal from 'components/modals/BasicModal.svelte';
-    import {
-        Currency,
-        TextInput,
-        SmartSelect,
-        SmartMultiSelect,
-    } from 'components/formBuilder/preview-blocks/index.js';
-    import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
-    import {getDataFromForm} from 'utils/Functions.js';
+    import Select from 'svelte-select';
+    import DateInput from 'components/inputs/DateInput.svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
+    import {createMembershipDraft, membershipEndDate, validateMembershipForm, membershipApiError} from 'utils/membershipForm.js';
     import {toast} from 'svelte-sonner';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
     import {createEventDispatcher, onMount} from 'svelte';
     import {userData} from 'store/stores';
 
     const dispatch = createEventDispatcher();
-
     userData.useLocalStorage();
-
     export let show;
     export let data = {};
     export let info = {};
     export let edit = false;
-    let loading = false;
+
+    // Initialize once: changing dates must not reapply record/course defaults to other fields.
+    let draft = createMembershipDraft(data, info, $userData);
+    const associate = data.subscription?.associate || data.associate;
+    let selectedAthletes = data.subscription_id || data.subscription?.subscription_id ? [{
+        value: data.subscription_id || data.subscription.subscription_id,
+        label: [associate?.first_name, associate?.last_name].filter(Boolean).join(' ').toUpperCase(),
+    }] : [];
     let availableAssociates = [];
+    let loading = true;
+    let saving = false;
+    let errors = {};
+    let requestError = '';
+    let loadError = '';
+    $: billedUntil = membershipEndDate(draft, info);
 
-    async function prepareJSONData(formData) {
-        console.log(formData);
-        if (info.billed_duration_is_sport_season) {
-            formData.billed_until = moment(formData.billed_until, 'DD/MM/YYYY').format('YYYY-MM-DD');
-            formData.billed_frequency = 12;
-        } else {
-            formData.billed_frequency = JSON.parse(formData.billed_frequency)?.value || null;
-            if (!info.billed_from_subscription_date) {
-                formData.billed_from_day_of_month = JSON.parse(formData.billed_from_day_of_month)?.value || null;
+    async function save() {
+        if (saving) return;
+        const validation = validateMembershipForm(draft, selectedAthletes, info, edit);
+        errors = validation.errors;
+        requestError = '';
+        if (Object.keys(errors).length) return;
+        const subscriptions = selectedAthletes.map(athlete => ({
+            course: info.course_id, subscription_id: athlete.value, ...validation.billing,
+        }));
+        saving = true;
+        blockPage({overlayColor: '#000000', state: 'primary', message: edit ? 'Aggiornamento...' : 'Creazione...'});
+        try {
+            const response = await apiFetch(edit
+                ? replaceUID(__bakney.env.API.COURSE_SUBSCRIPTIONS.UPDATE, data.course_subscription_id)
+                : __bakney.env.API.COURSE_SUBSCRIPTIONS.ADD, {
+                method: edit ? 'PATCH' : 'POST',
+                body: JSON.stringify(edit ? subscriptions[0] : subscriptions),
+            });
+            if (response.error || ![200, 201].includes(response.status)) {
+                requestError = membershipApiError(response.response) || "Impossibile salvare l'abbonamento. Riprova.";
+                return;
             }
-            formData.billed_until = moment(formData.billed_from, 'DD/MM/YYYY')
-                .add(formData.billed_frequency, 'months')
-                .format('YYYY-MM-DD');
-        }
-
-        formData.billed_from = moment(formData.billed_from, 'DD/MM/YYYY').format('YYYY-MM-DD');
-
-        formData.auto_renewal = formData.auto_renewal === 'on' ? true : false;
-        formData.membership_active = formData.membership_active === 'on' ? true : false;
-
-        formData.membership_fee = parseFloat(formData.membership_fee.replaceAll(',', '.'));
-
-        let subscriptions = [];
-        JSON.parse(formData.selectedAthletes).forEach(athlete => {
-            let athleteData = {
-                course: info.course_id,
-                subscription_id: athlete.value,
-                billed_from: formData.billed_from,
-                billed_until: formData.billed_until,
-                billed_frequency: formData.billed_frequency,
-                billed_from_day_of_month: formData.billed_from_day_of_month,
-                membership_active: formData.membership_active,
-                auto_renewal: formData.auto_renewal,
-                membership_fee: formData.membership_fee,
-            };
-            if (edit) {
-                athleteData.course_subscription_id = formData.course_subscription_id;
-            }
-            subscriptions.push(athleteData);
-        });
-        return subscriptions;
-    }
-
-    async function create(formData) {
-        blockPage({
-            overlayColor: '#000000',
-            state: 'primary',
-            message: 'Creazione...',
-        });
-
-        const url = __bakney.env.API.COURSE_SUBSCRIPTIONS.ADD;
-
-        let subs = await prepareJSONData(formData);
-
-        if (subs.length == 0) {
-            unblockPage();
-            toast.error('Seleziona almeno un tesserato.');
-            return;
-        }
-
-        const res = await apiFetch(url, {
-            method: 'POST',
-            body: JSON.stringify(subs),
-        });
-
-        unblockPage();
-
-        if (res.status == 200 || res.status == 201) {
-            toast.success('Abbonamento creato con successo.');
+            toast.success(edit ? 'Abbonamento aggiornato con successo.' : 'Abbonamento creato con successo.');
             dispatch('update');
             show = false;
-        } else {
-            toast.error(res.response?.msg || "Si è verificato un errore durante l'iscrizione.");
-        }
-    }
-
-    async function update(formData) {
-        blockPage({
-            overlayColor: '#000000',
-            state: 'primary',
-            message: 'Aggiornamento...',
-        });
-
-        let subs = await prepareJSONData(formData);
-
-        if (subs.length == 0 || subs.length > 1) {
+        } catch {
+            requestError = 'Connessione non disponibile. I dati inseriti sono stati mantenuti: riprova.';
+        } finally {
+            saving = false;
             unblockPage();
-            toast.error('Seleziona solo un tesserato.');
-            return;
-        }
-        const url = replaceUID(__bakney.env.API.COURSE_SUBSCRIPTIONS.UPDATE, data.course_subscription_id);
-
-        const res = await apiFetch(url, {
-            method: 'PATCH',
-            body: JSON.stringify(subs[0]),
-        });
-        unblockPage();
-
-        if (res.status == 200) {
-            toast.success('Abbonamento aggiornato con successo.');
-            show = false;
-            dispatch('update');
-        } else {
-            toast.error(res.response?.msg || "Si è verificato un errore durante l'aggiornamento.");
-        }
-    }
-
-    function handleValidation(e) {
-        if (edit) {
-            update(getDataFromForm(e));
-        } else {
-            create(getDataFromForm(e));
         }
     }
 
     async function fetchAvailableAssociates() {
         loading = true;
-        const res = await apiFetch(
-            `${__bakney.env.HOST}/subscription/list/all?current_year=true&type=athletes&course_id=${info.course_id}`
-        );
-
-        if (!res.error) {
-            let dataResult = res.response.data;
-            availableAssociates = [];
-            for (let i = 0; i < Object.keys(dataResult).length; i++) {
-                availableAssociates.push(dataResult[i]);
-            }
+        loadError = '';
+        try {
+            const response = await apiFetch(`${__bakney.env.HOST}/subscription/list/all?current_year=true&type=athletes&course_id=${info.course_id}`);
+            if (response.error) throw new Error();
+            availableAssociates = Object.values(response.response.data || {}).map(athlete => ({
+                value: athlete.subscription_id,
+                label: `${athlete.associate.first_name.toUpperCase()} ${athlete.associate.last_name.toUpperCase()} (${athlete.current_year ? 'Anno corrente' : 'Anni precedenti'})`,
+            }));
+        } catch {
+            loadError = 'Impossibile caricare i tesserati. Riprova.';
+        } finally {
+            loading = false;
         }
-        loading = false;
     }
-
-    onMount(async () => {
-        await fetchAvailableAssociates();
-    });
-
-    $: currentYear = new Date().getFullYear();
-    $: currentMonth = new Date().getMonth() + 1;
-    $: defaultBilledFrom = data?.billed_from
-        ? moment(data.billed_from, 'YYYY-MM-DD').format('DD/MM/YYYY')
-        : info?.billed_duration_is_sport_season
-            ? moment(
-                `${$userData.subscription_start_day}/${$userData.subscription_start_month}/${currentYear}`,
-                'DD/MM/YYYY'
-            ).format('DD/MM/YYYY')
-            : info.billed_from_subscription_date
-                ? moment().format('DD/MM/YYYY')
-                : moment(
-                    `${info.billed_from_day_of_month}/${currentMonth}/${currentYear}`,
-                    'DD/MM/YYYY'
-                ).format('DD/MM/YYYY');
-    $: defaultBilledUntil = info.billed_duration_is_sport_season
-        ? moment(
-            `${$userData.subscription_start_day}/${$userData.subscription_start_month}/${currentYear + 1}`,
-            'DD/MM/YYYY'
-        )
-            .subtract(1, 'days')
-            .format('DD/MM/YYYY')
-        : '';
+    onMount(fetchAvailableAssociates);
 </script>
 
-<div>
-    <BasicModal
-        id={`subscription-modal`}
-        bind:show
-        title="{edit ? 'Modifica' : 'Crea'} abbonamento"
-        showTitle={true}
-        showActionButton={true}
-        showCancelButton={true}
-        showFooter={false}
-        modalSize={'md'}
-        scrollable={false}
-        hideOnClickOutside={true}
-        bodyClass={'py-2 px-0'}>
-        {#if !loading}
-            <form id="course_subscription_form" on:submit|preventDefault={handleValidation}>
-                {#if edit}
-                    <input type="hidden" name="course_subscription_id" value={data.course_subscription_id} />
+<BasicModal id="subscription-modal" bind:show title="{edit ? 'Modifica' : 'Crea'} abbonamento"
+    showTitle={true} showFooter={false} modalSize="md" scrollable={false}
+    hideOnClickOutside={!saving} bodyClass="py-2 px-0">
+    {#if loading}
+        <div class="d-flex justify-content-center align-items-center" style="height: 100px;"><div class="spinner spinner-primary spinner-lg" /></div>
+    {:else}
+        <form id="course_subscription_form" novalidate on:submit|preventDefault={save}>
+            <div class="px-7">
+                {#if requestError}<div class="alert alert-danger" role="alert">{requestError}</div>{/if}
+                {#if loadError}
+                    <div class="alert alert-danger" role="alert">{loadError} <button type="button" class="btn btn-sm btn-light" on:click={fetchAvailableAssociates}>Riprova</button></div>
                 {/if}
-                <div class="px-7">
-                    <SmartMultiSelect
-                        customClasses="mb-4 p-0"
-                        editable={false}
-                        active={false}
-                        minNumberOfSelectedItems={1}
-                        props={{
-                            id: 'selectedAthletes',
-                            name: 'selectedAthletes',
-                            label: 'Tesserati',
-                            disabled: edit || data?.disable_selection_of_athletes || false,
-                            placeholder: "Seleziona l'atleta",
-                            helperLabel: 'Seleziona i tesserati da iscrivere al corso',
-                            required: true,
-                            clearable: true,
-                            searchable: true,
-                            showChevron: true,
-                            options: availableAssociates?.map(athlete => ({
-                                label: `${athlete.associate.first_name.toUpperCase()} ${athlete.associate.last_name.toUpperCase()} (${
-                                    athlete.current_year ? 'Anno corrente' : 'Anni precedenti'
-                                })`,
-                                value: athlete.subscription_id,
-                            })),
-                            value: edit
-                                ? {
-                                      label: `${data?.subscription?.associate?.first_name.toUpperCase()} ${data?.subscription?.associate?.last_name.toUpperCase()}`,
-                                      value: data?.subscription?.subscription_id,
-                                  }
-                                : data?.subscription_id
-                                ? [
-                                      {
-                                          label: `${data?.associate?.first_name?.toUpperCase()} ${data?.associate?.last_name?.toUpperCase()}`,
-                                          value: data?.subscription_id,
-                                      },
-                                  ]
-                                : [],
-                        }} />
-                    <Currency
-                        customClasses="mb-4"
-                        editable={false}
-                        props={{
-                            id: 'membership_fee',
-                            name: 'membership_fee',
-                            label: 'Quota di iscrizione',
-                            placeholder: 'Inserisci la quota',
-                            required: true,
-                            value: edit ? data.membership_fee.replaceAll('.', ',') : info.fee || '',
-                        }} />
+                {#if Object.keys(errors).length}
+                    <div class="alert alert-danger" role="alert"><ul class="mb-0">{#each Object.values(errors) as message}<li>{message}</li>{/each}</ul></div>
+                {/if}
+                <fieldset disabled={saving}>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bolder" for="membership-athletes">Tesserati*</label>
+                        <Select inputAttributes={{id: 'membership-athletes', 'aria-label': 'Tesserati'}}
+                            items={availableAssociates} bind:value={selectedAthletes} multiple={true}
+                            disabled={saving || edit || Boolean(data.disable_selection_of_athletes)}
+                            placeholder="Seleziona i tesserati" class="form-control selectpicker form-control-solid form-control-lg h-auto" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bolder" for="membership-fee">Quota di iscrizione (€)*</label>
+                        <input id="membership-fee" name="membership_fee" type="text" inputmode="decimal" bind:value={draft.membership_fee}
+                            aria-invalid={Boolean(errors.membership_fee)} class="form-control form-control-solid form-control-lg" />
+                    </div>
                     {#if !info.billed_duration_is_sport_season}
-                        <SmartSelect
-                            customClasses="mb-4"
-                            editable={false}
-                            props={{
-                                id: 'billed_frequency',
-                                name: 'billed_frequency',
-                                label: 'Durata abbonamento (mesi)',
-                                placeholder: 'Seleziona il numero di mesi',
-                                required: true,
-                                clearable: false,
-                                searchable: true,
-                                showChevron: true,
-                                options: [
-                                    {label: 'Mensile', value: 1},
-                                    {label: 'Bimestrale', value: 2},
-                                    {label: 'Trimestrale', value: 3},
-                                    {label: 'Ogni 4 mesi', value: 4},
-                                    {label: 'Ogni 5 mesi', value: 5},
-                                    {label: 'Semestrale', value: 6},
-                                    {label: 'Ogni 7 mesi', value: 7},
-                                    {label: 'Ogni 8 mesi', value: 8},
-                                    {label: 'Ogni 9 mesi', value: 9},
-                                    {label: 'Ogni 10 mesi', value: 10},
-                                    {label: 'Ogni 11 mesi', value: 11},
-                                    {label: 'Annuale', value: 12},
-                                ],
-                                value: data?.billed_frequency || info.billed_frequency || '',
-                            }} />
+                        <div class="form-group mb-4">
+                            <label class="font-weight-bolder" for="membership-frequency">Durata abbonamento (mesi)*</label>
+                            <select id="membership-frequency" bind:value={draft.billed_frequency} aria-invalid={Boolean(errors.billed_frequency)} class="form-control form-control-solid form-control-lg">
+                                {#each Array.from({length: 12}, (_, index) => index + 1) as months}<option value={months}>{months} {months === 1 ? 'mese' : 'mesi'}</option>{/each}
+                            </select>
+                        </div>
                         {#if !info.billed_from_subscription_date}
-                            <SmartSelect
-                                customClasses={'mb-4'}
-                                editable={false}
-                                active={false}
-                                on:change={e => {
-                                    data.billed_from_day_of_month = e.detail.value;
-                                }}
-                                props={{
-                                    id: 'billed_from_day_of_month',
-                                    name: 'billed_from_day_of_month',
-                                    label: 'Si rinnova il giorno',
-                                    placeholder: 'Seleziona il giorno del mese',
-                                    required: true,
-                                    clearable: false,
-                                    searchable: true,
-                                    showChevron: true,
-                                    value: data?.billed_from_day_of_month || info.billed_from_day_of_month || 1,
-                                    options: Array.from({length: 28}, (_, i) => ({
-                                        label: i + 1 + ' del mese',
-                                        value: i + 1,
-                                    })),
-                                }} />
+                            <div class="form-group mb-4">
+                                <label class="font-weight-bolder" for="membership-day">Si rinnova il giorno*</label>
+                                <select id="membership-day" bind:value={draft.billed_from_day_of_month} aria-invalid={Boolean(errors.billed_from_day_of_month)} class="form-control form-control-solid form-control-lg">
+                                    {#each Array.from({length: 28}, (_, index) => index + 1) as day}<option value={day}>{day} del mese</option>{/each}
+                                </select>
+                            </div>
                         {/if}
                     {/if}
-                    <div class="d-flex flex-wrap" style="gap: 1rem;">
-                        {#key defaultBilledFrom + defaultBilledUntil}
-                            <DateRangePicker
-                                id="membership_billed_range"
-                                name="membership_billed_range"
-                                format="DD/MM/YYYY"
-                                required={info.billed_duration_is_sport_season}
-                                sizeClass="form-control-lg"
-                                startPlaceholder="Data inizio"
-                                endPlaceholder={info.billed_duration_is_sport_season ? 'Data fine' : 'Data fine (auto)'}
-                                startValue={defaultBilledFrom}
-                                endValue={defaultBilledUntil}
-                                on:change={e => {
-                                    data.billed_from = e.detail.start
-                                        ? moment(e.detail.start, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                                        : null;
-                                    if (info.billed_duration_is_sport_season) {
-                                        data.billed_until = e.detail.end
-                                            ? moment(e.detail.end, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                                            : null;
-                                    }
-                                }}
-                            />
-                        {/key}
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bolder" for="membership-from">Data inizio*</label>
+                        <DateInput id="membership-from" name="billed_from" format="YYYY-MM-DD" required={true} bind:value={draft.billed_from} disabled={saving} />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bolder" for="membership-until">Data fine{info.billed_duration_is_sport_season ? '*' : ' (calcolata)'}</label>
+                        {#if info.billed_duration_is_sport_season}
+                            <DateInput id="membership-until" name="billed_until" format="YYYY-MM-DD" required={true} bind:value={draft.billed_until} min={draft.billed_from || undefined} disabled={saving} />
+                        {:else}
+                            <input id="membership-until" type="date" value={billedUntil} readonly class="form-control form-control-solid form-control-lg" />
+                            <small class="form-text text-muted">Calcolata dalla data di inizio e dalla durata. In modifica, la scadenza corrente viene mantenuta finché non cambi questi valori.</small>
+                        {/if}
                     </div>
                     <h5 class="font-weight-bolder font-size-h4 mb-4 mt-4">Opzioni</h5>
                     <div class="d-flex flex-wrap justify-content-between mb-4" style="gap: 1.5rem;">
-                        <div class="form-group mb-4">
-                            <div class="checkbox-inline">
-                                <label class="checkbox">
-                                    <input
-                                        type="checkbox"
-                                        name="membership_active"
-                                        checked={data.membership_active ?? true} />
-                                    <span />
-                                    <div class="font-weight-bolder font-size-lg">Abbonamento attivo</div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <div class="checkbox-inline">
-                                <label class="checkbox">
-                                    <input
-                                        type="checkbox"
-                                        name="auto_renewal"
-                                        checked={edit ? data.auto_renewal : info.auto_renewal} />
-                                    <span />
-                                    <div class="font-weight-bolder font-size-lg">Rinnovo automatico</div>
-                                </label>
-                            </div>
-                        </div>
+                        <label class="checkbox"><input type="checkbox" bind:checked={draft.membership_active} /><span />Abbonamento attivo</label>
+                        <label class="checkbox"><input type="checkbox" bind:checked={draft.auto_renewal} /><span />Rinnovo automatico</label>
                     </div>
-                </div>
-
-                {#if edit}
-                    <div
-                        class="bg-light-info py-2 px-4 rounded-xl text-primary font-weight-bolder d-flex align-items-center mx-6 mb-8"
-                        style="outline: 1px solid var(--light-info);border-top: 1px solid var(--bg-surface);">
-                        <span>Le modifiche ai pagamenti saranno applicate dal prossimo rinnovo.</span>
-                    </div>
-                {/if}
-
-                <div class="modal-footer d-flex justify-content-end mt-2">
-                    <button
-                        type="button"
-                        class="btn btn-light-primary font-weight-bold"
-                        on:click={() => (show = false)}>
-                        Annulla
-                    </button>
-                    <button type="submit" class="btn btn-primary font-weight-bold">
-                        {edit ? 'Salva' : 'Crea'}
-                    </button>
-                </div>
-            </form>
-        {:else}
-            <div class="d-flex justify-content-center align-items-center" style="height: 100px;">
-                <div class="spinner spinner-primary spinner-lg" />
+                </fieldset>
             </div>
-        {/if}
-    </BasicModal>
-</div>
+            {#if edit}<div class="bg-light-info py-2 px-4 rounded-xl text-primary mx-6 mb-8">Le modifiche aggiornano il pagamento corrente solo se non è già stato pagato.</div>{/if}
+            <div class="modal-footer d-flex justify-content-end mt-2">
+                <button type="button" disabled={saving} class="btn btn-light-primary font-weight-bold" on:click={() => (show = false)}>Annulla</button>
+                <button type="submit" disabled={saving || (Boolean(loadError) && !selectedAthletes.length)} class="btn btn-primary font-weight-bold">{saving ? 'Salvataggio…' : edit ? 'Salva' : 'Crea'}</button>
+            </div>
+        </form>
+    {/if}
+</BasicModal>

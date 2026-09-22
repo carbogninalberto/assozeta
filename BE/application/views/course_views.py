@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
+from django.db import transaction
 from django.db.models import Q, Prefetch
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1211,6 +1212,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return instances
 
+    @transaction.atomic
     def add(self, request):
         """
         Create a new course subscription
@@ -1249,37 +1251,84 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @transaction.atomic
     def update(self, request, pk=None):
         """
         Update a course subscription
         """
         instance = self.get_object()
-        old_billed_From = instance.billed_from
+        # Serialize edits with the renewal task, then read the latest billing period.
+        instance = CourseSubscription.objects.select_for_update().get(pk=instance.pk)
+        old_billed_from = instance.billed_from
+        old_billed_until = instance.billed_until
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+
+        payment = None
+        recovering_initial_period = False
+        if instance.type == CourseSubscription.MEMBERSHIP_TYPE and old_billed_until:
+            # Renewal advances only billed_until. billed_from remains the original
+            # membership start and cannot identify the current payment.
+            payments = list(instance.membership_payments.select_for_update().filter(
+                paid=False, meta__billed_until=old_billed_until.strftime('%Y-%m-%d'),
+            )[:2])
+            if len(payments) > 1:
+                raise ValidationError({'billed_until': 'Più pagamenti corrispondono al periodo corrente. Verifica i pagamenti prima di modificare l’abbonamento.'})
+            payment = payments[0] if payments else None
+            if payment is None and not instance.membership_payments.filter(
+                meta__billed_until=old_billed_until.strftime('%Y-%m-%d'),
+            ).exists():
+                # Older non-atomic updates could save membership dates and then
+                # fail before saving the payment. Recover only an explicit period
+                # edit with exactly one unpaid payment and no billing history.
+                existing_payments = list(instance.membership_payments.select_for_update().all()[:2])
+                if len(existing_payments) == 1 and not existing_payments[0].paid and all(
+                    field in serializer.validated_data for field in ('billed_from', 'billed_until')
+                ):
+                    payment = existing_payments[0]
+                    recovering_initial_period = True
+                elif instance.membership_payments.filter(paid=False).exists():
+                    raise ValidationError({'billed_until': 'Il periodo dell’abbonamento non corrisponde ai pagamenti. Verifica i periodi prima di salvare.'})
+
+        if payment:
+            try:
+                payment_start = make_aware(datetime.strptime(payment.meta['billed_from'], '%Y-%m-%d'))
+            except (KeyError, TypeError, ValueError):
+                raise ValidationError({'billed_from': 'Il pagamento corrente non contiene una data di inizio valida.'})
+            new_billed_from = serializer.validated_data.get('billed_from', old_billed_from)
+            # The form also resends unchanged membership dates on a fee-only edit.
+            start_changed = recovering_initial_period or new_billed_from != old_billed_from
+            if start_changed:
+                payment_start = new_billed_from
+            payment_end = serializer.validated_data.get('billed_until', old_billed_until)
+            if payment_end.date() < payment_start.date():
+                raise ValidationError({'billed_until': 'La fine non può precedere l’inizio del periodo di pagamento corrente.'})
+            if instance.membership_payments.exclude(pk=payment.pk).filter(
+                meta__billed_from__lt=payment_end.strftime('%Y-%m-%d'),
+                meta__billed_until__gt=payment_start.strftime('%Y-%m-%d'),
+            ).exists():
+                raise ValidationError({'billed_from': 'Il periodo si sovrappone a un pagamento precedente. I periodi già fatturati devono rimanere separati.'})
+
         serializer.save()
 
-        # update the related payment for instances of type membership
-        if instance.type == CourseSubscription.MEMBERSHIP_TYPE:
-            for payment in instance.membership_payments.all():
-                if not payment.paid and \
-                    str(payment.meta.get('billed_from')) == old_billed_From.strftime('%Y-%m-%d'):
-                    payment.amount = serializer.validated_data['membership_fee']
-                    payment.creation_date = serializer.validated_data['billed_from']
-                    payment.payment_date = serializer.validated_data['billed_from']
-                    payment.description = f"Abbonamento: {serializer.validated_data['course'].title} dal {serializer.validated_data['billed_from'].strftime('%d/%m/%Y')} al {serializer.validated_data['billed_until'].strftime('%d/%m/%Y')}"
-                    payment.meta = {
-                        'description': f"Abbonamento: {serializer.validated_data['course'].title} dal {serializer.validated_data['billed_from'].strftime('%d/%m/%Y')} al {serializer.validated_data['billed_until'].strftime('%d/%m/%Y')}",
-                        'course_id': str(serializer.validated_data['course'].course_id),
-                        'course_title': serializer.validated_data['course'].title,
-                        'course_subscription_id': str(serializer.validated_data['course_subscription_id']),
-                        'billed_from': serializer.validated_data['billed_from'].strftime('%Y-%m-%d'),
-                        'billed_until': serializer.validated_data['billed_until'].strftime('%Y-%m-%d'),
-                        'amount': str(serializer.validated_data['membership_fee'])
-
-                    }
-                    payment.save()
-                    break
+        # Use the saved instance so PATCH works without resending every billing field.
+        if payment:
+            payment.amount = instance.membership_fee
+            if start_changed:
+                payment.creation_date = payment_start
+                payment.payment_date = payment_start
+            payment.description = f"Abbonamento: {instance.course.title} dal {payment_start.strftime('%d/%m/%Y')} al {payment_end.strftime('%d/%m/%Y')}"
+            payment.meta = {
+                **payment.meta,
+                'description': payment.description,
+                'course_id': str(instance.course_id),
+                'course_title': instance.course.title,
+                'course_subscription_id': str(instance.pk),
+                'billed_from': payment_start.strftime('%Y-%m-%d'),
+                'billed_until': payment_end.strftime('%Y-%m-%d'),
+                'amount': str(instance.membership_fee),
+            }
+            payment.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

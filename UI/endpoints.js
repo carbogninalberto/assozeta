@@ -338,7 +338,8 @@ export const buildConfig = function(config={
                             UPDATE: `${apiHost}/instructor/<uid>/hours/<hour_uid>/update`,
                             DELETE: `${apiHost}/instructor/<uid>/hours/<hour_uid>/delete`,
                             ADD_COMPENSATION: `${apiHost}/instructor/<uid>/hours/add/compensation`,
-                        }
+                        },
+                        LESSONS_HOURS: `${apiHost}/instructor/<uid>/lessons-hours`,
                     },
                     PRINTING: {
                         GENERATE: `${apiHost}/printing/generate`,

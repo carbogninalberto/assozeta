@@ -43,7 +43,7 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "core.asgi:application", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "1", "--bind", "0.0.0.0:8000", "--reload", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["uvicorn", "core.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
 
 FROM base AS production
 

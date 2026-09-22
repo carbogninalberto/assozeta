@@ -6,7 +6,7 @@ from io import BytesIO
 from django.core.files.storage import default_storage
 from rest_framework import serializers
 
-from application.models import Subscription, Payment
+from application.models import Subscription, Payment, User
 from application.models.courses_models import Course, CourseSubscription, CourseSubscriptionInstallment, CourseLocation
 from application.serializers.auth_serializers import SportAssociationBasicInfo
 from application.serializers.payment_serializers import PaymentSerializer
@@ -163,6 +163,46 @@ class CourseSubscriptionOverviewSerializer(serializers.ModelSerializer):
     events = serializers.JSONField(required=False, write_only=True, allow_null=True)
     medical_label = serializers.SerializerMethodField()
     carnets = serializers.SerializerMethodField()
+
+    def validate(self, attrs):
+        course = attrs.get('course', getattr(self.instance, 'course', None))
+        is_membership = course is not None and course.course_type == Course.MEMBERSHIP_TYPE
+        if not is_membership and getattr(self.instance, 'type', None) != CourseSubscription.MEMBERSHIP_TYPE:
+            return attrs
+
+        errors = {}
+        request = self.context.get('request')
+        if request and request.user.role != User.ATHLETE and course.sport_association_id != getattr(request.user.sport_association, 'pk', None):
+            errors['course'] = 'Il corso non appartiene alla tua associazione.'
+        if self.instance and course.pk != self.instance.course_id:
+            errors['course'] = "Non puoi cambiare il corso di un abbonamento esistente."
+        subscription_id = attrs.get('subscription_id', getattr(self.instance, 'subscription_id', None))
+        if not Subscription.objects.filter(pk=subscription_id, sport_association_id=course.sport_association_id).exists():
+            errors['subscription_id'] = 'Seleziona un tesserato della stessa associazione del corso.'
+        if self.instance and subscription_id != self.instance.subscription_id:
+            errors['subscription_id'] = "Non puoi cambiare il tesserato di un abbonamento esistente."
+
+        def current(field, default=None):
+            return attrs.get(field, getattr(self.instance, field, default))
+
+        # Self-service creation fills defaults later in perform_create; validate any supplied values here.
+        self_service = request and request.user.role == User.ATHLETE and self.instance is None
+        start, end = current('billed_from'), current('billed_until')
+        if not start and not self_service:
+            errors['billed_from'] = 'Inserisci una data di inizio valida.'
+        if not end and not self_service:
+            errors['billed_until'] = 'Inserisci una data di fine valida.'
+        if start and end and end < start:
+            errors['billed_until'] = 'La data di fine non può precedere la data di inizio.'
+        frequency = current('billed_frequency', 1)
+        if frequency is None or not 1 <= frequency <= 12:
+            errors['billed_frequency'] = 'La durata deve essere compresa tra 1 e 12 mesi.'
+        fee = current('membership_fee', Decimal('0.00'))
+        if fee is None or fee < 0:
+            errors['membership_fee'] = 'La quota deve essere un importo maggiore o uguale a zero.'
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
     def get_medical_label(self, obj):
         if hasattr(obj, 'subscription') and obj.subscription:

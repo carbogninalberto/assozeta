@@ -2,6 +2,7 @@
 @ copyright: Bakney srl
 """
 import datetime
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 
 from dateutil import parser
@@ -14,7 +15,8 @@ from rest_framework.decorators import api_view, permission_classes
 
 from application.models.courses_models import Course, CourseSubscription, CourseSubscriptionInstallment
 from application.models.payment_models import PaymentCategory, Payment
-from application.utils.instructors_utils import get_report
+from application.utils.instructors_utils import get_report, get_instructor_lessons_hours
+from application.permissions_registry import check_collaborator_permission
 from core.middleware import IsAuthenticated
 from application.models.user_models import SportAssociation, Instructor, InstructorHours, User
 
@@ -116,6 +118,7 @@ def instructor_add(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def instructor_info(request, uid):
+    check_collaborator_permission(request)
 
     logger.info("instructor_info -> init -> user: {}".format(request.user.user_id))
 
@@ -128,6 +131,20 @@ def instructor_info(request, uid):
 
     if not instructor:
         return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # the instructor must belong to the requesting user's association
+    instructor_association = SportAssociation.objects.filter(user=instructor.user).first()
+    try:
+        requesting_association = SportAssociation.objects.get(user=request.user)
+    except SportAssociation.DoesNotExist:
+        requesting_association = None
+    if requesting_association is None or instructor_association is None or \
+            str(instructor_association.sport_association_id) != str(requesting_association.sport_association_id):
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+    original_user = getattr(request, 'original_user', request.user)
+    own = Instructor.objects.filter(user=request.user, associated_user_id=original_user.pk).first()
+    if own is not None and own.pk != instructor.pk:
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
 
     data = InstructorSerializer(instructor).data
 
@@ -160,7 +177,7 @@ def instructor_info(request, uid):
     else:
         # extract hours of this month
         start_date = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end_date = datetime.datetime.now().replace(day=1, month=datetime.datetime.now().month + 1, hour=0, minute=0, second=0, microsecond=0)
+        end_date = (start_date + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
     # format date to be YYYY-MM-DD
     start_date = start_date.strftime('%Y-%m-%d')
     end_date = end_date.strftime('%Y-%m-%d')
@@ -172,7 +189,7 @@ def instructor_info(request, uid):
     )
 
     if len(instructor_hours) > 0:
-        stats['hours'] = sum([x.amount for x in instructor_hours])
+        stats['hours'] = sum([x.hours for x in instructor_hours])
         stats['total_amount'] = sum([x.amount for x in instructor_hours])
         stats['total_amount_paid'] = sum([x.amount for x in instructor_hours if x.paid])
         stats['total_amount_to_pay'] = sum([x.amount for x in instructor_hours if not x.paid])
@@ -603,3 +620,118 @@ def instructor_delete(request, uid):
     })
 
     return Response({'msg': 'instructor deleted'}, status=status.HTTP_200_OK)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def instructor_lessons_hours(request, uid=None):
+    """
+    Lesson hours computed from the course calendar for one instructor (uid)
+    or for all instructors of the current association (no uid).
+
+    Authorization:
+        - association admins and collaborators may query any instructor
+          of their association or the whole list
+        - a user tied to an instructor profile (Instructor.associated_user_id)
+          may only query their own hours
+
+    Query params:
+        start_date, end_date: optional Europe/Rome DD/MM/YYYY period filter
+        include_lessons: true adds event details in single-instructor mode
+    """
+    check_collaborator_permission(request)
+    user = request.user
+
+    # Resolve the association of the requesting user (owner account)
+    try:
+        sport_association = SportAssociation.objects.get(user=user)
+    except SportAssociation.DoesNotExist:
+        sport_association = None
+
+    # Resolve the requesting user's own instructor profile, if any
+    original_user_id = getattr(getattr(request, 'original_user', None), 'user_id', None) or user.user_id
+    requesting_instructor = Instructor.objects.filter(associated_user_id=original_user_id,
+        **({'user': user} if sport_association is not None else {})).first()
+
+    # Parse optional period
+    start_date = request.GET.get('start_date', None)
+    end_date = request.GET.get('end_date', None)
+
+    period_start = period_end = None
+    calendar_timezone = ZoneInfo('Europe/Rome')
+    if start_date:
+        try:
+            period_start = datetime.datetime.strptime(start_date, '%d/%m/%Y').replace(tzinfo=calendar_timezone).astimezone(datetime.timezone.utc)
+        except (ValueError, OverflowError):
+            return Response({'error': 'Invalid start_date'}, status=status.HTTP_400_BAD_REQUEST)
+    if end_date:
+        try:
+            period_end = (datetime.datetime.strptime(end_date, '%d/%m/%Y') + datetime.timedelta(days=1)).replace(tzinfo=calendar_timezone).astimezone(datetime.timezone.utc)
+        except (ValueError, OverflowError):
+            return Response({'error': 'Invalid end_date'}, status=status.HTTP_400_BAD_REQUEST)
+
+    is_association = user.role == User.ASSOCIATION
+    is_collaborator = user.role == User.COLLABORATOR
+    if period_start and period_end and period_start >= period_end:
+        return Response({'error': 'Invalid date range'}, status=status.HTTP_400_BAD_REQUEST)
+    can_read_all = (is_association or is_collaborator) and sport_association is not None and requesting_instructor is None
+
+    from application.models import AttendanceRegistry
+    registries_by_association = {}
+
+    def serialize(instructor, association_id):
+        if association_id not in registries_by_association:
+            registries_by_association[association_id] = list(AttendanceRegistry.objects.filter(
+                course__sport_association_id=association_id, status=AttendanceRegistry.PUBLISHED).select_related('course'))
+        item = get_instructor_lessons_hours(
+            instructor, association_id, period_start, period_end, registries_by_association[association_id],
+            include_lessons=bool(uid) and request.GET.get('include_lessons') == 'true',
+        )
+        item['instructor_id'] = str(instructor.instructor_id)
+        item['first_name'] = instructor.first_name
+        item['last_name'] = instructor.last_name
+        return item
+
+    if uid:
+        is_valid_uuid(uid)
+        instructor = Instructor.objects.filter(instructor_id=uid).first()
+        if not instructor:
+            return Response({'error': 'instructor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if can_read_all:
+            # association admins: the instructor must belong to their association
+            instructor_association = SportAssociation.objects.filter(user=instructor.user).first()
+            if instructor_association is None or \
+                    str(instructor_association.sport_association_id) != str(sport_association.sport_association_id):
+                return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+            association_id = sport_association.sport_association_id
+        else:
+            # non-admin users: only their own instructor profile
+            if requesting_instructor is None or str(requesting_instructor.instructor_id) != str(uid):
+                return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+            # the instructor's owner user carries the association scope
+            instructor_association = SportAssociation.objects.filter(user=instructor.user).first()
+            if instructor_association is None:
+                return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+            association_id = instructor_association.sport_association_id
+
+        return Response({'data': serialize(instructor, association_id)}, status=status.HTTP_200_OK)
+
+    # List mode
+    if can_read_all:
+        association_user_ids = SportAssociation.objects.filter(
+            sport_association_id=sport_association.sport_association_id,
+        ).values_list('user_id', flat=True)
+        instructors = Instructor.objects.filter(
+            user_id__in=association_user_ids,
+            draft=False,
+        )
+        results = [serialize(i, sport_association.sport_association_id) for i in instructors]
+        return Response({'data': results}, status=status.HTTP_200_OK)
+
+    if requesting_instructor is None:
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+
+    instructor_association = SportAssociation.objects.filter(user=requesting_instructor.user).first()
+    if instructor_association is None:
+        return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
+    association_id = instructor_association.sport_association_id
+    return Response({'data': serialize(requesting_instructor, association_id)}, status=status.HTTP_200_OK)

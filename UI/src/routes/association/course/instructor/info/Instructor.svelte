@@ -6,6 +6,7 @@
     import {onDestroy, onMount} from 'svelte';
     import {Calculator, Clock} from 'phosphor-svelte';
     import AddEditModal from './modals/AddEditModal.svelte';
+    import LessonsHoursCard from './LessonsHoursCard.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
     import EditButton from 'components/buttons/EditButton.svelte';
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
@@ -28,6 +29,10 @@
     let id = params.id;
 
     let data = {};
+    let lessonsData = null;
+    let lessonsLoading = true;
+    let lessonsError = false;
+    let lessonsRequest = 0;
     let loading = true;
     let visibleMultiaction = false;
     let selectedCounter = 0;
@@ -41,6 +46,7 @@
             datatable.search(currentFilter.toLowerCase(), 'date_range');
         }
         fetchInfoWidget();
+        fetchLessonsHours();
     }
 
     let currentFilterStart = moment().startOf('month').format('DD/MM/YYYY');
@@ -367,11 +373,34 @@
         });
     }
 
+    async function fetchLessonsHours() {
+        const requestId = ++lessonsRequest;
+        lessonsLoading = true;
+        lessonsError = false;
+        await apiFetch(
+            `${replaceUID(__bakney.env.API.INSTRUCTOR.LESSONS_HOURS, id)}?include_lessons=true&start_date=${currentFilterStart}&end_date=${currentFilterEnd}`,
+            {
+                method: 'GET',
+            }
+        ).then(res => {
+            if (requestId !== lessonsRequest) return;
+            lessonsError = !!res.error;
+            lessonsData = res.response?.data || null;
+        }).catch(() => {
+            if (requestId !== lessonsRequest) return;
+            lessonsError = true;
+            lessonsData = null;
+        }).finally(() => {
+            if (requestId === lessonsRequest) lessonsLoading = false;
+        });
+    }
+
     onMount(async () => {
         localStorage.removeItem('bkn_datatable-1-meta');
         initTooltips(document.body);
         initPopovers(document.body);
         fetchInfoWidget();
+        fetchLessonsHours();
     });
 
     onDestroy(() => {
@@ -419,6 +448,14 @@
                     <div
                         class="d-none d-md-flex justify-content-start mb-2 mt-2 mt-md-0 pb-2 pb-md-0 overflow-auto"
                         style="flex-wrap: wrap;">
+                        <div class="col-12 col-md-3 p-2 pr-md-4" in:scale={{duration: 250, start: 0.92}}>
+                            <LessonsHoursCard
+                                instructorId={id}
+                                data={lessonsData}
+                                loading={lessonsLoading}
+                                error={lessonsError}
+                                canOpenCalendar={canPerformAction('association.courses.read')} />
+                        </div>
                         <div class="col-12 col-md-3 p-2 pr-md-4" in:scale={{duration: 250, start: 0.92}}>
                             <div class="card-widget card p-0 m-0">
                                 <div class="card-body p-4">
@@ -571,6 +608,8 @@
     <!--end::Container-->
 </div>
 <!--end::Entry-->
+
+
 
 <AddEditModal
     edit={false}
