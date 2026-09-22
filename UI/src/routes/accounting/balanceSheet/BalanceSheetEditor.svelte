@@ -1,4 +1,5 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
     import moment from 'moment';
     import {scale} from 'svelte/transition';
     import {isMobile} from 'store/breakpointStore.js';
@@ -29,7 +30,6 @@
     import {blockPage, unblockPage} from 'store/loadingStore.js';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import { initPopovers, destroyPopovers } from 'shim/popover.js';
-    import {initSelectpicker} from 'shim/select.js';
 
     userData.useLocalStorage();
 
@@ -197,9 +197,6 @@
         document.querySelectorAll('.popover').forEach(popover => popover.remove());
         initTooltips(document.body);
         initPopovers(document.body);
-        setTimeout(() => {
-            initSelectpicker(document.getElementById('social-year'));
-        }, 300);
         loading = false;
     }
 
@@ -641,25 +638,15 @@
                                 <b>{balanceSheetStartDay}/{balanceSheetStartMonth}/{balanceSheet.year + 1}</b>
                             </label>
                             <div style="max-width: 8rem">
-                                <select
-                                    on:change={async () => {
-                                        // update currentDate to the new year with moment to YYYY-MM-DD
-                                        // available_years is an array of objects with year property and start_date property
-                                        // we extract the start_date property to get the day and month of the start date
-                                        let selectedYear = parseInt(document.getElementById('social-year').value);
-                                        let actualYear = availableYears.find(
-                                            year => year.year === selectedYear
-                                        ).start_date;
-                                        currentDate = moment(actualYear).format('YYYY-MM-DD');
+                                <FilterSelect
+                                    label="Anno sociale"
+                                    value={balanceSheet.year}
+                                    on:change={async event => {
+                                        const year = availableYears.find(year => year.year === event.detail.value);
+                                        currentDate = moment(year.start_date).format('YYYY-MM-DD');
                                         await fetchInitialData();
                                     }}
-                                    value={balanceSheet.year}
-                                    id="social-year"
-                                    class="form-control form-control-solid">
-                                    {#each availableYears || [] as year}
-                                        <option value={year.year}>{year.year}</option>
-                                    {/each}
-                                </select>
+                                    options={(availableYears || []).map(year => ({value: year.year, label: String(year.year)}))} />
                             </div>
                             <span class="form-text text-muted font-size-sm"
                                 >Puoi cambiare l'anno sociale dalle <a href="/#/profile?page=settings">impostazioni</a

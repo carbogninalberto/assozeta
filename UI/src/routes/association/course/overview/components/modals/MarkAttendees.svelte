@@ -148,20 +148,21 @@
                             >".
                         </p>
                         <div class="form-group mb-4">
-                            <!-- svelte-ignore a11y-label-has-associated-control -->
-                            <label class="font-weight-bold">Ricerca atleta</label>
+                            <label class="font-weight-bold" for={`attendance-search-${id}`}>Ricerca atleta</label>
                             <div class="input-icon">
                                 <input
+                                    id={`attendance-search-${id}`}
                                     bind:value={searchKey}
                                     type="text"
                                     class="form-control"
+                                    style="min-height:44px;padding-right:44px"
                                     placeholder="Filtra atleta..." />
                                 <span><Search size={16} class="icon-md" /></span>
-                                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                <span
-                                    style="position: absolute; right: 0;left:auto;cursor:pointer;"
-                                    on:click={resetSearch}><X size={14} /></span>
-                                <!-- <span><MagnifyingGlass size="18" weight="regular" /></span> -->
+                                {#if searchKey}
+                                    <button type="button" aria-label="Cancella ricerca" class="btn btn-icon btn-light m-0"
+                                        style="position:absolute;right:0;top:0;width:44px;height:44px"
+                                        on:click={resetSearch}><X size={16} /></button>
+                                {/if}
                             </div>
                         </div>
                         {#if Array.from(availableSubscriptions?.filter(sub => !sub.selected) || [])?.length > 0}

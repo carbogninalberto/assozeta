@@ -1,4 +1,11 @@
 <script>
+    import {createPersonasListFilter} from 'store/stores.js';
+    function resetPageFilters() {
+        $personasListFilter = {...createPersonasListFilter(), generalSearch: datatable?.getSearchValue() ?? $personasListFilter.generalSearch};
+
+        datatable?.setDataSourceParams($personasListFilterDatatable);
+    }
+
 	import { Search } from 'lucide-svelte';
 	import { createElement as createLucideElement, User as userIcon } from 'lucide';
     import moment from 'moment';
@@ -167,6 +174,8 @@
             </div>
             <div class="card-body p-0">
                 <BKNDatatable
+                    resetFilters={resetPageFilters}
+                    on:search={event => { if (event.detail.key === 'generalSearch') $personasListFilter.generalSearch = event.detail.value; }}
                     id="bkn_datatable_personas"
                     bind:visibleMultiaction
                     bind:selectedCounter
@@ -361,41 +370,12 @@
                     showDividerFilter={false}
                     serverPaging={true}
                     serverFiltering={true}
-                    showSearch={false}
+                    showSearch={true}
                     serverSorting={true}>
                     <div slot="search-header">
                         <div
                             class="col-12 col-md-auto p-0 m-0 d-flex flex-column flex-md-row align-items-center justify-content-start">
-                            <div class="col-md-8 col-12 my-2 my-md-0 p-0 px-md-2">
-                                <div class="input-icon d-flex">
-                                    <input
-                                        type="text"
-                                        bind:value={$personasListFilter.generalSearch}
-                                        on:keyup={debounce(() => {
-                                            datatable?.setDataSourceParams($personasListFilterDatatable);
-                                        }, 300)}
-                                        class="form-control form-control-solid mb-0 {$personasListFilter.generalSearch !=
-                                        ''
-                                            ? 'border border-secondary border-2 bg-light'
-                                            : 'border border-secondary border-dashed bg-white'}"
-                                        placeholder="Cerca..."
-                                        id="bkn_datatable_search_query" />
-                                    <span>
-                                        <Search size={16} class="text-muted" />
-                                    </span>
 
-                                    <button
-                                        style="position: absolute;right:0;"
-                                        class="btn btn-icon btn-ghost mb-0"
-                                        class:d-none={$personasListFilter.generalSearch == ''}
-                                        on:click={() => {
-                                            $personasListFilter.generalSearch = '';
-                                            datatable?.setDataSourceParams($personasListFilterDatatable);
-                                        }}>
-                                        <XCircleIcon size={19} weight="duotone" />
-                                    </button>
-                                </div>
-                            </div>
                             <SmartSelect
                                 customClasses={'m-0 p-0 filter-select min-w-7'}
                                 selectClasses={$personasListFilter.is_tutor != ''

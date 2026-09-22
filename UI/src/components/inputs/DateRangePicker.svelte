@@ -39,6 +39,7 @@
 
     let triggerEl;
     let panelEl;
+    let returnFocusEl;
 
     // Panel positioning
     let panelStyle = '';
@@ -150,6 +151,9 @@
     }
 
     function closePanel() {
+        if (!isMobile && (panelEl?.contains(document.activeElement) || document.activeElement === document.body)) {
+            returnFocusEl?.focus();
+        }
         open = false;
     }
 
@@ -175,6 +179,7 @@
 
     function openPanel() {
         if (disabled || open) return;
+        returnFocusEl = triggerEl?.contains(document.activeElement) ? document.activeElement : triggerEl?.querySelector('input');
         draftStart = startDisplay;
         draftEnd = endDisplay;
         leftMonth = draftStart
@@ -278,7 +283,9 @@
 
     // ---- Escape / click-outside ----
     function handleGlobalKeydown(e) {
-        if (e.key === 'Escape' && open) {
+        if (e.key === 'Escape' && open && !isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
             cancelPanel();
         }
     }
@@ -349,14 +356,22 @@
         {disabled}
         {required}
         on:click={openPanel}
+        on:keydown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openPanel();
+            }
+        }}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         aria-label="Periodo"
     />
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="input-group-append" on:click={openPanel}>
+    <button type="button" class="input-group-append drp-calendar-button" {disabled}
+        aria-label="Seleziona periodo" aria-haspopup="dialog" aria-expanded={open} on:click={openPanel}>
         <span class="input-group-text">
             <Calendar size={18} weight="duotone" />
         </span>
-    </div>
+    </button>
 </div>
 
 <!-- ===== DESKTOP PANEL (Portal) ===== -->
@@ -409,6 +424,7 @@
 
 <!-- ===== MOBILE DRAWER ===== -->
 {#if isMobile}
+    <Portal target="body">
     <BasicDrawer
         bind:isOpen={open}
         position="bottom"
@@ -455,11 +471,24 @@
             {/if}
         </div>
     </BasicDrawer>
+    </Portal>
 {/if}
 
 <style>
+    .drp-calendar-button { border: 0; padding: 0; background: transparent; }
     .drp-trigger {
         flex-wrap: nowrap;
+    }
+    .drp-trigger.input-group:focus-within {
+        outline: 2px solid var(--focus-color, var(--primary, #3699ff)) !important;
+        outline-offset: 2px;
+    }
+    .drp-trigger .drp-display-input:focus,
+    .drp-trigger .drp-display-input:focus-visible,
+    .drp-trigger .drp-calendar-button:focus,
+    .drp-trigger .drp-calendar-button:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
     }
 
     .drp-display-input {

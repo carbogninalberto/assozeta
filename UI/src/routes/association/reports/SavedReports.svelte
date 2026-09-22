@@ -1,4 +1,5 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
     import {onMount, onDestroy, tick} from 'svelte';
     import {apiFetch, replaceUID, originalFetch} from 'utils/ApiMiddleware.js';
     import {sessionToken} from 'store/stores.js';
@@ -52,6 +53,11 @@
     let drawerTitle = '';
 
     let generalSearch = '';
+    let searchTimer;
+    function scheduleSearch() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => { if (!loading && datatable) initDatatable(); }, 300);
+    }
 
     // Edit state
     let editName = '';
@@ -135,9 +141,12 @@
             editDescription = selectedReport.description || '';
             localParams = {...(selectedReport.params || {})};
             uiConfig = selectedReport.ui_config || {};
-            localFilters = Array.isArray(localParams.filters) ? localParams.filters.map(f => ({...f})) : [];
+            localFilters = Array.isArray(localParams.filters) ? localParams.filters.map(f => ({...f, operator: f.operator || 'eq'})) : [];
             jsonStrings = {};
             for (const field of uiConfig.fields || []) {
+                if (field.type === 'select' && localParams[field.key] == null && field.options?.length) {
+                    localParams[field.key] = field.options[0];
+                }
                 if (field.type === 'json' && localParams[field.key] !== undefined) {
                     jsonStrings[field.key] = JSON.stringify(localParams[field.key], null, 2);
                 }
@@ -289,7 +298,7 @@
 
     // Filter builder helpers
     function addFilter() {
-        localFilters = [...localFilters, {field: '', operator: '', value: ''}];
+        localFilters = [...localFilters, {field: '', operator: 'eq', value: ''}];
     }
 
     function removeFilter(idx) {
@@ -297,6 +306,7 @@
     }
 
     onDestroy(() => {
+        clearTimeout(searchTimer);
         if (datatable) {
             try { datatable.destroy(); } catch (e) {}
             datatable = undefined;
@@ -366,24 +376,23 @@
                                                 <input
                                                     type="text"
                                                     bind:value={generalSearch}
-                                                    on:keyup={debounce(async () => {
-                                                        await tick();
-                                                        if (!loading && datatable) initDatatable();
-                                                    }, 300)}
+                                                    on:input={scheduleSearch}
                                                     class="form-control form-control-solid mb-0 {generalSearch != ''
                                                         ? 'border border-secondary border-2 bg-light'
                                                         : 'border border-secondary border-dashed bg-white'}"
                                                     placeholder="Cerca..."
-                                                    id="bkn_saved_reports_search" />
+                                                    id="bkn_saved_reports_search" aria-label="Cerca report" style="height: 44px;" />
                                                 <span>
-                                                    <MagnifyingGlass size={18} weight="duotone" class="text-muted" />
+                                                    <MagnifyingGlass size={16} weight="duotone" class="text-muted" />
                                                 </span>
                                                 {#if generalSearch}
                                                     <button
                                                         type="button"
+                                                        aria-label="Cancella ricerca"
                                                         style="position: absolute; right: 0;"
                                                         class="btn btn-icon btn-ghost mb-0"
                                                         on:click={async () => {
+                                                            clearTimeout(searchTimer);
                                                             generalSearch = '';
                                                             await tick();
                                                             if (!loading && datatable) initDatatable();
@@ -517,13 +526,11 @@
                                                     class="form-control form-control-solid form-control-sm"
                                                     bind:value={localParams[field.key]} />
                                             {:else if field.type === 'select' && field.options}
-                                                <select
-                                                    class="form-control form-control-solid form-control-sm"
-                                                    bind:value={localParams[field.key]}>
-                                                    {#each field.options as opt}
-                                                        <option value={opt}>{opt}</option>
-                                                    {/each}
-                                                </select>
+                                                <FilterSelect
+                                                    label={field.label}
+                                                    width="100%"
+                                                    bind:value={localParams[field.key]}
+                                                    options={field.options.map(opt => ({value: opt, label: String(opt)}))} />
                                             {:else if field.type === 'json'}
                                                 <textarea
                                                     class="form-control form-control-solid form-control-sm font-monospace"
@@ -582,26 +589,17 @@
                                 Filtri
                             </label>
                             {#each localFilters as filter, idx}
-                                <div class="d-flex align-items-center mb-3" style="gap: 0.5rem;">
-                                    <select
-                                        class="form-control form-control-solid form-control-sm"
-                                        style="width: 140px;"
-                                        bind:value={filter.field}>
-                                        <option value="">Campo...</option>
-                                        {#each uiConfig.filter_fields as f}
-                                            <option value={f.key}>{f.label}</option>
-                                        {/each}
-                                    </select>
-                                    <select
-                                        class="form-control form-control-solid form-control-sm"
-                                        style="width: 120px;"
-                                        bind:value={filter.operator}>
-                                        <option value="eq">uguale</option>
-                                        <option value="ne">diverso</option>
-                                        <option value="contains">contiene</option>
-                                        <option value="gt">maggiore</option>
-                                        <option value="lt">minore</option>
-                                    </select>
+                                <div class="d-flex flex-wrap align-items-center mb-3" style="gap: 0.5rem;">
+                                    <FilterSelect
+                                        label="Campo filtro"
+                                        width="140px"
+                                        bind:value={filter.field}
+                                        options={[{value: '', label: 'Campo...'}, ...uiConfig.filter_fields.map(f => ({value: f.key, label: f.label}))]} />
+                                    <FilterSelect
+                                        label="Operatore filtro"
+                                        width="120px"
+                                        bind:value={filter.operator}
+                                        options={[{value: 'eq', label: 'uguale'}, {value: 'ne', label: 'diverso'}, {value: 'contains', label: 'contiene'}, {value: 'gt', label: 'maggiore'}, {value: 'lt', label: 'minore'}]} />
                                     <input
                                         type="text"
                                         class="form-control form-control-solid form-control-sm"

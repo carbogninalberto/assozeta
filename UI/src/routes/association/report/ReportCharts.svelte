@@ -1,4 +1,5 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
 	import { AlertTriangle } from 'lucide-svelte';
     import ContentLoader from 'svelte-content-loader';
     import {onMount} from 'svelte';
@@ -39,7 +40,6 @@ UiApp.block('#content-graphs', {
             });
         }
         let url = __bakney.env.API.STATISTIC.REPORT;
-        selectedYear = parseInt(document.getElementById('report-year')?.value || selectedYear);
         if (selectedYear) {
             let selectedDate;
             for (let year of availableYears) {
@@ -122,15 +122,12 @@ let subscriptionChart = document.getElementById('subscriptions-chart');
                             {#if selectedYear}
                                 <label class="font-weight-bolder h5 mb-2"> Anno report </label>
                                 <div style="max-width: 8rem">
-                                    <select
-                                        on:change={fetchData}
+                                    <FilterSelect
+                                        label="Anno report"
+                                        width="8rem"
                                         bind:value={selectedYear}
-                                        id="report-year"
-                                        class="form-control form-control-solid">
-                                        {#each availableYears || [] as year}
-                                            <option value={year.year}>{year.year}</option>
-                                        {/each}
-                                    </select>
+                                        on:change={event => { selectedYear = event.detail.value; fetchData(); }}
+                                        options={(availableYears || []).map(year => ({value: year.year, label: String(year.year)}))} />
                                 </div>
                             {/if}
                         </div>

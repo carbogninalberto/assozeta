@@ -1,4 +1,14 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    let selectedFilter = '';
+    function resetPageFilters() {
+        selectedFilter = '';
+        const query = {...datatable.getDataSourceQuery(), generalSearch: datatable.getSearchValue()};
+        delete query['course.course_id'];
+
+        datatable.setDataSourceQuery(query);
+    }
+
     import {sessionToken} from 'store/stores.js';
     import {onMount, onDestroy} from 'svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
@@ -6,7 +16,6 @@
     import BackButton from 'components/buttons/BackButton.svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
-    import {initSelectpicker} from 'shim/select.js';
 
     sessionToken.useLocalStorage();
 
@@ -125,7 +134,7 @@
                     </div>
                     <div class="row">
                         <div class="col-12 mt-4">
-                            <BKNDatatable
+                            <BKNDatatable resetFilters={resetPageFilters}
                                 bind:datatable
                                 {columns}
                                 url={replaceUID(__bakney.env.API.SUBSCRIPTION.ATTENDANCE, params.subscriptionId)}
@@ -138,23 +147,16 @@
                                 serverPaging={false}
                                 serverFiltering={false}
                                 serverSorting={false}
-                                loadFilters={() => {
-                                    const statusEl = document.getElementById('bkn_datatable_search_status');
-                                    statusEl?.addEventListener('change', function (e) {
-                                        datatable.search(e.currentTarget.value.toLowerCase(), 'course.course_id');
-                                    });
-                                    initSelectpicker(statusEl);
-                                }}>
+                                >
                                 <div slot="search-header">
                                     <div class="d-flex align-items-center">
                                         <!-- svelte-ignore a11y-label-has-associated-control -->
                                         <label class="mr-3 mb-0 d-none d-md-block">Corso</label>
-                                        <select class="form-control" id="bkn_datatable_search_status">
-                                            <option value="">Tutti</option>
-                                            {#each courses as course}
-                                                <option value={course.course_id}>{course.title}</option>
-                                            {/each}
-                                        </select>
+                                        <FilterSelect
+                                            label="Corso"
+                                            bind:value={selectedFilter}
+                                            on:change={event => datatable.search(event.detail.value, 'course.course_id')}
+                                            options={[{value: '', label: 'Tutti'}, ...courses.map(course => ({value: course.course_id, label: course.title}))]} />
                                     </div>
                                 </div>
                             </BKNDatatable>

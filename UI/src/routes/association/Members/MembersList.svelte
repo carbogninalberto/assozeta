@@ -1,4 +1,24 @@
 <script>
+    import CheckboxFilters from 'components/filters/CheckboxFilters.svelte';
+    import {tableExportQuery} from 'components/tables/tableExportQuery.js';
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
+    import {createSubscriptionListFilter} from 'store/stores.js';
+    import {resetFilter, restoreStoredFilters} from 'components/filters/filterState.js';
+    let searchTimer;
+    function scheduleSearch() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => datatable?.setDataSourceParams($subscriptionListFilterDatatable), 300);
+    }
+
+    function resetPageFilters() {
+        clearTimeout(searchTimer);
+        $subscriptionListFilter = {...createSubscriptionListFilter(), generalSearch: $subscriptionListFilter.generalSearch};
+        periodStart = ''; periodEnd = '';
+        filters = filters.map(resetFilter);
+        datatable?.setDataSourceParams($subscriptionListFilterDatatable);
+    }
+
+    import MobileFilterSheet from 'components/filters/MobileFilterSheet.svelte';
 	import { CheckCircle as LucideCheckCircle, Info, Search, X } from 'lucide-svelte';
     import PrintingModal from 'components/modals/PrintingModal.svelte';
     import CertificateButton from 'components/buttons/CertificateButton.svelte';
@@ -117,6 +137,7 @@
             },
         },
     ];
+    filters = restoreStoredFilters(filters, $subscriptionListFilter);
 
     const statusTextDictionary = {
         1: '<span class="label label-light-info label-inline font-weight-bolder label-lg">non firmata</span>',
@@ -770,9 +791,8 @@
         let filterObj = generateFilterObject();
         let t_list = filterObj?.tags?.join(',') || [];
         let tags_and = filterObj?.tags_and == true ? 1 : 0;
-        let from_age = filterObj?.from_age || '';
-        let to_age = filterObj?.to_age || '';
-        console.log(filterObj);
+        let from_age = filterObj?.from_age ?? '';
+        let to_age = filterObj?.to_age ?? '';
         $subscriptionListFilter = {
             ...$subscriptionListFilter,
             ...filterObj,
@@ -837,7 +857,7 @@
                 tags = [...res.response?.tags];
                 // update filter options
                 filters.find(filter => filter.key === 'tags').data.options = tags;
-                filters = [...filters];
+                filters = restoreStoredFilters(filters, $subscriptionListFilter);
             }
         });
     }
@@ -887,8 +907,8 @@
         });
     }
 
-    let periodStart = '';
-    let periodEnd = '';
+    let periodStart = $subscriptionListFilter.period_start || '';
+    let periodEnd = $subscriptionListFilter.period_end || '';
 
     function handlePeriodRangeChange(e) {
         periodStart = e.detail.start;
@@ -942,6 +962,7 @@
     });
 
     onDestroy(() => {
+        clearTimeout(searchTimer);
         clearLocalStorageForPartialMatching('bkn_datatable_payments_');
         document.querySelectorAll('.popover').forEach(popover => popover.remove());
         document.querySelectorAll('.tooltip').forEach(popover => popover.remove());
@@ -1846,22 +1867,20 @@
             <div class="card-body p-0">
                 <!--begin: Search Form-->
                 <!--begin::Search Form-->
-                <div class="mb-2">
+                <div class="mb-2 datatable-filters">
                     <div class="row align-items-center">
                         <div class="col-12 mx-0 mx-md-2">
                             <div class="row align-items-center justify-content-between">
                                 <div
-                                    class="col-12 col-md-auto p-0 m-0 d-flex flex-column flex-wrap flex-md-row align-items-center justify-content-start">
+                                    class="datatable-filter-controls col-12 col-md-auto p-0 m-0 d-flex flex-column flex-wrap flex-md-row align-items-center justify-content-start">
                                     <div
-                                        class="col-md-5 col-12 my-2 my-md-0 p-0 px-md-2"
+                                        class="datatable-search col-md-5 col-12 my-2 my-md-0 p-0 px-md-2"
                                         style="max-width: 28rem;width: 28rem">
                                         <div class="input-icon d-flex">
                                             <input
                                                 type="text"
                                                 bind:value={$subscriptionListFilter.generalSearch}
-                                                on:keyup={debounce(() => {
-                                                    datatable?.setDataSourceParams($subscriptionListFilterDatatable);
-                                                }, 300)}
+                                                on:input={scheduleSearch}
                                                 class="form-control form-control-solid mb-0 {$subscriptionListFilter.generalSearch !=
                                                 ''
                                                     ? 'border border-secondary border-2 bg-light'
@@ -1878,6 +1897,7 @@
                                                 class="btn btn-icon btn-ghost mb-0"
                                                 class:d-none={$subscriptionListFilter.generalSearch == ''}
                                                 on:click={() => {
+                                                    clearTimeout(searchTimer);
                                                     $subscriptionListFilter.generalSearch = '';
                                                     datatable?.setDataSourceParams($subscriptionListFilterDatatable);
                                                 }}>
@@ -1885,6 +1905,7 @@
                                             </button>
                                         </div>
                                     </div>
+                                    <MobileFilterSheet onReset={resetPageFilters}>
                                     {#if $userData.preview_and_custom_features?.find(x => x.name === 'Iscrizioni per Enti e Federazioni') !== undefined}
                                         <div class="col-12 col-md-auto my-2 px-0 mx-0 mx-md-2">
                                             <div class="form-group mb-0">
@@ -2041,203 +2062,30 @@
                                         />
                                     </div>
                                     <div class="col-12 col-md-auto my-2 mx-md-1 px-0">
-                                        <div class="dropdown dropdown-inline m-0">
-                                            <button
-                                                type="button"
-                                                class="btn btn-light {Object.values(
-                                                    $subscriptionListFilter.filter
-                                                ).some(x => x)
-                                                    ? 'border-secondary border-2 bg-light'
-                                                    : 'border-secondary border-dashed bg-white'} btn-icon m-0"
-                                                data-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false">
-                                                <Funnel size="18" weight="duotone" class="text-secondary" />
-                                            </button>
-                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <div
-                                                class="dropdown-menu rounded-xl py-0"
-                                                on:click|preventDefault={() => {
-                                                    datatable?.setDataSourceParams($subscriptionListFilterDatatable);
-                                                }}>
-                                                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                                <form class="p-0">
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filterHideAssociateMembers = document.querySelector(
-                                                                'input[name="filter_hide_associate_and_members"]'
-                                                            );
-                                                            filterHideAssociateMembers.checked =
-                                                                !filterHideAssociateMembers.checked;
-                                                            $subscriptionListFilter.filter.hide_associate_and_members =
-                                                                filterHideAssociateMembers.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .hide_associate_and_members}
-                                                                name="filter_hide_associate_and_members" />
-                                                            <span />
-                                                            <content class="ml-4"> Nascondi Soci Tesserati </content>
-                                                        </label>
-                                                    </span>
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filterHideMembers = document.querySelector(
-                                                                'input[name="filter_hide_members"]'
-                                                            );
-                                                            filterHideMembers.checked = !filterHideMembers.checked;
-                                                            $subscriptionListFilter.filter.hide_members =
-                                                                filterHideMembers.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .hide_members}
-                                                                name="filter_hide_members" />
-                                                            <span />
-                                                            <content class="ml-4"> Nascondi tesserati </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter1 =
-                                                                document.querySelector('input[name="filter1"]');
-                                                            filter1.checked = !filter1.checked;
-                                                            $subscriptionListFilter.filter.certificate_missing_flag =
-                                                                filter1.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .certificate_missing_flag}
-                                                                name="filter1" />
-                                                            <span />
-                                                            <content class="ml-4"> Certificato non presente </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter2 =
-                                                                document.querySelector('input[name="filter2"]');
-                                                            filter2.checked = !filter2.checked;
-                                                            $subscriptionListFilter.filter.certificate_expired_flag =
-                                                                filter2.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                name="filter2"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .certificate_expired_flag} />
-                                                            <span />
-                                                            <content class="ml-4"> Certificato scaduto </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter3 =
-                                                                document.querySelector('input[name="filter3"]');
-                                                            filter3.checked = !filter3.checked;
-                                                            $subscriptionListFilter.filter.subscription_not_paid_flag =
-                                                                filter3.checked;
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .subscription_not_paid_flag}
-                                                                name="filter3" />
-                                                            <span />
-                                                            <content class="ml-4"> Iscrizione non pagata </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter4 =
-                                                                document.querySelector('input[name="filter4"]');
-                                                            filter4.checked = !filter4.checked;
-                                                            // if active disable
-                                                            $subscriptionListFilter.filter.sort_lastname_asc_flag =
-                                                                $subscriptionListFilter.filter.sort_lastname_asc_flag
-                                                                    ? !filter4.checked
-                                                                    : false;
-                                                            $subscriptionListFilter.filter.sort_lastname_asc_flag =
-                                                                filter4.checked;
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .sort_lastname_asc_flag}
-                                                                name="filter4" />
-                                                            <span />
-                                                            <content class="ml-4"> Ordina per cognome A-Z </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter5 =
-                                                                document.querySelector('input[name="filter5"]');
-                                                            filter5.checked = !filter5.checked;
-                                                            // if active disable
-                                                            $subscriptionListFilter.filter.sort_lastname_desc_flag =
-                                                                $subscriptionListFilter.filter.sort_lastname_desc_flag
-                                                                    ? !filter5.checked
-                                                                    : false;
-                                                            $subscriptionListFilter.filter.sort_lastname_desc_flag =
-                                                                filter5.checked;
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$subscriptionListFilter.filter
-                                                                    .sort_lastname_desc_flag}
-                                                                name="filter5" />
-                                                            <span />
-                                                            <content class="ml-4"> Ordina per cognome Z-A </content>
-                                                        </label>
-                                                    </span>
-                                                </form>
-                                            </div>
-                                        </div>
+                                        <CheckboxFilters bind:values={$subscriptionListFilter.filter}
+                                            options={[{"key": "hide_associate_and_members", "label": "Nascondi Soci Tesserati"}, {"key": "hide_members", "label": "Nascondi tesserati"}, {"key": "certificate_missing_flag", "label": "Certificato non presente"}, {"key": "certificate_expired_flag", "label": "Certificato scaduto"}, {"key": "subscription_not_paid_flag", "label": "Iscrizione non pagata"}, {"key": "sort_lastname_asc_flag", "label": "Ordina per cognome A-Z", "excludes": "sort_lastname_desc_flag"}, {"key": "sort_lastname_desc_flag", "label": "Ordina per cognome Z-A", "excludes": "sort_lastname_asc_flag"}]}
+                                            on:change={() => {
+                                                clearTimeout(searchTimer);
+
+                                                datatable?.setDataSourceParams($subscriptionListFilterDatatable);
+                                            }} />
                                     </div>
                                     <div
                                         class="col-12 col-md-auto p-0 text-right text-md-left p-md-auto m-0 mx-md-1 my-2 my-md-0">
                                         <QueryFilter {filters} on:filter-applied={handleFilterApplied} />
                                     </div>
+                                    </MobileFilterSheet>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 d-flex justify-content-end align-items-center mb-2">
+                <div class="datatable-filter-actions col-12 d-flex flex-wrap justify-content-end align-items-center mb-2">
                     <div class="my-2 mr-1">
                         <div class="dropdown">
                             <button
-                                class="btn btn-sm btn-light-primary dropdown-toggle font-weight-bolder d-flex align-items-center"
+                                class="has-dropdown-caret btn btn-sm btn-light-primary dropdown-toggle font-weight-bolder d-flex align-items-center"
                                 type="button"
                                 id="dropdownMenuButton"
                                 data-toggle="dropdown"
@@ -2245,7 +2093,7 @@
                                 aria-expanded="false">
                                 <FileArrowDown size={14} weight="duotone" class="mr-2" />
                                 Stampe utili
-                            </button>
+                            <DropdownCaret /></button>
                             <!-- svelte-ignore a11y-click-events-have-key-events -->
                             <!-- svelte-ignore a11y-missing-attribute -->
                             <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -2482,22 +2330,7 @@
                             data-placement="bottom"
                             title="Esporta ricerca corrente in Excel o PDF"
                             on:click={() => {
-                                let query = $subscriptionListFilterDatatable;
-                                // transform query to be a string like ?query[key]=value&...
-                                let queryString = Object.keys(query)
-                                    .map(key => {
-                                        return `${key}` + '=' + query[key];
-                                    })
-                                    .join('&');
-
-                                // sort options
-                                let sort = datatable.getDataSourceParam('sort');
-                                if (sort) {
-                                    queryString += '&sort[field]=' + sort.field + '&sort[sort]=' + sort.sort;
-                                }
-
-                                // add type=athletes
-                                queryString += '&type=athletes';
+                                const queryString = tableExportQuery(datatable, {type: 'athletes'});
 
                                 let endpointWithQueryString = __bakney.env.API.SUBSCRIPTION.LIST + '?' + queryString;
                                 let printingModal = new CurrentViewPrintingModal({
@@ -2635,7 +2468,7 @@
                                         <span class="d-none d-md-block">Archivia</span></button>
                                     <button
                                         disabled={!canPerformAction('association.members.update')}
-                                        class="btn btn-sm btn-light-primary font-weight-bolder m-0 ml-2 p-2 d-flex align-items-center dropdown-toggle"
+                                        class="has-dropdown-caret btn btn-sm btn-light-primary font-weight-bolder m-0 ml-2 p-2 d-flex align-items-center dropdown-toggle"
                                         type="button"
                                         on:click={() => {
                                             searchTagName = '';
@@ -2649,7 +2482,7 @@
                                         aria-expanded="false"
                                         id="bkn_datatable_assign_tag_to_selected">
                                         <Tag size="17" weight="duotone" class="mr-1" />
-                                        <span class="d-none d-md-block">Assegna Tag</span></button>
+                                        <span class="d-none d-md-block">Assegna Tag</span><DropdownCaret /></button>
                                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                                     <div
                                         on:click={e => e.stopPropagation()}

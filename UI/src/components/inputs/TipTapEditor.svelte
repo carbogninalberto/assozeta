@@ -1,4 +1,5 @@
 <script>
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { Table as LucideTable } from 'lucide-svelte';
     import {onMount, onDestroy} from 'svelte';
     import {toast} from 'svelte-sonner';
@@ -577,12 +578,12 @@
 
                 <div class="dropdown">
                     <button type="button"
-                        class="btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2 dropdown-toggle"
+                        class="has-dropdown-caret btn btn-white btn-sm font-weight-boldest btn-light p-1 mb-0 d-flex align-items-center gap-2 dropdown-toggle"
                         data-toggle="dropdown"
                         aria-haspopup="true"
                         aria-expanded="false">
                         <ArrowsOutCardinal size={14} weight="bold" class="mr-1" /> Bordo
-                    </button>
+                    <DropdownCaret /></button>
                     <ul class="dropdown-menu">
                         <li>
                             <div class="px-3 py-2">

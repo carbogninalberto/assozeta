@@ -1,10 +1,11 @@
 <script>
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
     import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
-    import * as easing from 'svelte/easing';
     import {XCircle, PlusCircle} from 'phosphor-svelte';
-    import {scale} from 'svelte/transition';
     import {clickOutside} from 'components/formBuilder/utils';
-    import {createEventDispatcher} from 'svelte';
+    import {createEventDispatcher, tick, onMount} from 'svelte';
+    import {v4 as uuidv4} from 'uuid';
+    import {copyFilter, resetFilter, validateFilter, hasFilterValue, isFilterActive} from './filterState.js';
 
     const dispatch = createEventDispatcher();
 
@@ -18,61 +19,91 @@
     };
 
     let showDropdown = false;
+    let draft = copyFilter(props);
+    let validationError = '';
+    let appliedReference = props;
+    $: if (props !== appliedReference) {
+        appliedReference = props;
+        draft = copyFilter(props);
+        close();
+    }
+    let trigger;
+    let root;
+    const filterId = `query-filter-${uuidv4()}`;
+
+    onMount(() => {
+        const panel = root.closest('.datatable-extra-filters');
+        panel?.addEventListener('filter-panel-close', close);
+        return () => panel?.removeEventListener('filter-panel-close', close);
+    });
 
     function toggle() {
-        props.active = !props.active;
-        // if tags, clear all tags
-        if (props.type === 'tags') {
-            props.data.options.forEach(option => {
-                option.checked = false;
-            });
-            // trigger reactivity
-            props.data.options = [...props.data.options];
-        }
+        props = resetFilter(props);
+        close();
         dispatch('filter-applied', props);
     }
 
     function close() {
         showDropdown = false;
+        validationError = '';
+    }
+
+    async function open() {
+        if (showDropdown) return close();
+        draft = copyFilter(props);
+        validationError = '';
+        showDropdown = true;
+        await tick();
+        root.querySelector('.query-filter-panel input, .query-filter-panel button')?.focus();
     }
 
     function apply() {
-        // toggle
-        showDropdown = false;
-        props.active = true;
+        validationError = validateFilter(draft);
+        if (validationError) return;
+        props = {...copyFilter(draft), active: isFilterActive(draft)};
+        close();
         dispatch('filter-applied', props);
+        trigger?.focus();
+    }
+
+    function handleKeydown(event) {
+        if (event.key === 'Escape' && showDropdown &&
+            event.target.closest('.drawer') === root.closest('.drawer')) {
+            event.preventDefault();
+            event.stopPropagation();
+            close();
+            trigger?.focus();
+        }
     }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="dropdown dropdown-inline {showDropdown ? 'show' : ''}">
+<div class="dropdown dropdown-inline query-filter {showDropdown ? 'show' : ''}"
+    bind:this={root} use:clickOutside on:keydown={handleKeydown}
+    on:click_outside={event => {
+        if (!event.detail.target.closest('.drp-panel') &&
+            event.detail.target.closest('.drawer') === root.closest('.drawer')) close();
+    }}>
+    {#if props.active}
+        <button type="button" class="btn btn-icon btn-light query-filter-remove mb-0"
+            aria-label={`Rimuovi filtro ${props.name}`} on:click={toggle}>
+            <XCircle size={18} />
+        </button>
+    {/if}
     <button
-        class="dropdown-toggle overflow-hidden d-flex align-items-center border rounded-lg px-2 cursor-pointer {props?.active
+        class="has-dropdown-caret dropdown-toggle overflow-hidden d-flex align-items-center border rounded-lg px-2 cursor-pointer {props?.active
             ? 'border-secondary border-2 bg-light'
             : 'border-secondary border-dashed bg-white'}"
-        id="dropdown-{props?.name}"
-        on:click={e => {
-            showDropdown = !showDropdown;
-        }}
+        type="button"
+        bind:this={trigger}
+        id={filterId}
+        aria-controls={`${filterId}-panel`}
+        on:click={open}
         style="padding-top: 0.075rem; padding-bottom: 0.075rem;"
         aria-haspopup="true"
         aria-expanded={showDropdown}>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        {#if props?.active}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <span
-                id="close-{props?.name}"
-                class="mr-0 btn-icon btn-ghost text-hover-danger btn btn-sm"
-                on:click|preventDefault={toggle}>
-                <XCircle size={20} weight="duotone" class="m-0" />
-            </span>
-        {:else}
-            <span class="mr-0 btn-icon btn-ghost text-hover-primary btn btn-sm">
-                <PlusCircle size={18} weight="duotone" class="m-0" />
-            </span>
-        {/if}
+        {#if !props.active}<PlusCircle size={18} class="mr-2" />{/if}
         <span class="font-weight-bold font-size-lg">
             {#if props?.active}
                 <span class="text-dark font-weight-boldest border-right border-light-dark py-3 pr-3 mr-2">
@@ -90,12 +121,12 @@
                     {props?.data?.options.filter(option => option.checked).length} tag
                 {:else if props?.type === 'age'}
                     <span class="font-weight-boldest text-dark">
-                        {#if props?.data?.from_age && props?.data?.to_age}
-                            {props?.data?.from_age || 0}-{props?.data?.to_age || 120}
-                        {:else if props?.data?.from_age}
-                            {props?.data?.from_age || 0}+
-                        {:else if props?.data?.to_age}
-                            &lt; {props?.data?.to_age || 120}
+                        {#if hasFilterValue(props?.data?.from_age) && hasFilterValue(props?.data?.to_age)}
+                            {props?.data?.from_age ?? 0}-{props?.data?.to_age ?? 120}
+                        {:else if hasFilterValue(props?.data?.from_age)}
+                            {props?.data?.from_age ?? 0}+
+                        {:else if hasFilterValue(props?.data?.to_age)}
+                            &lt; {props?.data?.to_age ?? 120}
                         {/if}
                     </span>
                 {:else}
@@ -105,13 +136,13 @@
                 {props?.name}
             {/if}
         </span>
-    </button>
+    <DropdownCaret /></button>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
-        on:click_outside={close}
-        use:clickOutside
-        class="dropdown-menu m-0 dropdown-menu-lg dropdown-menu-right font-weight-bold rounded-xl shadow-lg {showDropdown
+        id={`${filterId}-panel`}
+        aria-labelledby={filterId}
+        class="query-filter-panel dropdown-menu m-0 dropdown-menu-lg dropdown-menu-right font-weight-bold rounded-xl shadow-lg {showDropdown
             ? 'show'
             : ''}"
         style="display: {showDropdown ? 'block' : 'none'};padding: 1rem !important;"
@@ -133,18 +164,18 @@
                 {/each}
             {:else if props?.type === 'date-range'}
                 <DateRangePicker
-                    id="query_filter_date_range"
+                    id={`${filterId}-date-range`}
                     format="DD/MM/YYYY"
                     required={true}
                     sizeClass=""
                     startPlaceholder="Dal"
                     endPlaceholder="Al"
                     immediate={true}
-                    bind:startValue={props.data.from_date}
-                    bind:endValue={props.data.to_date}
+                    bind:startValue={draft.data.from_date}
+                    bind:endValue={draft.data.to_date}
                 />
             {:else if props?.type === 'checkbox'}
-                {#each props?.data?.options as option}
+                {#each draft?.data?.options as option}
                     <div class="checkbox-list">
                         <label class="checkbox mb-4">
                             <input type="checkbox" name="checkbox-{option.value}" bind:checked={option.checked} />
@@ -154,7 +185,7 @@
                     </div>
                 {/each}
             {:else if props?.type === 'tags'}
-                {#each props?.data?.options as option}
+                {#each draft?.data?.options as option}
                     <div class="checkbox-list">
                         <label class="checkbox mb-4">
                             <input type="checkbox" name="checkbox-{option.tag_id}" bind:checked={option.checked} />
@@ -167,21 +198,21 @@
                 <h6 class="font-weight-boldest mb-4">Modalità di filtro</h6>
                 <div class="checkbox-list mt-2">
                     <label class="checkbox mb-4">
-                        <input type="checkbox" bind:checked={props.data.and} />
+                        <input type="checkbox" bind:checked={draft.data.and} />
                         <span />
                         Contiene i tag selezionati
                     </label>
                     <div class="text-muted small">
-                        {props.data.and
+                        {draft.data.and
                             ? 'Mostra solo gli elementi che contengono tutti i tag selezionati'
                             : 'Mostra gli elementi che contengono almeno uno dei tag selezionati'}
                     </div>
                 </div>
             {:else if props?.type === 'radio'}
-                {#each props?.data?.options as option}
+                {#each draft?.data?.options as option}
                     <div class="checkbox-list">
                         <label class="checkbox mb-4">
-                            <input type="radio" name="radio" value={option.value} bind:group={props.value} />
+                            <input type="radio" name={`${filterId}-radio`} value={option.value} bind:group={draft.value} />
                             <span />
                             {option.label}
                         </label>
@@ -191,35 +222,46 @@
                 <div class="d-flex" style="gap: 1rem;">
                     <div class="form-group mb-0">
                         <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label for="from_age" class="font-weight-bolder">Da anni</label>
+                        <label for={`${filterId}-from-age`} class="font-weight-bolder">Da anni</label>
                         <input
-                            id="from_age"
+                            id={`${filterId}-from-age`}
                             type="number"
                             class="form-control form-control-sm min-w-5"
                             min="0"
                             max="120"
-                            bind:value={props.data.from_age}
+                            bind:value={draft.data.from_age}
                             placeholder="Età minima" />
                     </div>
                     <div class="form-group mb-0">
-                        <label for="to_age" class="font-weight-bolder">A anni</label>
+                        <label for={`${filterId}-to-age`} class="font-weight-bolder">A anni</label>
                         <input
-                            id="to_age"
+                            id={`${filterId}-to-age`}
                             type="number"
                             class="form-control form-control-sm min-w-5"
                             min="0"
                             max="120"
-                            bind:value={props.data.to_age}
+                            bind:value={draft.data.to_age}
                             placeholder="Età massima" />
                     </div>
                 </div>
             {/if}
 
+            {#if validationError}<p role="alert" class="text-danger">{validationError}</p>{/if}
             <div class="dropdown-divider border-light" />
             <div class="text-right pt-2">
-                <button class="btn btn-sm btn-secondary mb-0 font-weight-boldest" on:click={close}> Chiudi </button>
-                <button class="btn btn-sm btn-primary mb-0 font-weight-boldest" on:click={apply}> Applica </button>
+                <button type="button" class="btn btn-sm btn-secondary mb-0 font-weight-boldest" on:click={() => { close(); trigger?.focus(); }}> Annulla </button>
+                <button type="button" class="btn btn-sm btn-primary mb-0 font-weight-boldest" on:click={apply}> Applica </button>
             </div>
         </ul>
     </div>
 </div>
+
+<style>
+    .query-filter { display: flex; flex-wrap: wrap; align-items: center; max-width: 100%; }
+    .query-filter > .dropdown-toggle { min-height: 44px; min-width: 0; white-space: normal; text-align: left; }
+    .query-filter-remove { flex-shrink: 0; width: 44px; height: 44px; }
+    .query-filter-panel { max-width: calc(100vw - 2rem); max-height: min(60vh, 32rem); overflow-y: auto; }
+    @media (max-width: 767.98px) {
+        .query-filter-panel { position: static; float: none; flex-basis: 100%; width: 100%; margin-top: 0.5rem !important; }
+    }
+</style>

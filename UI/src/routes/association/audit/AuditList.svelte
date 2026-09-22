@@ -1,11 +1,19 @@
 <script>
+    import {resetFilter} from 'components/filters/filterState.js';
+    function resetPageFilters() {
+        generalSearch = datatable.getSearchValue();
+        filters = filters.map(resetFilter);
+        objectFilter = null;
+        objectFilterLabel = '';
+        applyFilters();
+    }
     import {sessionToken} from 'store/stores.js';
     import {scale} from 'svelte/transition';
     import * as easing from 'svelte/easing';
     import {onMount, onDestroy} from 'svelte';
     import {debounce} from 'utils/Functions.js';
     import {apiFetch} from 'utils/ApiMiddleware.js';
-    import {Plus, Pencil, Trash} from 'phosphor-svelte';
+    import {Plus, Pencil, Trash, X} from 'phosphor-svelte';
     import QueryFilter from 'components/filters/QueryFilter.svelte';
     import AuditDetailDrawer from './AuditDetailDrawer.svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
@@ -418,7 +426,10 @@
                 <!--end::Object Filter Indicator-->
 
                 <!--begin: Datatable-->
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
+                    on:search={event => {
+                        if (event.detail.key === 'generalSearch') generalSearch = event.detail.value;
+                    }}
                     bind:datatable
                     {columns}
                     url={__bakney.env.API.AUDIT.LIST}
@@ -426,11 +437,6 @@
                     clicked={(td, obj) => openDetailDrawer(obj.id)}
                     showDividerFilter={false}
                     loadFilters={() => {
-                        const searchQueryEl = document.getElementById('bkn_datatable_search_query');
-                        searchQueryEl?.addEventListener('keyup', debounce(function (e) {
-                            generalSearch = e.currentTarget.value;
-                            applyFilters();
-                        }, 300));
                     }}>
                     <div slot="search-header">
                         <div class="col-12 col-md-auto p-0 text-right text-md-left p-md-auto m-0 mx-md-1 my-2 my-md-0">

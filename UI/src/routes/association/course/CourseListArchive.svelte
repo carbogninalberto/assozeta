@@ -1,4 +1,13 @@
 <script>
+    import {createCourseListFilter} from 'store/stores.js';
+    import {resetFilter, restoreStoredFilters} from 'components/filters/filterState.js';
+    function resetPageFilters() {
+        $courseListFilter = {...createCourseListFilter(), status_flag: 1, generalSearch: datatable?.getSearchValue() ?? $courseListFilter.generalSearch};
+
+        filters = filters.map(resetFilter);
+        datatable?.setDataSourceParams({...$courseListFilterDatatable, 'query[status_flag]': 1});
+    }
+
 	import { X } from 'lucide-svelte';
     import {sessionToken, courseListFilter, courseListFilterDatatable} from 'store/stores.js';
     import {scale, slide} from 'svelte/transition';
@@ -52,6 +61,7 @@
             },
         },
     ];
+    filters = restoreStoredFilters(filters, $courseListFilter);
 
     const statusTextDictionary = {
         1: '<span class="label label-light-warning label-inline font-weight-bolder label-lg" data-toggle="tooltip" data-html="true" title="Il corso non è visibile dal profilo dell\'associazione">non visibile</span>',
@@ -261,7 +271,7 @@
                 tags = [...res.response?.tags];
                 // update filter options
                 filters.find(filter => filter.key === 'tags').data.options = tags;
-                filters = [...filters];
+                filters = restoreStoredFilters(filters, $courseListFilter);
             }
         });
     }
@@ -600,17 +610,6 @@
     function loadFilters() {
         initTooltips(document.body);
         initPopovers(document.body);
-        const searchQueryEl = document.getElementById('bkn_datatable_search_query');
-        searchQueryEl?.addEventListener('keyup', debounce(function (e) {
-            $courseListFilter.generalSearch = e.currentTarget.value;
-            datatable?.setDataSourceParams($courseListFilterDatatable);
-        }, 300));
-
-        const statusEl = document.getElementById('bkn_datatable_search_status');
-        statusEl?.addEventListener('change', function (e) {
-            datatable.search(e.currentTarget.value.toLowerCase(), 'status_flag');
-        });
-        initSelectpicker(statusEl);
     }
 
     function generateFilterObject() {
@@ -648,7 +647,7 @@
             tags_and: tags_and,
         };
         // apply search
-        datatable?.setDataSourceParams($courseListFilterDatatable);
+        datatable?.setDataSourceParams({...$courseListFilterDatatable, 'query[status_flag]': 1});
     }
 
     onMount(() => {
@@ -730,7 +729,7 @@
 
 <!--begin::Entry-->
 <div
-    
+
     class="d-flex flex-column-fluid font-weight-bold text-dark-50">
     <!--begin::Container-->
     <div class="container">
@@ -752,12 +751,16 @@
             <div class="card-body p-0">
                 <!--begin: Datatable-->
                 <BKNDatatable
+                    resetFilters={resetPageFilters}
+                    on:search={event => {
+                        if (event.detail.key === 'generalSearch') $courseListFilter.generalSearch = event.detail.value;
+                    }}
                     bind:datatable
                     bind:visibleMultiaction
                     bind:selectedCounter
                     {columns}
                     url={__bakney.env.API.COURSE.LIST}
-                    params={{'query[status_flag]': 1}}
+                    params={{...$courseListFilterDatatable, 'query[status_flag]': 1}}
                     {mapFunction}
                     clicked={handleRowClicked}
                     {loadFilters}

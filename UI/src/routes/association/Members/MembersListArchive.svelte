@@ -276,11 +276,6 @@
             ];
 
     const loadFilters = function () {
-        const statusEl = document.getElementById('bkn_datatable_search_status');
-        statusEl?.addEventListener('change', function (e) {
-            datatable.search(e.currentTarget.value.toLowerCase(), 'status_flag');
-        });
-        initSelectpicker(statusEl);
     };
 
     onMount(() => {

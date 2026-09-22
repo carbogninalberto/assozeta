@@ -1,4 +1,6 @@
 <script>
+    import {v4 as uuidv4} from 'uuid';
+    const filterInstanceId = uuidv4();
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     import {sessionToken} from 'store/stores.js';
     import {scale, slide} from 'svelte/transition';
@@ -38,6 +40,15 @@
     let selectedCounter = 0;
     let datatable;
     let filterKey = 0;
+    function resetPageFilters() {
+        currentFilterStart = moment().startOf('month').format('DD/MM/YYYY');
+        currentFilterEnd = moment().endOf('month').format('DD/MM/YYYY');
+        datatable.setDataSourceQuery({...datatable.getDataSourceQuery(),
+            generalSearch: datatable.getSearchValue(),
+            date_range: formatInstructorRange(currentFilterStart, currentFilterEnd)});
+        fetchInfoWidget();
+    }
+
     function handleInstructorDateRangeChange(e) {
         currentFilterStart = e.detail.start;
         currentFilterEnd = e.detail.end;
@@ -361,13 +372,16 @@
         });
     }
 
+    let infoGeneration = 0;
     async function fetchInfoWidget() {
+        const generation = ++infoGeneration;
         const response = await apiFetch(
             `${replaceUID(__bakney.env.API.INSTRUCTOR.INFO, id)}?date_range=${formatInstructorRange(currentFilterStart, currentFilterEnd)}`,
             {
                 method: 'GET',
             }
         ).then(res => {
+            if (generation !== infoGeneration) return;
             data = res.response;
             loading = false;
         });
@@ -546,7 +560,7 @@
                     </div>
                 {/if}
                 {#key filterKey}
-                    <BKNDatatable
+                    <BKNDatatable resetFilters={resetPageFilters}
                         bind:datatable
                         bind:visibleMultiaction
                         bind:selectedCounter
@@ -565,7 +579,7 @@
                             <div class="my-1 my-md-0 mr-2">
                                 <div class="d-flex align-items-center">
                                     <DateRangePicker
-                                        id="instructor-date-range"
+                                        id={`instructor-date-range-${filterInstanceId}`}
                                         format="DD/MM/YYYY"
                                         sizeClass=""
                                         startPlaceholder="Dal"

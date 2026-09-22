@@ -2012,3 +2012,105 @@ html.android-native .header-mobile-fixed .wrapper {
 		transform: rotate(360deg);
 	}
 }
+
+.datatable-extra-filters { display: contents; }
+
+@media (max-width: 767.98px) {
+    .datatable-filters .datatable-filter-controls {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.5rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .datatable-filter-controls > .datatable-search {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .datatable-filters .datatable-extra-filters { display: none; }
+
+    .datatable-filter-controls .datatable-search .form-control {
+        height: 44px;
+    }
+
+    .datatable-filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        height: 44px;
+        width: 44px;
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .mobile-filter-sheet .datatable-extra-filters,
+    .mobile-filter-sheet .datatable-filter-controls {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .mobile-filter-sheet [slot="search-header"],
+    .mobile-filter-sheet [slot="filter-bar"] { display: contents !important; }
+
+    .mobile-filter-sheet .datatable-extra-filters > *,
+    .mobile-filter-sheet [slot="search-header"] > *,
+    .mobile-filter-sheet .datatable-filter-controls > * {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .datatable-filter-controls .input-icon,
+    .datatable-filter-controls .form-control,
+    .mobile-filter-sheet .filter-select,
+    .mobile-filter-sheet .svelte-select,
+    .mobile-filter-sheet .form-control,
+    .mobile-filter-sheet .drp-trigger {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .mobile-filter-sheet .drp-display-input { width: 1% !important; }
+
+    .datatable-filter-actions {
+        justify-content: flex-start !important;
+        gap: 0.5rem;
+    }
+
+    .datatable-filter-actions > * {
+        margin: 0 !important;
+        max-width: 100%;
+    }
+}
+
+/* Keep keyboard focus visible despite the legacy button reset. */
+.datatable-filters :is(button, input, select):focus-visible,
+.mobile-filter-drawer :is(button, input, select):focus-visible {
+    outline: 2px solid var(--primary, #3699ff) !important;
+    outline-offset: 2px;
+}
+
+/* The select container owns the focus ring; its inner search input must not draw a second one. */
+.datatable-filters .svelte-select input:focus,
+.datatable-filters .svelte-select input:focus-visible,
+.mobile-filter-drawer .svelte-select input:focus,
+.mobile-filter-drawer .svelte-select input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}

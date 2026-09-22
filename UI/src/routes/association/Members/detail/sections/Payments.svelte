@@ -1,4 +1,13 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    let paymentFilters = {paid: '', expense: '', type: '', subject: ''};
+    function resetPageFilters() {
+        paymentFilters = {paid: '', expense: '', type: '', subject: ''};
+        const query = {...datatable.getDataSourceQuery(), generalSearch: datatable.getSearchValue()};
+        for (const key of Object.keys(paymentFilters)) delete query[key];
+        datatable.setDataSourceQuery(query);
+    }
+
     import {sessionToken, permissions, userData} from 'store/stores.js';
     import {scale} from 'svelte/transition';
     import * as easing from 'svelte/easing';
@@ -19,7 +28,6 @@
     import PaymentDrawer from 'routes/accounting/payment/PaymentDrawer.svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
-    import {initSelectpicker, refreshSelectpicker} from 'shim/select.js';
 	import { UiApp, UiUtil } from 'shim/ui.js';
     import { showCollapse, hideCollapse } from 'shim/collapse.js';
     sessionToken.useLocalStorage();
@@ -849,27 +857,6 @@
         else if (res.status != 403 && res.status != 401) toast.error('Qualcosa è andato storto.');
     }
 
-    function resetFilters(update = true) {
-        document.getElementById('bkn_datatable_search_query_' + uuid).value = '';
-
-        document.getElementById('bkn_datatable_search_status_' + uuid).value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_status_' + uuid));
-
-        document.getElementById('bkn_datatable_search_expense_' + uuid).value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_expense_' + uuid));
-
-        document.getElementById('bkn_datatable_search_subject_' + uuid).value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_subject_' + uuid));
-
-        document.getElementById('bkn_datatable_search_type_' + uuid).value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_type_' + uuid));
-
-        if (update) {
-            searchKey = '';
-            datatableKey++;
-        }
-    }
-
     onMount(async () => {
         await fetchCategories();
 
@@ -979,7 +966,7 @@
                 <!--begin: Datatable-->
                 {#if ready}
                 {#key datatableKey}
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
                     bind:datatable
                     bind:selectedCounter
                     id={`bkn_datatable_payments_${uuid}`}
@@ -1002,94 +989,47 @@
                             datatable.reload();
                         });
                     }}
-                    loadFilters={() => {
-                        const statusEl = document.getElementById(`bkn_datatable_search_status_${uuid}`);
-                        statusEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'paid');
-                        });
-                        initSelectpicker(statusEl);
 
-                        const expenseEl = document.getElementById('bkn_datatable_search_expense_' + uuid);
-                        expenseEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'expense');
-                        });
-                        initSelectpicker(expenseEl);
-
-                        const subjectEl = document.getElementById('bkn_datatable_search_subject_' + uuid);
-                        subjectEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'subject');
-                        });
-                        initSelectpicker(subjectEl);
-
-                        const typeEl = document.getElementById('bkn_datatable_search_type_' + uuid);
-                        typeEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'type');
-                        });
-                        initSelectpicker(typeEl);
-                    }}
                 >
                     <div slot="search-header" class="d-flex flex-wrap align-items-center">
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
                                 <!-- svelte-ignore a11y-label-has-associated-control -->
-                                <select
-                                    class="form-control form-control-solid mb-0"
-                                    id="bkn_datatable_search_status_{uuid}">
-                                    <option value="">Stato</option>
-                                    <option value="true">Pagato</option>
-                                    <option value="false">In attesa</option>
-                                </select>
+                                <FilterSelect
+                                    label="Stato pagamento"
+                                    bind:value={paymentFilters.paid}
+                                    on:change={event => datatable.search(event.detail.value, 'paid')}
+                                    options={[{value: '', label: 'Stato'}, {value: 'true', label: 'Pagato'}, {value: 'false', label: 'In attesa'}]} />
                             </div>
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    class="form-control form-control-solid mb-0"
-                                    id="bkn_datatable_search_type_{uuid}">
-                                    <option value="">Metodo</option>
-                                    {#each Array.from(paymentTypesMap || []) as type}
-                                        <option value={type.key}>
-                                            {type.value}
-                                        </option>
-                                    {/each}
-                                </select>
+                                <FilterSelect
+                                    label="Metodo pagamento"
+                                    bind:value={paymentFilters.type}
+                                    on:change={event => datatable.search(event.detail.value, 'type')}
+                                    options={[{value: '', label: 'Metodo'}, ...Array.from(paymentTypesMap || []).map(type => ({value: type.key, label: type.value}))]} />
                             </div>
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    class="form-control form-control-solid mb-0"
-                                    id="bkn_datatable_search_expense_{uuid}">
-                                    <option value="">Tipo</option>
-                                    <option value="true">Uscite</option>
-                                    <option value="false">Entrate</option>
-                                </select>
+                                <FilterSelect
+                                    label="Tipo movimento"
+                                    bind:value={paymentFilters.expense}
+                                    on:change={event => datatable.search(event.detail.value, 'expense')}
+                                    options={[{value: '', label: 'Tipo'}, {value: 'true', label: 'Uscite'}, {value: 'false', label: 'Entrate'}]} />
                             </div>
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    class="form-control form-control-solid mb-0"
-                                    id="bkn_datatable_search_subject_{uuid}">
-                                    <option value="">Attività</option>
-                                    {#each Array.from(paymentSubjectsMap || []) as subject}
-                                        <option value={subject.key}>
-                                            {subject.value}
-                                        </option>
-                                    {/each}
-                                </select>
+                                <FilterSelect
+                                    label="Attività"
+                                    bind:value={paymentFilters.subject}
+                                    on:change={event => datatable.search(event.detail.value, 'subject')}
+                                    options={[{value: '', label: 'Attività'}, ...Array.from(paymentSubjectsMap || []).map(subject => ({value: subject.key, label: subject.value}))]} />
                             </div>
                         </div>
-                        <div class="my-1 my-md-0 ml-auto">
-                            <!-- svelte-ignore a11y-click-events-have-key-events -->
-                            <!-- svelte-ignore a11y-missing-attribute -->
-                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                            <a
-                                on:click|preventDefault={resetFilters}
-                                class=" btn font-weight-bolder mb-0 cursor-pointer text-primary btn-clean btn-icon">
-                                <X size={18} weight="bold" />
-                            </a>
-                        </div>
+
                     </div>
                     <div slot="multiactions">
                     </div>

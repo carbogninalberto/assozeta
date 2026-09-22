@@ -419,11 +419,6 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     serverSorting={false}
                     showDividerFilter={false}
                     loadFilters={() => {
-                        const statusEl = document.getElementById('bkn_datatable_search_status');
-                        statusEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'status_flag');
-                        });
-                        initSelectpicker(statusEl);
                     }}
                 />
             </div>

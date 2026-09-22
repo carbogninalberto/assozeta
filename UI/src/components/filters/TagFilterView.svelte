@@ -1,5 +1,8 @@
 <script>
     import {onMount} from 'svelte';
+    import MobileFilterSheet from './MobileFilterSheet.svelte';
+
+    function resetTags() { tags = tags.map(tag => ({...tag, active: true})); }
 
     export let tags = [];
     export let activeTags = [];
@@ -31,15 +34,17 @@
     });
 </script>
 
-<div class="d-flex align-items-center justify-content-start w-100 mb-12 px-4">
+<div class="datatable-filters d-flex flex-wrap align-items-center justify-content-start w-100 mb-4 px-4">
+    <MobileFilterSheet onReset={resetTags}>
     <span class="font-weight-boldest font-size-lg my-auto mr-2"> Filtra corso per tag </span>
-    <div class="d-flex align-items-center">
+    <div class="d-flex flex-wrap align-items-center" style="gap: 0.5rem;">
         {#each tags as tag}
-            <span
+            <button type="button" aria-pressed={tag.active} style="min-height:44px"
                 class="m-0 font-weight-bolder btn btn-sm py-1 px-3 {tag.active ? 'btn-dark' : 'btn-light'} mx-1"
                 on:click={() => activateTag(tag.tag_name)}>
                 {tag.tag_name}
-            </span>
+            </button>
         {/each}
     </div>
+    </MobileFilterSheet>
 </div>

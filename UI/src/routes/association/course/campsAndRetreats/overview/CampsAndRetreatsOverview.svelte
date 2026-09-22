@@ -316,7 +316,7 @@
             serverPaging={false}
             serverFiltering={false}
             serverSorting={false}>
-            <div class="d-flex align-items-center justify-content-end" slot="search-header">
+            <div class="d-flex align-items-center justify-content-end" slot="search-actions">
                 <button
                     class="btn btn-light btn-sm font-weight-bolder mb-0"
                     on:click={() => {
