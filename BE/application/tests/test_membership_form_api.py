@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 from unittest.mock import patch
 
 from application.models.courses_models import Course, CourseSubscription
 from application.models.payment_models import Payment
+from application.tasks import renew_memberships_payments
 from application.tests.base import BaseAPITestCase
 from application.tests.fixtures.factories import (
     create_test_associate, create_test_subscription, create_test_course,
@@ -89,3 +91,103 @@ class MembershipFormAPITests(BaseAPITestCase):
             with self.assertRaises(RuntimeError):
                 self.client.post('/course-subscriptions/add', [self.payload], format='json')
         self.assertFalse(CourseSubscription.objects.filter(course=self.course).exists())
+
+    def renew_membership(self, original_paid=False):
+        self.payload['auto_renewal'] = True
+        self.course.status_flag = Course.ACTIVE
+        self.course.save()
+        membership = self.create_membership()
+        original = membership.membership_payments.get()
+        original.paid = original_paid
+        original.save()
+        with patch('application.tasks.cache') as cache, patch('application.tasks.send_mail'), patch(
+            'application.tasks.timezone.now', return_value=datetime(2026, 10, 2, tzinfo=timezone.utc),
+        ):
+            cache.add.return_value = True
+            renew_memberships_payments.run()
+        membership.refresh_from_db()
+        self.assertEqual(membership.membership_payments.count(), 2)
+        current = membership.membership_payments.exclude(pk=original.pk).get()
+        self.assertEqual(current.meta['billed_from'], '2026-10-01')
+        self.assertEqual(current.meta['billed_until'], '2026-11-01')
+        return membership, original, current
+
+    @staticmethod
+    def payment_snapshot(payment):
+        return Payment.objects.filter(pk=payment.pk).values().get()
+
+    def test_renewed_fee_edit_updates_only_current_payment(self):
+        for original_paid in (False, True):
+            for full_form in (False, True):
+                with self.subTest(original_paid=original_paid, full_form=full_form):
+                    membership, original, current = self.renew_membership(original_paid)
+                    original_before = self.payment_snapshot(original)
+                    current_dates = (current.creation_date, current.payment_date)
+                    data = {**self.payload, 'billed_until': '2026-11-01'} if full_form else {}
+                    data['membership_fee'] = '38.00'
+                    response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', data, format='json')
+                    self.assertEqual(response.status_code, 200, response.data)
+                    self.assertEqual(self.payment_snapshot(original), original_before)
+                    current.refresh_from_db()
+                    self.assertEqual(current.amount, Decimal('38.00'))
+                    self.assertEqual(current.meta['billed_from'], '2026-10-01')
+                    self.assertEqual(current.meta['billed_until'], '2026-11-01')
+                    self.assertEqual(current.meta['amount'], '38.00')
+                    self.assertIn('dal 01/10/2026 al 01/11/2026', current.description)
+                    self.assertEqual((current.creation_date, current.payment_date), current_dates)
+
+    def test_paid_current_period_does_not_fall_back_to_unpaid_original(self):
+        membership, original, current = self.renew_membership()
+        current.paid = True
+        current.save()
+        before = [self.payment_snapshot(payment) for payment in (original, current)]
+        response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', {'membership_fee': '38.00'}, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual([self.payment_snapshot(payment) for payment in (original, current)], before)
+        membership.refresh_from_db()
+        self.assertEqual(membership.membership_fee, Decimal('38.00'))
+
+    def test_renewed_period_end_edit_preserves_history_and_remains_editable(self):
+        membership, original, current = self.renew_membership()
+        original_before = self.payment_snapshot(original)
+        path = f'/course-subscriptions/{membership.pk}/update'
+        self.assertEqual(self.client.patch(path, {'billed_until': '2026-11-15'}, format='json').status_code, 200)
+        self.assertEqual(self.client.patch(path, {'membership_fee': '38.00'}, format='json').status_code, 200)
+        self.assertEqual(self.payment_snapshot(original), original_before)
+        current.refresh_from_db()
+        self.assertEqual(current.meta['billed_from'], '2026-10-01')
+        self.assertEqual(current.meta['billed_until'], '2026-11-15')
+        self.assertEqual(current.amount, Decimal('38.00'))
+
+    def test_renewed_period_cannot_reverse_or_overlap_history(self):
+        membership, original, current = self.renew_membership()
+        before = [self.payment_snapshot(payment) for payment in (original, current)]
+        for data in ({'billed_until': '2026-09-15'}, {'billed_from': '2026-09-15'}):
+            with self.subTest(data=data):
+                response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', data, format='json')
+                self.assertEqual(response.status_code, 400, response.data)
+                self.assertEqual([self.payment_snapshot(payment) for payment in (original, current)], before)
+                membership.refresh_from_db()
+                self.assertEqual(membership.billed_from.date().isoformat(), '2026-09-01')
+                self.assertEqual(membership.billed_until.date().isoformat(), '2026-11-01')
+
+    def test_initial_period_dates_remain_editable(self):
+        membership = self.create_membership()
+        response = self.client.patch(f'/course-subscriptions/{membership.pk}/update', {
+            'billed_from': '2026-09-10', 'billed_until': '2026-10-10',
+        }, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        payment = membership.membership_payments.get()
+        self.assertEqual(payment.meta['billed_from'], '2026-09-10')
+        self.assertEqual(payment.meta['billed_until'], '2026-10-10')
+        self.assertEqual(payment.payment_date.date().isoformat(), '2026-09-10')
+
+    def test_payment_update_failure_rolls_back_membership_changes(self):
+        membership, original, current = self.renew_membership()
+        before = [self.payment_snapshot(payment) for payment in (original, current)]
+        with patch.object(Payment, 'save', side_effect=RuntimeError('payment update failed')):
+            with self.assertRaises(RuntimeError):
+                self.client.patch(f'/course-subscriptions/{membership.pk}/update', {'membership_fee': '38.00'}, format='json')
+        membership.refresh_from_db()
+        self.assertEqual(membership.membership_fee, Decimal('25.50'))
+        self.assertEqual([self.payment_snapshot(payment) for payment in (original, current)], before)
