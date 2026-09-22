@@ -68,15 +68,11 @@ const strVersion = String(lines[lines.length-1].split(";")[0]).match(/\d+.\d+.\d
 const version = `${strVersion[0].padStart(2, '0')}${strVersion[1].padStart(3, '0')}${strVersion[2].padStart(4, '0')}`;
 
 
-function setFileVersion(filename, ver){
-    fs.readFile(filename, 'utf-8', function(err, data){
-        if (err) throw err;
-        var newValue = data.replace(/\?v=[0-9]*/gim, `?v=${ver}`);
-        fs.writeFile(filename, newValue, 'utf-8', function (err) {
-            if (err) throw err;
-        });
-    });
-
+function setFileVersion(filename, ver) {
+    // Finish updating entry HTML before Vite can start parsing it.
+    const data = fs.readFileSync(filename, 'utf-8');
+    const updated = data.replace(/\?v=[0-9]*/gim, `?v=${ver}`);
+    if (updated !== data) fs.writeFileSync(filename, updated, 'utf-8');
 }
 
 if (DEPLOY_ENV == "production" || DEPLOY_ENV == "staging") setFileVersion('index.html', version);
