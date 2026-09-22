@@ -1,4 +1,5 @@
 <script>
+    import {sameSelectValue} from './selectValue.js';
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
     import {clickOutside} from '../utils';
     import {createEventDispatcher} from 'svelte';
@@ -7,6 +8,7 @@
     import Select from 'svelte-select';
     import VirtualList from 'svelte-tiny-virtual-list';
     import {tick} from 'svelte';
+    import {offset, flip, shift, size} from 'svelte-floating-ui/dom';
 
     const dispatch = createEventDispatcher();
 
@@ -24,6 +26,58 @@
     let activeIndex = null;
     let hoverItemIndex = 0;
     let listOpen = false;
+    let selectContainer;
+    let selectedLabelWidth = 0;
+    let filterChromeWidth = 64;
+    async function measureFilterChrome(container) {
+        await tick();
+        if (!container) return;
+        const horizontalSpace = element => {
+            if (!element) return 0;
+            const css = getComputedStyle(element);
+            return ['paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth']
+                .reduce((total, property) => total + (parseFloat(css[property]) || 0), 0);
+        };
+        filterChromeWidth = Math.ceil(horizontalSpace(container)
+            + horizontalSpace(container.querySelector('.value-container'))
+            + horizontalSpace(container.querySelector('.selected-item'))
+            + (container.querySelector('.indicators')?.getBoundingClientRect().width || 0)
+            + (container.querySelector('.prepend')?.getBoundingClientRect().width || 0)) + 2;
+    }
+    $: if (fitFilter) { selectClasses; props.value; selectedLabelWidth; measureFilterChrome(selectContainer); }
+
+    $: fitFilter = customClasses.includes('filter-select') && !props.multiple;
+    $: selectedLabel = props.options?.find(option => sameSelectValue(option.value, props.value))?.label ?? props.placeholder ?? '';
+
+    function menuPosition(container) {
+        const boundary = container?.closest('.filter-sheet-fields');
+        if (!boundary && !fitFilter) return {middleware: [offset(5), flip(), shift()]};
+        const bounds = boundary ? {boundary, padding: 4} : {padding: 8};
+        return {
+            middleware: [offset(4), flip(bounds), shift({...bounds, crossAxis: true}), size({
+                ...bounds,
+                apply({availableHeight, availableWidth, rects, elements}) {
+                    elements.floating.style.maxHeight = `${Math.max(0, Math.min(252, availableHeight, boundary?.clientHeight ?? Infinity))}px`;
+                    if (fitFilter) {
+                        elements.floating.style.maxWidth = `${Math.max(0, availableWidth)}px`;
+                        elements.floating.style.minWidth = `${Math.min(rects.reference.width, availableWidth)}px`;
+                    }
+                },
+            })],
+        };
+    }
+
+    // Controls move into the mobile drawer without remounting; recalculate on open.
+    $: floatingConfig = (listOpen, menuPosition(selectContainer));
+    function handleFilterEscape(event) {
+        // Select consumes Escape even with its list closed. In a filter sheet,
+        // let the next Escape dismiss the sheet after the option list is gone.
+        if (event.key === 'Escape' && !listOpen && selectContainer?.closest('.mobile-filter-sheet')) {
+            event.preventDefault();
+            event.stopPropagation();
+            selectContainer.dispatchEvent(new CustomEvent('filter-panel-dismiss', {bubbles: true}));
+        }
+    }
     function handleClick(i, item) {
         filterText = '';
         activeIndex = i;
@@ -49,20 +103,31 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
     class="form-group {customClasses} rounded-lg"
+    class:auto-filter-select={fitFilter}
+    style:--filter-control-width={`${Math.ceil(selectedLabelWidth) + filterChromeWidth}px`}
     style="cursor:pointer;transition:all 0.05s;"
     use:clickOutside
+    on:keydown|capture={handleFilterEscape}
     on:click_outside={() => {
         if (editable) active = false;
     }}
     on:click={() => {
         if (!active && editable) active = true;
     }}>
+    {#if fitFilter}
+        <span class="filter-label-measure" aria-hidden="true" bind:clientWidth={selectedLabelWidth}>{selectedLabel}</span>
+    {/if}
     {#if props.label}
         <label class="font-weight-bolder" for={props.id}>{props.label}<b>{props.required ? '*' : ''}</b></label>
     {/if}
     {#if virtualListMode}
         <div />
         <Select
+            bind:container={selectContainer}
+            {floatingConfig}
+            listAutoWidth={!fitFilter}
+            id={props.id}
+            inputAttributes={{'aria-label': props.ariaLabel || props.label || props.placeholder || 'Seleziona'}}
             class={selectClasses}
             hideEmptyState={true}
             on:change={e => {
@@ -91,7 +156,7 @@
                 });
             }}
             justValue={props.value}
-            value={props?.options?.find(option => option.value === props.value)}
+            value={props?.options?.find(option => sameSelectValue(option.value, props.value))}
             name={props.name}
             items={props.options}
             groupBy={props.groupBy || null}
@@ -196,6 +261,12 @@
         </Select>
     {:else}
         <Select
+            bind:container={selectContainer}
+            bind:listOpen
+            {floatingConfig}
+            listAutoWidth={!fitFilter}
+            id={props.id}
+            inputAttributes={{'aria-label': props.ariaLabel || props.label || props.placeholder || 'Seleziona'}}
             class={selectClasses}
             hideEmptyState={true}
             on:change={e => {
@@ -208,7 +279,7 @@
                 dispatch('clear');
             }}
             justValue={props.value}
-            value={props?.options?.find(option => option.value === props.value)}
+            value={props?.options?.find(option => sameSelectValue(option.value, props.value))}
             name={props.name}
             items={props.options}
             groupBy={props.groupBy || null}
@@ -219,7 +290,7 @@
             showChevron={props?.showChevron !== undefined ? props?.showChevron : false}
             multiple={props?.multiple !== undefined ? props?.multiple : false}>
             <slot name="list-append" slot="list-append" />
-            <slot name="item" slot="item" let:item>
+            <slot name="item" slot="item" let:item {item}>
                 <div class="d-flex justify-content-between" style={item.description ? 'min-height: 10rem;' : ''}>
                     {@html item.label}
                     {#if item.description}
@@ -305,3 +376,40 @@
         }
     </style>
 </svelte:head>
+
+<style>
+    .filter-label-measure {
+        position: absolute;
+        visibility: hidden;
+        pointer-events: none;
+        white-space: pre;
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 400;
+        text-transform: capitalize;
+    }
+    .auto-filter-select {
+        width: var(--filter-control-width) !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+    .auto-filter-select :global(.svelte-select-list) { width: max-content !important; }
+    .auto-filter-select :global(.svelte-select-list .list-item),
+    .auto-filter-select :global(.svelte-select-list .item) {
+        max-height: none !important;
+        height: auto !important;
+        min-height: 35px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.5 !important;
+    }
+    .auto-filter-select :global(.svelte-select-list .item) {
+        display: flex;
+        align-items: center;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    @media (max-width: 767.98px) {
+        .auto-filter-select { width: 100% !important; }
+    }
+</style>

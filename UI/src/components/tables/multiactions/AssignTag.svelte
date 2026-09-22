@@ -1,4 +1,5 @@
 <script>
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
     import {PlusCircle, Tag, TrashSimple} from 'phosphor-svelte';
     import {onMount} from 'svelte';
     import {toast} from 'svelte-sonner';
@@ -152,7 +153,7 @@
 
 <button
     disabled={!canPerformAction(permission_to_perform)}
-    class="btn btn-sm btn-light-primary font-weight-bolder m-0 ml-2 p-2 d-flex align-items-centerdropdown-toggle"
+    class="has-dropdown-caret btn btn-sm btn-light-primary font-weight-bolder m-0 ml-2 p-2 d-flex align-items-center dropdown-toggle"
     type="button"
     on:click={() => {
         searchTagName = '';
@@ -167,7 +168,7 @@
     id="{datatableId}_assign_tag_to_selected">
     <Tag size="17" weight="duotone" class="mr-1" />
     <span class="d-none d-md-block">Assegna Tag</span>
-</button>
+<DropdownCaret /></button>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div

@@ -1,4 +1,5 @@
 <script>
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { FileText } from 'lucide-svelte';
     import {onDestroy, onMount, tick} from 'svelte';
     import ShareButton from '../../../components/buttons/ShareButton.svelte';
@@ -369,7 +370,8 @@
                         <button
                             disabled={!canPerformAction('bookeeping.documents.invoices.archive.read')}
                             type="button"
-                            class="btn btn-light-primary font-weight-bolder dropdown-toggle"
+                            aria-label="Esporta tutto"
+                            class="has-dropdown-caret btn btn-light-primary font-weight-bolder dropdown-toggle"
                             data-toggle="dropdown"
                             aria-haspopup="true"
                             aria-expanded="false">
@@ -394,7 +396,7 @@
                                     </g>
                                 </svg>
                                 <!--end::Svg Icon-->
-                            </span><span class="d-none d-md-inline-block">Esporta Archivio</span></button>
+                            </span><span class="d-none d-md-inline-block">Esporta Archivio</span><DropdownCaret /></button>
                         <!--begin::Dropdown Menu-->
                         <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
                             <!--begin::Navigation-->

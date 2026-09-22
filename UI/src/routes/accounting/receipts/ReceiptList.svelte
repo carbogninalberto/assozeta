@@ -1,4 +1,15 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    let selectedFilter = '1';
+    function resetPageFilters() {
+        selectedFilter = '1';
+        const query = {...datatable.getDataSourceQuery(), generalSearch: datatable.getSearchValue()};
+        delete query['current_year'];
+        query['current_year'] = '1';
+        datatable.setDataSourceQuery(query);
+    }
+
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { FileText } from 'lucide-svelte';
     import ShareButton from '../../../components/buttons/ShareButton.svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
@@ -22,7 +33,6 @@
 import {blockPage, unblockPage} from 'store/loadingStore.js';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
-    import {initSelectpicker} from 'shim/select.js';
     import {showModal} from 'shim/modal.js';
     import {
         INVOICE_DIALOG_TYPES,
@@ -559,7 +569,8 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
                         <button
                             disabled={!canPerformAction('bookeeping.documents.invoices.read')}
                             type="button"
-                            class="btn btn-light-primary font-weight-bolder dropdown-toggle"
+                            aria-label="Esporta tutto"
+                            class="has-dropdown-caret btn btn-light-primary font-weight-bolder dropdown-toggle"
                             data-toggle="dropdown"
                             aria-haspopup="true"
                             aria-expanded="false">
@@ -584,7 +595,7 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
                                     </g>
                                 </svg>
                                 <!--end::Svg Icon-->
-                            </span><span class="d-none d-md-inline-block">Esporta Tutto</span></button>
+                            </span><span class="d-none d-md-inline-block">Esporta Tutto</span><DropdownCaret /></button>
                         <!--begin::Dropdown Menu-->
                         <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
                             <!--begin::Navigation-->
@@ -632,7 +643,7 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
             </div>
             <div class="card-body p-0">
                 <!--begin::Search Form-->
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
                     bind:datatable
                     bind:selectedCounter
                     bind:visibleMultiaction
@@ -640,20 +651,14 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
                     url={__bakney.env.API.INVOICE.LIST}
                     params={{'query[current_year]': '1'}}
                     showDividerFilter={false}
-                    loadFilters={() => {
-                        const currentYearEl = document.getElementById('bkn_datatable_show_current');
-                        currentYearEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'current_year');
-                        });
-                        initSelectpicker(currentYearEl);
-                    }}>
+                    >
                     <div slot="search-header">
                         <div class="my-1 my-md-0 mr-2">
-                            <select class="form-control form-control-solid mb-0" id="bkn_datatable_show_current" value="1">
-                                <option value="-">Filtra Anno</option>
-                                <option value="1" default>Anno corrente</option>
-                                <option value="0">Anni precedenti</option>
-                            </select>
+                            <FilterSelect
+                                label="Anno ricevute"
+                                bind:value={selectedFilter}
+                                on:change={event => datatable.search(event.detail.value, 'current_year')}
+                                options={[{value: '-', label: 'Filtra Anno'}, {value: '1', label: 'Anno corrente'}, {value: '0', label: 'Anni precedenti'}]} />
                         </div>
                     </div>
                     <div slot="multiactions">

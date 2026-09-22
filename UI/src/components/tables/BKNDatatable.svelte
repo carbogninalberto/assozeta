@@ -5,14 +5,17 @@
     import {apiFetch} from 'utils/ApiMiddleware';
     import {UiUtil} from 'shim/ui.js';
     import {estimateHeaderMinimumWidth} from './datatableColumnLayout.js';
+    import MobileFilterSheet from '../filters/MobileFilterSheet.svelte';
+    import {v4 as uuidv4} from 'uuid';
 
     const dispatch = createEventDispatcher();
     const responsiveBreakpoints = ['xxxxl', 'xxxl', 'xxl', 'xl', 'lg', 'md', 'sm'];
     const responsiveBreakpointOrder = ['sm', 'md', 'lg', 'xl', 'xxl', 'xxxl', 'xxxxl'];
     const responsiveBreakpointMaxWidths = {sm: 575.98, md: 767.98, lg: 991.98, xl: 1199.98, xxl: 1399.98, xxxl: 1599.98, xxxxl: 1799.98};
 
-    export let id = 'bkn_datatable';
-    export let searchId = 'bkn_datatable_search_query';
+    const instanceId = uuidv4();
+    export let id = `bkn_datatable_${instanceId}`;
+    export let searchId = `bkn_datatable_search_query_${instanceId}`;
     export let selectedCounter = 0;
     export let visibleMultiaction = false;
     export let datatable;
@@ -30,6 +33,8 @@
     export let pageSizeSelect = [10, 20, 30, 50];
     export let showDividerFilter = true;
     export let showSearch = true;
+    export let resetFilters = null;
+    export let hideSearchActionsOnMobile = false;
     export let wrapText = true;
     let searchValue = '';
     export let mapFunction = function (raw) {
@@ -56,6 +61,7 @@
     let sortField = '';
     let sortDirection = 'asc';
     let searchTimeout = null;
+    let loadGeneration = 0;
     let viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
     let tableWidth = 0;
     const eventListeners = {};
@@ -341,6 +347,7 @@
     }
 
     async function loadRows() {
+        const generation = ++loadGeneration;
         clearSelection();
         errorMessage = '';
 
@@ -365,21 +372,25 @@
         loading = true;
         try {
             const {response, error} = await apiFetch(buildReadUrl(), {method: 'GET'});
+            if (generation !== loadGeneration) return;
             if (error) throw new Error(response?.message || 'Impossibile caricare i dati.');
 
             allRows = normalizeRows(response);
             if (serverPaging && serverFiltering) readPagination(response);
             applyClientRows();
         } catch (error) {
+            if (generation !== loadGeneration) return;
             allRows = [];
             dataSet = [];
             totalItems = 0;
             totalPages = 1;
             errorMessage = error?.message || 'Impossibile caricare i dati.';
         } finally {
-            loading = false;
-            await tick();
-            loadFilters();
+            if (generation === loadGeneration) {
+                loading = false;
+                await tick();
+                if (generation === loadGeneration) loadFilters();
+            }
         }
     }
 
@@ -868,6 +879,7 @@
                 },
             },
             destroy() {
+                loadGeneration += 1;
                 Object.keys(eventListeners).forEach(key => delete eventListeners[key]);
                 clearTimeout(searchTimeout);
             },
@@ -876,7 +888,10 @@
                 dispatch('reload');
             },
             search(value, key = 'generalSearch') {
-                if (getClientFilterKey(key) === 'generalSearch') searchValue = String(value ?? '');
+                if (getClientFilterKey(key) === 'generalSearch') {
+                    clearTimeout(searchTimeout);
+                    searchValue = String(value ?? '');
+                }
                 if (serverFiltering) {
                     params = {...params, [getQueryKey(key)]: value};
                     currentPage = 1;
@@ -902,10 +917,15 @@
 
                 return undefined;
             },
+            getSearchValue() {
+                return searchValue;
+            },
             getDataSourceQuery() {
                 return {...getQueryParams(), ...clientFilters};
             },
             setDataSourceQuery(query) {
+                clearTimeout(searchTimeout);
+                searchValue = query?.generalSearch ?? '';
                 if (serverFiltering) {
                     setQueryParams(query);
                     currentPage = 1;
@@ -918,7 +938,9 @@
                 }
             },
             setDataSourceParams(nextParams) {
+                clearTimeout(searchTimeout);
                 params = nextParams || {};
+                searchValue = getQueryParams().generalSearch ?? '';
                 currentPage = 1;
                 loadRows();
             },
@@ -977,6 +999,7 @@
     }
 
     onMount(() => {
+        searchValue = getQueryParams().generalSearch ?? '';
         BKNDatatable.init();
     });
 
@@ -990,24 +1013,24 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-<div class="mb-2">
+<div class="mb-2 datatable-filters">
     <div class="row align-items-center mx-0">
-        <slot name="filter-bar" />
         <div class="col-12 pb-2">
-            <div class="row align-items-center justify-content-left d-flex w-100 flex-wrap gap-2">
+            <div class="datatable-filter-controls row align-items-center justify-content-start d-flex w-100 flex-wrap gap-2">
                 {#if showSearch}
-                    <div class="my-1 my-md-0 mr-2 d-flex">
+                    <div class="datatable-search my-1 my-md-0 mr-2 d-flex">
                         <div class="input-icon d-flex">
                             <input
                                 type="text"
+                                value={searchValue}
                                 class="form-control form-control-solid mb-0 {searchValue !== ''
                                     ? 'border border-secondary border-2 bg-light'
                                     : 'border border-secondary border-dashed bg-white'}"
                                 style="max-width: 28rem;width: 28rem"
                                 placeholder="Cerca..."
                                 id={searchId}
-                                bind:value={searchValue}
-                                on:keyup={e => {
+                                aria-label="Cerca nella tabella"
+                                on:input={e => {
                                     searchValue = e.currentTarget.value;
                                     debouncedSearch(searchValue);
                                 }} />
@@ -1018,21 +1041,25 @@
                                 style="position: absolute;right:0;"
                                 class="btn btn-icon btn-ghost mb-0"
                                 class:d-none={searchValue === ''}
-                                on:click={() => {
-                                    clearTimeout(searchTimeout);
-                                    datatable?.search('', 'generalSearch');
-                                }}>
+                                type="button"
+                                aria-label="Cancella ricerca"
+                                on:click={() => datatable?.search('', 'generalSearch')}>
                                 <XCircle size={19} weight="duotone" />
                             </button>
                         </div>
                     </div>
                 {/if}
 
-                <slot name="search-header" />
+                {#if $$slots['search-header'] || $$slots['filter-bar']}
+                    <MobileFilterSheet onReset={resetFilters}>
+                        <slot name="filter-bar" />
+                        <slot name="search-header" />
+                    </MobileFilterSheet>
+                {/if}
             </div>
         </div>
         {#if $$slots['search-actions']}
-            <div class="col-12 d-flex justify-content-end pb-1">
+            <div class="col-12 {hideSearchActionsOnMobile ? 'd-none d-md-flex' : 'd-flex'} justify-content-end pb-1">
                 <slot name="search-actions" />
             </div>
         {/if}

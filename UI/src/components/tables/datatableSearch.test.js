@@ -34,8 +34,8 @@ test('a prefiltered table initializes its displayed search before the first requ
     assert.deepEqual(calls, ['Corso nuoto']);
 });
 
-test('a synthetic keyup reads the visible input instead of sending an empty stale filter', () => {
-    const callback = find(ast.html, node => node.type === 'EventHandler' && node.name === 'keyup').expression;
+test('an input event reads the visible value instead of sending an empty stale filter', () => {
+    const callback = find(ast.html, node => node.type === 'EventHandler' && node.name === 'input').expression;
     const searches = [];
     const context = vm.createContext({searchValue: '', debouncedSearch: value => searches.push(value)});
     context.event = {currentTarget: {value: 'Corso nuoto'}};

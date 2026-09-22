@@ -7,7 +7,7 @@
 </script>
 
 <div class="d-flex justify-content-between bg-white rounded {paddingClass}">
-    <div class="btn-group btn-group-toggle mx-auto mx-md-0 mt-8 mt-md-0" data-toggle="buttons">
+    <div class="btn-group btn-group-toggle mx-auto mx-md-0 mt-2 mt-md-0" data-toggle="buttons">
         {#each navigationPages as page}
             <button
                 style="width: fit-content !important;"

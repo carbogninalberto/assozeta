@@ -1,4 +1,6 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { X } from 'lucide-svelte';
     import ArchiveButton from 'components/buttons/ArchiveButton.svelte';
     import {permissions, sessionToken, tablesSettings} from 'store/stores.js';
@@ -14,7 +16,6 @@
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {blockPage, unblockPage} from 'store/loadingStore.js';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
-    import {initSelectpicker} from 'shim/select.js';
     import DateInput from 'components/inputs/DateInput.svelte';
     import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
@@ -28,8 +29,19 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     let categories = [];
     let selectedCounter = 0;
     let datatable;
-    let paymentDateRangeStart = moment().startOf('month').format('DD/MM/YYYY');
-    let paymentDateRangeEnd = moment().endOf('month').format('DD/MM/YYYY');
+    // The archive initially queries all dates; the controls must reflect that scope.
+    let paymentDateRangeStart = '';
+    let paymentDateRangeEnd = '';
+    let paidFilter = '';
+    let expenseFilter = '';
+
+    function resetPageFilters() {
+        paidFilter = '';
+        expenseFilter = '';
+        paymentDateRangeStart = '';
+        paymentDateRangeEnd = '';
+        datatable.setDataSourceQuery({archived: 'True', generalSearch: datatable.getSearchValue()});
+    }
 
     function handleDateRangeChangeArchive(e) {
         paymentDateRangeStart = e.detail.start;
@@ -514,14 +526,15 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                         <button
                             disabled={!canPerformAction('bookeeping.payments.archive.read')}
                             type="button"
-                            class="btn btn-light-primary font-weight-bolder dropdown-toggle"
+                            aria-label="Esporta tutto"
+                            class="has-dropdown-caret btn btn-light-primary font-weight-bolder dropdown-toggle"
                             data-toggle="dropdown"
                             aria-haspopup="true"
                             aria-expanded="false">
                             <span class="navi-icon">
                                 <Export size={18} weight="duotone" />
                             </span>
-                            <span class="d-none d-md-inline-block">Esporta tutto</span></button>
+                            <span class="d-none d-md-inline-block">Esporta tutto</span><DropdownCaret /></button>
                         <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
                             <!--begin::Navigation-->
                             <ul class="navi flex-column navi-hover py-2">
@@ -558,7 +571,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                 <!--begin: Datatable-->
                 {#if ready}
                 {#key datatableKey}
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
                     bind:datatable
                     bind:selectedCounter
                     columns={visibleColumns}
@@ -568,48 +581,28 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     spinnerConfig={{message: ''}}
                     showDividerFilter={false}
                     loadFilters={() => {
-                        const statusEl = document.getElementById('bkn_datatable_search_status');
-                        statusEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'paid');
-                        });
-                        initSelectpicker(statusEl);
-
-                        const expenseEl = document.getElementById('bkn_datatable_search_expense');
-                        expenseEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'expense');
-                        });
-                        initSelectpicker(expenseEl);
-
-                        // payment date range is handled by DateRangePicker component
-
                         initTooltips(document.body);
                         initPopovers(document.body);
                     }}>
-                    <div slot="filter-bar">
+                    <div slot="filter-bar" class="w-100">
                         <div class="col-12 pb-2">
-                            <div class="row align-items-center justify-content-left pl-4">
+                            <div class="datatable-filter-controls row align-items-center justify-content-start pl-4">
                                 <div class="my-1 my-md-0 mx-2">
                                     <div class="d-flex align-items-center">
-                                        <select
-                                            class="form-control form-control-solid"
-                                            id="bkn_datatable_search_status"
-                                            style="max-width: 13rem;width: 13rem">
-                                            <option value="">Filtra stato</option>
-                                            <option value="true">Pagato</option>
-                                            <option value="false">In attesa</option>
-                                        </select>
+                                        <FilterSelect
+                                            label="Stato pagamento"
+                                            bind:value={paidFilter}
+                                            on:change={event => datatable.search(event.detail.value, 'paid')}
+                                            options={[{value: '', label: 'Filtra stato'}, {value: 'true', label: 'Pagato'}, {value: 'false', label: 'In attesa'}]} />
                                     </div>
                                 </div>
                                 <div class="my-1 my-md-0 mx-2">
                                     <div class="d-flex align-items-center">
-                                        <select
-                                            style="max-width: 13rem;width: 13rem"
-                                            class="form-control form-control-solid"
-                                            id="bkn_datatable_search_expense">
-                                            <option value="">Filtra entrata</option>
-                                            <option value="true">Uscite</option>
-                                            <option value="false">Entrate</option>
-                                        </select>
+                                        <FilterSelect
+                                            label="Tipo movimento"
+                                            bind:value={expenseFilter}
+                                            on:change={event => datatable.search(event.detail.value, 'expense')}
+                                            options={[{value: '', label: 'Filtra entrata'}, {value: 'true', label: 'Uscite'}, {value: 'false', label: 'Entrate'}]} />
                                     </div>
                                 </div>
                                 <div class="mx-2 my-1 my-md-0">
@@ -626,7 +619,11 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                 />
                                     </div>
                                 </div>
-                                <div class="ml-auto my-1 my-md-0">
+
+                            </div>
+                        </div>
+                    </div>
+                <div slot="search-actions"><div class="ml-auto my-1 my-md-0">
                                     <div class="dropdown dropleft m-0">
                                         <button
                                             type="button"
@@ -681,10 +678,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                             </form>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                </div></div>
                 </BKNDatatable>
                 {/key}
                 {/if}

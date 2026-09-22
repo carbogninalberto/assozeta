@@ -1,4 +1,15 @@
 <script>
+    import CheckboxFilters from 'components/filters/CheckboxFilters.svelte';
+    import {tableExportQuery} from 'components/tables/tableExportQuery.js';
+    import {createAssociatesListFilter} from 'store/stores.js';
+    import {resetFilter, restoreStoredFilters} from 'components/filters/filterState.js';
+    function resetPageFilters() {
+        $associatesListFilter = {...createAssociatesListFilter(), generalSearch: datatable?.getSearchValue() ?? $associatesListFilter.generalSearch};
+        periodStartBook = ''; periodEndBook = '';
+        filters = filters.map(resetFilter);
+        datatable?.setDataSourceParams($associatesListFilterDatatable);
+    }
+
 	import { CheckCircle as LucideCheckCircle, Info, X } from 'lucide-svelte';
     import {
         sessionToken,
@@ -118,6 +129,7 @@
             },
         },
     ];
+    filters = restoreStoredFilters(filters, $associatesListFilter);
 
     let columns = [
         {
@@ -656,8 +668,8 @@
         });
     }
 
-    let periodStartBook = '';
-    let periodEndBook = '';
+    let periodStartBook = $associatesListFilter.period_start || '';
+    let periodEndBook = $associatesListFilter.period_end || '';
 
     function handleBookPeriodRangeChange(e) {
         periodStartBook = e.detail.start;
@@ -1445,9 +1457,8 @@
     function handleFilterApplied(event) {
         // remove tags from filterObj
         let filterObj = generateFilterObject();
-        let from_age = filterObj?.from_age || '';
-        let to_age = filterObj?.to_age || '';
-        console.log(filterObj);
+        let from_age = filterObj?.from_age ?? '';
+        let to_age = filterObj?.to_age ?? '';
         $associatesListFilter = {...$associatesListFilter, ...filterObj, from_age: from_age, to_age: to_age};
         // apply search
         datatable?.setDataSourceParams($associatesListFilterDatatable);
@@ -1644,6 +1655,10 @@
                 {#if ready}
                 {#key datatableKey}
                 <BKNDatatable
+                    resetFilters={resetPageFilters}
+                    on:search={event => {
+                        if (event.detail.key === 'generalSearch') $associatesListFilter.generalSearch = event.detail.value;
+                    }}
                     bind:datatable
                     bind:selectedCounter
                     bind:visibleMultiaction
@@ -1666,23 +1681,6 @@
                         });
                     }}
                     loadFilters={() => {
-                        const searchQueryEl = document.getElementById('bkn_datatable_search_query');
-                        searchQueryEl?.addEventListener('keyup', debounce(function (e) {
-                            $associatesListFilter.generalSearch = e.currentTarget.value;
-                            datatable?.setDataSourceParams($associatesListFilterDatatable);
-                        }, 300));
-
-                        const statusEl = document.getElementById('bkn_datatable_search_status');
-                        statusEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'status_flag');
-                        });
-                        initSelectpicker(statusEl);
-
-                        const currentYearEl = document.getElementById('bkn_datatable_show_current');
-                        currentYearEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'current_year');
-                        });
-                        initSelectpicker(currentYearEl);
                         initTooltips(document.body);
                         initPopovers(document.body);
                     }}>
@@ -1776,153 +1774,13 @@
                                     </div>
                                     <div
                                         class="col-12 col-md-auto p-0 text-right text-md-left p-md-auto m-0 mx-md-1 my-2 my-md-0">
-                                        <div class="dropdown dropdown-inline m-0">
-                                            <button
-                                                type="button"
-                                                class="btn btn-light {Object.values($associatesListFilter.filter).some(
-                                                    x => x
-                                                )
-                                                    ? 'border-secondary border-2 bg-light'
-                                                    : 'border-secondary border-dashed bg-white'} btn-icon m-0"
-                                                data-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false">
-                                                <Funnel size="18" weight="duotone" class="text-secondary" />
-                                            </button>
-                                            <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                            <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                            <div
-                                                class="dropdown-menu rounded-xl py-0"
-                                                on:click|preventDefault={() => {
-                                                    datatable?.setDataSourceParams($associatesListFilterDatatable);
-                                                }}>
-                                                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                                <form class="p-0">
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filterHideAssociateMembers = document.querySelector(
-                                                                'input[name="filter_hide_associate_and_members"]'
-                                                            );
-                                                            filterHideAssociateMembers.checked =
-                                                                !filterHideAssociateMembers.checked;
-                                                            $associatesListFilter.filter.hide_associate_and_members =
-                                                                filterHideAssociateMembers.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$associatesListFilter.filter
-                                                                    .hide_associate_and_members}
-                                                                name="filter_hide_associate_and_members" />
-                                                            <span />
-                                                            <content class="ml-4"> Nascondi Soci Tesserati </content>
-                                                        </label>
-                                                    </span>
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter2 =
-                                                                document.querySelector('input[name="filter2"]');
-                                                            filter2.checked = !filter2.checked;
-                                                            $associatesListFilter.filter.expired_certificate =
-                                                                filter2.checked;
-                                                        }}>
-                                                        <!-- svelte-ignore missing-declaration -->
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$associatesListFilter.filter
-                                                                    .expired_certificate}
-                                                                name="filter2" />
-                                                            <span />
-                                                            <content class="ml-4"> Certificato scaduto </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter3 =
-                                                                document.querySelector('input[name="filter3"]');
-                                                            filter3.checked = !filter3.checked;
-                                                            $associatesListFilter.filter.subscription_not_paid =
-                                                                filter3.checked;
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$associatesListFilter.filter
-                                                                    .subscription_not_paid}
-                                                                name="filter3" />
-                                                            <span />
-                                                            <content class="ml-4"> Iscrizione non pagata </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter4 =
-                                                                document.querySelector('input[name="filter4"]');
-                                                            filter4.checked = !filter4.checked;
-                                                            // if active disable
-                                                            $associatesListFilter.filter.sort_lastname_desc =
-                                                                $associatesListFilter.filter.sort_lastname_desc
-                                                                    ? !filter4.checked
-                                                                    : false;
-                                                            $associatesListFilter.filter.sort_lastname_asc =
-                                                                filter4.checked;
-                                                            let q = datatable.getDataSourceQuery();
-                                                            // delete the desc flag
-                                                            delete q.sort_lastname_desc_flag;
-                                                            datatable.setDataSourceQuery(q);
-                                                            // datatable.setDataSourceParam('sort_lastname_desc_flag', 0);
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$associatesListFilter.filter
-                                                                    .sort_lastname_asc}
-                                                                name="filter4" />
-                                                            <span />
-                                                            <content class="ml-4"> Ordina per cognome A-Z </content>
-                                                        </label>
-                                                    </span>
-                                                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                                    <span
-                                                        class="dropdown-item"
-                                                        on:click|preventDefault={() => {
-                                                            let filter5 =
-                                                                document.querySelector('input[name="filter5"]');
-                                                            filter5.checked = !filter5.checked;
-                                                            // if active disable
-                                                            $associatesListFilter.filter.sort_lastname_asc =
-                                                                $associatesListFilter.filter.sort_lastname_asc
-                                                                    ? !filter5.checked
-                                                                    : false;
-                                                            $associatesListFilter.filter.sort_lastname_desc =
-                                                                filter5.checked;
-                                                            let q = datatable.getDataSourceQuery();
-                                                            // delete the desc flag
-                                                            delete q.sort_lastname_asc_flag;
-                                                            datatable.setDataSourceQuery(q);
-                                                        }}>
-                                                        <label class="checkbox">
-                                                            <input
-                                                                type="checkbox"
-                                                                bind:checked={$associatesListFilter.filter
-                                                                    .sort_lastname_desc}
-                                                                name="filter5" />
-                                                            <span />
-                                                            <content class="ml-4"> Ordina per cognome Z-A </content>
-                                                        </label>
-                                                    </span>
-                                                </form>
-                                            </div>
-                                        </div>
+                                        <CheckboxFilters bind:values={$associatesListFilter.filter}
+                                            options={[{"key": "hide_associate_and_members", "label": "Nascondi Soci Tesserati"}, {"key": "expired_certificate", "label": "Certificato scaduto"}, {"key": "subscription_not_paid", "label": "Iscrizione non pagata"}, {"key": "sort_lastname_asc", "label": "Ordina per cognome A-Z", "excludes": "sort_lastname_desc"}, {"key": "sort_lastname_desc", "label": "Ordina per cognome Z-A", "excludes": "sort_lastname_asc"}]}
+                                            on:change={() => {
+
+                                                $associatesListFilter.generalSearch = datatable?.getSearchValue() ?? $associatesListFilter.generalSearch;
+                                                datatable?.setDataSourceParams($associatesListFilterDatatable);
+                                            }} />
                                     </div>
 
                                     <div
@@ -1938,20 +1796,8 @@
                                 data-placement="bottom"
                                 title="Esporta ricerca corrente in Excel o PDF"
                                 on:click={() => {
-                                    let query = $associatesListFilterDatatable;
-                                    let queryString = Object.keys(query)
-                                        .map(key => {
-                                            return `${key}` + '=' + query[key];
-                                        })
-                                        .join('&');
-                                    if (!Object.keys(query).includes('current_year')) {
-                                        queryString += '&current_year=1';
-                                    }
-                                    let sort = datatable.getDataSourceParam('sort');
-                                    if (sort) {
-                                        queryString += '&sort[field]=' + sort.field + '&sort[sort]=' + sort.sort;
-                                    }
-                                    queryString += '&type=associates';
+                                    const queryString = tableExportQuery(datatable, {type: 'associates'});
+
                                     let endpointWithQueryString = __bakney.env.API.SUBSCRIPTION.LIST + '?' + queryString;
                                     let printingModal = new CurrentViewPrintingModal({
                                         target: document.querySelector(`#portal-elements`),

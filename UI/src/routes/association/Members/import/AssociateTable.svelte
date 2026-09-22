@@ -1,4 +1,14 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    let selectedFilter = '';
+    function resetPageFilters() {
+        selectedFilter = '';
+        const query = {...datatable.getDataSourceQuery(), generalSearch: datatable.getSearchValue()};
+        delete query['valid'];
+
+        datatable.setDataSourceQuery(query);
+    }
+
     import ApproveButton from 'components/buttons/ApproveButton.svelte';
     import {sessionToken, userData} from 'store/stores.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
@@ -16,7 +26,6 @@
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import { initPopovers, destroyPopovers } from 'shim/popover.js';
-    import {initSelectpicker} from 'shim/select.js';
 	import { UiApp, UiUtil } from 'shim/ui.js';
     sessionToken.useLocalStorage();
 
@@ -528,7 +537,7 @@
         {:else}
             {#if ready}
             {#key datatableKey}
-            <BKNDatatable
+            <BKNDatatable resetFilters={resetPageFilters}
                 bind:datatable
                 bind:selectedCounter
                 bind:visibleMultiaction
@@ -569,27 +578,15 @@
                         datatable.reload();
                     });
                 }}
-                loadFilters={() => {
-                    const statusEl = document.getElementById('bkn_datatable_search_status_imported');
-                    statusEl?.addEventListener('change', function (e) {
-                        datatable.search(e.currentTarget.value.toLowerCase(), 'valid');
-                    });
-                    initSelectpicker(statusEl);
-
-                    const currentYearEl = document.getElementById('bkn_datatable_search_current_year');
-                    currentYearEl?.addEventListener('change', function (e) {
-                        datatable.search(e.currentTarget.value.toLowerCase(), 'current_year');
-                    });
-                    initSelectpicker(currentYearEl);
-                }}>
+                >
                 <div slot="search-header">
                     <div class="my-1 my-md-0 mr-2">
                         <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <select class="form-control form-control-solid mb-0" id="bkn_datatable_search_status_imported">
-                            <option value="">Tutti gli stati</option>
-                            <option value="false">Dati Mancanti</option>
-                            <option value="true">Valido</option>
-                        </select>
+                        <FilterSelect
+                            label="Validità dati"
+                            bind:value={selectedFilter}
+                            on:change={event => datatable.search(event.detail.value, 'valid')}
+                            options={[{value: '', label: 'Tutti gli stati'}, {value: 'false', label: 'Dati Mancanti'}, {value: 'true', label: 'Valido'}]} />
                     </div>
                 </div>
                 <div slot="multiactions">

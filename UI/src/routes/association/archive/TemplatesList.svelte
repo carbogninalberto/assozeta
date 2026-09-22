@@ -122,6 +122,7 @@
             </div>
             <div class="card-body p-0">
                 <BKNDatatable
+                    on:search={event => { if (event.detail.key === 'generalSearch') $templatesListFilter.generalSearch = event.detail.value; }}
                     id="bkn_datatable_templates"
                     bind:visibleMultiaction
                     bind:selectedCounter
@@ -277,43 +278,8 @@
                     showDividerFilter={false}
                     serverPaging={true}
                     serverFiltering={true}
-                    showSearch={false}
+                    showSearch={true}
                     serverSorting={true}>
-                    <div slot="search-header">
-                        <div
-                            class="col-12 col-md-auto p-0 m-0 d-flex flex-column flex-md-row align-items-center justify-content-start">
-                            <div class="col-12 my-2 my-md-0 p-0 min-w-10">
-                                <div class="input-icon d-flex">
-                                    <input
-                                        type="text"
-                                        bind:value={$templatesListFilter.generalSearch}
-                                        on:keyup={debounce(() => {
-                                            datatable?.setDataSourceParams($templatesListFilterDatatable);
-                                        }, 300)}
-                                        class="form-control form-control-solid mb-0 {$templatesListFilter.generalSearch !=
-                                        ''
-                                            ? 'border border-secondary border-2 bg-light'
-                                            : 'border border-secondary border-dashed bg-white'}"
-                                        placeholder="Cerca..."
-                                        id="bkn_datatable_search_query" />
-                                    <span>
-                                        <Search size={16} class="text-muted" />
-                                    </span>
-
-                                    <button
-                                        style="position: absolute;right:0;"
-                                        class="btn btn-icon btn-ghost mb-0"
-                                        class:d-none={$templatesListFilter.generalSearch == ''}
-                                        on:click={() => {
-                                            $templatesListFilter.generalSearch = '';
-                                            datatable?.setDataSourceParams($templatesListFilterDatatable);
-                                        }}>
-                                        <XCircleIcon size={19} weight="duotone" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div slot="multiactions">
                         {#if visibleMultiaction}
                             <!-- svelte-ignore a11y-click-events-have-key-events -->

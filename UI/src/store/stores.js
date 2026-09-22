@@ -1,3 +1,5 @@
+import {createSubscriptionListFilter, createAssociatesListFilter, createPersonasListFilter, createPersonasPaymentListFilter, createTemplatesListFilter, createCourseListFilter} from './filterDefaults.js';
+export {createSubscriptionListFilter, createAssociatesListFilter, createPersonasListFilter, createPersonasPaymentListFilter, createTemplatesListFilter, createCourseListFilter} from './filterDefaults.js';
 import {writable, derived} from 'svelte/store';
 
 const createLocalStore = (key, startValue) => {
@@ -59,26 +61,8 @@ export const cartElements = writable([]);
 export const message = writable('CIAOOOOO');
 export let secret = writable(0);
 
-export const subscriptionListFilter = writable({
-    generalSearch: '',
-    status: '',
-    year: '1',
-    from_age: null,
-    to_age: null,
-    tags: [],
-    tags_and: 0,
-    period_start: null,
-    period_end: null,
-    filter: {
-        hide_associate_and_members: false,
-        hide_members: false,
-        certificate_missing_flag: false,
-        certificate_expired_flag: false,
-        subscription_not_paid_flag: false,
-        sort_lastname_asc_flag: false,
-        sort_lastname_desc_flag: false,
-    },
-});
+
+export const subscriptionListFilter = writable(createSubscriptionListFilter());
 
 export const subscriptionListFilterDatatable = derived(subscriptionListFilter, $subscriptionListFilter => ({
     'query[current_year]': $subscriptionListFilter.year ?? '1',
@@ -99,22 +83,8 @@ export const subscriptionListFilterDatatable = derived(subscriptionListFilter, $
     ...($subscriptionListFilter.period_end ? { 'query[period_end]': $subscriptionListFilter.period_end } : {}),
 }));
 
-export const associatesListFilter = writable({
-    generalSearch: '',
-    status: '',
-    from_age: null,
-    to_age: null,
-    year: '1',
-    period_start: null,
-    period_end: null,
-    filter: {
-        hide_associate_and_members: false,
-        expired_certificate: false,
-        subscription_not_paid: false,
-        sort_lastname_asc: false,
-        sort_lastname_desc: false,
-    },
-});
+
+export const associatesListFilter = writable(createAssociatesListFilter());
 
 export const associatesListFilterDatatable = derived(associatesListFilter, $associatesListFilter => ({
     'query[generalSearch]': $associatesListFilter.generalSearch ?? '',
@@ -131,24 +101,16 @@ export const associatesListFilterDatatable = derived(associatesListFilter, $asso
     ...($associatesListFilter.period_end ? { 'query[period_end]': $associatesListFilter.period_end } : {}),
 }));
 
-export const personasListFilter = writable({
-    is_tutor: '',
-    generalSearch: '',
-});
+
+export const personasListFilter = writable(createPersonasListFilter());
 
 export const personasListFilterDatatable = derived(personasListFilter, $personasListFilter => ({
     'query[is_tutor]': $personasListFilter.is_tutor ?? '',
     'query[generalSearch]': $personasListFilter.generalSearch ?? '',
 }));
 
-export const personasPaymentListFilter = writable({
-    generalSearch: '',
-    associateId: null,
-    type: '',
-    paid: '',
-    subject: '',
-    expense: '',
-});
+
+export const personasPaymentListFilter = writable(createPersonasPaymentListFilter());
 
 export const personasPaymentListFilterDatatable = derived(personasPaymentListFilter, $personasPaymentListFilter => ({
     'query[generalSearch]': $personasPaymentListFilter.generalSearch ?? '',
@@ -159,9 +121,8 @@ export const personasPaymentListFilterDatatable = derived(personasPaymentListFil
     ...($personasPaymentListFilter.expense !== '' && { 'query[expense]': $personasPaymentListFilter.expense }),
 }));
 
-export const templatesListFilter = writable({
-    generalSearch: '',
-});
+
+export const templatesListFilter = writable(createTemplatesListFilter());
 
 export const templatesListFilterDatatable = derived(templatesListFilter, $templatesListFilter => ({
     'query[generalSearch]': $templatesListFilter.generalSearch ?? '',
@@ -169,12 +130,8 @@ export const templatesListFilterDatatable = derived(templatesListFilter, $templa
 
 
 
-export const courseListFilter = writable({
-    generalSearch: '',
-    status_flag: '',
-    tags: [],
-    tags_and: 0
-});
+
+export const courseListFilter = writable(createCourseListFilter());
 
 export const courseListFilterDatatable = derived(courseListFilter, $courseListFilter => ({
     'query[generalSearch]': $courseListFilter.generalSearch ?? '',

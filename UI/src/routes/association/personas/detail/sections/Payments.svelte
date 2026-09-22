@@ -1,4 +1,13 @@
 <script>
+    import {v4 as uuidv4} from 'uuid';
+    const filterInstanceId = uuidv4();
+    import {createPersonasPaymentListFilter} from 'store/stores.js';
+    function resetPageFilters() {
+        $personasPaymentListFilter = {...createPersonasPaymentListFilter(), generalSearch: datatable?.getSearchValue() ?? $personasPaymentListFilter.generalSearch, associateId: associateId};
+
+        datatable?.setDataSourceParams({...$personasPaymentListFilterDatatable, associate_id: associateId});
+    }
+
     import moment from 'moment';
     import swal from 'sweetalert2';
     import XCircleBtn from 'components/buttons/XCircle.svelte';
@@ -420,15 +429,15 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
 <div class="card card-custom gutter-b">
     <div class="card-body p-0 border-0">
         <div class="row">
-            <div class="col-10 mt-2">
+            <div class="col-8 col-md-10 mt-2">
                 <h3 class="card-label font-size-h2">
                     Pagamenti
                     <span class="d-block text-muted pt-2 font-size-sm">Lista dei pagamenti.</span>
                 </h3>
             </div>
-            <div class="col-2 mt-2 d-flex justify-content-end align-items-center">
+            <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
                 {#if canPerformAction('bookeeping.payments.create')}
-                    <button
+                    <button aria-label="Aggiungi pagamento" style="min-width: 44px; min-height: 44px;"
                         on:click={() => {
                             let addModal = new AddEditModal({
                                 target: document.querySelector(`#portal-elements-foreground`),
@@ -472,6 +481,10 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
         <div class="row">
             <div class="col-12 mt-4">
                 <BKNDatatable
+                    resetFilters={resetPageFilters}
+                    on:search={event => {
+                        if (event.detail.key === 'generalSearch') $personasPaymentListFilter.generalSearch = event.detail.value;
+                    }}
                     id={`bkn_datatable_payments_${associateId}`}
                     bind:datatable
                     bind:selectedCounter
@@ -933,6 +946,7 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                         return [];
                     }}
                     params={{
+                        ...$personasPaymentListFilterDatatable,
                         associate_id: associateId,
                     }}
                     serverPaging={true}
@@ -941,11 +955,6 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                     loadFilters={() => {
                         initTooltips(document.body);
                         initPopovers(document.body);
-                        const searchQueryEl = document.getElementById('bkn_datatable_search_query');
-                        searchQueryEl?.addEventListener('keyup', debounce(function (e) {
-                            $personasPaymentListFilter.generalSearch = e.currentTarget.value;
-                            datatable?.setDataSourceParams($personasPaymentListFilterDatatable);
-                        }, 300));
                     }}>
                     <div slot="search-header">
                         <div
@@ -959,11 +968,11 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                                     editable={false}
                                     active={false}
                                     on:change={() => {
-                                        datatable?.setDataSourceParams($personasPaymentListFilterDatatable);
+                                        datatable?.setDataSourceParams({...$personasPaymentListFilterDatatable, associate_id: associateId});
                                     }}
                                     bind:value={$personasPaymentListFilter.paid}
                                     props={{
-                                        id: 'bkn_datatable_search_paid',
+                                        id: `bkn_datatable_search_paid_${filterInstanceId}`,
                                         name: 'paid',
                                         label: null,
                                         placeholder: 'Stato',
@@ -987,11 +996,11 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                                     editable={false}
                                     active={false}
                                     on:change={() => {
-                                        datatable?.setDataSourceParams($personasPaymentListFilterDatatable);
+                                        datatable?.setDataSourceParams({...$personasPaymentListFilterDatatable, associate_id: associateId});
                                     }}
                                     bind:value={$personasPaymentListFilter.type}
                                     props={{
-                                        id: 'bkn_datatable_search_type',
+                                        id: `bkn_datatable_search_type_${filterInstanceId}`,
                                         name: 'type',
                                         label: null,
                                         placeholder: 'Metodo',
@@ -1017,11 +1026,11 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                                     editable={false}
                                     active={false}
                                     on:change={() => {
-                                        datatable?.setDataSourceParams($personasPaymentListFilterDatatable);
+                                        datatable?.setDataSourceParams({...$personasPaymentListFilterDatatable, associate_id: associateId});
                                     }}
                                     bind:value={$personasPaymentListFilter.expense}
                                     props={{
-                                        id: 'bkn_datatable_search_expense',
+                                        id: `bkn_datatable_search_expense_${filterInstanceId}`,
                                         name: 'expense',
                                         label: null,
                                         placeholder: 'Tipo',
@@ -1044,11 +1053,11 @@ import {PaperPlaneTilt, PlusCircle, TrashSimple, XCircle as XCircleIcon} from 'p
                                 editable={false}
                                 active={false}
                                 on:change={() => {
-                                    datatable?.setDataSourceParams($personasPaymentListFilterDatatable);
+                                    datatable?.setDataSourceParams({...$personasPaymentListFilterDatatable, associate_id: associateId});
                                 }}
                                 bind:value={$personasPaymentListFilter.subject}
                                 props={{
-                                    id: 'bkn_datatable_search_subject',
+                                    id: `bkn_datatable_search_subject_${filterInstanceId}`,
                                     name: 'subject',
                                     label: null,
                                     placeholder: 'Attività',

@@ -1,4 +1,5 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
     import {sessionToken} from 'store/stores.js';
     import {scale} from 'svelte/transition';
     import * as easing from 'svelte/easing';
@@ -27,7 +28,19 @@
     let datatableKey = 0;
     let ready = false;
 
+    let fetchGeneration = 0;
+    async function changeCourse() {
+        await fetchData(false);
+        datatable?.source.setLocalData(list);
+        datatable?.setDataSourceQuery({generalSearch: datatable.getSearchValue()});
+    }
+    async function resetPageFilters() {
+        selectedCourse = 'all';
+        await changeCourse();
+    }
+
     async function fetchData(updateCourses = true) {
+        const generation = ++fetchGeneration;
         const res = await apiFetch(
             `${replaceUID(__bakney.env.API.SUBSCRIPTION.ATTENDANCE, info.subscription_id)}?course=${selectedCourse}`,
             {
@@ -35,6 +48,7 @@
             }
         );
 
+        if (generation !== fetchGeneration) return;
         if (!res.error) {
             list = res.response.data.attendance_days;
             stats = res.response.data.stats;
@@ -148,7 +162,7 @@
             <div class="col-12 mt-4">
                 {#if ready}
                 {#key datatableKey}
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
                     bind:datatable
                     id="bkn_datatable_attendance"
                     searchId="bkn_datatable_attendance_search_query"
@@ -162,18 +176,11 @@
                     <div slot="search-header" class="d-flex flex-wrap align-items-center">
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    class="form-control form-control-solid mb-0"
+                                <FilterSelect
+                                    label="Corso"
                                     bind:value={selectedCourse}
-                                    on:change={async () => {
-                                        await fetchData(false);
-                                        datatableKey++;
-                                    }}>
-                                    <option value="all">Tutti i corsi</option>
-                                    {#each courses as course}
-                                        <option value={course.course_id}>{course.title}</option>
-                                    {/each}
-                                </select>
+                                    on:change={event => { selectedCourse = event.detail.value; changeCourse(); }}
+                                    options={[{value: 'all', label: 'Tutti i corsi'}, ...courses.map(course => ({value: course.course_id, label: course.title}))]} />
                             </div>
                         </div>
                     </div>

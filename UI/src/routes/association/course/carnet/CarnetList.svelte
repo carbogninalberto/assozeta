@@ -1,4 +1,14 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    let selectedFilter = '';
+    function resetPageFilters() {
+        selectedFilter = '';
+        const query = {...datatable.getDataSourceQuery(), generalSearch: datatable.getSearchValue()};
+        delete query['status_flag'];
+
+        datatable.setDataSourceQuery(query);
+    }
+
     import {sessionToken} from 'store/stores.js';
     import {onMount, onDestroy} from 'svelte';
     import {link} from 'svelte-spa-router';
@@ -12,7 +22,6 @@ import {PlusCircle} from 'phosphor-svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import { initPopovers, destroyPopovers } from 'shim/popover.js';
-    import {initSelectpicker} from 'shim/select.js';
 	import { UiApp } from 'shim/ui.js';
 
     sessionToken.useLocalStorage();
@@ -250,7 +259,7 @@ import {PlusCircle} from 'phosphor-svelte';
 
 <!--begin::Entry-->
 <div
-    
+
     class="d-flex flex-column-fluid font-weight-bold text-dark-50">
     <!--begin::Container-->
     <div class="container">
@@ -275,7 +284,7 @@ import {PlusCircle} from 'phosphor-svelte';
                 </div>
             </div>
             <div class="card-body p-0">
-                <BKNDatatable
+                <BKNDatatable resetFilters={resetPageFilters}
                     bind:datatable
                     {columns}
                     {mapFunction}
@@ -284,21 +293,15 @@ import {PlusCircle} from 'phosphor-svelte';
                     serverFiltering={false}
                     serverSorting={false}
                     showDividerFilter={false}
-                    loadFilters={() => {
-                        const statusEl = document.getElementById('bkn_datatable_search_status');
-                        statusEl?.addEventListener('change', function (e) {
-                            datatable.search(e.currentTarget.value.toLowerCase(), 'status_flag');
-                        });
-                        initSelectpicker(statusEl);
-                    }}
+
                 >
                     <div slot="search-header">
                         <div class="d-flex align-items-center">
-                            <select class="form-control form-control-solid mb-0" id="bkn_datatable_search_status">
-                                <option value="">Tutti gli stati</option>
-                                <option value="1">in bozza</option>
-                                <option value="2">pubblicato</option>
-                            </select>
+                            <FilterSelect
+                                label="Stato carnet"
+                                bind:value={selectedFilter}
+                                on:change={event => datatable.search(event.detail.value, 'status_flag')}
+                                options={[{value: '', label: 'Tutti gli stati'}, {value: '1', label: 'in bozza'}, {value: '2', label: 'pubblicato'}]} />
                         </div>
                     </div>
                 </BKNDatatable>

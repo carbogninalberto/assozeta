@@ -1,4 +1,6 @@
 <script>
+    import {tableExportQuery} from 'components/tables/tableExportQuery.js';
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
     import swal from 'sweetalert2';
     import {slide} from 'svelte/transition';
     import {sessionToken, userData} from 'store/stores.js';
@@ -232,9 +234,9 @@
                 <span class="d-block text-muted pt-2 font-size-sm">Iscritti al corso.</span>
             </h3>
         </div>
-        <div class="col-2 mt-2 d-flex justify-content-end align-items-center">
+        <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
             {#if canPerformAction('association.courses.update')}
-                <button
+                <button aria-label="Aggiungi tesserato" style="min-width: 44px; min-height: 44px;"
                     class="btn btn-sm btn-primary font-weight-bolder d-flex align-items-center"
                     on:click={() => {
                         let addModal = new AddEditCourseSubscriptionModal({
@@ -251,7 +253,7 @@
                         });
                     }}>
                     <PlusCircle size={16} class="mr-1" weight="bold" />
-                    Tesserato
+                    <span class="d-none d-md-inline-block">Tesserato</span>
                 </button>
             {/if}
         </div>
@@ -565,7 +567,7 @@
             serverPaging={false}
             serverFiltering={false}
             serverSorting={false}>
-            <div slot="search-header" style="width: -webkit-fill-available;">
+            <div slot="search-actions" style="width: -webkit-fill-available;">
                 <div class="d-flex justify-content-end">
                     <button
                         class="btn btn-sm btn-light-primary font-weight-bolder m-0 d-flex align-items-center justify-content-end"
@@ -573,25 +575,7 @@
                         data-placement="bottom"
                         title="Esporta ricerca corrente in Excel o PDF"
                         on:click={() => {
-                            let query = {};
-                            // Add course_id param
-                            query.course_id = info.course_id;
-
-                            // transform query to be a string like ?query[key]=value&...
-                            let queryString = Object.keys(query)
-                                .map(key => {
-                                    return `${key}` + '=' + query[key];
-                                })
-                                .join('&');
-
-                            // sort options
-                            let sort = datatable.getDataSourceParam('sort');
-                            if (sort) {
-                                queryString += '&sort[field]=' + sort.field + '&sort[sort]=' + sort.sort;
-                            }
-
-                            // add type=athletes
-                            queryString += '&type=athletes';
+                            const queryString = tableExportQuery(datatable, {course_id: info.course_id, type: 'athletes'});
 
                             let endpointWithQueryString =
                                 __bakney.env.API.COURSE_SUBSCRIPTIONS.LIST + '?' + queryString;
@@ -629,13 +613,14 @@
                             </span>
                             <div class="dropdown ml-2">
                                 <!-- svelte-ignore a11y-missing-attribute -->
-                                <a
+                                <button
                                     type="button"
-                                    class="btn btn-light-primary btn-sm dropdown-toggle font-weight-bolder"
+                                    class="has-dropdown-caret btn btn-light-primary btn-sm dropdown-toggle font-weight-bolder"
                                     data-toggle="dropdown">
                                     <DotsThreeCircleVertical size={16} weight="duotone" class="mr-1" />
                                     <span class="d-none d-md-inline">Operazioni su selezionati</span>
-                                </a>
+                                    <DropdownCaret />
+                                </button>
                                 <div class="dropdown-menu dropdown-menu">
                                     <ul class="navi navi-hover flex-column" style="cursor: pointer;">
                                         <!-- svelte-ignore a11y-click-events-have-key-events -->

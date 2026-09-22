@@ -1,3 +1,9 @@
+<script context="module">
+    const openDrawers = [];
+    let scrollLockCount = 0;
+    let scrollPreviousOverflow = '';
+</script>
+
 <script>
     import {X} from 'phosphor-svelte';
     import {onMount, onDestroy, createEventDispatcher} from 'svelte';
@@ -19,6 +25,7 @@
 
     function focusTrap(node, active = true) {
         let previouslyFocused = null;
+        openDrawers.push(node);
 
         function getFocusableElements() {
             return Array.from(node.querySelectorAll(focusableSelector)).filter(element => {
@@ -52,7 +59,7 @@
         }
 
         function handleKeydown(event) {
-            if (!active || event.key !== 'Tab') return;
+            if (!active || event.key !== 'Tab' || openDrawers.at(-1) !== node) return;
 
             const focusableElements = getFocusableElements();
 
@@ -89,14 +96,13 @@
                 }
             },
             destroy() {
+                const index = openDrawers.indexOf(node);
+                if (index !== -1) openDrawers.splice(index, 1);
                 document.removeEventListener('keydown', handleKeydown);
                 restoreFocus();
             },
         };
     }
-
-    let scrollLockCount = 0;
-    let scrollPreviousOverflow = '';
 
     function lockBodyScroll() {
         if (typeof document === 'undefined') {
@@ -130,6 +136,7 @@
     export let width = '85vw';
     export let height = '100%';
     export let maxHeight = '100%';
+    export let bottomOffset = '0px';
     export let closeOnClickOutside = true;
     export let closeOnEsc = true;
     export let title = '';
@@ -142,7 +149,9 @@
     const dispatch = createEventDispatcher();
 
     function handleKeydown(event) {
-        if (closeOnEsc && event.key === 'Escape' && isOpen) {
+        if (closeOnEsc && event.key === 'Escape' && !event.defaultPrevented && isOpen && openDrawers.at(-1) === drawer) {
+            event.preventDefault();
+            event.stopPropagation();
             close();
         }
     }
@@ -201,7 +210,7 @@
       max-width: ${width && isCompactViewport ? '100vw' : width};
       height: ${height};
       max-height: ${maxHeight};
-      ${position}: 0;
+      ${position}: ${position === 'bottom' ? bottomOffset : '0px'};
     `;
 </script>
 
@@ -215,6 +224,9 @@
         transition:fly={{duration: 200, opacity: 0}}>
         <div
             class="drawer drawer-{position} shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || undefined}
             style={drawerStyles}
             bind:this={drawer}
             use:focusTrap={isOpen}

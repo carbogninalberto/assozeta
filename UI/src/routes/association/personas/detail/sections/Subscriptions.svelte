@@ -270,15 +270,15 @@
 <div class="card card-custom gutter-b">
     <div class="card-body p-0 border-0">
         <div class="row">
-            <div class="col-10 mt-2">
+            <div class="col-8 col-md-10 mt-2">
                 <h3 class="card-label font-size-h2">
                     Iscrizioni
                     <span class="d-block text-muted pt-2 font-size-sm">Lista delle iscrizioni.</span>
                 </h3>
             </div>
-            <div class="col-2 mt-2 d-flex justify-content-end align-items-center">
+            <div class="col-4 col-md-2 mt-2 d-flex justify-content-end align-items-center">
                 {#if canPerformAction('association.members.create')}
-                    <button
+                    <button aria-label="Aggiungi iscrizione" style="min-width: 44px; min-height: 44px;"
                         class="btn btn-sm btn-primary font-weight-bolder d-flex align-items-center"
                         on:click={async () => {
                             let associate = await fetchData();
@@ -304,7 +304,7 @@
                             }
                         }}>
                         <PlusCircle size={16} class="mr-1" weight="bold" />
-                        Iscrizione
+                        <span class="d-none d-md-inline-block">Iscrizione</span>
                     </button>
                 {/if}
             </div>

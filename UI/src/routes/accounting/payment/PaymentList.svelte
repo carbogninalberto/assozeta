@@ -1,4 +1,6 @@
 <script>
+    import FilterSelect from 'components/filters/FilterSelect.svelte';
+    import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { CheckCircle as LucideCheckCircle, X as LucideX } from 'lucide-svelte';
     import moment from 'moment';
     import {permissions, sessionToken, tablesSettings, userData} from 'store/stores.js';
@@ -41,7 +43,6 @@
     import {SmartSelect} from 'components/formBuilder/preview-blocks/index.js';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {blockPage, unblockPage} from 'store/loadingStore.js';
-    import {initSelectpicker, refreshSelectpicker} from 'shim/select.js';
     import DateInput from 'components/inputs/DateInput.svelte';
     import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
@@ -79,6 +80,23 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     let selectedCounter = 0;
     let datatable;
     let accounts = [];
+    const createPaymentFilters = () => ({paid: '', expense: '', subject: '', payment_categories: '', account: '', type: ''});
+    let paymentFilters = createPaymentFilters();
+    let statsGeneration = 0;
+
+    function changePaymentFilter(key, value) {
+        paymentFilters = {...paymentFilters, [key]: value ?? ''};
+        datatable?.search(String(value ?? ''), key);
+    }
+
+    function currentPaymentQueryString() {
+        const query = datatable?.getDataSourceQuery() ?? {payment_range: formatPaymentRange(dateRangeStart, dateRangeEnd)};
+        const params = new URLSearchParams();
+        for (const [key, value] of Object.entries(query)) {
+            if (value !== '' && value !== null && value !== undefined) params.set(`query[${key}]`, String(value));
+        }
+        return params.toString();
+    }
     let dateRangeStart = moment().startOf('month').format('DD/MM/YYYY');
     let dateRangeEnd = moment().endOf('month').format('DD/MM/YYYY');
 
@@ -790,7 +808,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             case 'selected-filter':
                 filter = `&query[payment_range]=${formatPaymentRange(dateRangeStart, dateRangeEnd)}`;
                 // add to filter query[account] if selected
-                let account = document.getElementById('bkn_datatable_search_account')?.value || null;
+                let account = paymentFilters.account || null;
                 if (account) filter += `&query[account]=${account}`;
                 break;
         }
@@ -817,30 +835,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             state: 'primary',
             message: 'Esportazione in corso...',
         });
-        let filter = '';
-        let search = document.getElementById('bkn_datatable_search_query')?.value || null;
-        if (search) filter = `&query[generalSearch]=${search}`;
-        // add to filter query[paid] if selected
-        let paid = document.getElementById('bkn_datatable_search_status')?.value || null;
-        if (paid) filter += `&query[paid]=${paid}`;
-        // add to filter query[expense] if selected
-        let expense = document.getElementById('bkn_datatable_search_expense')?.value || null;
-        if (expense) filter += `&query[expense]=${expense}`;
-        // add to filter query[subject] if selected
-        let subject = document.getElementById('bkn_datatable_search_subject')?.value || null;
-        if (subject) filter += `&query[subject]=${subject}`;
-        // add to filter query[payment_categories] if selected
-        let payment_categories = document.getElementById('bkn_datatable_search_category')?.value || null;
-        if (payment_categories) filter += `&query[payment_categories]=${payment_categories}`;
-        // add to filter query[account] if selected
-        let account = document.getElementById('bkn_datatable_search_account')?.value || null;
-        if (account) filter += `&query[account]=${account}`;
-        // add to filter query[type] if selected
-        let type = document.getElementById('bkn_datatable_search_type')?.value || null;
-        if (type) filter += `&query[type]=${type}`;
-        // add to filter query[payment_range] if selected
-        const currentDateRange = formatPaymentRange(dateRangeStart, dateRangeEnd);
-        if (currentDateRange) filter += `&query[payment_range]=${currentDateRange}`;
+        const filter = `&${currentPaymentQueryString()}`;
 
         apiFetch(`${__bakney.env.API.PAYMENT.EXPORT}?m=xlsx${filter}`)
             .then(res => {
@@ -856,37 +851,14 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
         document.querySelectorAll('.tooltip').forEach(popover => popover.remove());
     });
 
-    function resetFilters(update = true) {
-        document.getElementById('bkn_datatable_search_query').value = '';
-
-        document.getElementById('bkn_datatable_search_status').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_status'));
-
-        document.getElementById('bkn_datatable_search_expense').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_expense'));
-
-        document.getElementById('bkn_datatable_search_subject').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_subject'));
-
-        document.getElementById('bkn_datatable_search_category').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_category'));
-
-        document.getElementById('bkn_datatable_search_account').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_account'));
-
-        document.getElementById('bkn_datatable_search_type').value = '';
-        refreshSelectpicker(document.getElementById('bkn_datatable_search_type'));
-
+    function resetFilters() {
+        paymentFilters = createPaymentFilters();
         dateRangeStart = moment().startOf('month').format('DD/MM/YYYY');
         dateRangeEnd = moment().endOf('month').format('DD/MM/YYYY');
-
-        if (update) {
-            // Trigger search update without remounting the datatable
-            const currentDateRange = formatPaymentRange(dateRangeStart, dateRangeEnd);
-            datatable.search(currentDateRange.toLowerCase(), 'payment_range');
-            document.getElementById('bkn_datatable_search_query').dispatchEvent(new Event('keyup'));
-            fetchStats();
-        }
+        datatable?.setDataSourceQuery({
+            generalSearch: datatable.getSearchValue(),
+            payment_range: formatPaymentRange(dateRangeStart, dateRangeEnd),
+        });
     }
 
     window.markAsPaid = (id, payment_date, expense = false) => {
@@ -1057,48 +1029,13 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             overlayColor: '#000000',
             state: 'primary',
         });
-        let payment_range =
-            formatPaymentRange(dateRangeStart, dateRangeEnd) ||
-            `${moment().startOf('month').format('DD/MM/YYYY')} al ${moment().endOf('month').format('DD/MM/YYYY')}`;
-        // subject
-        let subject = document.getElementById('bkn_datatable_search_subject')?.value || null;
-
-        // payment_categories
-        let payment_categories = document.getElementById('bkn_datatable_search_category')?.value || null;
-
-        // account
-        let account = document.getElementById('bkn_datatable_search_account')?.value || null;
-
-        // type
-        let type = document.getElementById('bkn_datatable_search_type')?.value || null;
-
-        // paid
-        let paid = document.getElementById('bkn_datatable_search_status')?.value || null;
-
-        // expense
-        let expense = document.getElementById('bkn_datatable_search_expense')?.value || null;
-
-        // generalSearch
-        let generalSearch = document.getElementById('bkn_datatable_search_query')?.value || null;
-
-        let queryStr = '';
-
-        // add only if not null
-        if (subject) queryStr += `&query[subject]=${subject}`;
-        if (type) queryStr += `&query[type]=${type}`;
-        if (paid) queryStr += `&query[paid]=${paid}`;
-        if (expense) queryStr += `&query[expense]=${expense}`;
-        if (generalSearch) queryStr += `&query[generalSearch]=${generalSearch}`;
-        if (payment_range) queryStr += `&query[payment_range]=${payment_range}`;
-        if (payment_categories) queryStr += `&query[payment_categories]=${payment_categories}`;
-        if (account) queryStr += `&query[account]=${account}`;
-
-        // remove first & from queryStr if first char is &
-        if (queryStr.charAt(0) == '&') queryStr = queryStr.substring(1);
+        const generation = ++statsGeneration;
+        const queryStr = currentPaymentQueryString();
 
         // make payment_range a valid query string
         let res = await apiFetch(`${__bakney.env.API.PAYMENT.STATS}?${queryStr}`);
 
+        if (generation !== statsGeneration) return;
         UiApp.unblock('#payment-stats');
 
         if (!res.error) stats = res.response.data || [];
@@ -1146,12 +1083,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
 
         ready = true;
 
-        setTimeout(() => {
-            if (params?.id) {
-                document.getElementById('bkn_datatable_search_query').value = params?.id;
-                document.getElementById('bkn_datatable_search_query').dispatchEvent(new Event('keyup'));
-            }
-        }, 200);
+
 
         UiApp.unblock('#payment-card');
     });
@@ -1439,14 +1371,15 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                         <button
                             disabled={!canPerformAction('bookeeping.payments.read')}
                             type="button"
-                            class="btn btn-light-primary btn-sm font-weight-bolder dropdown-toggle"
+                            aria-label="Esporta"
+                            class="has-dropdown-caret btn btn-light-primary btn-sm font-weight-bolder dropdown-toggle"
                             data-toggle="dropdown"
                             aria-haspopup="true"
                             aria-expanded="false">
                             <span class="navi-icon">
                                 <Export size={18} weight="duotone" />
                             </span>
-                            <span class="d-none d-md-inline-block">Esporta</span></button>
+                            <span class="d-none d-md-inline-block">Esporta</span><DropdownCaret /></button>
                         <div class="dropdown-menu dropdown-menu-sm dropdown-menu-right">
                             <!--begin::Navigation-->
                             <ul class="navi flex-column navi-hover py-2">
@@ -1579,11 +1512,13 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                 {#if ready}
                 {#key datatableKey}
                 <BKNDatatable
+                    hideSearchActionsOnMobile
+                    resetFilters={resetFilters}
                     bind:datatable
                     bind:selectedCounter
                     columns={visibleColumns}
                     url={__bakney.env.API.PAYMENT.LIST}
-                    params={{query: {payment_range: `${moment().startOf('month').format('DD/MM/YYYY')} al ${moment().endOf('month').format('DD/MM/YYYY')}`}}}
+                    params={{query: {generalSearch: params?.id || '', payment_range: `${moment().startOf('month').format('DD/MM/YYYY')} al ${moment().endOf('month').format('DD/MM/YYYY')}`}}}
                     pageSizeSelect={[10, 20, 30, 50, 100]}
                     spinnerConfig={{message: ''}}
                     showDividerFilter={false}
@@ -1613,62 +1548,33 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     loadFilters={() => {
                         initTooltips(document.body);
                         initPopovers(document.body);
-                        const addChangeFilter = (id, column) => {
-                            const el = document.getElementById(id);
-                            el?.addEventListener('change', function (e) {
-                                datatable.search(e.currentTarget.value.toLowerCase(), column);
-                            });
-                            initSelectpicker(el);
-                        };
-
-                        addChangeFilter('bkn_datatable_search_status', 'paid');
-                        addChangeFilter('bkn_datatable_search_expense', 'expense');
-                        addChangeFilter('bkn_datatable_search_subject', 'subject');
-                        addChangeFilter('bkn_datatable_search_category', 'payment_categories');
-                        addChangeFilter('bkn_datatable_search_account', 'account');
-                        addChangeFilter('bkn_datatable_search_type', 'type');
-
                         // payment date range is handled by DateRangePicker component
                     }}>
                     <svelte:fragment slot="search-header">
                         <div class="my-2 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    class="form-control form-control-solid"
-                                    id="bkn_datatable_search_status"
-                                    style="max-width: 13rem;width: 13rem">
-                                    <option value="">Stato</option>
-                                    <option value="true">Pagato</option>
-                                    <option value="false">In attesa</option>
-                                </select>
+                                <FilterSelect
+                                    label="Stato pagamento"
+                                    bind:value={paymentFilters.paid}
+                                    on:change={event => changePaymentFilter('paid', event.detail.value)}
+                                    options={[{value: '', label: 'Stato'}, {value: 'true', label: 'Pagato'}, {value: 'false', label: 'In attesa'}]} />
                             </div>
                         </div>
                         <div class="my-2 my-md-0 mr-2">
                             <div class="h-4">
-                                <input
-                                    type="hidden"
-                                    id="bkn_datatable_search_account"
-                                    name="bkn_datatable_search_account"
-                                    value=""
-                                    class="form-control form-control-solid" />
                                 <SmartSelect
                                     customClasses={'px-0 mb-0 min-w-6 max-w-6 filter-select'}
                                     editable={false}
                                     active={false}
-                                    on:change={e => {
-                                        document.getElementById('bkn_datatable_search_account').value =
-                                            e.detail.value;
-                                        document
-                                            .getElementById('bkn_datatable_search_account')
-                                            .dispatchEvent(new Event('change'));
-                                    }}
+                                    bind:value={paymentFilters.account}
+                                    on:change={event => changePaymentFilter('account', event.detail.value)}
                                     props={{
                                         placeholder: 'Tutti i conti',
                                         required: false,
                                         clearable: false,
                                         searchable: true,
                                         showChevron: true,
-                                        value: '',
+                                        value: paymentFilters.account,
                                         options: [
                                             {value: '', label: 'Tutti i conti'},
                                             {value: '[]', label: 'Senza conto'},
@@ -1684,72 +1590,46 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    style="max-width: 13rem;width: 13rem"
-                                    class="form-control form-control-solid"
-                                    id="bkn_datatable_search_type">
-                                    <option value="">Metodo</option>
-                                    {#each Array.from(paymentTypesMap || []) as type}
-                                        <option value={type.key}>
-                                            {type.value}
-                                        </option>
-                                    {/each}
-                                </select>
+                                <FilterSelect
+                                    label="Metodo pagamento"
+                                    bind:value={paymentFilters.type}
+                                    on:change={event => changePaymentFilter('type', event.detail.value)}
+                                    options={[{value: '', label: 'Metodo'}, ...Array.from(paymentTypesMap || []).map(type => ({value: type.key, label: type.value}))]} />
                             </div>
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    style="max-width: 13rem;width: 13rem"
-                                    class="form-control form-control-solid"
-                                    id="bkn_datatable_search_expense">
-                                    <option value="">Tipo</option>
-                                    <option value="true">Uscite</option>
-                                    <option value="false">Entrate</option>
-                                </select>
+                                <FilterSelect
+                                    label="Tipo movimento"
+                                    bind:value={paymentFilters.expense}
+                                    on:change={event => changePaymentFilter('expense', event.detail.value)}
+                                    options={[{value: '', label: 'Tipo'}, {value: 'true', label: 'Uscite'}, {value: 'false', label: 'Entrate'}]} />
                             </div>
                         </div>
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
-                                <select
-                                    style="max-width: 13rem;width: 13rem"
-                                    class="form-control form-control-solid"
-                                    id="bkn_datatable_search_subject">
-                                    <option value="">Attività</option>
-                                    {#each Array.from(paymentSubjectsMap || []) as subject}
-                                        <option value={subject.key}>
-                                            {subject.value}
-                                        </option>
-                                    {/each}
-                                </select>
+                                <FilterSelect
+                                    label="Attività"
+                                    bind:value={paymentFilters.subject}
+                                    on:change={event => changePaymentFilter('subject', event.detail.value)}
+                                    options={[{value: '', label: 'Attività'}, ...Array.from(paymentSubjectsMap || []).map(subject => ({value: subject.key, label: subject.value}))]} />
                             </div>
                         </div>
                         <div class="my-2 my-md-0 mr-2">
                             <div class="h-4">
-                                <input
-                                    type="hidden"
-                                    id="bkn_datatable_search_category"
-                                    name="bkn_datatable_search_category"
-                                    value=""
-                                    class="form-control form-control-solid" />
                                 <SmartSelect
                                     customClasses={'px-0 mb-0 min-w-8 max-w-12 filter-select'}
                                     editable={false}
                                     active={false}
-                                    on:change={e => {
-                                        document.getElementById('bkn_datatable_search_category').value =
-                                            e.detail.value;
-                                        document
-                                            .getElementById('bkn_datatable_search_category')
-                                            .dispatchEvent(new Event('change'));
-                                    }}
+                                    bind:value={paymentFilters.payment_categories}
+                                    on:change={event => changePaymentFilter('payment_categories', event.detail.value)}
                                     props={{
                                         placeholder: 'Tutte le causali',
                                         required: false,
                                         clearable: false,
                                         searchable: true,
                                         showChevron: true,
-                                        value: '',
+                                        value: paymentFilters.payment_categories,
                                         options: [
                                             {value: '', label: 'Tutte le causali'},
                                             {value: '[]', label: 'Senza Causale'},
@@ -1779,13 +1659,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                 />
                             </div>
                         </div>
-                        <div class="my-2 my-md-0">
-                            <a
-                                on:click|preventDefault={resetFilters}
-                                class="btn font-weight-bolder mb-0 cursor-pointer text-primary btn-clean btn-icon">
-                                <LucideX size={18} weight="bold" />
-                            </a>
-                        </div>
+
                     </svelte:fragment>
                     <div slot="search-actions" class="w-100 px-0">
 
@@ -1991,7 +1865,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                             <div class="my-2 mr-1">
                                 <div class="dropdown">
                                     <button
-                                        class="btn btn-sm btn-light-primary dropdown-toggle font-weight-bolder"
+                                        class="has-dropdown-caret btn btn-sm btn-light-primary dropdown-toggle font-weight-bolder"
                                         type="button"
                                         id="dropdownMenuButton"
                                         data-toggle="dropdown"
@@ -1999,7 +1873,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                         aria-expanded="false">
                                         <FileArrowDown size={14} weight="duotone" />
                                         Prima nota
-                                    </button>
+                                    <DropdownCaret /></button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                                         <!-- svelte-ignore a11y-missing-attribute -->
