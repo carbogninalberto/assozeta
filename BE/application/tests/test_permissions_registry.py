@@ -415,11 +415,19 @@ class MethodAwarePermissionTests(TestCase):
         self.assertEqual(perm_post, 'association.courses.update')
 
     def test_calendar_events_methods(self):
-        """Test calendar/events with different methods."""
+        """Calendar reads are GET-only; mutations use the update endpoint."""
         perm_get = _match_permission('calendar/events', 'GET')
         perm_post = _match_permission('calendar/events', 'POST')
         self.assertEqual(perm_get, 'association.calendar.read')
-        self.assertEqual(perm_post, 'association.calendar.read')
+        self.assertIsNone(perm_post)
+        self.assertEqual(
+            _match_permission('calendar/events/update', 'POST'),
+            'association.events.update',
+        )
+        self.assertEqual(
+            _match_permission('calendar/events/update', 'DELETE'),
+            'association.events.delete',
+        )
 
     def test_profile_settings_methods(self):
         """Test profile/settings with different methods."""
