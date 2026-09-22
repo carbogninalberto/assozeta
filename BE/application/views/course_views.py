@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from application.permissions_registry import check_collaborator_permission
 
 from application.models import AttendanceRegistry
 from application.serializers.payment_serializers import PaymentSerializer
@@ -475,6 +476,7 @@ def course_tags_unassign(request, tag_id, course_id):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def course_list(request):
+    check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
         sport_association_id = request.GET.get('sport_association_id', None)
         if sport_association_id is None:
@@ -556,18 +558,6 @@ def course_list(request):
             "file": file,
             "filename": filename
         }, status=status.HTTP_200_OK)
-
-    original_user = request.original_user if hasattr(request, 'original_user') else None
-    if original_user and original_user.role == User.COLLABORATOR:
-        attentance_registries = AttendanceRegistry.objects.filter(
-            course__in=courses,
-        )
-        instructor = Instructor.objects.filter(associated_user_id=original_user.user_id).first()
-        if instructor:
-            instructor_id = str(instructor.instructor_id)
-            # Cast JSONField to text and search within it
-            attentance_registries = attentance_registries.filter(events__iregex=instructor_id)
-            courses = courses.filter(attendanceregistry__in=attentance_registries)
 
     courses = paginator.paginate_queryset(queryset=courses, request=request)
 
