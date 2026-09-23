@@ -76,7 +76,10 @@ def public_integration(provider, config):
                 decrypt_secret(secret)
             except ImproperlyConfigured:
                 credential_error = True
-    return {**value, 'provider': provider, 'credential_error': credential_error,
+    last_test = (config.diagnostic_results or {}).get('integration_tests', {}).get(provider) if config else None
+    if last_test and last_test.get('revision') != value['revision']:
+        last_test = None
+    return {**value, 'provider': provider, 'credential_error': credential_error, 'last_test': last_test,
             'restart_required': False,
             'webhook_url': settings.APP_URL.rstrip('/') + '/api/stripe/webhook' if provider == 'stripe' else None,
             'authorized_origin': settings.APP_URL if provider == 'google' else None,

@@ -39,15 +39,15 @@
   --text-secondary: #7E8299;
   --text-muted: #92929C;
   --text-inverse: #ffffff;
-  --text-link: #351DC2;
-  --text-link-hover: #1e0f87;
+  --text-link: var(--primary-text, var(--primary));
+  --text-link-hover: var(--primary-hover);
 
   /* Borders */
   --border-color: #EBEDF3;
   --border-color-light: #F3F6F9;
   --border-color-dark: #E4E6EF;
   --border-input: #E4E6EF;
-  --border-input-focus: #351DC2;
+  --border-input-focus: var(--primary-text, var(--primary));
 
   /* Shadows */
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
@@ -61,7 +61,7 @@
   --scrollbar-thumb-hover: #bdc0c7;
 
   /* State colors (light variants) */
-  --light-primary: #DEEDFF;
+  --light-primary: rgba(var(--primary-rgb), 0.12);
   --light-secondary: #EBEDF3;
   --light-success: #D6FBF4;
   --light-info: #EDE4FF;
@@ -69,7 +69,7 @@
   --light-danger: #FFE2E5;
 
   /* Backwards compatibility */
-  --main-color: #351DC2;
+  --main-color: var(--primary);
   --focus-color: #7b7e9a;
 }
 
@@ -99,15 +99,15 @@
   --text-secondary: #A0A3BD;   /* Secondary text */
   --text-muted: #6B6F8D;       /* Muted/disabled text */
   --text-inverse: #131320;     /* Text on bright backgrounds */
-  --text-link: #93A3F8;        /* Links - pastel indigo */
-  --text-link-hover: #B0BCF9;  /* Link hover - lighter pastel */
+  --text-link: var(--primary-text, var(--primary));        /* Readable brand links */
+  --text-link-hover: var(--primary-hover);  /* Derived brand hover */
 
   /* === Borders === */
   --border-color: #2E2E4A;
   --border-color-light: #252540;
   --border-color-dark: #3A3A5C;
   --border-input: #3A3A5C;
-  --border-input-focus: #7C7CF8;  /* Pastel indigo focus ring */
+  --border-input-focus: var(--primary-text, var(--primary));  /* Readable brand focus ring */
 
   /* === Shadows (stronger on dark to compensate) === */
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.35);
@@ -121,7 +121,7 @@
   --scrollbar-thumb-hover: #565878;
 
   /* === State colors (desaturated/pastel for dark bg) === */
-  --light-primary: #1E2744;
+  --light-primary: rgba(var(--primary-rgb), 0.12);
   --light-secondary: #2E2E4A;
   --light-success: #1A2F30;
   --light-info: #2A2248;
@@ -135,8 +135,8 @@
   --info: #A78BFA;             /* Pastel violet */
   --warning: #FCD34D;          /* Pastel amber */
   --danger: #FDA4AF;           /* Pastel rose */
-  --main-color: #7C7CF8;
-  --focus-color: rgba(129, 140, 248, 0.3);
+  --main-color: var(--primary);
+  --focus-color: rgba(var(--primary-rgb), 0.3);
 }
 
 /* ==========================================================================
@@ -254,6 +254,7 @@
   border-color: transparent !important;
 }
 
+[data-theme="dark"] input.form-control:focus,
 [data-theme="dark"] .form-control:focus,
 [data-theme="dark"] .form-control-solid:focus,
 [data-theme="dark"] input:focus,
@@ -262,7 +263,7 @@
   background-color: var(--bg-input-focus) !important;
   border-color: var(--border-input-focus) !important;
   outline: none !important;
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 [data-theme="dark"] .form-control::placeholder,
@@ -329,7 +330,7 @@
 }
 
 [data-theme="dark"] .btn-light-primary:hover {
-  background-color: rgba(129, 140, 248, 0.2) !important;
+  background-color: rgba(var(--primary-rgb), 0.2) !important;
   color: var(--primary) !important;
 }
 
@@ -645,7 +646,7 @@
   --ec-button-text-color: var(--text-primary, #E1E2E8);
   --ec-button-active-bg-color: var(--primary, #7C7CF8);
   --ec-button-active-border-color: var(--primary, #7C7CF8);
-  --ec-button-active-text-color: #fff;
+  --ec-button-active-text-color: var(--on-primary);
   --ec-today-bg-color: color-mix(in srgb, var(--primary, #7C7CF8) 10%, transparent);
   --ec-highlight-color: color-mix(in srgb, var(--primary, #7C7CF8) 14%, transparent);
   --ec-popup-bg-color: var(--bg-dropdown, #252540);
@@ -686,7 +687,11 @@
   background-color: var(--ec-today-bg-color) !important;
 }
 
-[data-theme="dark"] .ec-event.ec-event-primary,
+[data-theme="dark"] .ec-event.ec-event-primary {
+    background-color: var(--bg-surface, #1B1B2D) !important;
+    color: var(--text-primary, #E1E2E8) !important;
+}
+
 [data-theme="dark"] .ec-event.ec-event-success,
 [data-theme="dark"] .ec-event.ec-event-danger,
 [data-theme="dark"] .ec-event.ec-event-warning,
@@ -921,9 +926,12 @@
 }
 
 /* Labels and badges */
+[data-theme="dark"] .label-light-primary {
+  border-top-color: var(--border-color) !important;
+  outline-color: var(--border-color) !important;
+}
 [data-theme="dark"] .label-light-warning,
 [data-theme="dark"] .label-light-info,
-[data-theme="dark"] .label-light-primary,
 [data-theme="dark"] .label-light-success,
 [data-theme="dark"] .label-light-danger {
   border-top-color: var(--border-color) !important;
@@ -1249,17 +1257,20 @@ html[data-theme="dark"] body {
   color: var(--text-muted) !important;
 }
 
-[data-theme="dark"] button:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not([class*="btn-outline"]):not([class*="btn-light-"]):not([class*="swal2"]):not([class*="fc-"]):not(.close) {
+[data-theme="dark"] button:not(.MuiButtonBase-root):not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not([class*="btn-outline"]):not([class*="btn-light-"]):not([class*="swal2"]):not([class*="fc-"]):not(.close) {
   color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] button:disabled:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not([class*="btn-outline"]):not([class*="btn-light-"]) {
+[data-theme="dark"] button:disabled:not(.MuiButtonBase-root):not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-info):not([class*="btn-outline"]):not([class*="btn-light-"]) {
   color: var(--text-muted) !important;
 }
 
 /* Disabled branded buttons: keep white text with reduced opacity */
 [data-theme="dark"] .btn-primary:disabled,
-[data-theme="dark"] .btn-primary.disabled,
+[data-theme="dark"] .btn-primary.disabled {
+  color: var(--on-primary) !important;
+  opacity: 0.65;
+}
 [data-theme="dark"] .btn-success:disabled,
 [data-theme="dark"] .btn-success.disabled,
 [data-theme="dark"] .btn-info:disabled,
@@ -1272,7 +1283,7 @@ html[data-theme="dark"] body {
   opacity: 0.65;
 }
 
-[data-theme="dark"] button:not(:disabled):active {
+[data-theme="dark"] button:not(:disabled):not(.MuiButtonBase-root):not(.btn-primary):not(.btn-outline-primary):not(.btn-light-primary):not(.swal2-confirm):active {
   background-color: var(--bg-active) !important;
 }
 
@@ -1357,7 +1368,7 @@ html[data-theme="dark"] body {
 [data-theme="dark"] .bootstrap-select > .dropdown-toggle.btn-secondary.focus,
 [data-theme="dark"] .bootstrap-select > .dropdown-toggle.btn-secondary.active {
   border-color: var(--border-input-focus) !important;
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* General dropdown-toggle active/open state */
@@ -1957,8 +1968,8 @@ html[data-theme="dark"] body {
 }
 
 [data-theme="dark"] .btn-outline-primary:hover {
-  background-color: rgba(92, 107, 192, 0.15) !important;
-  color: #A5B4FC !important;
+  background-color: rgba(var(--primary-rgb), 0.15) !important;
+  color: var(--primary-text) !important;
 }
 
 [data-theme="dark"] .btn-outline-secondary {
@@ -2048,9 +2059,10 @@ html[data-theme="dark"] body {
   outline-color: var(--primary) !important;
 }
 
+[data-theme="dark"] input.form-control:focus,
 [data-theme="dark"] .form-control:focus,
 [data-theme="dark"] .form-control-solid:focus {
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* Card hover */
@@ -2090,7 +2102,7 @@ html[data-theme="dark"] body {
 [data-theme="dark"] .page-item.active .page-link {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
-  color: #ffffff !important;
+  color: var(--on-primary-active) !important;
 }
 
 [data-theme="dark"] .page-item.disabled .page-link {
@@ -2113,27 +2125,27 @@ html[data-theme="dark"] body {
   box-shadow: 0 0 0 0.2rem rgba(50, 50, 72, 0.5) !important;
 }
 
-/* Primary button states - MUST have white text */
+/* Primary button states use contrast-aware foregrounds. */
 [data-theme="dark"] .btn-primary {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
-  color: #ffffff !important;
+  color: var(--on-primary) !important;
 }
 
 [data-theme="dark"] .btn-primary:hover {
-  background-color: #6B6BE0 !important;
-  border-color: #6B6BE0 !important;
-  color: #ffffff !important;
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: var(--on-primary-hover) !important;
 }
 
 [data-theme="dark"] .btn-primary:focus,
 [data-theme="dark"] .btn-primary.focus {
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.4) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.4) !important;
 }
 
 [data-theme="dark"] .btn-primary:active,
 [data-theme="dark"] .btn-primary.active {
-  background-color: #5B6BD0 !important;
+  background-color: var(--primary-active) !important;
 }
 
 /* Success button states */
@@ -2229,7 +2241,7 @@ html[data-theme="dark"] body {
 
 [data-theme="dark"] .svelte-select.focused {
   border-color: var(--border-input-focus) !important;
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* Tooltip arrows */
@@ -2265,7 +2277,7 @@ html[data-theme="dark"] body {
 
 [data-theme="dark"] .custom-select:focus {
   border-color: var(--border-input-focus) !important;
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* Datatable checkbox styling */
@@ -2303,11 +2315,13 @@ html[data-theme="dark"] body {
 }
 
 /* ==========================================================================
-   FIX: All branded buttons must have white text
+   Branded and semantic button foregrounds
    ========================================================================== */
 
-/* All colored buttons: enforce white text */
-[data-theme="dark"] .btn-primary,
+/* Primary uses its palette foreground; semantic colors retain their own styling. */
+[data-theme="dark"] .btn-primary {
+  color: var(--on-primary) !important;
+}
 [data-theme="dark"] .btn-success,
 [data-theme="dark"] .btn-info,
 [data-theme="dark"] .btn-warning,
@@ -2315,7 +2329,10 @@ html[data-theme="dark"] body {
   color: #ffffff !important;
 }
 
-[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] .btn-primary:hover {
+  color: var(--on-primary-hover) !important;
+}
+
 [data-theme="dark"] .btn-success:hover,
 [data-theme="dark"] .btn-info:hover,
 [data-theme="dark"] .btn-warning:hover,
@@ -2323,9 +2340,12 @@ html[data-theme="dark"] body {
   color: #ffffff !important;
 }
 
-/* Icons inside colored buttons should also be white */
+/* Icons follow the foreground of their button palette. */
 [data-theme="dark"] .btn-primary .svg-icon svg g [fill],
-[data-theme="dark"] .btn-primary i,
+[data-theme="dark"] .btn-primary i {
+  fill: var(--on-primary) !important;
+  color: var(--on-primary) !important;
+}
 [data-theme="dark"] .btn-success .svg-icon svg g [fill],
 [data-theme="dark"] .btn-success i,
 [data-theme="dark"] .btn-info .svg-icon svg g [fill],
@@ -2435,7 +2455,7 @@ html[data-theme="dark"] body {
    ========================================================================== */
 
 [data-theme="dark"] a:not(.btn):not(.nav-link):not(.menu-link):not(.dropdown-item):not(.page-link):hover {
-  color: #C8D2FA !important;
+  color: var(--text-link-hover) !important;
   text-decoration: underline;
 }
 
@@ -2798,11 +2818,11 @@ html[data-theme="dark"] body {
    FIX: "Post" and "Messaggio" buttons (btn with gray text)
    ========================================================================== */
 
-/* Ensure all btn-primary descendants also have white text */
+/* Primary descendants inherit the current state foreground. */
 [data-theme="dark"] .btn-primary span,
 [data-theme="dark"] .btn-primary i,
 [data-theme="dark"] .btn-primary svg {
-  color: #ffffff !important;
+  color: var(--on-primary) !important;
 }
 
 /* btn-info also needs white text */
@@ -2972,7 +2992,7 @@ html[data-theme="dark"] body {
   border-color: var(--border-input-focus) !important;
   color: var(--text-primary) !important;
   outline: none !important;
-  box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* Native select option elements (limited browser support) */

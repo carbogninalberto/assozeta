@@ -41,11 +41,15 @@ const server = await createServer({
                 if (path.startsWith('/admin/releases')) return send({relation: 'current', history: [], pending: [], latest: null});
                 if (path === '/admin/diagnostics') return send({overall: 'passed', checked_at: new Date().toISOString(), checks: [], integrations: []});
                 if (path === '/admin/email') return send({host: 'smtp.example.test', port: 587, security: 'tls', username: '', from_email: 'hello@example.test', sender_name: 'Aurora', source: 'environment', revision: 0});
+                if (path === '/admin/integrations/ai/test') {
+                    ai.last_test = {status: 'passed', level: 'connectivity', message: 'Elenco modelli accessibile. Nessuna generazione AI eseguita.', checked_at: new Date().toISOString(), revision: ai.revision};
+                    return send(ai.last_test);
+                }
                 if (path === '/admin/integrations/ai') {
                     if (req.method === 'PUT') {
                         if (failSave) {res.statusCode = 409; return send({error: 'Integrazione modificata in un’altra sessione. Ricarica prima di salvare.'});}
                         const {api_key, clear_secrets, ...values} = body;
-                        ai = {...ai, ...values, api_key_configured: clear_secrets?.includes('api_key') ? false : !!api_key || ai.api_key_configured, revision: ai.revision + 1, source: 'instance'};
+                        ai = {...ai, ...values, api_key_configured: clear_secrets?.includes('api_key') ? false : !!api_key || ai.api_key_configured, revision: ai.revision + 1, source: 'instance', last_test: null};
                     }
                     if (req.method === 'DELETE') ai = {...defaults, revision: ai.revision + 1};
                     return send(ai);

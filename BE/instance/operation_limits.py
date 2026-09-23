@@ -5,7 +5,7 @@ from .models import InstanceConfiguration
 
 
 def claim_operation(name, seconds):
-    if name not in ('diagnostics', 'email_test'):
+    if name not in ('diagnostics', 'email_test', 'integration_ai', 'integration_stripe', 'integration_google', 'integration_apple'):
         raise ValueError('Unknown operation')
     try:
         with transaction.atomic():

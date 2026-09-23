@@ -25,6 +25,9 @@ def probe(name, payload):
     from django.core.cache import cache
     from django.db import connection
 
+    if name.startswith('integration_'):
+        from .integration_probe import verify_integration
+        return verify_integration(name.removeprefix('integration_'), payload.get('revision'))
     if name == 'database':
         with connection.cursor() as cursor:
             cursor.execute('SELECT 1')
@@ -125,8 +128,8 @@ def main():
             # Service probes need settings and their client libraries, not the
             # application's model registry/task imports. Booting the whole app
             # four times in parallel exhausts the deadline on small servers.
-            # Only email probes read the instance model and require setup.
-            if name.startswith('email'):
+            # Email and integration probes read persisted instance settings.
+            if name.startswith(('email', 'integration_')):
                 import django
                 django.setup()
             value = probe(name, payload)

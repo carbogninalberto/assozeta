@@ -1,4 +1,5 @@
 <script>
+    import {brandPalette, foregroundFor, validBrandColor} from 'utils/BrandTheme.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
     import {UserCircle, Printer} from 'phosphor-svelte';
     import {userData} from 'store/stores';
@@ -12,7 +13,9 @@
     export let params = {};
     export let member;
     export let showQRCode = true;
-    export let color = '#351DC2';
+    export let color = null;
+    $: cardColor = validBrandColor(color) ? color : $brandPalette.brand;
+    $: cardForeground = foregroundFor(cardColor);
     export let template = 'standard';
     export let preview = false;
     export let printToImage = true;
@@ -194,7 +197,7 @@
                         <!-- Standard Layout -->
                         <div
                             class="d-flex bg-primary rounded-sm p-2"
-                            style="min-height: 35mm; max-height: 35mm;background-color: {color} !important;">
+                            style="min-height: 35mm; max-height: 35mm;background-color: {cardColor} !important; --on-primary: {cardForeground}; color: {cardForeground};">
                             {#if showQRCode}
                                 <div
                                     class="p-1 m-1 my-2 mb-0 bg-white border rounded-lg d-flex justify-content-center align-items-center cursor-pointer"
@@ -336,7 +339,7 @@
                         <!-- Classic Layout -->
                         <div
                             class="d-flex bg-primary rounded-sm p-1"
-                            style="min-height: 35mm; max-height: 35mm;background-color: {color} !important;">
+                            style="min-height: 35mm; max-height: 35mm;background-color: {cardColor} !important; --on-primary: {cardForeground}; color: {cardForeground};">
                             <!-- Logo on left, similar to where QR was in standard -->
                             <div
                                 class="p-1 m-1 my-auto mx-4 mb-0 bg-white border rounded-lg d-flex justify-content-center align-items-center"

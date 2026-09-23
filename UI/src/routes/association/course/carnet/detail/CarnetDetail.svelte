@@ -139,7 +139,7 @@
                                 class:active={activeTab === 'info'}
                                 href="/#/course/carnet/list/detail/{params.carnetId}/info">
                                 <span class="nav-icon mr-1">
-                                    <User size="19" color={activeTab == 'info' ? '#351DC2' : '#888'} weight="duotone" />
+                                    <User size="19" color={activeTab == 'info' ? 'var(--primary)' : '#888'} weight="duotone" />
                                 </span>
                                 <span class="nav-text">Dettagli</span>
                             </a>
@@ -154,7 +154,7 @@
                                 <span class="nav-icon mr-1">
                                     <UsersThree
                                         size="19"
-                                        color={activeTab == 'usage' ? '#351DC2' : '#888'}
+                                        color={activeTab == 'usage' ? 'var(--primary)' : '#888'}
                                         weight="duotone" />
                                 </span>
                                 <span class="nav-text">Utilizzo</span>
@@ -184,12 +184,6 @@
     <style>
         .nav-link {
             cursor: pointer;
-        }
-        .nav-link.active {
-            border-bottom: 4px solid #351dc2 !important;
-        }
-        .nav-link:hover {
-            border-bottom: 4px solid #351dc2 !important;
         }
         .card-toolbar::-webkit-scrollbar {
             display: none;

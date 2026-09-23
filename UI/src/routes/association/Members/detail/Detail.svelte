@@ -478,12 +478,6 @@
         .nav-link {
             cursor: pointer;
         }
-        .nav-link.active {
-            border-bottom: 4px solid var(--primary) !important;
-        }
-        .nav-link:hover {
-            border-bottom: 4px solid var(--primary) !important;
-        }
         .card-toolbar::-webkit-scrollbar {
             display: none;
         }

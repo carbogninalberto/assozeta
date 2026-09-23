@@ -1,4 +1,5 @@
 <script>
+    import {brandPalette, getBrandPalette} from 'utils/BrandTheme.js';
     import {onMount, onDestroy} from 'svelte';
     import {ListLoader} from 'svelte-content-loader';
     import {apiFetch} from 'utils/ApiMiddleware';
@@ -11,6 +12,7 @@
     };
     let loading = true;
     let chart = null;
+    let stopTheme;
 
     const handleResize = () => resizeChart(chart);
 
@@ -42,7 +44,7 @@
                 ...widgetTooltip,
                 formatter: function (params) {
                     const value = params?.[0]?.value;
-                    return value !== undefined ? tooltipHtml('Iscritti', value + ' iscritti', '#351DC2') : '';
+                    return value !== undefined ? tooltipHtml('Iscritti', value + ' iscritti', getBrandPalette().primary) : '';
                 },
             },
             series: [
@@ -53,11 +55,11 @@
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
-                        color: '#351DC2',
+                        color: getBrandPalette().primary,
                         width: 3,
                     },
                     areaStyle: {
-                        color: '#DEEDFF',
+                        color: getBrandPalette().subtle,
                         opacity: 1,
                     },
                 },
@@ -68,6 +70,7 @@
     }
 
     onMount(async () => {
+        stopTheme = brandPalette.subscribe(() => { if (chart) initWidget(); });
         const res = await apiFetch(`${__bakney.env.API.STATISTIC.DASHBOARD}?widget=bestcourses`, {
             method: 'GET',
         });
@@ -81,6 +84,7 @@
     });
 
     onDestroy(() => {
+        stopTheme?.();
         window.removeEventListener('resize', handleResize);
         disposeChart(chart);
         chart = null;

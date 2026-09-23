@@ -142,3 +142,31 @@ class IntegrationSettingsView(OwnerOperationsView):
     def persist(config, provider, revision, value):
         config.integration_settings = {**config.integration_settings, provider: {'revision': revision, 'settings': value}}
         config.save(update_fields=['integration_settings', 'updated_at'])
+
+
+class IntegrationTestView(IntegrationSettingsView):
+    http_method_names = ['post', 'options']
+
+    def post(self, request, **kwargs):
+        from .operation_limits import claim_operation
+        from .probe_runner import run_probe
+        provider = self.provider()
+        revision = serializers.IntegerField(min_value=0).run_validation(request.data.get('revision'))
+        config = InstanceConfiguration.get_config()
+        current = effective_integration(provider, config, decrypt=False)
+        if current['revision'] != revision:
+            return Response({'error': 'Configurazione cambiata. Ricarica prima di verificare.'}, status=409)
+        if not current['enabled']:
+            return Response({'error': 'Abilita e salva l’integrazione prima di verificarla.'}, status=400)
+        if not claim_operation('integration_' + provider, 20):
+            return Response({'error': 'Verifica già in corso o appena terminata. Attendi fino a 20 secondi.'}, status=429, headers={'Retry-After': '20'})
+        result = run_probe('integration_' + provider, {'revision': revision})
+        with transaction.atomic():
+            config = InstanceConfiguration.objects.select_for_update().first()
+            if effective_integration(provider, config, decrypt=False)['revision'] != revision:
+                return Response({'error': 'Configurazione cambiata durante la verifica. Ricarica e riprova.'}, status=409)
+            results = dict(config.diagnostic_results or {})
+            results['integration_tests'] = {**results.get('integration_tests', {}), provider: {**result, 'revision': revision}}
+            config.diagnostic_results = results
+            config.save(update_fields=['diagnostic_results'])
+        return Response(result)

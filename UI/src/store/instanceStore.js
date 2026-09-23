@@ -1,3 +1,4 @@
+import {applyBrandColor} from '../utils/BrandTheme.js';
 import {writable, derived, get} from 'svelte/store';
 
 /**
@@ -25,13 +26,12 @@ export const instanceConfig = writable(null);
 export const aiEnabled = derived(instanceConfig, config => config?.features?.aiEnabled === true);
 
 export function applyRuntimeConfig(config) {
-    if (typeof __bakney === 'undefined' || !config) return;
+    if (!config) return;
+    if (config.oem) applyBrandColor(config.oem.primaryColor);
+    if (typeof __bakney === 'undefined') return;
 
     if (config.oem) {
         __bakney.OEM_CONFIG = config.oem;
-        if (typeof document !== 'undefined' && /^#[0-9a-f]{6}$/i.test(config.oem.primaryColor || '')) {
-            document.documentElement.style.setProperty('--primary', config.oem.primaryColor);
-        }
     }
     if (config.oauth) {
         __bakney.CLIENT_ID = config.oauth.googleClientId || '';
@@ -243,6 +243,7 @@ export async function validateSetupToken(setupToken = '') {
 export async function loadInstanceConfig() {
     // Skip in non-self-hosted mode
     if (!isSelfHostedMode()) {
+        applyBrandColor(__bakney.OEM_CONFIG?.primaryColor || __bakney.OEM_CONFIG?.theme?.primaryColor);
         // Legacy installations also use the server’s effective AI feature state.
         try {
             const response = await fetch(getEndpoint('INSTANCE', 'STATUS', getApiHost()));

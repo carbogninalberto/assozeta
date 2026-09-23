@@ -1,4 +1,5 @@
 <script>
+    import {brandPalette, getBrandPalette} from 'utils/BrandTheme.js';
     import {onMount, onDestroy} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {disposeChart, renderChart, resizeChart, tooltipHtml, widgetTooltip} from 'utils/ECharts';
@@ -8,6 +9,7 @@
     };
     let loading = true;
     let chart = null;
+    let stopTheme;
 
     const handleResize = () => resizeChart(chart);
 
@@ -39,7 +41,7 @@
                 ...widgetTooltip,
                 formatter: function (params) {
                     const value = params?.[0]?.value;
-                    return value !== undefined ? tooltipHtml('Nuovi soci', value + ' soci', '#351DC2') : '';
+                    return value !== undefined ? tooltipHtml('Nuovi soci', value + ' soci', getBrandPalette().primary) : '';
                 },
             },
             series: [
@@ -50,11 +52,11 @@
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
-                        color: '#ffffff',
+                        color: getBrandPalette().foreground,
                         width: 3,
                     },
                     areaStyle: {
-                        color: '#351DC2',
+                        color: getBrandPalette().primary,
                         opacity: 1,
                     },
                 },
@@ -65,6 +67,7 @@
     }
 
     onMount(async () => {
+        stopTheme = brandPalette.subscribe(() => { if (chart) initWidget(); });
         const res = await apiFetch(`${__bakney.env.API.STATISTIC.DASHBOARD}?widget=associates`, {
             method: 'GET',
         });
@@ -78,6 +81,7 @@
     });
 
     onDestroy(() => {
+        stopTheme?.();
         window.removeEventListener('resize', handleResize);
         disposeChart(chart);
         chart = null;
@@ -88,15 +92,15 @@
     <!--begin::Header-->
     <div class="card-header border-0 pt-6">
         <h3 class="card-title align-items-start flex-column">
-            <span class="card-label font-weight-bolder font-size-h6 text-white">Iscrizioni</span>
-            <span class="font-weight-bolder font-size-h1 text-white mt-2">
+            <span class="card-label font-weight-bolder font-size-h6 text-on-primary">Iscrizioni</span>
+            <span class="font-weight-bolder font-size-h1 text-on-primary mt-2">
                 {#if loading}
                     ...
                 {:else}
                     +{data.total_associates || '0'}
                 {/if}
             </span>
-            <span class="text-white mt-2 font-weight-bold font-size-sm"
+            <span class="text-on-primary mt-2 font-weight-bold font-size-sm"
                 >Le iscrizioni medie del mese sono circa {Math.ceil(data.total_associates / 3.7 - 1).toFixed(0) || ''}
                 alla settimana.</span>
         </h3>

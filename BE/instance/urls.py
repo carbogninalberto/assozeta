@@ -6,7 +6,7 @@ from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView
 
 from .diagnostics import DiagnosticsView
 from .operations import EmailSettingsView, EmailTestView
-from .integrations import IntegrationSettingsView
+from .integrations import IntegrationSettingsView, IntegrationTestView
 
 from .views import (
     InstanceStatusView,
@@ -20,6 +20,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('admin/integrations/<str:provider>/test', IntegrationTestView.as_view(), name='instance-integration-test'),
     path('admin/integrations/<str:provider>', IntegrationSettingsView.as_view(), name='instance-integration-settings'),
     path('admin/diagnostics', DiagnosticsView.as_view(), name='instance-diagnostics'),
     path('admin/email', EmailSettingsView.as_view(), name='instance-email-settings'),

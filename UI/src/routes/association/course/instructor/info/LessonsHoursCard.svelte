@@ -166,7 +166,7 @@
 <style>
     .calendar-hours-card { align-items: center; border: 0; cursor: pointer; color: inherit; font: inherit; }
     .calendar-hours-card:hover { box-shadow: 0 0 0 2px #dce8ff; }
-    .calendar-hours-card:focus-visible { outline: 2px solid #3699ff; outline-offset: 3px; }
+    .calendar-hours-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     .lessons-panel { position: fixed; z-index: 1080; inset: auto; margin: 0; padding: 0; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; border: 1px solid #e7eaf0; border-radius: 16px; background: white; color: #181c32; box-shadow: 0 16px 48px #18243a29; }
     .panel-heading { display: flex; gap: 16px; padding: 20px; border-bottom: 1px solid #eef0f5; }
     h3 { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; }

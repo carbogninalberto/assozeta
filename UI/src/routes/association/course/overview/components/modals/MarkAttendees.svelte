@@ -195,7 +195,7 @@
                                     <!-- {JSON.stringify(availableSubscriptions)} -->
                                     {#if availableSubscriptions.length == 0 && courseSubscriptions.length > 0}
                                         <div class="d-flex justify-content-center align-items-center">
-                                            <Circle size="40" color="#351DC2" unit="px" duration="1s" />
+                                            <Circle size="40" color="var(--primary)" unit="px" duration="1s" />
                                         </div>
                                     {/if}
                                     <!-- {#if !updating} -->
@@ -304,7 +304,7 @@
             pointer-events: none;
         }
         .list-item-attendees {
-            border-left: 0.5rem solid #351dc2;
+            border-left: 0.5rem solid var(--primary);
             padding: 0.5rem;
             border-radius: 0.3rem;
         }
@@ -345,13 +345,13 @@
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        border: 1px solid #351dc205;
+        border: 1px solid rgba(var(--primary-rgb), 0.0196);
     }
     .checkbox-darker > span {
         background-color: var(--border-color-dark);
     }
     .checkbox-darker > input:checked ~ span {
-        background-color: #351dc2;
+        background-color: var(--primary);
     }
 
     .selected-checkbox-container {

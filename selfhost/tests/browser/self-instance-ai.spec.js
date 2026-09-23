@@ -15,9 +15,11 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         const card = page.getByRole('region', {name: 'Bot AI', exact: true});
         await expect(card).toBeVisible();
         const toggle = card.getByRole('switch', {name: 'Abilita Bot AI', exact: true});
+        await expect(card.getByRole('button', {name: 'Verifica Bot AI', exact: true})).toBeDisabled();
         await toggle.focus();
         await page.keyboard.press('Space');
         await expect(toggle).toBeChecked();
+        await expect(card.getByRole('button', {name: 'Verifica Bot AI', exact: true})).toBeDisabled();
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0); // Only saved state changes the navbar.
         await card.getByLabel('Chiave API', {exact: true}).fill('fixture-secret');
         await card.getByLabel('URL del provider', {exact: false}).fill('https://provider.example.test/v1');
@@ -34,9 +36,12 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toBeVisible();
         await expect(page.getByText('Bot AI: impostazioni salvate.', {exact: true})).toBeVisible();
         await expect(card.getByLabel('Chiave API', {exact: true})).toHaveValue('');
+        await card.getByRole('button', {name: 'Verifica Bot AI', exact: true}).click();
+        await expect(card.locator('.diagnostic-result')).toContainText('Elenco modelli accessibile');
         await page.reload();
         await tabs.getByRole('button', {name: 'Bot AI', exact: true}).click();
         await expect(toggle).toBeChecked();
+        await expect(card.locator('.diagnostic-result')).toContainText('Elenco modelli accessibile');
         await expect(card.getByLabel('Risultati massimi', {exact: false})).toHaveValue('321');
         const quick = await page.locator('#navbar .bk-dropdown-toggle').boundingBox();
         const bot = await page.getByRole('button', {name: 'Agente AI', exact: true}).boundingBox();
@@ -70,6 +75,7 @@ for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}])
         await page.reload();
         await tabs.getByRole('button', {name: 'Bot AI', exact: true}).click();
         await expect(toggle).toBeDisabled();
+        await expect(card.getByRole('button', {name: 'Verifica Bot AI', exact: true})).toBeDisabled();
         expect(errors).toEqual([]);
     });
 }

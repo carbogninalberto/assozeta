@@ -73,7 +73,7 @@
                                 in:slide>
                                 {#if carnetList.length == 0 && fetching}
                                     <div class="d-flex justify-content-center align-items-center">
-                                        <Circle size="40" color="#351DC2" unit="px" duration="1s" />
+                                        <Circle size="40" color="var(--primary)" unit="px" duration="1s" />
                                     </div>
                                 {/if}
                                 {#if !fetching}
@@ -134,7 +134,7 @@
             pointer-events: none;
         }
         .list-item-attendees {
-            border-left: 0.5rem solid #351dc2;
+            border-left: 0.5rem solid var(--primary);
             padding: 0.5rem;
             border-radius: 0.3rem;
         }

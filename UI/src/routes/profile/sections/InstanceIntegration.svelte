@@ -23,9 +23,12 @@
     let confirmReset = false;
     let loading = true;
     let error = '';
+    let verifying = false;
+    let testResult;
     $: changes = !!baseline && (JSON.stringify(draft) !== baseline || !!secretKey || !!webhookSecret || clearSecret || clearWebhook);
     function adopt(value) {
         config = value;
+        testResult = value.last_test;
         draft = {enabled: value.enabled, ...(provider === 'ai' ? Object.fromEntries(aiFields.map(({key}) => [key, value[key]])) : provider === 'stripe' ? {public_key: value.public_key} : {client_id: value.client_id})};
         baseline = JSON.stringify(draft);
         secretKey = ''; webhookSecret = ''; clearSecret = false; clearWebhook = false; confirmReset = false;
@@ -65,6 +68,16 @@
             onSaved(config);
         } catch (e) { error = e.message; }
         finally { busy = false; }
+    }
+    async function verify() {
+        if (busy || disabled || loading || changes || !config?.enabled) return;
+        busy = true; verifying = true; error = ''; testResult = null;
+        try {
+            testResult = await request(`/admin/integrations/${provider}/test`, {method: 'POST', body: JSON.stringify({revision: config.revision})});
+            config = {...config, last_test: testResult};
+            if (testResult.status === 'passed') toast.success(`${title}: verifica completata.`);
+        } catch (e) { error = e.message; toast.error(e.message); }
+        finally { busy = false; verifying = false; }
     }
     onMount(load);
 </script>
@@ -132,11 +145,15 @@
                     <label>Client ID {title}<input class="form-control" bind:value={draft.client_id} maxlength="255" autocomplete="off" required={draft.enabled} placeholder={provider === 'google' ? '…apps.googleusercontent.com' : 'com.example.service'} /></label>
                 {/if}
                 <div class="integration-actions">
-                    <button type="submit" class="btn btn-primary" disabled={!changes}>{busy ? 'Salvataggio…' : `Salva ${title}`}</button>
+                    <button type="submit" class="btn btn-primary" disabled={!changes}>{busy && !verifying ? 'Salvataggio…' : `Salva ${title}`}</button>
+                    <button type="button" class="btn btn-light-primary" disabled={busy || loading || disabled || changes || !config.enabled} on:click={verify}>{verifying ? 'Verifica in corso…' : `Verifica ${title}`}</button>
                     {#if changes}<button type="button" class="btn btn-light" on:click={cancel}>Annulla {title}</button>{/if}
                 </div>
             </fieldset>
         </form>
+        <p class="text-muted mt-3">Verifica in lettura delle impostazioni salvate. Non esegue pagamenti, accessi utente o generazioni AI. {changes ? 'Salva o annulla le modifiche prima di verificare.' : !config.enabled ? 'Abilita e salva l’integrazione per verificarla.' : ''}</p>
+        {#if verifying}<p role="status">Connessione al provider in corso…</p>{/if}
+        {#if testResult}<DiagnosticResult check={{...testResult, label: changes ? 'Ultima verifica delle impostazioni salvate' : 'Ultima verifica'}} />{/if}
         {#if config.source === 'instance'}
             <details class="mt-4">
                 <summary>Ripristina {title} da .env</summary>

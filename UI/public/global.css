@@ -1,5 +1,5 @@
 :root {
-	--main-color: #351DC2;
+	--main-color: var(--primary);
 	--focus-color: #d5d8e4;
 }
 
@@ -9,7 +9,7 @@
 }
 
 [data-theme="dark"] {
-	--main-color: #351DC2;
+	--main-color: var(--primary);
 	--focus-color: #7b7e9a;
 }
 
@@ -487,7 +487,7 @@ button:not(:disabled):active {
 .btn.btn-clean .svg-icon svg g [fill] {
     -webkit-transition: fill 0.3s ease;
     transition: fill 0.3s ease;
-    fill: #351DC2
+    fill: var(--primary)
 }
 
 .datatable.datatable-default.datatable-head-custom > .datatable-table > .datatable-head .datatable-row > .datatable-cell > span, .datatable.datatable-default.datatable-head-custom > .datatable-table > .datatable-foot .datatable-row > .datatable-cell > span {
@@ -812,7 +812,7 @@ display: block; }
     border: 0;
     border-radius: 0.25em;
     background: initial;
-    background-color: #351DC2 !important;
+    background-color: var(--primary) !important;
     color: #fff;
     font-size: 1.0625em;
 }
@@ -843,12 +843,12 @@ display: block; }
 
 .privacypolicies-com---palette-light .cc-nb-okagree,
 .privacypolicies-com---palette-light .cc-cp-foot-save {
-	background-color: #351DC2 !important;
+	background-color: var(--primary) !important;
     border-radius: 0.35rem !important;
 }
 
 .privacypolicies-com---pc-dialog input[type="checkbox"].cc-custom-checkbox:checked+label:before {
-	background-color: #351DC2 !important;
+	background-color: var(--primary) !important;
 }
 
 .cc-cp-foot-byline {
@@ -865,7 +865,7 @@ display: block; }
 }
 
 .active-filter, .active-filter:focus {
-	outline: 0.2rem solid #351dc2 !important;
+	outline: 0.2rem solid var(--primary) !important;
 }
 
 input, select, .input-group  {
@@ -1321,7 +1321,7 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 }
 .label-light-primary {
 	border-top: 1px solid #ffffff8f !important;
-	outline: 1px solid #d0e2f3 !important;
+	outline: 1px solid var(--primary-border) !important;
 }
 .label-light-success {
 	border-top: 1px solid #ffffff8f !important;
@@ -1371,7 +1371,7 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 	--ec-button-text-color: var(--text-primary, #181C32);
 	--ec-button-active-bg-color: var(--primary, #351DC2);
 	--ec-button-active-border-color: var(--primary, #351DC2);
-	--ec-button-active-text-color: #fff;
+	--ec-button-active-text-color: var(--on-primary);
 	--ec-today-bg-color: color-mix(in srgb, var(--primary, #351DC2) 6%, transparent);
 	--ec-highlight-color: color-mix(in srgb, var(--primary, #351DC2) 10%, transparent);
 	--ec-now-indicator-color: var(--danger, #F64E60);

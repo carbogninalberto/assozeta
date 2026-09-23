@@ -1352,7 +1352,7 @@
     }
 
     .datatable.datatable-default > .datatable-table:focus {
-        outline: 2px solid rgba(53, 29, 194, 0.18);
+        outline: 2px solid rgba(var(--primary-rgb), 0.18);
         outline-offset: 2px;
     }
 
@@ -1477,7 +1477,7 @@
         border: 0;
         border-radius: 50%;
         background: transparent;
-        color: #351dc2;
+        color: var(--primary);
         cursor: pointer;
         display: inline-flex;
         align-items: center;

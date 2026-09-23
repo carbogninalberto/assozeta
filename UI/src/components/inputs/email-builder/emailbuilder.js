@@ -1,3 +1,4 @@
+import {brandPalette} from '../../../utils/BrandTheme.js';
 var N9 = Object.defineProperty;
 var R9 = (e, t, n) => (t in e ? N9(e, t, {enumerable: !0, configurable: !0, writable: !0, value: n}) : (e[t] = n));
 var Ja = (e, t, n) => (R9(e, typeof t != 'symbol' ? t + '' : t, n), n);
@@ -104407,8 +104408,9 @@ function OAe() {
         })
     );
 }
-const wAe = '#351dc2',
-    Vf = '#351dc2',
+function createEditorTheme(palette) {
+const wAe = palette.primary,
+    Vf = palette.primary,
     Td = '#1F8466',
     Yf = '#E81212',
     mc = '#F6DC9F',
@@ -104419,7 +104421,7 @@ const wAe = '#351dc2',
     LAe =
         'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro", "Fira Mono", "Droid Sans Mono", "Courier New", monospace',
     Ee = Hg({
-        palette: {background: {default: '#f2f5f7'}, text: {primary: '#351dc2', secondary: '#4F4F4F'}},
+        palette: {mode: palette.dark ? 'dark' : 'light', background: {default: palette.surface, paper: palette.surface}, text: {primary: palette.dark ? '#e1e2e8' : '#181c32', secondary: palette.dark ? '#a0a3bd' : '#4f4f4f'}},
         typography: {fontFamily: MAe},
     }),
     FAe = Hg(Ee, {
@@ -104430,7 +104432,7 @@ const wAe = '#351dc2',
             cadet: {100: '#F9FAFB', 200: '#F2F5F7', 300: '#DCE4EA', 400: '#A8BBCA', 500: '#6A8BA4'},
             highlight: {100: Qo(mc, 0.8), 200: Qo(mc, 0.6), 300: Qo(mc, 0.4), 400: Qo(mc, 0.2), 500: mc},
             info: {main: Vf},
-            primary: {main: Vf},
+            primary: {main: Vf, light: palette.hover, dark: palette.active, contrastText: palette.foreground},
         },
         components: {
             MuiCssBaseline: {
@@ -104529,7 +104531,7 @@ const wAe = '#351dc2',
             MuiButton: {
                 defaultProps: {disableElevation: !0},
                 styleOverrides: {
-                    textPrimary: {color: Ee.palette.text.primary},
+                    textPrimary: {color: palette.text},
                     textSecondary: {color: Ee.palette.text.secondary},
                     outlinedPrimary: {
                         borderColor: Ee.palette.grey[300],
@@ -104540,11 +104542,11 @@ const wAe = '#351dc2',
                         },
                     },
                     containedSecondary: {
-                        backgroundColor: Ee.palette.common.white,
+                        backgroundColor: Ee.palette.background.paper,
                         border: `1px solid ${Ee.palette.grey[300]}`,
                         color: Ee.palette.text.primary,
                         '&:hover, &:active, &:focus': {
-                            backgroundColor: Ee.palette.common.white,
+                            backgroundColor: Ee.palette.background.paper,
                             borderColor: Ee.palette.grey[500],
                             color: Ee.palette.text.primary,
                         },
@@ -104600,7 +104602,7 @@ const wAe = '#351dc2',
             },
             MuiTabs: {
                 defaultProps: {variant: 'scrollable'},
-                styleOverrides: {indicator: {height: 1, backgroundColor: Ee.palette.text.primary}},
+                styleOverrides: {indicator: {height: 1, backgroundColor: palette.primary}},
             },
             MuiTab: {
                 styleOverrides: {
@@ -104685,6 +104687,15 @@ const wAe = '#351dc2',
             ...Array(20).fill('none'),
         ],
     });
-Sv.createRoot(document.getElementById('root')).render(
-    D.jsx(ne.StrictMode, {children: D.jsxs(EW, {theme: FAe, children: [D.jsx(bX, {}), D.jsx(OAe, {})]})})
-);
+return FAe;
+}
+
+// Runtime theme bridge. Re-render the provider, preserving the editor/document state.
+export function mountEmailBuilder(element) {
+    const root = Sv.createRoot(element);
+    const unsubscribe = brandPalette.subscribe(palette => {
+        const theme = createEditorTheme(palette);
+        root.render(D.jsx(ne.StrictMode, {children: D.jsxs(EW, {theme, children: [D.jsx(bX, {}), D.jsx(OAe, {})]})}));
+    });
+    return () => { unsubscribe(); root.unmount(); };
+}
