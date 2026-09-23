@@ -1,6 +1,7 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
     import InstanceAlert from './InstanceAlert.svelte';
+    import InstanceAccordion from './InstanceAccordion.svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
     import InplaceTabs from '../../../components/InplaceTabs.svelte';
     import {toast} from 'svelte-sonner';
@@ -325,14 +326,13 @@
             </section>
             <InstanceBranding bind:changes={logoChanges} bind:busy={logoBusy} disabled={apiUnavailable || !!active || starting} />
             </div>
-            <div hidden={section !== 'updates'}>
-            {#if section === 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} />{/if}
-            <section class="mb-8" aria-labelledby="instance-version">
+            <div class="updates-sections" hidden={section !== 'updates'}>
+            <section class="version-panel" aria-labelledby="instance-version">
                 <h2 id="instance-version">Versione e aggiornamenti</h2>
                 <dl class="version-grid">
-                    <dt>Versione in esecuzione</dt><dd>{info.running_version || 'Non riconosciuta'}</dd>
-                    <dt>Versione configurata</dt><dd>{info.configured_version || 'Non specificata'}</dd>
-                    <dt>Ultima release stabile</dt><dd>{catalog?.latest?.tag || 'Non disponibile'}</dd>
+                    <div><dt>Versione in esecuzione</dt><dd>{info.running_version || 'Non riconosciuta'}</dd></div>
+                    <div><dt>Versione configurata</dt><dd>{info.configured_version || 'Non specificata'}</dd></div>
+                    <div><dt>Ultima release stabile</dt><dd>{catalog?.latest?.tag || 'Non disponibile'}</dd></div>
                 </dl>
                 {#if catalog?.relation === 'current'}<p>La tua installazione è aggiornata.</p>{/if}
                 {#if catalog?.relation === 'ahead'}<p>La versione installata è successiva all’ultima release stabile.</p>{/if}
@@ -361,23 +361,14 @@
                 {/if}
             </section>
 
-            <section class="mb-8" aria-labelledby="instance-backups">
-                <h2 id="instance-backups">Backup e ripristino</h2>
-                {#each (diagnostics?.checks || []).filter(check => ['backups', 'updater'].includes(check.id)) as check}<div class="mb-3"><DiagnosticResult {check} /></div>{/each}
-                <p>Un backup viene creato prima di ogni aggiornamento. La presenza di un archivio non dimostra che possa essere ripristinato.</p>
-                <details><summary>Operazioni sul server e recupero</summary>
-                    <p class="mt-3">Dalla cartella selfhost dell’installazione:</p>
-                    <p><code>./bin/assozeta backup</code> crea un backup coerente; l’applicazione viene fermata temporaneamente.</p>
-                    <p>Conserva una copia protetta fuori dal server. Prova il ripristino su un’installazione isolata seguendo selfhost/UPDATES.md prima di un aggiornamento importante.</p>
-                    <p>Se un aggiornamento richiede recupero, segui le istruzioni mostrate nello stato operazione. Il comando <code>./bin/assozeta recover-upgrade PERCORSO_BACKUP</code> ripristina versione, configurazione e dati; richiede l’accesso al server.</p>
-                </details>
-            </section>
             {#if reviewing}
-                <section class="review-panel mb-8" aria-labelledby="update-review">
+                <section class="review-panel" aria-labelledby="update-review">
                     <h2 id="update-review">Aggiorna a {reviewing.tag}</h2>
                     <p>Verrà creato un backup prima dell’aggiornamento. L’applicazione sarà temporaneamente non disponibile durante le migrazioni e il riavvio.</p>
                     <p>La versione selezionata rimane {reviewing.tag}, anche se viene pubblicata una nuova release.</p>
-                    {#each reviewNotes as release (release.id)}<ReleaseNotes {release} expanded />{/each}
+                    <div class="review-notes" role="region" aria-label="Modifiche dell’aggiornamento selezionato" tabindex="0">
+                        {#each reviewNotes as release (release.id)}<ReleaseNotes {release} expanded />{/each}
+                    </div>
                     <div class="instance-actions mt-4">
                         <button class="btn btn-primary" disabled={apiUnavailable || starting || emailBusy || aiBusy || integrationBusy || diagnosticBusy || changes || !!active} on:click={startUpdate}>
                             {starting ? 'Avvio in corso…' : `Conferma aggiornamento a ${reviewing.tag}`}
@@ -387,22 +378,35 @@
                 </section>
             {/if}
 
-            <section class="mb-8" aria-labelledby="release-history">
-                <h2 id="release-history">Note di rilascio</h2>
+            {#if section === 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} collapseHistory />{/if}
+
+            <InstanceAccordion id="instance-backups" title="Backup e ripristino" description="Stato dei backup e istruzioni per il recupero dei dati.">
+                {#each (diagnostics?.checks || []).filter(check => ['backups', 'updater'].includes(check.id)) as check}<div class="mb-3"><DiagnosticResult {check} /></div>{/each}
+                <p>Un backup viene creato prima di ogni aggiornamento. La presenza di un archivio non dimostra che possa essere ripristinato.</p>
+                <h3 class="font-size-lg mt-5">Operazioni sul server e recupero</h3>
+                <p>Dalla cartella selfhost dell’installazione:</p>
+                <p><code>./bin/assozeta backup</code> crea un backup coerente; l’applicazione viene fermata temporaneamente.</p>
+                <p>Conserva una copia protetta fuori dal server. Prova il ripristino su un’installazione isolata seguendo selfhost/UPDATES.md prima di un aggiornamento importante.</p>
+                <p>Se un aggiornamento richiede recupero, segui le istruzioni mostrate nello stato operazione. Il comando <code>./bin/assozeta recover-upgrade PERCORSO_BACKUP</code> ripristina versione, configurazione e dati; richiede l’accesso al server.</p>
+            </InstanceAccordion>
+
+            <InstanceAccordion id="release-notes" title="Note di rilascio" description="Le novità dell’ultima versione e degli aggiornamenti disponibili.">
                 {#if catalog?.pending?.length > 0}
                     <p>Tutte le modifiche dalla versione installata all’ultima release stabile.</p>
                     {#each catalog.pending as release (release.id)}<ReleaseNotes {release} />{/each}
                 {:else if catalog?.latest}
                     <ReleaseNotes release={catalog.latest} expanded />
+                {:else}
+                    <p class="text-muted mb-0">Nessuna nota di rilascio disponibile.</p>
                 {/if}
-                <details class="mt-4">
-                    <summary>Cronologia completa delle release</summary>
+            </InstanceAccordion>
+            <InstanceAccordion id="release-history" title="Cronologia completa delle release" description="Consulta le versioni precedenti e le relative modifiche." count={history.length}>
                     {#each history as release (release.id)}<ReleaseNotes {release} />{/each}
+                    {#if !history.length}<p class="text-muted mb-0">Nessuna release disponibile.</p>{/if}
                     {#if catalog?.next_page}
                         <button class="btn btn-light mt-4" disabled={checkingReleases} on:click={() => loadReleases(false, catalog.next_page)}>Carica release precedenti</button>
                     {/if}
-                </details>
-            </section>
+            </InstanceAccordion>
             </div>
         {/if}
     </div>
@@ -429,7 +433,15 @@
     .identity-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
     .identity-form label { display: grid; gap: 0.5rem; }
     .instance-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; grid-column: 1 / -1; }
-    .version-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; overflow-wrap: anywhere; }
+    .updates-sections { display: flex; flex-direction: column; gap: 1rem; }
+    .version-panel { border: 1px solid var(--border-color, #dce1e7); border-top: 3px solid var(--primary); padding: 1.5rem; border-radius: .75rem; }
+    .version-panel h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 1.25rem; }
+    .version-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; overflow-wrap: anywhere; margin-bottom: 1.25rem; }
+    .version-grid > div { background: var(--bg-hover, #f8fafc); border-radius: .5rem; padding: 1rem; }
+    .version-grid dt { color: var(--text-secondary, #536171); font-size: .9rem; font-weight: 400; }
+    .version-grid dd { font-size: 1.2rem; font-weight: 600; margin: .4rem 0 0; }
     .review-panel { border: 1px solid var(--primary); padding: 1.5rem; border-radius: 0.75rem; }
-    @media (max-width: 575px) { .identity-form { grid-template-columns: 1fr; } .version-grid { grid-template-columns: 1fr; } }
+    .review-notes { max-height: min(32rem, 65vh); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; }
+    .review-notes:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+    @media (max-width: 575px) { .identity-form { grid-template-columns: 1fr; } .version-grid { grid-template-columns: 1fr; } .version-panel, .review-panel { padding: 1rem; } }
 </style>

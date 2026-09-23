@@ -1,8 +1,10 @@
 <script>
     import InstanceAlert from './InstanceAlert.svelte';
+    import InstanceAccordion from './InstanceAccordion.svelte';
     export let runner = {active: null, history: []};
     export let simulation = null;
     export let showHistory = true;
+    export let collapseHistory = false;
     export let reconnecting = false;
     export let apiUnavailable = false;
     const stages = {
@@ -14,10 +16,11 @@
     };
     $: active = simulation || runner.active;
     $: visibleHistory = showHistory ? (runner.history || []) : (runner.history || []).slice(0, 1).filter(operation => ['failed', 'recovery_required'].includes(operation.stage));
+    $: recovery = collapseHistory && (runner.history || []).find(operation => operation.stage === 'recovery_required');
 </script>
 
 {#if apiUnavailable || reconnecting || runner.reason || active || visibleHistory.length}
-<section class="mb-8 update-status" aria-label="Stato aggiornamenti">
+<section class="update-status" class:mb-8={!collapseHistory} aria-label="Stato aggiornamenti">
     {#if apiUnavailable}
         <p role="status">L’applicazione è temporaneamente non disponibile. Lo stato seguente proviene dal servizio di aggiornamento; le modifiche alle impostazioni saranno disponibili al ripristino dell’applicazione.</p>
     {/if}
@@ -32,8 +35,13 @@
             {#if active.error}<p>{active.error}</p>{/if}
         </InstanceAlert>
     {/if}
+    {#if recovery && !active}
+        <InstanceAlert tone="warning">Ripristino necessario · {recovery.target_version}
+            {#if recovery.recovery}<p class="mb-0">{recovery.recovery}</p>{/if}
+        </InstanceAlert>
+    {/if}
     {#if visibleHistory.length}
-        <h2>{showHistory ? 'Cronologia aggiornamenti' : 'Ultimo aggiornamento'}</h2>
+        <InstanceAccordion id="instance-update-history" title={showHistory ? 'Cronologia aggiornamenti' : 'Ultimo aggiornamento'} description="Esiti e dettagli delle operazioni eseguite sull’istanza." count={visibleHistory.length} collapsible={collapseHistory}>
         {#each visibleHistory as operation (operation.id)}
             <div class="py-4 border-bottom">
                 <strong>{operation.source_version} → {operation.target_version}</strong>
@@ -43,6 +51,7 @@
                 {#if operation.recovery}<p>{operation.recovery}</p>{/if}
             </div>
         {/each}
+        </InstanceAccordion>
     {/if}
 </section>
 {/if}

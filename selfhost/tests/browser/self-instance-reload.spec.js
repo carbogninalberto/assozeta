@@ -77,6 +77,7 @@ for (const stage of ['backup', 'completed', 'recovery_required']) {
         const status = page.getByRole('region', {name: 'Stato aggiornamenti'});
         await expect(status).toContainText(stage === 'backup' ? 'Backup dei dati' : stage === 'completed' ? 'Aggiornamento completato' : 'Ripristino necessario');
         if (stage !== 'backup') {
+            await status.locator('.instance-accordion > summary').click();
             await status.getByText('Dettagli operazione').click();
             await expect(status).toContainText('fcc58c2a-436c-4c95-aa38-ea9b4ef6b135');
         }

@@ -28,7 +28,7 @@ const server = await createServer({
         configureServer(vite) {
             vite.middlewares.use(async (req, res, next) => {
                 if (req.url !== '/') return next();
-                const html = await vite.transformIndexHtml('/', '<!doctype html><html lang="it"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/static/css/bootstrap.min.css"><link rel="stylesheet" href="/static/css/app-bundle.css"></head><body><main id="app" style="max-width:1100px;margin:24px auto;padding:12px"></main><script type="module" src="/operations-entry.js"></script></body></html>');
+                const html = await vite.transformIndexHtml('/', '<!doctype html><html lang="it"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/static/css/bootstrap.min.css"><link rel="stylesheet" href="/static/css/app-bundle.css"><link rel="stylesheet" href="/global.css"><link rel="stylesheet" href="/dark-mode.css"><link rel="stylesheet" href="/brand.css"></head><body><main id="app" style="max-width:1100px;margin:24px auto;padding:12px"></main><script type="module" src="/operations-entry.js"></script></body></html>');
                 res.setHeader('Content-Type', 'text/html'); res.end(html);
             });
         },
@@ -43,7 +43,7 @@ try {
         const context = await browser.newContext({viewport});
         const page = await context.newPage();
         const errors = [];
-        page.on('pageerror', error => errors.push(error.message));
+        page.on('pageerror', error => {errors.push(error.message); console.error(error.stack);});
         let email = {source: 'environment', revision: 0, host: '', port: 465, security: 'ssl', username: '', from_email: '', sender_name: '', password_configured: false, restart_required: false};
         let diagnostics = {overall: 'not_checked', checked_at: null, checks: [
             {id: 'database', label: 'Database', core: true, status: 'not_checked', message: 'Esegui la diagnostica.', level: 'connectivity'},
@@ -59,7 +59,9 @@ try {
         let failSave = false;
         let failRun = false;
         let sent = 0;
-        let runnerHistory = [{id: 'fixture-operation', source_version: '1.0.2', target_version: '1.0.3', stage: 'completed', actor_id: 'fixture-owner', created_at: '2026-09-18T12:00:00Z'}];
+        let runnerHistory = Array.from({length: 20}, (_, index) => ({id: `fixture-operation-${index}`, source_version: '1.0.2', target_version: '1.0.3', stage: 'completed', actor_id: 'fixture-owner', created_at: '2026-09-18T12:00:00Z'}));
+        const latestRelease = {id: 4, tag: 'v1.0.4', name: 'Miglioramenti dell’istanza', published_at: '2026-09-23T12:00:00Z', artifacts_ready: true, url: 'https://example.test/release',
+            notes: '# Novità della versione\n\n' + 'Migliorata la gestione degli aggiornamenti e la consultazione delle versioni precedenti.\n\n'.repeat(30) + 'Fine delle note di rilascio.'};
         await page.route('**/api/instance/**', async route => {
             const request = route.request();
             const endpoint = new URL(request.url()).pathname.replace('/api/instance', '');
@@ -67,7 +69,7 @@ try {
             let value = {};
             let status = 200;
             if (endpoint === '/admin') value = {config: {oem: {name: 'Diagnostic Club', abbreviation: 'DC', primaryColor: '#234582', supportEmail: 'help@example.test'}}, running_version: '1.0.3', configured_version: '1.0.3', mode: 'production'};
-            else if (endpoint === '/admin/releases') value = {history: [], pending: [], latest: null, relation: 'unknown'};
+            else if (endpoint === '/admin/releases') value = {history: [latestRelease], pending: [latestRelease], latest: latestRelease, relation: 'behind'};
             else if (endpoint === '/admin/updates') value = {available: true, can_update: true, active: null, history: runnerHistory};
             else if (endpoint.startsWith('/admin/integrations/')) {
                 const provider = endpoint.split('/').at(-1);
@@ -214,6 +216,38 @@ try {
         await navigate('Aggiornamenti e backup');
         await expect(page.getByRole('heading', {name: 'Backup e ripristino', exact: true})).toBeVisible();
         await expect(page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})).toBeVisible();
+        const updates = page.locator('.updates-sections');
+        await expect(updates.getByRole('heading').first()).toHaveText('Versione e aggiornamenti');
+        const panels = updates.locator('details.instance-accordion');
+        await expect(panels).toHaveCount(4);
+        for (const panel of await panels.all()) await expect(panel).toHaveJSProperty('open', false);
+        await page.screenshot({path: path.join(output, `updates-collapsed-${viewport.width}.png`), fullPage: true});
+        const operationHistory = panels.filter({has: page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})});
+        await operationHistory.locator(':scope > summary').focus();
+        await page.keyboard.press('Enter');
+        await expect(operationHistory).toHaveJSProperty('open', true);
+        const historyContent = operationHistory.getByRole('region');
+        assert(await historyContent.evaluate(element => element.scrollHeight > element.clientHeight), 'Long update history must scroll');
+        assert(await historyContent.evaluate(element => element.getBoundingClientRect().height <= innerHeight * .65 + 1), 'History height must respect the viewport');
+        await historyContent.focus();
+        await page.keyboard.press('End');
+        await expect.poll(() => historyContent.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+        await operationHistory.locator(':scope > summary').click();
+        await expect(operationHistory).toHaveJSProperty('open', false);
+        const notesPanel = panels.filter({has: page.getByRole('heading', {name: 'Note di rilascio', exact: true})});
+        await notesPanel.locator(':scope > summary').click();
+        await notesPanel.locator('.release-notes > summary').click();
+        const notesContent = notesPanel.getByRole('region');
+        assert(await notesContent.evaluate(element => element.scrollHeight > element.clientHeight), 'Long release notes must scroll');
+        await notesContent.scrollIntoViewIfNeeded();
+        await notesContent.evaluate(element => element.scrollTop = element.scrollHeight);
+        await expect(notesPanel.getByText('Fine delle note di rilascio.', {exact: true})).toBeInViewport();
+        await page.screenshot({path: path.join(output, `updates-expanded-${viewport.width}.png`), fullPage: true});
+        await page.getByRole('button', {name: 'Esamina aggiornamento a v1.0.4', exact: true}).click();
+        await expect(page.getByRole('heading', {name: 'Aggiorna a v1.0.4', exact: true})).toBeVisible();
+        assert(await page.locator('.review-notes').evaluate(element => element.scrollHeight > element.clientHeight));
+        await expect(page.getByRole('button', {name: 'Conferma aggiornamento a v1.0.4', exact: true})).toBeEnabled();
+        await page.locator('.review-panel').getByRole('button', {name: 'Annulla', exact: true}).click();
         await navigate('Identità e logo');
         await expect(page.getByRole('heading', {name: 'Identità dell’istanza', exact: true})).toBeVisible();
         for (const label of ['Panoramica', 'Email', 'Diagnostica', 'Aggiornamenti e backup', 'Integrazioni', 'Identità e logo']) {
@@ -224,6 +258,8 @@ try {
         await page.reload();
         await expect(page.getByRole('heading', {name: 'Ultimo aggiornamento', exact: true})).toBeVisible();
         await expect(page.getByText('Ripristina il backup verificato.', {exact: true})).toBeVisible();
+        await navigate('Aggiornamenti e backup');
+        await expect(page.getByText('Ripristina il backup verificato.', {exact: true}).filter({visible: true})).toBeVisible();
         assert.deepEqual(errors, []);
         reports.push({viewport, passed: true, scope: 'Real Svelte components, fixture API; keyboard navigation, saves/reloads, failed saves, SMTP actions, failed diagnostics, integration environment values, masked secrets, saves/reloads, failed saves, explicit resets, update history/recovery visibility, overflow.'});
         await context.close();
