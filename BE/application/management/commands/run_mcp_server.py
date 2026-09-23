@@ -39,9 +39,9 @@ class Command(BaseCommand):
 
         if transport == 'stdio':
             from application.mcp_server.server import run_stdio_server
-            self.stdout.write(self.style.SUCCESS(
-                f'Starting MCP server (stdio) for association {association_id}'
-            ))
+            # In stdio mode stdout is the JSON-RPC channel: any print on it
+            # corrupts the protocol and kills the client. Log to stderr only.
+            self.stderr.write(f'Starting MCP server (stdio) for association {association_id}\n')
             asyncio.run(run_stdio_server(association_id))
         elif transport == 'sse':
             self.stdout.write(self.style.WARNING(
