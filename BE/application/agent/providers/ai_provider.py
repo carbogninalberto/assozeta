@@ -22,7 +22,7 @@ class AIProvider:
     ):
         self.api_key = api_key or getattr(settings, 'AI_API_KEY', None)
         self.model = model or getattr(settings, 'AI_MODEL', 'deepseek-v4-flash')
-        self.base_url = base_url or getattr(settings, 'AI_BASE_URL', 'https://api.deepseek.com')
+        self.base_url = base_url if base_url is not None else getattr(settings, 'AI_BASE_URL', 'https://api.deepseek.com')
 
         if not self.api_key:
             raise ValueError("AI_API_KEY is required")

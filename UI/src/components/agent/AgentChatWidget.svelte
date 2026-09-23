@@ -363,6 +363,8 @@
     });
 
     onDestroy(() => {
+        isAgentOpen.set(false);
+        agentProcessing.set(false);
         if (ws) {
             ws.disconnect();
             ws = null;

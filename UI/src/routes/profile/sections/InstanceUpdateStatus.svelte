@@ -1,4 +1,5 @@
 <script>
+    import InstanceAlert from './InstanceAlert.svelte';
     export let runner = {active: null, history: []};
     export let simulation = null;
     export let showHistory = true;
@@ -25,11 +26,11 @@
     {/if}
     {#if runner.reason}<p>{runner.reason}</p>{/if}
     {#if active}
-        <div class="alert alert-info" role="status" aria-live="polite">
+        <InstanceAlert>
             {#if active.simulated}<strong>Simulazione — nessuna modifica all’installazione.</strong><br />{/if}
             {stages[active.stage] || active.stage} · {active.target_version}
             {#if active.error}<p>{active.error}</p>{/if}
-        </div>
+        </InstanceAlert>
     {/if}
     {#if visibleHistory.length}
         <h2>{showHistory ? 'Cronologia aggiornamenti' : 'Ultimo aggiornamento'}</h2>

@@ -16,6 +16,7 @@ DEFAULT_LOGO_URL = '/oem/assozeta/brand/logo.svg'
 class InstanceStatusSerializer(serializers.Serializer):
     """Serializer for /instance/status endpoint."""
     configured = serializers.BooleanField()
+    ai_enabled = serializers.BooleanField()
     version = serializers.CharField()
     instance_name = serializers.CharField(allow_null=True)
     supported_features = serializers.ListField(child=serializers.CharField())
@@ -53,6 +54,7 @@ class MetaConfigSerializer(serializers.Serializer):
 
 class FeaturesConfigSerializer(serializers.Serializer):
     """Nested serializer for feature flags in response."""
+    aiEnabled = serializers.BooleanField()
     isReseller = serializers.BooleanField()
     selfHosted = serializers.BooleanField()
     supportMultipleAssociations = serializers.BooleanField()
@@ -117,7 +119,10 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
         }
 
     def get_features(self, obj):
+        from .integration_configuration import effective_integration
+        ai = effective_integration('ai', obj, decrypt=False)
         return {
+            'aiEnabled': ai['enabled'],
             'isReseller': obj.is_reseller,
             'selfHosted': obj.self_hosted,
             'supportMultipleAssociations': obj.support_multiple_associations,

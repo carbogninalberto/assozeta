@@ -6,13 +6,22 @@ from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+AI_FIELDS = {
+    'api_key': 'AI_API_KEY', 'model': 'AI_MODEL', 'cheap_model': 'AI_CHEAP_MODEL',
+    'base_url': 'AI_BASE_URL', 'max_iterations': 'MCP_AGENT_MAX_ITERATIONS',
+    'max_results': 'MCP_AGENT_MAX_RESULTS', 'query_timeout': 'MCP_AGENT_QUERY_TIMEOUT',
+    'ws_rate_limit': 'MCP_AGENT_WS_RATE_LIMIT', 'ws_timeout': 'MCP_AGENT_WS_TIMEOUT',
+    'history_cap': 'MCP_AGENT_HISTORY_CAP',
+}
+
 PROVIDERS = {
+    'ai': AI_FIELDS,
     'stripe': {'public_key': 'STRIPE_PUBLIC_KEY', 'secret_key': 'STRIPE_KEY',
                'webhook_secret': 'STRIPE_WEBHOOK_SECRET'},
     'google': {'client_id': 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'},
     'apple': {'client_id': 'SOCIAL_AUTH_APPLE_ID_CLIENT'},
 }
-SECRET_FIELDS = {'stripe': ('secret_key', 'webhook_secret'), 'google': (), 'apple': ()}
+SECRET_FIELDS = {'ai': ('api_key',), 'stripe': ('secret_key', 'webhook_secret'), 'google': (), 'apple': ()}
 UNSET = object()
 
 
@@ -45,7 +54,7 @@ def effective_integration(provider, config=UNSET, decrypt=True):
     source = 'instance' if value is not None else 'environment'
     if value is None:
         value = {key: getattr(settings, name, '') or '' for key, name in PROVIDERS[provider].items()}
-        value['enabled'] = any(value.values())
+        value['enabled'] = bool(value['api_key']) if provider == 'ai' else any(value.values())
         if provider == 'google' and config and config.self_hosted:
             value['enabled'] = value['enabled'] and config.get_display_settings().get('login', {}).get('allowOauthLogin', False)
     else:

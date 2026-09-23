@@ -9,6 +9,7 @@
     export let showHR = true;
     export let activeTab = '';
     export let disabled = false;
+    export let ariaLabel = 'Sezioni';
 
     function dispatchTabChange() {
         dispatch('tabChange', {tabName: activeTab});
@@ -17,13 +18,14 @@
 
 <div
     in:fly={{delay: 0, duration: 200}}
-    class="d-flex jusitify-content-between bg-white rounded {paddingClass}"
+    class="d-flex justify-content-between bg-white rounded {paddingClass}"
     style={disabled ? 'pointer-events:none;opacity:0.5' : ''}>
-    <div class="btn-group btn-group-toggle">
+    <div class="btn-group btn-group-toggle inplace-tabs" role="group" aria-label={ariaLabel}>
         {#each navigationPages as page}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <a
+            <button
+                type="button"
+                {disabled}
+                aria-pressed={page.tabName === activeTab}
                 style="width: fit-content !important;"
                 class="btn {page.tabName == activeTab
                     ? 'btn-primary'
@@ -33,10 +35,16 @@
                     dispatchTabChange();
                 }}>
                 {page.title}
-            </a>
+            </button>
         {/each}
     </div>
 </div>
 {#if showHR}
     <hr class="m-0 p-0" style="opacity:55%;" />
 {/if}
+
+<style>
+    .inplace-tabs { flex-wrap: wrap; gap: .5rem; min-width: 0; }
+    .inplace-tabs > button { flex: 0 1 auto; border-radius: .5rem !important; margin-left: 0 !important; overflow-wrap: anywhere; }
+    .inplace-tabs > button:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+</style>

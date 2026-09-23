@@ -21,6 +21,9 @@ export const instanceStatus = writable({
 
 export const instanceConfig = writable(null);
 
+// Fail closed until the server has supplied the feature flag.
+export const aiEnabled = derived(instanceConfig, config => config?.features?.aiEnabled === true);
+
 export function applyRuntimeConfig(config) {
     if (typeof __bakney === 'undefined' || !config) return;
 
@@ -240,6 +243,14 @@ export async function validateSetupToken(setupToken = '') {
 export async function loadInstanceConfig() {
     // Skip in non-self-hosted mode
     if (!isSelfHostedMode()) {
+        // Legacy installations also use the server’s effective AI feature state.
+        try {
+            const response = await fetch(getEndpoint('INSTANCE', 'STATUS', getApiHost()));
+            if (response.ok) {
+                const status = await response.json();
+                instanceConfig.update(config => ({...config, features: {...config?.features, aiEnabled: status.ai_enabled === true}}));
+            }
+        } catch { /* Keep the optional AI feature hidden when status is unavailable. */ }
         instanceStatus.set({
             loading: false,
             configured: true,
@@ -273,7 +284,7 @@ export async function loadInstanceConfig() {
         const cached = getCachedConfig();
         if (cached) {
             applyRuntimeConfig(cached);
-            instanceConfig.set(cached);
+            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true}});
             instanceStatus.set({
                 loading: false,
                 configured: true,
@@ -312,7 +323,7 @@ export async function loadInstanceConfig() {
         const cached = getCachedConfig();
         if (cached) {
             applyRuntimeConfig(cached);
-            instanceConfig.set(cached);
+            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true}});
             instanceStatus.set({
                 loading: false,
                 configured: true,

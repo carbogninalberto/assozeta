@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {get} from 'svelte/store';
-import {instanceConfig, oemConfig, uploadInstanceLogo} from './instanceStore.js';
+import {aiEnabled, instanceConfig, oemConfig, uploadInstanceLogo, loadInstanceConfig} from './instanceStore.js';
 
 test('upload updates reactive branding and cached config only after success', async () => {
     const originalFetch = globalThis.fetch;
@@ -28,6 +28,40 @@ test('upload updates reactive branding and cached config only after success', as
     } finally {
         globalThis.fetch = originalFetch;
         globalThis.localStorage = originalStorage;
+        globalThis.__bakney = originalConfig;
+        instanceConfig.set(null);
+    }
+});
+
+
+test('AI visibility requires an explicit enabled flag and reacts to saved configuration', () => {
+    for (const config of [null, {}, {features: {}}, {features: {aiEnabled: false}}]) {
+        instanceConfig.set(config);
+        assert.equal(get(aiEnabled), false);
+    }
+    instanceConfig.set({features: {aiEnabled: true}});
+    assert.equal(get(aiEnabled), true);
+    instanceConfig.set({features: {aiEnabled: false}});
+    assert.equal(get(aiEnabled), false);
+    instanceConfig.set(null);
+});
+
+test('legacy installations load AI visibility from the server status', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalConfig = globalThis.__bakney;
+    globalThis.__bakney = {OEM_CONFIG: {name: 'Legacy'}, env: {HOST: '/api'}};
+    try {
+        for (const enabled of [true, false]) {
+            instanceConfig.set(null);
+            globalThis.fetch = async url => {
+                assert.equal(url, '/api/instance/status');
+                return {ok: true, json: async () => ({ai_enabled: enabled})};
+            };
+            assert.equal(await loadInstanceConfig(), true);
+            assert.equal(get(aiEnabled), enabled);
+        }
+    } finally {
+        globalThis.fetch = originalFetch;
         globalThis.__bakney = originalConfig;
         instanceConfig.set(null);
     }

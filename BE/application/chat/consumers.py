@@ -4,7 +4,6 @@ import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 
@@ -130,6 +129,17 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
 
         user_id = str(self.user.user_id)
 
+        from instance.integration_configuration import effective_integration
+        try:
+            self.ai_config = await database_sync_to_async(effective_integration)('ai')
+        except Exception:
+            logger.warning('Agent WS rejected: AI configuration unavailable')
+            await self.close(code=4004)
+            return
+        if not self.ai_config['enabled']:
+            await self.close(code=4004)
+            return
+
         # Concurrency check
         self.concurrency_guard = ConcurrencyGuard(user_id)
         if not self.concurrency_guard.acquire():
@@ -149,11 +159,17 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             return
 
         # Set up throttle
-        rate_limit = getattr(settings, 'MCP_AGENT_WS_RATE_LIMIT', 10)
+        rate_limit = self.ai_config['ws_rate_limit']
         self.throttle = WebSocketThrottle(user_id, max_messages=rate_limit)
 
         # Initialize agent
-        await self._init_agent()
+        try:
+            await self._init_agent()
+        except Exception:
+            self.concurrency_guard.release()
+            logger.warning('Agent WS rejected: invalid AI configuration')
+            await self.close(code=4004)
+            return
 
         await self.accept()
         logger.info(f"Agent WS connected: user={user_id} association={self.sport_association.denomination}")
@@ -176,7 +192,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         from application.agent.core import Agent
         from application.agent.providers.ai_provider import AIProvider
 
-        provider = AIProvider()
+        provider = AIProvider(api_key=self.ai_config['api_key'], model=self.ai_config['model'], base_url=self.ai_config['base_url'])
         callback = WebSocketAgentCallback(self)
 
         self.agent = Agent(
@@ -184,6 +200,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             sport_association_name=self.sport_association.denomination,
             provider=provider,
             callback=callback,
+            ai_config=self.ai_config,
             user_id=str(self.user.user_id),
         )
 
@@ -232,14 +249,6 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         if not message:
             return
 
-        # Rate limit check
-        if not self.throttle.is_allowed():
-            await self.send_json({
-                'type': 'error',
-                'message': 'Troppi messaggi. Attendi un momento prima di riprovare.',
-            })
-            return
-
         # Don't allow concurrent agent tasks
         if self.agent_task and not self.agent_task.done():
             await self.send_json({
@@ -248,8 +257,34 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             })
             return
 
+        # Refresh on every request, including sockets opened before an owner change.
+        from instance.integration_configuration import effective_integration
+        try:
+            current = await database_sync_to_async(effective_integration)('ai')
+            if not current['enabled']:
+                await self.send_json({'type': 'error', 'message': 'Il bot AI è disattivato per questa istanza.'})
+                return
+            if current != self.ai_config:
+                from application.agent.providers.ai_provider import AIProvider
+                self.agent.provider = AIProvider(api_key=current['api_key'], model=current['model'], base_url=current['base_url'])
+                self.agent.max_iterations = current['max_iterations']
+                self.agent.history_cap = current['history_cap']
+                self.throttle.max_messages = current['ws_rate_limit']
+                self.ai_config = current
+        except Exception:
+            await self.send_json({'type': 'error', 'message': 'Configurazione AI non disponibile. Contatta il proprietario dell’istanza.'})
+            return
+
+        # Rate limit check
+        if not self.throttle.is_allowed():
+            await self.send_json({
+                'type': 'error',
+                'message': 'Troppi messaggi. Attendi un momento prima di riprovare.',
+            })
+            return
+
         # Run agent in a task with timeout
-        timeout = getattr(settings, 'MCP_AGENT_WS_TIMEOUT', 60)
+        timeout = self.ai_config['ws_timeout']
         self.agent_task = asyncio.create_task(
             self._run_agent_with_timeout(message, timeout)
         )

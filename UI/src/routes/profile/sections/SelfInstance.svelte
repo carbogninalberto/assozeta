@@ -1,5 +1,8 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
+    import InstanceAlert from './InstanceAlert.svelte';
+    import Switch from '../../../components/inputs/Switch.svelte';
+    import InplaceTabs from '../../../components/InplaceTabs.svelte';
     import {toast} from 'svelte-sonner';
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
     import {readStoredStatus} from './independentStatus.js';
@@ -8,6 +11,7 @@
     import InstanceBranding from './InstanceBranding.svelte';
     import InstanceEmail from './InstanceEmail.svelte';
     import InstanceIntegrations from './InstanceIntegrations.svelte';
+    import InstanceIntegration from './InstanceIntegration.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
     import ReleaseNotes from './release-notes/ReleaseNotes.svelte';
     import {createCompletionRefresh, mergeRunnerStatus} from './updateStatus.js';
@@ -21,10 +25,12 @@
     let logoChanges = false;
     let emailChanges = false;
     let emailBusy = false;
+    let aiChanges = false;
+    let aiBusy = false;
     let integrationChanges = false;
     let integrationBusy = false;
     let section = 'overview';
-    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
+    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
     let diagnostics;
     let diagnosticError = '';
     let diagnosticBusy = false;
@@ -37,6 +43,10 @@
         try { diagnostics = await request('/admin/diagnostics'); diagnosticError = ''; }
         catch (e) { diagnosticError = e.message; }
         finally { diagnosticLoading = false; }
+    }
+    function refreshAI(value) {
+        info = {...info, config: {...info.config, features: {...info.config.features, aiEnabled: value.enabled}}};
+        saveRuntimeConfig(info.config);
     }
     async function refreshIntegrations() {
         try { await loadInfo(false); saveRuntimeConfig(info.config); }
@@ -73,9 +83,9 @@
     let simulationTimer;
     const completionRefresh = createCompletionRefresh();
 
-    $: changes = integrationChanges || emailChanges || logoChanges || (!!saved && JSON.stringify(draft) !== saved);
+    $: changes = aiChanges || integrationChanges || emailChanges || logoChanges || (!!saved && JSON.stringify(draft) !== saved);
     $: active = simulation || runner.active;
-    $: updateReady = !apiUnavailable && !diagnosticBusy && !emailBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
+    $: updateReady = !apiUnavailable && !diagnosticBusy && !emailBusy && !aiBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
         info?.mode === 'production' && catalog?.relation === 'behind' && catalog?.latest?.artifacts_ready;
 
     async function request(path, options = {}) {
@@ -109,7 +119,7 @@
             saveRuntimeConfig(result.config);
             saved = JSON.stringify(submitted);
             toast.success('Impostazioni dell’istanza aggiornate.');
-        } catch (e) { error = e.message; }
+        } catch (e) { error = e.message; toast.error(e.message); }
         finally { saving = false; }
     }
 
@@ -171,7 +181,7 @@
     }
 
     async function startUpdate() {
-        if (!reviewing || !requestId || starting || apiUnavailable || emailBusy || integrationBusy || diagnosticBusy || changes) return;
+        if (!reviewing || !requestId || starting || apiUnavailable || emailBusy || aiBusy || integrationBusy || diagnosticBusy || changes) return;
         starting = true;
         error = '';
         try {
@@ -227,21 +237,19 @@
     <div class="card-header py-3">
         <div class="card-title flex-column align-items-start">
             <h1 class="font-size-h1 font-weight-bolder">Self Instance</h1>
+            {#if info}<span class="label label-inline label-light-primary mb-3">{info.mode === 'production' ? 'Produzione' : 'Sviluppo'}</span>{/if}
             <p class="text-muted mb-0">Configurazione, salute e manutenzione della tua installazione.</p>
         </div>
     </div>
-    <div class="card-body">
-        {#if error}<p class="alert alert-danger" role="alert">{error}</p>{/if}
+    <div class="card-body instance-body">
+        {#if error}<InstanceAlert tone="danger" role="alert">{error}</InstanceAlert>{/if}
         {#if loading}<p role="status">Caricamento dell’istanza…</p>{/if}
         {#if !info}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} />{/if}
         {#if info}
-            <nav class="instance-nav" aria-label="Sezioni Self Instance">
-                {#each sections as [id, label]}
-                    <button type="button" class:current={section === id} aria-current={section === id ? 'page' : undefined} on:click={() => section = id}>{label}{((id === 'branding' && (logoChanges || JSON.stringify(draft) !== saved)) || (id === 'email' && emailChanges) || (id === 'integrations' && integrationChanges)) ? ' •' : ''}</button>
-                {/each}
-            </nav>
+            <InplaceTabs bind:activeTab={section} ariaLabel="Sezioni Self Instance" paddingClass="px-0 pb-4 pt-0" showHR={true}
+                navigationPages={sections.map(([tabName, title]) => ({tabName, title: title + (((tabName === 'branding' && (logoChanges || JSON.stringify(draft) !== saved)) || (tabName === 'email' && emailChanges) || (tabName === 'integrations' && integrationChanges) || (tabName === 'ai' && aiChanges)) ? ' •' : '')}))} />
             {#if section !== 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} showHistory={false} />{/if}
-            {#if changes}<p class="unsaved" role="status">Modifiche non salvate. Salvale o annullale nella relativa sezione.</p>{/if}
+            {#if changes}<InstanceAlert tone="warning" role="status">Modifiche non salvate. Salvale o annullale nella relativa sezione.</InstanceAlert>{/if}
             <div hidden={section !== 'overview'}>
                 <section aria-labelledby="instance-overview">
                     <h2 id="instance-overview">Panoramica</h2>
@@ -253,13 +261,14 @@
                     <p class="mt-4">I risultati descrivono l’ultima verifica e non costituiscono monitoraggio continuo. Le integrazioni facoltative sono valutate separatamente.</p>
                     <button class="btn btn-primary" on:click={() => section = 'diagnostics'}>Apri diagnostica</button>
                     {#if diagnosticLoading}<p role="status" class="mt-4">Caricamento risultati…</p>{/if}
-                    {#if diagnosticError}<p class="alert alert-warning mt-4" role="alert">Impossibile caricare i risultati. Apri Diagnostica per riprovare.</p>{/if}
+                    {#if diagnosticError}<InstanceAlert tone="warning" role="alert">Impossibile caricare i risultati. Apri Diagnostica per riprovare.</InstanceAlert>{/if}
                     {#if issues.length}
                         <h3 class="mt-6">Richiedono attenzione</h3>
                         <ul class="issue-list">{#each issues as check}<li><span>{check.label}{check.core ? '' : ' (facoltativo)'}</span><button class="text-action" on:click={() => section = check.section}>Visualizza dettagli</button></li>{/each}</ul>
                     {/if}
                 </section>
             </div>
+            <div hidden={section !== 'ai'}><InstanceIntegration provider="ai" title="Bot AI" {request} bind:changes={aiChanges} bind:busy={aiBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshAI} /></div>
             <div hidden={section !== 'email'}><InstanceEmail {request} bind:changes={emailChanges} bind:busy={emailBusy} disabled={apiUnavailable || !!active || starting} onSaved={loadDiagnostics} /></div>
             <div hidden={section !== 'integrations'}><InstanceIntegrations {request} checks={diagnostics?.integrations || []} bind:changes={integrationChanges} bind:busy={integrationBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshIntegrations} /></div>
             <div hidden={section !== 'diagnostics'}>
@@ -271,7 +280,7 @@
                         <button class="btn btn-light" disabled={diagnosticBusy || diagnosticLoading || apiUnavailable} on:click={loadDiagnostics}>Ricarica risultati salvati</button>
                     </div>
                     {#if diagnosticBusy}<p role="status">Verifica in corso. L’operazione può richiedere circa 30 secondi; i risultati precedenti restano visibili.</p>{/if}
-                    {#if diagnosticError}<p class="alert alert-danger" role="alert">{diagnosticError}</p>{/if}
+                    {#if diagnosticError}<InstanceAlert tone="danger" role="alert">{diagnosticError}</InstanceAlert>{/if}
                     <p class="text-muted">Ogni risultato distingue configurazione, connessione e prova funzionale. “Verificato” vale solo per la verifica descritta.</p>
                     <div class="checks-grid" aria-live="polite">{#each diagnostics?.checks || [] as check}<DiagnosticResult {check} />{/each}</div>
                 </section>
@@ -327,7 +336,7 @@
                 {#if info.mode !== 'production'}
                     <details class="mt-4">
                         <summary>Prova il flusso di aggiornamento in sviluppo</summary>
-                        <label class="d-block mt-4"><input type="checkbox" bind:checked={simulateFailure} /> Simula un errore durante le migrazioni</label>
+                        <Switch id="simulate-update-failure" label="Simula un errore durante le migrazioni" bind:checked={simulateFailure} />
                         <button class="btn btn-light" on:click={startSimulation}>Avvia simulazione</button>
                         {#if simulation}
                             <button class="btn btn-light" on:click={() => { clearTimeout(simulationTimer); simulation = null; }}>Chiudi simulazione</button>
@@ -354,7 +363,7 @@
                     <p>La versione selezionata rimane {reviewing.tag}, anche se viene pubblicata una nuova release.</p>
                     {#each reviewNotes as release (release.id)}<ReleaseNotes {release} expanded />{/each}
                     <div class="instance-actions mt-4">
-                        <button class="btn btn-primary" disabled={apiUnavailable || starting || emailBusy || integrationBusy || diagnosticBusy || changes || !!active} on:click={startUpdate}>
+                        <button class="btn btn-primary" disabled={apiUnavailable || starting || emailBusy || aiBusy || integrationBusy || diagnosticBusy || changes || !!active} on:click={startUpdate}>
                             {starting ? 'Avvio in corso…' : `Conferma aggiornamento a ${reviewing.tag}`}
                         </button>
                         <button class="btn btn-light" disabled={starting} on:click={() => reviewing = null}>Annulla</button>
@@ -386,18 +395,17 @@
 <style>
     .text-muted { color: #536171 !important; }
     [hidden] { display: none !important; }
-    .instance-nav { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #dce1e7; }
-    .instance-nav button { background: #f2f4f7; color: #263747; border: 1px solid transparent; border-radius: .5rem; padding: .75rem 1rem; }
-    .instance-nav button.current { background: #e8eefc; border-color: #335caa; color: #234582; font-weight: 700; }
-    .instance-nav button:focus-visible, .text-action:focus-visible { outline: 3px solid #335caa; outline-offset: 2px; }
     .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
     .overview-tile { display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; border: 1px solid #dce1e7; border-radius: .65rem; overflow-wrap: anywhere; }
+    .overview-tile { background: #f8fafc; border-top: 3px solid var(--primary); }
+    .instance-body { min-width: 0; }
+    .instance-body > div:not([hidden]) { margin-top: 1.5rem; }
     .overview-tile strong { font-size: 1.2rem; }
+    .text-action:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
     .text-action { background: none; border: 0; padding: 0; color: #234582; text-align: left; text-decoration: underline; }
     .checks-grid { display: grid; gap: 1rem; }
     .issue-list { list-style: none; padding: 0; }
     .issue-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: 1rem 0; border-bottom: 1px solid #dce1e7; }
-    .unsaved { padding: .75rem 1rem; border-left: 3px solid #936000; background: #fff8e6; }
     .brand-preview { display: flex; align-items: center; gap: 1rem; border: 1px solid #dce1e7; border-radius: .65rem; padding: 1rem; overflow-wrap: anywhere; }
     .brand-preview > div { min-width: 0; }
     .brand-swatch { width: 2.5rem; height: 2.5rem; flex-shrink: 0; border: 1px solid #dce1e7; border-radius: .5rem; }

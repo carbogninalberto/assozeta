@@ -20,17 +20,14 @@
         Gift,
         HandHeart,
         IdentificationCard,
-        PlusCircle,
         Question,
-        Robot,
         UserFocus,
         Volleyball,
         Wallet,
     } from 'phosphor-svelte';
-    import {isAgentOpen, agentProcessing} from 'store/agentStore.js';
+    import HeaderActions from './HeaderActions.svelte';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
-    import BasicDropdown from 'components/dropdowns/basic-dropdown.svelte';
     import {oemConfig} from 'store/instanceStore.js';
 
     userData.useLocalStorage();
@@ -192,36 +189,9 @@
             class="header-menu-wrapper header-menu-wrapper-left d-none d-lg-flex align-items-center gap-2"
             id="bkn_header_menu_wrapper"
             style=" width: 200%; margin: auto;">
-            {#if $role !== 'athlete' && quickAddItems.length > 0}
-                <div class="d-flex align-items-center h-100">
-                        <BasicDropdown
-                            variant="clean"
-                            size="sm"
-                            buttonClass="px-2 py-2"
-                            items={quickAddItems}
-                            on:itemClick={openQuickAdd}>
-                        <span slot="button-content">
-                            <PlusCircle size={18} weight="bold" />
-                        </span>
-                    </BasicDropdown>
-                </div>
-            {/if}
-
-            {#if $role === 'association' && canPerformAction('association.report.read')}
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div
-                    class="topbar-item agent-toggle-btn"
-                    class:agent-toggle-active={$isAgentOpen}
-                    on:click={() => ($isAgentOpen = !$isAgentOpen)}
-                    title="Agente AI">
-                    <div class="btn btn-icon btn-clean btn-sm position-relative">
-                        <Robot size={20} weight={$isAgentOpen ? 'fill' : 'duotone'} />
-                        {#if $agentProcessing}
-                            <span class="agent-processing-dot" />
-                        {/if}
-                    </div>
-                </div>
-            {/if}
+            <HeaderActions {quickAddItems} showQuickAdd={$role !== 'athlete'}
+                showAI={$role === 'association' && canPerformAction('association.report.read')}
+                on:itemClick={openQuickAdd} />
         </div>
         <!--end::Header Menu Wrapper-->
 
@@ -482,33 +452,3 @@
 </BasicDrawer>
 
 <NotificationsDrawer bind:isOpen={$isNotificationsPanelOpen} />
-
-<style>
-    .agent-toggle-btn {
-        cursor: pointer;
-    }
-    .agent-toggle-active .btn {
-        color: var(--primary, #351dc2) !important;
-        background: color-mix(in srgb, var(--primary, #351dc2) 10%, transparent) !important;
-        border-radius: 0.42rem;
-    }
-    .agent-processing-dot {
-        position: absolute;
-        top: 0.15rem;
-        right: 0.15rem;
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: var(--success, #08d1ad);
-        animation: agentPulse 1.5s infinite;
-    }
-    @keyframes agentPulse {
-        0%,
-        100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.35;
-        }
-    }
-</style>

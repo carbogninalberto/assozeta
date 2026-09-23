@@ -23,6 +23,7 @@ import WebSocketHeartbeat from './WebSocketHeartbeat.js';
  */
 
 const TERMINAL_CODES = {
+    4004: 'Il bot AI è disattivato o non disponibile per questa istanza.',
     4001: 'Autenticazione fallita. Effettua nuovamente il login.',
     4002: "Sessione sostituita da un'altra scheda.",
     4003: 'Troppe richieste. Riprova tra qualche minuto.',

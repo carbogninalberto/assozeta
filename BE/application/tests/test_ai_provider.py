@@ -21,6 +21,12 @@ class AIProviderTests(SimpleTestCase):
         )
         self.assertEqual(provider.model, 'test-model')
 
+    @override_settings(AI_BASE_URL='https://environment.example.test')
+    @patch('application.agent.providers.ai_provider.AsyncOpenAI')
+    def test_explicit_empty_base_url_uses_client_default(self, openai_client):
+        AIProvider(api_key='instance-key', base_url='')
+        openai_client.assert_called_once_with(api_key='instance-key')
+
     @override_settings(AI_API_KEY=None)
     def test_requires_api_key(self):
         with self.assertRaisesMessage(ValueError, 'AI_API_KEY is required'):
