@@ -51,6 +51,8 @@ class Journal:
                 return record
             if blocked_reason:
                 raise Conflict(blocked_reason)
+            if db.execute("SELECT 1 FROM operations WHERE status='recovery_required'").fetchone():
+                raise Conflict('Un aggiornamento richiede una verifica di ripristino prima di un nuovo tentativo.')
             if db.execute("SELECT 1 FROM operations WHERE status IN ('queued', 'running')").fetchone():
                 raise Conflict('An update is already in progress.')
             record = {
@@ -87,3 +89,6 @@ class Journal:
     def interrupted(self):
         return [record for record in self.records()
                 if record['status'] == 'recovery_required' and record.get('interrupted_at')]
+
+    def requiring_recovery(self):
+        return [record for record in self.records() if record['status'] == 'recovery_required']

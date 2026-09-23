@@ -8,7 +8,8 @@ import sys
 from django.utils import timezone
 
 PROBE_IDS = frozenset(('public_url', 'api', 'database', 'storage', 'worker', 'scheduler',
-                       'renderer', 'email', 'updater', 'backups', 'email_connect', 'email_send'))
+                       'renderer', 'email', 'updater', 'backups', 'email_connect', 'email_send',
+                       'integration_ai', 'integration_stripe', 'integration_google', 'integration_apple'))
 STATUSES = frozenset(('passed', 'warning', 'failed', 'not_configured', 'not_applicable', 'not_checked'))
 
 

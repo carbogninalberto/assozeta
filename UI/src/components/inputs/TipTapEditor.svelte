@@ -860,13 +860,13 @@
         }
 
         .tiptap table th {
-            background-color: #351dc205;
+            background-color: rgba(var(--primary-rgb), 0.0196);
             font-weight: bold;
             text-align: left;
         }
 
         .tiptap table .selectedCell:after {
-            background: #351dc21c;
+            background: rgba(var(--primary-rgb), 0.1098);
             content: '';
             left: 0;
             right: 0;
@@ -878,7 +878,7 @@
         }
 
         .tiptap table .column-resize-handle {
-            background-color: #351dc2;
+            background-color: var(--primary);
             bottom: -2px;
             pointer-events: none;
             position: absolute;

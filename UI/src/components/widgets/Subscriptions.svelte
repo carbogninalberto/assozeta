@@ -1,4 +1,5 @@
 <script>
+    import {brandPalette, getBrandPalette} from 'utils/BrandTheme.js';
     import ContentLoader from 'svelte-content-loader';
     import {onMount, onDestroy} from 'svelte';
     import Chart from 'chart.js/auto';
@@ -9,6 +10,7 @@
     };
     let loading = true;
     let chart = null;
+    let stopTheme;
 
     function initWidget() {
         var element = document.getElementById('bkn_dashboard_widget_subscriptions');
@@ -28,7 +30,7 @@
                     {
                         data: data.pie_subscriptions,
                         backgroundColor: [
-                            '#351DC2',
+                            getBrandPalette().primary,
                             '#F5CE01',
                             '#FF3D60',
                             '#08D1AD',
@@ -72,6 +74,7 @@
     }
 
     onMount(async () => {
+        stopTheme = brandPalette.subscribe(() => { if (chart) initWidget(); });
         const res = await apiFetch(`${__bakney.env.API.STATISTIC.DASHBOARD}?widget=subscriptions`, {
             method: 'GET',
         });
@@ -84,6 +87,7 @@
     });
 
     onDestroy(() => {
+        stopTheme?.();
         if (chart) {
             chart.destroy();
             chart = null;

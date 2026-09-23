@@ -555,7 +555,7 @@
                                     {#if isLoading}
                                         <div
                                             class="d-flex flex-column align-items-center justify-content-center p-20 my-auto">
-                                            <Circle size="32" color="#351DC2" unit="px" duration="0.5s" />
+                                            <Circle size="32" color="var(--primary)" unit="px" duration="0.5s" />
                                         </div>
                                     {/if}
                                     {#if currentFileList?.length == 0}

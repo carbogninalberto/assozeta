@@ -1378,7 +1378,7 @@ supports_self_update() {
     [ "$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-backend ] || return 1
     [ "$(env_value ASSOZETA_WEB_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-web ] || return 1
     [ "$(env_value ASSOZETA_RENDERER_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-renderer ] || return 1
-    env_value ASSOZETA_VERSION "$PROD_ENV" | grep -Eq '^v?[0-9]+\.[0-9]+\.[0-9]+$'
+    env_value ASSOZETA_VERSION "$PROD_ENV" | grep -Eq '^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
 }
 
 run_updater_tool() {
@@ -1435,14 +1435,22 @@ upgrade_prod() {
         updater_expected_source=${ASSOZETA_EXPECTED_SOURCE:-}
         [ "${previous#v}" = "${updater_expected_source#v}" ] || die "installed version changed while the update was queued"
     fi
-    ensure_configuration_values "$PROD_ENV"
-
     printf '%s\n' '@@ASSOZETA_STAGE checking'
     managed_update=false
     if supports_self_update; then
         case "$version" in v*) version=${version#v} ;; esac
         printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "upgrade requires an exact stable version"
         managed_update=true
+    else
+        if [ "${ASSOZETA_RUNNER_ACTIVE:-false}" = 1 ] || [ -n "${ASSOZETA_OPERATION_ID:-}" ] || [ -n "${ASSOZETA_VERIFIED_UPDATER_REF:-}" ]; then
+            die "managed update unavailable: ASSOZETA_BACKEND_IMAGE, ASSOZETA_WEB_IMAGE and ASSOZETA_RENDERER_IMAGE must use official repositories and ASSOZETA_VERSION must be a stable release"
+        fi
+        for pinned_key in ASSOZETA_BACKEND_REF ASSOZETA_WEB_REF ASSOZETA_RENDERER_REF; do
+            [ -z "$(env_value "$pinned_key" "$PROD_ENV")" ] || die "cannot perform legacy upgrade: $pinned_key pins an image independently of ASSOZETA_VERSION; verify the installation configuration first"
+        done
+    fi
+    ensure_configuration_values "$PROD_ENV"
+    if [ "$managed_update" = true ]; then
         updater_tool_image=${ASSOZETA_VERIFIED_UPDATER_REF:-"ghcr.io/carbogninalberto/assozeta-updater:$version"}
         docker pull "$updater_tool_image"
     fi

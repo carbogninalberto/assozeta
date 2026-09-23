@@ -1,3 +1,4 @@
+import {applyBrandColor} from './utils/BrandTheme.js';
 // Initialize the Svelte app and inject it in the DOM
 import App from './App.svelte';
 import { createIcons, X, Check, Plus, ArrowLeft, ArrowRight, Upload, User, FileText, Info } from 'lucide';
@@ -120,6 +121,9 @@ const app = new App({
 //         target: document.querySelector('#view')
 //     });
 // }
+applyBrandColor((typeof __bakney !== 'undefined' && (__bakney.OEM_CONFIG?.primaryColor || __bakney.OEM_CONFIG?.theme?.primaryColor))
+    || document.documentElement.style.getPropertyValue('--brand-color') || undefined);
+
 const app = replaceContainer(App, {
     target: document.querySelector('#view'),
 });

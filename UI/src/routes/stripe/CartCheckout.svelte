@@ -1,4 +1,9 @@
 <script>
+    import {onDestroy} from 'svelte';
+    import {brandPalette, stripeAppearance} from 'utils/BrandTheme.js';
+    let stopAppearance;
+    let destroyed = false;
+    onDestroy(() => { destroyed = true; stopAppearance?.(); });
     import {scale} from 'svelte/transition';
     import * as easing from 'svelte/easing';
     import {apiFetch} from 'utils/ApiMiddleware';
@@ -104,6 +109,7 @@
     async function loadStripeComponent() {
         const client_secret = stripeData.client_secret || null;
         const stripe = await initStripe();
+        if (destroyed || !stripe) return;
 
         if (client_secret == null)
             return console.warn('[STRIPE] Cannot load Stripe Component because of missing client_secret');
@@ -111,17 +117,13 @@
         const options = {
             clientSecret: client_secret,
             // Fully customizable with appearance API.
-            appearance: {
-                theme: 'flat',
-                variables: {
-                    colorPrimary: '#351DC2',
-                    colorBackground: '#F3F6F9',
-                },
-            },
+            appearance: stripeAppearance(),
         };
 
         // Set up Stripe.js and Elements to use in checkout form, passing the client secret obtained in step 2
         const elements = stripe.elements(options);
+        stopAppearance?.();
+        stopAppearance = brandPalette.subscribe(palette => elements.update({appearance: stripeAppearance(palette)}));
 
         // Create and mount the Payment Element
         const paymentElement = elements.create('payment');

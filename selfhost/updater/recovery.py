@@ -84,12 +84,12 @@ def reconcile(root, env_file):
     if (root / '.updater/pending-distribution').exists():
         raise ReleaseError('A pending distribution requires recover-upgrade with its matching backup.')
     journal = Journal(root / '.updater/operations.sqlite3')
-    interrupted = journal.interrupted()
-    if not interrupted:
-        raise ReleaseError('No interrupted update requires reconciliation.')
+    unresolved = journal.requiring_recovery()
+    if not unresolved:
+        raise ReleaseError('No update requires reconciliation.')
     engine = Engine(root, env_file, journal)
     configured = image_version(read_env(env_file).get('ASSOZETA_VERSION'))
-    for operation in interrupted:
+    for operation in unresolved:
         source, target = image_version(operation['source_version']), image_version(operation['tag'])
         if configured == target:
             # A target is successful only with the operation-bound receipt,
@@ -102,9 +102,9 @@ def reconcile(root, env_file):
         elif configured == source:
             engine.verify_running(source, allow_configured_images=True)
             journal.update(operation['id'], status='recovered', stage='recovered', reconciled_at=now(),
-                           recovery=f'Interruzione verificata: la versione {source} è attiva. È possibile avviare un nuovo aggiornamento.')
+                           recovery=f'Ripristino verificato: la versione {source} è attiva. È possibile avviare un nuovo aggiornamento.')
         else:
-            raise ReleaseError('The configured version does not match the interrupted operation.')
+            raise ReleaseError('The configured version does not match the operation requiring recovery.')
 
 
 if __name__ == '__main__':

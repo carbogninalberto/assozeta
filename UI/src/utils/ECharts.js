@@ -1,3 +1,4 @@
+import {getBrandPalette} from './BrandTheme.js';
 import * as echarts from 'echarts/core';
 import {BarChart, LineChart, PieChart} from 'echarts/charts';
 import {GridComponent, LegendComponent, ToolboxComponent, TooltipComponent} from 'echarts/components';
@@ -73,7 +74,7 @@ export const reportAxisNameTextStyle = {
     fontWeight: 600,
 };
 
-export function tooltipHtml(label, value, color = '#255aee') {
+export function tooltipHtml(label, value, color = getBrandPalette().primary) {
     return `<div style="display:flex;align-items:center;gap:8px;white-space:nowrap;">
         <span style="width:8px;height:8px;border-radius:999px;background:${color};display:inline-block;"></span>
         <span style="opacity:.78;font-weight:500;">${label}</span>

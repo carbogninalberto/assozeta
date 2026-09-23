@@ -252,13 +252,13 @@
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-        border: 1px solid #351dc205;
+        border: 1px solid rgba(var(--primary-rgb), 0.0196);
     }
     .checkbox-darker > span {
         background-color: var(--border-color-dark);
     }
     .checkbox-darker > input:checked ~ span {
-        background-color: #351dc2;
+        background-color: var(--primary);
     }
 
     .selected-checkbox-container {

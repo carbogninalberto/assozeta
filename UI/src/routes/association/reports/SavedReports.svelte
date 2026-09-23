@@ -3,6 +3,7 @@
     import {onMount, onDestroy, tick} from 'svelte';
     import {apiFetch, replaceUID, originalFetch} from 'utils/ApiMiddleware.js';
     import {sessionToken} from 'store/stores.js';
+    import {aiEnabled} from 'store/instanceStore.js';
     import {isAgentOpen, reportSavedTrigger} from 'store/agentStore.js';
     import {toast} from 'svelte-sonner';
     import {debounce, waitForElementAndExecute} from 'utils/Functions.js';
@@ -340,6 +341,7 @@
                     </h3>
                 </div>
                 <div class="card-toolbar">
+                    {#if $aiEnabled}
                     <button
                         type="button"
                         class="btn btn-primary btn-sm m-2 d-flex align-items-center font-weight-boldest"
@@ -347,6 +349,7 @@
                         <Robot size={16} weight="duotone" class="mr-2" />
                         Crea con l'agente AI
                     </button>
+                    {/if}
                 </div>
             </div>
             <div class="card-body p-0">
@@ -358,6 +361,7 @@
                     <div class="text-center py-20 px-4">
                         <FileText size={48} weight="duotone" class="text-muted mb-4" style="opacity: 0.4;" />
                         <p class="font-weight-bold font-size-lg text-dark-75 mb-1">Nessun report salvato</p>
+                        {#if $aiEnabled}
                         <p class="text-muted font-size-sm mb-6">Chiedi all'agente AI di creare un report e salvarlo.</p>
                         <button
                             type="button"
@@ -366,6 +370,7 @@
                             <Robot size={16} weight="duotone" class="mr-2" />
                             Apri agente AI
                         </button>
+                    {/if}
                     </div>
                 {:else}
                     <!--begin::Search-->

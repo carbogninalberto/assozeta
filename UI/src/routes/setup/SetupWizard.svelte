@@ -1,4 +1,5 @@
 <script>
+    import {brandScopeStyle} from 'utils/BrandTheme.js';
     import {Check as LucideCheck} from 'lucide-svelte';
     import {onMount} from 'svelte';
     import {fly} from 'svelte/transition';
@@ -169,7 +170,7 @@
     <title>Configurazione Iniziale</title>
 </svelte:head>
 
-<div class="setup-wizard d-flex flex-column min-vh-100 position-relative" style="background-color: white;">
+<div class="setup-wizard d-flex flex-column min-vh-100 position-relative" style="{brandScopeStyle(brandingConfig.primaryColor)}; background-color: white;">
     <div
         class="position-absolute w-100 h-100"
         style="background-image: url('/static/forms/pattern.png'); background-size: cover; opacity: 0.03; pointer-events: none;" />
@@ -292,13 +293,13 @@
     .step-dot.active {
         border-color: var(--main-color, #351dc2);
         background: var(--main-color, #351dc2);
-        color: white;
+        color: var(--on-primary);
     }
 
     .step-dot.completed {
         border-color: var(--main-color, #351dc2);
         background: var(--main-color, #351dc2);
-        color: white;
+        color: var(--on-primary);
     }
 
     .step-line {
@@ -327,7 +328,7 @@
     :global(.setup-card .form-control:focus) {
         border-color: var(--main-color, #351dc2);
         background: white;
-        box-shadow: 0 0 0 0.2rem rgba(53, 29, 194, 0.1);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.1);
     }
 
     :global(.setup-card .btn-primary) {

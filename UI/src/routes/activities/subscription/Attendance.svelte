@@ -175,12 +175,6 @@
         .nav-link {
             cursor: pointer;
         }
-        .nav-link.active {
-            border-bottom: 4px solid #351dc2 !important;
-        }
-        .nav-link:hover {
-            border-bottom: 4px solid #351dc2 !important;
-        }
         .card-toolbar::-webkit-scrollbar {
             display: none;
         }

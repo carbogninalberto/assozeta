@@ -1,5 +1,14 @@
 <script>
-    import {onMount} from 'svelte';
+    import {onMount, onDestroy} from 'svelte';
+    let disposeEditor;
+    let saveHandler;
+    let destroyed = false;
+    onDestroy(() => {
+        destroyed = true;
+        disposeEditor?.();
+        if (saveHandler) window.removeEventListener('save', saveHandler);
+        broadcastChannelUpdate?.close();
+    });
     import {toast} from 'svelte-sonner';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
 
@@ -49,8 +58,10 @@
         } else {
             // set localStorage
             localStorage.setItem(`email-builder-json-${params?.id}`, JSON.stringify(block.data.json));
-            await import('./emailbuilder.js');
-            window.addEventListener('save', async e => {
+            const {mountEmailBuilder} = await import('./emailbuilder.js');
+            if (destroyed) return;
+            disposeEditor = mountEmailBuilder(document.getElementById('root'));
+            saveHandler = async e => {
                 block.data.content = e.detail.content;
                 block.data.json = e.detail.json;
                 automationTree.find(node => node.data?.blockId == params?.id).data = {...block.data};
@@ -58,7 +69,8 @@
                 broadcastChannelUpdate.postMessage('update');
                 // console.log('Saved:', localStorage.getItem(`email-builder-json-${id}`));
                 // localStorage.removeItem(`email-builder-json-${id}`);
-            });
+            };
+            window.addEventListener('save', saveHandler);
         }
     });
 </script>

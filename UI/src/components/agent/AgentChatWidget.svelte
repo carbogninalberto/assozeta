@@ -363,6 +363,8 @@
     });
 
     onDestroy(() => {
+        isAgentOpen.set(false);
+        agentProcessing.set(false);
         if (ws) {
             ws.disconnect();
             ws = null;
@@ -933,7 +935,7 @@
         align-items: center;
         gap: 0.35rem;
         background: var(--primary, #351dc2);
-        color: #ffffff;
+        color: var(--on-primary);
         border: none;
         border-radius: 0.4rem;
         padding: 0.35rem 0.75rem;
@@ -1164,7 +1166,7 @@
     }
     .agent-send-btn {
         background: var(--primary, #351dc2);
-        color: #ffffff;
+        color: var(--on-primary);
         border: none;
         border-radius: 0.5rem;
         width: 2.5rem;

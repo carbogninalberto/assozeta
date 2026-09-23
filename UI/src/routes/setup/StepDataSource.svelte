@@ -83,7 +83,7 @@
         width: 70px;
         height: 70px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(53, 29, 194, 0.1) 0%, rgba(53, 29, 194, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--primary-rgb), 0.05) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -111,19 +111,19 @@
 
     .source-option:hover {
         border-color: var(--main-color, #351DC2);
-        background: rgba(53, 29, 194, 0.02);
+        background: rgba(var(--primary-rgb), 0.02);
     }
 
     .source-option.selected {
         border-color: var(--main-color, #351DC2);
-        background: rgba(53, 29, 194, 0.05);
+        background: rgba(var(--primary-rgb), 0.05);
     }
 
     .source-icon {
         width: 50px;
         height: 50px;
         border-radius: 0.75rem;
-        background: rgba(53, 29, 194, 0.1);
+        background: rgba(var(--primary-rgb), 0.1);
         display: flex;
         align-items: center;
         justify-content: center;

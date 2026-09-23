@@ -267,7 +267,7 @@
                                         <span class="nav-icon mr-1">
                                             <Rows
                                                 size="19"
-                                                color={activeTab == 'courses' ? '#351DC2' : '#888'}
+                                                color={activeTab == 'courses' ? 'var(--primary)' : '#888'}
                                                 weight="duotone" />
                                         </span>
                                         <span class="nav-text">Corsi</span>
@@ -282,7 +282,7 @@
                                         <span class="nav-icon mr-1">
                                             <Ticket
                                                 size="19"
-                                                color={activeTab == 'carnet' ? '#351DC2' : '#888'}
+                                                color={activeTab == 'carnet' ? 'var(--primary)' : '#888'}
                                                 weight="duotone" />
                                         </span>
                                         <span class="nav-text">Carnet</span>

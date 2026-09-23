@@ -141,7 +141,7 @@
                             <div class="ml-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 20 20" fill="none">
                                     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                        <circle fill="#351DC2" cx="10" cy="10" r="6" />
+                                        <circle fill="var(--primary)" cx="10" cy="10" r="6" />
                                     </g>
                                 </svg>
                             </div>

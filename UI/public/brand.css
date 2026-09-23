@@ -1,0 +1,60 @@
+/* Runtime values are supplied by BrandTheme.js; these are pre-bootstrap defaults. */
+:root {
+  --primary-rgb: 53, 29, 194;
+  --primary-hover: #2f1aab;
+  --primary-active: #291798;
+  --on-primary: #fff;
+  --on-primary-hover: #fff;
+  --on-primary-active: #fff;
+  --primary-text: var(--primary);
+  --primary-subtle-text: var(--primary);
+  --primary-border: rgba(var(--primary-rgb), .4);
+}
+[data-theme="dark"] .text-on-primary, .text-on-primary, .bg-primary .text-white { color: var(--on-primary) !important; }
+[data-theme="dark"] .bg-primary, [data-theme="dark"] .badge-primary, [data-theme="dark"] .label-primary,
+.bg-primary, .badge-primary, .label-primary,
+.ec-event-solid-primary, .swal2-styled.swal2-confirm,
+.privacypolicies-com---palette-light .cc-nb-okagree,
+.privacypolicies-com---palette-light .cc-cp-foot-save {
+  color: var(--on-primary) !important;
+}
+.swal2-styled.swal2-confirm:hover { background-color: var(--primary-hover) !important; color: var(--on-primary-hover) !important; }
+.swal2-styled.swal2-confirm:active { background-color: var(--primary-active) !important; color: var(--on-primary-active) !important; }
+.swal2-styled.swal2-confirm:focus-visible { box-shadow: 0 0 0 .2rem var(--focus-color) !important; }
+.text-primary, a.text-primary { color: var(--primary-text) !important; }
+a.text-primary:hover { color: var(--text-link-hover) !important; }
+.label-light-primary, .badge-light-primary, .alert-light-primary, .alert-primary,
+[data-theme="dark"] .label-light-primary, [data-theme="dark"] .badge-light-primary {
+  background-color: var(--light-primary) !important;
+  color: var(--primary-subtle-text) !important;
+  outline-color: var(--primary-border) !important;
+}
+/* Shared active/hover underline used by detail and calendar tabs. */
+[data-theme="dark"] .nav-tabs .nav-item .nav-link.active,
+[data-theme="dark"] .nav-tabs .nav-link.active, [data-theme="dark"] .nav-tabs .nav-link:hover,
+.nav-tabs .nav-link.active, .nav-tabs .nav-link:hover {
+  border-bottom: 4px solid var(--primary) !important;
+}
+
+/* Glyphs and active controls use the foreground of their actual primary surface. */
+.checkbox:not(.checkbox-outline):not([class*="success"]):not([class*="danger"]):not([class*="warning"]):not([class*="info"]):not([class*="secondary"]):not([class*="dark"]) > input:checked ~ span:after,
+[data-theme="dark"] .checkbox.checkbox-primary > input:checked ~ span:after {
+  border-color: var(--on-primary) !important;
+}
+.radio.radio-primary:not(.radio-outline):not(.radio-accent) > input:checked ~ span:after { background-color: var(--on-primary); border-color: var(--on-primary); }
+.switch.switch-primary:not(.switch-outline) input ~ span:after { background-color: var(--on-primary); }
+[data-theme="dark"] .list-group-item.active { color: var(--on-primary) !important; }
+[data-theme="dark"] .btn-primary:active { border-color: var(--primary-active) !important; }
+[data-theme="dark"] .btn-primary:disabled { background-color: var(--primary) !important; color: var(--on-primary) !important; }
+[data-theme="dark"] .btn-primary span, [data-theme="dark"] .btn-primary i,
+[data-theme="dark"] .btn-primary svg { color: inherit !important; }
+
+
+[data-theme="dark"] .nav-pills .nav-link.active {
+  background-color: var(--primary) !important;
+  color: var(--on-primary) !important;
+}
+/* Embedded editor controls, excluding the authored email document. */
+[data-theme="dark"] .MuiButton-containedPrimary { color: var(--on-primary) !important; }
+[data-theme="dark"] .MuiButton-containedPrimary:hover { color: var(--on-primary-hover) !important; }
+[data-theme="dark"] .MuiButton-containedPrimary:active { color: var(--on-primary-active) !important; background-color: var(--primary-active) !important; }

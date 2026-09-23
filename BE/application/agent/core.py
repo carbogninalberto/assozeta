@@ -85,14 +85,16 @@ class Agent:
         provider: LLMProvider,
         callback: AgentCallback,
         user_id: str = None,
+        ai_config: dict = None,
     ):
         self.sport_association_id = str(sport_association_id)
         self.sport_association_name = sport_association_name
         self.user_id = str(user_id) if user_id else None
         self.provider = provider
         self.callback = callback
-        self.max_iterations = getattr(settings, 'MCP_AGENT_MAX_ITERATIONS', 10)
-        self.history_cap = getattr(settings, 'MCP_AGENT_HISTORY_CAP', 50)
+        ai_config = ai_config or {}
+        self.max_iterations = ai_config.get('max_iterations') or getattr(settings, 'MCP_AGENT_MAX_ITERATIONS', 10)
+        self.history_cap = ai_config.get('history_cap') or getattr(settings, 'MCP_AGENT_HISTORY_CAP', 50)
 
         self._schema_cache = None
         self._recent_tool_calls = []  # Track recent tool call signatures for loop detection

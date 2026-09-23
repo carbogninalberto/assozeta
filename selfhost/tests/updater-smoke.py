@@ -17,6 +17,9 @@ def run(image):
     project = f'assozeta-updater-smoke-{uuid4().hex[:10]}'
     env_file = temporary / '.env'
     env_file.write_text(f'COMPOSE_PROJECT_NAME={project}\nASSOZETA_VERSION=1.0.1\nASSOZETA_UPDATER_REF={image}\nCUSTOM_SETTING=preserved\n')
+    with env_file.open('a') as output:
+        for name in ('backend', 'web', 'renderer'):
+            output.write(f'ASSOZETA_{name.upper()}_IMAGE=ghcr.io/carbogninalberto/assozeta-{name}\n')
     shutil.copy(ROOT / 'selfhost/compose.updater.yml', temporary)
     base_command = ['docker', 'run', '--rm', '-v', f'{temporary}:{temporary}', '-v', '/var/run/docker.sock:/var/run/docker.sock']
     command = base_command + [image]
@@ -94,6 +97,30 @@ for path, method, expected in [('/diagnostics','GET',405),('/updates','POST',404
         assert rejected['code'] == 409
         assert status()['data']['active'] is None
         pending.rmdir()
+        canonical = env_file.read_text()
+        env_file.write_text(canonical.replace('ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web', 'ASSOZETA_WEB_IMAGE=custom'))
+        assert not status()['data']['can_update']
+        assert 'ASSOZETA_WEB_IMAGE' in status()['data']['reason']
+        assert status(request={'release_id': 2, 'tag': 'v1.0.2', 'source_version': '1.0.1',
+                               'request_id': str(uuid4()), 'actor_id': str(uuid4())})['code'] == 409
+        env_file.write_text(canonical)
+        # A caught post-migration error has no interrupted_at and no pending
+        # transaction in the incident. It must still block status and requests.
+        failed_request = {'release_id': 2, 'tag': 'v1.0.2', 'source_version': '1.0.1',
+                          'request_id': str(uuid4()), 'actor_id': str(uuid4())}
+        subprocess.run(command + ['-c', '''
+import json,sys
+from journal import Journal
+journal=Journal(sys.argv[1]+'/.updater/operations.sqlite3')
+# Create the record directly in its terminal state to avoid racing the worker.
+record={**json.loads(sys.argv[2]),'id':sys.argv[3],'status':'recovery_required','stage':'recovery_required'}
+with journal.connect() as db:
+    db.execute('INSERT INTO operations VALUES (?, ?, ?, ?)',(record['id'],record['request_id'],record['status'],json.dumps(record)))
+''', str(temporary), json.dumps(failed_request), str(uuid4())], check=True)
+        assert not status()['data']['can_update']
+        assert 'ripristino' in status()['data']['reason']
+        assert status(request={**failed_request, 'request_id': str(uuid4())})['code'] == 409
+        assert status(request=failed_request)['data']['operation']['status'] == 'recovery_required'
         fingerprint_code = "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('/run/assozeta-updater/token').read_bytes()).hexdigest())"
         before = subprocess.check_output(api_command + ['-c', fingerprint_code])
         subprocess.run(command + ['/runner/provision.py', str(temporary), str(env_file)], check=True)

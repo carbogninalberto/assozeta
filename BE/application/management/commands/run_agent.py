@@ -35,13 +35,20 @@ class Command(BaseCommand):
             ))
             return
 
-        provider = AIProvider()
+        from asgiref.sync import sync_to_async
+        from instance.integration_configuration import effective_integration
+        config = await sync_to_async(effective_integration)('ai')
+        if not config['enabled']:
+            self.stderr.write('Il bot AI è disattivato per questa istanza.')
+            return
+        provider = AIProvider(api_key=config['api_key'], model=config['model'], base_url=config['base_url'])
         callback = CLICallback()
         agent = Agent(
             sport_association_id=str(sa.sport_association_id),
             sport_association_name=sa.denomination,
             provider=provider,
             callback=callback,
+            ai_config=config,
         )
 
         self.stdout.write(self.style.SUCCESS(
@@ -66,4 +73,11 @@ class Command(BaseCommand):
             if not user_input.strip():
                 continue
 
+            config = await sync_to_async(effective_integration)('ai')
+            if not config['enabled']:
+                self.stderr.write('Il bot AI è disattivato per questa istanza.')
+                continue
+            agent.provider = AIProvider(api_key=config['api_key'], model=config['model'], base_url=config['base_url'])
+            agent.max_iterations = config['max_iterations']
+            agent.history_cap = config['history_cap']
             await agent.process_message(user_input)

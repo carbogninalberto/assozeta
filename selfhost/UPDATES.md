@@ -257,9 +257,135 @@ Publish the feature-containing release and all required images/assets before
 operators use the bootstrap commands against it. Fixture versions are local test
 releases, not releases published by this task.
 
-Desktop/mobile interaction has not been visually verified because no browser
-session is available to the development agent. The integration scenario invokes
-the authenticated owner API used by the tab, rather than clicking its controls.
+The application integration scenario invokes the authenticated owner API used
+by the tab. The reload feature is separately checked with compiled frontend
+fixtures in desktop/mobile browsers, including visual inspection. These fixtures
+do not substitute for a production rollout or the broader release browser gates.
+
+## Eligibility, recovery gates, and browser reload
+
+Automatic updates require explicit official repositories in
+`ASSOZETA_BACKEND_IMAGE`, `ASSOZETA_WEB_IMAGE`, and `ASSOZETA_RENDERER_IMAGE`, and
+an exact stable `ASSOZETA_VERSION` (optionally prefixed with `v`). Status and update
+submission expose the same eligibility restriction; the runner rechecks it before
+execution. The host CLI also refuses an unsupported managed invocation before
+changing configuration or starting a backup.
+
+Compose gives `ASSOZETA_*_REF` precedence over `ASSOZETA_*_IMAGE` and the version
+tag. A stale custom image name can therefore block automatic updating even while
+an official image digest is running. Do not remove digest pins to work around
+this check. Establish which release is installed and correct obsolete settings.
+Manual custom-image upgrades remain supported when application digest/reference
+overrides are absent; a legacy upgrade with any application `*_REF` is rejected
+because changing only the version would leave that reference unchanged.
+
+The environment version is the **configured target**, not proof that a release
+is installed. During managed deployment it changes transactionally before the
+new containers start. Success requires healthy services, matching image
+references, the backend's embedded version, and a verification receipt bound to
+the operation and target. Missing, malformed, unreadable, and mismatched receipts
+produce explicit verification errors; details stay in the private operation log.
+
+Every unresolved `recovery_required` operation blocks new requests, including
+caught failures without an `interrupted_at` timestamp. Repeating the same request
+ID still returns its original operation. A pending distribution requires
+`recover-upgrade` with the matching backup. With no pending distribution,
+`reconcile-updates` also handles non-interrupted failures: a corrected source
+configuration must pass live verification, or the target must have its original
+valid receipt and pass live verification. Reconciliation neither changes a
+mismatched version nor manufactures evidence of success.
+
+Self Instance includes **Ricarica applicazione**. It reloads the entire browser
+document at the current URL, reinitializes the frontend, and invalidates only
+the cached instance configuration. Authentication and preferences are retained.
+Unsaved settings, uploads, and in-flight saves disable the action. A running
+server update does not disable it: after navigation, the page reads the durable
+operation again, including through the independent status endpoint during API
+maintenance. This action does not restart services or repair deployments.
+
+Caddy sends `Cache-Control: no-cache` for the entry document and static files,
+requiring revalidation. Vite fingerprints compiled assets. There is no registered
+application service worker to unregister or reset. Do not clear unrelated browser
+storage or replace the reload with client-router navigation.
+
+Run the compiled frontend reload checks behind the actual Caddy configuration:
+
+```sh
+npm ci --prefix UI
+npm ci --prefix selfhost/tests/browser
+npm exec --prefix selfhost/tests/browser -- playwright install chromium
+cd selfhost/tests/browser
+npm exec -- playwright test --config self-instance-reload.config.js
+```
+
+Docker is required. The fixture builds two frontend versions and tests deploying
+one over the other, session/route preservation, save guards, durable operation
+history, API downtime, cache headers, and the mobile layout. It uses only a
+disposable local API and Caddy container.
+
+## Recovery procedure for the 23 September 2026 incident
+
+This is an operator procedure, **not an automatic migration**. No production
+recovery or deployment is performed by the implementation or its tests.
+
+Affected installation:
+`/opt/assozeta/releases/stable-v1.0.5-20260920/selfhost` (resolve
+`/opt/assozeta/current/selfhost` again before acting).
+
+- `fcc58c2a-436c-4c95-aa38-ea9b4ef6b135` reached health verification without a
+  receipt. The environment became `1.0.6`, but the manifest and running backend
+  remained `1.0.5`; the configured image digests were unchanged.
+- `2d894870-0824-4a2c-987d-4f8d8e956cae` then failed source-version validation
+  before starting the lifecycle command. It must remain in history as failed.
+- The first operation's log reports `No migrations to apply.` and identifies
+  backup `backups/assozeta-20260923T061929Z.tar.gz`. Inspection found no pending
+  distribution transaction. Revalidate all of this before recovery; the server
+  may have changed since diagnosis.
+
+1. Build, test, and publish a new complete release containing the corrected
+   updater, lifecycle bundle, and frontend. Do not overwrite the published
+   `v1.0.6` artifacts or reuse their tag. Obtain the corrected updater's immutable
+   digest from that release's verified manifest. Repository edits alone do not
+   change the running controller.
+2. Schedule the recovery and stop only the updater controller using its separate
+   Compose project. Preserve its credential volumes and journal. Verify there
+   are no running lifecycle helpers or active operations before editing state.
+   Keep private copies of the environment, the journal using SQLite's backup API,
+   the retained manifest and operation logs, and the existing backup archive.
+   Coordinate environment edits under the installation's lifecycle lock.
+3. Compare every running application image with the retained `1.0.5` manifest,
+   check health and `/app/VERSION`, inspect the original migration log, and check
+   the database's migration state against the running source release. If there
+   is evidence of a partially applied newer release, stop this procedure and use
+   an appropriate data/distribution recovery. Merely seeing healthy containers
+   or changing a version string is insufficient.
+4. Only after confirming the source installation, explicitly correct
+   `ASSOZETA_VERSION=1.0.5` and
+   `ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web`. Preserve the verified
+   source application `*_REF` values. Set `ASSOZETA_UPDATER_REF` to the corrected
+   updater digest from step 1 and pull that exact image. This delivers the new
+   reconciliation code without overwriting managed installation files or
+   falsifying their baseline hashes. Release the manual lifecycle lock before
+   running the CLI, which acquires it itself.
+5. From the installation directory, execute `./bin/assozeta reconcile-updates`.
+   The existing CLI selects the helper using `ASSOZETA_UPDATER_REF`; therefore
+   updating that reference in step 4 is essential. The corrected helper handles
+   the non-interrupted failure, verifies the source services, and marks only the
+   unresolved operation recovered. The command then provisions the corrected
+   controller with the existing credentials. If verification fails, leave the
+   operation blocked and investigate; never edit its status or create a receipt
+   by hand.
+6. Verify status shows the first operation recovered and the second still failed,
+   with no active operation and updating enabled. Verify the running backend
+   still reports `1.0.5`. Select the new fixed release through Self Instance and
+   perform the normal managed upgrade. Verify the target images, embedded backend
+   version, original operation receipt, successful journal entry, and refreshed
+   updater. Then use **Ricarica applicazione** to load the new frontend.
+
+The generic `recover-upgrade` command cannot repair this particular historical
+state without a pending distribution transaction. Do not invent one, delete
+history, or restore the old database backup solely to fix the version mismatch:
+that could discard legitimate writes made after the failed attempt.
 
 ## Disposable verification
 

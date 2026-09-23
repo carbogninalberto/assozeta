@@ -355,7 +355,7 @@
         width: 70px;
         height: 70px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(53, 29, 194, 0.1) 0%, rgba(53, 29, 194, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--primary-rgb), 0.05) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -371,7 +371,7 @@
     .dropzone:hover,
     .dropzone.drag-over {
         border-color: var(--main-color, #351dc2);
-        background-color: rgba(53, 29, 194, 0.02);
+        background-color: rgba(var(--primary-rgb), 0.02);
     }
 
     .file-preview {

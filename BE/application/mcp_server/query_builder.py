@@ -252,8 +252,10 @@ class QueryBuilder:
 
     def __init__(self, sport_association_id):
         self.sport_association_id = sport_association_id
-        self.max_results = getattr(settings, 'MCP_AGENT_MAX_RESULTS', 5000)
-        self.query_timeout = getattr(settings, 'MCP_AGENT_QUERY_TIMEOUT', 10)
+        from instance.integration_configuration import effective_integration
+        config = effective_integration('ai', decrypt=False)
+        self.max_results = config['max_results']
+        self.query_timeout = config['query_timeout']
 
     def _set_query_timeout(self):
         """Set PostgreSQL statement timeout for the current connection."""

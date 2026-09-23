@@ -1,4 +1,5 @@
 <script>
+    import {brandPalette} from 'utils/BrandTheme.js';
     import moment from 'moment';
     import {onMount} from 'svelte';
     import {scale} from 'svelte/transition';
@@ -24,7 +25,7 @@
             customized_template: {
                 show_qr_code: true,
                 template: 'standard',
-                color: '#351DC2',
+                color: null,
             },
         },
         enumerate_invoices: false,
@@ -82,7 +83,7 @@
                         customized_template: {
                             show_qr_code: true,
                             template: 'standard',
-                            color: '#351DC2',
+                            color: null,
                         },
                     };
                 } else {
@@ -91,7 +92,7 @@
                         settings.membership_card_configuration.customized_template = {
                             show_qr_code: true,
                             template: 'standard',
-                            color: '#351DC2',
+                            color: null,
                         };
                     } else {
                         // add missing keys to customized_template
@@ -102,7 +103,7 @@
                             settings.membership_card_configuration.customized_template.template = 'standard';
                         }
                         if (settings.membership_card_configuration.customized_template.color === undefined) {
-                            settings.membership_card_configuration.customized_template.color = '#351DC2';
+                            settings.membership_card_configuration.customized_template.color = null;
                         }
                     }
                 }
@@ -811,10 +812,16 @@ toast.success('Impostazioni generali aggiornate.');
                                 disabled={!canPerformAction('other.settings.update')}
                                 type="color"
                                 name=""
-                                bind:value={settings.membership_card_configuration.customized_template.color} />
+                                value={settings.membership_card_configuration.customized_template.color || $brandPalette.brand}
+                                on:input={event => settings.membership_card_configuration.customized_template.color = event.currentTarget.value} />
                             <span />
                         </div>
 
+                        <div class="col-12 mb-3">
+                            <button type="button" class="btn btn-sm btn-light-primary"
+                                disabled={!canPerformAction('other.settings.update') || !settings.membership_card_configuration.customized_template.color}
+                                on:click={() => settings.membership_card_configuration.customized_template.color = null}>Usa il colore dell’istanza</button>
+                        </div>
                         <label class="col-12 col-form-label font-weight-bolder text-left">Layout della tessera</label>
                         <div class="col-12 d-flex justify-content-start align-items-center mb-3">
                             <select

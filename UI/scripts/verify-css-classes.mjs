@@ -40,6 +40,7 @@ const NEW_CSS = [
     'public/static/assets/plugins/event-calendar/event-calendar.min.css',
     'public/global.css',
     'public/dark-mode.css',
+    'public/brand.css',
 ];
 
 // Classes created at runtime with dynamic parts (expanded manually).

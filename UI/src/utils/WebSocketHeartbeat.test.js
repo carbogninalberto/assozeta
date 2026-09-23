@@ -127,7 +127,7 @@ for (const [name, WebSocketClass] of [
 }
 
 test('existing terminal close codes remain terminal', () => {
-    for (const code of [4001, 4002, 4003]) {
+    for (const code of [4001, 4002, 4003, 4004]) {
         FakeWebSocket.instances = [];
         const agent = new AgentWebSocket('token');
         agent.connect();

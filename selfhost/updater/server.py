@@ -15,10 +15,21 @@ from diagnostics import backup_readiness
 from engine import Engine
 from journal import Journal, Conflict
 from release_catalog import version_tuple
-from common import read_env
+from common import read_env, update_eligibility_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
 
 PROTOCOL = 1
+
+
+def update_blocked_reason(root, env_file, journal):
+    if (Path(root) / '.updater/pending-distribution').exists():
+        return 'La transazione precedente richiede un ripristino prima di un nuovo aggiornamento.'
+    if journal.requiring_recovery():
+        return 'Un aggiornamento richiede una verifica di ripristino prima di un nuovo tentativo.'
+    try:
+        return update_eligibility_reason(read_env(env_file))
+    except OSError:
+        return 'La configurazione dell’installazione non è leggibile. Verifica il server prima di aggiornare.'
 
 
 class Server(ThreadingMixIn, UnixStreamServer):
@@ -56,11 +67,7 @@ def serve(root, env_file, engine_class=Engine):
     wake = threading.Event()
 
     def blocked_reason():
-        if (directory / 'pending-distribution').exists():
-            return 'La transazione precedente richiede un ripristino prima di un nuovo aggiornamento.'
-        if journal.interrupted():
-            return 'Un aggiornamento interrotto richiede la verifica dell’operatore prima di un nuovo tentativo.'
-        return None
+        return update_blocked_reason(root, env_file, journal)
 
     def status_payload():
         records = journal.records()
