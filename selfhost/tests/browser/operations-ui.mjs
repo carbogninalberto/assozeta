@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {chromium, expect} from '@playwright/test';
+import {setSwitch} from './switch.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const ui = path.join(root, 'UI');
 const {createServer} = await import(pathToFileURL(path.join(ui, 'node_modules/vite/dist/node/index.js')));
@@ -125,6 +126,9 @@ try {
         await expect(emailNavigation).toHaveAttribute('aria-pressed', 'true');
         await expect(page.getByRole('heading', {name: 'Email di sistema', exact: true})).toBeVisible();
         await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeDisabled();
+        await page.getByText('Password e opzioni avanzate', {exact: true}).click();
+        await setSwitch(page, 'email-clear-password', 'Rimuovi la password salvata', true);
+        await setSwitch(page, 'email-clear-password', 'Rimuovi la password salvata', false);
         await page.getByLabel('Server SMTP', {exact: true}).fill('smtp.example.test');
         await page.getByLabel('Email mittente', {exact: true}).fill('sender@example.test');
         await page.getByLabel('Nome mittente', {exact: true}).fill('Club');
@@ -142,6 +146,9 @@ try {
         await page.reload();
         await navigate('Email');
         await expect(page.getByLabel('Server SMTP', {exact: true})).toHaveValue('smtp.example.test');
+        await page.getByText('Ripristina le impostazioni di ambiente', {exact: true}).click();
+        await setSwitch(page, 'email-confirmReset', 'Confermo il ripristino della configurazione di ambiente', true);
+        await setSwitch(page, 'email-confirmReset', 'Confermo il ripristino della configurazione di ambiente', false);
         await page.getByRole('button', {name: 'Verifica connessione SMTP'}).click();
         await expect(page.getByText('Connessione SMTP riuscita. Nessun messaggio inviato.')).toBeVisible();
         assert.equal(sent, 0);
@@ -169,6 +176,13 @@ try {
         await expect(page.getByLabel('Chiave segreta Stripe', {exact: true})).toHaveValue('');
         await expect(page.getByLabel('Firma webhook Stripe', {exact: true})).toHaveValue('');
         await expect(page.getByRole('button', {name: 'Salva Stripe', exact: true})).toBeDisabled();
+        for (const provider of ['stripe', 'google', 'apple']) {
+            const title = provider[0].toUpperCase() + provider.slice(1);
+            const label = provider === 'apple' ? 'Abilita verifica token Apple' : `Abilita ${title}`;
+            const checked = await page.getByRole('switch', {name: label, exact: true}).isChecked();
+            await setSwitch(page, `integration-${provider}-enabled`, label, !checked);
+            await setSwitch(page, `integration-${provider}-enabled`, label, checked);
+        }
         await page.getByLabel('Chiave pubblica Stripe', {exact: true}).fill('pk_test_changed');
         await page.getByLabel('Chiave segreta Stripe', {exact: true}).fill('sk_test_changed');
         await navigate('Panoramica'); await navigate('Integrazioni •');
@@ -194,8 +208,7 @@ try {
         await page.screenshot({path: path.join(output, `integrations-${viewport.width}.png`), fullPage: true});
         await page.getByText('Ripristina Stripe da .env', {exact: true}).click();
         await expect(page.getByRole('button', {name: 'Ripristina Stripe', exact: true})).toBeDisabled();
-        await page.locator('label[for="stripe-confirm-reset"]').click();
-        await expect(page.getByRole('switch', {name: 'Confermo il ripristino di Stripe da .env'})).toBeChecked();
+        await setSwitch(page, 'stripe-confirm-reset', 'Confermo il ripristino di Stripe da .env', true);
         await page.getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
         await navigate('Aggiornamenti e backup');

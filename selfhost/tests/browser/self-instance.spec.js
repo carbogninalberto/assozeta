@@ -1,6 +1,7 @@
 import {test, expect} from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import {setSwitch} from './switch.js';
 
 const input = JSON.parse(fs.readFileSync(process.env.ASSOZETA_BROWSER_INPUT, 'utf8'));
 const phase = process.env.ASSOZETA_BROWSER_PHASE;
@@ -37,7 +38,7 @@ for (const viewport of viewports) {
                 await page.getByLabel('Email mittente', {exact: true}).fill('fixture@example.test');
                 await page.getByLabel('Nome mittente', {exact: true}).fill('Disposable fixture');
                 await page.getByText('Password e opzioni avanzate', {exact: true}).click();
-                await page.getByLabel('Rimuovi la password salvata').check();
+                await setSwitch(page, 'email-clear-password', 'Rimuovi la password salvata', true);
                 await page.getByRole('button', {name: 'Salva email', exact: true}).click();
                 await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeDisabled();
                 await page.reload();
@@ -69,13 +70,13 @@ for (const viewport of viewports) {
                 await expect(page.locator('.diagnostic-result:visible').filter({has: page.getByText('Database', {exact: true})})).toContainText('Verificato');
                 await page.getByRole('button', {name: 'Email', exact: true}).click();
                 await page.getByText('Ripristina le impostazioni di ambiente', {exact: true}).click();
-                await page.getByLabel('Confermo il ripristino della configurazione di ambiente').check();
+                await setSwitch(page, 'email-confirmReset', 'Confermo il ripristino della configurazione di ambiente', true);
                 await page.getByRole('button', {name: 'Ripristina email di ambiente', exact: true}).click();
                 await expect(page.getByText('Variabili di ambiente del server', {exact: true})).toBeVisible();
                 await page.getByRole('button', {name: 'Integrazioni', exact: true}).click();
                 for (const provider of ['Stripe', 'Google', 'Apple']) {
                     const card = page.locator('.integration-card').filter({has: page.getByRole('heading', {name: provider, exact: true})});
-                    await card.getByLabel(provider === 'Apple' ? 'Abilita verifica token Apple' : `Abilita ${provider}`, {exact: true}).uncheck();
+                    await setSwitch(card, `integration-${provider.toLowerCase()}-enabled`, provider === 'Apple' ? 'Abilita verifica token Apple' : `Abilita ${provider}`, false);
                     if (provider === 'Stripe') {
                         await card.getByLabel('Chiave pubblica Stripe', {exact: true}).fill('pk_test_disposable');
                         await card.getByLabel('Chiave segreta Stripe', {exact: true}).fill('sk_test_disposable');
@@ -93,7 +94,7 @@ for (const viewport of viewports) {
                 for (const provider of ['Stripe', 'Google', 'Apple']) {
                     const card = page.locator('.integration-card').filter({has: page.getByRole('heading', {name: provider, exact: true})});
                     await card.getByText(`Ripristina ${provider} da .env`, {exact: true}).click();
-                    await card.getByLabel(`Confermo il ripristino di ${provider} da .env`, {exact: true}).check();
+                    await setSwitch(card, `${provider.toLowerCase()}-confirm-reset`, `Confermo il ripristino di ${provider} da .env`, true);
                     await card.getByRole('button', {name: `Ripristina ${provider}`, exact: true}).click();
                     await expect(card.getByText('Variabili di ambiente del server (.env)', {exact: true})).toBeVisible();
                 }

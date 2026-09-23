@@ -88,7 +88,7 @@ jobs:
         run: |
           npm ci --prefix UI
           npm ci --prefix selfhost/tests/browser
-          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
           cd UI
           npm test
           cd ..
@@ -133,10 +133,50 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: docker/setup-buildx-action@v3
+      # Keep separate caches for each image. Both scenarios still build the
+      # checked-out source; cached layers never replace the test execution.
+      - name: Build backend test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./BE
+          load: true
+          tags: assozeta-backend:goal-test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-backend
+          cache-to: type=gha,mode=max,scope=quality-backend
+      - name: Build web test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./UI
+          load: true
+          tags: assozeta-web:goal-test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-web
+          cache-to: type=gha,mode=max,scope=quality-web
+      - name: Build renderer test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./selfhost/renderer
+          load: true
+          tags: assozeta-renderer:test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-renderer
+          cache-to: type=gha,mode=max,scope=quality-renderer
+      - name: Build updater test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./selfhost/updater/Dockerfile
+          load: true
+          tags: assozeta-updater:goal-test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-updater
+          cache-to: type=gha,mode=max,scope=quality-updater
       - name: Run disposable upgrade and browser verification
         env:
           ASSOZETA_QUALITY_REPORT_DIR: ${{ github.workspace }}/quality-reports
-        run: ./selfhost/tests/quality.sh '${{ matrix.scenario }}'
+        run: ./selfhost/tests/quality.sh '${{ matrix.scenario }}' --prepared-images
       - name: Retain safe evidence and screenshots
         if: always()
         uses: actions/upload-artifact@v4

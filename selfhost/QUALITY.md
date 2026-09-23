@@ -24,6 +24,15 @@ Docker, Node 22, Python, and the `v1.0.2` Git tag. Linux execution uses `sudo` f
 private-state inspection. The GitHub jobs provide an isolated runner and a shared
 browser installation path automatically.
 
+The upgrade matrix builds images with persistent GitHub Actions BuildKit caches,
+with a separate cache scope per image. It then calls `quality.sh` with
+`--prepared-images`, which checks that all four local images carry the current
+commit's revision label before running tests. Local commands still build images
+by default. Browser setup downloads only the Chromium headless shell used by the
+suite. Both upgrade scenarios and all browser checks still run on every selected
+commit; cache hits only reduce setup work. The first run populates the caches,
+so timing improvements must be measured on subsequent runs.
+
 On a host with a restrictive firewall, allow Docker containers to reach the
 selected temporary HTTP port through the Docker host gateway. Keep public
 ingress to test ports blocked. The harness does not change host firewall rules.

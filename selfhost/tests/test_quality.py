@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import socket
 import subprocess
+import sys
 import threading
 import unittest
 from unittest.mock import patch
@@ -14,6 +15,63 @@ import select_rehearsal
 
 
 class QualityTests(unittest.TestCase):
+    def run_quality_script(self, *arguments, stale_image='', missing_image=''):
+        root = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            calls = temporary / 'calls.jsonl'
+            stub = f'#!{sys.executable}\n' + '''import json, os, sys
+from pathlib import Path
+name = Path(sys.argv[0]).name
+args = sys.argv[1:]
+with open(os.environ['QUALITY_TEST_CALLS'], 'a') as output:
+    output.write(json.dumps([name, *args]) + '\\n')
+if name == 'git' and args == ['rev-parse', 'HEAD']:
+    print('a' * 40)
+elif name == 'uname':
+    print('Darwin')  # Avoid sudo in these orchestration-only tests.
+elif name == 'docker' and args[:2] == ['image', 'inspect']:
+    if args[-1] == os.environ['QUALITY_TEST_MISSING_IMAGE']:
+        sys.exit(1)
+    print('b' * 40 if args[-1] == os.environ['QUALITY_TEST_STALE_IMAGE'] else 'a' * 40)
+'''
+            for name in ('docker', 'git', 'npm', 'python3', 'uname'):
+                executable = temporary / name
+                executable.write_text(stub)
+                executable.chmod(0o755)
+            result = subprocess.run(['sh', str(root / 'selfhost/tests/quality.sh'), *arguments],
+                env={**os.environ, 'PATH': f'{temporary}:{os.environ["PATH"]}',
+                     'ASSOZETA_QUALITY_REPORT_DIR': str(temporary / 'reports'),
+                     'QUALITY_TEST_CALLS': str(calls), 'QUALITY_TEST_STALE_IMAGE': stale_image,
+                     'QUALITY_TEST_MISSING_IMAGE': missing_image}, capture_output=True, text=True)
+            return result, [json.loads(line) for line in calls.read_text().splitlines()]
+
+    def test_prepared_images_still_run_each_full_browser_scenario(self):
+        for scenario in ('legacy', 'recovery'):
+            with self.subTest(scenario=scenario):
+                result, calls = self.run_quality_script(scenario, '--prepared-images')
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(len([call for call in calls if call[:3] == ['docker', 'image', 'inspect']]), 4)
+                self.assertFalse(any(call[:2] == ['docker', 'build'] for call in calls))
+                execution = next(call for call in calls if call[0] == 'python3')
+                self.assertIn('--browser', execution)
+                self.assertEqual('--legacy' in execution, scenario == 'legacy')
+                self.assertNotIn('--operations-only', execution)
+
+    def test_prepared_images_reject_missing_or_stale_images_before_tests(self):
+        for image in ('assozeta-backend:goal-test', 'assozeta-web:goal-test', 'assozeta-renderer:test', 'assozeta-updater:goal-test'):
+            for problem in ('stale_image', 'missing_image'):
+                with self.subTest(image=image, problem=problem):
+                    result, calls = self.run_quality_script('recovery', '--prepared-images', **{problem: image})
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(any(call[0] in ('npm', 'python3') for call in calls))
+
+    def test_local_quality_command_still_builds_all_images(self):
+        result, calls = self.run_quality_script('recovery')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len([call for call in calls if call[:2] == ['docker', 'build']]), 4)
+        self.assertTrue(any(call[0] == 'python3' for call in calls))
+
     def test_readiness_rejects_a_server_that_accepts_but_never_responds(self):
         root = Path(__file__).resolve().parents[2]
         # Exercise the real lifecycle functions without dispatching a command
