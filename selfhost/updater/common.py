@@ -5,6 +5,19 @@ from pathlib import Path
 import re
 import tempfile
 
+from release_catalog import version_tuple
+
+
+def update_eligibility_reason(values):
+    """Keep in sync with supports_self_update in the host lifecycle CLI."""
+    for service in ('BACKEND', 'WEB', 'RENDERER'):
+        key = f'ASSOZETA_{service}_IMAGE'
+        if values.get(key) != f'ghcr.io/carbogninalberto/assozeta-{service.lower()}':
+            return f'Aggiornamenti automatici non disponibili: {key} deve indicare il repository ufficiale.'
+    if version_tuple(values.get('ASSOZETA_VERSION')) is None:
+        return 'Aggiornamenti automatici non disponibili: ASSOZETA_VERSION deve indicare una release stabile.'
+    return None
+
 
 def read_env(path):
     values = {}

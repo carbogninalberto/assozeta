@@ -14,19 +14,25 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 
-from common import atomic_write, read_env, update_env
+from common import atomic_write, read_env, update_env, update_eligibility_reason
 from distribution import digest, migration_started, prepare, rollback, unpack, validate_manifest
 from recovery import validate as validate_recovery, restore_files, finish as finish_recovery, reconcile
-from engine import Engine
+from engine import Engine, VerificationError
 from journal import Journal, Conflict
 from release_catalog import ReleaseError
-from server import validate_request
+from server import validate_request, update_blocked_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
 
 
 def request():
     return {'release_id': 2, 'tag': 'v1.0.2', 'source_version': 'v1.0.1',
             'request_id': str(uuid4()), 'actor_id': str(uuid4())}
+
+
+def official_environment(version='1.0.1'):
+    return f'ASSOZETA_VERSION={version}\n' + ''.join(
+        f'ASSOZETA_{service.upper()}_IMAGE=ghcr.io/carbogninalberto/assozeta-{service}\n'
+        for service in ('backend', 'web', 'renderer'))
 
 
 def archive(files):
@@ -316,6 +322,164 @@ class DistributionTests(unittest.TestCase):
 
 
 class EngineTests(unittest.TestCase):
+    def test_private_log_failure_still_persists_failed_operation(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            env.write_text(official_environment('1.0.6'))
+            journal = Journal(root / '.updater/operations.sqlite3')
+            operation = journal.create(request())
+            engine = Engine(root, env, journal, resolver=lambda _: {'tag': 'v1.0.2', 'artifacts_ready': True})
+            with patch('engine.os.open', side_effect=PermissionError('private path')):
+                engine.execute(operation)
+            self.assertEqual(journal.records()[0]['status'], 'failed')
+            self.assertNotIn('private path', json.dumps(journal.records()))
+
+    def test_live_verification_rejects_unhealthy_wrong_image_and_wrong_backend_version(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            refs = {f'ASSOZETA_{name}_REF': f'registry/{name.lower()}@sha256:' + 'a' * 64
+                    for name in ('BACKEND', 'WEB', 'RENDERER')}
+            env.write_text(official_environment('1.0.5'))
+            update_env(env, refs)
+            engine = Engine(root, env, None)
+            services = {service: refs[f'ASSOZETA_{name}_REF'] for service, name in
+                        [('api', 'BACKEND'), ('worker', 'BACKEND'), ('beat', 'BACKEND'), ('web', 'WEB'), ('renderer', 'RENDERER')]}
+            for fault in ('health', 'image', 'version', None):
+                def docker(command, **kwargs):
+                    if command[-3:] == ['config', '--format', 'json']:
+                        return json.dumps({'services': {key: {'image': value} for key, value in services.items()}})
+                    if command[0:2] == ['docker', 'inspect']:
+                        service = command[-1]
+                        return json.dumps([{'State': {'Running': True, 'Health': {'Status': 'unhealthy' if fault == 'health' else 'healthy'}},
+                                            'Config': {'Image': 'wrong' if fault == 'image' else services[service]}}])
+                    if command[-2:] == ['cat', '/app/VERSION']:
+                        return 'v1.0.6' if fault == 'version' else 'v1.0.5'
+                    return command[-1]
+                with self.subTest(fault=fault), patch('engine.subprocess.check_output', side_effect=docker):
+                    if fault:
+                        with self.assertRaises(RuntimeError):
+                            engine.verify_running('1.0.5', allow_configured_images=True)
+                    else:
+                        engine.verify_running('1.0.5', allow_configured_images=True)
+                        engine.verify_running('1.0.5')
+
+    def test_incident_retry_reports_version_mismatch_before_launch(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            env.write_text(official_environment('1.0.6'))
+            journal = Journal(root / '.updater/operations.sqlite3')
+            operation = journal.create({**request(), 'tag': 'v1.0.6', 'source_version': 'v1.0.5'})
+            engine = Engine(root, env, journal, resolver=lambda _: {'tag': 'v1.0.6', 'artifacts_ready': True})
+            with patch.object(engine, 'launch_command') as launch:
+                engine.execute(operation)
+                launch.assert_not_called()
+            record = journal.records()[0]
+            self.assertEqual(record['failed_stage'], 'checking')
+            self.assertIn('richiesta 1.0.5, configurata 1.0.6', record['error'])
+            self.assertEqual(read_env(env)['ASSOZETA_VERSION'], '1.0.6')
+
+    def test_eligibility_rechecked_after_queue_and_release_errors_are_distinct(self):
+        for scenario, expected in [('custom', 'ASSOZETA_WEB_IMAGE'), ('release', 'distribuzione completa'),
+                                   ('older', 'successiva'), ('invalid', 'stabile valida'), ('recovery', 'ripristino')]:
+            with self.subTest(scenario=scenario), TemporaryDirectory() as directory:
+                root = Path(directory)
+                env = root / '.env'
+                env.write_text(official_environment())
+                journal = Journal(root / '.updater/operations.sqlite3')
+                if scenario == 'recovery':
+                    old = journal.create(request())
+                    journal.update(old['id'], status='failed')
+                operation = journal.create(request())
+                release = {'tag': 'v1.0.2', 'artifacts_ready': scenario != 'release'}
+                if scenario == 'custom':
+                    update_env(env, {'ASSOZETA_WEB_IMAGE': 'private-secret-image-name'})
+                if scenario == 'older':
+                    operation['tag'] = release['tag'] = 'v1.0.1'
+                if scenario == 'invalid':
+                    update_env(env, {'ASSOZETA_VERSION': 'private-secret-version'})
+                if scenario == 'recovery':
+                    journal.update(old['id'], status='recovery_required')
+                engine = Engine(root, env, journal, resolver=lambda _: release)
+                with patch.object(engine, 'launch_command') as launch:
+                    engine.execute(operation)
+                    launch.assert_not_called()
+                record = journal.records()[0]
+                self.assertIn(expected, record['error'])
+                self.assertNotIn('private-secret', json.dumps(record))
+
+    def test_missing_receipt_is_private_logged_failure_and_blocks_retry(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            env = root / '.env'
+            env.write_text(official_environment())
+            journal = Journal(root / '.updater/operations.sqlite3')
+            operation = journal.create(request())
+            engine = Engine(root, env, journal, resolver=lambda _: {'tag': 'v1.0.2', 'artifacts_ready': True})
+            with patch.object(engine, 'launch_command', return_value=[sys.executable, '-c', 'print("@@ASSOZETA_STAGE health_check")']), patch.object(engine, 'refresh_runner') as refresh:
+                engine.execute(operation)
+                refresh.assert_not_called()
+            record = journal.records()[0]
+            self.assertEqual(record['status'], 'recovery_required')
+            self.assertNotIn('interrupted_at', record)
+            self.assertIn('manca la ricevuta', record['error'])
+            log = root / '.updater/logs' / f'{operation["id"]}.log'
+            self.assertEqual(log.stat().st_mode & 0o777, 0o600)
+            self.assertIn('FileNotFoundError', log.read_text())
+            self.assertNotIn(str(root), json.dumps(record))
+            self.assertIn('ripristino', update_blocked_reason(root, env, journal))
+            with self.assertRaises(Conflict):
+                journal.create(request())
+            self.assertEqual(journal.create({k: operation[k] for k in request()})['id'], operation['id'])
+
+    def test_non_interrupted_recovery_requires_verified_state_and_no_silent_version_fix(self):
+        for configured in ('1.0.5', '1.0.6', '1.0.9'):
+            with self.subTest(configured=configured), TemporaryDirectory() as directory:
+                root = Path(directory)
+                env = root / '.env'
+                env.write_text(official_environment(configured))
+                original = env.read_bytes()
+                journal = Journal(root / '.updater/operations.sqlite3')
+                operation = journal.create({**request(), 'tag': 'v1.0.6', 'source_version': 'v1.0.5'})
+                journal.update(operation['id'], status='recovery_required', stage='recovery_required')
+                self.assertEqual(journal.interrupted(), [])
+                with patch.object(Engine, 'verify_running', side_effect=RuntimeError('mismatch')) as verify:
+                    with self.assertRaises((ReleaseError, RuntimeError)):
+                        reconcile(root, env)
+                    self.assertEqual(env.read_bytes(), original)
+                    self.assertEqual(len(journal.requiring_recovery()), 1)
+                    if configured == '1.0.9':
+                        verify.assert_not_called()
+                        continue
+                    if configured == '1.0.6':
+                        verify.assert_not_called()
+                        Engine(root, env, None).record_verification(operation['id'], configured)
+                        with self.assertRaises(RuntimeError):
+                            reconcile(root, env)
+                    verify.side_effect = None
+                    reconcile(root, env)
+                    verify.assert_called_with(configured, **({'allow_configured_images': True} if configured == '1.0.5' else {}))
+                self.assertEqual(journal.requiring_recovery(), [])
+                self.assertEqual(journal.records()[0]['status'], 'recovered' if configured == '1.0.5' else 'succeeded')
+
+    def test_malformed_receipts_are_explicitly_rejected(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            engine = Engine(root, root / '.env', None)
+            operation = request() | {'id': str(uuid4())}
+            engine.record_verification(operation['id'], '1.0.2')
+            path = engine.verification_path(operation['id'])
+            valid = json.loads(path.read_text())
+            for raw in ('{', '[]', 'null', json.dumps(valid | {'verified_at': 'tomorrow'}),
+                        json.dumps(valid | {'verified_at': '2026-09-23T08:00:00'}),
+                        json.dumps(valid | {'schema_version': True}), json.dumps(valid | {'operation_id': str(uuid4())})):
+                with self.subTest(raw=raw):
+                    path.write_text(raw)
+                    with self.assertRaises(VerificationError):
+                        engine.require_verification(operation)
+
     def test_interruption_reconciliation_requires_verified_source_or_receipted_target(self):
         for version in ('1.0.1', '1.0.2', '1.0.9'):
             with self.subTest(version=version), TemporaryDirectory() as directory:
@@ -335,7 +499,7 @@ class EngineTests(unittest.TestCase):
                         self.assertEqual(len(journal.interrupted()), 1)
                         continue
                     if version == '1.0.2':
-                        with self.assertRaises(FileNotFoundError):
+                        with self.assertRaises(VerificationError):
                             reconcile(root, env)
                         self.assertEqual(len(journal.interrupted()), 1)
                         engine.record_verification(operation['id'], version)
@@ -365,7 +529,7 @@ class EngineTests(unittest.TestCase):
                 script.write_text(f'#!/bin/sh\nprintf "@@ASSOZETA_STAGE migrating\\n"\nexit {exit_code}\n')
                 script.chmod(0o755)
                 env = root / '.env'
-                env.write_text('ASSOZETA_VERSION=1.0.1\n')
+                env.write_text(official_environment())
                 journal = Journal(root / '.updater/operations.sqlite')
                 operation = journal.create(request())
                 engine = Engine(root, env, journal, resolver=lambda _: {'tag': 'v1.0.2', 'artifacts_ready': True})
@@ -382,14 +546,14 @@ class EngineTests(unittest.TestCase):
             root = Path(directory)
             engine = Engine(root, root / '.env', None)
             operation = {'id': str(uuid4()), 'tag': 'v1.0.2'}
-            with self.assertRaises(FileNotFoundError):
+            with self.assertRaises(VerificationError):
                 engine.require_verification(operation)
             engine.record_verification(operation['id'], '1.0.1')
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(VerificationError):
                 engine.require_verification(operation)
             engine.record_verification(operation['id'], '1.0.2')
             self.assertEqual(engine.require_verification(operation)['version'], '1.0.2')
-            with self.assertRaises(FileNotFoundError):
+            with self.assertRaises(VerificationError):
                 engine.require_verification({**operation, 'id': str(uuid4())})
 
 

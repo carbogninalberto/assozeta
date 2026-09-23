@@ -6,9 +6,11 @@
     let fileInput;
     export let changes = false;
     export let disabled = false;
+    export let busy = false;
     let selectedFile = null;
     let previewUrl = '';
     let uploading = false;
+    $: busy = uploading;
     let error = '';
     $: changes = selectedFile !== null;
 

@@ -34,15 +34,20 @@
     }
 
     handle @ui_static {
+        header Cache-Control "no-cache"
         file_server
     }
 
     handle_path /static/* {
         root * /django-static
+        header Cache-Control "no-cache"
         file_server
     }
 
     handle {
+        # Revalidate entry HTML and unversioned public assets on full reloads.
+        # Compiled JS/CSS also use content hashes in their filenames.
+        header Cache-Control "no-cache"
         try_files {path} /index.html
         file_server
     }

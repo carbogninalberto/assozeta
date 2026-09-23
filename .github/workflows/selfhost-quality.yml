@@ -93,6 +93,11 @@ jobs:
           npm test
           cd ..
           node selfhost/tests/browser/operations-ui.mjs
+      - name: Verify full application reload behind Caddy
+        working-directory: selfhost/tests/browser
+        env:
+          ASSOZETA_RELOAD_BROWSER_OUTPUT: ${{ github.workspace }}/quality-reports/reload-ui
+        run: npm exec -- playwright test --config self-instance-reload.config.js
       - name: Retain fixture screenshots and acceptance results
         if: always()
         uses: actions/upload-artifact@v4
@@ -101,6 +106,7 @@ jobs:
           path: |
             quality-reports/operations-ui/*.json
             quality-reports/operations-ui/*.png
+            quality-reports/reload-ui/**/*.png
           if-no-files-found: warn
           retention-days: 14
 

@@ -7,7 +7,7 @@
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
     import {readStoredStatus} from './independentStatus.js';
     import InstanceUpdateStatus from './InstanceUpdateStatus.svelte';
-    import {getApiHost, saveRuntimeConfig} from 'store/instanceStore.js';
+    import {getApiHost, saveRuntimeConfig, clearInstanceCache} from 'store/instanceStore.js';
     import InstanceBranding from './InstanceBranding.svelte';
     import InstanceEmail from './InstanceEmail.svelte';
     import InstanceIntegrations from './InstanceIntegrations.svelte';
@@ -23,6 +23,7 @@
     let draft = {};
     let saved = '';
     let logoChanges = false;
+    let logoBusy = false;
     let emailChanges = false;
     let emailBusy = false;
     let aiChanges = false;
@@ -85,6 +86,7 @@
 
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges || (!!saved && JSON.stringify(draft) !== saved);
     $: active = simulation || runner.active;
+    $: reloadBlocked = loading || changes || saving || logoBusy || emailBusy || aiBusy || integrationBusy || starting || diagnosticBusy;
     $: updateReady = !apiUnavailable && !diagnosticBusy && !emailBusy && !aiBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
         info?.mode === 'production' && catalog?.relation === 'behind' && catalog?.latest?.artifacts_ready;
 
@@ -95,6 +97,14 @@
             throw new Error(typeof detail === 'string' ? detail : 'Operazione non riuscita. Riprova.');
         }
         return result.response;
+    }
+
+    function reloadApplication() {
+        if (reloadBlocked) return;
+        // Re-fetch runtime configuration at startup, preserving session/preferences.
+        // Caddy revalidates the document and mutable assets; Vite fingerprints JS.
+        clearInstanceCache();
+        window.location.reload();
     }
 
     async function loadInfo(resetDraft = false) {
@@ -240,6 +250,12 @@
             {#if info}<span class="label label-inline label-light-primary mb-3">{info.mode === 'production' ? 'Produzione' : 'Sviluppo'}</span>{/if}
             <p class="text-muted mb-0">Configurazione, salute e manutenzione della tua installazione.</p>
         </div>
+        <div class="reload-application">
+            <button type="button" class="btn btn-light-primary" disabled={reloadBlocked} aria-describedby="reload-application-help" on:click={reloadApplication}>Ricarica applicazione</button>
+            <p id="reload-application-help" class="text-muted mb-0">Riapre questa pagina con la versione disponibile e mantiene la sessione.
+                {#if changes} Salva o annulla le modifiche prima di ricaricare.{:else if reloadBlocked} Attendi il completamento dell’operazione in corso.{/if}
+            </p>
+        </div>
     </div>
     <div class="card-body instance-body">
         {#if error}<InstanceAlert tone="danger" role="alert">{error}</InstanceAlert>{/if}
@@ -307,7 +323,7 @@
                     </div>
                 </form>
             </section>
-            <InstanceBranding bind:changes={logoChanges} disabled={apiUnavailable || !!active || starting} />
+            <InstanceBranding bind:changes={logoChanges} bind:busy={logoBusy} disabled={apiUnavailable || !!active || starting} />
             </div>
             <div hidden={section !== 'updates'}>
             {#if section === 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} />{/if}
@@ -393,6 +409,7 @@
 </div>
 
 <style>
+    .reload-application { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; max-width: 26rem; padding: 0.75rem 0; }
     .text-muted { color: #536171 !important; }
     [hidden] { display: none !important; }
     .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
