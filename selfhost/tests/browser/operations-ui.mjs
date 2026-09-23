@@ -21,7 +21,7 @@ const server = await createServer({
         },
         load(id) {
             if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options) { const r = await fetch(url, options); return {error: !r.ok, response: await r.json()}; }`;
-            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const uploadInstanceLogo = async () => {};`;
+            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {};`;
             if (id === '\0fixture-entry') return `import SelfInstance from '/src/routes/profile/sections/SelfInstance.svelte'; new SelfInstance({target: document.getElementById('app')});`;
         },
         configureServer(vite) {
@@ -114,15 +114,15 @@ try {
             } else throw new Error(`Unexpected request ${method} ${endpoint}`);
             await route.fulfill({status, contentType: 'application/json', body: JSON.stringify(value)});
         });
-        const navigate = label => page.getByRole('navigation', {name: 'Sezioni Self Instance'}).getByRole('button', {name: label, exact: true}).click();
+        const navigate = label => page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: label, exact: true}).click();
         await page.goto('http://127.0.0.1:5198/');
         await expect(page.getByRole('heading', {name: 'Panoramica', exact: true})).toBeVisible();
         await expect(page.getByText('Salute non ancora verificata')).toBeVisible();
         await expect(page.getByRole('heading', {name: 'Cronologia aggiornamenti', exact: true})).toHaveCount(0);
-        const emailNavigation = page.getByRole('navigation', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Email', exact: true});
+        const emailNavigation = page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Email', exact: true});
         await emailNavigation.focus();
         await page.keyboard.press('Enter');
-        await expect(emailNavigation).toHaveAttribute('aria-current', 'page');
+        await expect(emailNavigation).toHaveAttribute('aria-pressed', 'true');
         await expect(page.getByRole('heading', {name: 'Email di sistema', exact: true})).toBeVisible();
         await expect(page.getByRole('button', {name: 'Salva email', exact: true})).toBeDisabled();
         await page.getByLabel('Server SMTP', {exact: true}).fill('smtp.example.test');
@@ -194,7 +194,8 @@ try {
         await page.screenshot({path: path.join(output, `integrations-${viewport.width}.png`), fullPage: true});
         await page.getByText('Ripristina Stripe da .env', {exact: true}).click();
         await expect(page.getByRole('button', {name: 'Ripristina Stripe', exact: true})).toBeDisabled();
-        await page.getByLabel('Confermo il ripristino di Stripe da .env', {exact: true}).check();
+        await page.locator('label[for="stripe-confirm-reset"]').click();
+        await expect(page.getByRole('switch', {name: 'Confermo il ripristino di Stripe da .env'})).toBeChecked();
         await page.getByRole('button', {name: 'Ripristina Stripe', exact: true}).click();
         await expect(page.getByLabel('Chiave pubblica Stripe', {exact: true})).toHaveValue('pk_test_environment');
         await navigate('Aggiornamenti e backup');
