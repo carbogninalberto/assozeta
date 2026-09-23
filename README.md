@@ -20,6 +20,7 @@
 
 <!-- contributors:start -->
 <a href="https://github.com/carbogninalberto"><img src="https://avatars.githubusercontent.com/u/17618905?v=4&amp;s=64" width="64" height="64" alt="@carbogninalberto" title="@carbogninalberto"></a>
+<a href="https://github.com/cavalettig-ship-it"><img src="https://avatars.githubusercontent.com/u/268731189?v=4&amp;s=64" width="64" height="64" alt="@cavalettig-ship-it" title="@cavalettig-ship-it"></a>
 <!-- contributors:end -->
 
 > [!IMPORTANT]
