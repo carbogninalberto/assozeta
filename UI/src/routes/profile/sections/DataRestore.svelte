@@ -1,4 +1,5 @@
 <script>
+    import swal from 'sweetalert2';
     import {onMount, onDestroy} from 'svelte';
     import RestoreDownloadButton from './RestoreDownloadButton.svelte';
     import RestoreProgressCard from './RestoreProgressCard.svelte';
@@ -47,12 +48,13 @@
     let timer;
     let disposed = false;
     let backups = [];
+    const deletedBackupIds = new Set();
     let backupCursor;
     let backupsInitialized = false;
 
     function mergeBackups(incoming) {
         const combined = [...incoming, ...backups];
-        backups = combined.filter((op, index) => combined.findIndex(other => other.id === op.id) === index);
+        backups = combined.filter((op, index) => !deletedBackupIds.has(op.id) && combined.findIndex(other => other.id === op.id) === index);
     }
     $: active = status?.active;
     $: uploadLimit = formatSize(status?.max_upload_bytes || 5 * 1024 ** 3);
@@ -184,6 +186,18 @@
     }
     async function download(op, kind = 'backup') {
         if (busy) return;
+        if (kind === 'backup') {
+            error = '';
+            if (!op.download_token) { error = 'Aggiorna lo stato per ottenere il link di download.'; return; }
+            const link = document.createElement('a');
+            link.href = `${endpoint}/${op.id}/download?download_token=${encodeURIComponent(op.download_token)}`;
+            link.download = `backup-prima-del-ripristino-${op.id}.zip`;
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return;
+        }
         busy = true;
         error = '';
         downloading = `${op.id}:${kind}`;
@@ -199,13 +213,34 @@
         } catch (e) { error = e.message; }
         finally { busy = false; downloading = ''; }
     }
+    async function deleteBackup(op) {
+        if (busy) return;
+        const result = await swal.fire({
+            title: 'Eliminare il backup di sicurezza?',
+            text: 'La copia dei dati precedenti verrà eliminata definitivamente. I dati attuali dell’associazione resteranno invariati.',
+            icon: 'warning', showCancelButton: true, confirmButtonText: 'Elimina', cancelButtonText: 'Annulla',
+            reverseButtons: true, buttonsStyling: false,
+            customClass: {confirmButton: 'btn btn-danger font-weight-bolder', cancelButton: 'btn btn-secondary font-weight-bolder mr-2'},
+        });
+        if (!result.isConfirmed || busy) return;
+        busy = true;
+        error = '';
+        try {
+            await request(`${endpoint}/${op.id}/delete-backup`, {method: 'POST', body: JSON.stringify({confirm:true})});
+            deletedBackupIds.add(op.id);
+            backups = backups.filter(backup => backup.id !== op.id);
+            await refresh();
+        } catch (e) { error = e.message; }
+        finally { busy = false; }
+    }
+
     async function loadOlderBackups() {
         busy = true;
         error = '';
         try {
             const page = await request(`${endpoint}/backups?before=${encodeURIComponent(backupCursor)}`);
             const known = new Set(backups.map(op => op.id));
-            backups = [...backups, ...page.backups.filter(op => !known.has(op.id))];
+            backups = [...backups, ...page.backups.filter(op => !known.has(op.id) && !deletedBackupIds.has(op.id))];
             backupCursor = page.backups_next;
         } catch (e) { error = e.message; }
         finally { busy = false; }

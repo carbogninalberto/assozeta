@@ -19,11 +19,12 @@ from .views import (
     InstanceReconfigureView,
 )
 
-from .restore.views import DataRestoreView, DataRestoreActionView, DataRestoreBackupsView
+from .restore.views import DataRestoreView, DataRestoreActionView, DataRestoreBackupsView, DataRestoreDownloadView
 
 urlpatterns = [
     path('admin/data-restore', DataRestoreView.as_view(), name='instance-data-restore'),
     path('admin/data-restore/backups', DataRestoreBackupsView.as_view(), name='instance-data-restore-backups'),
+    path('admin/data-restore/<uuid:operation_id>/download', DataRestoreDownloadView.as_view(), name='instance-data-restore-download'),
     path('admin/data-restore/<uuid:operation_id>/<str:action>', DataRestoreActionView.as_view(), name='instance-data-restore-action'),
     path('admin/integrations/<str:provider>/test', IntegrationTestView.as_view(), name='instance-integration-test'),
     path('admin/integrations/<str:provider>', IntegrationSettingsView.as_view(), name='instance-integration-settings'),

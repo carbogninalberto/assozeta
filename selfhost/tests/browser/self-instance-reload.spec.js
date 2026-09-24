@@ -62,6 +62,11 @@ test('unsaved edits and an in-flight save block reload', async ({page}) => {
     await expect(reload).toBeDisabled();
     await expect(reload).toBeEnabled();
     await Promise.all([page.waitForEvent('load'), reload.click()]);
+    // Refresh preserves the selected tab; verify the saved form before opening
+    // the overview instead of expecting navigation to reset implicitly.
+    await expect(page).toHaveURL(/#\/profile\?page=self-instance&tab=branding$/);
+    await expect(page.getByLabel('Nome', {exact: true})).toHaveValue('Nome salvato');
+    await page.getByRole('group', {name: 'Sezioni Self Instance'}).getByRole('button', {name: 'Panoramica', exact: true}).click();
     await expect(page.locator('.overview-tile').getByText('Nome salvato', {exact: true})).toBeVisible();
 });
 

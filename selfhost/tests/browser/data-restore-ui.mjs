@@ -11,6 +11,7 @@ const {createServer} = await import(pathToFileURL(path.join(ui, 'node_modules/vi
 const {svelte} = await import(pathToFileURL(path.join(ui, 'node_modules/@sveltejs/vite-plugin-svelte/src/index.js')));
 const output = path.join(root, 'quality-reports/data-restore-ui');
 await fs.mkdir(output, {recursive: true});
+let serveBackupDownload;
 const server = await createServer({
     root: ui, configFile: false, logLevel: 'error', server: {host: '127.0.0.1', port: 5199, strictPort: true},
     resolve: {alias: {utils: `${ui}/src/utils`, store: `${ui}/src/store`}},
@@ -33,6 +34,9 @@ const server = await createServer({
         },
         configureServer(vite) {
             vite.middlewares.use(async (req, res, next) => {
+                if (req.url?.split('?')[0].endsWith('/download') && serveBackupDownload) {
+                    return serveBackupDownload(req, res);
+                }
                 if (req.url?.split('?')[0] !== '/') return next();
                 const html = await vite.transformIndexHtml('/', '<!doctype html><html lang="it"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/static/css/bootstrap.min.css"><link rel="stylesheet" href="/static/css/app-bundle.css"><link rel="stylesheet" href="/global.css"><link rel="stylesheet" href="/dark-mode.css"><link rel="stylesheet" href="/brand.css"></head><body><main id="app" style="max-width:1100px;margin:24px auto;padding:12px"></main><script type="module" src="/restore-entry.js"></script></body></html>');
                 res.setHeader('Content-Type', 'text/html'); res.end(html);
@@ -61,8 +65,19 @@ try {
         let downloadedPath;
         let profileFetches = 0;
         let failProfile = true;
+        // Native anchor downloads can bypass Playwright route interception.
+        // Serve actual attachment bytes from the disposable fixture server.
+        serveBackupDownload = (request, response) => {
+            const url = new URL(request.url, 'http://127.0.0.1:5199');
+            assert.equal(url.searchParams.get('download_token'), 'signed-11');
+            downloads++;
+            downloadedPath = url.pathname;
+            response.setHeader('Content-Type', 'application/zip');
+            response.setHeader('Content-Disposition', 'attachment; filename="recovery.zip"');
+            response.end('fixture backup bytes');
+        };
         const historicBackups = Array.from({length:12}, (_, i) => ({id:`old-backup-${i}`, state:'completed', stage:'completed',
-            created_at:`2026-08-${String(20-i).padStart(2,'0')}T12:00:00Z`, has_recovery_backup:true, preview:{}}));
+            created_at:`2026-08-${String(20-i).padStart(2,'0')}T12:00:00Z`, has_recovery_backup:true, download_token:`signed-${i}`, preview:{}}));
         await page.route('**/api/profile/info', route => {
             profileFetches++;
             return failProfile ? route.fulfill({status:503,json:{error:'Profilo non disponibile. Riprova.'}})
@@ -72,14 +87,10 @@ try {
         await page.route('**/api/instance/admin/data-restore**', async route => {
             const request = route.request();
             const endpoint = new URL(request.url()).pathname;
+            if (endpoint.endsWith('/download')) return route.continue();
             if (request.method() === 'GET' && endpoint.endsWith('/missing-relations')) {
                 relationReports++;
                 return route.fulfill({contentType: 'application/json', json: {missing_relations: [{model:'MedicalCertificate', field:'user_id', record_id:'certificate-original-id', target_id:'missing-user-id'}]}});
-            }
-            if (request.method() === 'GET' && endpoint.endsWith('/backup')) {
-                downloads++;
-                downloadedPath = endpoint;
-                return route.fulfill({contentType: 'application/zip', body: 'fixture backup bytes'});
             }
             if (request.method() === 'GET' && endpoint.endsWith('/backups')) {
                 const cursor = new URL(request.url()).searchParams.get('before');
@@ -116,10 +127,12 @@ try {
         await page.getByRole('button',{name:'Ripristina backup',exact:true}).click();
         await expect(page.getByText('Formato ZIP · Dimensione massima 5 GB', {exact:true})).toBeVisible();
         const picker = page.getByRole('button',{name:'Seleziona backup ZIP',exact:true});
-        await picker.focus();
-        const chooser = page.waitForEvent('filechooser');
-        await page.keyboard.press('Enter');
-        await (await chooser).setFiles({name:'wrong.txt',mimeType:'text/plain',buffer:Buffer.from('fixture')});
+        await expect(picker).toBeEnabled();
+        const [chooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            picker.press('Enter'),
+        ]);
+        await chooser.setFiles({name:'wrong.txt',mimeType:'text/plain',buffer:Buffer.from('fixture')});
         await expect(page.getByRole('alert')).toContainText('Seleziona un solo file ZIP');
         // Exercise the size boundary without allocating or uploading a 5 GB file.
         await page.locator('input[type=file]').evaluate(input => {
@@ -206,9 +219,11 @@ try {
         await page.getByRole('button',{name:'Carica backup precedenti',exact:true}).click();
         await expect(page.getByRole('button',{name:'Scarica backup di sicurezza',exact:true})).toHaveCount(13);
         await expect(page.getByRole('button',{name:'Carica backup precedenti',exact:true})).toHaveCount(0);
+        const downloadStarted = page.waitForEvent('download');
         await page.getByRole('button',{name:'Scarica backup di sicurezza',exact:true}).last().click();
+        assert.equal((await downloadStarted).suggestedFilename(), 'recovery.zip');
         await expect.poll(()=>downloads).toBe(1);
-        assert.equal(downloadedPath, '/api/instance/admin/data-restore/old-backup-11/backup');
+        assert.equal(downloadedPath, '/api/instance/admin/data-restore/old-backup-11/download');
         await page.screenshot({path:path.join(output,`${viewport.width}-completed.png`),fullPage:true});
         await page.evaluate(() => {
             localStorage.setItem('userData', JSON.stringify({user_id:'owner-fixture',sport_association:{denomination:'Old ASD'}}));

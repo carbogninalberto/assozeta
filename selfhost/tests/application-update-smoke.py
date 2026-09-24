@@ -170,6 +170,9 @@ sys.exit(42)
                   '-v', '/var/run/docker.sock:/var/run/docker.sock', updater]
         legacy_files = None
         if legacy:
+            # Registry availability is external to the old release. Preload the
+            # same pinned storage versions without changing its files or config.
+            command([str(ROOT / 'selfhost/bin/prepare-storage'), '--legacy'])
             # Preserve the actual old distribution; the test registry adapter
             # selects local images without editing its Compose or image settings.
             source = directory / 'legacy-source'

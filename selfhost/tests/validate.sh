@@ -7,6 +7,8 @@ trap 'rm -rf "$TEMPORARY"' EXIT HUP INT TERM
 
 sh -n "$ROOT/selfhost/bin/assozeta"
 sh -n "$ROOT/selfhost/bin/update"
+sh -n "$ROOT/selfhost/bin/prepare-storage"
+sh -n "$ROOT/selfhost/tests/storage-smoke.sh"
 sh -n "$ROOT/selfhost/tests/quality.sh"
 sh -n "$ROOT/selfhost/tests/smoke.sh"
 sh -n "$ROOT/selfhost/tests/production-smoke.sh"
@@ -62,3 +64,5 @@ assert not any(mount["source"] == "updater_api" for mount in web)
 '
 
 printf 'Self-host validation and updater regression tests passed.\n'
+
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_storage_images.py

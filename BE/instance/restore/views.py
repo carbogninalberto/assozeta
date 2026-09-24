@@ -6,26 +6,29 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Q
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from instance.models import DataRestore, InstanceConfiguration
-from instance.permissions import IsInstanceOwner
+from instance.permissions import IsInstanceOwner, is_instance_owner
 from instance.tasks import restore_instance_data
 from .archive import Archive, RestoreError, digest
 from .execution import cleanup, save_operation
 from .replacement import require_single
 from .locking import operation_lock, restore_pending, Busy
 from .progress import snapshot
+from .downloads import download_token, valid_download_token, stream_backup
 
 
 def public_operation(op):
     return {'id': str(op.id), 'state': op.state, 'stage': op.stage, 'preview': {k: v for k, v in op.preview.items() if k != 'missing_relation_details'},
             'error': op.error, 'created_at': op.created_at, 'updated_at': op.updated_at,
-            'has_recovery_backup': bool(op.backup_path), 'attempts': op.attempts, 'progress': snapshot(op)}
+            'has_recovery_backup': bool(op.backup_path), 'attempts': op.attempts, 'progress': snapshot(op),
+            'download_token': download_token(op) if op.backup_path else None}
 
 
 def recovery_page(owner, before=None):
@@ -36,7 +39,8 @@ def recovery_page(owner, before=None):
             cursor = UUID(before)
         except ValueError:
             raise RestoreError('Pagina dei backup non valida.')
-        boundary = get_object_or_404(backups, pk=cursor)
+        # Receipts survive backup deletion, so an already-issued cursor remains usable.
+        boundary = get_object_or_404(DataRestore, owner=owner, pk=cursor)
         backups = backups.filter(Q(created_at__lt=boundary.created_at) |
                                  Q(created_at=boundary.created_at, id__lt=boundary.id))
     rows = list(backups.order_by('-created_at', '-id')[:11])
@@ -115,6 +119,25 @@ class DataRestoreBackupsView(DataRestoreView):
             return Response({'error': str(exc)}, status=400)
 
 
+class DataRestoreDownloadView(DataRestoreView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    http_method_names = ['get', 'head', 'options']
+
+    def get(self, request, operation_id):
+        op = get_object_or_404(DataRestore.objects.select_related('owner'), pk=operation_id)
+        if not valid_download_token(request.query_params.get('download_token'), op):
+            return Response({'error': 'Link di download non valido o scaduto.'}, status=403)
+        config = InstanceConfiguration.get_config()
+        if not is_instance_owner(op.owner, config) or config.primary_association_id != op.association_id:
+            return Response({'error': 'Download non autorizzato.'}, status=403)
+        if not op.backup_path:
+            return Response({'error': 'Backup di sicurezza non disponibile.'}, status=404)
+        response = stream_backup(op)
+        response['Referrer-Policy'] = 'no-referrer'
+        return response
+
+
 class DataRestoreActionView(DataRestoreView):
     def get(self, request, operation_id, action):
         op = get_object_or_404(DataRestore, pk=operation_id, owner=request.user)
@@ -129,8 +152,7 @@ class DataRestoreActionView(DataRestoreView):
             return Response(public_operation(op))
         if action != 'backup' or not op.backup_path:
             return Response({'error': 'Backup di sicurezza non disponibile.'}, status=404)
-        return FileResponse(default_storage.open(op.backup_path, 'rb'), as_attachment=True,
-                            filename=f'backup-prima-del-ripristino-{op.id}.zip', content_type='application/zip')
+        return stream_backup(op)
 
     def post(self, request, operation_id, action):
         try:
@@ -141,7 +163,19 @@ class DataRestoreActionView(DataRestoreView):
                     op = get_object_or_404(DataRestore.objects.select_for_update(), pk=operation_id, owner=request.user)
                     config = InstanceConfiguration.get_config()
                     require_single(config)
-                    if action == 'dismiss':
+                    if action == 'delete-backup':
+                        if op.state in DataRestore.ACTIVE:
+                            raise RestoreError('Attendi il termine del ripristino prima di eliminare il backup di sicurezza.')
+                        if request.data.get('confirm') is not True:
+                            raise RestoreError('Conferma l’eliminazione del backup di sicurezza.')
+                        if op.backup_path:
+                            try:
+                                default_storage.delete(op.backup_path)
+                            except Exception:
+                                return Response({'error': 'Eliminazione del backup non riuscita. Riprova.'}, status=503)
+                            save_operation(op, backup_path='', backup_sha256='')
+                        return Response(public_operation(op))
+                    elif action == 'dismiss':
                         if op.state not in ('failed', 'completed', 'cancelled', 'expired'):
                             raise RestoreError('Puoi chiudere solo un ripristino terminato.')
                         save_operation(op, preview={**op.preview, 'dismissed': True})

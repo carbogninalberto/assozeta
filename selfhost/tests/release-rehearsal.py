@@ -87,7 +87,28 @@ def rehearse(source, target, revision, browser=False):
         command([cli, 'configure', '--domain', origin, '--email', 'quality@example.invalid', '--version', image_version(source)])
         update_env(env_file, {'COMPOSE_PROJECT_NAME': project, 'HTTPS_PORT': str(free_port()), 'QUALITY_SENTINEL': 'preserve-me'})
         print('Installing the real source release in a disposable project.', flush=True)
-        command([cli, 'install'])
+        # Historical CLIs unconditionally repull immutable dependencies. Allow
+        # the fork-built pinned storage already prepared by CI to remain in
+        # cache without changing the released distribution or image references.
+        legacy_storage = {
+            'MINIO_IMAGE': 'quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z',
+            'MINIO_CLIENT_IMAGE': 'quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z',
+        }
+        source_environment = read_env(env_file)
+        if any(source_environment.get(key) == value for key, value in legacy_storage.items()):
+            adapter = directory / 'source-install-tools'
+            adapter.mkdir()
+            shutil.copy2(ROOT / 'selfhost/tests/fixtures/cached-storage-docker', adapter / 'docker')
+            environment['ASSOZETA_REHEARSAL_DOCKER'] = shutil.which('docker')
+            original_path = environment['PATH']
+            environment['PATH'] = str(adapter) + os.pathsep + original_path
+            try:
+                command([cli, 'install'])
+            finally:
+                environment['PATH'] = original_path
+                environment.pop('ASSOZETA_REHEARSAL_DOCKER', None)
+        else:
+            command([cli, 'install'])
         seed = '''
 from django.db import connection
 from django.core.files.base import ContentFile

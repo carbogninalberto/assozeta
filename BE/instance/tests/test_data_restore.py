@@ -510,6 +510,62 @@ class RestoreTests(TransactionTestCase):
         self.assertEqual(collaborator.password, credentials)
         self.assertFalse(DataRestoreUserDetachment.objects.filter(user=collaborator).exists())
 
+    def test_recovery_download_token_is_scoped_expiring_and_owner_revocable(self):
+        from asgiref.sync import async_to_sync
+        from instance.restore.downloads import download_token
+        key = default_storage.save('recovery/fixture.zip', ContentFile(b'zip fixture'))
+        op = DataRestore.objects.create(owner=self.owner, association_id=self.association.pk,
+                                       state='completed', sha256='upload', backup_path=key, backup_sha256='recovery')
+        token = self.client.get(self.endpoint).data['backups'][0]['download_token']
+        self.client.force_authenticate(user=None)
+        url = f'{self.endpoint}/{op.id}/download'
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.assertEqual(self.client.get(url, {'download_token': token + 'tampered'}).status_code, 403)
+        response = self.client.get(url, {'download_token': token})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.is_async)
+        self.assertEqual(response['Cache-Control'], 'no-store')
+        self.assertEqual(response['Content-Length'], '11')
+        async def consume():
+            return b''.join([chunk async for chunk in response.streaming_content])
+        self.assertEqual(async_to_sync(consume)(), b'zip fixture')
+        response.close()
+        other = DataRestore.objects.create(owner=self.owner, association_id=self.association.pk,
+                                          state='completed', sha256='upload', backup_path=key, backup_sha256='recovery')
+        self.assertEqual(self.client.get(f'{self.endpoint}/{other.id}/download', {'download_token': token}).status_code, 403)
+        with patch('django.core.signing.time.time', return_value=0):
+            expired = download_token(op)
+        self.assertEqual(self.client.get(url, {'download_token': expired}).status_code, 403)
+        op.backup_sha256 = 'replacement'
+        op.save(update_fields=['backup_sha256'])
+        self.assertEqual(self.client.get(url, {'download_token': token}).status_code, 403)
+        token = download_token(op)
+        self.association.user = User.objects.create_user(username='replacement-owner')
+        self.association.save(update_fields=['user'])
+        self.assertEqual(self.client.get(url, {'download_token': token}).status_code, 403)
+
+    def test_large_recovery_download_streams_s3_before_reading_the_body(self):
+        from asgiref.sync import async_to_sync
+        from unittest.mock import MagicMock
+        from instance.restore.downloads import stream_backup
+        storage, body = MagicMock(), MagicMock()
+        storage.connection.meta.client.get_object.return_value = {'Body': body, 'ContentLength': 8 * 1024**3}
+        body.read.side_effect = [b'first chunk', b'rest of archive']
+        op = DataRestore(id=uuid.uuid4(), backup_path='recovery/large.zip')
+        with patch('instance.restore.downloads.default_storage', storage), patch('application.utils.printing.default_storage', storage):
+            response = stream_backup(op)
+        self.assertTrue(response.is_async)
+        self.assertTrue(response.disable_gzip)
+        self.assertEqual(response['Content-Length'], str(8 * 1024**3))
+        storage.open.assert_not_called()
+        body.read.assert_not_called()
+        async def first_chunk():
+            return await anext(response.streaming_content)
+        self.assertEqual(async_to_sync(first_chunk)(), b'first chunk')
+        body.read.assert_called_once_with(1024 * 1024)
+        response.close()
+        body.close.assert_called_once_with()
+
     def test_recovery_backups_remain_listed_and_paginated_after_cancelled_uploads(self):
         backups = []
         for index in range(12):

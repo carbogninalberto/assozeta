@@ -309,3 +309,28 @@ self-host distribution as a release archive.
 ## Owner diagnostics and configuration
 
 See [OPERATIONS.md](OPERATIONS.md) for Self Instance sections, persisted system email settings, diagnostic evidence levels, upgrade adoption, and troubleshooting.
+
+### Pinned MinIO images
+
+Storage images are published from the maintained build workflows in our forks:
+
+- [Server source and local build](https://github.com/carbogninalberto/minio/tree/master/.assozeta): original commit `0d7408fc9969caf07de6a8c3a84f9fbb10a6739e` (`RELEASE.2025-04-22T22-12-26Z`).
+- [Client source and local build](https://github.com/carbogninalberto/mc/tree/master/.assozeta): original commit `b00526b153a31b36767991a4f5ce2cced435ee8e` (`RELEASE.2025-04-16T18-13-26Z`).
+
+The fork workflows publish AMD64 and ARM64 images to `ghcr.io/carbogninalberto/minio`
+and `ghcr.io/carbogninalberto/mc`. The `assozeta.1` suffix identifies our packaging;
+the MinIO release and storage format are unchanged. Forking preserves the source
+and build pipeline; it does not provide new upstream security maintenance.
+
+Fresh installations download the pinned images without compiling Go. Existing
+installations using the exact retired Quay defaults are transparently mapped by
+the CLI to the new images, without rewriting `.env` or modifying stored data.
+Custom `MINIO_IMAGE` and `MINIO_CLIENT_IMAGE` references are preserved. Run Compose
+through `bin/assozeta` so that existing configurations receive this translation.
+
+CI downloads and tests the same published images. Historical-release rehearsals
+add local aliases for the old image names and allow old installers to reuse the
+cache; this compatibility adapter does not alter historical release files.
+Application CI no longer rebuilds MinIO. To rebuild locally, use the Dockerfile
+and instructions in each fork's `.assozeta` directory. Publish a new packaging
+tag and update the verified image pins here when changing those builds.
