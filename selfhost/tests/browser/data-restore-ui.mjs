@@ -116,10 +116,12 @@ try {
         await page.getByRole('button',{name:'Ripristina backup',exact:true}).click();
         await expect(page.getByText('Formato ZIP · Dimensione massima 5 GB', {exact:true})).toBeVisible();
         const picker = page.getByRole('button',{name:'Seleziona backup ZIP',exact:true});
-        await picker.focus();
-        const chooser = page.waitForEvent('filechooser');
-        await page.keyboard.press('Enter');
-        await (await chooser).setFiles({name:'wrong.txt',mimeType:'text/plain',buffer:Buffer.from('fixture')});
+        await expect(picker).toBeEnabled();
+        const [chooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            picker.press('Enter'),
+        ]);
+        await chooser.setFiles({name:'wrong.txt',mimeType:'text/plain',buffer:Buffer.from('fixture')});
         await expect(page.getByRole('alert')).toContainText('Seleziona un solo file ZIP');
         // Exercise the size boundary without allocating or uploading a 5 GB file.
         await page.locator('input[type=file]').evaluate(input => {
