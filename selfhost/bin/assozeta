@@ -1586,7 +1586,12 @@ run_locked_prod_command() {
     if command -v flock >/dev/null 2>&1; then
         mkdir -p "$SELFHOST_DIR/.operations"
         exec 8>"$SELFHOST_DIR/.operations/lifecycle.lock"
-        chmod 666 "$SELFHOST_DIR/.operations/lifecycle.lock"
+        # A container may own this shared file. A host user can lock its
+        # existing writable inode without being allowed to chmod it.
+        chmod 666 "$SELFHOST_DIR/.operations/lifecycle.lock" 2>/dev/null || {
+            [ -n "$(find "$SELFHOST_DIR/.operations/lifecycle.lock" -prune -type f -perm -0666 -print)" ] \
+                || die "shared lifecycle lock must be readable and writable by host and application users"
+        }
         flock -x 8
     fi
     case "$locked_command" in
