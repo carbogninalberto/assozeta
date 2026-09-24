@@ -521,7 +521,7 @@ export const buildConfig = function(config={
                 }
             },
             build: {
-                VERSION: DEPLOY_ENV == 'development' ? 'dev-unstable' : versionUI,
+                VERSION: versionUI,
                 RELEASE_NOTES_UI: DEPLOY_ENV == 'development' ? 'Testing release, like: <br>-xyz<br>-abc<br>Cool</b> features coming soon!<br><a href="https://google.it">check this out </a>' : releaseNotesUI,
             }
         })

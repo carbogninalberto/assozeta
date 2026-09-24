@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { buildConfig } from './endpoints';
 import oems from './oems.json';
+import {buildVersion, assetVersion} from './scripts/build-version.js';
 
 const CURRENT_OEM_ENV = process.env.OEM_ENV || "assozeta";
 const OEM = oems[CURRENT_OEM_ENV];
@@ -53,19 +54,15 @@ if (DEPLOY_ENV == 'development') {
     throw new Error("DEPLOY ENVIRONMENT MUST BE SPECIFIED: ['development', 'staging', 'production']");
 }
 
-const lines = fs.readFileSync('build.versions', 'utf-8').replaceAll("\r", "").split('\n').filter(Boolean);
 const releaseNotesUI = fs.readFileSync('release_notes.txt', 'utf-8');
 
 
 
 // UI VERSION
-const d = new Date();
-const versionUI = String(lines[lines.length-1].split(";")[0]).match(/v\d+.\d+.\d+/gm) 
-					+ `-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+const versionUI = buildVersion(process.env.VERSION, DEPLOY_ENV);
 
 // vX.Y.Z -> 0X00Y000Z | ex. v1.30.245 -> 010300245
-const strVersion = String(lines[lines.length-1].split(";")[0]).match(/\d+.\d+.\d+/gm)[0].split(".");
-const version = `${strVersion[0].padStart(2, '0')}${strVersion[1].padStart(3, '0')}${strVersion[2].padStart(4, '0')}`;
+const version = assetVersion(versionUI);
 
 
 function setFileVersion(filename, ver) {

@@ -17,11 +17,13 @@ CMD ["npm", "run", "dev:selfhosted", "--", "--host", "0.0.0.0"]
 
 FROM dependencies AS build
 
+ARG VERSION=unstable
 ARG OEM_ENV=assozeta
 ARG CLIENT_ID=""
 ARG APPLE_CLIENT_ID=""
 
-ENV OEM_ENV=$OEM_ENV \
+ENV VERSION=$VERSION \
+    OEM_ENV=$OEM_ENV \
     CLIENT_ID=$CLIENT_ID \
     APPLE_CLIENT_ID=$APPLE_CLIENT_ID \
     NODE_OPTIONS=--max-old-space-size=4096
