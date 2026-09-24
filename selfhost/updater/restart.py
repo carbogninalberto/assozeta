@@ -159,15 +159,28 @@ class Restart:
             if (self.root / '.updater/pending-distribution').exists() or self.journal.requiring_recovery():
                 raise RuntimeError('An update requires recovery')
             application, updater = self.inventory(), self.inventory(updater=True)
+            maintenance = self.root / '.operations/maintenance.flag'
+            if not maintenance.exists():
+                maintenance.touch()
+                maintenance.chmod(0o644)
+            web = [item for item in application
+                   if item['Config']['Labels']['com.docker.compose.service'] == 'web']
+            backend = [item for item in application if item not in web]
             self.journal.update(self.operation_id, stage='restarting')
+            # Keep Caddy serving maintenance while dependencies restart.
             # Stop consumers first, preserving queued tasks and persistent stores.
-            for item in reversed(application):
+            for item in reversed(backend):
                 self.run(['docker', 'stop', '--time', '60', item['Id']], timeout=75)
-            for item in application:
+            for item in backend:
                 self.run(['docker', 'start', item['Id']])
                 self.wait_healthy(item)
             # This process is outside both Compose projects and survives this.
             for item in updater:
+                self.run(['docker', 'restart', '--time', '30', item['Id']])
+                self.wait_healthy(item)
+            # Restart the existing web container last. Its brief interruption
+            # uses the browser's offline fallback; the marker survives restart.
+            for item in web:
                 self.run(['docker', 'restart', '--time', '30', item['Id']])
                 self.wait_healthy(item)
             self.journal.update(self.operation_id, stage='health_check')
@@ -185,6 +198,7 @@ class Restart:
                         break
                     except subprocess.CalledProcessError:
                         time.sleep(2)
+            maintenance.unlink(missing_ok=True)
             self.journal.update(self.operation_id, status='succeeded', stage='completed', verified_at=now())
 
 

@@ -1,59 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-	<base href="">
-	<meta charset="utf-8" />
-	<meta name="theme-color" content="#333333">
-	<meta name="description" content="Updates and statistics" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, minimum-scale=1" />
-
-	<title>Applicazione offline</title>
-
-	<!--begin::Fonts-->
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-
-	<!--end::Fonts-->
-
-	<!--begin::Global Theme Styles(used by all pages)-->
-	<link href="/static/css/bootstrap.min.css?v=001380001" rel="stylesheet" type="text/css" />
-	<link href="/static/css/app-bundle.css?v=001380001" rel="stylesheet" type="text/css" />
-
-	<!--end::Global Theme Styles-->
-	<link rel="shortcut icon" href="favicon.svg" />
-	<link rel='stylesheet' href='/global.css?v=001380001'>
-	<link rel='stylesheet' href='/dark-mode.css?v=001380001'>
-	<link rel='stylesheet' href='/brand.css?v=001380001'>
-	<script src='/brand-cache.js?v=001380001'></script>
-	<!-- <link rel='stylesheet' href='/build/bundle.css?v=001380001'> -->
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#351dc2">
+  <title>Applicazione offline · Assozeta</title>
+  <style>
+    :root { color-scheme: light; --primary: #351dc2; --primary-text: #351dc2; --on-primary: #fff; --background: #f5f4fb; --surface: #fff; --text: #181c32; --muted: #62677b; --border: #e7e4f2; }
+    [data-theme="dark"] { color-scheme: dark; --primary: #7c7cf8; --primary-text: #a9a9ff; --on-primary: #131320; --background: #131320; --surface: #1b1b2d; --text: #e1e2e8; --muted: #a0a3bd; --border: #35354f; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; padding: 24px; background: var(--background); color: var(--text); font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(100%, 480px); padding: clamp(28px, 7vw, 48px); border: 1px solid var(--border); border-radius: 24px; background: var(--surface); box-shadow: 0 20px 55px rgba(24, 28, 50, .08); text-align: center; }
+    .icon { display: grid; place-items: center; width: 80px; height: 80px; margin: 0 auto 26px; border-radius: 22px; background: color-mix(in srgb, var(--primary) 12%, var(--surface)); color: var(--primary-text); }
+    .icon svg { width: 42px; height: 42px; }
+    .eyebrow { margin: 0 0 10px; color: var(--primary-text); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(25px, 6vw, 34px); line-height: 1.18; letter-spacing: -.035em; }
+    p { margin: 18px 0 30px; color: var(--muted); }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 22px; border: 0; border-radius: 11px; background: var(--primary); color: var(--on-primary); font: inherit; font-weight: 700; cursor: pointer; }
+    .btn-primary:hover { filter: brightness(.94); }
+    .btn-primary:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+    .btn-primary svg { width: 19px; height: 19px; }
+  </style>
+  <script>
+    // Restore only the colors needed by this self-contained page.
+    try {
+      const user = JSON.parse(localStorage.getItem('userData') || '{}');
+      const dark = user.dark_mode ?? matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.dataset.theme = 'dark';
+      const palette = JSON.parse(localStorage.getItem('assozeta_brand_palette') || 'null');
+      const colors = palette?.[dark ? 'dark' : 'light'];
+      for (const key of ['--primary', '--primary-text', '--on-primary']) {
+        if (/^#[0-9a-f]{6}$/i.test(colors?.[key] || '')) document.documentElement.style.setProperty(key, colors[key]);
+      }
+      if (/^#[0-9a-f]{6}$/i.test(colors?.['--brand-color'] || '')) {
+        document.querySelector('meta[name="theme-color"]').content = colors['--brand-color'];
+      }
+    } catch { /* The default colors work without local storage. */ }
+  </script>
 </head>
-<body id="bkn_body" class="quick-panel-right demo-panel-right offcanvas-right header-fixed header-mobile-fixed aside-enabled aside-fixed page-loading">
-
-	<div id="portal-elements" style="z-index: 10000;">
-
-	</div>
-	<div id="view" style="width: 100%; height: 100%;">
-        <div class="row" style="height: 100%;overflow-x:hidden">
-            <div
-                class="col-12"
-                style="height: 100%; margin: auto; display: flex; flex-direction: column; justify-content: center;align-items: center;">
-                <div class="d-flex justify-content-center pt-10">
-					<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="#000000" viewBox="0 0 256 256"><path d="M240,127.62a80,80,0,0,1-80,80H72A56,56,0,1,1,85.92,97.36l0,.1A80,80,0,0,1,240,127.62Z" opacity="0.2"></path><path d="M160,40A88.09,88.09,0,0,0,81.29,88.67,64,64,0,1,0,72,216h88a88,88,0,0,0,0-176Zm0,160H72a48,48,0,0,1,0-96c1.1,0,2.2,0,3.29.11A88,88,0,0,0,72,128a8,8,0,0,0,16,0,72,72,0,1,1,72,72Zm-8-72V88a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,172,164Z"></path></svg>                </div>
-                <div class="d-flex justify-content-center flex-column" style="min-width: 25rem">
-                    <div class="text-center pb-6 font-weight-bolder text-info" style="font-size:2rem">Offline. <br>Connessione assente!</div>
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <!-- svelte-ignore a11y-missing-attribute -->
-                    <a
-                        class="btn btn-primary btn-lg font-weight-bolder m-auto d-flex justify-content-center align-items-bottom"
-                        href="/#/login"
-                        style="width: 80%;margin-top: .5rem !important;">
-                        <span class="mr-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M232.2,51.7v48a8,8,0,0,1-8,8h-48a8,8,0,0,1,0-16h28.7L184.6,71.4a80,80,0,1,0,0,113.2,7.9,7.9,0,0,1,11.3,0,8,8,0,0,1,0,11.3,96,96,0,1,1,0-135.8l20.3,20.3V51.7a8,8,0,1,1,16,0Z"></path></svg></span>
-                        Ricarica l'applicazione
-                    </a>
-                </div>
-            </div>
-        </div>
-	</div>
+<body>
+  <main>
+    <div class="icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 34a9 9 0 0 1 2-17.8A15 15 0 0 1 39 22a7 7 0 0 1-2 13H15"/><path d="M17 25 31 39M31 25 17 39"/></svg>
+    </div>
+    <div class="eyebrow">Servizio non raggiungibile</div>
+    <h1>Non riusciamo a raggiungere l’app</h1>
+    <p>Controlla la connessione e riprova. Potrai tornare al tuo lavoro appena il servizio sarà disponibile.</p>
+    <button class="btn-primary" type="button" onclick="location.pathname === '/offline.html' ? location.replace('/' + location.hash) : location.reload()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 4v7h-7"/></svg>
+      Riprova
+    </button>
+  </main>
 </body>
 </html>

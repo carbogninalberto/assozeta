@@ -299,14 +299,18 @@ Self Instance includes **Ricarica applicazione**. It reloads the entire browser
 document at the current URL, reinitializes the frontend, and invalidates only
 the cached instance configuration. Authentication and preferences are retained.
 Unsaved settings, uploads, and in-flight saves disable the action. A running
-server update does not disable it: after navigation, the page reads the durable
-operation again, including through the independent status endpoint during API
-maintenance. This action does not restart services or repair deployments.
+server update does not disable it: navigation may show Caddy's maintenance page
+until the services recover. Retrying then reloads the app and reads the durable
+operation again. An already open app can keep checking the independent status
+endpoint during API maintenance. This action does not restart services or repair
+deployments.
 
 Caddy sends `Cache-Control: no-cache` for the entry document and static files,
-requiring revalidation. Vite fingerprints compiled assets. There is no registered
-application service worker to unregister or reset. Do not clear unrelated browser
-storage or replace the reload with client-router navigation.
+requiring revalidation. Vite fingerprints compiled assets. The application
+service worker uses the network for every navigation and serves its cached,
+self-contained offline page only when that request fails. A live maintenance
+response from Caddy is shown as-is. Do not clear unrelated browser storage or
+replace the reload with client-router navigation.
 
 Run the compiled frontend reload checks behind the actual Caddy configuration:
 

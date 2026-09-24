@@ -102,20 +102,41 @@ class RestartTests(unittest.TestCase):
 
     def test_ordered_stop_start_and_updater_restart_finish_only_after_health(self):
         restart = Restart(self.root, self.env, self.journal, self.operation['id'])
-        application = [{'Id': name} for name in ('postgres', 'api', 'worker', 'web')]
+        application = [{'Id': name, 'Config': {'Labels': {'com.docker.compose.service': name}}}
+                       for name in ('postgres', 'api', 'worker', 'web')]
         updater = [{'Id': 'updater'}]
         commands = []
+        def run(args, **kwargs):
+            self.assertTrue((self.root / '.operations/maintenance.flag').is_file())
+            commands.append(args)
+            return ''
         with patch.object(restart, 'inventory', side_effect=[application, updater]), \
-                patch.object(restart, 'run', side_effect=lambda args, **kwargs: commands.append(args) or ''), \
+                patch.object(restart, 'run', side_effect=run), \
                 patch.object(restart, 'wait_healthy') as healthy:
             restart.execute()
-        self.assertEqual(commands[:4], [['docker', 'stop', '--time', '60', name] for name in ('web', 'worker', 'api', 'postgres')])
-        self.assertEqual(commands[4:8], [['docker', 'start', name] for name in ('postgres', 'api', 'worker', 'web')])
-        self.assertEqual(commands[8], ['docker', 'restart', '--time', '30', 'updater'])
+        self.assertEqual(commands[:3], [['docker', 'stop', '--time', '60', name] for name in ('worker', 'api', 'postgres')])
+        self.assertEqual(commands[3:6], [['docker', 'start', name] for name in ('postgres', 'api', 'worker')])
+        self.assertEqual(commands[6], ['docker', 'restart', '--time', '30', 'updater'])
+        self.assertEqual(commands[7], ['docker', 'restart', '--time', '30', 'web'])
         self.assertEqual(healthy.call_count, 10)
+        self.assertFalse((self.root / '.operations/maintenance.flag').exists())
         result = self.journal.records()[0]
         self.assertEqual(result['status'], 'succeeded')
         self.assertTrue(result['verified_at'])
+
+    def test_failed_public_readiness_keeps_maintenance_enabled(self):
+        application = [{'Id': name, 'Config': {'Labels': {'com.docker.compose.service': name}}}
+                       for name in ('api', 'web')]
+        def run(args, **kwargs):
+            if args[0] == 'curl':
+                raise TimeoutError('Readiness deadline exceeded')
+            return ''
+        with patch.object(Restart, 'inventory', side_effect=[application, []]), \
+                patch.object(Restart, 'run', side_effect=run), \
+                patch.object(Restart, 'wait_healthy'):
+            execute_restart(self.root, self.env, self.operation['id'])
+        self.assertTrue((self.root / '.operations/maintenance.flag').is_file())
+        self.assertEqual(self.journal.records()[0]['status'], 'failed')
 
     def test_health_does_not_accept_unchanged_start_time_or_changed_image(self):
         restart = Restart(self.root, self.env, self.journal, self.operation['id'])

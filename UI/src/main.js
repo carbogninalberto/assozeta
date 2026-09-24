@@ -14,6 +14,13 @@ import 'shim/alert.js';
 // import * as Sentry from '@sentry/svelte';
 import fetchIntercept from 'fetch-intercept';
 
+if ('serviceWorker' in navigator && __bakney.env.DEPLOY_ENV !== 'development') {
+    // Do not wait for third-party scripts and images to finish loading.
+    navigator.serviceWorker.register('/sw.js', {updateViaCache: 'none'}).catch(() => {
+        // The app remains usable if registration is unavailable.
+    });
+}
+
 import {downloadFile, downloadCSV, downloadPdf, downloadZip, tryDownloadFile, tryDownloadCSV} from './utils/download.js';
 import * as Base64 from './utils/base64.js';
 

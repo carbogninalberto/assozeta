@@ -11,6 +11,7 @@ MIN_COMPOSE_VERSION=2.20.0
 PROD_LOCK_DIR="$SELFHOST_DIR/.lifecycle.lock"
 READINESS_ATTEMPTS=${ASSOZETA_READINESS_ATTEMPTS:-60}
 READINESS_DELAY=${ASSOZETA_READINESS_DELAY:-2}
+MAINTENANCE_FLAG="$SELFHOST_DIR/.operations/maintenance.flag"
 
 log() {
     printf '[assozeta] %s\n' "$*"
@@ -815,11 +816,13 @@ require_background_services_running() {
 }
 
 stop_prod_data_services() {
-    if [ "${managed_update:-false}" = true ] || [ "${recover_upgrade_active:-false}" = true ]; then
-        prod_compose stop api worker beat
-    else
-        prod_compose stop web api worker beat
+    mkdir -p "$SELFHOST_DIR/.operations"
+    if [ ! -e "$MAINTENANCE_FLAG" ]; then
+        : > "$MAINTENANCE_FLAG"
+        chmod 644 "$MAINTENANCE_FLAG"
     fi
+    # Keep Caddy serving the maintenance page while the data services stop.
+    prod_compose stop api worker beat
 }
 
 start_prod_app_services() {
@@ -833,7 +836,11 @@ start_prod_app_services() {
         prod_compose up -d --wait api web || return $?
     fi
 
-    require_background_services_running
+    require_background_services_running || return $?
+    # Container health alone does not prove that public routing reaches the API.
+    # The readiness routes bypass maintenance so failures keep the page active.
+    wait_public_readiness || return $?
+    rm -f "$MAINTENANCE_FLAG"
 }
 
 initialise_prod() {

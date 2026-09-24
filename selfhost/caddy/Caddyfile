@@ -12,43 +12,94 @@
         X-Content-Type-Options "nosniff"
     }
 
-    handle /healthz {
-        respond 200
+    @maintenance file {
+        root /run/assozeta-operations
+        try_files /maintenance.flag
+    }
+    @maintenance_page {
+        method GET HEAD
+        file {
+            root /run/assozeta-operations
+            try_files /maintenance.flag
+        }
     }
 
-    handle /instance-update-status {
-        reverse_proxy unix//run/assozeta-update-status/status.sock
-    }
+    route {
+        handle /healthz {
+            respond 200
+        }
 
-    handle_path /api/* {
-        reverse_proxy api:8000
-    }
+        handle /instance-update-status {
+            reverse_proxy unix//run/assozeta-update-status/status.sock
+        }
 
-    handle /ws/* {
-        reverse_proxy api:8000
-    }
+        # The lifecycle readiness check must still reach the API while the
+        # public application is in maintenance mode.
+        handle /api/readyz {
+            rewrite * /readyz
+            reverse_proxy api:8000
+        }
 
-    @ui_static {
-        path /static/*
-        file
-    }
+        handle /sw.js {
+            header Cache-Control "no-cache"
+            file_server
+        }
 
-    handle @ui_static {
-        header Cache-Control "no-cache"
-        file_server
-    }
+        handle /offline.html {
+            header Cache-Control "no-cache"
+            file_server
+        }
 
-    handle_path /static/* {
-        root * /django-static
-        header Cache-Control "no-cache"
-        file_server
-    }
+        handle /maintenance.html {
+            header Cache-Control "no-store"
+            file_server
+        }
 
-    handle {
-        # Revalidate entry HTML and unversioned public assets on full reloads.
-        # Compiled JS/CSS also use content hashes in their filenames.
-        header Cache-Control "no-cache"
-        try_files {path} /index.html
-        file_server
+        handle @maintenance_page {
+            header Cache-Control "no-store"
+            header Retry-After "60"
+            rewrite * /maintenance.html
+            file_server {
+                status 503
+            }
+        }
+
+        handle @maintenance {
+            header Cache-Control "no-store"
+            header Retry-After "60"
+            respond 503
+        }
+
+        handle_path /api/* {
+            reverse_proxy api:8000
+        }
+
+        handle /ws/* {
+            reverse_proxy api:8000
+        }
+
+        @ui_static {
+            path /static/*
+            file
+        }
+
+        handle @ui_static {
+            header Cache-Control "no-cache"
+            file_server
+        }
+
+        handle_path /static/* {
+            root * /django-static
+            header Cache-Control "no-cache"
+            file_server
+        }
+
+        handle {
+            # Revalidate entry HTML and unversioned public assets on full reloads.
+            # Compiled JS/CSS also use content hashes in their filenames.
+            header Cache-Control "no-cache"
+            try_files {path} /index.html
+            file_server
+        }
     }
 }

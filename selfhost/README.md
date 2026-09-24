@@ -135,6 +135,25 @@ upgrade, or uninstall operations do not overlap. If an unclean shutdown leaves a
 stale lock, verify that no lifecycle command is running before removing
 `selfhost/.lifecycle.lock/` manually.
 
+During backup, migration, restore, and upgrade, Caddy stays up and serves a
+standalone maintenance page with HTTP 503 while the API, worker, and scheduler
+are stopped. The lifecycle command creates
+`selfhost/.operations/maintenance.flag` before stopping them and removes it
+after the application services and public readiness checks pass. If startup or readiness fails,
+the flag remains in place; resolve the failure and start the application before
+removing it. Caddy keeps `/healthz`, `/api/readyz`, and the independent update
+status endpoint available for checks. An explicit `stop` shuts down Caddy too.
+
+The Self Instance restart keeps Caddy up while backend services restart, then
+restarts Caddy last. A browser that previously installed the service worker can
+show the offline page during that brief interruption. Maintenance remains active
+until public readiness checks pass.
+
+To verify these flows against the production frontend and Caddy, run
+`npm run build:vite:production --prefix UI` followed by
+`node selfhost/tests/browser/unavailable.mjs`. The browser check uses disposable
+Caddy and API fixtures and requires Docker and the browser test dependencies.
+
 ## Backups
 
 Create a logical PostgreSQL dump, a bundled-MinIO object-storage mirror,
@@ -149,9 +168,10 @@ must be encrypted or stored with restrictive permissions. A backup on the same
 server does not protect against disk or host loss; copy it to independent
 storage.
 
-Backup stops the web, API, worker, and scheduler services while PostgreSQL and
-MinIO are snapshotted, then restarts them only if any were running beforehand.
-Expect brief write downtime for the duration of the dump and object mirror.
+Backup stops the API, worker, and scheduler services while PostgreSQL and MinIO
+are snapshotted, then restarts them only if any were running beforehand. Caddy
+serves the maintenance page during this interval. Expect brief write downtime
+for the duration of the dump and object mirror.
 
 Backup archives are specific to the bundled private MinIO layout. New manifests
 record the source `AWS_LOCATION`; archives created before that manifest field are
