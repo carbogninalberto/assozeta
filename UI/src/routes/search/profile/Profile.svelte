@@ -86,14 +86,14 @@
 </script>
 
 <!--begin::Entry-->
-<div class="d-flex flex-column-fluid mt-16 mt-md-0 {params?.insideDashboard ? 'p-0' : 'p-2'}">
+<div class="association-profile d-flex flex-column-fluid mt-16 mt-md-0 {params?.insideDashboard ? 'p-0' : 'p-2'}">
     <!--begin::Container-->
     <div class="container {params?.insideDashboard ? 'p-0' : ''}">
         {#if loaded}
             <div class="card card-custom gutter-b">
                 <div
                     class={params?.insideDashboard ? 'card-body p-0 mx-auto' : 'card-body'}
-                    style="max-width: 99vw;width: 100%;">
+                    style="min-width: 0; max-width: 100%; width: 100%;">
                     {#if params?.insideDashboard}
                         <div
                             class="d-flex align-items-center align-items-md-center justify-content-between flex-column flex-md-row">
@@ -316,7 +316,7 @@
         {:else}
             <div class="card card-custom gutter-b">
                 <div class="card-body">
-                    <FacebookLoader width={window.screen.width / 1.4} />
+                    <FacebookLoader width="100%" />
                 </div>
             </div>
         {/if}
@@ -346,3 +346,8 @@
         </div>
     </div>
 </div> -->
+
+<style>
+    .association-profile { width: 100%; min-width: 0; max-width: 100%; }
+    .association-profile > .container { min-width: 0; max-width: 100%; }
+</style>

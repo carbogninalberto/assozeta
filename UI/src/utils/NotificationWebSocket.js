@@ -53,8 +53,7 @@ class NotificationWebSocket {
     connect() {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
         const wsPath = __bakney.env.WS.NOTIFICATIONS;
-        const baseUrl = getWebSocketUrl(wsPath);
-        const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
+        const url = getWebSocketUrl(wsPath, this.token);
 
         this.ws = new WebSocket(url);
         const socket = this.ws;

@@ -1,4 +1,6 @@
 <script>
+    import {observeIdentityChanges} from 'utils/impersonation.js';
+    onMount(observeIdentityChanges);
     import {
         sessionToken,
         notifications,
@@ -40,7 +42,7 @@
     let offline = false;
     let ga;
     let refreshingToken = false;
-    let isSwitchedUser = false;
+    let isSwitchedUser = localStorage.getItem('switched_superuser') === 'true';
     let isLoadingUserData = false;
     let showTestimonial = false;
 
@@ -75,6 +77,7 @@
         role.set(null);
         localStorage.removeItem('switched_superuser');
         localStorage.removeItem('USER_ID');
+        localStorage.removeItem('impersonationContext');
     }
 
     // Reactive statement for user preference (only when logged in)
@@ -130,7 +133,7 @@
             instanceConfigured = true;
         }
 
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $role != 'administrator' && $location != '/welcome') {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -260,6 +263,7 @@
     });
 
     function showTestimonialModal() {
+        if ($role === 'administrator') return;
         // read again from localStorage
         let userData = JSON.parse(localStorage.getItem('userData'));
         // get or create showTestimonial localstorage key
@@ -294,7 +298,7 @@
 
     beforeUpdate(() => {
         if (instanceLoading || instanceUnavailable) return;
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $role != 'administrator' && $location != '/welcome') {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -341,12 +345,21 @@
 
             // Need to fetch user data
             isLoadingUserData = true;
-            apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                isLoadingUserData = false;
+            apiFetch(__bakney.env.API.PROFILE.INFO).then(async res => {
                 if (!res.error) {
                     userDataStore.set(res.response.user_data);
+                    if (res.response.info.role === 'association') {
+                        const billing = await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN);
+                        if (!billing.error) {
+                            billingData.set(billing.response.data);
+                            setPermissions(billing.response.data?.active_plan?.billing_type, res.response.info.role);
+                        }
+                    }
+                    // Route selection waits for role: publish it only after the
+                    // selected user's permissions are ready on the first load.
+                    role.set(res.response.info.role);
                 }
-            });
+            }).finally(() => { isLoadingUserData = false; });
             return;
         }
         if ($location == '/reset') return;
@@ -382,6 +395,7 @@
             currentPage != 'login' &&
             $role != 'association' &&
             $role != 'athlete' &&
+            $role != 'administrator' &&
             $sessionToken != null
         ) {
             console.warn('checking role...', currentPage, $role);
@@ -487,42 +501,6 @@
     <div transition:slide={{duration: 350, y: 5}} class="connection-status">Connessione persa, sei offline...</div>
 {/if}
 
-{#if isSwitchedUser}
-    <Portal target="#portal-elements">
-        <div
-            transition:slide={{duration: 350, y: 5}}
-            class="rounded-lg"
-            style="margin-top: 0.5rem; left: 0.5rem; outline: .2rem solid #b463ff;position:fixed;width:40rem;max-width:96vw;display: flex; justify-content: space-between; background: blueviolet; color: #fff; font-weight: 800; padding: 0.25rem 1rem!important; font-size: 10px; box-shadow: 0 0rem 3rem 0rem #00000070;">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            Sei in modalità superuser, attenzione!
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <span
-                on:click={() => {
-                    // Disconnect WebSockets before switching back
-                    notificationService.disconnect();
-                    healthService.disconnect();
-
-                    // clear all local storage keys except for sessionToken
-                    Object.keys(localStorage).forEach(key => {
-                        if (key !== 'sessionToken' && key !== 'refreshToken' && key !== 'expires')
-                            localStorage.removeItem(key);
-                    });
-
-                    // Reset stores to clear in-memory state
-                    userDataStore.set({});
-                    role.set(null);
-                    billingData.set({});
-                    isSwitchedUser = false;
-
-                    // Full page reload to ensure clean state
-                    window.location.href = '/#/tools/sport-associations-manager';
-                    window.location.reload();
-                }}
-                class="ml-3"
-                style="cursor:pointer"><u>esci da questa modalità</u></span>
-        </div>
-    </Portal>
-{/if}
 
 <UpdatesToast />
 <LoadingOverlay />

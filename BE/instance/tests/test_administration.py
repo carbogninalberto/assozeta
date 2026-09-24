@@ -9,6 +9,7 @@ from rest_framework.test import APIClient
 from application.models import SportAssociation, User
 from instance.models import InstanceConfiguration
 from instance.release_catalog import ReleaseError, fetch_releases, normalize_release, read_json, release_summary, version_tuple
+from application.services.jwt_token_service import JWTTokenService
 
 
 def upstream_release(number=2):
@@ -35,11 +36,10 @@ class InstanceAdministrationTests(TestCase):
             domain='admin.example.test', name='Owner ASD', primary_association=self.association,
         )
 
-    def test_only_actual_owner_gets_access_even_with_impersonation_header(self):
+    def test_owner_access_is_preserved_and_unrelated_users_are_denied(self):
         collaborator = User.objects.create_user(username='admin-collaborator', role=User.COLLABORATOR, connected_user=self.owner)
-        superuser = User.objects.create_user(username='admin-superuser', role=User.ASSOCIATION, is_superuser=True)
         other = User.objects.create_user(username='admin-other', role=User.ASSOCIATION)
-        for user in (collaborator, superuser, other):
+        for user in (collaborator, other):
             with self.subTest(user=user.username):
                 self.client.force_authenticate(user=user)
                 response = self.client.get('/instance/access', HTTP_USER_ID=str(self.owner.pk))
@@ -54,6 +54,41 @@ class InstanceAdministrationTests(TestCase):
         self.owner.is_superuser = True
         self.owner.save()
         self.assertTrue(self.client.get('/instance/access').data['is_owner'])
+
+    def test_superuser_and_owner_both_administer_the_primary_association(self):
+        admin = User.objects.create_superuser(username='instance-admin', password='test-password')
+        for user in (self.owner, admin):
+            with self.subTest(user=user.username):
+                self.client.force_authenticate(user=user)
+                access = self.client.get('/instance/access')
+                self.assertTrue(access.data['is_administrator'])
+                self.assertEqual(access.data['data_association']['id'], str(self.association.pk))
+                self.assertEqual(self.client.get('/instance/admin').status_code, 200)
+                for section in ('email', 'diagnostics', 'integrations/stripe', 'integrations/google', 'integrations/apple', 'integrations/ai'):
+                    self.assertEqual(self.client.get('/instance/admin/' + section).status_code, 200, section)
+        self.assertFalse(access.data['is_owner'])
+        admin.is_active = False
+        admin.save(update_fields=['is_active'])
+        self.assertEqual(self.client.get('/instance/admin').status_code, 403)
+
+    def test_regular_users_cannot_access_instance_apis_with_real_tokens(self):
+        athlete = User.objects.create_user(username='regular-athlete', role=User.ATHLETE)
+        collaborator = User.objects.create_user(username='regular-collaborator', role=User.COLLABORATOR,
+                                                connected_user=self.owner)
+        outsider = User.objects.create_user(username='unrelated-owner', role=User.ASSOCIATION)
+        for user in (athlete, collaborator, outsider):
+            client = APIClient()
+            token = JWTTokenService.generate_tokens_for_user(user)['access_token']
+            client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+            with self.subTest(role=user.role):
+                access = client.get('/instance/access')
+                self.assertFalse(access.data['is_owner'])
+                self.assertFalse(access.data['is_administrator'])
+                for path in ('admin', 'admin/email', 'admin/diagnostics', 'admin/releases', 'admin/updates',
+                             'admin/data-restore', 'admin/integrations/ai', 'admin/integrations/stripe'):
+                    self.assertEqual(client.get('/instance/' + path).status_code, 403, path)
+                self.assertEqual(client.put('/instance/admin', {'oem': {}}, format='json').status_code, 403)
+                self.assertEqual(client.post('/instance/admin/restarts', {'request_id': str(uuid4())}, format='json').status_code, 403)
 
     def test_anonymous_unconfigured_and_non_selfhost_have_no_access(self):
         self.assertIn(self.client.get('/instance/access').status_code, (401, 403))

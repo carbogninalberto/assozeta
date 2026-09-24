@@ -15,8 +15,10 @@ from channels.middleware import BaseMiddleware
 from django.contrib.auth.models import AnonymousUser
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework.exceptions import PermissionDenied
 
 from application.models import User
+from application.impersonation import resolve_target
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ logger = logging.getLogger(__name__)
 def get_user_from_id(user_id):
     """Fetch user from database by user_id."""
     try:
-        return User.objects.get(user_id=user_id)
+        return User.objects.get(user_id=user_id, is_active=True)
     except User.DoesNotExist:
         return AnonymousUser()
 
@@ -57,7 +59,52 @@ class JWTAuthMiddleware(BaseMiddleware):
         else:
             scope['user'] = AnonymousUser()
 
-        return await super().__call__(scope, receive, send)
+        parameters = parse_qs(scope.get('query_string', b'').decode('utf-8'))
+        identifier = parameters.get('impersonation', [None])[0]
+        if not identifier:
+            return await super().__call__(scope, receive, send)
+
+        actor_id = getattr(scope['user'], 'pk', None)
+
+        @database_sync_to_async
+        def selected_user():
+            try:
+                actor = User.objects.get(pk=actor_id, is_active=True)
+                return resolve_target(actor, identifier)
+            except (User.DoesNotExist, PermissionDenied):
+                return None
+
+        target = await selected_user()
+        if target is None:
+            await send({'type': 'websocket.close', 'code': 4003})
+            return
+        scope['authenticated_user'] = scope['user']
+        scope['user'] = target
+        closed = False
+
+        async def checked_send(message):
+            nonlocal closed
+            if closed:
+                return
+            # Check outgoing pushes too: a revoked idle socket must not receive
+            # messages from the previous identity's notification groups.
+            if message['type'] in ('websocket.send', 'websocket.accept') and await selected_user() is None:
+                closed = True
+                await send({'type': 'websocket.close', 'code': 4003})
+                return
+            await send(message)
+
+        async def checked_receive():
+            nonlocal closed
+            message = await receive()
+            if message['type'] == 'websocket.receive' and (closed or await selected_user() is None):
+                if not closed:
+                    await send({'type': 'websocket.close', 'code': 4003})
+                closed = True
+                return {'type': 'websocket.disconnect', 'code': 4003}
+            return message
+
+        return await super().__call__(scope, checked_receive, checked_send)
 
     def _get_token_from_query(self, scope):
         """Extract token from ?token=xxx query parameter."""

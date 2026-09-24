@@ -45,7 +45,7 @@ class IntegrationVerificationTests(TestCase):
         self.client.force_authenticate(None)
         self.assertIn(self.client.post(endpoint, {'revision': 1}, format='json').status_code, (401, 403))
         from application.models import User
-        other = User.objects.create_user(username='verification-other', is_superuser=True)
+        other = User.objects.create_user(username='verification-other')
         self.client.force_authenticate(other)
         self.assertEqual(self.client.post(endpoint, {'revision': 1}, format='json').status_code, 403)
         self.client.force_authenticate(self.owner)

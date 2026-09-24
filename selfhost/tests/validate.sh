@@ -39,6 +39,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_restart.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_maintenance_lifecycle.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_upgrade_preflight.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_quality.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_sync_repo.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_operational_diagnostics.py
 
 ASSOZETA_SELFHOST_DIR="$ROOT/selfhost" ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \

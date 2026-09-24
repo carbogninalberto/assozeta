@@ -60,9 +60,10 @@ def require_current_owner(root, env_file, actor):
     # A failed migration elsewhere need not prevent this fixed read-only query.
     sql = '''SELECT EXISTS (
         SELECT 1 FROM (SELECT * FROM instance_instanceconfiguration ORDER BY id LIMIT 1) cfg
-        JOIN application_sportassociation sa ON cfg.primary_association_id = sa.sport_association_id
-        JOIN bakney_user u ON sa.user_id = u.user_id
-        WHERE cfg.self_hosted IS TRUE AND u.is_active IS TRUE AND u.user_id = :'actor'
+        LEFT JOIN application_sportassociation sa ON cfg.primary_association_id = sa.sport_association_id
+        JOIN bakney_user u ON u.user_id = :'actor'
+        WHERE cfg.self_hosted IS TRUE AND u.is_active IS TRUE AND u.deleted IS FALSE
+          AND (u.is_superuser IS TRUE OR sa.user_id = u.user_id)
     );'''
     try:
         result = subprocess.run(compose_command(root, env_file) + ['exec', '-T', 'postgres', 'psql',

@@ -140,11 +140,17 @@ for (const viewport of viewports) {
                 expect(operation.request_id).toBe(submitted.request_id);
                 fs.writeFileSync(input.operation, JSON.stringify(operation), {mode: 0o600});
             } else if (phase === 'during' || phase === 'recovery') {
-                await expect(page.getByRole('region', {name: 'Stato aggiornamenti'})).toContainText(
-                    phase === 'during' ? 'Backup dei dati' : 'Ripristino necessario');
-                await page.reload();
-                await expect(page.getByRole('region', {name: 'Stato aggiornamenti'})).toContainText(
-                    phase === 'during' ? 'Backup dei dati' : 'Ripristino necessario');
+                await expect(page.getByRole('heading', {name: 'Torniamo tra poco'})).toBeVisible();
+                const response = await page.reload();
+                expect(response.status()).toBe(503);
+                await expect(page.getByRole('heading', {name: 'Torniamo tra poco'})).toBeVisible();
+                const status = await page.request.post(`${input.origin}/instance-update-status`, {
+                    headers: {Authorization: `Bearer ${input.token}`}, data: {},
+                });
+                expect(status.status()).toBe(200);
+                const state = await status.json();
+                if (phase === 'during') expect(state.active.stage).toBe('backup');
+                else expect(state.history.some(item => item.status === 'recovery_required')).toBe(true);
                 expect(page.url()).not.toContain('/login');
             } else if (phase === 'readiness') {
                 await expect(page.getByRole('heading', {name: 'Self Instance', exact: true})).toBeVisible();

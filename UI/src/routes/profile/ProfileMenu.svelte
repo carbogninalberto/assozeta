@@ -4,7 +4,7 @@
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
     import {isMobile} from 'store/breakpointStore.js';
 
-    import {User, Sliders, FingerprintSimple, Password, StripeLogo, Plugs, Database} from 'phosphor-svelte';
+    import {User, Sliders, FingerprintSimple, Password, StripeLogo, Plugs, Database, GearSix, UserSwitch} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
 
     sessionToken.useLocalStorage();
@@ -23,6 +23,11 @@
     let previousTab = null;
     function checkParams() {
         const {page, tab} = readProfileLocation();
+        if ($role === 'administrator') {
+            const requested = page || $subPage;
+            subPage.set(['self-instance', 'data-management'].includes(requested) ? requested : 'self-instance');
+            return;
+        }
         if (navigationReady && page && page !== $subPage && changes && $subPage !== 'stripe'
             && !confirm('Sei sicuro di voler lasciare questa pagina? Eventuali modifiche non salvate andranno perse.')) {
             navigateProfile($subPage, previousTab, true);
@@ -64,6 +69,24 @@
     <div class="card card-custom gutter-b card-settings">
         <!--begin::Body-->
         <div class="card-body {$isMobile ? '' : 'position-fixed'} navi-body-settings p-0 px-md-8 py-md-4">
+            {#if $role === 'administrator'}
+                <nav aria-label="Amministrazione" class="navi navi-bold navi-hover navi-active navi-link-rounded py-4">
+                    {#each [{page:'self-instance',label:'Self Instance',icon:GearSix},{page:'data-management',label:'Gestione Dati',icon:Database}] as item}
+                        <div class="navi-item mb-2">
+                            <a href={`/#/profile?page=${item.page}`} on:click|preventDefault={() => changeSubPage(item.page)} class="navi-link py-4" class:active={$subPage === item.page}>
+                                <span class="menu-icon mr-3"><svelte:component this={item.icon} size={24} weight="duotone" /></span>
+                                <span class="navi-text font-size-lg">{item.label}</span>
+                            </a>
+                        </div>
+                    {/each}
+                    <div class="navi-item">
+                        <a href="/#/tools/sport-associations-manager" class="navi-link py-4">
+                            <span class="menu-icon mr-3"><UserSwitch size={24} weight="duotone" /></span>
+                            <span class="navi-text font-size-lg">Impersona utenti</span>
+                        </a>
+                    </div>
+                </nav>
+            {:else}
             <!--begin::User-->
             <div class="d-flex align-items-center mt-4 nav-settings">
                 <div class="symbol symbol-60 symbol-xxl-90 mr-5 align-self-start align-self-xxl-center">
@@ -274,6 +297,7 @@
                 {/if}
             </div>
             <!--end::Nav-->
+            {/if}
         </div>
         <!--end::Body-->
     </div>

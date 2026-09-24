@@ -14,7 +14,7 @@
 </script>
 
 {#if searchData && searchData.courses_pinned?.length > 0}
-    <div class="row">
+    <div class="row mx-0 course-grid">
         <div class="col d-flex align-items-center justify-content-center mb-5" style="margin: auto;">
             <!-- svelte-ignore a11y-missing-attribute -->
             <span class="font-size-h3 font-weight-boldest text-primary d-flex align-items-center">
@@ -23,10 +23,10 @@
         </div>
     </div>
     <!--  && searchData.courses && searchData?.courses?.filter(c => c.pinned).length > 0 -->
-    <div class="row">
+    <div class="row mx-0 course-grid">
         <!-- ?.filter(c => c.pinned) -->
         {#each searchData.courses_pinned || [] as course_pinned, idx}
-            <div class="col-xl-4" in:scale={{start: 0.9, duration: 80}}>
+            <div class="col-12 col-md-6 col-xl-4 course-column" in:scale={{start: 0.9, duration: 80}}>
                 <!--begin::Stats Widget 10-->
                 <div class="card card-widget card-custom card-stretch gutter-b bg-white">
                     <!--begin::Body-->
@@ -106,7 +106,7 @@
 {#if searchData?.courses?.length == 0 && searchData?.courses_pinned?.length == 0}
     <div class="text-center">Nessun corso disponibile.</div>
 {:else if searchData?.courses?.length > 0}
-    <div class="row">
+    <div class="row mx-0 course-grid">
         <div class="col d-flex align-items-center justify-content-center mb-5" style="margin: auto;">
             <!-- svelte-ignore a11y-missing-attribute -->
             <span class="font-size-h3 font-weight-boldest text-dark d-flex align-items-center">
@@ -114,7 +114,7 @@
                 Corsi</span>
         </div>
     </div>
-    <div class="row">
+    <div class="row mx-0 course-grid">
     {#if searchData}
         {#if searchData.courses_tags && searchData.courses_tags.length > 0}
             <TagFilterView bind:tags={searchData.courses_tags} bind:activeTags />
@@ -122,7 +122,7 @@
 
         {#each searchData?.courses || [] as course, idx}
             {#if includesAny( activeTags, course.tags?.map(t => t.tag_name) )}
-                <div class="col-xl-4" in:scale={{start: 0.9, duration: 80}}>
+                <div class="col-12 col-md-6 col-xl-4 course-column" in:scale={{start: 0.9, duration: 80}}>
                     <!--begin::Stats Widget 10-->
                     <div class="card card-widget card-custom card-stretch gutter-b bg-white">
                         <!--begin::Body-->
@@ -271,3 +271,9 @@
     {/if}
 </div>
 {/if}
+<style>
+    .course-grid, .course-column { min-width: 0; }
+    .course-column :global(h2), .course-column :global(.card-body) { overflow-wrap: anywhere; min-width: 0; }
+    .course-column :global(.card-footer) { flex-wrap: wrap; gap: .5rem; }
+    .course-column :global(img) { max-width: 100%; height: auto; }
+</style>

@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 
 import pytz
 import requests
@@ -33,7 +34,7 @@ def calendar_datetime_in_rome(value):
 def google_check(request):
     user = request.user
     if request.collaborator:
-        user = request.original_user
+        user = acting_user(request)
 
     return Response({'google_sync_enabled': user.google_sync_enabled}, status.HTTP_200_OK)
 
@@ -45,7 +46,7 @@ def google_calendar_config(request):
     if request.method == 'DELETE':
         user = request.user
         if request.collaborator:
-            user = request.original_user
+            user = acting_user(request)
 
         logger.info("Revoking Google Calendar integration", extra={'user_id': str(user.user_id)})
         # revoke the token
@@ -83,8 +84,8 @@ def google_calendar_config(request):
     request.session['state'] = state
 
     if request.collaborator:
-        request.original_user.integration_google_state = state
-        request.original_user.save()
+        acting_user(request).integration_google_state = state
+        acting_user(request).save()
     else:
         request.user.integration_google_state = state
         request.user.save()
@@ -153,7 +154,7 @@ def google_oauth2callback(request):
 def google_calendar_list(request):
     user = request.user
     if request.collaborator:
-        user = request.original_user
+        user = acting_user(request)
 
     logger.info("Fetching Google Calendar list", extra={'user_id': str(user.user_id)})
     # use the code for API call request of the calendar list
@@ -188,7 +189,7 @@ def google_calendar_export_course(request, course_id):
 
     user = request.user
     if request.collaborator:
-        user = request.original_user
+        user = acting_user(request)
 
     logger.info("Exporting course to Google Calendar", extra={'user_id': str(user.user_id), 'course_id': str(course_id), 'course_title': course.title})
     # use the code for API call request of the calendar list

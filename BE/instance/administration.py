@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import InstanceConfiguration
-from .permissions import IsInstanceOwner, is_instance_owner
+from .permissions import IsInstanceOwner, is_instance_owner, is_instance_administrator
 from .serializers import InstanceConfigSerializer, InstanceReconfigureSerializer
 from .views import InstanceLogoUploadView
 from .release_catalog import ReleaseError, fetch_releases, fetch_release, release_summary, version_tuple
@@ -20,7 +20,15 @@ class InstanceAccessView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response({'is_owner': is_instance_owner(getattr(request, 'original_user', request.user))})
+        actor = getattr(request, 'authenticated_user', getattr(request, 'original_user', request.user))
+        config = InstanceConfiguration.get_config()
+        association = config.primary_association if config and config.primary_association_id else None
+        allowed = is_instance_administrator(actor, config)
+        return Response({
+            'is_owner': is_instance_owner(actor, config),
+            'is_administrator': allowed,
+            'data_association': {'id': str(association.pk), 'name': association.denomination} if allowed and association else None,
+        })
 
 
 class OwnerLogoView(InstanceLogoUploadView):
