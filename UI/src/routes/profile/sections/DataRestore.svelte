@@ -1,5 +1,6 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
+    import RestoreDownloadButton from './RestoreDownloadButton.svelte';
     import RestoreProgressCard from './RestoreProgressCard.svelte';
     import NotificationService from 'utils/NotificationService.js';
     import {mergeRestoreProgress} from 'utils/restoreProgress.js';
@@ -37,6 +38,7 @@
     let fileInput;
     let dragOver = false;
     let busy = false;
+    let downloading = '';
     let loading = true;
     let error = '';
     let connectionError = '';
@@ -181,7 +183,10 @@
         finally { reportLoading = false; }
     }
     async function download(op, kind = 'backup') {
+        if (busy) return;
         busy = true;
+        error = '';
+        downloading = `${op.id}:${kind}`;
         try {
             const response = await window.fetch(`${endpoint}/${op.id}/${kind}`);
             if (!response.ok) throw new Error('Download non riuscito. Riprova.');
@@ -192,7 +197,7 @@
             link.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (e) { error = e.message; }
-        finally { busy = false; }
+        finally { busy = false; downloading = ''; }
     }
     async function loadOlderBackups() {
         busy = true;
@@ -268,10 +273,10 @@
                 <small id="backup-upload-help" class="text-muted d-block mt-2">Formato ZIP · Dimensione massima {uploadLimit}</small>
             </div>
             <button class="btn btn-primary" disabled={busy || !file} on:click={upload}>
-                {#if busy}<span class="spinner-border spinner-border-sm mr-2" aria-hidden="true" />{/if}
-                {busy ? 'Caricamento e verifica…' : 'Carica e verifica backup'}
+                {#if busy && !downloading}<span class="spinner-border spinner-border-sm mr-2" aria-hidden="true" />{/if}
+                {busy && !downloading ? 'Caricamento e verifica…' : 'Carica e verifica backup'}
             </button>
-            {#if busy}<p class="text-muted mt-2" role="status">Caricamento e verifica del backup. Mantieni aperta questa pagina.</p>{/if}
+            {#if busy && !downloading}<p class="text-muted mt-2" role="status">Caricamento e verifica del backup. Mantieni aperta questa pagina.</p>{/if}
             <p class="text-muted mt-2">Sono accettati export Bakney v1 completi. Gli archivi di backup del server non sono compatibili.</p>
         {/if}
         {#if selected}
@@ -307,7 +312,8 @@
                     <button class="btn btn-light mb-3" disabled={busy || reportLoading} on:click={() => showReport(selected)}>
                         {reportLoading ? 'Caricamento rapporto…' : reportOperationId === selected.id && relationReport ? 'Nascondi rapporto' : 'Visualizza rapporto'}
                     </button>
-                    <button class="btn btn-link mb-3" disabled={busy} on:click={() => download(selected, 'missing-relations')}>Scarica rapporto relazioni mancanti</button>
+                    <div class="report-download mb-3"><RestoreDownloadButton kind="missing-relations" disabled={busy}
+                        loading={downloading === `${selected.id}:missing-relations`} on:click={() => download(selected, 'missing-relations')} /></div>
                     {#if reportOperationId === selected.id && relationReport}
                         <div class="relation-report mb-3" aria-label="Rapporto relazioni mancanti">
                             <p>I record elencati sono presenti nel backup; manca soltanto il dato a cui punta il collegamento.
@@ -361,12 +367,15 @@
         {#if backups.length}
             <InstanceAccordion id="data-recovery-history" title="Backup di sicurezza" description="Copie dei dati precedenti, create prima di ogni ripristino." count={backups.length}>
             {#each backups as op}
-                <div class="d-flex flex-wrap align-items-center justify-content-between border rounded p-3 mb-2">
-                    <span>{new Date(op.created_at).toLocaleString('it-IT')} · {labels[op.stage] || op.stage}</span>
-                    <button class="btn btn-light" disabled={busy} on:click={() => download(op)}>Scarica backup di sicurezza</button>
-                    {#if op.preview.missing_relations}
-                        <button class="btn btn-light" disabled={busy} on:click={() => download(op, 'missing-relations')}>Scarica rapporto relazioni mancanti</button>
-                    {/if}
+                <div class="recovery-row">
+                    <div class="recovery-caption"><strong>{new Date(op.created_at).toLocaleString('it-IT')}</strong><span>{labels[op.stage] || op.stage}</span></div>
+                    <div class="recovery-downloads">
+                        <RestoreDownloadButton disabled={busy} loading={downloading === `${op.id}:backup`} on:click={() => download(op)} />
+                        {#if op.preview.missing_relations}
+                            <RestoreDownloadButton kind="missing-relations" disabled={busy} loading={downloading === `${op.id}:missing-relations`}
+                                on:click={() => download(op, 'missing-relations')} />
+                        {/if}
+                    </div>
                 </div>
             {/each}
             {#if backupCursor}<button class="btn btn-light" disabled={busy} on:click={loadOlderBackups}>Carica backup precedenti</button>{/if}
@@ -381,6 +390,13 @@
 </section>
 
 <style>
+    .recovery-row {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--border-color,#e6e8ef);}
+    .recovery-row:last-child {border-bottom:0;}
+    .recovery-caption {display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;}
+    .recovery-caption span {color:var(--text-secondary,#73798c);font-size:.74rem;}
+    .recovery-downloads {display:flex;gap:.65rem;flex-wrap:wrap;}
+    @media(max-width:575px) {.recovery-downloads {width:100%;} .report-download {width:100%;}}
+
     .restore-intro {display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:1.5rem 0 1rem;}
     .intro-icon {display:grid;place-items:center;border-radius:16px;padding:1rem;color:var(--primary);background:color-mix(in srgb, var(--primary) 8%, white);}
     .restore-intro>div {flex:1;min-width:210px;}
@@ -406,7 +422,7 @@
     .backup-file { border: 1px solid var(--border-color, #e4e6ef); }
     .file-details { min-width: 0; }
     section { min-width: 0; overflow-wrap: anywhere; }
-    .review-panel { border: 1px solid var(--border-color, #e3e5ee); padding: 1.5rem; border-radius: 1rem; background: var(--bg-card, #fff); box-shadow:0 8px 28px #20223806; }
+    .review-panel { margin-bottom: 1rem; border: 1px solid var(--border-color, #e3e5ee); padding: 1.5rem; border-radius: 1rem; background: var(--bg-card, #fff); box-shadow:0 8px 28px #20223806; }
     .restore-failed {border-color: var(--danger, #c62828);}
     .relation-report {min-width:0; width:100%; max-height: 28rem; overflow-y: auto;}
     .relation-rows {min-width:0; width:100%; max-height: 16rem; overflow: auto;}
