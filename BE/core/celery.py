@@ -1,5 +1,6 @@
 import os
 from celery import Celery
+from instance.restore.task_base import CoordinatedTask
 from celery.schedules import crontab
 
 # set the default Django settings module for the 'celery' program.
@@ -10,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 # See: https://github.com/celery/celery/issues/7007
 os.environ.setdefault('OBJC_DISABLE_INITIALIZE_FORK_SAFETY', 'YES')
 
-app = Celery('core')
+app = Celery('core', task_cls=CoordinatedTask)
 
 # Using a string here means the worker don't have to serialize
 # the configuration object to child processes.
@@ -40,6 +41,7 @@ app.conf.task_annotations = {
 }
 
 app.conf.beat_schedule = {
+    'cleanup-data-restores': {'task': 'instance.restore.cleanup', 'schedule': 3600.0},
     'renew-memberships-payments': {
         'task': 'renew_memberships_payments',
         'schedule': crontab(hour='0', minute='10'),

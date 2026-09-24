@@ -1,6 +1,6 @@
 <script>
     import {onMount} from 'svelte';
-    import {querystring} from 'svelte-spa-router';
+    import {profilePages, readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
     import {isMobile} from 'store/breakpointStore.js';
 
@@ -15,21 +15,30 @@
     userData.useLocalStorage();
     subPage.useLocalStorage();
 
-    let pages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'data-management', 'self-instance'];
+    const pages = profilePages;
     export let changes = false;
     export let instanceOwner = false;
 
+    let navigationReady = false;
+    let previousTab = null;
     function checkParams() {
-        let splittedQuery = $querystring.split('&');
-        let queryKey = splittedQuery[0].split('=')[0];
-        let page = splittedQuery[0].split('=')[1];
-
-        if (pages.includes(page) && queryKey == 'page') subPage.set(page);
+        const {page, tab} = readProfileLocation();
+        if (navigationReady && page && page !== $subPage && changes && $subPage !== 'stripe'
+            && !confirm('Sei sicuro di voler lasciare questa pagina? Eventuali modifiche non salvate andranno perse.')) {
+            navigateProfile($subPage, previousTab, true);
+            return;
+        }
+        previousTab = tab;
+        if (page) subPage.set(page);
         else if (!pages.includes($subPage)) subPage.set('info');
     }
 
-    onMount(async () => {
+    onMount(() => {
         checkParams();
+        navigationReady = true;
+        navigateProfile($subPage, undefined, true);
+        window.addEventListener('hashchange', checkParams);
+        return () => window.removeEventListener('hashchange', checkParams);
     });
 
     const changeSubPage = function (page) {
@@ -45,7 +54,7 @@
                 }
             }
         }
-        if ($subPage === page) window.history.replaceState(null, '', `/#/profile?page=${page}`);
+        if ($subPage === page) navigateProfile(page);
     };
 </script>
 

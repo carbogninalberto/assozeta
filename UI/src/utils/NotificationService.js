@@ -35,6 +35,7 @@ class NotificationService {
         this.onNewNotificationCallback = null;
         this.visibilityHandler = null;
         this.activeExportSync = null;
+        this.restoreListeners = new Set();
         this.staffBoardListeners = new Set();
     }
 
@@ -73,6 +74,7 @@ class NotificationService {
             this.onNewNotificationCallback?.(notification);
         });
 
+        this.ws.onRestoreProgress = event => { for (const callback of this.restoreListeners) callback(event); };
         this.ws.setOnExportProgress(event => exportProgress.applyProgress(event));
         this.ws.setOnExportCompleted(event => exportProgress.applyCompleted(event));
         this.ws.setOnExportFailed(event => exportProgress.applyFailed(event));
@@ -121,6 +123,11 @@ class NotificationService {
      * Mark a single notification as read
      * @param {string} notificationId - The notification UUID
      */
+    subscribeRestoreProgress(callback) {
+        this.restoreListeners.add(callback);
+        return () => this.restoreListeners.delete(callback);
+    }
+
     subscribeStaffBoard(callback) {
         this.staffBoardListeners.add(callback);
         return () => this.staffBoardListeners.delete(callback);

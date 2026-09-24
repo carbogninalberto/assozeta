@@ -159,7 +159,10 @@ read from their archived configuration when available and otherwise treated as
 the legacy self-host default `storage` prefix. Restore stops before the live swap
 if the source and target prefixes differ.
 
-Restore replaces the current database and object-storage contents:
+To replace association data from a **Bakney ZIP** while retaining the installation
+configuration and owner access, use [Gestione Dati → Ripristina backup](DATA_RESTORE.md).
+
+The following full-server restore replaces the current database and object-storage contents:
 
 ```bash
 ./selfhost/bin/assozeta restore \

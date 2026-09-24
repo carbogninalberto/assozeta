@@ -1,5 +1,6 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
+    import {profileTab, readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
     import InstanceAlert from './InstanceAlert.svelte';
     import InstanceAccordion from './InstanceAccordion.svelte';
     import Switch from '../../../components/inputs/Switch.svelte';
@@ -33,6 +34,14 @@
     let integrationBusy = false;
     let section = 'overview';
     const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
+    onMount(() => {
+        const syncTab = () => {
+            if (readProfileLocation().page === 'self-instance') section = profileTab('self-instance', sections.map(([id]) => id), 'overview');
+        };
+        syncTab();
+        window.addEventListener('hashchange', syncTab);
+        return () => window.removeEventListener('hashchange', syncTab);
+    });
     let diagnostics;
     let diagnosticError = '';
     let diagnosticBusy = false;
@@ -263,7 +272,7 @@
         {#if loading}<p role="status">Caricamento dell’istanza…</p>{/if}
         {#if !info}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} />{/if}
         {#if info}
-            <InplaceTabs bind:activeTab={section} ariaLabel="Sezioni Self Instance" paddingClass="px-0 pb-4 pt-0" showHR={true}
+            <InplaceTabs bind:activeTab={section} on:tabChange={() => navigateProfile('self-instance', section)} ariaLabel="Sezioni Self Instance" paddingClass="px-0 pb-4 pt-0" showHR={true}
                 navigationPages={sections.map(([tabName, title]) => ({tabName, title: title + (((tabName === 'branding' && (logoChanges || JSON.stringify(draft) !== saved)) || (tabName === 'email' && emailChanges) || (tabName === 'integrations' && integrationChanges) || (tabName === 'ai' && aiChanges)) ? ' •' : '')}))} />
             {#if section !== 'updates'}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} showHistory={false} />{/if}
             {#if changes}<InstanceAlert tone="warning" role="status">Modifiche non salvate. Salvale o annullale nella relativa sezione.</InstanceAlert>{/if}

@@ -150,7 +150,8 @@ class Agent:
 
         try:
             # Run sync Django ORM calls in a thread
-            result = await asyncio.to_thread(func, **arguments)
+            from instance.restore.locking import coordinated_sync
+            result = await asyncio.to_thread(coordinated_sync(func), **arguments)
             result_json = json.dumps(result, default=str, ensure_ascii=False)
 
             # Cache full schema result (not model-specific ones)

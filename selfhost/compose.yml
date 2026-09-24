@@ -11,9 +11,11 @@ x-backend: &backend
   env_file:
     - ${ASSOZETA_ENV_FILE:-.env}
   environment:
+    DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
     ASSOZETA_DEPLOYMENT_MODE: production
   init: true
   volumes:
+    - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
     - django_static:/app/staticfiles
   networks:
     - internal
@@ -120,6 +122,8 @@ services:
       - /bin/sh
       - -c
       - >-
+        touch /run/assozeta-operations/lifecycle.lock &&
+        chmod 666 /run/assozeta-operations/lifecycle.lock &&
         python manage.py migrate --noinput &&
         python manage.py collectstatic --noinput --clear &&
         python manage.py seed_selfhost
@@ -137,6 +141,7 @@ services:
   api:
     <<: *backend
     volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - django_static:/app/staticfiles
       - updater_api:/run/assozeta-updater:ro
     depends_on:

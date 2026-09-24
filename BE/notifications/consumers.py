@@ -171,6 +171,9 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         if association and association == self.staff_board_association:
             await self.send_json({'type': 'staff_board_changed'})
 
+    async def restore_progress(self, event):
+        await self.send_json({'type': 'restore_progress', **event['payload']})
+
     async def export_progress(self, event):
         await self.send_json({'type': 'export_progress', **event['payload']})
 

@@ -373,10 +373,17 @@ SOCIAL_AUTH_PIPELINE = (
 
 AUTH_USER_MODEL = 'application.User'
 
+DATA_RESTORE_LOCK_PATH = env.str('DATA_RESTORE_LOCK_PATH', '')
+DATA_RESTORE_MAX_UPLOAD_BYTES = env.int('DATA_RESTORE_MAX_UPLOAD_BYTES', 5 * 1024**3)
+DATA_RESTORE_MAX_EXPANDED_BYTES = env.int('DATA_RESTORE_MAX_EXPANDED_BYTES', 20 * 1024**3)
+DATA_RESTORE_MAX_JSON_BYTES = env.int('DATA_RESTORE_MAX_JSON_BYTES', 512 * 1024**2)
+DATA_RESTORE_MAX_FILE_BYTES = env.int('DATA_RESTORE_MAX_FILE_BYTES', 5 * 1024**3)
+
 MIDDLEWARE = [
     'core.middleware.GZipMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'instance.restore.locking.RestoreMaintenanceMiddleware',
     # "kolo.middleware.KoloMiddleware",
     'django.middleware.security.SecurityMiddleware',
     # OPTIMIZED: Use ConditionalSessionMiddleware instead of SessionMiddleware
@@ -399,7 +406,7 @@ MIDDLEWARE = [
 
 # Operational forms contain SMTP credentials; exclude them from the development
 # request profiler as well as the production API audit logger.
-SILKY_IGNORE_PATHS = ['/instance/admin/email', '/instance/admin/email/test', '/instance/admin/diagnostics',
+SILKY_IGNORE_PATHS = ['/instance/admin/data-restore', '/instance/admin/email', '/instance/admin/email/test', '/instance/admin/diagnostics',
                      '/instance/admin/integrations/stripe', '/instance/admin/integrations/google', '/instance/admin/integrations/apple']
 
 if DEBUG:

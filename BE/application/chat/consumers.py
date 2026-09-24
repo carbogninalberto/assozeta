@@ -2,6 +2,8 @@ import asyncio
 import json
 import logging
 
+from instance.restore.locking import coordinated_async
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
@@ -296,6 +298,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         except Exception:
             pass
 
+    @coordinated_async
     async def _run_agent_with_timeout(self, message: str, timeout: int):
         """Run the agent with a timeout."""
         try:
@@ -346,6 +349,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             'status': 'history_cleared',
         })
 
+    @coordinated_async
     async def _handle_save_report(self, content: dict):
         """Save the last exported report with a custom name."""
         name = content.get('name', '').strip()
@@ -394,7 +398,8 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         )
 
         try:
-            result = await database_sync_to_async(tool_save_report)(
+            from instance.restore.locking import coordinated_sync
+            result = await database_sync_to_async(coordinated_sync(tool_save_report))(
                 sport_association_id=str(sport_association_id),
                 name=name,
                 tool_name=save_info.get('tool_name'),
@@ -424,6 +429,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
                 'message': 'Errore nel salvataggio del report. Riprova.',
             })
 
+    @coordinated_async
     async def _handle_delete_report(self, content: dict):
         """Delete a saved report from the frontend."""
         from django.apps import apps
@@ -448,13 +454,14 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             return
 
         try:
-            deleted, _ = await database_sync_to_async(
+            from instance.restore.locking import coordinated_sync
+            deleted, _ = await database_sync_to_async(coordinated_sync(
                 lambda: SavedReport.objects.filter(
                     saved_report_id=saved_report_id,
                     sport_association_id=sport_association_id,
                     created_by_id=user_id,
                 ).delete()
-            )()
+            ))()
 
             if deleted == 0:
                 await self.send_json({

@@ -12,5 +12,8 @@
 </div>
 
 <style>
+    .alert-icon {color: inherit;}
+    .alert-light-warning .alert-icon {color: #9a6700;}
+    .alert-light-danger .alert-icon {color: var(--danger, #c62828);}
     .alert-text {min-width: 0; overflow-wrap: anywhere;}
 </style>

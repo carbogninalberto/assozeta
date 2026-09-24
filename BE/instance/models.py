@@ -1,6 +1,7 @@
 """
 Instance configuration model for self-hosted deployments.
 """
+import uuid
 from copy import deepcopy
 from django.db import models
 
@@ -124,3 +125,39 @@ class InstanceConfiguration(models.Model):
                 else:
                     settings[key] = value
         return settings
+
+
+class DataRestore(models.Model):
+    """Durable receipt for validated uploads and background replacement."""
+    ACTIVE = ('queued', 'running')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey('application.User', on_delete=models.PROTECT)
+    association_id = models.UUIDField()
+    state = models.CharField(max_length=16, default='review')
+    stage = models.CharField(max_length=32, default='validated')
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    upload_path = models.TextField(default='')
+    sha256 = models.CharField(max_length=64)
+    version = models.CharField(max_length=100, default='')
+    preview = models.JSONField(default=dict)
+    backup_path = models.TextField(default='')
+    backup_sha256 = models.CharField(max_length=64, default='')
+    media = models.JSONField(default=dict)
+    error = models.TextField(default='')
+    allow_missing_media = models.BooleanField(default=False)
+    attempts = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['association_id'], condition=models.Q(state__in=['queued', 'running']),
+            name='one_active_data_restore',
+        )]
+
+
+class DataRestoreUserDetachment(models.Model):
+    """Local provenance for access revoked by replacement, consumed on recovery."""
+    user = models.OneToOneField('application.User', on_delete=models.CASCADE, related_name='+')
+    owner = models.ForeignKey('application.User', on_delete=models.CASCADE, related_name='+')
+    association_id = models.UUIDField()

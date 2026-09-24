@@ -41,6 +41,7 @@ class NotificationWebSocket {
         this.onConnect = null;
         this.onDisconnect = null;
         this.onStaffBoardChanged = null;
+        this.onRestoreProgress = null;
         this.onExportProgress = null;
         this.onExportCompleted = null;
         this.onExportFailed = null;
@@ -120,6 +121,10 @@ class NotificationWebSocket {
 
             case 'staff_board_changed':
                 this.onStaffBoardChanged?.();
+                break;
+
+            case 'restore_progress':
+                this.onRestoreProgress?.(data);
                 break;
 
             case 'export_progress':

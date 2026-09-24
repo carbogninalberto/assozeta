@@ -4,6 +4,19 @@
 
 <script>
     import {onMount} from 'svelte';
+    import {profileTab, readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
+    import InstanceAlert from './InstanceAlert.svelte';
+    import DataRestore from './DataRestore.svelte';
+    import InplaceTabs from '../../../components/InplaceTabs.svelte';
+    let section = profileTab('data-management', ['export', 'restore'], 'export');
+    let mounted = false;
+    let disposed = false;
+    let requestedExports = false;
+    let exportError = '';
+    let loadedExports = false;
+    let exportController;
+    export let accessPending = false;
+    export let instanceOwner = false;
     import {scale} from 'svelte/transition';
     import {apiFetch} from 'utils/ApiMiddleware.js';
     import {sessionToken, subPage, userData} from 'store/stores.js';
@@ -48,19 +61,55 @@
         handleTerminalExport(exportStatus, announceTerminal);
     }
 
-    onMount(async () => {
-        await Promise.all([loadExports(), notificationService.syncActiveExport()]);
+    onMount(() => {
+        const syncTab = () => {
+            if (readProfileLocation().page === 'data-management') section = profileTab('data-management', ['export', 'restore'], 'export');
+        };
+        syncTab();
+        mounted = true;
+        window.addEventListener('hashchange', syncTab);
+        return () => {
+            disposed = true;
+            exportController?.abort();
+            window.removeEventListener('hashchange', syncTab);
+        };
     });
+    $: if (mounted && !accessPending && !instanceOwner && section === 'restore') {
+        section = 'export';
+        navigateProfile('data-management', section, true);
+    }
+    $: if (mounted && !accessPending && section === 'export' && !requestedExports) {
+        requestedExports = true;
+        loadExports();
+        notificationService.syncActiveExport().catch(() => {});
+    }
 
     async function loadExports() {
+        if (loadingExports || disposed) return;
+        if (section !== 'export') { requestedExports = false; return; }
         loadingExports = true;
-        let res = await apiFetch(__bakney.env.API.ASSOCIATION.EXPORT.LIST);
-        if (!res.error) {
-            exports = res.response.exports || [];
-        } else {
-            toast.error(res.response?.msg || 'Errore nel caricamento degli export');
+        exportError = '';
+        exportController = new AbortController();
+        const timeout = setTimeout(() => exportController.abort(), 30000);
+        try {
+            const res = await apiFetch(__bakney.env.API.ASSOCIATION.EXPORT.LIST, {signal: exportController.signal});
+            if (disposed) return;
+            if (res.error) {
+                exportError = res.status === 503
+                    ? 'Gli export non sono disponibili durante un ripristino o una manutenzione. Riprova al termine.'
+                    : 'Non è stato possibile caricare gli export. Riprova tra poco.';
+            } else {
+                exports = res.response.exports || [];
+                loadedExports = true;
+            }
+        } catch (e) {
+            if (!disposed) exportError = e.name === 'AbortError'
+                ? 'Il caricamento sta impiegando troppo tempo. Puoi riprovare.'
+                : 'Connessione non disponibile. Controlla la rete e riprova.';
+        } finally {
+            clearTimeout(timeout);
+            loadingExports = false;
         }
-        loadingExports = false;
     }
 
     async function startExport() {
@@ -159,21 +208,25 @@
 
 {#if $subPage == 'data-management'}
     <div class="flex-row-fluid">
-        <div class="card card-custom card-stretch">
+        <div class="card card-custom">
             <div class="card-header py-3">
                 <div class="card-title align-items-start flex-column">
-                    <h3 class="card-label font-weight-bolder text-dark font-size-h1">Gestione Dati</h3>
-                    <span class="text-muted font-weight-bold font-size-sm mt-1">
-                        Esporta e gestisci i dati della tua associazione per backup o selfhosting.
-                    </span>
+                    <h1 class="font-size-h1 font-weight-bolder">Gestione Dati</h1>
+                    <p class="text-muted mb-0">Export, backup e ripristino dei dati della tua associazione.</p>
                 </div>
             </div>
 
-            <div class="card-body">
-                {#if !loadingExports}
+            <div class="card-body data-body">
+                {#if accessPending}<p role="status">Verifica delle sezioni disponibili…</p>{/if}
+                {#if instanceOwner}
+                    <InplaceTabs bind:activeTab={section} on:tabChange={() => navigateProfile('data-management', section)} ariaLabel="Sezioni Gestione Dati" paddingClass="px-0 pb-4 pt-0" showHR={true}
+                        navigationPages={[{tabName: 'export', title: 'Esporta dati'}, {tabName: 'restore', title: 'Ripristina backup'}]} />
+                {/if}
+                <div class="data-section" hidden={section !== 'export'}>
+                <div aria-busy={loadingExports}>
                     <!-- Export Section Title -->
                     <div in:scale={{duration: 150, start: 0.98}} class="form-group row mb-0">
-                        <h1 class="col-12 font-weight-boldest text-dark">Esporta Dati</h1>
+                        <h2 class="col-12">Esporta dati</h2>
                     </div>
 
                     <!-- Description -->
@@ -220,7 +273,7 @@
                                     <div class="d-flex justify-content-center">
                                         <button
                                             class="btn btn-primary font-weight-bold px-6"
-                                            disabled={!canPerformAction('other.settings.update')}
+                                            disabled={loadingExports || !!exportError || !loadedExports || !canPerformAction('other.settings.update')}
                                             on:click={startExport}>
                                             <CloudArrowUp size={18} class="mr-2" weight="duotone" />
                                             Avvia Export
@@ -233,13 +286,25 @@
 
                     <!-- Export History Title -->
                     <div in:scale={{duration: 150, start: 0.98}} class="form-group row mb-0 mt-8">
-                        <h1 class="col-12 font-weight-boldest text-dark">Storico Export</h1>
+                        <h3 class="col-12">Storico export</h3>
                     </div>
 
                     <!-- Export History List -->
                     <div in:scale={{duration: 150, start: 0.98}} class="form-group row">
                         <div class="col-12">
-                            {#if exports.length === 0 && !startingExport && !exporting}
+                            {#if loadingExports}
+                                <div class="export-loading" role="status">
+                                    <span class="export-spinner text-primary"><SpinnerGap size={24} /></span>
+                                    <div><strong>Caricamento degli export…</strong><p>Stiamo recuperando i backup disponibili. Puoi continuare a navigare tra le sezioni.</p></div>
+                                </div>
+                            {/if}
+                            {#if exportError}
+                                <InstanceAlert tone="warning" role="alert">{exportError}
+                                    {#if exports.length}<p class="mb-0">Gli export mostrati risalgono all’ultimo caricamento riuscito.</p>{/if}
+                                    <button class="btn btn-light mt-2" disabled={loadingExports} on:click={loadExports}>Riprova caricamento export</button>
+                                </InstanceAlert>
+                            {/if}
+                            {#if exports.length === 0 && !startingExport && !exporting && loadedExports && !loadingExports && !exportError}
                                 <div class="d-flex justify-content-center flex-column align-items-center py-12">
                                     <div>
                                         <File size={64} weight="duotone" class="mb-4 text-muted" />
@@ -326,17 +391,19 @@
                             {/if}
                         </div>
                     </div>
-                {:else}
-                    <div class="d-flex justify-content-center py-10">
-                        <div class="spinner spinner-primary spinner-lg" />
-                    </div>
-                {/if}
+                </div>
+                </div>
+                {#if instanceOwner}<div class="data-section" hidden={section !== 'restore'}><DataRestore /></div>{/if}
             </div>
         </div>
     </div>
 {/if}
 
 <style>
+    .export-loading {display:flex;align-items:center;gap:1rem;padding:1.5rem;background:var(--bg-hover, #f6f7fb);border-radius:.75rem;}
+    .export-loading p {margin:.25rem 0 0;color:var(--text-secondary, #73798c);font-size:.85rem;}
+    .data-body { min-width: 0; }
+    .data-section:not([hidden]) { margin-top: 1.5rem; }
     .export-spinner {
         display: inline-flex;
         align-items: center;

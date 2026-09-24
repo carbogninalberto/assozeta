@@ -137,6 +137,7 @@ release_prod_lock() {
         rm -rf "$PROD_LOCK_DIR" || true
     fi
     prod_lock_held=false
+    exec 8>&-
 }
 
 prod_lock_on_exit() {
@@ -1557,6 +1558,13 @@ run_locked_prod_command() {
 
     acquire_prod_lock "$locked_command"
     require_no_surviving_lifecycle_helpers
+    # Shared with application ZIP restores and running background jobs.
+    if command -v flock >/dev/null 2>&1; then
+        mkdir -p "$SELFHOST_DIR/.operations"
+        exec 8>"$SELFHOST_DIR/.operations/lifecycle.lock"
+        chmod 666 "$SELFHOST_DIR/.operations/lifecycle.lock"
+        flock -x 8
+    fi
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;

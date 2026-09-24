@@ -93,6 +93,7 @@ jobs:
           npm test
           cd ..
           node selfhost/tests/browser/operations-ui.mjs
+          node selfhost/tests/browser/data-restore-ui.mjs
       - name: Verify full application reload behind Caddy
         working-directory: selfhost/tests/browser
         env:
@@ -106,6 +107,8 @@ jobs:
           path: |
             quality-reports/operations-ui/*.json
             quality-reports/operations-ui/*.png
+            quality-reports/data-restore-ui/*.json
+            quality-reports/data-restore-ui/*.png
             quality-reports/reload-ui/**/*.png
           if-no-files-found: warn
           retention-days: 14

@@ -87,7 +87,7 @@
                 {/if}
 
                 {#if $subPage == 'data-management'}
-                    <DataManagement />
+                    <DataManagement {instanceOwner} accessPending={checkingOwner} />
                 {/if}
             </div>
 
