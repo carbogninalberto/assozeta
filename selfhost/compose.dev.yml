@@ -51,7 +51,7 @@ services:
       retries: 30
 
   minio:
-    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    image: ${MINIO_IMAGE:-ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389}
     command: server /data --console-address :9001
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -69,7 +69,7 @@ services:
       retries: 30
 
   minio-init:
-    image: ${MINIO_CLIENT_IMAGE:-quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z}
+    image: ${MINIO_CLIENT_IMAGE:-ghcr.io/carbogninalberto/mc:RELEASE.2025-04-16T18-13-26Z-assozeta.1@sha256:c12985fd4e9fada3afd286d10ccacb86ebeb7894894360c96da18ed5c092b456}
     profiles: [tools]
     depends_on:
       minio:

@@ -1,0 +1,22 @@
+name: Prepare pinned object storage
+description: Download and verify the images published from our pinned MinIO forks.
+inputs:
+  legacy:
+    description: Also cache historical image names for unchanged old-release installers.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Download pinned storage images
+      shell: bash
+      env:
+        LEGACY_STORAGE: ${{ inputs.legacy }}
+      run: |
+        if [ "$LEGACY_STORAGE" = true ]; then
+          ./selfhost/bin/prepare-storage --legacy
+        else
+          ./selfhost/bin/prepare-storage
+        fi
+    - name: Verify storage versions and object operations
+      shell: bash
+      run: ./selfhost/tests/storage-smoke.sh

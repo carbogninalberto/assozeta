@@ -1,0 +1,15 @@
+#!/bin/sh
+# Download storage for CI; historical release tests also need old local tags.
+set -eu
+case "${1:-}" in
+    ''|--legacy) ;;
+    *) printf 'Usage: prepare-storage [--legacy]\n' >&2; exit 2 ;;
+esac
+server='ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389'
+client='ghcr.io/carbogninalberto/mc:RELEASE.2025-04-16T18-13-26Z-assozeta.1@sha256:c12985fd4e9fada3afd286d10ccacb86ebeb7894894360c96da18ed5c092b456'
+docker pull "$server"
+docker pull "$client"
+if [ "${1:-}" = --legacy ]; then
+    docker tag "$server" quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    docker tag "$client" quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+fi

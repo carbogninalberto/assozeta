@@ -40,6 +40,9 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: ./.github/actions/prepare-storage
+        with:
+          legacy: 'true'
       - name: Select and validate published releases
         id: releases
         env:

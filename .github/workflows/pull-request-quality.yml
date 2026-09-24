@@ -32,13 +32,13 @@ jobs:
           predicate-quantifier: every
           filters: |
             backend:
-              - '{BE/**,run_tests.sh,selfhost/compose.dev.yml,selfhost/bin/assozeta,selfhost/config/**,selfhost/.env*,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '{BE/**,run_tests.sh,selfhost/compose.dev.yml,selfhost/bin/assozeta,selfhost/config/**,selfhost/.env*,.github/workflows/selfhost-quality.yml,.github/actions/prepare-storage/**,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
             ui:
-              - '{UI/**,selfhost/tests/browser/**,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '{UI/**,selfhost/tests/browser/**,.github/workflows/selfhost-quality.yml,.github/actions/prepare-storage/**,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
             selfhost:
-              - '{selfhost/**,BE/instance/**,BE/Dockerfile,BE/entrypoint.sh,UI/Dockerfile,UI/Caddyfile,Makefile,run_tests.sh,.github/workflows/selfhost-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '{selfhost/**,BE/instance/**,BE/Dockerfile,BE/entrypoint.sh,UI/Dockerfile,UI/Caddyfile,Makefile,run_tests.sh,.github/workflows/selfhost-quality.yml,.github/actions/prepare-storage/**,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
               - '!selfhost/tests/browser/**'
             stack:

@@ -213,6 +213,26 @@ acquire_prod_lock() {
     done
 }
 
+# Kept in the CLI: legacy bootstrap copies this file before companion files.
+# Translate exact retired defaults without changing saved env or custom images.
+storage_image_ref() {
+    case "$1" in
+        server)
+            case "$2" in
+                ''|quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z)
+                    printf '%s\n' 'ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389' ;;
+                *) printf '%s\n' "$2" ;;
+            esac ;;
+        client)
+            case "$2" in
+                ''|quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z)
+                    printf '%s\n' 'ghcr.io/carbogninalberto/mc:RELEASE.2025-04-16T18-13-26Z-assozeta.1@sha256:c12985fd4e9fada3afd286d10ccacb86ebeb7894894360c96da18ed5c092b456' ;;
+                *) printf '%s\n' "$2" ;;
+            esac ;;
+        *) return 1 ;;
+    esac
+}
+
 compose_with_env() {
     compose_env_file=$1
     compose_file=$2
@@ -233,6 +253,10 @@ compose_with_env() {
         compose_application_project=$(env_value COMPOSE_PROJECT_NAME "$compose_env_file")
         ASSOZETA_UPDATER_API_VOLUME="${compose_application_project:-assozeta}_updater_api"; export ASSOZETA_UPDATER_API_VOLUME
         ASSOZETA_UPDATER_STATUS_VOLUME="${compose_application_project:-assozeta}_updater_status"; export ASSOZETA_UPDATER_STATUS_VOLUME
+        # Resolve retired defaults without rewriting the saved environment.
+        MINIO_IMAGE=$(storage_image_ref server "$(env_value MINIO_IMAGE "$compose_env_file")")
+        MINIO_CLIENT_IMAGE=$(storage_image_ref client "$(env_value MINIO_CLIENT_IMAGE "$compose_env_file")")
+        export MINIO_IMAGE MINIO_CLIENT_IMAGE
         docker compose --env-file "$compose_env_file" -f "$compose_file" "$@"
     )
 }
@@ -535,8 +559,8 @@ ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web
 ASSOZETA_RENDERER_IMAGE=ghcr.io/carbogninalberto/assozeta-renderer
 POSTGRES_IMAGE=postgres:16-alpine
 REDIS_IMAGE=redis:7-alpine
-MINIO_IMAGE=quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
-MINIO_CLIENT_IMAGE=quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+MINIO_IMAGE=ghcr.io/carbogninalberto/minio:RELEASE.2025-04-22T22-12-26Z-assozeta.1@sha256:8d35f39307b12cbc9ba3eedd26587d77ab30c21c3e904aee552df8b17b600389
+MINIO_CLIENT_IMAGE=ghcr.io/carbogninalberto/mc:RELEASE.2025-04-16T18-13-26Z-assozeta.1@sha256:c12985fd4e9fada3afd286d10ccacb86ebeb7894894360c96da18ed5c092b456
 
 SITE_ADDRESS=$site_address
 APP_URL=$app_url
