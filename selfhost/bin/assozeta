@@ -91,7 +91,7 @@ sync_repo() {
         || die "local commits or divergent history prevent alignment; resolve them explicitly before retrying"
     [ -z "$(git -C "$repo_root" status --porcelain --untracked-files=normal)" ] \
         || die "worktree changed during fetch; refusing to update"
-    git -C "$repo_root" merge --ff-only --no-edit "$repo_upstream" \
+    git -C "$repo_root" merge --ff-only --no-edit --no-overwrite-ignore "$repo_upstream" \
         || die "fast-forward failed; inspect the checkout before retrying"
     log "repository aligned: $(git -C "$repo_root" rev-parse --short HEAD); containers were not changed"
 }
@@ -895,6 +895,9 @@ start_prod_app_services() {
     fi
 
     require_background_services_running || return $?
+    if [ "${2:-false}" = true ]; then
+        printf '%s\n' '@@ASSOZETA_STAGE health_check'
+    fi
     # Container health alone does not prove that public routing reaches the API.
     # The readiness routes bypass maintenance so failures keep the page active.
     wait_public_readiness || return $?
@@ -1574,9 +1577,7 @@ upgrade_prod() {
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     # Recreate even unchanged images: replaced host bind files (e.g. Caddyfile)
     # otherwise remain attached to the old inode in an existing container.
-    start_prod_app_services "$managed_update"
-    printf '%s\n' '@@ASSOZETA_STAGE health_check'
-    require_public_readiness
+    start_prod_app_services "$managed_update" true
     if [ "$managed_update" = true ]; then
         run_updater_tool /runner/engine.py "$SELFHOST_DIR" "$PROD_ENV" "$version" "${ASSOZETA_OPERATION_ID:-}"
         run_updater_tool /runner/distribution.py commit "$SELFHOST_DIR"

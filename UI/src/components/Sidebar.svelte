@@ -186,6 +186,7 @@
             style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             <!--begin::Menu Nav - Scrollable-->
             <div class="menu-nav" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+                {#key $permissions}
                 {#if $role === 'administrator'}
                     {#each [
                         {page: 'self-instance', label: 'Self Instance', href: '/#/profile?page=self-instance', icon: GearSix},
@@ -1071,6 +1072,7 @@
                     </div>
                 {/if} -->
                 {/if}
+                {/key}
             </div>
             <!--end::Menu Nav-->
             <ImpersonationPanel />

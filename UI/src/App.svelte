@@ -1,5 +1,6 @@
 <script>
-    import {observeIdentityChanges} from 'utils/impersonation.js';
+    import {createUserContextLoader} from 'utils/userContext.js';
+    import {observeIdentityChanges, isChangingIdentity} from 'utils/impersonation.js';
     onMount(observeIdentityChanges);
     import {
         sessionToken,
@@ -7,6 +8,7 @@
         refreshToken,
         expires,
         billingData,
+        permissions,
         role,
         userData as userDataStore,
         unreadNotificationsCounter,
@@ -43,7 +45,11 @@
     let ga;
     let refreshingToken = false;
     let isSwitchedUser = localStorage.getItem('switched_superuser') === 'true';
-    let isLoadingUserData = false;
+    const loadUserContext = createUserContextLoader({
+        fetchProfile: () => apiFetch(__bakney.env.API.PROFILE.INFO),
+        fetchBilling: () => apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
+        userData: userDataStore, billingData, permissions, role, setPermissions,
+    });
     let showTestimonial = false;
 
     // Self-hosted instance configuration state
@@ -241,8 +247,8 @@
             document.querySelectorAll('.popover').forEach(popover => popover.remove());
             document.querySelectorAll('.tooltip').forEach(popover => popover.remove());
         });
-        await checkPermissions();
-        setInterval(checkPermissions, 5000);
+        await checkUserData();
+        setInterval(() => { if ($sessionToken && $location !== '/error') checkUserData(); }, 5000);
 
         if (
             sessionStorage.getItem('redirectAfterLogin') == 1 &&
@@ -321,9 +327,7 @@
     });
 
     function checkUserData() {
-        // Prevent concurrent API calls
-        if (isLoadingUserData) return;
-
+        if (isChangingIdentity()) return;
         let userDataStr = localStorage.getItem('userData');
         let parsedUserData = null;
 
@@ -336,31 +340,14 @@
 
         if ($sessionToken) {
             // Valid data exists for current user - skip reload
-            if (parsedUserData?.user_id) {
+            if (parsedUserData?.user_id && $role) {
                 // Not in switched mode, data is valid
                 if (!isSwitchedUser) return;
                 // In switched mode, check if data matches the switched user
                 if (String(parsedUserData.user_id) === String(localStorage.getItem('USER_ID'))) return;
             }
 
-            // Need to fetch user data
-            isLoadingUserData = true;
-            apiFetch(__bakney.env.API.PROFILE.INFO).then(async res => {
-                if (!res.error) {
-                    userDataStore.set(res.response.user_data);
-                    if (res.response.info.role === 'association') {
-                        const billing = await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN);
-                        if (!billing.error) {
-                            billingData.set(billing.response.data);
-                            setPermissions(billing.response.data?.active_plan?.billing_type, res.response.info.role);
-                        }
-                    }
-                    // Route selection waits for role: publish it only after the
-                    // selected user's permissions are ready on the first load.
-                    role.set(res.response.info.role);
-                }
-            }).finally(() => { isLoadingUserData = false; });
-            return;
+            return loadUserContext();
         }
         if ($location == '/reset') return;
         if (
@@ -384,39 +371,6 @@
                 !$location.includes('/card')
             )
                 push('/login');
-        }
-    }
-
-    async function checkPermissions() {
-        let currentPage = localStorage.getItem('currentPage');
-        if (
-            currentPage &&
-            !window.location.href.includes('/stripe') &&
-            currentPage != 'login' &&
-            $role != 'association' &&
-            $role != 'athlete' &&
-            $role != 'administrator' &&
-            $sessionToken != null
-        ) {
-            console.warn('checking role...', currentPage, $role);
-            await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(async billingResult => {
-                if (!billingResult.error) {
-                    billingData.set(billingResult.response.data);
-                    await apiFetch(__bakney.env.API.PROFILE.INFO).then(profileResult => {
-                        if (!profileResult.error) {
-                            const currentRole = profileResult.response.info.role;
-                            role.set(currentRole);
-                            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
-                        }
-                    });
-                } else {
-                    apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                        if (!res.error && res.response.info.role != $role) {
-                            role.set(res.response.info.role);
-                        }
-                    });
-                }
-            });
         }
     }
 

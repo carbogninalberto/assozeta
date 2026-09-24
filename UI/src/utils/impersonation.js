@@ -2,6 +2,8 @@ import {getApiHost} from '../store/instanceStore.js';
 import {resetIdentityStores} from '../store/stores.js';
 
 export const contextKey = 'impersonationContext';
+let changingIdentity = false;
+export const isChangingIdentity = () => changingIdentity;
 
 export function readImpersonation() {
     try {
@@ -25,6 +27,7 @@ async function changeSession(method, target) {
 }
 
 function replaceIdentity(context) {
+    changingIdentity = true;
     resetIdentityStores();
     sessionStorage.clear();
     for (const key of Object.keys(localStorage)) {
@@ -58,7 +61,10 @@ export async function stopImpersonation() {
 // sockets when another tab changes it, rather than keeping another tenant's data.
 export function observeIdentityChanges() {
     const listener = event => {
-        if (event.key === contextKey && event.oldValue !== event.newValue) window.location.reload();
+        if (event.key === contextKey && event.oldValue !== event.newValue) {
+            changingIdentity = true;
+            window.location.reload();
+        }
     };
     window.addEventListener('storage', listener);
     return () => window.removeEventListener('storage', listener);

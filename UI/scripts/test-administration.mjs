@@ -30,7 +30,8 @@ role.useLocalStorage();userData.useLocalStorage();permissions.useLocalStorage();
 observeIdentityChanges();
 const result=await apiFetch('/api/profile/info',{skipForbidden:true});
 if(!result.error){role.set(result.response.info.role);userData.set(result.response.user_data);}
-permissions.set(['other.settings.read','other.settings.update']);
+permissions.set([]);
+setTimeout(()=>permissions.set(['association.dashboard.read','other.settings.read','other.settings.update']),150);
 new Sidebar({target:document.getElementById('sidebar')});
 if(readImpersonation())new ProfileMenu({target:document.getElementById('profile'),props:{instanceOwner:false}});
 if(!readImpersonation())new Picker({target:document.getElementById('app')});
@@ -106,6 +107,7 @@ try{
             await picker.getByRole('button',{name:`Impersona ${target.username}`,exact:true}).click();
             await expect(page.getByRole('heading',{name:target.username,exact:true})).toBeVisible({timeout:30000});
             await expect(page.locator('.identity-summary')).toContainText(target.username);
+            await expect(page.locator('.menu-nav').getByRole('link',{name:'Bacheca',exact:true})).toBeVisible();
             await expect(page.locator('#bkn_profile_aside')).not.toContainText('Self Instance');
             assert.equal(await page.evaluate(()=>localStorage.getItem('bkn_datatable-1-meta')),null);
             assert.equal(await page.evaluate(()=>localStorage.getItem('selectedGroup')),'null');

@@ -249,6 +249,7 @@ are required. The command requires an attached tracking branch and a clean
 worktree, including untracked files. It refuses detached HEADs, missing remotes
 or upstream branches, local commits ahead of upstream, and divergent history;
 commit or stash local work and resolve the reported condition explicitly.
+Ignored local files are also preserved if an upstream commit starts tracking the same path.
 Release archive installations are not Git checkouts and cannot use this command.
 A successful synchronization does not build images, upgrade the installation,
 apply migrations, or restart containers. Use the documented deployment commands
