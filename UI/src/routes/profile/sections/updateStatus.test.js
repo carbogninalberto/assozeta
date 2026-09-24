@@ -1,6 +1,26 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {createCompletionRefresh, mergeRunnerStatus} from './updateStatus.js';
+import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
+
+test('restart recovery matches the accepted request even when its POST response was lost', () => {
+    const operation = {kind: 'restart', request_id: 'same-request', status: 'running', stage: 'restarting'};
+    assert.equal(restartResult({available: true, active: operation}, 'same-request', 0, 10).phase, 'waiting');
+    const completed = {...operation, status: 'succeeded', stage: 'completed', verified_at: 'now'};
+    const status = {available: true, history: [completed]};
+    assert.equal(restartResult(status, 'same-request', 0, 10).phase, 'ready');
+    assert.equal(restartResult(status, 'other-request', 0, 10).phase, 'waiting');
+    assert.equal(restartResult({...status, available: false}, 'same-request', 0, 10).phase, 'waiting');
+    assert.equal(restartResult({available: true, history: [{...completed, verified_at: null}]}, 'same-request', 0, 10).phase, 'waiting');
+});
+
+test('restart failure and timeout are explicit and late verified recovery is accepted', () => {
+    const operation = {kind: 'restart', request_id: 'request', status: 'failed', error: 'Failed', recovery: 'Inspect services'};
+    const failed = restartResult({available: true, history: [operation]}, 'request', 0, 10);
+    assert.equal(failed.phase, 'failed');
+    assert.equal(failed.operation.recovery, 'Inspect services');
+    assert.equal(restartResult({available: false}, 'request', 0, 600000).phase, 'timeout');
+    assert.equal(restartResult({available: true, history: [{...operation, status: 'succeeded', stage: 'completed', verified_at: 'now'}]}, 'request', 0, 700000).phase, 'ready');
+});
 
 test('temporary runner outages retain the operation until authoritative status returns', () => {
     const operation = {id: 'durable-id', stage: 'migrating'};

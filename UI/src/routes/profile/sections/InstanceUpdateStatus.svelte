@@ -14,6 +14,8 @@
         failed: 'Aggiornamento non riuscito', recovery_required: 'Ripristino necessario',
         recovered: 'Ripristino completato',
     };
+    const restartStages = {checking: 'Verifica del riavvio', health_check: 'Verifica dei servizi', completed: 'Riavvio completato', failed: 'Riavvio non riuscito'};
+    const label = operation => (operation.kind === 'restart' && restartStages[operation.stage]) || stages[operation.stage] || operation.stage;
     $: active = simulation || runner.active;
     $: visibleHistory = showHistory ? (runner.history || []) : (runner.history || []).slice(0, 1).filter(operation => ['failed', 'recovery_required'].includes(operation.stage));
     $: recovery = collapseHistory && (runner.history || []).find(operation => operation.stage === 'recovery_required');
@@ -31,7 +33,7 @@
     {#if active}
         <InstanceAlert>
             {#if active.simulated}<strong>Simulazione — nessuna modifica all’installazione.</strong><br />{/if}
-            {stages[active.stage] || active.stage} · {active.target_version}
+            {label(active)} · {active.target_version}
             {#if active.error}<p>{active.error}</p>{/if}
         </InstanceAlert>
     {/if}
@@ -44,8 +46,8 @@
         <InstanceAccordion id="instance-update-history" title={showHistory ? 'Cronologia aggiornamenti' : 'Ultimo aggiornamento'} description="Esiti e dettagli delle operazioni eseguite sull’istanza." count={visibleHistory.length} collapsible={collapseHistory}>
         {#each visibleHistory as operation (operation.id)}
             <div class="py-4 border-bottom">
-                <strong>{operation.source_version} → {operation.target_version}</strong>
-                <p class="mb-1">{stages[operation.stage] || operation.stage}{#if operation.created_at} · <time datetime={operation.created_at}>{new Date(operation.created_at).toLocaleString('it-IT')}</time>{/if}</p>
+                <strong>{#if operation.kind === 'restart'}Riavvio · {operation.target_version}{:else}{operation.source_version} → {operation.target_version}{/if}</strong>
+                <p class="mb-1">{label(operation)}{#if operation.created_at} · <time datetime={operation.created_at}>{new Date(operation.created_at).toLocaleString('it-IT')}</time>{/if}</p>
                 <details><summary>Dettagli operazione</summary><p>ID: {operation.id} · Utente: {operation.actor_id}</p></details>
                 {#if operation.error}<p class="text-danger">{operation.error}</p>{/if}
                 {#if operation.recovery}<p>{operation.recovery}</p>{/if}

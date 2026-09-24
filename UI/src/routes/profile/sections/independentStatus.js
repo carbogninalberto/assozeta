@@ -32,3 +32,14 @@ export async function readIndependentStatus(token, fetcher, origin = '') {
         clearTimeout(timeout);
     }
 }
+
+export async function applicationReady(fetcher, apiHost) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+        const responses = await Promise.all(['/healthz', `${apiHost}/readyz`].map(url =>
+            fetcher(url, {cache: 'no-store', signal: controller.signal})));
+        return responses.every(response => response.ok);
+    } catch { return false; }
+    finally { clearTimeout(timeout); }
+}

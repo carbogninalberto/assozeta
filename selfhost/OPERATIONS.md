@@ -216,3 +216,27 @@ The reusable release-quality workflow now runs these operational checks in a
 separate disposable job, including a legacy-schema migration test and local SMTP
 receiver. Publication already depends on that workflow. CI results must be
 verified on the actual release commit before rollout.
+# Restarting from Self Instance
+
+The instance owner can choose **Ricarica applicazione** in Self Instance. The
+Italian confirmation explains the interruption for all users and the risk of
+losing unsaved edits. Cancel leaves the installation untouched.
+
+After confirmation, the existing updater records an idempotent restart operation
+and launches a detached helper using its currently installed image. The helper
+shares the lifecycle and data-operation locks, stops the application's consumers
+before their dependencies, and starts existing containers in dependency order.
+It also restarts the updater itself. One-shot setup and migration jobs are
+excluded. Container images, persistent volumes, configuration and session data
+are retained; this action does not upgrade the installation.
+
+The page keeps polling the existing independent status endpoint through expected
+connection failures. It reloads only after the recorded operation succeeds and
+web/API readiness checks pass. After ten minutes it displays recovery guidance
+and a **Verifica di nuovo lo stato** action, which only checks status and never
+submits another restart. Failed operations include guidance in the existing
+operation history; private details are in `.updater/logs/<operation-id>.log`.
+Inspect the installation's container state and logs before retrying a failure.
+
+Restarts are disabled in development, during another operation, when an update
+requires recovery, or when the installed updater does not support restarts.

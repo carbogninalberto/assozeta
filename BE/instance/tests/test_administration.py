@@ -47,6 +47,7 @@ class InstanceAdministrationTests(TestCase):
                 for path in ('admin', 'admin/releases', 'admin/updates'):
                     self.assertEqual(self.client.get(f'/instance/{path}', HTTP_USER_ID=str(self.owner.pk)).status_code, 403)
                 self.assertEqual(self.client.post('/instance/admin/updates', {}).status_code, 403)
+                self.assertEqual(self.client.post('/instance/admin/restarts', {'request_id': str(uuid4())}, format='json', HTTP_USER_ID=str(self.owner.pk)).status_code, 403)
                 self.assertEqual(self.client.post('/instance/admin/logo', {}).status_code, 403)
         self.client.force_authenticate(user=self.owner)
         self.assertTrue(self.client.get('/instance/access').data['is_owner'])
@@ -56,12 +57,45 @@ class InstanceAdministrationTests(TestCase):
 
     def test_anonymous_unconfigured_and_non_selfhost_have_no_access(self):
         self.assertIn(self.client.get('/instance/access').status_code, (401, 403))
+        self.assertIn(self.client.post('/instance/admin/restarts', {}).status_code, (401, 403))
         self.client.force_authenticate(user=self.owner)
         self.config.self_hosted = False
         self.config.save()
         self.assertFalse(self.client.get('/instance/access').data['is_owner'])
+        self.assertEqual(self.client.post('/instance/admin/restarts', {}).status_code, 403)
         self.config.delete()
         self.assertEqual(self.client.get('/instance/admin').status_code, 403)
+        self.assertEqual(self.client.post('/instance/admin/restarts', {}).status_code, 403)
+
+    @patch('instance.administration.call_runner')
+    def test_restart_uses_authenticated_owner_and_only_accepts_a_request_id(self, runner):
+        self.client.force_authenticate(user=self.owner)
+        runner.return_value = {'operation': {'id': 'restart-job', 'kind': 'restart', 'stage': 'queued'}}
+        data = {'request_id': str(uuid4())}
+        response = self.client.post('/instance/admin/restarts', data, format='json')
+        self.assertEqual(response.status_code, 202)
+        runner.assert_called_once_with('POST', '/restarts', {**data, 'actor_id': str(self.owner.pk)})
+        runner.reset_mock()
+        for invalid in ({}, {'request_id': 'invalid'}, {**data, 'command': 'restart'}, {**data, 'actor_id': str(uuid4())}):
+            self.assertEqual(self.client.post('/instance/admin/restarts', invalid, format='json').status_code, 400)
+        runner.assert_not_called()
+
+    @override_settings(ASSOZETA_DEPLOYMENT_MODE='development')
+    @patch('instance.administration.call_runner')
+    def test_development_cannot_restart_containers(self, runner):
+        self.client.force_authenticate(user=self.owner)
+        self.assertEqual(self.client.post('/instance/admin/restarts', {'request_id': str(uuid4())}, format='json').status_code, 409)
+        runner.assert_not_called()
+
+    @patch('instance.administration.call_runner')
+    def test_restart_runner_failures_are_reported(self, runner):
+        from instance.updater_client import UpdaterRejected, UpdaterUnavailable
+        self.client.force_authenticate(user=self.owner)
+        for exception, code in ((UpdaterRejected('Operazione in corso.'), 409), (UpdaterUnavailable('Non disponibile.'), 503)):
+            runner.side_effect = exception
+            response = self.client.post('/instance/admin/restarts', {'request_id': str(uuid4())}, format='json')
+            self.assertEqual(response.status_code, code)
+            self.assertEqual(response.data['error'], str(exception))
 
     def test_owner_can_update_branding_without_business_settings(self):
         self.client.force_authenticate(user=self.owner)

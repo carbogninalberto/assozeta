@@ -46,7 +46,8 @@ class Journal:
             existing = db.execute('SELECT record FROM operations WHERE request_id=?', (request['request_id'],)).fetchone()
             if existing:
                 record = json.loads(existing[0])
-                if any(record[key] != request[key] for key in ('actor_id', 'release_id', 'tag')):
+                keys = ('actor_id',) if request.get('kind') == 'restart' else ('actor_id', 'release_id', 'tag')
+                if record.get('kind', 'update') != request.get('kind', 'update') or any(record[key] != request[key] for key in keys):
                     raise Conflict('This request identifier was already used for a different update.')
                 return record
             if blocked_reason:
@@ -80,7 +81,7 @@ class Journal:
 
     def interrupt_running(self):
         for record in self.records():
-            if record['status'] == 'running':
+            if record['status'] == 'running' and record.get('kind') != 'restart':
                 self.update(record['id'], status='recovery_required', stage='recovery_required',
                             interrupted_at=now(), failed_stage=record['stage'],
                             error='Il servizio di aggiornamento è stato interrotto.',

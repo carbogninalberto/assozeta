@@ -1,6 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {readIndependentStatus, readStoredStatus} from './independentStatus.js';
+import {readIndependentStatus, readStoredStatus, applicationReady} from './independentStatus.js';
+
+test('browser recovery requires both web and API readiness without touching authentication', async () => {
+    const urls = [];
+    assert.equal(await applicationReady(async (url, options) => {
+        urls.push(url);
+        assert.equal(options.cache, 'no-store');
+        assert.equal(options.headers, undefined);
+        return new Response('{}');
+    }, '/api'), true);
+    assert.deepEqual(urls, ['/healthz', '/api/readyz']);
+    assert.equal(await applicationReady(async url => new Response('{}', {status: url === '/healthz' ? 200 : 503}), '/api'), false);
+    assert.equal(await applicationReady(async () => {throw new Error('disconnected');}, '/api'), false);
+});
 
 test('status follows middleware token rotation and never reuses a removed session', async () => {
     let current = 'first-access-token';

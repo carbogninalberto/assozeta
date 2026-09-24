@@ -1,5 +1,6 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
+    import swal from 'sweetalert2';
     import {profileTab, readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
     import InstanceAlert from './InstanceAlert.svelte';
     import InstanceAccordion from './InstanceAccordion.svelte';
@@ -7,7 +8,7 @@
     import InplaceTabs from '../../../components/InplaceTabs.svelte';
     import {toast} from 'svelte-sonner';
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
-    import {readStoredStatus} from './independentStatus.js';
+    import {readStoredStatus, applicationReady} from './independentStatus.js';
     import InstanceUpdateStatus from './InstanceUpdateStatus.svelte';
     import {getApiHost, saveRuntimeConfig, clearInstanceCache} from 'store/instanceStore.js';
     import InstanceBranding from './InstanceBranding.svelte';
@@ -16,7 +17,7 @@
     import InstanceIntegration from './InstanceIntegration.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
     import ReleaseNotes from './release-notes/ReleaseNotes.svelte';
-    import {createCompletionRefresh, mergeRunnerStatus} from './updateStatus.js';
+    import {createCompletionRefresh, mergeRunnerStatus, restartResult} from './updateStatus.js';
     import {v4 as uuidv4} from 'uuid';
 
     export let changes = false;
@@ -87,6 +88,10 @@
     let reviewNotes = [];
     let requestId;
     let starting = false;
+    let confirmingReload = false;
+    let restartRequestId = null;
+    let restartStartedAt = 0;
+    let restartTimedOut = false;
     let disposed = false;
     let timer;
     let simulation = null;
@@ -95,8 +100,8 @@
     const completionRefresh = createCompletionRefresh();
 
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges || (!!saved && JSON.stringify(draft) !== saved);
-    $: active = simulation || runner.active;
-    $: reloadBlocked = loading || changes || saving || logoBusy || emailBusy || aiBusy || integrationBusy || starting || diagnosticBusy;
+    $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
+    $: reloadBlocked = loading || changes || saving || logoBusy || emailBusy || aiBusy || integrationBusy || starting || diagnosticBusy || !!active || apiUnavailable || !runner.available || runner.can_restart !== true || info?.mode !== 'production' || !!restartRequestId;
     $: updateReady = !apiUnavailable && !diagnosticBusy && !emailBusy && !aiBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
         info?.mode === 'production' && catalog?.relation === 'behind' && catalog?.latest?.artifacts_ready;
 
@@ -109,12 +114,61 @@
         return result.response;
     }
 
-    function reloadApplication() {
-        if (reloadBlocked) return;
-        // Re-fetch runtime configuration at startup, preserving session/preferences.
-        // Caddy revalidates the document and mutable assets; Vite fingerprints JS.
-        clearInstanceCache();
-        window.location.reload();
+    async function reloadApplication() {
+        if (reloadBlocked || confirmingReload) return;
+        confirmingReload = true;
+        const confirmation = await swal.fire({
+            title: 'Riavviare l’applicazione?',
+            text: 'Tutti i container di questa installazione verranno riavviati. L’applicazione sarà temporaneamente non disponibile per tutti gli utenti. Le modifiche non salvate potrebbero andare perse; i dati salvati e la sessione saranno mantenuti. La versione installata non cambia. La pagina si ricaricherà quando i servizi saranno pronti.',
+            icon: 'warning', showCancelButton: true, confirmButtonText: 'Riavvia e ricarica', cancelButtonText: 'Annulla',
+            reverseButtons: true, buttonsStyling: false, focusCancel: true,
+            customClass: {confirmButton: 'btn btn-primary font-weight-bolder', cancelButton: 'btn btn-secondary font-weight-bolder mr-2'},
+        });
+        confirmingReload = false;
+        if (!confirmation.isConfirmed || reloadBlocked || disposed) return;
+        starting = true;
+        error = '';
+        restartRequestId = uuidv4();
+        restartStartedAt = Date.now();
+        restartTimedOut = false;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        try {
+            const result = await apiFetch(`${endpoint}/admin/restarts`, {
+                method: 'POST', skipForbidden: true, signal: controller.signal,
+                body: JSON.stringify({request_id: restartRequestId}),
+            });
+            if (result.error && result.status >= 400 && result.status < 500) {
+                restartRequestId = null;
+                error = result.response?.error || 'Riavvio non autorizzato o operazione già in corso. Verifica lo stato dell’istanza.';
+            } else if (!result.error) runner = {...runner, active: result.response.operation};
+            // A network/5xx failure can follow acceptance. Resolve the same
+            // request from the journal; never automatically start another one.
+        } catch { /* Expected if the API stops before returning acceptance. */ }
+        finally { clearTimeout(timeout); starting = false; }
+        if (!disposed) await loadRunner();
+    }
+
+    async function checkRestart(status) {
+        if (!restartRequestId) return;
+        const result = restartResult(status, restartRequestId, restartStartedAt);
+        if (result.phase === 'failed') {
+            error = `${result.operation.error || 'Riavvio non riuscito.'} ${result.operation.recovery || 'Verifica i servizi sul server prima di riprovare.'}`;
+            restartRequestId = null;
+            restartTimedOut = false;
+        } else if (result.phase === 'ready' && await applicationReady(originalFetch, getApiHost())) {
+            if (disposed) return;
+            clearInstanceCache();
+            window.location.reload();
+        } else if (result.phase === 'timeout' || Date.now() - restartStartedAt >= 10 * 60 * 1000) {
+            restartTimedOut = true;
+        }
+    }
+
+    function retryRestartStatus() {
+        restartStartedAt = Date.now();
+        restartTimedOut = false;
+        loadRunner();
     }
 
     async function loadInfo(resetDraft = false) {
@@ -157,11 +211,13 @@
 
     async function loadRunner() {
         let status;
-        try {
-            status = await request('/admin/updates');
-            apiUnavailable = false;
-        } catch {
-            apiUnavailable = true;
+        if (!restartRequestId && runner.active?.kind !== 'restart') {
+            try {
+                status = await request('/admin/updates');
+                apiUnavailable = false;
+            } catch {
+                apiUnavailable = true;
+            }
         }
         if (!status?.available) {
             const independent = await readStoredStatus(originalFetch);
@@ -171,6 +227,7 @@
                 runner = {available: false, active: null, history: []};
                 info = undefined;
                 error = 'Accesso al servizio di aggiornamento non autorizzato. Verifica la sessione quando l’applicazione torna disponibile.';
+                restartRequestId = null;
                 reconnecting = false;
                 return;
             }
@@ -179,6 +236,10 @@
         completionRefresh.observe(runner, status);
         runner = mergeRunnerStatus(runner, status);
         reconnecting = !status.available;
+        if (restartRequestId) {
+            await checkRestart(status);
+            return;
+        }
         if (!apiUnavailable && status.available && !runner.active) {
             try {
                 if (!info) {
@@ -201,7 +262,7 @@
     }
 
     async function startUpdate() {
-        if (!reviewing || !requestId || starting || apiUnavailable || emailBusy || aiBusy || integrationBusy || diagnosticBusy || changes) return;
+        if (!reviewing || !requestId || starting || active || apiUnavailable || emailBusy || aiBusy || integrationBusy || diagnosticBusy || changes) return;
         starting = true;
         error = '';
         try {
@@ -240,7 +301,7 @@
             async function poll() {
                 if (disposed) return;
                 await loadRunner();
-                if (!disposed) timer = setTimeout(poll, runner.active || reconnecting || apiUnavailable ? 4000 : 15000);
+                if (!disposed) timer = setTimeout(poll, restartRequestId || runner.active || reconnecting || apiUnavailable ? 4000 : 15000);
             }
             if (!disposed) timer = setTimeout(poll, 4000);
         }
@@ -261,14 +322,24 @@
             <p class="text-muted mb-0">Configurazione, salute e manutenzione della tua installazione.</p>
         </div>
         <div class="reload-application">
-            <button type="button" class="btn btn-light-primary" disabled={reloadBlocked} aria-describedby="reload-application-help" on:click={reloadApplication}>Ricarica applicazione</button>
-            <p id="reload-application-help" class="text-muted mb-0">Riapre questa pagina con la versione disponibile e mantiene la sessione.
-                {#if changes} Salva o annulla le modifiche prima di ricaricare.{:else if reloadBlocked} Attendi il completamento dell’operazione in corso.{/if}
+            <button type="button" class="btn btn-light-primary" disabled={reloadBlocked || confirmingReload} aria-describedby="reload-application-help" on:click={reloadApplication}>Ricarica applicazione</button>
+            <p id="reload-application-help" class="text-muted mb-0">Riavvia tutti i container dell’installazione e ricarica la pagina mantenendo la sessione.
+                {#if changes} Salva o annulla le modifiche prima di ricaricare.{:else if info?.mode === 'development'} Il riavvio dei container è disponibile in produzione.{:else if !runner.available || runner.can_restart !== true} Il servizio di riavvio non è disponibile. Verifica lo stato dell’istanza.{:else if reloadBlocked} Attendi il completamento dell’operazione in corso.{/if}
             </p>
         </div>
     </div>
     <div class="card-body instance-body">
         {#if error}<InstanceAlert tone="danger" role="alert">{error}</InstanceAlert>{/if}
+        {#if restartRequestId}
+            <InstanceAlert tone={restartTimedOut ? 'warning' : 'primary'} role={restartTimedOut ? 'alert' : 'status'}>
+                {#if restartTimedOut}
+                    Il riavvio non è stato verificato entro 10 minuti. Controlla i container e i log sul server. La richiesta non verrà ripetuta: puoi verificare di nuovo lo stato senza avviare un altro riavvio.
+                    <button type="button" class="btn btn-light mt-3" on:click={retryRestartStatus}>Verifica di nuovo lo stato</button>
+                {:else}
+                    Riavvio dell’installazione in corso. La connessione può interrompersi temporaneamente; questa pagina si ricaricherà solo quando tutti i servizi saranno pronti.
+                {/if}
+            </InstanceAlert>
+        {/if}
         {#if loading}<p role="status">Caricamento dell’istanza…</p>{/if}
         {#if !info}<InstanceUpdateStatus {runner} {simulation} {reconnecting} {apiUnavailable} />{/if}
         {#if info}

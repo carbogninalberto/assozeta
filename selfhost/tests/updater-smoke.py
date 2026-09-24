@@ -78,7 +78,7 @@ import http.client,json,pathlib,socket
 assert not pathlib.Path('/run/assozeta-updater/token').exists()
 assert not pathlib.Path('/var/run/docker.sock').exists()
 assert [p.name for p in pathlib.Path('/run/assozeta-update-status').iterdir()] == ['status.sock']
-for path, method, expected in [('/diagnostics','GET',405),('/updates','POST',404),('/status','GET',405),('/instance-update-status','POST',403)]:
+for path, method, expected in [('/diagnostics','GET',405),('/updates','POST',404),('/restarts','POST',404),('/status','GET',405),('/instance-update-status','POST',403)]:
     connection=http.client.HTTPConnection('localhost',timeout=5)
     connection.sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
     connection.sock.connect('/run/assozeta-update-status/status.sock')

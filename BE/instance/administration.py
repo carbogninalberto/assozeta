@@ -77,6 +77,32 @@ class UpdateRequestSerializer(serializers.Serializer):
     request_id = serializers.UUIDField()
 
 
+class RestartRequestSerializer(serializers.Serializer):
+    request_id = serializers.UUIDField()
+
+
+class InstanceRestartsView(APIView):
+    permission_classes = [IsInstanceOwner]
+
+    def post(self, request):
+        if set(request.data) != {'request_id'}:
+            raise serializers.ValidationError('È richiesto soltanto l’identificativo della richiesta.')
+        serializer = RestartRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if deployment_mode() != 'production':
+            return Response({'error': 'Il riavvio dei container è disabilitato in sviluppo.'}, status=409)
+        try:
+            result = call_runner('POST', '/restarts', {
+                'request_id': str(serializer.validated_data['request_id']),
+                'actor_id': str(getattr(request, 'original_user', request.user).pk),
+            })
+            return Response(result, status=status.HTTP_202_ACCEPTED)
+        except UpdaterUnavailable as exc:
+            return Response({'error': str(exc)}, status=503)
+        except UpdaterRejected as exc:
+            return Response({'error': str(exc)}, status=exc.status)
+
+
 class InstanceUpdatesView(APIView):
     permission_classes = [IsInstanceOwner]
 

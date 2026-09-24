@@ -2,7 +2,7 @@
 URL configuration for instance configuration endpoints.
 """
 from django.urls import path
-from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView
+from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
 from .diagnostics import DiagnosticsView
 from .operations import EmailSettingsView, EmailTestView
@@ -36,6 +36,7 @@ urlpatterns = [
     path('admin/logo', OwnerLogoView.as_view(), name='instance-owner-logo'),
     path('admin/releases', InstanceReleasesView.as_view(), name='instance-releases'),
     path('admin/updates', InstanceUpdatesView.as_view(), name='instance-updates'),
+    path('admin/restarts', InstanceRestartsView.as_view(), name='instance-restarts'),
     path('status', InstanceStatusView.as_view(), name='instance-status'),
     path('setup-token/validate', InstanceSetupTokenValidateView.as_view(), name='instance-setup-token-validate'),
     path('config', InstanceConfigView.as_view(), name='instance-config'),

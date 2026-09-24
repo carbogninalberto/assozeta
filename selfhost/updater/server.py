@@ -17,6 +17,7 @@ from journal import Journal, Conflict
 from release_catalog import version_tuple
 from common import read_env, update_eligibility_reason
 from status_access import AccessDenied, OwnershipUnavailable, authenticate_access_token, require_current_owner
+from restart import launch_restart, reconcile_restarts
 
 PROTOCOL = 1
 
@@ -49,6 +50,15 @@ def validate_request(value):
     return value
 
 
+def validate_restart_request(value, env_file):
+    if not isinstance(value, dict) or set(value) != {'request_id', 'actor_id'}:
+        raise ValueError('Invalid restart request fields.')
+    UUID(value['request_id'])
+    UUID(value['actor_id'])
+    version = read_env(env_file).get('ASSOZETA_VERSION', 'unstable')
+    return {**value, 'kind': 'restart', 'release_id': None, 'tag': version, 'source_version': version}
+
+
 def serve(root, env_file, engine_class=Engine):
     root = Path(root).resolve()
     directory = root / '.updater'
@@ -62,6 +72,7 @@ def serve(root, env_file, engine_class=Engine):
         raise RuntimeError('Runner credentials are not provisioned')
     journal = Journal(directory / 'operations.sqlite3')
     journal.interrupt_running()
+    reconcile_restarts(journal)
     engine = engine_class(root, env_file, journal)
     stop = threading.Event()
     wake = threading.Event()
@@ -75,6 +86,7 @@ def serve(root, env_file, engine_class=Engine):
         recovery_reason = blocked_reason()
         return {
             'available': not stop.is_set(), 'protocol': PROTOCOL,
+            'can_restart': not stop.is_set() and not journal.requiring_recovery() and not (directory / 'pending-distribution').exists(),
             'can_update': not recovery_reason and not stop.is_set(),
             'reason': recovery_reason if not active else None,
             'runner_version': os.environ.get('RUNNER_VERSION', 'development'),
@@ -118,15 +130,20 @@ def serve(root, env_file, engine_class=Engine):
         def do_POST(self):
             if not self.authorized():
                 return
-            if self.path != '/updates':
+            if self.path not in ('/updates', '/restarts'):
                 self.respond(404, {'error': 'Unknown endpoint.'})
                 return
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length < 4096 or stop.is_set():
                     raise ValueError('Request cannot be accepted.')
-                request = validate_request(json.loads(self.rfile.read(length)))
-                operation = journal.create(request, blocked_reason=blocked_reason())
+                body = json.loads(self.rfile.read(length))
+                if self.path == '/restarts':
+                    request = validate_restart_request(body, env_file)
+                    reason = 'La transazione precedente richiede un ripristino.' if (directory / 'pending-distribution').exists() else None
+                else:
+                    request, reason = validate_request(body), blocked_reason()
+                operation = journal.create(request, blocked_reason=reason)
                 self.respond(202, {'operation': operation})
                 wake.set()
             except (ValueError, TypeError, KeyError):
@@ -162,9 +179,13 @@ def serve(root, env_file, engine_class=Engine):
 
     def work():
         while not stop.is_set():
+            reconcile_restarts(journal)
             pending = next((item for item in journal.records() if item['status'] == 'queued'), None)
             if pending:
-                engine.execute(pending)
+                if pending.get('kind') == 'restart':
+                    launch_restart(root, env_file, journal, pending)
+                else:
+                    engine.execute(pending)
             else:
                 wake.wait(2)
                 wake.clear()

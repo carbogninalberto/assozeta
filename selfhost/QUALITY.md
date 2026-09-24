@@ -125,3 +125,23 @@ independent revisions, environment reset, Stripe checkout/worker/webhook consume
 cache isolation after key changes, and Google/Apple token audiences. Disposable
 browser operations exercise all three integration forms on desktop and mobile.
 Actual external payments and provider sign-ins remain separate integration tests.
+# Restart regression checks
+
+`python3 -m unittest discover -s selfhost/tests -p test_restart.py` covers request
+validation, idempotency, shared leases, helper survival, dependency order and
+failure reporting. Backend owner authorization is covered by
+`instance/tests/test_administration.py`.
+
+Build the current updater with
+`docker build -t assozeta-updater:restart-test -f selfhost/updater/Dockerfile .`,
+then run `python3 selfhost/tests/restart-smoke.py`. This creates and removes a
+disposable installation with lightweight service containers. It checks actual
+restarts of all nine services, including the updater, unchanged container/image
+IDs, persistent data, idempotent retries, and untouched migration/unrelated
+containers. It does not restart a development or production installation.
+
+From `selfhost/tests/browser`, run
+`npx playwright test --config=self-instance-reload.config.js`. The existing
+production-built UI/Caddy fixture checks cancellation, confirmation, duplicate
+prevention, lost responses, downtime, failure/timeout guidance, session and route
+preservation, and desktop/mobile layout.
