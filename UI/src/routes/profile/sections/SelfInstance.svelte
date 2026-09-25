@@ -13,6 +13,7 @@
     import {getApiHost, saveRuntimeConfig, clearInstanceCache} from 'store/instanceStore.js';
     import InstanceBranding from './InstanceBranding.svelte';
     import InstanceEmail from './InstanceEmail.svelte';
+    import BakneyPairing from './BakneyPairing.svelte';
     import InstanceIntegrations from './InstanceIntegrations.svelte';
     import InstanceIntegration from './InstanceIntegration.svelte';
     import DiagnosticResult from './DiagnosticResult.svelte';
@@ -33,8 +34,9 @@
     let aiBusy = false;
     let integrationChanges = false;
     let integrationBusy = false;
+    let pairingBusy = false;
     let section = 'overview';
-    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
+    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['bakney', 'Collegamento Bakney'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
     onMount(() => {
         const syncTab = () => {
             if (readProfileLocation().page === 'self-instance') section = profileTab('self-instance', sections.map(([id]) => id), 'overview');
@@ -101,8 +103,8 @@
 
     $: changes = aiChanges || integrationChanges || emailChanges || logoChanges || (!!saved && JSON.stringify(draft) !== saved);
     $: active = simulation || runner.active || (restartRequestId ? {kind: 'restart', stage: 'queued'} : null);
-    $: reloadBlocked = loading || changes || saving || logoBusy || emailBusy || aiBusy || integrationBusy || starting || diagnosticBusy || !!active || apiUnavailable || !runner.available || runner.can_restart !== true || info?.mode !== 'production' || !!restartRequestId;
-    $: updateReady = !apiUnavailable && !diagnosticBusy && !emailBusy && !aiBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
+    $: reloadBlocked = pairingBusy || loading || changes || saving || logoBusy || emailBusy || aiBusy || integrationBusy || starting || diagnosticBusy || !!active || apiUnavailable || !runner.available || runner.can_restart !== true || info?.mode !== 'production' || !!restartRequestId;
+    $: updateReady = !pairingBusy && !apiUnavailable && !diagnosticBusy && !emailBusy && !aiBusy && !integrationBusy && !changes && !active && !starting && !refreshingInfo && !checkingReleases && !releaseError && runner.available && runner.can_update !== false &&
         info?.mode === 'production' && catalog?.relation === 'behind' && catalog?.latest?.artifacts_ready;
 
     async function request(path, options = {}) {
@@ -367,6 +369,7 @@
             </div>
             <div hidden={section !== 'ai'}><InstanceIntegration provider="ai" title="Bot AI" {request} bind:changes={aiChanges} bind:busy={aiBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshAI} /></div>
             <div hidden={section !== 'email'}><InstanceEmail {request} bind:changes={emailChanges} bind:busy={emailBusy} disabled={apiUnavailable || !!active || starting} onSaved={loadDiagnostics} /></div>
+            {#if section === 'bakney'}<BakneyPairing {request} bind:busy={pairingBusy} disabled={apiUnavailable || !!active || starting} />{/if}
             <div hidden={section !== 'integrations'}><InstanceIntegrations {request} checks={diagnostics?.integrations || []} bind:changes={integrationChanges} bind:busy={integrationBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshIntegrations} /></div>
             <div hidden={section !== 'diagnostics'}>
                 <section aria-labelledby="instance-diagnostics">

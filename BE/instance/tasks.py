@@ -1,4 +1,5 @@
 from celery import shared_task
+from .sso.tasks import maintain_bakney_pairings  # noqa: F401
 
 
 @shared_task(bind=True, name='instance.restore.execute', acks_late=True, reject_on_worker_lost=True,

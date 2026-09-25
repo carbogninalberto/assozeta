@@ -1,4 +1,5 @@
 <script>
+    import {initializeLoginSession} from 'utils/loginSession.js';
     import {Capacitor} from '@capacitor/core';
     import {Eye, EyeOff} from 'lucide-svelte';
     import * as jose from 'jose';
@@ -653,13 +654,7 @@
                     confirmButton: "btn font-weight-bold btn-light-primary"
                 }
             }).then(function() { */
-            sessionToken.set(response.access_token);
-            refreshToken.set(response.refresh_token);
-            expires.set(Date.now() + parseInt(response.expires_in) * 1000); // conversion to UNIX epoch
-            role.set(response.role);
-            userData.set(response.user_data);
-            tablesSettings.set(response.tables_settings);
-            currentPage.set('dashboard');
+            initializeLoginSession(response);
             // location.replace('/');
 
             // before redirect check if need to do stripe onboarding or show onboarded page

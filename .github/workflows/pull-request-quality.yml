@@ -48,7 +48,7 @@ jobs:
               - '!**/*.md'
               # Browser dependencies/config and self-instance.spec.js also
               # exercise the upgrade suite; standalone fixtures do not.
-              - '!selfhost/tests/browser/{operations-ui.mjs,staff-board-ui.mjs,calendar-security.mjs}'
+              - '!selfhost/tests/browser/{operations-ui.mjs,staff-board-ui.mjs,calendar-security.mjs,bakney-sso.mjs}'
               - '!selfhost/tests/test_*.py'
             workflows:
               - '.github/workflows/**'
