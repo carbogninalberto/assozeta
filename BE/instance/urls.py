@@ -2,6 +2,7 @@
 URL configuration for instance configuration endpoints.
 """
 from django.urls import path
+from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
 from .diagnostics import DiagnosticsView
@@ -22,6 +23,7 @@ from .views import (
 from .restore.views import DataRestoreView, DataRestoreActionView, DataRestoreBackupsView, DataRestoreDownloadView
 
 urlpatterns = [
+    path('admin/bakney-pairing', PairingAdminView.as_view(), name='bakney-pairing-admin'),
     path('admin/data-restore', DataRestoreView.as_view(), name='instance-data-restore'),
     path('admin/data-restore/backups', DataRestoreBackupsView.as_view(), name='instance-data-restore-backups'),
     path('admin/data-restore/<uuid:operation_id>/download', DataRestoreDownloadView.as_view(), name='instance-data-restore-download'),

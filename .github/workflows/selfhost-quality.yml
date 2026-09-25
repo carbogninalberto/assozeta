@@ -117,6 +117,51 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  bakney-sso:
+    name: Bakney SSO contract and HTTPS browser checks
+    if: inputs.run_operations || inputs.run_ui
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            UI/package-lock.json
+            selfhost/tests/browser/package-lock.json
+      - uses: ./.github/actions/prepare-storage
+      - name: Prepare isolated SSO fixtures
+        run: |
+          ./selfhost/bin/assozeta dev-config
+          docker build --target development -t assozeta-backend-dev BE
+          ./selfhost/bin/assozeta dev-compose up -d --wait postgres redis minio
+          npm ci --prefix UI
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
+          npm run build:vite:production --prefix UI
+      - name: Exercise pairing and login across separate HTTPS sites
+        run: |
+          # Bakney's registered receiver origin must use standard HTTPS port 443.
+          sudo sysctl -w net.ipv4.ip_unprivileged_port_start=443
+          node selfhost/tests/browser/bakney-sso.mjs
+      - name: Retain safe SSO browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bakney-sso-${{ github.sha }}
+          path: |
+            quality-reports/bakney-sso/*.json
+            quality-reports/bakney-sso/*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Remove isolated services
+        if: always()
+        run: ./selfhost/bin/assozeta dev-compose down -v --remove-orphans
+
   upgrade:
     if: inputs.run_upgrade
     name: Linux ${{ matrix.scenario }} and browser checks

@@ -111,6 +111,7 @@ try {
             return send({config, mode: 'production', running_version: 'v1.0.5'});
         }
         if (path === '/instance/admin/updates') return send(status());
+        if (path === '/instance/admin/bakney-pairing' && req.method === 'GET') return send({state: 'disconnected', pairing_id: null, forwarding_enabled: false});
         if (path === '/instance/admin/restarts' && req.method === 'POST') {
             restartOperation = {id: 'fixture-restart', request_id: body.request_id, kind: 'restart', stage: 'restarting', status: 'running', target_version: 'v1.0.5'};
             unavailable = true;

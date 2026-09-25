@@ -71,6 +71,7 @@ try {
             if (endpoint === '/admin') value = {config: {oem: {name: 'Diagnostic Club', abbreviation: 'DC', primaryColor: '#234582', supportEmail: 'help@example.test'}}, running_version: '1.0.3', configured_version: '1.0.3', mode: 'production'};
             else if (endpoint === '/admin/releases') value = {history: [latestRelease], pending: [latestRelease], latest: latestRelease, relation: 'behind'};
             else if (endpoint === '/admin/updates') value = {available: true, can_update: true, active: null, history: runnerHistory};
+            else if (endpoint === '/admin/bakney-pairing' && method === 'GET') value = {state: 'disconnected', pairing_id: null, forwarding_enabled: false};
             else if (endpoint.startsWith('/admin/integrations/')) {
                 const provider = endpoint.split('/').at(-1);
                 if (method === 'PUT') {

@@ -1,0 +1,25 @@
+{
+  "description": "Synthetic public test vector; never use this secret in a deployment",
+  "secret": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "secret_sha256": "ea866a757e4c38babfa8127cbe9a409d3e1f93a00ff1488ff735fcf917afffd0",
+  "binding": {
+    "protocol": "bakney-pairing-v1",
+    "pairing_id": "20000000-0000-4000-8000-000000000002",
+    "association_id": "30000000-0000-4000-8000-000000000003",
+    "instance_id": "10000000-0000-4000-8000-000000000001",
+    "origin": "https://club.example",
+    "callback_uri": "https://club.example/bakney/v1/callback",
+    "generation": "40000000-0000-4000-8000-000000000004",
+    "nonce": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "expires_at": 1800000000
+  },
+  "proofs": {
+    "challenge": "d14255a775d3d6851d51556b1ddff928128daa7c311e71dc6babc8ab1fc2f5be",
+    "commit": "7c6bd9152ef24ac14e3054edf0cee6c7d6f785b2ad949546c1840ff9c7cf7e71",
+    "ack": "c4d87a953b177eba0b00ecbfe0413f103a8ae8ee001713ab97f0566598ed3ddc"
+  },
+  "pkce": {
+    "verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+    "challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+  }
+}

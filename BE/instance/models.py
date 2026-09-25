@@ -6,6 +6,7 @@ from copy import deepcopy
 from django.db import models
 
 from .defaults import DEFAULT_DISPLAY_SETTINGS, DEFAULT_PRIMARY_COLOR
+from .sso.models import BakneyChallenge, BakneyPairing, BakneyNonce, BakneyLogin, BakneyRevocation  # noqa: F401
 
 
 class InstanceConfiguration(models.Model):

@@ -144,7 +144,7 @@ test('timeout offers a status-only retry without another restart', async ({page,
     await page.getByRole('button', {name: 'Riavvia e ricarica', exact: true}).click();
     await expect(page.getByText('Riavvio dell’installazione in corso.', {exact: false})).toBeVisible();
     await page.clock.fastForward(601000);
-    await expect(page.getByRole('alert')).toContainText('non è stato verificato entro 10 minuti');
+    await expect(page.getByRole('alert').filter({hasText: 'non è stato verificato entro 10 minuti'})).toBeVisible();
     await page.getByRole('button', {name: 'Verifica di nuovo lo stato', exact: true}).click();
     await expect(page.getByRole('button', {name: 'Ricarica applicazione', exact: true})).toBeDisabled();
     expect((await (await request.get('/api/fixture/state')).json()).writes).toBe(1);

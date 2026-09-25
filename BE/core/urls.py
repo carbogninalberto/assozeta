@@ -37,6 +37,7 @@ urlpatterns = [
     path('', include('docmanager.urls')),
     path('', include('communications.urls')),
     path('instance/', include('instance.urls')),
+    path('bakney/v1/', include('instance.sso.urls')),
     # path('api-auth/', include('rest_framework.urls'))
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:

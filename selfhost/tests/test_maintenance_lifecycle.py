@@ -10,6 +10,26 @@ DEFINITIONS = (ROOT / 'selfhost/bin/assozeta').read_text().split('\ncommand=${1:
 
 
 class MaintenanceLifecycleTests(unittest.TestCase):
+    def test_development_prepares_host_directory_before_compose(self):
+        with TemporaryDirectory() as directory:
+            script = DEFINITIONS + r'''
+compose_with_env() {
+    test -d "$SELFHOST_DIR/.operations" || exit 90
+    test -w "$SELFHOST_DIR/.operations" || exit 91
+}
+# Configuration generation leaves a restrictive mask in the same shell.
+umask 077
+dev_compose up -d api
+prod_compose() { :; }
+stop_prod_data_services
+'''
+            result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual((Path(directory) / '.operations').stat().st_uid, os.getuid())
+            self.assertEqual((Path(directory) / '.operations').stat().st_mode & 0o777, 0o755)
+            self.assertTrue((Path(directory) / '.operations/maintenance.flag').exists())
+
     def test_marker_covers_stop_start_and_is_retained_on_failure(self):
         for failure in ('none', 'stop', 'start', 'background', 'readiness'):
             with self.subTest(failure=failure), TemporaryDirectory() as directory:

@@ -1,6 +1,8 @@
 import {applyBrandColor} from './utils/BrandTheme.js';
 // Initialize the Svelte app and inject it in the DOM
 import App from './App.svelte';
+import BakneyLogin from './routes/login/BakneyLogin.svelte';
+import {isBakneyLogin, observeLoginIdentity} from './utils/loginSession.js';
 import { createIcons, X, Check, Plus, ArrowLeft, ArrowRight, Upload, User, FileText, Info } from 'lucide';
 import moment from 'moment';
 import Swal from 'sweetalert2';
@@ -131,9 +133,10 @@ const app = new App({
 applyBrandColor((typeof __bakney !== 'undefined' && (__bakney.OEM_CONFIG?.primaryColor || __bakney.OEM_CONFIG?.theme?.primaryColor))
     || document.documentElement.style.getPropertyValue('--brand-color') || undefined);
 
-const app = replaceContainer(App, {
+const app = replaceContainer(isBakneyLogin(window.location) ? BakneyLogin : App, {
     target: document.querySelector('#view'),
 });
+observeLoginIdentity();
 
 // Week/time-grid view: show a 1-hour ghost event following the mouse
 function initCalendarWeekGhostHover() {

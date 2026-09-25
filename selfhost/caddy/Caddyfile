@@ -8,8 +8,15 @@
 
     header {
         -Server
-        Referrer-Policy "strict-origin-when-cross-origin"
+        ?Referrer-Policy "strict-origin-when-cross-origin"
         X-Content-Type-Options "nosniff"
+    }
+
+    @bakney_protocol path /bakney/v1/* /api/instance/admin/bakney-pairing
+    header @bakney_protocol {
+        defer
+        Cache-Control "no-store"
+        Referrer-Policy "no-referrer"
     }
 
     @maintenance file {
@@ -68,6 +75,11 @@
             header Cache-Control "no-store"
             header Retry-After "60"
             respond 503
+        }
+
+        # Bakney contracts use root paths, without the /api prefix.
+        handle /bakney/v1/* {
+            reverse_proxy api:8000
         }
 
         handle_path /api/* {

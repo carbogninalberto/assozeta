@@ -4,8 +4,8 @@ The instance owner can open **Profile settings → Self Instance**. Ownership is
 user attached to the installation's primary association, not a collaborator or an
 unrelated administrator. The API enforces this independently of navigation.
 
-The page separates Overview, Branding, Email, Integrations, Updates and backups,
-and Diagnostics. Switching sections preserves drafts. Unsaved changes prevent an
+The page separates Overview, Branding, Email, Integrations,
+Updates and backups, and Diagnostics. Switching sections preserves drafts. Unsaved changes prevent an
 instance update until they are saved or discarded. Branding includes identity and
 logo previews; saving branding does not overwrite operational settings.
 
@@ -33,6 +33,31 @@ Replace `X.Y.Z` with the exact published stable release containing this feature.
 as a stable release. Already bootstrapped installations can use their normal
 `./bin/assozeta upgrade X.Y.Z` command instead. This feature is available only after a release containing it
 has been built and installed; these local changes do not alter deployed instances.
+
+## Bakney pairing and automatic login
+
+The primary association owner can open **Profile settings → Self Instance →
+Panoramica**, generate a pairing secret, and copy it together with the
+instance's public HTTPS URL into Bakney. Import the association's Bakney data
+first: pairing and login require the original association and user IDs.
+
+The secret is displayed once. The page shows the confirmed association, pairing
+status, and Bakney's forwarding status. Enable forwarding separately in Bakney;
+only eligible ordinary athlete accounts can use it. Owners, collaborators,
+administrators, and instructors continue to sign in directly.
+
+`APP_URL` must be the canonical HTTPS origin. The deployment-controlled
+`BAKNEY_SSO_API_BASE` defaults to `https://app.bakney.com/api` and
+`BAKNEY_SSO_UI_ORIGIN` to `https://app.bakney.com`. A URL change requires
+regenerating the secret and pairing again. Preserve Django's `SECRET_KEY` with
+protected backups; it encrypts the stored secret. Keep worker and beat services
+running for status refresh and retrying disconnect notifications.
+
+Disconnecting or regenerating immediately blocks the old pairing locally.
+Existing local sessions continue until their normal expiration. Deploy the matching
+Bakney backend and frontend described in the [integration instructions](../docs/contracts/bakney-sso-v1.md).
+That document links the authoritative Bakney contract and describes configuration,
+session semantics and logging requirements for additional proxies.
 
 ## System email
 
