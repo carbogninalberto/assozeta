@@ -17,6 +17,8 @@ compose_with_env() {
     test -d "$SELFHOST_DIR/.operations" || exit 90
     test -w "$SELFHOST_DIR/.operations" || exit 91
 }
+# Configuration generation leaves a restrictive mask in the same shell.
+umask 077
 dev_compose up -d api
 prod_compose() { :; }
 stop_prod_data_services
@@ -25,6 +27,7 @@ stop_prod_data_services
                 env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory})
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((Path(directory) / '.operations').stat().st_uid, os.getuid())
+            self.assertEqual((Path(directory) / '.operations').stat().st_mode & 0o777, 0o755)
             self.assertTrue((Path(directory) / '.operations/maintenance.flag').exists())
 
     def test_marker_covers_stop_start_and_is_retained_on_failure(self):

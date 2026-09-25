@@ -327,7 +327,7 @@ prod_compose() {
 dev_compose() {
     # Create the bind source as the host user before Docker can create it as root.
     # Production lifecycle commands also write maintenance markers here.
-    mkdir -p "$SELFHOST_DIR/.operations"
+    mkdir -p -m 755 "$SELFHOST_DIR/.operations"
     compose_with_env "$DEV_ENV" "$DEV_COMPOSE" "$@"
 }
 
@@ -877,7 +877,7 @@ require_background_services_running() {
 }
 
 stop_prod_data_services() {
-    mkdir -p "$SELFHOST_DIR/.operations"
+    mkdir -p -m 755 "$SELFHOST_DIR/.operations"
     if [ ! -e "$MAINTENANCE_FLAG" ]; then
         : > "$MAINTENANCE_FLAG"
         chmod 644 "$MAINTENANCE_FLAG"
@@ -1653,7 +1653,7 @@ run_locked_prod_command() {
     require_no_surviving_lifecycle_helpers
     # Shared with application ZIP restores and running background jobs.
     if command -v flock >/dev/null 2>&1; then
-        mkdir -p "$SELFHOST_DIR/.operations"
+        mkdir -p -m 755 "$SELFHOST_DIR/.operations"
         exec 8>"$SELFHOST_DIR/.operations/lifecycle.lock"
         # A container may own this shared file. A host user can lock its
         # existing writable inode without being allowed to chmod it.

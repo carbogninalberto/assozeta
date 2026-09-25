@@ -216,7 +216,7 @@ ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" migrate
 curl_ready
 
 phase "configure instance and verify protections"
-setup_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+setup_status=$(curl --silent --show-error --output "$TEMPORARY/unauthenticated-setup-response" --write-out '%{http_code}' \
     --request POST \
     --header 'content-type: application/json' \
     --data '{}' \
@@ -225,6 +225,7 @@ case "$setup_status" in
     401|403) ;;
     *)
         printf 'Expected unauthenticated setup to be denied, got HTTP %s.\n' "$setup_status" >&2
+        cat "$TEMPORARY/unauthenticated-setup-response" >&2
         exit 1
         ;;
 esac
