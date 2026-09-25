@@ -3,7 +3,7 @@
     import {originalFetch} from 'utils/ApiMiddleware.js';
     import {initializeLoginSession, reloadAppAt} from 'utils/loginSession.js';
 
-    const endpoint = '/api/instance/sso/v1/session';
+    const endpoint = '/bakney/v1/session';
     const messages = {
         account_unavailable: 'Il tuo account non è presente o non è attivo in questa istanza. Contatta l’associazione.',
         account_not_eligible: 'Questo account non può usare il trasferimento automatico. Puoi accedere direttamente.',

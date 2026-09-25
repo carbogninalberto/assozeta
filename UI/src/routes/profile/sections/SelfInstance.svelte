@@ -36,7 +36,7 @@
     let integrationBusy = false;
     let pairingBusy = false;
     let section = 'overview';
-    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['bakney', 'Collegamento Bakney'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
+    const sections = [['overview', 'Panoramica'], ['branding', 'Identità e logo'], ['email', 'Email'], ['integrations', 'Integrazioni'], ['ai', 'Bot AI'], ['updates', 'Aggiornamenti e backup'], ['diagnostics', 'Diagnostica']];
     onMount(() => {
         const syncTab = () => {
             if (readProfileLocation().page === 'self-instance') section = profileTab('self-instance', sections.map(([id]) => id), 'overview');
@@ -366,10 +366,10 @@
                         <ul class="issue-list">{#each issues as check}<li><span>{check.label}{check.core ? '' : ' (facoltativo)'}</span><button class="text-action" on:click={() => section = check.section}>Visualizza dettagli</button></li>{/each}</ul>
                     {/if}
                 </section>
+                {#if section === 'overview'}<div class="mt-8"><BakneyPairing {request} bind:busy={pairingBusy} disabled={apiUnavailable || !!active || starting} /></div>{/if}
             </div>
             <div hidden={section !== 'ai'}><InstanceIntegration provider="ai" title="Bot AI" {request} bind:changes={aiChanges} bind:busy={aiBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshAI} /></div>
             <div hidden={section !== 'email'}><InstanceEmail {request} bind:changes={emailChanges} bind:busy={emailBusy} disabled={apiUnavailable || !!active || starting} onSaved={loadDiagnostics} /></div>
-            {#if section === 'bakney'}<BakneyPairing {request} bind:busy={pairingBusy} disabled={apiUnavailable || !!active || starting} />{/if}
             <div hidden={section !== 'integrations'}><InstanceIntegrations {request} checks={diagnostics?.integrations || []} bind:changes={integrationChanges} bind:busy={integrationBusy} disabled={apiUnavailable || !!active || starting} onSaved={refreshIntegrations} /></div>
             <div hidden={section !== 'diagnostics'}>
                 <section aria-labelledby="instance-diagnostics">

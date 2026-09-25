@@ -142,7 +142,10 @@ jobs:
           npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
           npm run build:vite:production --prefix UI
       - name: Exercise pairing and login across separate HTTPS sites
-        run: node selfhost/tests/browser/bakney-sso.mjs
+        run: |
+          # Bakney's registered receiver origin must use standard HTTPS port 443.
+          sudo sysctl -w net.ipv4.ip_unprivileged_port_start=443
+          node selfhost/tests/browser/bakney-sso.mjs
       - name: Retain safe SSO browser evidence
         if: always()
         uses: actions/upload-artifact@v4

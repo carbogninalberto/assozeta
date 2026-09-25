@@ -21,6 +21,7 @@ from application.models import User, SportAssociation, Associate, Instructor
 from application.services.jwt_token_service import JWTTokenService
 from instance.models import InstanceConfiguration
 from instance.sso.models import BakneyPairing, BakneyLogin
+from instance.sso.service import deliver_revocations
 from core.urls import urlpatterns
 
 # Trust the harness CA, rather than disabling certificate verification.
@@ -32,12 +33,14 @@ class FixtureSession(requests.Session):
 
 requests.Session = FixtureSession
 settings.ROOT_URLCONF = __name__
-settings.CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}}
+from django.test.utils import override_settings
+fixture_cache = override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
+fixture_cache.enable()
 call_command('migrate', verbosity=0, interactive=False)
 owner, _ = User.objects.get_or_create(username='sso-browser-owner', defaults={'role': User.ASSOCIATION})
 association, _ = SportAssociation.objects.get_or_create(user=owner, defaults={'denomination': 'Browser Club'})
 config, _ = InstanceConfiguration.objects.get_or_create(defaults={
-    'domain': 'club.assozeta.test:5443', 'name': 'Browser Club', 'primary_association': association,
+    'domain': 'club.assozeta.test', 'name': 'Browser Club', 'primary_association': association,
     'setup_provenance': 'import',
 })
 users = {}
@@ -51,16 +54,20 @@ for name in ('alice', 'bob'):
 def fixture(request):
     if request.method == 'POST':
         data = json.loads(request.body)
+        if data.get('reset_throttles'):
+            cache.clear()
         if data.get('reset'):
             BakneyLogin.objects.all().delete()
             BakneyPairing.objects.all().delete()
             cache.clear()
+        if data.get('deliver_revocations'):
+            deliver_revocations()
         if 'eligible' in data:
             users['alice'].is_active = data['eligible']
             users['alice'].save(update_fields=['is_active'])
         return JsonResponse({'ok': True})
     return JsonResponse({
-        'association_id': str(association.pk),
+        'association_id': str(association.pk), 'owner_id': str(owner.pk),
         'owner': {**JWTTokenService.build_login_response(owner, JWTTokenService.generate_tokens_for_user(owner)), 'user_id': str(owner.pk)},
         'users': {name: {**JWTTokenService.build_login_response(user, JWTTokenService.generate_tokens_for_user(user)),
                         'user_id': str(user.pk), 'username': user.username, 'first_name': user.first_name}
@@ -72,4 +79,4 @@ urlpatterns = [path('fixture', fixture), *urlpatterns]
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run('core.asgi:application', host='0.0.0.0', port=8000, access_log=False)
+    uvicorn.run('core.asgi:application', host='0.0.0.0', port=8000, access_log=False, workers=1)

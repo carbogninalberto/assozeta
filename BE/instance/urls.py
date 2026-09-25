@@ -2,7 +2,7 @@
 URL configuration for instance configuration endpoints.
 """
 from django.urls import path
-from .sso.views import PairingAdminView, PairingMetadataView, PairingProofView, PairingConfirmView, LoginStartView, LoginCallbackView, LoginSessionView
+from .sso.views import PairingAdminView
 from .administration import InstanceAccessView, InstanceAdminView, OwnerLogoView, InstanceReleasesView, InstanceUpdatesView, InstanceRestartsView
 
 from .diagnostics import DiagnosticsView
@@ -24,12 +24,6 @@ from .restore.views import DataRestoreView, DataRestoreActionView, DataRestoreBa
 
 urlpatterns = [
     path('admin/bakney-pairing', PairingAdminView.as_view(), name='bakney-pairing-admin'),
-    path('sso/v1/metadata', PairingMetadataView.as_view(), name='bakney-pairing-metadata'),
-    path('sso/v1/proof', PairingProofView.as_view(), name='bakney-pairing-proof'),
-    path('sso/v1/confirm', PairingConfirmView.as_view(), name='bakney-pairing-confirm'),
-    path('sso/v1/start', LoginStartView.as_view(), name='bakney-sso-start'),
-    path('sso/v1/callback', LoginCallbackView.as_view(), name='bakney-sso-callback'),
-    path('sso/v1/session', LoginSessionView.as_view(), name='bakney-sso-session'),
     path('admin/data-restore', DataRestoreView.as_view(), name='instance-data-restore'),
     path('admin/data-restore/backups', DataRestoreBackupsView.as_view(), name='instance-data-restore-backups'),
     path('admin/data-restore/<uuid:operation_id>/download', DataRestoreDownloadView.as_view(), name='instance-data-restore-download'),

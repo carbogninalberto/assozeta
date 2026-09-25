@@ -123,6 +123,10 @@ export default defineConfig({
             usePolling: process.env.VITE_USE_POLLING === 'true',
         },
         proxy: {
+            '/bakney/v1': {
+                target: API_PROXY_TARGET,
+                xfwd: true,
+            },
             '/api': {
                 target: API_PROXY_TARGET,
                 // changeOrigin: true,

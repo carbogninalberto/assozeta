@@ -5,12 +5,12 @@ import logging
 class SSORequestFilter(logging.Filter):
     def filter(self, record):
         message = record.getMessage()
-        if '/instance/sso/' in message or '/instance/admin/bakney-pairing' in message:
+        if '/bakney/v1/' in message or '/instance/sso/' in message or '/instance/admin/bakney-pairing' in message:
             if record.name == 'uvicorn.access' and isinstance(record.args, tuple) and len(record.args) == 5:
                 # Uvicorn's AccessFormatter unpacks this tuple even when the
                 # message has already been formatted. Retain its required shape.
                 client, method, _, version, status = record.args
-                record.args = (client, method, '/instance/sso/[redacted]', version, status)
+                record.args = (client, method, '/bakney/v1/[redacted]', version, status)
             else:
                 record.msg = 'Bakney SSO request (request details redacted)'
                 record.args = ()

@@ -23,6 +23,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     if (event.request.mode !== 'navigate' || new URL(event.request.url).origin !== self.location.origin) return;
+    // Let the browser own authentication redirects and their temporary cookies.
+    // Never substitute cached/offline HTML for a credential-bearing callback.
+    if (new URL(event.request.url).pathname.startsWith('/bakney/v1/')) return;
 
     // A live 503 response is Caddy's maintenance page; use the offline fallback
     // only when the network request itself fails.

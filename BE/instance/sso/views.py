@@ -3,10 +3,10 @@ import hashlib
 import hmac
 import re
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone as utc_timezone
 from urllib.parse import urlencode
 
-from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.utils import timezone
@@ -22,9 +22,9 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from application.services.jwt_token_service import JWTTokenService
 from instance.permissions import IsInstanceOwner
-from .models import BakneyLogin
-from .protocol import COOKIE, CALLBACK, OPAQUE, UPSTREAM, SSOError, decrypt, digest, encrypt, signature, upstream, https_origin
-from .service import (binding, check_binding, consume_nonce, disconnect, local_user, locked_pairing,
+from .models import BakneyLogin, BakneyChallenge
+from .protocol import CALLBACK, VERSION, OPAQUE, canonical_uuid, SSOError, decrypt, digest, encrypt, signature, upstream, normalize_origin, browser_cookie
+from .service import (check_binding, consume_nonce, disconnect, local_user, locked_pairing,
                       redeemed_user, require_forwarding, rotate, snapshot, synchronize)
 
 
@@ -69,7 +69,14 @@ class PairingAdminView(SecureView):
     permission_classes = [PairingAdministrator]
 
     def get(self, request):
-        return Response(snapshot(locked_pairing()))
+        pairing = locked_pairing()
+        error = None
+        if pairing.remote_pairing_id and pairing.state in ('pending', 'paired'):
+            try:
+                synchronize(pairing)
+            except SSOError as exc:
+                error = exc.code
+        return Response({**snapshot(pairing), 'sync_error': error})
 
     @sensitive_variables()
     def post(self, request):
@@ -84,7 +91,7 @@ class PairingAdminView(SecureView):
         if action == 'disconnect':
             disconnect(pairing)
         elif action == 'sync':
-            synchronize(pairing, acknowledge=pairing.state == 'pending')
+            synchronize(pairing)
         else:
             raise SSOError('invalid_request')
         return Response(snapshot(pairing))
@@ -95,65 +102,76 @@ class PublicView(SecureView):
     permission_classes = [AllowAny]
 
 
-class PairingMetadataView(PublicView):
-    def get(self, request):
-        pairing = locked_pairing()
-        check_binding(pairing)
-        if pairing.state not in ('generated', 'pending'):
-            raise SSOError('invalid_pairing', 409)
-        return Response({'protocol': 1, **binding(pairing)})
-
-
-class PairingProofView(PublicView):
-    purpose = 'proof'
+class PairingChallengeView(PublicView):
+    commit = False
 
     @sensitive_variables()
     def post(self, request):
         pairing = locked_pairing()
         check_binding(pairing)
-        if pairing.state not in ('generated', 'pending'):
+        if pairing.state not in ('generated', 'pending') or pairing.remote_pairing_id:
             raise SSOError('invalid_pairing', 409)
         data = request.data
-        fields = set(binding(pairing)) | {'protocol', 'nonce', 'expires_at', 'association_name', 'signature'}
+        fields = {'protocol', 'pairing_id', 'association_id', 'instance_id', 'origin',
+                  'callback_uri', 'generation', 'nonce', 'expires_at'}
+        if self.commit:
+            fields.add('proof')
         if not isinstance(data, dict) or set(data) != fields:
             raise SSOError('invalid_request')
-        payload = {key: value for key, value in data.items() if key != 'signature'}
-        if (type(data['protocol']) is not int or data['protocol'] != 1
-                or any(data.get(key) != value for key, value in binding(pairing).items())
-                or not isinstance(data['nonce'], str) or not OPAQUE.fullmatch(data['nonce'])
+        if (data['protocol'] != VERSION
+                or not canonical_uuid(data['pairing_id']) or not canonical_uuid(data['generation'])
+                or data['association_id'] != str(pairing.association_id)
+                or data['instance_id'] != (str(pairing.instance_id) if self.commit else '')
+                or data['origin'] != pairing.origin or data['callback_uri'] != pairing.origin + CALLBACK
+                or not isinstance(data['nonce'], str) or not re.fullmatch('[A-Za-z0-9_-]{43}', data['nonce'])
                 or type(data['expires_at']) is not int
-                or not 0 < data['expires_at'] - timezone.now().timestamp() <= 120
-                or not isinstance(data['association_name'], str) or not 1 <= len(data['association_name']) <= 255
-                or not isinstance(data['signature'], str) or not re.fullmatch('[0-9a-f]{64}', data['signature'])):
+                or not 0 < data['expires_at'] - timezone.now().timestamp() <= 120):
             raise SSOError('invalid_request')
-        expected = signature(decrypt(pairing.secret_encrypted), self.purpose + ':request', payload)
-        if not hmac.compare_digest(expected, data['signature']):
-            raise SSOError('invalid_proof', 403)
-        consume_nonce(digest(str(pairing.pairing_id) + self.purpose + data['nonce']),
-                      datetime.fromtimestamp(data['expires_at'], utc_timezone.utc))
-        if self.purpose == 'confirm':
-            if pairing.state != 'pending':
+        payload = {key: value for key, value in data.items() if key != 'proof'}
+        payload['instance_id'] = str(pairing.instance_id)
+        context = digest('\n'.join([str(pairing.pairing_id)] + [payload[key] for key in (
+            'pairing_id', 'association_id', 'instance_id', 'origin', 'callback_uri', 'generation')]))
+        expiry = datetime.fromtimestamp(data['expires_at'], utc_timezone.utc)
+        secret = decrypt(pairing.secret_encrypted)
+        if self.commit:
+            proof = data['proof']
+            if (not isinstance(proof, str) or not re.fullmatch('[0-9a-f]{64}', proof)
+                    or not hmac.compare_digest(proof, signature(secret, 'commit', payload))):
+                raise SSOError('invalid_proof', 403)
+            challenge = BakneyChallenge.objects.filter(digest=context, pairing_id=pairing.pairing_id,
+                                                       expires_at__gt=timezone.now()).first()
+            if not challenge:
                 raise SSOError('invalid_pairing', 409)
-            synchronize(pairing, acknowledge=True)
-            if pairing.state != 'paired':
-                raise SSOError('pairing_rejected', 403)
-        else:
+            consume_nonce(digest(str(pairing.pairing_id) + ':commit:' + data['nonce']), expiry)
+            pairing.remote_pairing_id = uuid.UUID(data['pairing_id'])
+            pairing.remote_generation = uuid.UUID(data['generation'])
+            # Bakney marks verified only after receiving this signed acknowledgement.
+            # A later authenticated status check completes the local pairing.
             pairing.state = 'pending'
             pairing.save()
-        return Response({**payload, 'signature': signature(decrypt(pairing.secret_encrypted), self.purpose + ':response', payload)})
+            BakneyChallenge.objects.filter(pairing_id=pairing.pairing_id).delete()
+        else:
+            consume_nonce(digest(str(pairing.pairing_id) + ':challenge:' + data['nonce']), expiry)
+            BakneyChallenge.objects.update_or_create(digest=context, defaults={
+                'pairing_id': pairing.pairing_id, 'expires_at': expiry})
+            pairing.state = 'pending'
+            pairing.save()
+        return Response({'protocol': VERSION, 'instance_id': str(pairing.instance_id),
+                         'proof': signature(secret, 'ack' if self.commit else 'challenge', payload)})
 
 
-class PairingConfirmView(PairingProofView):
-    purpose = 'confirm'
+class PairingCommitView(PairingChallengeView):
+    commit = True
 
 
 def browser_origin(request, pairing):
-    if https_origin(request.build_absolute_uri('/')) != pairing.origin:
+    if normalize_origin(request.build_absolute_uri('/')) != pairing.origin:
         raise SSOError('revalidation_required', 409)
 
 
 def browser_login(request, pairing):
-    cookie = request.COOKIES.get(COOKIE, '')
+    cookie_name, _ = browser_cookie(pairing)
+    cookie = request.COOKIES.get(cookie_name, '')
     if not OPAQUE.fullmatch(cookie):
         raise SSOError('handoff_expired', 400)
     login = BakneyLogin.objects.select_for_update().filter(digest=digest(cookie), pairing_id=pairing.pairing_id).first()
@@ -188,20 +206,28 @@ class LoginStartView(PublicView):
             pairing = locked_pairing()
             browser_origin(request, pairing)
             require_forwarding(pairing)
+            if (set(request.query_params) != {'protocol', 'pairing_id', 'attempt_id'}
+                    or any(len(request.query_params.getlist(key)) != 1 for key in request.query_params)
+                    or request.query_params['protocol'] != VERSION
+                    or request.query_params['pairing_id'] != str(pairing.remote_pairing_id)
+                    or not canonical_uuid(request.query_params['attempt_id'])):
+                raise SSOError('invalid_handoff')
             browser_secret, state, verifier = (secrets.token_urlsafe(32) for _ in range(3))
-            previous = request.COOKIES.get(COOKIE, '')
+            cookie_name, cookie_secure = browser_cookie(pairing)
+            previous = request.COOKIES.get(cookie_name, '')
             if OPAQUE.fullmatch(previous):
                 BakneyLogin.objects.filter(digest=digest(previous)).delete()
             BakneyLogin.objects.create(digest=digest(browser_secret), pairing_id=pairing.pairing_id,
-                state=state, verifier_encrypted=encrypt(verifier), expires_at=timezone.now() + timedelta(minutes=5))
+                state=state, remote_generation=pairing.remote_generation,
+                attempt_id=uuid.UUID(request.query_params['attempt_id']), verifier_encrypted=encrypt(verifier), expires_at=timezone.now() + timedelta(minutes=5))
             query = urlencode({
-                'protocol': 1, 'response_type': 'code', 'pairing_id': str(pairing.pairing_id),
-                'redirect_uri': pairing.origin + CALLBACK, 'state': state,
+                'attempt_id': request.query_params['attempt_id'],
+                'callback_uri': pairing.origin + CALLBACK, 'state': state,
                 'code_challenge_method': 'S256',
                 'code_challenge': base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('='),
             })
-            response = HttpResponseRedirect(pairing.authority + UPSTREAM + '/authorize?' + query)
-            response.set_cookie(COOKIE, browser_secret, max_age=300, secure=True, httponly=True, samesite='Lax', path='/')
+            response = HttpResponseRedirect(pairing.ui_origin + '/handoff.html#' + query)
+            response.set_cookie(cookie_name, browser_secret, max_age=300, secure=cookie_secure, httponly=True, samesite='Lax', path='/')
             return response
         except SSOError as exc:
             return HttpResponseRedirect('/#/bakney-login?error=' + exc.code)
@@ -227,13 +253,17 @@ class LoginCallbackView(PublicView):
             login.verifier_encrypted = ''
             login.save()
             require_forwarding(pairing)
-            data = upstream(pairing, 'redeem', {**binding(pairing), 'code': code, 'code_verifier': verifier})
+            if login.remote_generation != pairing.remote_generation:
+                raise SSOError('invalid_handoff')
+            data = upstream(pairing, 'token', {'callback_uri': pairing.origin + CALLBACK,
+                                              'code': code, 'code_verifier': verifier})
             user = redeemed_user(pairing, data)
             login.user_id, login.stage = user.pk, 'ready'
             login.expires_at = timezone.now() + timedelta(minutes=2)
             login.save()
             response = HttpResponseRedirect('/#/bakney-login')
-            response.set_cookie(COOKIE, request.COOKIES[COOKIE], max_age=120, secure=True,
+            cookie_name, cookie_secure = browser_cookie(pairing)
+            response.set_cookie(cookie_name, request.COOKIES[cookie_name], max_age=120, secure=cookie_secure,
                                 httponly=True, samesite='Lax', path='/')
             return response
         except SSOError as exc:
@@ -270,6 +300,8 @@ class LoginSessionView(PublicView):
         if request.data['confirm_for'] != others:
             raise SSOError('account_switch_required', 409)
         require_forwarding(pairing)
+        if login.remote_generation != pairing.remote_generation:
+            raise SSOError('invalid_handoff')
         user = local_user(pairing, login.user_id)
         tokens = JWTTokenService.generate_tokens_for_user(user)
         content = JWTTokenService.build_login_response(user, tokens)
@@ -278,7 +310,8 @@ class LoginSessionView(PublicView):
         login.stage = 'consumed'
         login.save(update_fields=['stage'])
         response = Response(content)
-        response.set_cookie('BKN_AUTH', tokens['access_token'], httponly=True, secure=True,
+        cookie_name, cookie_secure = browser_cookie(pairing)
+        response.set_cookie('BKN_AUTH', tokens['access_token'], httponly=True, secure=cookie_secure,
                             samesite='Strict', max_age=int(tokens['expires_in']), path='/')
-        response.delete_cookie(COOKIE, path='/', samesite='Lax')
+        response.delete_cookie(cookie_name, path='/', samesite='Lax')
         return response

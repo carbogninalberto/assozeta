@@ -47,7 +47,8 @@ JWT_PUBLIC_KEY = env_key('JWT_PUBLIC_KEY')
 APP_HOST = env.str('APP_HOST')
 APP_URL = env.str('APP_URL', f'https://{APP_HOST}').rstrip('/')
 # Trusted deployment configuration; never chosen by a handoff request.
-BAKNEY_SSO_AUTHORITY = env.str('BAKNEY_SSO_AUTHORITY', 'https://app.bakney.com').rstrip('/')
+BAKNEY_SSO_API_BASE = env.str('BAKNEY_SSO_API_BASE', 'https://app.bakney.com/api').rstrip('/')
+BAKNEY_SSO_UI_ORIGIN = env.str('BAKNEY_SSO_UI_ORIGIN', 'https://app.bakney.com').rstrip('/')
 INSTANCE_SETUP_TOKEN = env.str('INSTANCE_SETUP_TOKEN', '')
 
 
@@ -416,7 +417,7 @@ MIDDLEWARE = [
 SILKY_IGNORE_PATHS = ['/instance/admin/data-restore', '/instance/admin/email', '/instance/admin/email/test', '/instance/admin/diagnostics',
                      '/instance/admin/integrations/stripe', '/instance/admin/integrations/google', '/instance/admin/integrations/apple']
 SILKY_IGNORE_PATHS += ['/instance/admin/bakney-pairing', *[
-    '/instance/sso/v1/' + action for action in ('metadata', 'proof', 'confirm', 'start', 'callback', 'session')]]
+    '/bakney/v1/' + action for action in ('pairing/challenge', 'pairing/commit', 'login-start', 'callback', 'session')]]
 
 if DEBUG:
     MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
@@ -704,7 +705,7 @@ DRF_API_LOGGER_PATH_TYPE = 'ABSOLUTE'
 DRF_LOGGER_QUEUE_MAX_SIZE = 1 # Default to 50 if not specified.
 DRF_LOGGER_INTERVAL = 1 # In Seconds, Default to 10 seconds if not specified.
 DRF_API_LOGGER_SKIP_URL_NAME = ['', 'health', 'instance-email-settings', 'instance-email-test', 'instance-diagnostics', 'instance-integration-settings']
-DRF_API_LOGGER_SKIP_URL_NAME += ['bakney-pairing-admin', 'bakney-pairing-metadata', 'bakney-pairing-proof', 'bakney-pairing-confirm',
+DRF_API_LOGGER_SKIP_URL_NAME += ['bakney-pairing-admin', 'bakney-pairing-challenge', 'bakney-pairing-commit',
                                'bakney-sso-start', 'bakney-sso-callback', 'bakney-sso-session']
 DRF_API_LOGGER_SLOW_API_ABOVE = 300
 DRF_API_LOGGER_METHODS = ['PATCH', 'POST', 'DELETE', 'PUT']

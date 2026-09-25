@@ -11,7 +11,7 @@ from urllib.parse import parse_qs, urlsplit
 from uuid import uuid4
 
 from django.core.cache import cache
-from django.db import close_old_connections, transaction
+from django.db import close_old_connections, connections, transaction
 from django.test import TestCase, TransactionTestCase, SimpleTestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -19,16 +19,16 @@ from rest_framework.test import APIClient
 from application.models import User, SportAssociation, Associate, Instructor
 from application.services.jwt_token_service import JWTTokenService
 from instance.models import InstanceConfiguration
-from instance.sso.models import BakneyPairing, BakneyLogin, BakneyRevocation
-from instance.sso.protocol import COOKIE, CALLBACK, SSOError, decrypt, signature, upstream
+from instance.sso.models import BakneyPairing, BakneyLogin, BakneyRevocation, BakneyChallenge
+from instance.sso.protocol import COOKIE, CALLBACK, VERSION, SSOError, decrypt, signature, upstream
 from instance.sso.service import binding, deliver_revocations, synchronize
 from instance.sso.logging import SSORequestFilter
 
-ENV = dict(APP_URL='https://club.example.test', BAKNEY_SSO_AUTHORITY='https://app.bakney.test',
+ENV = dict(APP_URL='https://club.example.test', BAKNEY_SSO_API_BASE='https://api.bakney.test/api', BAKNEY_SSO_UI_ORIGIN='https://app.bakney.test',
            ALLOWED_HOSTS=['club.example.test'], DEBUG=False,
            CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
 ADMIN = '/instance/admin/bakney-pairing'
-API = '/instance/sso/v1/'
+API = '/bakney/v1/'
 
 
 class PairingFixture:
@@ -43,6 +43,7 @@ class PairingFixture:
         self.admin = APIClient(HTTP_HOST='club.example.test')
         self.admin.force_authenticate(self.owner)
         self.forwarding = True
+        self.remote_id, self.generation = uuid4(), uuid4()
         self.identity = {}
         self.calls = []
         for target in ('instance.sso.service.upstream', 'instance.sso.views.upstream'):
@@ -53,13 +54,13 @@ class PairingFixture:
     def peer(self, pairing, action, data=None, **kwargs):
         self.calls.append((action, data))
         if action == 'disconnect':
-            return {'protocol': 1, 'state': 'disconnected'}
-        response = {'protocol': 1, **binding(pairing)}
-        if action == 'redeem':
-            return {**response, 'user_id': str(self.user.pk), 'role': 'athlete', 'is_active': True,
-                    'is_superuser': False, 'is_instructor': False, 'authentication_complete': True, **self.identity}
-        return {**response, 'state': 'paired', 'forwarding_enabled': self.forwarding,
-                'revision': 1, 'association_name': 'SSO Club'}
+            return {'protocol': VERSION, 'status': 'revoked', 'pairing_id': str(pairing.remote_pairing_id)}
+        response = {'protocol': VERSION, **binding(pairing)}
+        if action == 'token':
+            return {**response, 'user_id': str(self.user.pk), 'auth_time': int(timezone.now().timestamp()),
+                    'amr': ['authenticated'], **self.identity}
+        return {**response, 'status': 'verified', 'forwarding': self.forwarding,
+                'generation': str(self.generation)}
 
     def generate(self):
         info = self.admin.get(ADMIN, secure=True).data
@@ -69,26 +70,33 @@ class PairingFixture:
         self.pairing = BakneyPairing.objects.get()
         return response
 
-    def envelope(self, purpose='proof', **changes):
-        data = {'protocol': 1, **binding(self.pairing), 'nonce': secrets.token_urlsafe(32),
-                'expires_at': int(timezone.now().timestamp()) + 60, 'association_name': 'SSO Club', **changes}
-        return {**data, 'signature': signature(self.secret, purpose + ':request', data)}
+    def envelope(self, purpose='challenge', **changes):
+        data = {'protocol': VERSION, **binding(self.pairing), 'pairing_id': str(self.remote_id),
+                'instance_id': '' if purpose == 'challenge' else str(self.pairing.instance_id),
+                'generation': str(self.generation), 'nonce': secrets.token_urlsafe(32),
+                'expires_at': int(timezone.now().timestamp()) + 60, **changes}
+        if purpose == 'commit':
+            data['proof'] = signature(self.secret, 'commit', data)
+        return data
 
     def pair(self):
         self.generate()
-        r = self.client.post(API + 'proof', self.envelope(), format='json', secure=True)
+        r = self.client.post(API + 'pairing/challenge', self.envelope(), format='json', secure=True)
+        self.assertEqual(r.status_code, 200, r.data)
+        r = self.client.post(API + 'pairing/commit', self.envelope('commit'), format='json', secure=True)
         self.assertEqual(r.status_code, 200, r.data)
         self.pairing.refresh_from_db()
         self.assertEqual(self.pairing.state, 'pending')
-        r = self.client.post(API + 'confirm', self.envelope('confirm'), format='json', secure=True)
-        self.assertEqual(r.status_code, 200, r.data)
+        self.admin.get(ADMIN, secure=True)
         self.pairing.refresh_from_db()
+        self.assertEqual(self.pairing.state, 'paired')
 
     def start(self):
-        response = self.client.get(API + 'start', secure=True)
+        response = self.client.get(API + 'login-start', {'protocol': VERSION,
+            'pairing_id': str(self.remote_id), 'attempt_id': str(uuid4())}, secure=True)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response['Location'].startswith('https://app.bakney.test/'))
-        return parse_qs(urlsplit(response['Location']).query), response
+        self.assertTrue(response['Location'].startswith('https://app.bakney.test/handoff.html#'), response['Location'])
+        return parse_qs(urlsplit(response['Location']).fragment), response
 
     def callback(self, query=None):
         if query is None:
@@ -108,6 +116,20 @@ class PairingFixture:
 
 @override_settings(**ENV)
 class PairingTests(PairingFixture, TestCase):
+    def test_migration_invalidates_draft_protocol_credentials_and_preserves_instance_id(self):
+        from importlib import import_module
+        from django.apps import apps
+        self.pair()
+        self.start()
+        instance_id = self.pairing.instance_id
+        migration = import_module('instance.migrations.0008_bakneychallenge_bakneylogin_attempt_id_and_more')
+        migration.invalidate_previous_protocol(apps, None)
+        self.pairing.refresh_from_db()
+        self.assertEqual(self.pairing.instance_id, instance_id)
+        self.assertEqual(self.pairing.secret_encrypted, '')
+        self.assertEqual(self.pairing.state, 'disconnected')
+        self.assertFalse(BakneyLogin.objects.exists())
+
     def test_administrator_only_including_inactive_and_non_selfhost(self):
         outsider = User.objects.create_user(username='outsider', role=User.ASSOCIATION)
         collaborator = User.objects.create_user(username='collaborator', role=User.COLLABORATOR, connected_user=self.owner)
@@ -140,8 +162,6 @@ class PairingTests(PairingFixture, TestCase):
         self.assertNotIn(self.secret, self.pairing.secret_encrypted)
         self.assertEqual(decrypt(self.pairing.secret_encrypted), self.secret)
         self.assertEqual(response['Cache-Control'], 'no-store')
-        metadata = self.client.get(API + 'metadata', secure=True)
-        self.assertEqual(metadata.data, {'protocol': 1, **binding(self.pairing)})
         for url in (ADMIN, '/instance/config', '/instance/status'):
             r = self.admin.get(url, secure=True)
             self.assertNotIn(self.secret, r.content.decode())
@@ -152,32 +172,45 @@ class PairingTests(PairingFixture, TestCase):
         for changes in ({'association_id': str(uuid4())}, {'instance_id': str(uuid4())}, {'origin': 'https://evil.test'},
                         {'callback_uri': 'https://evil.test/callback'}, {'protocol': True},
                         {'expires_at': int(timezone.now().timestamp()) - 1}, {'expires_at': int(timezone.now().timestamp()) + 300}):
-            r = self.client.post(API + 'proof', self.envelope(**changes), format='json', secure=True)
+            r = self.client.post(API + 'pairing/challenge', self.envelope(**changes), format='json', secure=True)
             self.assertEqual(r.status_code, 400, changes)
         data = self.envelope()
-        bad = {**data, 'signature': '0' * 64}
-        self.assertEqual(self.client.post(API + 'proof', bad, format='json', secure=True).status_code, 403)
-        r = self.client.post(API + 'proof', data, format='json', secure=True)
+        r = self.client.post(API + 'pairing/challenge', data, format='json', secure=True)
         self.assertEqual(r.status_code, 200)
-        payload = {key: value for key, value in r.data.items() if key != 'signature'}
-        self.assertEqual(r.data['signature'], signature(self.secret, 'proof:response', payload))
-        self.assertEqual(self.client.post(API + 'proof', data, format='json', secure=True).status_code, 409)
+        payload = {**data, 'instance_id': str(self.pairing.instance_id)}
+        self.assertEqual(r.data['proof'], signature(self.secret, 'challenge', payload))
+        self.assertEqual(self.client.post(API + 'pairing/challenge', data, format='json', secure=True).status_code, 409)
+        bad = {**self.envelope('commit'), 'proof': '0' * 64}
+        self.assertEqual(self.client.post(API + 'pairing/commit', bad, format='json', secure=True).status_code, 403)
 
-    def test_pending_until_upstream_acknowledges_exact_binding(self):
+    def test_pending_until_authenticated_status_verifies_exact_binding(self):
         self.generate()
-        self.client.post(API + 'proof', self.envelope(), format='json', secure=True)
-        with patch('instance.sso.service.upstream', return_value={'protocol': 1, 'state': 'paired'}):
-            r = self.client.post(API + 'confirm', self.envelope('confirm'), format='json', secure=True)
-        self.assertEqual(r.status_code, 502)
+        self.client.post(API + 'pairing/challenge', self.envelope(), format='json', secure=True)
+        r = self.client.post(API + 'pairing/commit', self.envelope('commit'), format='json', secure=True)
+        self.assertEqual(r.status_code, 200)
         self.pairing.refresh_from_db()
         self.assertEqual(self.pairing.state, 'pending')
         self.assertFalse(self.pairing.forwarding_enabled)
-        r = self.admin.post(ADMIN, {'action': 'sync', 'pairing_id': str(self.pairing.pairing_id)}, format='json', secure=True)
+        with patch('instance.sso.service.upstream', return_value={'protocol': VERSION, 'status': 'verified'}):
+            r = self.admin.post(ADMIN, {'action': 'sync', 'pairing_id': str(self.pairing.pairing_id)}, format='json', secure=True)
+            self.assertEqual(r.status_code, 502)
+        r = self.admin.get(ADMIN, secure=True)
         self.assertEqual(r.data['state'], 'paired')
+        self.assertEqual(r.data['association']['id'], str(self.association.pk))
+
+    def test_commit_requires_matching_unexpired_challenge(self):
+        self.generate()
+        self.assertEqual(self.client.post(API + 'pairing/commit', self.envelope('commit'), format='json', secure=True).status_code, 409)
+        self.client.post(API + 'pairing/challenge', self.envelope(), format='json', secure=True)
+        self.generation = uuid4()
+        self.assertEqual(self.client.post(API + 'pairing/commit', self.envelope('commit'), format='json', secure=True).status_code, 409)
+        self.client.post(API + 'pairing/challenge', self.envelope(), format='json', secure=True)
+        BakneyChallenge.objects.update(expires_at=timezone.now() - timedelta(seconds=1))
+        self.assertEqual(self.client.post(API + 'pairing/commit', self.envelope('commit'), format='json', secure=True).status_code, 409)
 
     def test_pairing_cannot_be_silently_replaced(self):
         self.pair()
-        self.assertEqual(self.client.post(API + 'proof', self.envelope(), format='json', secure=True).status_code, 409)
+        self.assertEqual(self.client.post(API + 'pairing/challenge', self.envelope(), format='json', secure=True).status_code, 409)
 
     def test_http_configuration_rejected_without_revoking_the_previous_pairing(self):
         self.pair()
@@ -190,14 +223,14 @@ class PairingTests(PairingFixture, TestCase):
     def test_revoked_authority_credentials_disconnect_locally(self):
         self.pair()
         with patch('instance.sso.service.upstream', side_effect=SSOError('pairing_rejected', 403)):
-            response = self.client.get(API + 'start', secure=True)
+            response = self.client.get(API + 'login-start', secure=True)
         self.assertIn('pairing_rejected', response['Location'])
         self.pairing.refresh_from_db()
         self.assertEqual(self.pairing.state, 'disconnected')
 
-    def test_stale_status_revision_and_wrong_binding_are_rejected(self):
+    def test_invalid_generation_and_wrong_status_binding_are_rejected(self):
         self.pair()
-        for changes in ({'revision':0}, {'association_id':str(uuid4())}, {'forwarding_enabled':'true'}):
+        for changes in ({'generation':'invalid'}, {'association_id':str(uuid4())}, {'forwarding':'true'}):
             data = {**self.peer(self.pairing, 'status'), **changes}
             with patch('instance.sso.service.upstream', return_value=data):
                 response = self.admin.post(ADMIN, {'action':'sync', 'pairing_id':str(self.pairing.pairing_id)}, format='json', secure=True)
@@ -205,13 +238,13 @@ class PairingTests(PairingFixture, TestCase):
 
     def test_domain_authority_and_local_association_changes_require_revalidation(self):
         self.pair()
-        for change in ({'APP_URL': 'https://new.example.test'}, {'BAKNEY_SSO_AUTHORITY': 'https://other.bakney.test'}):
+        for change in ({'APP_URL': 'https://new.example.test'}, {'BAKNEY_SSO_API_BASE': 'https://other.bakney.test/api'}, {'BAKNEY_SSO_UI_ORIGIN': 'https://other.bakney.test'}):
             with override_settings(**change):
                 self.assertEqual(self.admin.get(ADMIN, secure=True).data['state'], 'revalidation_required')
-                self.assertIn('error=', self.client.get(API + 'start', secure=True)['Location'])
+                self.assertIn('error=', self.client.get(API + 'login-start', secure=True)['Location'])
         self.config.primary_association = None
         self.config.save()
-        self.assertIn('configuration_required', self.client.get(API + 'start', secure=True)['Location'])
+        self.assertIn('configuration_required', self.client.get(API + 'login-start', secure=True)['Location'])
 
     def test_rotation_preserves_instance_id_invalidates_handoffs_and_queues_revocation(self):
         self.pair()
@@ -238,12 +271,12 @@ class PairingTests(PairingFixture, TestCase):
         self.assertTrue(r.data['notification_pending'])
         self.assertFalse(BakneyLogin.objects.exists())
         self.assertEqual(self.client.cookies['BKN_AUTH'].value, existing)
-        self.assertIn('error=', self.client.get(API + 'start', secure=True)['Location'])
+        self.assertIn('error=', self.client.get(API + 'login-start', secure=True)['Location'])
 
     def test_forwarding_owned_by_bakney_and_refreshed_before_login(self):
         self.pair()
         self.forwarding = False
-        r = self.client.get(API + 'start', secure=True)
+        r = self.client.get(API + 'login-start', secure=True)
         self.assertIn('forwarding_disabled', r['Location'])
         self.assertFalse(self.admin.get(ADMIN, secure=True).data['forwarding_enabled'])
 
@@ -262,7 +295,7 @@ class HandoffTests(PairingFixture, TestCase):
         r = self.callback(query)
         self.assertEqual(r['Location'], '/#/bakney-login')
         self.assertEqual(r.cookies[COOKIE]['max-age'], 120)
-        verifier = [data for action, data in self.calls if action == 'redeem'][0]['code_verifier']
+        verifier = [data for action, data in self.calls if action == 'token'][0]['code_verifier']
         self.assertEqual(base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('='), query['code_challenge'][0])
         self.assertEqual(BakneyLogin.objects.get().verifier_encrypted, '')
         pending = self.client.get(API + 'session', secure=True).data
@@ -283,7 +316,7 @@ class HandoffTests(PairingFixture, TestCase):
         r = other.get(API + 'callback', {'code': secrets.token_urlsafe(32), 'state': query['state'][0]}, secure=True)
         self.assertIn('error=', r['Location'])
         self.callback({'state': [secrets.token_urlsafe(32)]})
-        self.assertFalse(any(action == 'redeem' for action, _ in self.calls))
+        self.assertFalse(any(action == 'token' for action, _ in self.calls))
         self.assertEqual(self.callback(query)['Location'], '/#/bakney-login')
 
     def test_duplicate_query_parameters_are_rejected(self):
@@ -297,7 +330,7 @@ class HandoffTests(PairingFixture, TestCase):
         query, _ = self.start()
         self.callback(query)
         self.assertIn('error=', self.callback(query)['Location'])
-        self.assertEqual(sum(action == 'redeem' for action, _ in self.calls), 1)
+        self.assertEqual(sum(action == 'token' for action, _ in self.calls), 1)
         pending = self.client.get(API + 'session', secure=True).data
         cookie = self.client.cookies[COOKIE].value
         self.assertEqual(self.finish(pending).status_code, 200)
@@ -312,17 +345,17 @@ class HandoffTests(PairingFixture, TestCase):
 
     def test_local_role_instructor_superuser_staff_and_activity_exclusions(self):
         self.pair()
-        for change in ({'role': User.ASSOCIATION}, {'role': User.COLLABORATOR}, {'is_superuser': True}, {'is_staff': True}, {'is_active': False}, {'deleted': True}):
+        for change in ({'role': User.ASSOCIATION}, {'role': User.COLLABORATOR}, {'role': 9}, {'connected_user_id': self.owner.pk}, {'is_superuser': True}, {'is_staff': True}, {'is_active': False}, {'deleted': True}):
             User.original_objects.filter(pk=self.user.pk).update(**change)
             self.assertIn('error=', self.callback()['Location'], change)
-            User.original_objects.filter(pk=self.user.pk).update(role=User.ATHLETE, is_superuser=False, is_staff=False, is_active=True, deleted=False)
+            User.original_objects.filter(pk=self.user.pk).update(role=User.ATHLETE, connected_user_id=None, is_superuser=False, is_staff=False, is_active=True, deleted=False)
         Instructor.objects.create(user=self.owner, associated_user_id=self.user.pk)
         self.assertIn('account_not_eligible', self.callback()['Location'])
 
-    def test_upstream_role_and_binding_are_required(self):
+    def test_upstream_authentication_context_and_binding_are_required(self):
         self.pair()
-        for identity in ({'role': 'association'}, {'is_superuser': True}, {'is_instructor': True},
-                         {'authentication_complete': False}, {'pairing_id': str(uuid4())}, {'association_id': str(uuid4())}):
+        for identity in ({'amr': []}, {'amr': ['password']}, {'auth_time': True},
+                         {'auth_time': int(timezone.now().timestamp()) + 300}, {'pairing_id': str(uuid4())}, {'association_id': str(uuid4())}):
             self.identity = identity
             self.assertIn('error=', self.callback()['Location'], identity)
 
@@ -345,6 +378,32 @@ class HandoffTests(PairingFixture, TestCase):
         pending = self.ready()
         self.forwarding = False
         self.assertEqual(self.finish(pending).data['error'], 'forwarding_disabled')
+
+    def test_changed_generation_never_resurrects_a_pending_login(self):
+        pending = self.ready()
+        self.generation = uuid4()  # Bakney disabled forwarding and then enabled it again.
+        response = self.finish(pending)
+        self.assertEqual(response.data['error'], 'invalid_handoff')
+        self.assertNotIn('BKN_AUTH', response.cookies)
+
+    def test_login_start_requires_bakney_attempt_and_exact_pairing(self):
+        self.pair()
+        valid = {'protocol': VERSION, 'pairing_id': str(self.remote_id), 'attempt_id': str(uuid4())}
+        for params in ({}, {**valid, 'pairing_id': str(uuid4())}, {**valid, 'attempt_id': 'bad'},
+                       {**valid, 'authority': 'https://evil.test'}, {**valid, 'attempt_id': [str(uuid4())] * 2}):
+            response = self.client.get(API + 'login-start', params, secure=True)
+            self.assertIn('invalid_handoff', response['Location'])
+        self.assertFalse(BakneyLogin.objects.exists())
+
+    def test_disabled_draft_membership_and_inactive_owner_are_rejected(self):
+        self.pair()
+        for changes in ({'disabled': True}, {'draft': True}):
+            Associate._base_manager.filter(user=self.user).update(**changes)
+            self.assertIn('membership_required', self.callback()['Location'])
+            Associate._base_manager.filter(user=self.user).update(disabled=False, draft=False)
+        self.owner.is_active = False
+        self.owner.save()
+        self.assertIn('membership_required', self.callback()['Location'])
 
     def test_existing_session_requires_explicit_matching_confirmation(self):
         pending = self.ready()
@@ -390,7 +449,7 @@ class HandoffConcurrencyTests(PairingFixture, TransactionTestCase):
                     HTTP_ORIGIN=ENV['APP_URL'], HTTP_X_SSO_CSRF=pending['csrf_token'])
                 return response.status_code
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(lambda _: finish(), range(2)))
@@ -401,7 +460,7 @@ class LoggingTests(SimpleTestCase):
     def test_redaction_preserves_uvicorn_access_formatter_contract(self):
         from uvicorn.logging import AccessFormatter
         record = logging.LogRecord('uvicorn.access', 20, '', 0, '%s - "%s %s HTTP/%s" %d',
-            ('client', 'GET', '/instance/sso/v1/callback?code=secret', '1.1', 302), None)
+            ('client', 'GET', '/bakney/v1/callback?code=secret', '1.1', 302), None)
         SSORequestFilter().filter(record)
         result = AccessFormatter('%(client_addr)s - "%(request_line)s" %(status_code)s', use_colors=False).format(record)
         self.assertNotIn('secret', result)
@@ -410,31 +469,33 @@ class LoggingTests(SimpleTestCase):
 
     def test_shared_wire_signature_vectors(self):
         fixture = json.loads((Path(__file__).parent / 'fixtures/bakney-sso-v1.json').read_text())
-        for purpose, expected in fixture['signatures'].items():
-            self.assertEqual(signature(fixture['secret'], purpose, fixture['payload']), expected)
+        for purpose, expected in fixture['proofs'].items():
+            self.assertEqual(signature(fixture['secret'], purpose, fixture['binding']), expected)
 
     def test_uvicorn_gunicorn_and_django_access_records_are_redacted(self):
-        for msg, args in [('%s - "%s %s HTTP/%s" %d', ('client', 'GET', '/instance/sso/v1/callback?code=secret', '1.1', 302)),
-                          ('%(r)s %(f)s', {'r': 'GET /instance/sso/v1/callback?code=secret HTTP/1.1', 'f': '-'}),
-                          ('"GET /instance/sso/v1/callback?code=secret HTTP/1.1" 302', ())]:
+        for msg, args in [('%s - "%s %s HTTP/%s" %d', ('client', 'GET', '/bakney/v1/callback?code=secret', '1.1', 302)),
+                          ('%(r)s %(f)s', {'r': 'GET /bakney/v1/callback?code=secret HTTP/1.1', 'f': '-'}),
+                          ('"GET /bakney/v1/callback?code=secret HTTP/1.1" 302', ())]:
             record = logging.LogRecord('test', 20, '', 0, msg, args, None)
-            record.request = 'GET /instance/sso/v1/callback?code=secret'
+            record.request = 'GET /bakney/v1/callback?code=secret'
             SSORequestFilter().filter(record)
             self.assertNotIn('secret', record.getMessage())
             self.assertNotIn('request', record.__dict__)
 
     @override_settings(**ENV)
     def test_transport_uses_only_pinned_https_authority_and_never_follows_redirects(self):
-        pairing = MagicMock(authority=ENV['BAKNEY_SSO_AUTHORITY'], pairing_id=uuid4(), secret_encrypted='encrypted')
+        pairing = MagicMock(authority=ENV['BAKNEY_SSO_API_BASE'], remote_pairing_id=uuid4(), secret_encrypted='encrypted')
         with patch('instance.sso.protocol.decrypt', return_value='test-secret'), patch('instance.sso.protocol.requests.Session') as factory:
             session = factory.return_value.__enter__.return_value
             response = session.post.return_value.__enter__.return_value
             response.status_code = 302
             with self.assertRaises(SSOError):
-                upstream(pairing, 'redeem', {'code': 'test-code'})
+                upstream(pairing, 'token', {'code': 'test-code'})
             self.assertFalse(session.trust_env)
             args, kwargs = session.post.call_args
-            self.assertEqual(args[0], ENV['BAKNEY_SSO_AUTHORITY'] + '/api/selfhost/v1/redeem')
+            self.assertEqual(args[0], ENV['BAKNEY_SSO_API_BASE'] + '/pairing/v1/token')
             self.assertFalse(kwargs['allow_redirects'])
             self.assertNotIn('verify', kwargs)  # requests verifies TLS by default.
-            self.assertEqual(kwargs['auth'], (str(pairing.pairing_id), 'test-secret'))
+            self.assertNotIn('auth', kwargs)
+            self.assertEqual(kwargs['json']['secret'], 'test-secret')
+            self.assertEqual(kwargs['json']['pairing_id'], str(pairing.remote_pairing_id))
