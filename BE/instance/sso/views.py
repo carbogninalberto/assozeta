@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, BasePermission
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework.views import APIView
@@ -21,18 +21,20 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from application.services.jwt_token_service import JWTTokenService
-from instance.permissions import IsInstanceOwner
+from instance.permissions import is_instance_owner
 from .models import BakneyLogin, BakneyChallenge
 from .protocol import CALLBACK, VERSION, OPAQUE, canonical_uuid, SSOError, decrypt, digest, encrypt, signature, upstream, normalize_origin, browser_cookie
 from .service import (check_binding, consume_nonce, disconnect, local_user, locked_pairing,
                       redeemed_user, require_forwarding, rotate, snapshot, synchronize)
 
 
-class PairingAdministrator(IsInstanceOwner):
+class PairingAdministrator(BasePermission):
+    message = 'Only the instance owner can administer Bakney pairing.'
+
     def has_permission(self, request, view):
         actor = getattr(request, 'authenticated_user', getattr(request, 'original_user', request.user))
         return bool(actor and actor.is_authenticated and actor.is_active and not actor.deleted
-                    and super().has_permission(request, view))
+                    and is_instance_owner(actor))
 
 
 class HandoffThrottle(SimpleRateThrottle):

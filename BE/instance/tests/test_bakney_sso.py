@@ -147,7 +147,7 @@ class PairingTests(PairingFixture, TestCase):
         self.config.save()
         self.assertEqual(self.admin.get(ADMIN, secure=True).status_code, 403)
 
-    def test_existing_instance_administration_policy_has_no_unrelated_superuser_bypass(self):
+    def test_pairing_has_no_unrelated_superuser_bypass(self):
         user = User.objects.create_superuser(username='root', password='test')
         self.admin.force_authenticate(user)
         self.assertEqual(self.admin.get(ADMIN, secure=True).status_code, 403)

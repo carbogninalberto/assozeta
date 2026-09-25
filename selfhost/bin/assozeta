@@ -325,6 +325,9 @@ prod_compose() {
 }
 
 dev_compose() {
+    # Create the bind source as the host user before Docker can create it as root.
+    # Production lifecycle commands also write maintenance markers here.
+    mkdir -p "$SELFHOST_DIR/.operations"
     compose_with_env "$DEV_ENV" "$DEV_COMPOSE" "$@"
 }
 
