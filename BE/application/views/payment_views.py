@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
 """
@@ -382,7 +383,7 @@ def payment_sign(request):
 
     max_keys_length = 2
 
-    user = request.user if request.collaborator is False else request.original_user
+    user = request.user if request.collaborator is False else acting_user(request)
 
     # checking body for security/correctness
     if 'payment_id' in data.keys() and \

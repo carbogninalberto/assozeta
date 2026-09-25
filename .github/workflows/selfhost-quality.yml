@@ -58,7 +58,7 @@ jobs:
       - name: Verify owner APIs, integrations, migrations, email and diagnostic failures
         if: github.event_name != 'pull_request'
         run: |
-          ./selfhost/bin/assozeta dev-compose run --rm --no-deps api python -m pytest instance/tests/ application/tests/test_stripe_availability.py application/tests/test_auth_views.py application/tests/test_signup_policy.py -q
+          ./selfhost/bin/assozeta dev-compose run --rm --no-deps api python -m pytest instance/tests/ application/tests/test_stripe_availability.py application/tests/test_auth_views.py application/tests/test_signup_policy.py application/tests/test_impersonation.py application/tests/test_impersonation_websocket.py application/tests/test_create_instance_superuser.py -q
           python3 -m unittest discover -s selfhost/tests -p test_operational_diagnostics.py
       - name: Run backend regression suite
         if: github.event_name == 'pull_request'
@@ -96,6 +96,7 @@ jobs:
           node selfhost/tests/browser/operations-ui.mjs
           node selfhost/tests/browser/data-restore-ui.mjs
           node UI/scripts/test-data-management-navigation.mjs
+          node UI/scripts/test-administration.mjs
       - name: Verify full application reload behind Caddy
         working-directory: selfhost/tests/browser
         env:
@@ -107,6 +108,7 @@ jobs:
         with:
           name: selfhost-operations-${{ github.sha }}
           path: |
+            quality-reports/administration/*.png
             quality-reports/operations-ui/*.json
             quality-reports/operations-ui/*.png
             quality-reports/data-restore-ui/*.json

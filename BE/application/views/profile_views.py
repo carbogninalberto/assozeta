@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
 """
@@ -39,7 +40,7 @@ def profile_update(request):
     logger.info("Updating profile", extra={'user_id': str(request.user.user_id)})
 
     user_data = UserAuthUpdateSerializer(data=request.data['user_data'])
-    user = request.user if request.collaborator is None or request.collaborator is False else request.original_user
+    user = request.user if request.collaborator is None or request.collaborator is False else acting_user(request)
 
     if user_data.initial_data['first_name'] is not None:
         user.first_name = user_data.initial_data['first_name']
@@ -435,7 +436,7 @@ def profile_update_password(request):
     logger.info("Updating password", extra={'user_id': str(request.user.user_id)})
 
     password_data = request.data['password_data']
-    user = request.original_user if request.collaborator else request.user
+    user = acting_user(request) if request.collaborator else request.user
 
     password_pattern = re.compile(r"^(?=.*[A-Z])(?=.*[!@#$&\.\-\_*])(?=.*[0-9]).{10,}$")
     password_validated = re.search(password_pattern, password_data['new_password'])
@@ -680,9 +681,11 @@ def sport_association_admin_update(request, uid):
 @permission_classes([IsAuthenticated])
 # @cache_endpoint('info', timeout=60)
 def profile_info(request):
-
-
-    user = request.user
+    user = acting_user(request)
+    if user.is_superuser:
+        from application.services.jwt_token_service import JWTTokenService
+        content = JWTTokenService.build_login_response(user, {})
+        return Response({'info': {'role': content['role']}, 'user_data': content['user_data']})
 
     content = {}
     content['user_data'] = UserAuthSerializer(user).data
@@ -713,7 +716,7 @@ def profile_info(request):
 
     return Response({
         "info": {
-            "role": User.ROLE_CHOICES[user.role-1][1],
+            "role": "administrator" if user.is_superuser else User.ROLE_CHOICES[user.role-1][1],
         },
         "user_data": content['user_data']
     }, status=status.HTTP_200_OK)

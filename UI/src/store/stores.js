@@ -2,8 +2,21 @@ import {createSubscriptionListFilter, createAssociatesListFilter, createPersonas
 export {createSubscriptionListFilter, createAssociatesListFilter, createPersonasListFilter, createPersonasPaymentListFilter, createTemplatesListFilter, createCourseListFilter} from './filterDefaults.js';
 import {writable, derived} from 'svelte/store';
 
+const identityStores = new Map();
+export function resetIdentityStores() {
+    for (const [key, reset] of identityStores) {
+        if (!['sessionToken', 'refreshToken', 'expires'].includes(key)) reset();
+    }
+}
+
 const createLocalStore = (key, startValue) => {
+    const initialValue = JSON.stringify(startValue);
     const {subscribe, set, update} = writable(startValue);
+    identityStores.set(key, () => {
+        const value = JSON.parse(initialValue);
+        set(value);
+        localStorage.setItem(key, initialValue);
+    });
 
     return {
         subscribe,

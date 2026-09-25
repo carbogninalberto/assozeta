@@ -1,3 +1,4 @@
+import {readImpersonation, contextKey} from './impersonation.js';
 import {sessionToken} from '../store/stores.js';
 import {get} from 'svelte/store';
 
@@ -89,6 +90,8 @@ window.fetch = async (...args) => {
     // skip for fetch on urls different from same origin (api)
     if (!requestUrl?.includes('/api')) return await originalFetch(...args);
 
+    const identitySnapshot = localStorage.getItem(contextKey);
+
     // Check if this is a FormData request - don't set Content-Type, let browser handle it
     const isFormData = args[1]?.body instanceof FormData;
 
@@ -116,8 +119,6 @@ window.fetch = async (...args) => {
 
     if (localStorage.getItem('switched_superuser') == 'true' && localStorage.getItem('USER_ID') != null) {
         let USER_ID = localStorage.getItem('USER_ID');
-        console.info('USER_fdID', USER_ID);
-        console.info('args', args);
         // check if headers are set and arg 1 is present
         if (!args[1]) args[1] = {};
         // For FormData, only set Accept, Authorization, and User-Id - browser will set Content-Type with boundary
@@ -125,6 +126,7 @@ window.fetch = async (...args) => {
         if (!isFormData && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
         if (sessionToken) headers.set('Authorization', `Bearer ${sessionToken}`);
         headers.set('User-Id', USER_ID);
+        headers.set('X-Impersonation-Id', readImpersonation()?.session_id || '');
         args[1]['headers'] = headers;
     }
 
@@ -139,6 +141,9 @@ window.fetch = async (...args) => {
     try {
         // Execute the original fetch function
         const response = await originalFetch(...args);
+        if (identitySnapshot !== localStorage.getItem(contextKey)) {
+            throw new DOMException('Identity changed during request', 'AbortError');
+        }
 
         // Operations after the response is received
 
@@ -183,7 +188,10 @@ window.fetch = async (...args) => {
             if (localStorage.getItem('switched_superuser') == 'true' && localStorage.getItem('USER_ID') != null) {
                 USER_ID = localStorage.getItem('USER_ID');
             }
-            if (USER_ID) xhr.setRequestHeader('User-Id', USER_ID);
+            if (USER_ID) {
+                xhr.setRequestHeader('User-Id', USER_ID);
+                xhr.setRequestHeader('X-Impersonation-Id', readImpersonation()?.session_id || '');
+            }
 
             // get selectedGroup from localStorage
             let selectedGroup = localStorage.getItem('selectedGroup');

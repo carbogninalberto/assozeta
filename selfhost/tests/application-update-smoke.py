@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from common import read_env, update_env
 from distribution import digest, snapshot_managed
-from quality_support import docker_host, write_evidence, assert_project_removed
+from quality_support import docker_host, write_evidence, assert_project_removed, remove_disposable_project
 
 
 def free_port():
@@ -231,17 +231,19 @@ print('OWNER_TOKEN=' + owner_access)
 collaborator = User.objects.create_user(username='upgrade-collaborator', role=User.COLLABORATOR, connected_user=user)
 other = User.objects.create_user(username='upgrade-other', role=User.ASSOCIATION)
 superuser = User.objects.create_user(username='upgrade-superuser', role=User.ASSOCIATION, is_superuser=True)
-for denied in (collaborator, other, superuser):
+for denied in (collaborator, other):
     refresh = RefreshToken.for_user(denied)
     access = str(refresh.access_token)
     refresh_tokens[access] = str(refresh)
     print('DENIED_TOKEN=' + access)
+print('ADMIN_TOKEN=' + str(RefreshToken.for_user(superuser).access_token))
 print('BROWSER_REFRESH=' + json.dumps(refresh_tokens))
 print('OWNER_ID=' + str(user.pk))
 '''
         seeded = capture(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', seed.replace('host.docker.internal', host)), env=environment)
         token = next(line.removeprefix('OWNER_TOKEN=') for line in seeded.splitlines() if line.startswith('OWNER_TOKEN='))
         denied_tokens = [line.removeprefix('DENIED_TOKEN=') for line in seeded.splitlines() if line.startswith('DENIED_TOKEN=')]
+        admin_token = next(line.removeprefix('ADMIN_TOKEN=') for line in seeded.splitlines() if line.startswith('ADMIN_TOKEN='))
         refresh_tokens = json.loads(next(line.removeprefix('BROWSER_REFRESH=') for line in seeded.splitlines() if line.startswith('BROWSER_REFRESH=')))
         owner_id = next(line.removeprefix('OWNER_ID=') for line in seeded.splitlines() if line.startswith('OWNER_ID='))
         if legacy:
@@ -312,13 +314,20 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
 
         def assert_independent_access():
             assert independent_status()['is_owner'] is True
+            assert independent_status(admin_token)['is_owner'] is True
             for denied in ['', 'invalid-token', *denied_tokens]:
                 independent_status(denied, expected=403)
 
-        def assert_static_web():
+        def assert_maintenance_web():
             request = Request(f'http://127.0.0.1:{port}/', headers={'Host': f'{host}:{port}'})
-            with urlopen(request, timeout=10) as response:
-                assert response.status == 200 and b'<html' in response.read().lower()
+            try:
+                with urlopen(request, timeout=10):
+                    raise AssertionError('Maintenance must return HTTP 503')
+            except HTTPError as response:
+                assert response.code == 503
+                assert response.headers['Cache-Control'] == 'no-store'
+                assert response.headers['Retry-After'] == '60'
+                assert b'Torniamo tra poco' in response.read()
 
         def api(path, body=None):
             request = Request(f'http://127.0.0.1:{port}/api/instance/{path}',
@@ -461,7 +470,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             time.sleep(0.2)
         assert (fixtures / 'backup-blocked').exists(), 'Update did not reach its database backup'
         assert not capture(compose('ps', '--status', 'running', '--services', 'api'), env=environment)
-        assert_static_web()
+        assert_maintenance_web()
         assert_independent_access()
         assert independent_status()['active']['id'] == operation['id']
         with log.open('a') as output:
@@ -525,7 +534,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert (installation / '.updater/pending-distribution/transaction.json').exists()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
         assert not runner_status()['can_update']
-        assert_static_web()
+        assert_maintenance_web()
         assert_independent_access()
         independent = independent_status()
         assert not independent['can_update']
@@ -558,7 +567,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert failed_restore.returncode != 0
         assert not capture(compose('ps', '--status', 'running', '--services', 'api', 'worker', 'beat'), env=environment)
         assert not runner_status()['can_update']
-        assert_static_web()
+        assert_maintenance_web()
         assert independent_status()['is_owner']
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
         resume = installation / '.updater/recover-upgrade'
@@ -651,12 +660,12 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             for filename in ('compose.updater.yml', 'compose.yml'):
                 with log.open('a') as output:
                     project_args = ['--project-name', f'{project}-updater'] if filename == 'compose.updater.yml' else []
-                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, 'down', '--volumes', '--remove-orphans'],
+                    subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f', str(installation / filename), *project_args, 'down', '--timeout', '10', '--volumes', '--remove-orphans'],
                                    env=environment, stdout=output, stderr=output)
             subprocess.run(['docker', 'volume', 'rm', f'{project}_updater_api', f'{project}_updater_status'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for tag in reversed(image_tags):
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        assert_project_removed(project)
+        remove_disposable_project(project)
         if success:
             write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'update-recovery', {'images': {'backend': backend, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser})
             shutil.rmtree(directory)

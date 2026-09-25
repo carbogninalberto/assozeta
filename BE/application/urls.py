@@ -2,6 +2,7 @@ from django.urls import path, include
 
 from .views.archive_views import FolderViewSet, DocumentArchiveViewSet, SportAssociationModuleTemplatesViewSet
 from .views.export_views import AssociationExportViewSet, AssociationImportViewSet
+from .views.admin_views import impersonation_users, impersonation_session
 from .views.camp_and_retreats_views import camps_and_retreats_list, camps_and_retreats_add, camps_and_retreats_update, \
     camps_and_retreats_delete, camps_and_retreats_info, camps_and_retreats_periods_add, \
     camps_and_retreats_periods_update, camps_and_retreats_periods_delete, camps_and_retreats_periods_services_add, \
@@ -90,6 +91,8 @@ router.register(r'personas', AssociateViewSet, basename='persona')
 router.register(r'personas-subscriptions', AssociateSubscriptionViewSet, basename='persona-subscriptions')
 
 urlpatterns = [
+    path('administration/impersonation/users', impersonation_users),
+    path('administration/impersonation', impersonation_session),
     path('', include(router.urls)),
     # Health endpoint moved to WebSocket: ws://host/ws/health/
     path(r'check-inconsistencies', check_inconsistencies, name="check_inconsistencies"),

@@ -75,6 +75,8 @@ DEC_LOADER = "application.disposable_email.custom_email_domain_loader"
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'api'])
 CORS_ORIGIN_ALLOW_ALL = env.bool('CORS_ORIGIN_ALLOW_ALL', DEBUG)
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = (*default_headers, 'user-id', 'x-impersonation-id', 'x-group-id', 'x-setup-token')
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 # Caddy terminates TLS and forwards the original scheme to Django.
@@ -209,7 +211,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'core.authentication.ScopedJWTAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     "DATE_INPUT_FORMATS": ['%d/%m/%Y'],

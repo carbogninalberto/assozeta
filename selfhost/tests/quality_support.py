@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 
 
 def docker_host():
@@ -37,3 +38,29 @@ def assert_project_removed(project):
             raise RuntimeError(f'Disposable containers remain for {name}')
     if subprocess.check_output(['docker', 'volume', 'ls', '-q', '--filter', f'name=^{project}_'], text=True).strip():
         raise RuntimeError(f'Disposable data volumes remain for {project}')
+
+
+def remove_disposable_project(project):
+    """Remove only this fixture's resources, including updater helper containers.
+
+    A failed upgrade can leave its updater replacing itself while Compose down
+    runs. Stop the exact fixture containers before removing its data volumes.
+    """
+    if not re.fullmatch(r'assozeta-update-test-[0-9a-f]{10}', project):
+        raise ValueError('Refusing cleanup outside a disposable update fixture')
+    for _ in range(10):
+        rows = subprocess.check_output(['docker', 'ps', '-a', '--format', '{{.ID}} {{.Names}}'], text=True)
+        identifiers = [row.split()[0] for row in rows.splitlines()
+                       if row.split()[1].startswith(project + '-')]
+        if not identifiers:
+            break
+        subprocess.run(['docker', 'rm', '--force', *identifiers], check=True,
+                       stdout=subprocess.DEVNULL)
+        time.sleep(0.5)
+    for kind in ('network', 'volume'):
+        rows = subprocess.check_output(['docker', kind, 'ls', '--format', '{{.Name}}'], text=True)
+        names = [name for name in rows.splitlines()
+                 if name.startswith(project + '_') or name.startswith(project + '-updater_')]
+        if names:
+            subprocess.run(['docker', kind, 'rm', *names], check=True, stdout=subprocess.DEVNULL)
+    assert_project_removed(project)

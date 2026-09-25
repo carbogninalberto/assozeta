@@ -26,6 +26,17 @@ usage() {
     cat <<'EOF'
 Usage: ./selfhost/bin/assozeta COMMAND [OPTIONS]
 
+Repository commands:
+  sync-repo                 Fetch the configured upstream and fast-forward this Git checkout.
+                            Requires a clean worktree and attached tracking branch; refuses
+                            local commits/divergence. Does not upgrade or restart containers.
+
+Administration commands:
+  create-superuser [--dev] [OPTIONS]
+                            Create a Bakney administrator in the running API container.
+                            Prompts for username, email, name, phone and a hidden password.
+                            Use create-superuser [--dev] --help for account options.
+
 Production commands:
   configure [--domain DOMAIN] [--email EMAIL] [--version VERSION]
   install [configure options]
@@ -57,6 +68,53 @@ EOF
 
 require_command() {
     command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+sync_repo() {
+    [ "$#" -eq 0 ] || die "sync-repo does not accept arguments"
+    require_command git
+    repo_root=$(git -C "$SELFHOST_DIR" rev-parse --show-toplevel 2>/dev/null) \
+        || die "this installation is not a Git checkout; release archives cannot use sync-repo"
+    repo_branch=$(git -C "$repo_root" symbolic-ref --quiet --short HEAD) \
+        || die "detached HEAD: check out a tracking branch before running sync-repo"
+    repo_remote=$(git -C "$repo_root" config --get "branch.$repo_branch.remote") \
+        || die "branch $repo_branch has no configured upstream remote"
+    [ "$repo_remote" != . ] || die "the upstream must track a remote repository"
+    git -C "$repo_root" remote get-url "$repo_remote" >/dev/null 2>&1 \
+        || die "configured remote $repo_remote does not exist"
+    [ -z "$(git -C "$repo_root" status --porcelain --untracked-files=normal)" ] \
+        || die "worktree is dirty; commit or stash tracked and untracked changes first"
+    git -C "$repo_root" fetch --prune "$repo_remote" || die "fetch failed; checkout was not changed"
+    repo_upstream=$(git -C "$repo_root" rev-parse --verify '@{upstream}') \
+        || die "the configured upstream branch is unavailable"
+    git -C "$repo_root" merge-base --is-ancestor HEAD "$repo_upstream" \
+        || die "local commits or divergent history prevent alignment; resolve them explicitly before retrying"
+    [ -z "$(git -C "$repo_root" status --porcelain --untracked-files=normal)" ] \
+        || die "worktree changed during fetch; refusing to update"
+    git -C "$repo_root" merge --ff-only --no-edit --no-overwrite-ignore "$repo_upstream" \
+        || die "fast-forward failed; inspect the checkout before retrying"
+    log "repository aligned: $(git -C "$repo_root" rev-parse --short HEAD); containers were not changed"
+}
+
+create_superuser() {
+    superuser_development=false
+    if [ "${1:-}" = --dev ]; then superuser_development=true; shift; fi
+    preflight
+    if [ "$superuser_development" = true ]; then
+        [ -f "$DEV_ENV" ] || die "run dev-config and start the development API first"
+        if [ -t 0 ]; then
+            dev_compose exec -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
+        else
+            dev_compose exec -T -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
+        fi
+    else
+        [ -f "$PROD_ENV" ] || die "run configure and start the production API first"
+        if [ -t 0 ]; then
+            prod_compose exec -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
+        else
+            prod_compose exec -T -e DJANGO_SUPERUSER_PASSWORD api python manage.py create_instance_superuser "$@"
+        fi
+    fi
 }
 
 compose_version_at_least() {
@@ -837,6 +895,9 @@ start_prod_app_services() {
     fi
 
     require_background_services_running || return $?
+    if [ "${2:-false}" = true ]; then
+        printf '%s\n' '@@ASSOZETA_STAGE health_check'
+    fi
     # Container health alone does not prove that public routing reaches the API.
     # The readiness routes bypass maintenance so failures keep the page active.
     wait_public_readiness || return $?
@@ -1516,9 +1577,7 @@ upgrade_prod() {
     printf '%s\n' '@@ASSOZETA_STAGE restarting'
     # Recreate even unchanged images: replaced host bind files (e.g. Caddyfile)
     # otherwise remain attached to the old inode in an existing container.
-    start_prod_app_services "$managed_update"
-    printf '%s\n' '@@ASSOZETA_STAGE health_check'
-    require_public_readiness
+    start_prod_app_services "$managed_update" true
     if [ "$managed_update" = true ]; then
         run_updater_tool /runner/engine.py "$SELFHOST_DIR" "$PROD_ENV" "$version" "${ASSOZETA_OPERATION_ID:-}"
         run_updater_tool /runner/distribution.py commit "$SELFHOST_DIR"
@@ -1649,6 +1708,8 @@ command=${1:-help}
 
 case "$command" in
     help|-h|--help) usage ;;
+    sync-repo) sync_repo "$@" ;;
+    create-superuser) create_superuser "$@" ;;
     upgrade)
         if [ -z "${ASSOZETA_VERIFIED_UPDATER_REF:-}" ] && [ -f "$PROD_ENV" ] && supports_self_update; then
             bootstrap_upgrade_prod "$@"

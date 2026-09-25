@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney srl
 """
@@ -141,7 +142,7 @@ def instructor_info(request, uid):
     if requesting_association is None or instructor_association is None or \
             str(instructor_association.sport_association_id) != str(requesting_association.sport_association_id):
         return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
-    original_user = getattr(request, 'original_user', request.user)
+    original_user = acting_user(request)
     own = Instructor.objects.filter(user=request.user, associated_user_id=original_user.pk).first()
     if own is not None and own.pk != instructor.pk:
         return Response({'error': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
@@ -647,7 +648,7 @@ def instructor_lessons_hours(request, uid=None):
         sport_association = None
 
     # Resolve the requesting user's own instructor profile, if any
-    original_user_id = getattr(getattr(request, 'original_user', None), 'user_id', None) or user.user_id
+    original_user_id = getattr(acting_user(request), 'user_id', None) or user.user_id
     requesting_instructor = Instructor.objects.filter(associated_user_id=original_user_id,
         **({'user': user} if sport_association is not None else {})).first()
 

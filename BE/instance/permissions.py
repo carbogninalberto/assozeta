@@ -21,11 +21,22 @@ def is_instance_owner(user, config=None):
     )
 
 
+def is_instance_administrator(user, config=None):
+    """Installation administration belongs to the active owner or superuser."""
+    if not user or not getattr(user, 'is_authenticated', False) or not getattr(user, 'is_active', False) or getattr(user, 'deleted', False):
+        return False
+    if config is None:
+        config = InstanceConfiguration.objects.select_related('primary_association').first()
+    return bool(config and config.self_hosted and (
+        getattr(user, 'is_superuser', False) or is_instance_owner(user, config)
+    ))
+
+
 class IsInstanceOwner(BasePermission):
-    message = 'Only the instance owner can administer this installation.'
+    message = 'Only the instance owner or an administrator can administer this installation.'
 
     def has_permission(self, request, view):
-        return is_instance_owner(getattr(request, 'original_user', request.user))
+        return is_instance_administrator(getattr(request, 'authenticated_user', getattr(request, 'original_user', request.user)))
 
 
 def is_primary_association_owner_or_superuser(user, config=None):
