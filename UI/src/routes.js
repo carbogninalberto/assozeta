@@ -62,6 +62,8 @@ export default {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
 
+            if (get(role) === 'administrator') return (await import('./routes/tools/SportAssociationsManager.svelte')).default;
+
             if (!canPerformAction('association.dashboard.read')) {
                 if (get(role) == 'association') {
                     return (await import('./routes/dashboard/EmptyDasbhoard.svelte')).default;
@@ -1368,7 +1370,7 @@ export default {
         // Condition is logged and admin
         conditions: [
             () => {
-                if (JSON.parse(localStorage.getItem('userData')).is_superuser) {
+                if (JSON.parse(localStorage.getItem('userData') || '{}')?.is_superuser) {
                     return true;
                 }
             },

@@ -60,8 +60,7 @@ class AgentWebSocket {
         }
 
         const wsPath = __bakney.env.WS?.AGENT || '/ws/agent/';
-        const baseUrl = getWebSocketUrl(wsPath);
-        const url = this.token ? `${baseUrl}?token=${this.token}` : baseUrl;
+        const url = getWebSocketUrl(wsPath, this.token);
 
         this.ws = new WebSocket(url);
         const socket = this.ws;

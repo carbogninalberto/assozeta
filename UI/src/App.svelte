@@ -1,10 +1,14 @@
 <script>
+    import {createUserContextLoader} from 'utils/userContext.js';
+    import {observeIdentityChanges, isChangingIdentity} from 'utils/impersonation.js';
+    onMount(observeIdentityChanges);
     import {
         sessionToken,
         notifications,
         refreshToken,
         expires,
         billingData,
+        permissions,
         role,
         userData as userDataStore,
         unreadNotificationsCounter,
@@ -40,8 +44,12 @@
     let offline = false;
     let ga;
     let refreshingToken = false;
-    let isSwitchedUser = false;
-    let isLoadingUserData = false;
+    let isSwitchedUser = localStorage.getItem('switched_superuser') === 'true';
+    const loadUserContext = createUserContextLoader({
+        fetchProfile: () => apiFetch(__bakney.env.API.PROFILE.INFO),
+        fetchBilling: () => apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
+        userData: userDataStore, billingData, permissions, role, setPermissions,
+    });
     let showTestimonial = false;
 
     // Self-hosted instance configuration state
@@ -75,6 +83,7 @@
         role.set(null);
         localStorage.removeItem('switched_superuser');
         localStorage.removeItem('USER_ID');
+        localStorage.removeItem('impersonationContext');
     }
 
     // Reactive statement for user preference (only when logged in)
@@ -130,7 +139,7 @@
             instanceConfigured = true;
         }
 
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $role != 'administrator' && $location != '/welcome') {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -238,8 +247,8 @@
             document.querySelectorAll('.popover').forEach(popover => popover.remove());
             document.querySelectorAll('.tooltip').forEach(popover => popover.remove());
         });
-        await checkPermissions();
-        setInterval(checkPermissions, 5000);
+        await checkUserData();
+        setInterval(() => { if ($sessionToken && $location !== '/error') checkUserData(); }, 5000);
 
         if (
             sessionStorage.getItem('redirectAfterLogin') == 1 &&
@@ -260,6 +269,7 @@
     });
 
     function showTestimonialModal() {
+        if ($role === 'administrator') return;
         // read again from localStorage
         let userData = JSON.parse(localStorage.getItem('userData'));
         // get or create showTestimonial localstorage key
@@ -294,7 +304,7 @@
 
     beforeUpdate(() => {
         if (instanceLoading || instanceUnavailable) return;
-        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $location != '/welcome') {
+        if ($sessionToken && $userDataStore?.requires_welcome && $role != 'athlete' && $role != 'administrator' && $location != '/welcome') {
             // $userDataStore.requires_welcome = false;
             push('/welcome');
         }
@@ -317,9 +327,7 @@
     });
 
     function checkUserData() {
-        // Prevent concurrent API calls
-        if (isLoadingUserData) return;
-
+        if (isChangingIdentity()) return;
         let userDataStr = localStorage.getItem('userData');
         let parsedUserData = null;
 
@@ -332,22 +340,14 @@
 
         if ($sessionToken) {
             // Valid data exists for current user - skip reload
-            if (parsedUserData?.user_id) {
+            if (parsedUserData?.user_id && $role) {
                 // Not in switched mode, data is valid
                 if (!isSwitchedUser) return;
                 // In switched mode, check if data matches the switched user
                 if (String(parsedUserData.user_id) === String(localStorage.getItem('USER_ID'))) return;
             }
 
-            // Need to fetch user data
-            isLoadingUserData = true;
-            apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                isLoadingUserData = false;
-                if (!res.error) {
-                    userDataStore.set(res.response.user_data);
-                }
-            });
-            return;
+            return loadUserContext();
         }
         if ($location == '/reset') return;
         if (
@@ -371,38 +371,6 @@
                 !$location.includes('/card')
             )
                 push('/login');
-        }
-    }
-
-    async function checkPermissions() {
-        let currentPage = localStorage.getItem('currentPage');
-        if (
-            currentPage &&
-            !window.location.href.includes('/stripe') &&
-            currentPage != 'login' &&
-            $role != 'association' &&
-            $role != 'athlete' &&
-            $sessionToken != null
-        ) {
-            console.warn('checking role...', currentPage, $role);
-            await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(async billingResult => {
-                if (!billingResult.error) {
-                    billingData.set(billingResult.response.data);
-                    await apiFetch(__bakney.env.API.PROFILE.INFO).then(profileResult => {
-                        if (!profileResult.error) {
-                            const currentRole = profileResult.response.info.role;
-                            role.set(currentRole);
-                            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
-                        }
-                    });
-                } else {
-                    apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                        if (!res.error && res.response.info.role != $role) {
-                            role.set(res.response.info.role);
-                        }
-                    });
-                }
-            });
         }
     }
 
@@ -487,42 +455,6 @@
     <div transition:slide={{duration: 350, y: 5}} class="connection-status">Connessione persa, sei offline...</div>
 {/if}
 
-{#if isSwitchedUser}
-    <Portal target="#portal-elements">
-        <div
-            transition:slide={{duration: 350, y: 5}}
-            class="rounded-lg"
-            style="margin-top: 0.5rem; left: 0.5rem; outline: .2rem solid #b463ff;position:fixed;width:40rem;max-width:96vw;display: flex; justify-content: space-between; background: blueviolet; color: #fff; font-weight: 800; padding: 0.25rem 1rem!important; font-size: 10px; box-shadow: 0 0rem 3rem 0rem #00000070;">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            Sei in modalità superuser, attenzione!
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <span
-                on:click={() => {
-                    // Disconnect WebSockets before switching back
-                    notificationService.disconnect();
-                    healthService.disconnect();
-
-                    // clear all local storage keys except for sessionToken
-                    Object.keys(localStorage).forEach(key => {
-                        if (key !== 'sessionToken' && key !== 'refreshToken' && key !== 'expires')
-                            localStorage.removeItem(key);
-                    });
-
-                    // Reset stores to clear in-memory state
-                    userDataStore.set({});
-                    role.set(null);
-                    billingData.set({});
-                    isSwitchedUser = false;
-
-                    // Full page reload to ensure clean state
-                    window.location.href = '/#/tools/sport-associations-manager';
-                    window.location.reload();
-                }}
-                class="ml-3"
-                style="cursor:pointer"><u>esci da questa modalità</u></span>
-        </div>
-    </Portal>
-{/if}
 
 <UpdatesToast />
 <LoadingOverlay />

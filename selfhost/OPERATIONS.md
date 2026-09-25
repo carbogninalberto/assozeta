@@ -240,3 +240,56 @@ Inspect the installation's container state and logs before retrying a failure.
 
 Restarts are disabled in development, during another operation, when an update
 requires recovery, or when the installed updater does not support restarts.
+
+## Synchronize a source checkout
+
+Run `./selfhost/bin/assozeta sync-repo` to fetch the current branch's configured
+remote and fast-forward to its upstream commit. Git and access to that remote
+are required. The command requires an attached tracking branch and a clean
+worktree, including untracked files. It refuses detached HEADs, missing remotes
+or upstream branches, local commits ahead of upstream, and divergent history;
+commit or stash local work and resolve the reported condition explicitly.
+Ignored local files are also preserved if an upstream commit starts tracking the same path.
+Release archive installations are not Git checkouts and cannot use this command.
+A successful synchronization does not build images, upgrade the installation,
+apply migrations, or restart containers. Use the documented deployment commands
+separately when you intend to run the updated source.
+
+## Create an administrator
+
+With the API container running, use:
+
+```sh
+./selfhost/bin/assozeta create-superuser
+# Development instance only:
+./selfhost/bin/assozeta create-superuser --dev
+```
+
+The command prompts for username, email, optional first and last name, optional
+phone, and a hidden password with confirmation. Usernames follow the existing
+uppercase normalization; login remains case-insensitive. Existing usernames or
+email addresses, including soft-deleted accounts, are rejected without changing
+those accounts. Standard password validation applies.
+
+Run `create-superuser [--dev] --help` for account options. `--username`, `--email`,
+`--first-name`, `--last-name`, and `--phone` supply profile values explicitly.
+For unattended creation use `--noinput` with `DJANGO_SUPERUSER_PASSWORD` supplied
+through the environment, rather than a password command-line argument. The
+explicit `--allow-weak-password` option is accepted only when the application's
+deployment mode is development; it is intended for local test accounts.
+
+The active superuser receives Self Instance, Gestione Dati, and impersonation
+management. Existing primary-association owners retain their installation
+administration and data-management access. Administrator exports and restores
+operate on the configured primary association; restore restrictions and backup
+validation still apply. Ordinary association exports remain scoped to their
+association. Impersonate the association owner to work in another association.
+
+Impersonation selection supports association owners, personal users, and
+collaborators. The expandable identity panel above the sidebar build label
+identifies the selected account and its association, and opens the account picker;
+“Torna all’amministrazione” revokes the impersonation session and restores the
+administrator context. Ordinary requests use the selected user's permissions,
+while installation administration uses the authenticated administrator. Sessions
+expire after one hour, are revocable, and are bound to their administrator and
+target. Start and end events retain the administrator as the audit actor.

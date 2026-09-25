@@ -1,3 +1,4 @@
+from instance.permissions import is_instance_administrator
 """Crash-recoverable preparation and transactional replacement."""
 import logging
 import os
@@ -137,7 +138,7 @@ def execute(operation_id):
                 raise RestoreError('Ripristino interrotto più volte. I dati precedenti sono conservati; verifica il worker e carica nuovamente il backup.')
             config = InstanceConfiguration.objects.select_related('primary_association__user').get()
             require_single(config)
-            if config.primary_association_id != op.association_id or config.primary_association.user_id != op.owner_id:
+            if config.primary_association_id != op.association_id or not is_instance_administrator(op.owner, config):
                 raise RestoreError('Il titolare o l’associazione sono cambiati. Valida nuovamente il backup.')
             if op.version != settings.RUNNING_VERSION:
                 raise RestoreError('La versione dell’applicazione è cambiata. Valida nuovamente il backup.')

@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
 """
@@ -348,8 +349,8 @@ def calendar(request, uid):
         else:
             try:
                 request, has_permission = IsAuthenticated.has_permission_and_return_request(request=request)
-                if request.original_user:
-                        google_sync_enabled = request.original_user.google_sync_enabled
+                if acting_user(request):
+                        google_sync_enabled = acting_user(request).google_sync_enabled
             except Exception as e:
                 logger.info(e)
     data = {
@@ -748,9 +749,9 @@ def full_events_calendar(request):
 
     courses_colors = get_course_colors(sport_association.sport_association_id)
 
-    if hasattr(request, 'original_user') and request.original_user is not None and request.original_user.is_collaborator:
+    if acting_user(request) is not None and acting_user(request) is not None and acting_user(request).is_collaborator:
         # check if it's an instructor
-        instructor = Instructor.objects.filter(user=request.user, associated_user_id=str(request.original_user.user_id)).first()
+        instructor = Instructor.objects.filter(user=request.user, associated_user_id=str(acting_user(request).user_id)).first()
         instructor_id = str(instructor.instructor_id) if instructor is not None else None
         if instructor_id is not None:
             is_instructor = True

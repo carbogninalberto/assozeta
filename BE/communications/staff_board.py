@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """Staff-board ownership, rich-document validation and realtime invalidation."""
 import json
 import logging
@@ -18,8 +19,8 @@ MARK_TYPES = {'bold', 'italic', 'underline', 'strike', 'code', 'link'}
 
 
 def message_actor(request):
-    if getattr(request, 'collaborator', False) and getattr(request, 'original_user', None):
-        return request.original_user
+    if getattr(request, 'collaborator', False) and acting_user(request):
+        return acting_user(request)
     return request.user
 
 

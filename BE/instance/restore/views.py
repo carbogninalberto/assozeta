@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from instance.models import DataRestore, InstanceConfiguration
-from instance.permissions import IsInstanceOwner, is_instance_owner
+from instance.permissions import IsInstanceOwner, is_instance_administrator
 from instance.tasks import restore_instance_data
 from .archive import Archive, RestoreError, digest
 from .execution import cleanup, save_operation
@@ -129,7 +129,7 @@ class DataRestoreDownloadView(DataRestoreView):
         if not valid_download_token(request.query_params.get('download_token'), op):
             return Response({'error': 'Link di download non valido o scaduto.'}, status=403)
         config = InstanceConfiguration.get_config()
-        if not is_instance_owner(op.owner, config) or config.primary_association_id != op.association_id:
+        if not is_instance_administrator(op.owner, config) or config.primary_association_id != op.association_id:
             return Response({'error': 'Download non autorizzato.'}, status=403)
         if not op.backup_path:
             return Response({'error': 'Backup di sicurezza non disponibile.'}, status=404)

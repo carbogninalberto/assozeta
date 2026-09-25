@@ -95,6 +95,12 @@ class JWTTokenService:
         content['role'] = User.ROLE_CHOICES[user.role - 1][1]
         content['user_data'] = UserAuthSerializer(user).data
 
+        if user.is_superuser:
+            content['role'] = 'administrator'
+            content['user_data']['is_superuser'] = True
+            content['requires_welcome'] = False
+            return content
+
         if user.role == User.COLLABORATOR:
             content['requires_welcome'] = False
 

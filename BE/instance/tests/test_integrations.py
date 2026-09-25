@@ -37,8 +37,8 @@ class IntegrationSettingsTests(TestCase):
         value = {'revision': 0, 'enabled': True, **({'public_key': 'pk_test_saved'} if provider == 'stripe' else {'client_id': 'saved.apps.googleusercontent.com' if provider == 'google' else 'com.example.saved'}), **changes}
         return self.client.put(self.endpoint(provider), value, format='json')
 
-    def test_owner_required_for_each_provider_and_method(self):
-        other = User.objects.create_user(username='unrelated-admin', is_superuser=True)
+    def test_unrelated_users_denied_for_each_provider_and_method(self):
+        other = User.objects.create_user(username='unrelated-user')
         for user in (None, other):
             self.client.force_authenticate(user)
             for provider in ('stripe', 'google', 'apple'):

@@ -1,4 +1,5 @@
 <script>
+    import ImpersonationPanel from './ImpersonationPanel.svelte';
     import {Capacitor} from '@capacitor/core';
     import {slide} from 'svelte/transition';
     import {push, replace} from 'svelte-spa-router';
@@ -106,7 +107,7 @@
     $: brandLogo = $oemConfig?.logo || '';
 
     onMount(async () => {
-        if ($role != 'athlete')
+        if ($role === 'association')
             await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(res => {
                 // TODO: check if plan active & show plan in the case is expired
                 if (!res.error) {
@@ -185,6 +186,21 @@
             style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
             <!--begin::Menu Nav - Scrollable-->
             <div class="menu-nav" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+                {#key $permissions}
+                {#if $role === 'administrator'}
+                    {#each [
+                        {page: 'self-instance', label: 'Self Instance', href: '/#/profile?page=self-instance', icon: GearSix},
+                        {page: 'data-management', label: 'Gestione Dati', href: '/#/profile?page=data-management', icon: Files},
+                        {page: 'impersonation', label: 'Impersona utenti', href: '/#/tools/sport-associations-manager', icon: UserFocus}
+                    ] as item}
+                        <div class="menu-item" class:menu-item-active={item.page === $subPage || (item.page === 'impersonation' && $currentPage !== 'profile')}>
+                            <a href={item.href} class="menu-link" on:click={collapseSidebar}>
+                                <span class="menu-icon"><svelte:component this={item.icon} size={24} weight="duotone" /></span>
+                                <span class="menu-text">{item.label}</span>
+                            </a>
+                        </div>
+                    {/each}
+                {:else}
                 {#if canPerformAction('association.dashboard.read') || $role == 'athlete'}
                     <div
                         class={$currentPage == 'dashboard' ? 'menu-item menu-item-active' : 'menu-item'}
@@ -1055,12 +1071,15 @@
                         </div>
                     </div>
                 {/if} -->
+                {/if}
+                {/key}
             </div>
             <!--end::Menu Nav-->
+            <ImpersonationPanel />
             <div
                 class="version border border-2 mx-auto"
                 style="flex-shrink: 0; width: 200px; background: var(--bg-surface-secondary); border-radius: 1rem; margin-bottom:0; padding: 1rem; max-width: -webkit-fill-available;">
-                {#if showPlan && $userData.collaborator_role == 1 && $oemConfig?.displaySettings?.sidebar?.showPlanUpgrades}
+                {#if $role !== 'administrator' && showPlan && $userData.collaborator_role == 1 && $oemConfig?.displaySettings?.sidebar?.showPlanUpgrades}
                     <div class="d-flex align-items-center justify-content-center flex-column text-dark">
                         {#if Capacitor.getPlatform() !== 'ios'}
                             <a

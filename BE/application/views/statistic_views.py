@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
 """
@@ -46,8 +47,8 @@ def statistic_dashboard_layout(request):
     dashboard_layout = request.data.get('dashboard_layout', None)
 
     if request.user.is_collaborator:
-        request.original_user.dashboard_layout = dashboard_layout
-        request.original_user.save()
+        acting_user(request).dashboard_layout = dashboard_layout
+        acting_user(request).save()
     else:
         request.user.dashboard_layout = dashboard_layout
         request.user.save()
@@ -268,9 +269,9 @@ def statistic_dashboard(request):
         rome_today_end = datetime.now().replace(hour=23, minute=59, second=59, microsecond=0) + timedelta(minutes=121)
 
         is_instructor = False
-        if hasattr(request, 'original_user') and request.original_user is not None and request.original_user.is_collaborator:
+        if acting_user(request) is not None and acting_user(request) is not None and acting_user(request).is_collaborator:
             # check if it's an instructor
-            instructor = Instructor.objects.filter(associated_user_id=str(request.original_user.user_id)).first()
+            instructor = Instructor.objects.filter(associated_user_id=str(acting_user(request).user_id)).first()
             instructor_id = str(instructor.instructor_id) if instructor is not None else None
             if instructor_id is not None:
                 is_instructor = True

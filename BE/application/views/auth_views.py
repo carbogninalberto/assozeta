@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
 """
@@ -154,6 +155,9 @@ def oauth2_login(request):
             user.password = migrated_passwords[user.user_id]
             user.save(update_fields=['password'])
 
+    if not user.is_active or user.deleted:
+        return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
     # Preserve legacy username normalization, but only after successful authentication.
     normalized_username = user.username.upper()
     if user.username != normalized_username:
@@ -229,7 +233,7 @@ def oauth2_delete_account(request):
     # it could happen that the user doesn't have the collaborator field
     try:
         if request.collaborator is True:
-            user = request.original_user
+            user = acting_user(request)
     except AttributeError:
         pass
 

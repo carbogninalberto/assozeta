@@ -36,8 +36,8 @@ class OperationsTests(TestCase):
     def put(self, **changes):
         return self.client.put('/instance/admin/email', {**self.data, **changes}, format='json')
 
-    def test_authorization_all_methods_and_no_superuser_bypass(self):
-        other = User.objects.create_user(username='operations-other', is_superuser=True)
+    def test_authorization_all_methods_rejects_unrelated_users(self):
+        other = User.objects.create_user(username='operations-other')
         for user in (None, other):
             self.client.force_authenticate(user)
             for method, path, data in [('get', 'email', {}), ('put', 'email', self.data), ('delete', 'email', {'revision': 0}),

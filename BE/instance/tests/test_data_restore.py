@@ -89,6 +89,23 @@ class RestoreTests(TransactionTestCase):
         self.assertEqual(response.status_code, 202, response.data)
         return op
 
+    def test_superuser_can_restore_primary_association_without_replacing_its_owner(self):
+        administrator = User.objects.create_superuser(username='installation-admin', password='TestSecret')
+        self.client.force_authenticate(administrator)
+        operation = self.upload()
+        self.assertEqual(operation.owner, administrator)
+        self.assertEqual(operation.association_id, self.association.pk)
+        self.start(operation)
+        execute(operation.pk)
+        operation.refresh_from_db()
+        self.assertEqual(operation.state, 'completed', operation.error)
+        self.association.refresh_from_db()
+        self.assertEqual(self.association.user_id, self.owner.pk)
+        self.assertTrue(User.objects.get(pk=administrator.pk).is_superuser)
+        self.client.force_authenticate(self.owner)
+        self.assertEqual(self.client.get('/instance/admin').status_code, 200)
+        self.assertEqual(self.client.get(self.endpoint).status_code, 200)
+
     def test_replacement_preserves_all_configuration_owner_and_same_uuid(self):
         old_family = Family.objects.create()
         old_associate = Associate.objects.create(sport_association=self.association, family=old_family, first_name='Old')
@@ -155,9 +172,9 @@ class RestoreTests(TransactionTestCase):
             execute(op.pk)
         self.assertEqual(events, ['failed'])
 
-    def test_requires_owner_even_with_impersonation_header(self):
+    def test_rejects_unrelated_users_even_with_impersonation_header(self):
         op = self.upload()
-        outsider = User.objects.create_user(username='outsider', is_superuser=True)
+        outsider = User.objects.create_user(username='outsider')
         collaborator = User.objects.create_user(username='collaborator', connected_user=self.owner)
         for user in (None, outsider, collaborator):
             self.client.force_authenticate(user)

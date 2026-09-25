@@ -3,13 +3,11 @@ import django
 import django_ratelimit
 import requests
 
-from django.core.cache import cache
 from django.http import JsonResponse
 from django.middleware.gzip import GZipMiddleware as DjangoGZipMiddleware
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied, NotAcceptable
 from rest_framework.permissions import BasePermission
-from auditlog.context import auditlog_value
 from application.models import User
 
 logger = logging.getLogger()
@@ -20,19 +18,6 @@ class GZipMiddleware(DjangoGZipMiddleware):
         if getattr(response, 'disable_gzip', False):
             return response
         return super().process_response(request, response)
-
-
-def get_user_by_id_cached(user_id):
-    """
-    Get user by ID with Redis caching to avoid repeated DB queries.
-    Cache timeout: 5 minutes (300 seconds)
-    """
-    cache_key = f'user_impersonate_{user_id}'
-    user = cache.get(cache_key)
-    if user is None:
-        user = User.objects.get(user_id=user_id)
-        cache.set(cache_key, user, timeout=300)  # 5 min cache
-    return user
 
 
 class ConditionalSessionMiddleware:
@@ -84,88 +69,25 @@ class ConditionalSessionMiddleware:
 
 
 class IsAuthenticated(BasePermission):
-    """
-    Allows access only to authenticated users.
-    Also handles user context swapping for collaborators and superuser impersonation,
-    and sets the correct actor for audit logging.
-    """
+    """Apply the shared identity scope, including manually authenticated requests."""
 
     def has_permission(self, request, view):
-        request.collaborator = False
-
-        # Store the original user for audit logging (before any swaps)
-        audit_actor = request.user if request.user and request.user.is_authenticated else None
-
-        if request.user and request.user.is_authenticated and request.user.is_collaborator:
-            request.original_user = request.user
-            request.collaborator = True
-            request._force_auth_user = request.user.connected_user
-            request.user = request.user.connected_user
-            # audit_actor remains as the original collaborator
-
-        if request.user.is_superuser and request.headers.get('user-id'):
-            # get the original user from header user-id and set it to request.user
-            # Use cached lookup to avoid DB query on every request (saves 2-5ms)
-            user = get_user_by_id_cached(request.headers.get('user-id'))
-            request.original_user = request.user
-            request._force_auth_user = user
-            request.user = user
-            # For superuser impersonation, record the impersonated user as actor
-            audit_actor = user
-
-        # Update auditlog context with the correct actor
-        if audit_actor and audit_actor.is_authenticated:
-            try:
-                context = auditlog_value.get()
-                context["actor"] = audit_actor
-            except LookupError:
-                # Context not set yet (AuditlogMiddleware hasn't run)
-                pass
-
-        return bool(request.user and request.user.is_authenticated)
+        from application.impersonation import resolve_request_identity
+        user = resolve_request_identity(request)
+        return bool(user and user.is_authenticated)
 
     @staticmethod
     def has_permission_and_return_request(request):
-        request.collaborator = False
-
-        # Store the original user for audit logging (before any swaps)
-        audit_actor = request.user if request.user and request.user.is_authenticated else None
-
-        if request.user and request.user.is_authenticated and request.user.is_collaborator:
-            request.original_user = request.user
-            request.collaborator = True
-            request._force_auth_user = request.user.connected_user
-            request.user = request.user.connected_user
-            # audit_actor remains as the original collaborator
-
-        if request.user.is_superuser and request.headers.get('user-id'):
-            # get the original user from header user-id and set it to request.user
-            # Use cached lookup to avoid DB query on every request (saves 2-5ms)
-            user = get_user_by_id_cached(request.headers.get('user-id'))
-            request.original_user = request.user
-            request._force_auth_user = user
-            request.user = user
-            # For superuser impersonation, record the impersonated user as actor
-            audit_actor = user
-
-        # Update auditlog context with the correct actor
-        if audit_actor and audit_actor.is_authenticated:
-            try:
-                context = auditlog_value.get()
-                context["actor"] = audit_actor
-            except LookupError:
-                # Context not set yet (AuditlogMiddleware hasn't run)
-                pass
-
-        return request, bool(request.user and request.user.is_authenticated)
+        from application.impersonation import resolve_request_identity
+        user = resolve_request_identity(request)
+        return request, bool(user and user.is_authenticated)
 
 
 class ExceptionHandlerMiddleware:
     """
     Middleware for centralized exception handling.
 
-    Note: Impersonation (superuser via HTTP_USER_ID header, collaborator user swap)
-    is handled by the IsAuthenticated permission class, not this middleware.
+    Identity scoping is handled by authentication and the shared permission resolver.
     Django's new-style middleware doesn't call process_view() without MiddlewareMixin.
     """
 

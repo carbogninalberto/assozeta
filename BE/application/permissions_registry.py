@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """
 Centralized permission registry for collaborator access control.
 
@@ -424,6 +425,8 @@ PERMISSIONS_REGISTRY = {
 # Endpoints that should NEVER require permission checks
 # These are either public, external callbacks, or superuser-only
 EXCLUDED_ENDPOINTS = [
+    'calendar/events/update',  # mutate_events checks create/update/delete permissions per action.
+    'profile/info',  # Every signed-in identity needs its own profile to initialize the UI.
     # Authentication (public)
     'oauth2/login',
     'oauth2/signup',
@@ -491,7 +494,7 @@ def check_collaborator_permission(request):
         return
 
     # Get the original collaborator user (before swap to connected_user)
-    collaborator = request.original_user
+    collaborator = acting_user(request)
 
     # FULL role (1) bypasses all permission checks
     if collaborator.collaborator_role == 1:  # User.FULL

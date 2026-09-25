@@ -95,7 +95,7 @@
     }
 </script>
 
-<div  class="d-flex flex-column-fluid">
+<div class="athlete-dashboard d-flex flex-column-fluid">
     <!--begin::Container-->
     <div class="container">
         <!--begin::Dashboard-->
@@ -133,7 +133,7 @@
                         <div class="row mx-auto">
                             <h6 class="mb-2 mt-10 px-4 font-weight-boldest text-dark font-size-h6">Prossime lezioni</h6>
                         </div>
-                        <div class="row p-0 p-md-4">
+                        <div class="row p-0 p-md-4 mx-0">
                             {#if loading}
                                 <ContentLoader width="100%" primaryColor="#6b6b6b1f" secondaryColor="#eaf1f7" />
                             {:else}
@@ -242,7 +242,7 @@
         {/if}
         <!--end::Row-->
 
-        <div class="row p-0 p-md-4">
+        <div class="row p-0 p-md-4 mx-0">
             {#if loading}
                 <ContentLoader width="100%" primaryColor="#6b6b6b1f" secondaryColor="#eaf1f7" />
             {:else if loadError}
@@ -275,6 +275,9 @@
 
 <!--end::Entry-->
 <style>
+    .athlete-dashboard { min-width: 0; max-width: 100%; }
+    .athlete-dashboard > .container { min-width: 0; }
+
     .scrolling-wrapper {
         overflow-x: auto;
     }

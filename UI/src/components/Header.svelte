@@ -1,4 +1,6 @@
 <script>
+    import {readImpersonation} from 'utils/impersonation.js';
+    const impersonation = readImpersonation();
     import {BasicDrawer} from './drawer/index.js';
     import {
         userData,
@@ -189,7 +191,13 @@
             class="header-menu-wrapper header-menu-wrapper-left d-none d-lg-flex align-items-center gap-2"
             id="bkn_header_menu_wrapper"
             style=" width: 200%; margin: auto;">
-            <HeaderActions {quickAddItems} showQuickAdd={$role !== 'athlete'}
+            {#if impersonation}
+                <button type="button" class="btn btn-light-primary btn-sm mr-2" style="max-width: min(14rem, 40vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    title={`Stai impersonando ${impersonation.target.username}`} on:click={() => window.dispatchEvent(new Event('open-impersonation-panel'))}>
+                    {impersonation.target.username}
+                </button>
+            {/if}
+            <HeaderActions {quickAddItems} showQuickAdd={$role === 'association'}
                 showAI={$role === 'association' && canPerformAction('association.report.read')}
                 on:itemClick={openQuickAdd} />
         </div>

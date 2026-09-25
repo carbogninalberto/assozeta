@@ -273,7 +273,7 @@
                                     <div class="d-flex justify-content-center">
                                         <button
                                             class="btn btn-primary font-weight-bold px-6"
-                                            disabled={loadingExports || !!exportError || !loadedExports || !canPerformAction('other.settings.update')}
+                                            disabled={loadingExports || !!exportError || !loadedExports || !($userData?.is_superuser && instanceOwner) && !canPerformAction('other.settings.update')}
                                             on:click={startExport}>
                                             <CloudArrowUp size={18} class="mr-2" weight="duotone" />
                                             Avvia Export
@@ -381,7 +381,7 @@
                                             <button
                                                 class="btn btn-icon btn-clean btn-sm"
                                                 title="Elimina"
-                                                disabled={!canPerformAction('other.settings.update')}
+                                                disabled={!($userData?.is_superuser && instanceOwner) && !canPerformAction('other.settings.update')}
                                                 on:click={() => confirmDelete(exp)}>
                                                 <TrashSimple size={18} class="text-danger" weight="duotone" />
                                             </button>

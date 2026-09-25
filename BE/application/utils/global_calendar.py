@@ -1,3 +1,4 @@
+from application.impersonation import acting_user
 """Validate global calendar mutations before changing events or reminders."""
 from datetime import datetime, timezone
 from uuid import UUID
@@ -8,7 +9,7 @@ from application.models import User
 
 
 def can_manage_events(request, action):
-    user = getattr(request, 'original_user', request.user)
+    user = acting_user(request)
     return (not user.is_collaborator or user.collaborator_role == User.FULL or
             f'association.events.{action}' in (user.collaborator_permissions or []))
 

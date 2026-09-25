@@ -78,8 +78,8 @@ class AIConfigurationTests(TestCase):
         self.assertEqual(self.client.put(self.endpoint, self.payload(revision=0), format='json').status_code, 409)
         self.assertEqual(self.client.delete(self.endpoint, {'revision': 0}, format='json').status_code, 409)
 
-    def test_owner_only_and_hosted_instances_forbidden(self):
-        unrelated = User.objects.create_user(username='ai-unrelated', is_superuser=True)
+    def test_unrelated_users_and_hosted_instances_forbidden(self):
+        unrelated = User.objects.create_user(username='ai-unrelated')
         for user in (None, unrelated):
             self.client.force_authenticate(user)
             for method in ('get', 'put', 'delete'):

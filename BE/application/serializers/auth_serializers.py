@@ -378,7 +378,7 @@ class UserAuthSerializer(serializers.ModelSerializer):
         - lead_sport_market_channel
         )
         '''
-        if obj.role != User.ASSOCIATION:
+        if obj.is_superuser or obj.role != User.ASSOCIATION:
             return False
         sport_association = obj.sport_association
 
@@ -395,7 +395,7 @@ class UserAuthSerializer(serializers.ModelSerializer):
         return self._get_legacy_requires_welcome(obj, sport_association)
 
     def get_onboarding(self, obj):
-        if obj.role != User.ASSOCIATION:
+        if obj.is_superuser or obj.role != User.ASSOCIATION:
             return None
         # get the associated usersonboarding object
         try:
