@@ -21,7 +21,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from application.services.jwt_token_service import JWTTokenService
-from instance.permissions import is_instance_owner
+from instance.permissions import is_instance_administrator
 from .models import BakneyLogin, BakneyChallenge
 from .protocol import CALLBACK, VERSION, OPAQUE, canonical_uuid, SSOError, decrypt, digest, encrypt, signature, upstream, normalize_origin, browser_cookie
 from .service import (check_binding, consume_nonce, disconnect, local_user, locked_pairing,
@@ -29,12 +29,11 @@ from .service import (check_binding, consume_nonce, disconnect, local_user, lock
 
 
 class PairingAdministrator(BasePermission):
-    message = 'Only the instance owner can administer Bakney pairing.'
+    message = 'Only the instance owner or an administrator can administer Bakney pairing.'
 
     def has_permission(self, request, view):
         actor = getattr(request, 'authenticated_user', getattr(request, 'original_user', request.user))
-        return bool(actor and actor.is_authenticated and actor.is_active and not actor.deleted
-                    and is_instance_owner(actor))
+        return is_instance_administrator(actor)
 
 
 class HandoffThrottle(SimpleRateThrottle):
