@@ -59,6 +59,24 @@ Bakney backend and frontend described in the [integration instructions](../docs/
 That document links the authoritative Bakney contract and describes configuration,
 session semantics and logging requirements for additional proxies.
 
+## Disk cleanup after updates
+
+Successful managed upgrades from either the CLI or the UI run the same automatic
+cleanup after release verification and commit. Cleanup removes obsolete official
+Assozeta images, retaining the current release, the immediately previous release,
+and images referenced by any running or stopped container. Images shared with
+other repositories, unidentified images, volumes, backups, configuration, and
+release recovery snapshots are preserved. Missing recovery metadata causes image
+cleanup to be skipped. Unused Docker build cache older than seven days is also
+pruned; this cache belongs to the Docker daemon and can include other projects.
+
+Cleanup is best effort: failures appear as warnings in the CLI output or private
+update log and do not turn a verified upgrade into a failed update. Failed updates
+do not run cleanup. Host package caches and system journals are not modified by
+the updater, which runs in a container. Legacy custom-image upgrades retain their
+existing behavior. Cleanup needs a release containing this change on both paths;
+editing a checkout does not alter an already deployed updater.
+
 ## System email
 
 Until the owner saves an override, the existing `EMAIL_HOST`, `EMAIL_PORT`,

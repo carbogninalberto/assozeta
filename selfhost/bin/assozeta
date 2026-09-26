@@ -1589,6 +1589,13 @@ upgrade_prod() {
         fi
     fi
     status_prod
+    if [ "$managed_update" = true ]; then
+        # Both UI and CLI upgrades reach this point only after verification and
+        # commit. Keep maintenance failures separate from upgrade success.
+        if ! run_updater_tool /runner/cleanup.py "$SELFHOST_DIR" "$PROD_ENV"; then
+            log "cleanup warning: automatic maintenance failed; upgrade remains successful"
+        fi
+    fi
     log "upgrade complete; previous version was $previous"
 }
 
