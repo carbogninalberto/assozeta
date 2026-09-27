@@ -16,6 +16,8 @@ from django.contrib.auth.hashers import identify_hasher, is_password_usable
 from django.core.files.storage import default_storage
 from django.core.serializers.json import DjangoJSONEncoder
 
+from application.services.json_stream import iter_json_array
+
 logger = logging.getLogger(__name__)
 
 
@@ -361,15 +363,14 @@ class ImportValidator:
                     return result
 
                 try:
-                    users = json.loads(zf.read('data/02_users.json'))
+                    owner_matches = []
+                    with zf.open('data/02_users.json') as stream:
+                        for user_data in iter_json_array(stream):
+                            if str(user_data.get('user_id')) == str(owner_user_id):
+                                owner_matches.append(user_data)
                 except KeyError:
                     result.add_error("Missing required data file: 02_users.json")
                     return result
-
-                owner_matches = [
-                    user_data for user_data in users
-                    if str(user_data.get('user_id')) == str(owner_user_id)
-                ]
                 if len(owner_matches) != 1:
                     result.add_error(
                         f"Expected exactly one User with user_id {owner_user_id} "

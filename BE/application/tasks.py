@@ -1,5 +1,7 @@
 import logging
 import os
+import shutil
+import tempfile
 import time
 from datetime import datetime, timedelta
 import random
@@ -2211,6 +2213,56 @@ Il team {WHITELABEL_NAME}
             logger.warning('Unable to clear active export cache', exc_info=True)
 
 
+UPLOAD_STREAM_CHUNK = 1024 * 1024
+
+
+def _stage_stored_archive(storage_key: str, destination) -> None:
+    """Copy a stored archive to a local file with bounded memory use.
+
+    The S3 backend downloads a whole object into memory the first time it is
+    read, so that backend streams straight into ``destination`` instead.  Only
+    storages that already read incrementally fall back to the chunked copy.
+    """
+    with default_storage.open(storage_key, 'rb') as src:
+        if not _streams_straight_to_file(src, destination):
+            shutil.copyfileobj(src, destination, length=UPLOAD_STREAM_CHUNK)
+
+
+def _streams_straight_to_file(source, destination) -> bool:
+    """Stream an S3 file object to ``destination`` without buffering it.
+
+    Returns False when the storage keeps its own streaming semantics, so the
+    caller can fall back to a plain chunked copy.
+    """
+    try:
+        from storages.backends.s3 import S3File
+    except ImportError:  # pragma: no cover - the S3 backend requires boto3
+        return False
+    if not isinstance(source, S3File):
+        return False
+    seekable = getattr(destination, 'seekable', None)
+    if seekable is None or not seekable():
+        return False
+    storage = source._storage
+    if getattr(storage, 'gzip', False):
+        # S3File transparently decompresses gzip-encoded objects while reading.
+        return False
+    try:
+        from s3transfer.constants import ALLOWED_DOWNLOAD_ARGS
+    except ImportError:  # pragma: no cover - s3transfer ships with boto3
+        return False
+    params = {
+        key: value for key, value in storage.get_object_parameters(source.name).items()
+        if key in ALLOWED_DOWNLOAD_ARGS
+    }
+    source.obj.download_fileobj(
+        destination,
+        ExtraArgs=params,
+        Config=getattr(storage, 'transfer_config', None),
+    )
+    return True
+
+
 @shared_task(name="import_association_data")
 def import_association_data(
     zip_file_path: str,
@@ -2229,8 +2281,6 @@ def import_association_data(
         preserve_uuids: Ignored stale option; source UUIDs are always preserved
         skip_files: Ignored stale option; archive media is always imported
     """
-    import os
-    import tempfile
     from application.services.import_service import (
         AssociationImportService,
         ImportOptions,
@@ -2246,10 +2296,10 @@ def import_association_data(
 
     temp_file = None
     try:
-        # Download file from storage to temp location
+        # Download file from storage to temp location without buffering the
+        # whole archive in memory; uploads can be several GiB.
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
-        with default_storage.open(zip_file_path, 'rb') as src:
-            temp_file.write(src.read())
+        _stage_stored_archive(zip_file_path, temp_file)
         temp_file.close()
 
         # Create import options

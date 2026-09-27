@@ -7,6 +7,7 @@ Bakney instance.
 import json
 import logging
 import os
+import shutil
 import tempfile
 import uuid
 import zipfile
@@ -16,7 +17,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 from django.contrib.auth.hashers import make_password
-from django.core.files.base import ContentFile
+from django.core.files import File
 from django.core.files.storage import default_storage
 import django.db.utils
 from django.db import connection, models, transaction
@@ -93,6 +94,7 @@ from application.models.user_models import (
     User,
     UsersOnboarding,
 )
+from application.services.json_stream import iter_json_array
 from application.services.validators import is_restorable_password_hash
 from communications.models import (
     AutomationWorkflow,
@@ -103,6 +105,9 @@ from communications.models import (
 from docmanager.models import Document
 
 logger = logging.getLogger(__name__)
+
+# Media larger than this is spooled to disk instead of being buffered in RAM.
+MEDIA_SPOOL_LIMIT = 1024 * 1024
 
 
 @dataclass
@@ -674,15 +679,18 @@ class AssociationImportService:
         if not owner_user_id:
             raise ValueError("SportAssociation record is missing user_id for owner selection")
 
+        owner_matches = []
+        user_ids: Set[str] = set()
         try:
-            users = json.loads(zf.read('data/02_users.json'))
+            with zf.open('data/02_users.json') as stream:
+                for user_data in iter_json_array(stream):
+                    user_id = user_data.get('user_id')
+                    if user_id is not None:
+                        user_ids.add(str(user_id))
+                    if str(user_id) == str(owner_user_id):
+                        owner_matches.append(user_data)
         except KeyError as exc:
             raise ValueError("Missing required data file: 02_users.json") from exc
-
-        owner_matches = [
-            user_data for user_data in users
-            if str(user_data.get('user_id')) == str(owner_user_id)
-        ]
         if len(owner_matches) != 1:
             raise ValueError(
                 f"Expected exactly one User with user_id {owner_user_id} "
@@ -694,11 +702,7 @@ class AssociationImportService:
         self.source_association_id = str(association_id)
         self.source_owner_user_id = str(owner_user_id)
         self.source_pks_by_model['SportAssociation'] = {self.source_association_id}
-        self.source_pks_by_model['User'] = {
-            str(user_data.get('user_id'))
-            for user_data in users
-            if user_data.get('user_id') is not None
-        }
+        self.source_pks_by_model['User'] = user_ids
         return association_data, owner_matches[0]
 
     def _build_model_kwargs(
@@ -1090,21 +1094,49 @@ class AssociationImportService:
             logger.warning(f"Skipping {model_name}: file not found")
             return 0
 
-        records = json.loads(zf.read(data_path))
         pk_field = self.PK_FIELDS.get(model_name)
-        if pk_field:
-            self.source_pks_by_model[model_name] = {
-                str(record.get(pk_field))
-                for record in records
-                if record.get(pk_field) is not None
-            }
+        if (
+            model_class is not Folder
+            and pk_field
+            and model_name not in self.source_pks_by_model
+            and self._has_self_reference(model_class)
+        ):
+            # The identity pre-load already supplies User keys.  Any other
+            # self-referencing model that is imported without it needs the
+            # complete source key set before the first record is created, so
+            # scan the file once without materialising its records.
+            with zf.open(data_path) as stream:
+                self.source_pks_by_model[model_name] = {
+                    str(record.get(pk_field))
+                    for record in iter_json_array(stream)
+                    if isinstance(record, dict) and record.get(pk_field) is not None
+                }
+
+        logger.info(f"Processing {model_name} from {filename}")
+        with zf.open(data_path) as stream:
+            if model_class is Folder:
+                return self._import_folders(list(iter_json_array(stream)))
+            count = self._import_records(model_name, model_class, pk_field, iter_json_array(stream))
+
+        self.stats[model_name] = count
+        # Mark this model as imported so FKs to it can be resolved
+        self.imported_models.add(model_name)
+        logger.info(f"Imported {count} {model_name} records")
+        return count
+
+    @staticmethod
+    def _has_self_reference(model_class: Type[models.Model]) -> bool:
+        """Whether the model has a foreign key to itself (e.g. User.connected_user)."""
+        return any(
+            getattr(field, 'concrete', False) and getattr(field, 'many_to_one', False)
+            and field.related_model is model_class
+            for field in model_class._meta.get_fields()
+        )
+
+    def _import_records(self, model_name: str, model_class: Type[models.Model],
+                        pk_field: Optional[str], records) -> int:
+        """Create records from a lazily decoded stream."""
         count = 0
-
-        logger.info(f"Processing {model_name}: {len(records)} records to import")
-
-        if model_class is Folder:
-            return self._import_folders(records)
-
         for record in records:
             old_pk = str(record.get(pk_field)) if pk_field and record.get(pk_field) is not None else None
             try:
@@ -1129,11 +1161,6 @@ class AssociationImportService:
                 logger.error(f"Error importing {model_name} record: {e}", exc_info=True)
                 self.errors.append(f"Failed to import {model_name}: {e}")
                 raise
-
-        self.stats[model_name] = count
-        # Mark this model as imported so FKs to it can be resolved
-        self.imported_models.add(model_name)
-        logger.info(f"Imported {count} {model_name} records")
         return count
 
     def _import_folders(self, records: List[Dict[str, Any]]) -> int:
@@ -1387,8 +1414,7 @@ class AssociationImportService:
             storage_path = f"{timestamp}/{doc.document_id}/{filename}"
 
         if not self.options.dry_run:
-            content = zf.read(archive_name)
-            saved_path = default_storage.save(storage_path, ContentFile(content))
+            saved_path = self._save_archive_member(zf, archive_name, storage_path, filename)
             self.created_storage_keys.append(saved_path)
             doc.filepath = saved_path
             doc.save(update_fields=['filepath'])
@@ -1430,8 +1456,7 @@ class AssociationImportService:
         )
 
         if not self.options.dry_run:
-            content = zf.read(archive_name)
-            saved_path = default_storage.save(storage_path, ContentFile(content))
+            saved_path = self._save_archive_member(zf, archive_name, storage_path, safe_filename)
             self.created_storage_keys.append(saved_path)
             subscription.signature_storage_key = saved_path
             subscription.signature_url = subscription._signature_public_url(saved_path)
@@ -1449,6 +1474,20 @@ class AssociationImportService:
                     exc_info=True,
                 )
         self.created_storage_keys.clear()
+
+    def _save_archive_member(self, zf: zipfile.ZipFile, archive_name: str,
+                             storage_path: str, filename: str) -> str:
+        """Stream one archive member into storage with bounded memory.
+
+        The member is spooled to a temporary file, so large media never has to
+        fit in RAM and storage backends always receive a seekable, thread-safe
+        file object.
+        """
+        with tempfile.SpooledTemporaryFile(max_size=MEDIA_SPOOL_LIMIT) as spool:
+            with zf.open(archive_name) as member:
+                shutil.copyfileobj(member, spool, length=MEDIA_SPOOL_LIMIT)
+            spool.seek(0)
+            return default_storage.save(storage_path, File(spool, name=filename))
 
     def _resolve_deferred_fks(self):
         """
