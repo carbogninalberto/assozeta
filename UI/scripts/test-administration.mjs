@@ -87,6 +87,7 @@ try{
             }
         });
         const page=await context.newPage(),errors=[];
+        const output=path.join(ui,'../quality-reports/administration');fs.mkdirSync(output,{recursive:true});
         page.on('pageerror',error=>{errors.push(error.message);console.error(error.stack);});
         page.on('console',message=>{if(message.type()==='error')console.error(message.text());});
         await page.goto('http://127.0.0.1:5204/');
@@ -100,6 +101,37 @@ try{
                 await page.getByRole('button',{name:'Impersona un utente',exact:true}).click();
                 picker = page.getByRole('dialog',{name:'Impersona utenti',exact:true});
                 await expect(picker).toBeVisible();
+                const dialog = picker.locator('.modal-dialog');
+                await expect(dialog).toHaveClass(/modal-xl/);
+                if(viewport.width >= 1200) {
+                    const dialogBox = await dialog.boundingBox();
+                    assert.ok(dialogBox && dialogBox.width > 900, `impersonation dialog is not widened: ${dialogBox && dialogBox.width}`);
+                }
+                const table = picker.locator('.datatable-table').first();
+                const action = picker.locator('.datatable-body .datatable-row [data-field="actions"] button').first();
+                await expect(action).toBeVisible();
+                for(const position of ['start','end']) {
+                    await table.evaluate((element,scrollPosition) => {
+                        element.scrollLeft = scrollPosition === 'end' ? element.scrollWidth : 0;
+                    }, position);
+                    const tableBox = await table.boundingBox(), actionBox = await action.boundingBox();
+                    assert.ok(tableBox && actionBox, `missing geometry while the action column is at the ${position}`);
+                    assert.ok(actionBox.x >= tableBox.x - 1 && actionBox.x + actionBox.width <= tableBox.x + tableBox.width + 1,
+                        `action column is outside the visible table area at the ${position}`);
+                }
+                const stickyStyle = await picker.locator('.datatable-body .datatable-row [data-field="actions"]').first().evaluate(element => {
+                    const style = getComputedStyle(element);
+                    return {position: style.position, background: style.backgroundColor};
+                });
+                assert.equal(stickyStyle.position, 'sticky', 'action column is not pinned to the right edge');
+                assert.ok(!['rgba(0, 0, 0, 0)', 'transparent'].includes(stickyStyle.background),
+                    `sticky action column has no opaque background: ${stickyStyle.background}`);
+                if(viewport.width < 768) {
+                    await expect(picker.locator('.datatable-body .datatable-row [data-field="first_name"]').first()).toBeHidden();
+                    await expect(picker.locator('.datatable-toggle-detail-button').first()).toBeVisible();
+                }
+                await page.evaluate(() => window.scrollTo(0,0));
+                await page.screenshot({path:path.join(output,`impersonation-modal-${viewport.width}.png`)});
             }
             await picker.getByRole('textbox',{name:'Cerca nella tabella'}).fill(target.username);
             await expect(picker.locator('.datatable-body .datatable-row')).toHaveCount(1);
@@ -121,7 +153,6 @@ try{
             assert.equal(sessions.size,0);
         }
         assert.deepEqual(errors,[]);
-        const output=path.join(ui,'../quality-reports/administration');fs.mkdirSync(output,{recursive:true});
         await page.screenshot({path:path.join(output,`administrator-${viewport.width}.png`),fullPage:true});
         await context.close();
     }

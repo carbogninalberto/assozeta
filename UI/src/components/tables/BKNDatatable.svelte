@@ -684,6 +684,12 @@
         return width <= responsiveBreakpointMaxWidths[breakpoint];
     }
 
+    // Columns can opt into staying visible while the table scrolls sideways,
+    // which keeps row actions reachable inside narrow containers and modals.
+    function isStickyRightColumn(column) {
+        return !column.selector && column.sticky === 'right';
+    }
+
     function getDetailVisibilityClass(column) {
         return `datatable-detail-visible-below-${getResponsiveBreakpoint(column)}`;
     }
@@ -713,6 +719,7 @@
 
         if (column.selector) classes.push('datatable-cell-check');
         if (isActionColumn(column)) classes.push('datatable-cell-actions');
+        if (isStickyRightColumn(column)) classes.push('datatable-cell-sticky-right');
         if (align === 'right') classes.push('datatable-cell-right');
         else if (align === 'center') classes.push('datatable-cell-center');
         else classes.push('datatable-cell-left');
@@ -847,6 +854,7 @@
     $: tableLayout = computeTableLayout(columns, hasResponsiveDetails, viewportWidth, dataSet, tableWidth);
     $: columnWidths = tableLayout.columnWidths;
     $: rowMinWidth = tableLayout.rowMinWidth;
+    $: hasHorizontalOverflow = tableWidth > 0 && rowMinWidth > tableWidth + 1;
 
     let rerenderKey = 0;
     let previousViewportBreakpoint = null;
@@ -1070,7 +1078,7 @@
     </div>
 </div>
 <div
-    class="datatable datatable-default datatable-bordered datatable-head-custom datatable-scroll datatable-loaded {errorMessage ? 'datatable-error' : ''} {loading ? 'datatable-loading' : ''}"
+    class="datatable datatable-default datatable-bordered datatable-head-custom datatable-scroll datatable-loaded {errorMessage ? 'datatable-error' : ''} {loading ? 'datatable-loading' : ''} {hasHorizontalOverflow ? 'datatable-has-overflow' : ''}"
     {id}>
     {#if errorMessage && !loading}
         <div class="datatable-table" bind:clientWidth={tableWidth} tabindex="0" aria-label="Tabella dati scorrevole orizzontalmente">
@@ -1450,6 +1458,24 @@
         justify-content: flex-end;
         gap: 0.25rem;
         margin-left: auto;
+    }
+
+    /* Optional column flag: keep the cell visible while the table scrolls. */
+    .datatable.datatable-default > .datatable-table > .datatable-head .datatable-row > .datatable-cell.datatable-cell-sticky-right,
+    .datatable.datatable-default > .datatable-table > .datatable-body .datatable-row > .datatable-cell.datatable-cell-sticky-right {
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background-color: var(--bg-surface, #ffffff);
+    }
+
+    .datatable.datatable-default.datatable-has-overflow > .datatable-table > .datatable-head .datatable-row > .datatable-cell.datatable-cell-sticky-right,
+    .datatable.datatable-default.datatable-has-overflow > .datatable-table > .datatable-body .datatable-row > .datatable-cell.datatable-cell-sticky-right {
+        box-shadow: -0.5rem 0 0.75rem -0.75rem rgba(0, 0, 0, 0.4);
+    }
+
+    .datatable.datatable-default > .datatable-table > .datatable-body .datatable-row:hover > .datatable-cell.datatable-cell-sticky-right {
+        background-color: var(--bg-surface-secondary, #f3f6f9);
     }
 
     .datatable.datatable-default > .datatable-table > .datatable-head .datatable-row > .datatable-cell.datatable-cell-overflow-visible > span,

@@ -17,7 +17,7 @@
         {field:'role',title:'Tipo di account',width:170,minWidth:155,responsive:{hidden:'md'},template:row => `<span class="badge badge-light-primary">${labels[row.role] || ''}</span>`},
         {field:'association.name',title:'Associazione',width:190,minWidth:140,responsive:{hidden:'xl'},sortable:false,template:row => escape(row.association?.name || 'Account personale')},
         {field:'last_login',title:'Ultimo accesso',width:140,minWidth:130,responsive:{hidden:'xxl'},template:row => row.last_login ? escape(new Date(row.last_login).toLocaleDateString('it-IT')) : 'Mai'},
-        {field:'actions',title:'Azioni',width:80,autoHide:false,sortable:false,fireClick:false,component:ImpersonationActions},
+        {field:'actions',title:'Azioni',width:80,autoHide:false,sortable:false,fireClick:false,sticky:'right',component:ImpersonationActions},
     ];
     const mapUsers = response => (response.users || []).map(user => ({...user,onSelect:select}));
     async function select(user) {

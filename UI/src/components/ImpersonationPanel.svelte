@@ -55,7 +55,7 @@
             </div>
         {/if}
     </section>
-    <BasicModal bind:show={showPicker} id="admin-impersonation-modal" showTitle title="Impersona utenti" modalSize="lg" showFooter={false}>
+    <BasicModal bind:show={showPicker} id="admin-impersonation-modal" showTitle title="Impersona utenti" modalSize="xl" showFooter={false}>
         {#if showPicker}<Picker embedded />{/if}
     </BasicModal>
 {/if}
