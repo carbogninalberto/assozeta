@@ -37,6 +37,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
+        self.association_scope = None
         self.user_group = None
         self.broadcast_groups = []
         self.staff_board_association = None
