@@ -344,6 +344,10 @@
     function clearSelection() {
         selectedRows = new Set();
         expandedRows = new Set();
+        // Also reset bound outputs when called during reactive cell preparation,
+        // after their derived statements have already run in this update.
+        selectedCounter = 0;
+        visibleMultiaction = false;
     }
 
     async function loadRows() {
@@ -351,32 +355,22 @@
         clearSelection();
         errorMessage = '';
 
-        if (localData) {
-            allRows = [...localData];
-            applyClientRows();
-            await tick();
-            loadFilters();
-            return;
-        }
-
-        if (!url) {
-            allRows = [];
-            dataSet = [];
-            totalItems = 0;
-            totalPages = 1;
-            await tick();
-            loadFilters();
-            return;
-        }
-
         loading = true;
         try {
-            const {response, error} = await apiFetch(buildReadUrl(), {method: 'GET'});
-            if (generation !== loadGeneration) return;
-            if (error) throw new Error(response?.message || 'Impossibile caricare i dati.');
+            if (localData) {
+                allRows = [...localData];
+            } else if (!url) {
+                allRows = [];
+                totalItems = 0;
+                totalPages = 1;
+            } else {
+                const {response, error} = await apiFetch(buildReadUrl(), {method: 'GET'});
+                if (generation !== loadGeneration) return;
+                if (error) throw new Error(response?.message || 'Impossibile caricare i dati.');
 
-            allRows = normalizeRows(response);
-            if (serverPaging && serverFiltering) readPagination(response);
+                allRows = normalizeRows(response);
+                if (serverPaging && serverFiltering) readPagination(response);
+            }
             applyClientRows();
         } catch (error) {
             if (generation !== loadGeneration) return;
@@ -423,11 +417,26 @@
         }
     }
 
-    function renderCell(column, row) {
-        if (column.selector) return '';
-        if (typeof column.template === 'function') return column.template(row);
-        const value = column.field ? getFieldValue(row, column.field) : '';
-        return value === undefined || value === null ? '' : String(value);
+    // Templates run before DOM patching, once per row/column, including hidden
+    // responsive cells. A failed page must never escape into Svelte's flush.
+    function prepareCells(rows, cols) {
+        try {
+            return rows.map(row => new Map(cols.map(column => {
+                if (column.selector || column.component) return [column, ''];
+                const value = typeof column.template === 'function'
+                    ? column.template(row)
+                    : column.field ? getFieldValue(row, column.field) : '';
+                return [column, value === undefined || value === null ? '' : String(value)];
+            })));
+        } catch (error) {
+            console.error('BKNDatatable: Unable to render rows', error);
+            allRows = [];
+            dataSet = [];
+            clearSelection();
+            loading = false;
+            errorMessage = 'Impossibile visualizzare la tabella. Riprova.';
+            return [];
+        }
     }
 
     function clampNumber(value, min, max) {
@@ -875,6 +884,10 @@
         previousViewportBreakpoint = currentBreakpoint;
     }
 
+    // Column updates and breakpoint changes can alter rendered cell output.
+    // Selection/expansion and measured widths reuse the prepared HTML.
+    $: preparedCells = (rerenderKey, prepareCells(dataSet, columns));
+
     function createDatatableController() {
         return {
             get dataSet() {
@@ -1083,7 +1096,8 @@
     {#if errorMessage && !loading}
         <div class="datatable-table" bind:clientWidth={tableWidth} tabindex="0" aria-label="Tabella dati scorrevole orizzontalmente">
             <div class="datatable-body">
-                <div class="alert alert-light-danger font-weight-bolder m-0">{errorMessage}</div>
+                <div class="alert alert-light-danger font-weight-bolder m-0" role="alert">{errorMessage}</div>
+                <button type="button" class="btn btn-light-primary mt-2" on:click={loadRows}>Riprova</button>
             </div>
         </div>
     {:else}
@@ -1187,7 +1201,7 @@
                                             {#if column.component}
                                                 <svelte:component this={column.component} {row} {datatable} />
                                             {:else}
-                                                {@html renderCell(column, row)}
+                                                {@html preparedCells[rowIndex]?.get(column) ?? ''}
                                             {/if}
                                         {/if}
                                     </span>
@@ -1218,7 +1232,7 @@
                                                     {#if detailColumn.component}
                                                         <svelte:component this={detailColumn.component} {row} {datatable} />
                                                     {:else}
-                                                        {@html renderCell(detailColumn, row)}
+                                                        {@html preparedCells[rowIndex]?.get(detailColumn) ?? ''}
                                                     {/if}
                                                 </span>
                                             </div>

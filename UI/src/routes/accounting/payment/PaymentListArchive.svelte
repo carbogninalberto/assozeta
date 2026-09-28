@@ -1,4 +1,5 @@
 <script>
+    import {renderPaymentIdentity} from './paymentIdentity.js';
     import FilterSelect from 'components/filters/FilterSelect.svelte';
     import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { X } from 'lucide-svelte';
@@ -105,36 +106,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             width: 130,
             minWidth: '100%',
             autoHide: false,
-            template: function (row) {
-                let content = '';
-                if (!row.subscription_id) {
-                    if (!row.associate) {
-                        if (!row.associate && !row.supplier) {
-                            content = `<b>${row.description}</b>`;
-                        } else if (row.supplier) {
-                            content = `<b>${(
-                                row.supplier.name +
-                                ' (' +
-                                row.supplier.tax_code +
-                                ')'
-                            ).toUpperCase()}</b>`;
-                        } else {
-                            content = `<b>${(row.user.first_name + ' ' + row.user.last_name).toUpperCase()}</b>`;
-                        }
-                    } else {
-                        content = `<b>${(row.associate.first_name + ' ' + row.associate.last_name).toUpperCase()}<br>
-                                <span class="font-size-xs text-dark-65">${row.description || ''}</span></b>`;
-                    }
-                } else {
-                    content = `<a href="/#/members/list/detail/${row.subscription_id}/info"><b>${(
-                        row.associate.first_name +
-                        ' ' +
-                        row.associate.last_name
-                    ).toUpperCase()}</b></a>`;
-                }
-
-                return `<div class="font-size-sm" style="line-height:1.2;">${content}</div>`;
-            },
+            template: row => renderPaymentIdentity(row, {archive: true}),
         },
         {
             field: 'paid',

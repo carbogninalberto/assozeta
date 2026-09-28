@@ -1,4 +1,5 @@
 <script>
+    import {renderPaymentIdentity} from './paymentIdentity.js';
     import FilterSelect from 'components/filters/FilterSelect.svelte';
     import DropdownCaret from 'components/dropdowns/DropdownCaret.svelte';
 	import { CheckCircle as LucideCheckCircle, X as LucideX } from 'lucide-svelte';
@@ -231,47 +232,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
             fireClick: true,
             minWidth: '100%',
             autoHide: false,
-            template: function (row) {
-                let content = '';
-                if (!row.subscription_id) {
-                    if (!row.associate) {
-                        if (!row.associate && !row.supplier) {
-                            content = `<b>${row.description}</b>`;
-                        } else if (row.supplier) {
-                            content = `<b>${(
-                                row.supplier.name +
-                                ' (' +
-                                row.supplier.tax_code +
-                                ')'
-                            ).toUpperCase()}</b>`;
-                            if (row.description)
-                                content += `<br><span class="font-size-xs text-dark">${row.description || ''}</span>`;
-                        } else {
-                            content = `<b>${(row.user.first_name + ' ' + row.user.last_name).toUpperCase()}</b>`;
-                            if (row.description)
-                                content += `<br><span class="font-size-xs text-dark">${row.description || ''}</span>`;
-                        }
-                    } else {
-                        content = `<b class="text-primary">${(
-                            row.associate.first_name +
-                            ' ' +
-                            row.associate.last_name
-                        ).toUpperCase()}</b>`;
-                        if (row.description)
-                            content += `<br><span class="font-size-xs text-dark">${row.description || ''}</span>`;
-                    }
-                } else {
-                    content = `<b class="text-primary">${(
-                        row.associate.first_name +
-                        ' ' +
-                        row.associate.last_name
-                    ).toUpperCase()}</b>`;
-                    if (row.description)
-                        content += `<br><span class="font-size-xs text-dark">${row.description || ''}</span>`;
-                }
-
-                return `<div class="font-size-sm" style="line-height:1.2;">${content}</div>`;
-            },
+            template: row => renderPaymentIdentity(row, {archive: false}),
         },
         {
             field: 'paid',
