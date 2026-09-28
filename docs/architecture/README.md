@@ -16,6 +16,8 @@ Use this directory to understand system behavior from a technical and operations
   Current route and permission coverage numbers.
 - [frontend-backend-contract.md](./frontend-backend-contract.md)
   Browser navigation, HTTP, WebSocket, async, and data-boundary contract.
+- [golang-backend-migration.md](./golang-backend-migration.md)
+  Django-to-Go assessment and migration specification based on Kuayle's pinned architecture, with compatibility requirements and acceptance gates.
 
 Run order for architecture docs:
 
