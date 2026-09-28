@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.clickjacking import xframe_options_exempt
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -97,7 +97,8 @@ def retrieve_document(request, uid):
     logger.info('retrieve_document {}'.format(uid))
     token = request.GET.get("token", None)
     download_token = request.GET.get("download_token", None)
-    request.user = _get_authenticated_user(request, query_token=token)
+    if not getattr(request, 'impersonating', False):
+        request.user = _get_authenticated_user(request, query_token=token)
 
     export_archive = None
     if download_token:
@@ -149,6 +150,11 @@ def retrieve_document(request, uid):
                     {'error': 'Not authorized to access this export.'},
                     status.HTTP_403_FORBIDDEN,
                 )
+
+    if getattr(request, 'impersonation_association', None):
+        from application.impersonation_scope import visible_documents
+        if not visible_documents(request).filter(pk=document.pk).exists():
+            raise PermissionDenied('Documento non disponibile per questa associazione.')
 
     printing_service = PrintingService()
 
@@ -202,6 +208,8 @@ def medical_certificate_document(request):
         usr = request.user if request.user.is_authenticated else None
         medical_certificate_doc = MedicalCertificate.objects.create(document=document, user=usr)
         medical_certificate_doc.save()
+        from application.impersonation_scope import remember_medical_upload
+        remember_medical_upload(request, medical_certificate_doc.pk)
         return Response({
             'msg': 'success!',
             'uid': medical_certificate_doc.medical_id,

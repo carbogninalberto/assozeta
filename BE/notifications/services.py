@@ -75,7 +75,7 @@ class NotificationService:
         cache.delete(cache_key)
 
     @classmethod
-    def send_notification(cls, user, messages, broadcast=None):
+    def send_notification(cls, user, messages, broadcast=None, association_id=None):
         """
         Send notification: store in Redis AND push via WebSocket.
 
@@ -92,6 +92,10 @@ class NotificationService:
         Returns:
             bool: Success status
         """
+        if association_id is None and user.role in (user.ASSOCIATION, user.COLLABORATOR):
+            association_id = user.sport_association.pk
+        if association_id is not None:
+            messages = [{**message, 'association_id': str(association_id)} for message in messages]
         manager = cls.get_manager()
 
         # Default to user-specific broadcast
@@ -142,7 +146,7 @@ class NotificationService:
             for msg in messages:
                 msg_text = msg.get('msg', '')
                 for notif in all_notifications:
-                    if notif.get('msg') == msg_text:
+                    if notif.get('msg') == msg_text and notif.get('association_id') == msg.get('association_id'):
                         # Send to user-specific notification group
                         async_to_sync(channel_layer.group_send)(
                             f"notifications_user_{user.user_id}",

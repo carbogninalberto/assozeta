@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
@@ -52,10 +53,10 @@ def calendar_update(request, uid):
 
     if request.method == 'DELETE':
         logger.info("calendar_update -> delete -> user: {}".format(request.user.user_id))
-        sport_association = SportAssociation.objects.get(user=request.user)
-        course = Course.objects.filter(sport_association=sport_association, course_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        course = scoped_queryset(request, Course.objects).filter(sport_association=sport_association, course_id=uid).first()
         with transaction.atomic():
-            course_attendance_registry = AttendanceRegistry.objects.select_for_update().filter(
+            course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).select_for_update().filter(
                 course=course,
             ).first()
 
@@ -120,7 +121,7 @@ def calendar_update(request, uid):
             ]
             deleted_event_id_strings = {str(event_id) for event_id in deleted_event_ids}
 
-            attendance_days = AttendanceDay.objects.filter(
+            attendance_days = scoped_queryset(request, AttendanceDay.objects).filter(
                 attendance_registry=course_attendance_registry,
             )
             attendance_days.filter(associated_event__in=deleted_event_ids).delete()
@@ -161,13 +162,13 @@ def calendar_update(request, uid):
     if data['status'] not in [AttendanceRegistry.DRAFT, AttendanceRegistry.PUBLISHED]:
         raise ValidationError("Status not valid.")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(sport_association=sport_association, course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(sport_association=sport_association, course_id=uid).first()
 
     if course is None:
         raise NotFound("Course not found.")
 
-    course_attendance_registry = AttendanceRegistry.objects.filter(course=course).first()
+    course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(course=course).first()
 
     events_ids = [event['event_id'] for event in data['events']]
     reminders = Reminders.objects.filter(event_id__in=events_ids)
@@ -300,7 +301,7 @@ def calendar_update(request, uid):
                 ).save()
             else:
                 # update event in db
-                attendance_day = AttendanceDay.objects.filter(
+                attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
                     attendance_registry=course_attendance_registry,
                     date=course_attendance_registry.events[event_from_registry]['start']).first()
 
@@ -336,12 +337,12 @@ def calendar(request, uid):
 
     is_valid_uuid(uid)
 
-    course = Course.objects.filter(course_id=uid).first()
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
 
     if course is None:
         raise NotFound("Course not found.")
 
-    course_attendance_registry = AttendanceRegistry.objects.filter(course=course).first()
+    course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(course=course).first()
     google_sync_enabled = False
     if request.user.is_authenticated:
         if request.user.is_collaborator is False:
@@ -396,18 +397,18 @@ def attendees_update(request, uid, attendance_day_uid):
     if 'attendees' not in data.keys() or len(data.keys()) != 1:
         raise ValidationError("Missing or wrong events data.")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(sport_association=sport_association, course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(sport_association=sport_association, course_id=uid).first()
 
     if course is None:
         raise NotFound("Course not found.")
 
-    course_attendance_registry = AttendanceRegistry.objects.filter(course=course).first()
+    course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(course=course).first()
 
     if course_attendance_registry is None:
         raise NotFound("Course Attendance Registry not found.")
 
-    event_day = AttendanceDay.objects.filter(attendance_registry=course_attendance_registry,
+    event_day = scoped_queryset(request, AttendanceDay.objects).filter(attendance_registry=course_attendance_registry,
                                              attendance_day_id=attendance_day_uid).first()
     if event_day is None:
         raise NotFound("Course Event day not found.")
@@ -420,10 +421,10 @@ def attendees_update(request, uid, attendance_day_uid):
     for attendee in event_day.attendees:
         if attendee not in data['attendees']:
             # getting course subscription
-            course_subscription = CourseSubscription.objects.all_objects().filter(
+            course_subscription = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(
                 course_subscription_id=attendee['course_subscription_id']).first()
             # getting the carnets of the course subscription
-            carnets = CarnetSubscription.objects.filter(
+            carnets = scoped_queryset(request, CarnetSubscription.objects).filter(
                 Q(course_subscription=course_subscription) |
                 Q(course_subscription__isnull=True),
                 subscription=course_subscription.subscription,
@@ -458,7 +459,7 @@ def attendees_update(request, uid, attendance_day_uid):
             continue
 
         # get course subscription
-        course_subscription = CourseSubscription.objects.filter(
+        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=attendee['course_subscription_id']).first()
         # check if there is a carnet
         if course_subscription:
@@ -467,7 +468,7 @@ def attendees_update(request, uid, attendance_day_uid):
             #     course_subscription=course_subscription,
             #     meta__contains={"lessons_left": {"$gt": 0}}
             # ).first()
-            carnets = CarnetSubscription.objects.filter(
+            carnets = scoped_queryset(request, CarnetSubscription.objects).filter(
                 Q(course_subscription=course_subscription) |
                 Q(course_subscription__isnull=True),
                 subscription=course_subscription.subscription,
@@ -526,8 +527,8 @@ def attendees(request, uid):
     is_valid_uuid(uid)
 
     logger.info("attendees -> init -> user: {}".format(request.user.user_id))
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(sport_association=sport_association, course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(sport_association=sport_association, course_id=uid).first()
     data = {
         'events': [],
     }
@@ -535,14 +536,14 @@ def attendees(request, uid):
     if course is None:
         raise NotFound("Course not found.")
 
-    course_attendance_registry = AttendanceRegistry.objects.filter(course=course).first()
+    course_attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(course=course).first()
 
     if course_attendance_registry is None:
         return Response({'data': data}, status=status.HTTP_200_OK)
 
     map_unlinked_attendance(course_attendance_registry)
 
-    events = AttendanceDay.objects.filter(attendance_registry=course_attendance_registry).select_related('attendance_registry', 'attendance_registry__course').order_by('date')
+    events = scoped_queryset(request, AttendanceDay.objects).filter(attendance_registry=course_attendance_registry).select_related('attendance_registry', 'attendance_registry__course').order_by('date')
 
 
     for event in events:
@@ -552,7 +553,7 @@ def attendees(request, uid):
         # get expected absences and resolve associate full name
         if event.expected_absences is not None:
             for attendee in event.expected_absences:
-                courseSubscription = CourseSubscription.objects.filter(
+                courseSubscription = scoped_queryset(request, CourseSubscription.objects).filter(
                     course_subscription_id=attendee['course_subscription_id']).first()
                 if courseSubscription is not None:
                     attendee['associate_name'] = courseSubscription.subscription.associate.get_full_name()
@@ -616,15 +617,15 @@ def subscription_attendance(request, uid):
 
     logger.info("subscription_attendance -> init -> user: {}".format(request.user.user_id))
     if request.user.role == User.ATHLETE:
-        subscription = Subscription.objects.filter(user=request.user, subscription_id=uid).first()
+        subscription = scoped_queryset(request, Subscription.objects).filter(user=request.user, subscription_id=uid).first()
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscription = Subscription.objects.filter(sport_association=sport_association, subscription_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
     # get course subscriptions for the current subscription
     if selected_course_id == 'all':
-        course_subscriptions = CourseSubscription.objects.all_objects().filter(subscription=subscription).select_related('subscription__associate')
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(subscription=subscription).select_related('subscription__associate')
     else:
-        course_subscriptions = CourseSubscription.objects.all_objects().filter(subscription=subscription, course__course_id=selected_course_id).select_related('subscription__associate')
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(subscription=subscription, course__course_id=selected_course_id).select_related('subscription__associate')
     # get courses from course subscriptions
     courses = []
     courses_detailed = []
@@ -637,9 +638,9 @@ def subscription_attendance(request, uid):
             })
 
     # get attendance registry for each course subscription
-    attendance_registries = AttendanceRegistry.objects.filter(course_id__in=courses)
+    attendance_registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
     # get attendance days for each attendance registry
-    attendance_days_full = AttendanceDay.objects.filter(attendance_registry__in=attendance_registries).order_by('-date')
+    attendance_days_full = scoped_queryset(request, AttendanceDay.objects).filter(attendance_registry__in=attendance_registries).order_by('-date')
     attendance_days = []
 
     course_subscriptions_list = [str(x) for x in course_subscriptions.values_list('course_subscription_id', flat=True)]
@@ -693,13 +694,13 @@ def subscription_calendar(request, uid):
 
     logger.info("subscription_calendar -> init -> user: {}".format(request.user.user_id))
     if request.user.role == User.ATHLETE:
-        subscription = Subscription.objects.filter(user=request.user, subscription_id=uid).first()
+        subscription = scoped_queryset(request, Subscription.objects).filter(user=request.user, subscription_id=uid).first()
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscription = Subscription.objects.filter(sport_association=sport_association, subscription_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscription = scoped_queryset(request, Subscription.objects).filter(sport_association=sport_association, subscription_id=uid).first()
     # get course subscriptions for the current subscription
-    courses = CourseSubscription.objects.filter(subscription=subscription).values_list('course__course_id', flat=True)
-    registries = AttendanceRegistry.objects.filter(course_id__in=courses)
+    courses = scoped_queryset(request, CourseSubscription.objects).filter(subscription=subscription).values_list('course__course_id', flat=True)
+    registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
 
     events = []
     for registry in registries:
@@ -743,9 +744,9 @@ def full_events_calendar(request):
     if end is not None:
         end = event_datetime(end)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     # get course subscriptions for the current subscription
-    courses = Course.objects.filter(sport_association=sport_association).values_list('course_id', flat=True)
+    courses = scoped_queryset(request, Course.objects).filter(sport_association=sport_association).values_list('course_id', flat=True)
 
     courses_colors = get_course_colors(sport_association.sport_association_id)
 
@@ -755,7 +756,7 @@ def full_events_calendar(request):
         instructor_id = str(instructor.instructor_id) if instructor is not None else None
         if instructor_id is not None:
             is_instructor = True
-            attentance_registries = AttendanceRegistry.objects.filter(events__iregex=instructor_id)
+            attentance_registries = scoped_queryset(request, AttendanceRegistry.objects).filter(events__iregex=instructor_id)
             courses = attentance_registries.filter(
                 course_id__in=courses
             ).values_list('course_id', flat=True)
@@ -763,8 +764,8 @@ def full_events_calendar(request):
 
     for idx, course in enumerate(courses):
         courses_colors[course] = ColorPalette.colors[idx] if idx < len(ColorPalette.colors) else ColorPalette.colors[0]
-    registries = AttendanceRegistry.objects.filter(course_id__in=courses)
-    attendace_days = AttendanceDay.objects.filter(attendance_registry__in=registries).select_related('attendance_registry', 'attendance_registry__course')
+    registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
+    attendace_days = scoped_queryset(request, AttendanceDay.objects).filter(attendance_registry__in=registries).select_related('attendance_registry', 'attendance_registry__course')
 
     events = []
     for registry in registries:
@@ -834,7 +835,7 @@ def full_events_calendar(request):
 def full_events_calendar_update(request):
     # Lock the association as well as existing rows so concurrent first writes
     # cannot create duplicate calendars or lose an unrelated event.
-    sport_association = SportAssociation.objects.select_for_update().get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).select_for_update().get(user=request.user)
     global_calendar_events, _ = GlobalCalendarEvents.objects.get_or_create(sport_association=sport_association)
     previous_ids = {event['event_id'] for event in global_calendar_events.events or []}
     global_calendar_events.events = mutate_events(request, global_calendar_events.events or [])
@@ -926,12 +927,12 @@ def full_events_calendar_export(request):
         return Response({'error: not allowed.'}, status.HTTP_403_FORBIDDEN)
 
     # get course subscriptions for the current subscription
-    courses = Course.objects.filter(sport_association=request.user.sport_association).values_list('course_id', flat=True)
+    courses = scoped_queryset(request, Course.objects).filter(sport_association=request.user.sport_association).values_list('course_id', flat=True)
     # dict with random hex color for each course
     if course_id is not None:
         courses = courses.filter(course_id=course_id)
 
-    registries = AttendanceRegistry.objects.filter(course_id__in=courses)
+    registries = scoped_queryset(request, AttendanceRegistry.objects).filter(course_id__in=courses)
 
     cal = Calendar()
     for registry in registries:

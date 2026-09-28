@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
@@ -56,7 +57,7 @@ def profile_update(request):
     user.save()
 
     if user_data.initial_data['sport_association'] is not None and user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.get(user=user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         if user_data.initial_data['sport_association']['denomination'] is not None:
             sport_association.denomination = user_data.initial_data['sport_association']['denomination']
 
@@ -156,7 +157,7 @@ def profile_update(request):
         content['user_data']['avatar_image'] = compress_base64(content['user_data']['avatar_image'])
 
     if user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.get(user=user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
         # compress logo image
         if content['user_data']['sport_association']['logo'] is not None:
@@ -176,7 +177,7 @@ def profile_update_subscription_template(request):
     user = request.user
 
     if sport_association_data.initial_data is not None:
-        sport_association = SportAssociation.objects.get(user=user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         # update additional_sections
         if sport_association_data.initial_data['additional_sections'] is not None:
             # loop through additional_sections and remove if json field name or text is empty or if there are different
@@ -297,7 +298,7 @@ def profile_update_subscription_template(request):
         content['user_data']['avatar_image'] = compress_base64(content['user_data']['avatar_image'])
 
     if user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.get(user=user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
         # compress logo image
         if content['user_data']['sport_association']['logo'] is not None:
@@ -319,16 +320,16 @@ def profile_associates_course(request, uid):
     is_valid_uuid(uid)
 
     user = request.user
-    sport_association = Course.objects.filter(course_id=uid).prefetch_related('sport_association').first().sport_association
-    associates = Associate.objects.filter(user__in=[user, sport_association.user])
-    subscribed_associates = CourseSubscription.objects.filter(course_id=uid)\
+    sport_association = scoped_queryset(request, Course.objects).filter(course_id=uid).prefetch_related('sport_association').first().sport_association
+    associates = scoped_queryset(request, Associate.objects).filter(user__in=[user, sport_association.user])
+    subscribed_associates = scoped_queryset(request, CourseSubscription.objects).filter(course_id=uid)\
         .prefetch_related('subscription', 'subscription__associate').filter(subscription__associate__in=associates)\
         .values_list('subscription__associate__associate_id', flat=True)
 
     associates_subscribed = []
     associates_unsubscribed = []
 
-    subscriptions = Subscription.objects.filter(
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         user=user,
         associate__in=associates,
         sport_association=sport_association
@@ -377,7 +378,7 @@ def profile_associates_sport_association(request, uid):
     is_valid_uuid(uid)
 
     user = request.user
-    associates = Associate.objects.filter(
+    associates = scoped_queryset(request, Associate.objects).filter(
         user=user,
         disabled=False
     )
@@ -387,7 +388,7 @@ def profile_associates_sport_association(request, uid):
         starting_day=user.balance_sheet_start_day,
         starting_month=user.balance_sheet_start_month
     )
-    sport_subscriptions = Subscription.objects.filter(
+    sport_subscriptions = scoped_queryset(request, Subscription.objects).filter(
         sport_association_id=uid,
         associate__in=associates,
         creation_date__gte=date_from,
@@ -464,7 +465,7 @@ def profile_update_password(request):
         content['user_data']['avatar_image'] = compress_base64(content['user_data']['avatar_image'])
 
     if user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.get(user=user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
         # compress logo image
         if content['user_data']['sport_association']['logo'] is not None:
@@ -626,7 +627,7 @@ def sport_association_list(request):
     # check if superuser
     if not request.user.is_superuser:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    sport_associations = SportAssociation.objects.all().iterator(chunk_size=100)
+    sport_associations = scoped_queryset(request, SportAssociation.objects).all().iterator(chunk_size=100)
     serializer = SportAssociationToolSerializer(sport_associations, many=True)
     return Response(serializer.data)
 
@@ -642,7 +643,7 @@ def sport_association_admin_update(request, uid):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     is_valid_uuid(uid)
-    sport_association = SportAssociation.objects.filter(sport_association_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(sport_association_id=uid).first()
 
     if sport_association is None:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -694,9 +695,9 @@ def profile_info(request):
         content['user_data']['avatar_image'] = compress_base64(content['user_data']['avatar_image'])
     if user.role == User.ASSOCIATION or user.role == User.COLLABORATOR:
         if user.role == User.ASSOCIATION:
-            sport_association = SportAssociation.objects.get(user=user)
+            sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         else:
-            sport_association = SportAssociation.objects.get(user=user.connected_user)
+            sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user.connected_user)
         content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
         # need to compress the logo (which is a base64 string) to save bandwidth and improve performance
         if content['user_data']['sport_association']['logo'] is not None:
@@ -748,7 +749,7 @@ def testimonials_create(request):
     )
     testimonial.save()
 
-    sport_association = SportAssociation.objects.filter(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user)
     if sport_association is None:
         return Response({'msg': 'sport association not found.'}, status=status.HTTP_404_NOT_FOUND)
     else:
@@ -787,7 +788,7 @@ def testimonials_update(request):
             # check if sport association id is valid
             is_valid_uuid(sport_association_id)
 
-            sport_association = SportAssociation.objects.filter(
+            sport_association = scoped_queryset(request, SportAssociation.objects).filter(
                 sport_association_id=sport_association_id).first()
             if sport_association is None:
                 return Response(status=status.HTTP_404_NOT_FOUND)
@@ -822,7 +823,7 @@ def export_all_data(request):
     subscriptions_sheet = wb.create_sheet(title='Iscrizioni')
 
     # perform raw query to get all the subscriptions
-    subscriptions = Subscription.objects.filter(
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         sport_association=user.sport_association
     ).select_related('associate', 'medical').prefetch_related('associate__tutors')
     # add all columns to the sheet dynamically, also of the associate and associate__tutors that is ManyToMany
@@ -928,7 +929,7 @@ def export_all_data(request):
     payments_sheet = wb.create_sheet(title='Pagamenti')
 
     # perform raw query to get all the payments
-    payments = Payment.objects.filter(
+    payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=user.sport_association
     ).select_related('associate', 'payment_category', 'invoice', 'supplier', 'instructor', 'custom_accounts')
 
@@ -995,11 +996,11 @@ def export_all_data(request):
     def get_course(obj):
         if obj.subject == Payment.COURSE:
             try:
-                sub = CourseSubscription.objects.get(payment=obj)
+                sub = scoped_queryset(request, CourseSubscription.objects).get(payment=obj)
                 return sub.course.title
             except CourseSubscription.DoesNotExist:
                 try:
-                    sub = CourseSubscriptionInstallment.objects.get(payment=obj)
+                    sub = scoped_queryset(request, CourseSubscriptionInstallment.objects).get(payment=obj)
                     return sub.course_subscription.course.title
                 except CourseSubscriptionInstallment.DoesNotExist:
                     if obj.course:

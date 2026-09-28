@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 """
 @ copyright: Bakney SRL
 """
@@ -59,7 +60,7 @@ def course_add(request):
             'subscriptions' in data.keys() and \
             len(data.keys()) == 2:
 
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         new_course_data = CourseAddSerializer(data=data['new_course'])
         subscriptions = data['subscriptions']
 
@@ -94,7 +95,7 @@ def course_add(request):
                         course.locations.add(course_location)
 
             for subscription in subscriptions:
-                sub = Subscription.objects.get(subscription_id=subscription)
+                sub = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription)
                 course_subscription = CourseSubscription.objects.create(
                     course=course,
                     subscription=sub,
@@ -173,7 +174,7 @@ def course_update(request, uid):
     # getting body
     data = request.data
 
-    course = Course.objects.filter(course_id=uid).first()
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course is None:
         logger.error("Course not found for update", extra={
             'user_id': str(request.user.user_id),
@@ -401,7 +402,7 @@ def course_tags_assign(request, tag_id, course_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    course = Course.objects.filter(
+    course = scoped_queryset(request, Course.objects).filter(
         course_id=course_id,
         sport_association=request.user.sport_association
     ).first()
@@ -449,7 +450,7 @@ def course_tags_unassign(request, tag_id, course_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    course = Course.objects.filter(
+    course = scoped_queryset(request, Course.objects).filter(
         course_id=course_id,
         sport_association=request.user.sport_association
     ).first()
@@ -483,7 +484,7 @@ def course_list(request):
             raise PermissionDenied("Missing sport_association_id query param.")
         is_valid_uuid(sport_association_id)
 
-        courses = Course.objects.filter(
+        courses = scoped_queryset(request, Course.objects).filter(
             sport_association_id=sport_association_id,
             status_flag=Course.ACTIVE
         ).select_related('sport_association').prefetch_related(
@@ -504,22 +505,22 @@ def course_list(request):
     all = request.GET.get('all', None)
     optimized = request.GET.get('optimized', None)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # Optimize with select_related and prefetch_related
-    courses = Course.objects.select_related('sport_association').prefetch_related(
+    courses = scoped_queryset(request, Course.objects).select_related('sport_association').prefetch_related(
         Prefetch(
             'coursesubscription_set',
-            queryset=CourseSubscription.objects.select_related(
+            queryset=scoped_queryset(request, CourseSubscription.objects).select_related(
                 'subscription__associate'
             )
         )
     ).filter(sport_association=sport_association).order_by('-creation_date')
 
     if subscription_id:
-        sub = Subscription.objects.get(subscription_id=subscription_id)
+        sub = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
         # Cache course subscriptions query
-        course_subs = list(CourseSubscription.objects.filter(subscription=sub))
+        course_subs = list(scoped_queryset(request, CourseSubscription.objects).filter(subscription=sub))
         courses = courses.exclude(course_id__in=[c.course_id for c in course_subs])
 
     if general_search:
@@ -582,7 +583,7 @@ def course_list(request):
     athletes_by_course = defaultdict(list)
     course_ids = [course['course_id'] for course in courses]
 
-    all_athletes = CourseSubscription.objects.filter(
+    all_athletes = scoped_queryset(request, CourseSubscription.objects).filter(
         course_id__in=course_ids
     ).select_related('subscription__associate')
 
@@ -628,8 +629,8 @@ def course_enable(request, uid):
     is_valid_uuid(uid)
 
     logger.info("course_enable")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course is None:
         return Response({'msg': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
     if course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
@@ -653,8 +654,8 @@ def course_disable(request, uid):
     is_valid_uuid(uid)
 
     logger.info("course_disable")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course is None:
         return Response({'msg': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
     if course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
@@ -677,8 +678,8 @@ def course_pin(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course is None:
         return Response({'msg': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
     if course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
@@ -700,8 +701,8 @@ def course_delete(request, uid):
     is_valid_uuid(uid)
 
     logger.info("course_delete")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course is None:
         return Response({'msg': 'Course not found.'}, status=status.HTTP_404_NOT_FOUND)
     if course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
@@ -721,7 +722,7 @@ def course_overview(request, uid):
     is_valid_uuid(uid)
 
     logger.info("course_disable")
-    course = Course.objects.select_related(
+    course = scoped_queryset(request, Course.objects).select_related(
         'sport_association'
     ).prefetch_related(
         'tags', 'locations'
@@ -748,13 +749,13 @@ def course_overview_delete(request, uid, uid_subscription):
     is_valid_uuid(uid_subscription)
 
     logger.info("course_overview_delete")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    course = Course.objects.filter(course_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     if course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
         raise PermissionDenied("User not allowed.")
 
-    subscription = Subscription.objects.filter(subscription_id=uid_subscription).first()
-    course_sub = CourseSubscription.objects.filter(
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid_subscription).first()
+    course_sub = scoped_queryset(request, CourseSubscription.objects).filter(
         course=course,
         subscription=subscription
     ).first()
@@ -764,7 +765,7 @@ def course_overview_delete(request, uid, uid_subscription):
     if 'installments' in data:
         installments = data['installments']
         for installment in installments:
-            inst_to_del = CourseSubscriptionInstallment.objects.filter(
+            inst_to_del = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
                 course_subscription=course_sub,
                 course_subscription_installment_id=installment
             ).first()
@@ -781,7 +782,7 @@ def course_overview_delete(request, uid, uid_subscription):
                 inst_to_del.delete()
     else:
         # delete all the unpaid installments and payments
-        installments = CourseSubscriptionInstallment.objects.filter(
+        installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
             course_subscription=course_sub,
             paid=False,
         )
@@ -821,9 +822,9 @@ def course_overview_add(request, uid, uid_subscription):
     data = request.data
 
     logger.info("course_overview_add")
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
-    course = Course.objects.filter(course_id=uid).first()
-    sub = Subscription.objects.filter(subscription_id=uid_subscription).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
+    sub = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid_subscription).first()
     is_athlete = request.user.role == User.ATHLETE
     if sport_association is not None and \
             course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
@@ -844,7 +845,7 @@ def course_installment_make_payment(request, uid):
     is_valid_uuid(uid)
 
     # get the course installment
-    installment = CourseSubscriptionInstallment.objects.filter(
+    installment = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
         course_subscription_installment_id=uid
     ).first()
 
@@ -894,13 +895,13 @@ def course_overview_update(request, uid, uid_subscription):
     data = request.data
 
     logger.info("course_overview_update")
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
-    course = Course.objects.filter(course_id=uid).first()
-    course_subscription = CourseSubscription.objects.filter(
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
+    course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
         subscription__subscription_id=uid_subscription,
         course__course_id=uid
     ).first()
-    sub = Subscription.objects.filter(subscription_id=uid_subscription).first()
+    sub = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid_subscription).first()
     if course_subscription is None:  # pragma: no cover
         raise Exception("Error in updating user.")
 
@@ -919,7 +920,7 @@ def course_overview_update(request, uid, uid_subscription):
         # if the course has multi payments
         if course_subscription.multi_payments:
             # delete all upcoming unpaid installments and payments
-            installments = CourseSubscriptionInstallment.objects.filter(
+            installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
                 course_subscription=course_subscription
             ).filter(
                 Q(payment__paid=False) | Q(payment__isnull=True),
@@ -992,7 +993,7 @@ def course_overview_update(request, uid, uid_subscription):
         # check if the course has multi payments
         if course_subscription.multi_payments:
             # delete all upcoming unpaid installments and payments
-            installments = CourseSubscriptionInstallment.objects.filter(
+            installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
                 course_subscription=course_subscription,
             ).filter(
                 Q(payment__paid=False) | Q(payment__isnull=True),
@@ -1055,7 +1056,7 @@ class CourseLocationViewSet(viewsets.ModelViewSet):
 
     def delete(self, request, pk=None):
         instance = self.get_object()
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
         if instance.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
@@ -1065,7 +1066,7 @@ class CourseLocationViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None):
         instance = self.get_object()
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
         if instance.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
@@ -1222,7 +1223,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
         data = request.data
         course_subscription_ids = data.get('course_subscription_ids', [])
 
-        CourseSubscription.objects.filter(
+        scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id__in=course_subscription_ids,
             course__sport_association=request.user.sport_association
         ).delete()
@@ -1248,7 +1249,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
         """
         instance = self.get_object()
         # Serialize edits with the renewal task, then read the latest billing period.
-        instance = CourseSubscription.objects.select_for_update().get(pk=instance.pk)
+        instance = scoped_queryset(request, CourseSubscription.objects).select_for_update().get(pk=instance.pk)
         old_billed_from = instance.billed_from
         old_billed_until = instance.billed_until
         serializer = self.get_serializer(instance, data=request.data, partial=True)

@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 """
 @ copyright: Bakney SRL
 """
@@ -56,9 +57,9 @@ def invoice_list(request):
     invoice_id = request.GET.get('query[invoice_id]', None)
 
     if invoice_id:
-        invoice = Invoice.objects.filter(invoice_id=invoice_id).first()
+        invoice = scoped_queryset(request, Invoice.objects).filter(invoice_id=invoice_id).first()
         if invoice is not None:
-            payment = Payment.objects.filter(invoice=invoice).first()
+            payment = scoped_queryset(request, Payment.objects).filter(invoice=invoice).first()
             if payment is not None:
                 return Response({
                     'data': {
@@ -79,14 +80,14 @@ def invoice_list(request):
     try:
         sport_association = request.user.sportassociation
     except SportAssociation.DoesNotExist:
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     
     # Combine filters and add select_related/prefetch_related
     filters = Q(sport_association=sport_association, archived=archived) & (
         Q(payment__isnull=False) | Q(meta__isnull=False)
     )
     
-    invoices = Invoice.objects.filter(filters).select_related(
+    invoices = scoped_queryset(request, Invoice.objects).filter(filters).select_related(
         'sport_association',
         'sport_association__user',
         'document_pdf',
@@ -94,7 +95,7 @@ def invoice_list(request):
         'group'
     ).prefetch_related(
         Prefetch('payment_set',
-            queryset=Payment.objects.select_related(
+            queryset=scoped_queryset(request, Payment.objects).select_related(
                 'invoice', 
                 'associate',
                 'supplier',
@@ -234,9 +235,9 @@ def invoice_update(request, uid):
         except Exception as e:
             payment_date = None
 
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     if sport_association is not None:
-        invoice = Invoice.objects.filter(
+        invoice = scoped_queryset(request, Invoice.objects).filter(
             invoice_id=uid,
             sport_association=sport_association,
             archived=False
@@ -246,12 +247,12 @@ def invoice_update(request, uid):
             invoice.cancelled = bool(cancelled)
             if 'selected_tutor' in data.keys():
                 # get the selected tutor
-                selected_tutor = Associate.objects.filter(associate_id=data['selected_tutor']).first()
+                selected_tutor = scoped_queryset(request, Associate.objects).filter(associate_id=data['selected_tutor']).first()
                 if selected_tutor is not None:
                     invoice.selected_tutor = selected_tutor
             else:
                 invoice.selected_tutor = None
-            payment = Payment.objects.filter(invoice=invoice).first()
+            payment = scoped_queryset(request, Payment.objects).filter(invoice=invoice).first()
             if payment is not None:
                 if payment_date:
                     payment.payment_date = payment_date
@@ -276,10 +277,10 @@ def invoice_delete(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     if sport_association is not None: #\
             #and sport_association.user.temporary_invoice_deletion:
-        invoice = Invoice.objects.filter(
+        invoice = scoped_queryset(request, Invoice.objects).filter(
             invoice_id=uid,
             sport_association=sport_association,
         ).first()
@@ -287,7 +288,7 @@ def invoice_delete(request, uid):
         # \
         # and invoice.creation_date < invoice.creation_date + datetime.timedelta(days=7)
         if invoice is not None:
-            payment = Payment.objects.filter(invoice=invoice).first()
+            payment = scoped_queryset(request, Payment.objects).filter(invoice=invoice).first()
             if payment is not None:
                 payment.invoice = None
                 payment.paid = False #if payment.subject is not Payment.OTHER else True
@@ -310,9 +311,9 @@ def invoice_send(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    invoice = Invoice.objects.filter(invoice_id=uid).first()
-    invoice.payment = Payment.objects.filter(invoice=invoice).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    invoice = scoped_queryset(request, Invoice.objects).filter(invoice_id=uid).first()
+    invoice.payment = scoped_queryset(request, Payment.objects).filter(invoice=invoice).first()
 
     if invoice.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
@@ -378,10 +379,10 @@ def invoice_bulk_delete(request):
     if 'invoice_ids' not in data.keys():
         raise Exception("missing required field")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # get all invoices
-    Invoice.objects.filter(
+    scoped_queryset(request, Invoice.objects).filter(
         sport_association=sport_association,
         invoice_id__in=data['invoice_ids']
     ).delete()
@@ -399,10 +400,10 @@ def invoice_bulk_archive(request):
     if 'invoice_ids' not in data.keys():
         raise Exception("missing required field")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # get all invoices
-    invoices = Invoice.objects.filter(
+    invoices = scoped_queryset(request, Invoice.objects).filter(
         sport_association=sport_association,
         invoice_id__in=data['invoice_ids']
     )
@@ -410,7 +411,7 @@ def invoice_bulk_archive(request):
     for invoice in invoices:
         invoice.archived = True
 
-    Invoice.objects.bulk_update(invoices, ['archived'])
+    scoped_queryset(request, Invoice.objects).bulk_update(invoices, ['archived'])
 
     return Response({'message': 'All Invoices archived'}, status=status.HTTP_200_OK)
 
@@ -423,13 +424,13 @@ def invoice_list_archived(request):
     if is_athlete:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    invoices = Invoice.objects.filter(
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    invoices = scoped_queryset(request, Invoice.objects).filter(
         sport_association=sport_association,
         archived=True
     ).select_related('document_pdf').prefetch_related(
         Prefetch('payment_set',
-            queryset=Payment.objects.select_related('associate', 'invoice')
+            queryset=scoped_queryset(request, Payment.objects).select_related('associate', 'invoice')
         )
     ).order_by('-creation_date')
 
@@ -455,13 +456,13 @@ def invoice_list_export(request):
     if User.ATHLETE == request.user.role:
         raise Exception("Cannot export info for athlete")
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        invoices = Invoice.objects.filter(
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        invoices = scoped_queryset(request, Invoice.objects).filter(
             sport_association=sport_association,
             archived=archived
         ).select_related('document_pdf').prefetch_related(
             Prefetch('payment_set',
-                queryset=Payment.objects.select_related('associate')
+                queryset=scoped_queryset(request, Payment.objects).select_related('associate')
             )
         ).order_by('creation_date')
 
@@ -562,7 +563,7 @@ def invoice_list_export(request):
 @permission_classes([IsAuthenticated])
 def invoice_suppliers_stats(request):
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     invoices = InvoiceSuppliers.objects.filter(sport_association=sport_association).order_by('-expire_date')
 
     invoices_total = 0
@@ -603,7 +604,7 @@ def invoice_suppliers_list(request):
     sort_type = request.GET.get('sort[sort]', None)
 
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     invoices = InvoiceSuppliers.objects.filter(sport_association=sport_association)\
         .select_related('supplier').order_by('-expire_date')
 
@@ -724,7 +725,7 @@ def invoice_suppliers_update(request, uid):
     # get number from body
     data = request.data
 
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     if sport_association is not None:
         invoice = InvoiceSuppliers.objects.filter(
             invoice_supplier_id=uid,
@@ -750,7 +751,7 @@ def invoice_suppliers_update(request, uid):
 def invoice_suppliers_delete(request, uid):
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     if sport_association is not None:
         invoice = InvoiceSuppliers.objects.filter(
             invoice_supplier_id=uid,
@@ -768,7 +769,7 @@ def invoice_suppliers_delete(request, uid):
 @permission_classes([IsAuthenticated])
 def invoice_customers_stats(request):
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     invoices = CustomerInvoice.objects.filter(
         sport_association=sport_association).order_by('-payment_expiry_date')
 
@@ -886,7 +887,7 @@ def invoice_customers_update(request, uid):
     is_valid_uuid(uid)
     # we only update the paid and transmitted fields
     data = request.data
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     if sport_association is not None:
         invoice = CustomerInvoice.objects.filter(
             customer_invoice_id=uid,
@@ -907,7 +908,7 @@ def invoice_customers_update(request, uid):
 @permission_classes([IsAuthenticated])
 def invoice_customers_delete(request, uid):
     is_valid_uuid(uid)
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     if sport_association is not None:
         invoice = CustomerInvoice.objects.filter(
             customer_invoice_id=uid,

@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 import logging
 from datetime import datetime
 
@@ -45,7 +46,7 @@ def document_subscription(request, uid):
     try:
         # template = os.path.join(BASE_DIR, 'templates/document/application/subscription.html')
         logger.info('document_subscription {}'.format(uid))
-        subscription = Subscription.objects.get(subscription_id=uid)
+        subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
         filename = '[{}] Modulo di Iscrizione {}.pdf'.format(
             subscription.sport_association.denomination,
             subscription.associate.get_full_name())
@@ -97,7 +98,7 @@ def document_subscription_preview(request):
 
 
     if sport_association_id is not None:
-        sport_association = SportAssociation.objects.get(sport_association_id=sport_association_id)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=sport_association_id)
         user = sport_association.user
     else:
         user = request.user
@@ -193,7 +194,7 @@ def document_subscription_view(request, uid):
     logger.info('medical_certificate_document')
 
     logger.info('document_subscription_view {}'.format(uid))
-    subscription = Subscription.objects.get(subscription_id=uid)
+    subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
     payment_data = None
     if subscription.payment and subscription.payment.meta:
         try:
@@ -286,8 +287,8 @@ def document_invoice(request, uid):
     try:
         logger.info('document_invoice {}'.format(uid))
         try:
-            invoice = Invoice.objects.get(invoice_id=uid)
-            invoice.payment = Payment.objects.get(invoice=invoice)
+            invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+            invoice.payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
         except Invoice.DoesNotExist:
             return Response({'exception': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
         filename = '[{}] Ricevuta {}.pdf'.format(
@@ -304,7 +305,7 @@ def document_invoice(request, uid):
             invoice.document_pdf = document
             invoice.save()
             # SEND EMAIL TO ASSOCIATE and USER if available
-            p = Payment.objects.get(invoice=invoice)
+            p = scoped_queryset(request, Payment.objects).get(invoice=invoice)
             subject = f"Ricevuta di pagamento {invoice.payment.payment_date.date().strftime('%d/%m/%y')}"
             message = f"Gentile {p.associate.get_full_name()},\n" \
                       f"abbiamo il piacere di inviarle la ricevuta di pagamento di {str(invoice.payment.amount).replace(',', ' ').replace('.', ',')} € del {invoice.payment.payment_date.date().strftime('%d/%m/%y')}.\n\n" \
@@ -340,8 +341,8 @@ def document_invoice_view(request, uid):
     logger.info('medical_certificate_document')
 
     logger.info('document_invoice_view {}'.format(uid))
-    invoice = Invoice.objects.get(invoice_id=uid)
-    payment = Payment.objects.get(invoice=invoice)
+    invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+    payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
     total_amount = invoice.activity_fee + invoice.membership_fee
     user = User.objects.filter(user_id=invoice.sport_association.user_id).first()
     enumerate_invoices = user.enumerate_invoices
@@ -597,7 +598,7 @@ def document_einvoice_view(request, uid):
 def document_compensation(request, uid):
     try:
         try:
-            payment = Payment.objects.get(payment_id=uid)
+            payment = scoped_queryset(request, Payment.objects).get(payment_id=uid)
         except Payment.DoesNotExist:
             return Response({'exception': 'Compensation not found'}, status=status.HTTP_404_NOT_FOUND)
         filename = '[{}] Compenso per {} del {}.pdf'.format(
@@ -627,7 +628,7 @@ def document_compensation(request, uid):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def document_compensation_view(request, uid):
-    payment = Payment.objects.get(payment_id=uid)
+    payment = scoped_queryset(request, Payment.objects).get(payment_id=uid)
 
     user_language = 'it'
     translation.activate(user_language)
@@ -704,7 +705,7 @@ def document_template(request, uid):
             if 'subscription' in additional_data:
                 query += f'subscription_id={additional_data["subscription"]}&'
                 try:
-                    subscription = Subscription.objects.get(subscription_id=additional_data["subscription"])
+                    subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=additional_data["subscription"])
                     SubscriptionFile.objects.create(document=document, subscription=subscription)
                 except Exception as e:
                     pass
@@ -743,7 +744,7 @@ def document_template_view(request, uid):
     # get subscription
     courses_list = []
     try:
-        subscription = Subscription.objects.get(subscription_id=subscription_id)
+        subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
         courses_list = subscription.get_courses_list()
         context_objects['associate'] = subscription.associate
         context_objects['main_tutor'] = subscription.associate.get_main_tutor()

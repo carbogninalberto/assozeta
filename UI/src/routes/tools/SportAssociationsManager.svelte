@@ -1,13 +1,14 @@
 <script>
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
     import {getApiHost} from 'store/instanceStore.js';
-    import {startImpersonation} from 'utils/impersonation.js';
+    import {startImpersonation, impersonationEndpoint, readImpersonation} from 'utils/impersonation.js';
     import ImpersonationActions from './ImpersonationActions.svelte';
     export let embedded = false;
     let datatable;
     let selectedRole = '';
     let switching = false;
     let error = '';
+    const associationActor = readImpersonation()?.actor_role === 'association' || (!readImpersonation() && !JSON.parse(localStorage.getItem('userData') || '{}').is_superuser);
     const labels = {association: 'Associazione sportiva', athlete: 'Utente', collaborator: 'Collaboratore'};
     const escape = value => String(value || '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
     const columns = [
@@ -36,7 +37,7 @@
                 <div class="card-header flex-wrap border-0 p-0">
                     <div class="card-title">
                         <h1 class="card-label font-size-h2">Impersona utenti
-                            <span class="d-block text-muted pt-2 font-size-sm">Associazioni, utenti e collaboratori: scegli l’account con cui operare.</span>
+                            <span class="d-block text-muted pt-2 font-size-sm">{associationActor ? 'Scegli un utente o collaboratore della tua associazione.' : 'Associazioni, utenti e collaboratori: scegli l’account con cui operare.'}</span>
                         </h1>
                     </div>
                 </div>
@@ -44,14 +45,14 @@
             <div class="card-body p-0">
             {#if error}<p role="alert" class="alert alert-danger">{error}</p>{/if}
             {#if switching}<p role="status" class="text-primary">Cambio utente in corso…</p>{/if}
-            <BKNDatatable bind:datatable {columns} url={`${getApiHost()}/administration/impersonation/users`}
+            <BKNDatatable bind:datatable {columns} url={`${impersonationEndpoint()}/users`}
                 mapFunction={mapUsers} pageSize={25} pageSizeSelect={[10,25,50,100]} showDividerFilter={false} wrapText={false} serverPaging serverFiltering serverSorting>
                 <div slot="filter-bar" class="account-type-filter d-flex align-items-center">
                     <label class="mb-0 mr-3" for={embedded ? 'impersonation-modal-role' : 'impersonation-page-role'}>Tipo di account</label>
                     <select id={embedded ? 'impersonation-modal-role' : 'impersonation-page-role'} class="form-control form-control-sm"
                         bind:value={selectedRole} on:change={() => datatable?.search(selectedRole, 'role')} disabled={switching}>
                         <option value="">Tutti</option>
-                        {#each Object.entries(labels) as [value,label]}<option {value}>{label}</option>{/each}
+                        {#each Object.entries(labels).filter(([value]) => !associationActor || value !== 'association') as [value,label]}<option {value}>{label}</option>{/each}
                     </select>
                 </div>
             </BKNDatatable>

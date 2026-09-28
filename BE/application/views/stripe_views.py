@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 """
 @ copyright: Bakney SRL
 """
@@ -95,7 +96,7 @@ def stripe_multiple_pay(request):
             # check if first element is a string (payment ID) or object
             if isinstance(payments[0], str):
                 # get all payments by IDs
-                payments = Payment.objects.filter(payment_id__in=payments)
+                payments = scoped_queryset(request, Payment.objects).filter(payment_id__in=payments)
                 # serialize payments
                 payments = PaymentSerializer(payments, many=True).data
             # if it's already a list of objects, keep as is
@@ -108,7 +109,7 @@ def stripe_multiple_pay(request):
 
         # TODO: this needs to be refactored for multiple associations payments
         # get the checkout info from the sport association
-        sport_association = SportAssociation.objects.filter(
+        sport_association = scoped_queryset(request, SportAssociation.objects).filter(
             pk=payments[0]['sport_association']
         )
         if sport_association.exists():
@@ -124,7 +125,7 @@ def stripe_multiple_pay(request):
             stripe_payments_methods = ['card', 'sepa_debit']
             for payment in payments_groups[sport_association_key]:
                 # retrieve the payment
-                payment = Payment.objects.get(payment_id=payment['payment_id'])
+                payment = scoped_queryset(request, Payment.objects).get(payment_id=payment['payment_id'])
                 if not online_payments_available(payment.sport_association):
                     return Response(
                         {'error': 'Online payments are not configured.'},
@@ -145,7 +146,7 @@ def stripe_multiple_pay(request):
                         mark_payment_as_paid(request._request, payment, response=False)
                         continue
             # retrieve the unpaid payments
-            unpaid_payments = Payment.objects.filter(
+            unpaid_payments = scoped_queryset(request, Payment.objects).filter(
                 payment_id__in=[p['payment_id'] for p in payments_groups[sport_association_key]],
                 paid=False
             )
@@ -223,7 +224,7 @@ def stripe_pay(request, payment_id):
     payment_intent_q = request.GET.get('payment_intent_id', None)
 
     if payment_intent_q:
-        payment = Payment.objects.filter(payment_intent_id=payment_intent_q).first()
+        payment = scoped_queryset(request, Payment.objects).filter(payment_intent_id=payment_intent_q).first()
         if payment is not None:
             if not online_payments_available(payment.sport_association):
                 return Response(
@@ -243,7 +244,7 @@ def stripe_pay(request, payment_id):
                 # loop through the metadata keys
                 for key in payment_intent.metadata.keys():
                     # key is the payment id
-                    payment = Payment.objects.filter(payment_id=key).first()
+                    payment = scoped_queryset(request, Payment.objects).filter(payment_id=key).first()
                     if payment is not None and payment.paid is False:
                         # mark already paid transaction on the db
                         mark_payment_as_paid(request._request, payment, response=False)
@@ -257,7 +258,7 @@ def stripe_pay(request, payment_id):
     if not is_valid_uuid(payment_id):
         raise ValidationError('not valid uuid')
     else:
-        payment = Payment.objects.filter(payment_id=payment_id).first()
+        payment = scoped_queryset(request, Payment.objects).filter(payment_id=payment_id).first()
         if payment is None:
             raise NotFound('payment not found')
         if not online_payments_available(payment.sport_association):
@@ -339,7 +340,7 @@ def mark_payment_as_paid(request, payment, response=True):
 
     with transaction.atomic():
         # select the payment for safe update
-        payment = Payment.objects.select_for_update().get(payment_id=payment.payment_id)
+        payment = scoped_queryset(request, Payment.objects).select_for_update().get(payment_id=payment.payment_id)
 
         # check if there are suppliers invoices to pay
         suppliers_invoice = InvoiceSuppliers.objects.filter(
@@ -479,7 +480,7 @@ def mark_payment_as_paid(request, payment, response=True):
                         "msg": notification_description,
                     }
                 ]
-                NotificationService.send_notification(payment.user, messages)
+                NotificationService.send_notification(payment.user, messages, association_id=payment.sport_association_id)
 
     data = {
         "msg": "payment mark as payed.",
@@ -524,7 +525,7 @@ def stripe_webhook(request):
     elif event['type'] == 'charge.succeeded':
         try:
             # get payment from payment_intent
-            payments = Payment.objects.filter(payment_intent_id=event['data']['object']['payment_intent'])
+            payments = scoped_queryset(request, Payment.objects).filter(payment_intent_id=event['data']['object']['payment_intent'])
             if not payments.exists():
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             for payment in payments:

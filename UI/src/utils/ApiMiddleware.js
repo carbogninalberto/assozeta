@@ -1,4 +1,4 @@
-import {readImpersonation, contextKey} from './impersonation.js';
+import {readImpersonation, contextKey, recoverInvalidImpersonation} from './impersonation.js';
 import {sessionToken} from '../store/stores.js';
 import {get} from 'svelte/store';
 
@@ -145,6 +145,13 @@ window.fetch = async (...args) => {
             throw new DOMException('Identity changed during request', 'AbortError');
         }
 
+        if (response.status === 403 && identitySnapshot) {
+            const error = await response.clone().json().catch(() => ({}));
+            if (recoverInvalidImpersonation(error, identitySnapshot)) {
+                throw new DOMException('Impersonation expired', 'AbortError');
+            }
+        }
+
         // Operations after the response is received
 
         // Return the response object
@@ -184,6 +191,7 @@ window.fetch = async (...args) => {
                 return;
             }
 
+            const identitySnapshot = localStorage.getItem(contextKey);
             let USER_ID = null;
             if (localStorage.getItem('switched_superuser') == 'true' && localStorage.getItem('USER_ID') != null) {
                 USER_ID = localStorage.getItem('USER_ID');
@@ -200,7 +208,12 @@ window.fetch = async (...args) => {
             // Attach event listeners to handle the response
             xhr.addEventListener('load', function () {
                 // Operations after the response is received
-                // You can work with `xhr.response` here if needed
+                if (xhr.status === 403 && identitySnapshot) {
+                    try {
+                        const error = xhr.responseType === 'json' ? xhr.response : JSON.parse(xhr.responseText);
+                        recoverInvalidImpersonation(error, identitySnapshot);
+                    } catch { /* Non-JSON failures are handled by the caller. */ }
+                }
             });
 
             xhr.addEventListener('error', function () {

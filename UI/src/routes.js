@@ -1,3 +1,4 @@
+import {canImpersonate} from './utils/impersonation.js';
 // Components - using lazy loading with dynamic imports
 import {get} from 'svelte/store';
 import {wrap} from 'svelte-spa-router/wrap';
@@ -1370,7 +1371,7 @@ export default {
         // Condition is logged and admin
         conditions: [
             () => {
-                if (JSON.parse(localStorage.getItem('userData') || '{}')?.is_superuser) {
+                if (isLogged() && canImpersonate(JSON.parse(localStorage.getItem('userData') || '{}'))) {
                     return true;
                 }
             },

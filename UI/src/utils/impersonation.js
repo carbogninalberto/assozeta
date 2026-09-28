@@ -13,8 +13,19 @@ export function readImpersonation() {
     }
 }
 
+export function impersonationEndpoint() {
+    const context = readImpersonation();
+    const user = JSON.parse(localStorage.getItem('userData') || '{}');
+    const actorRole = context?.actor_role || (context || user.is_superuser ? 'administrator' : 'association');
+    return `${getApiHost()}/${actorRole === 'administrator' ? 'administration' : 'association'}/impersonation`;
+}
+
+export function canImpersonate(user) {
+    return Boolean(readImpersonation() || user?.is_superuser || user?.can_impersonate === true);
+}
+
 async function changeSession(method, target) {
-    const response = await fetch(`${getApiHost()}/administration/impersonation`, {
+    const response = await fetch(impersonationEndpoint(), {
         method,
         headers: {'Content-Type': 'application/json'},
         ...(target ? {body: JSON.stringify({target_user_id: target.user_id})} : {}),
@@ -26,7 +37,13 @@ async function changeSession(method, target) {
     return response.status === 204 ? null : response.json();
 }
 
-function replaceIdentity(context) {
+export function recoverInvalidImpersonation(error, identitySnapshot) {
+    if (!error?.impersonation_invalid || !identitySnapshot || localStorage.getItem(contextKey) !== identitySnapshot) return false;
+    replaceIdentity(null);
+    return true;
+}
+
+export function replaceIdentity(context) {
     changingIdentity = true;
     resetIdentityStores();
     sessionStorage.clear();

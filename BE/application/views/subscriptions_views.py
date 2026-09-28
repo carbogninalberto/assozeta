@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset, isolate_medical_certificate
 """
 @ copyright: Bakney SRL
 """
@@ -196,7 +197,7 @@ def subscription_renew(request):
     logger.info("Subscription renewal started", extra={'user_id': str(request.user.user_id)})
     data = request.data
     if request.user.role != User.ASSOCIATION:
-        request.user = SportAssociation.objects.get(sport_association_id=data['sport_association']['sport_association_id']).user
+        request.user = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id']).user
 
     created_storage_keys = []
     try:
@@ -209,7 +210,7 @@ def subscription_renew(request):
             created_storage_keys.extend(getattr(fresh_sub, '_created_storage_keys', []))
 
             logger.info("Subscription created successfully", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
-            payments = Payment.objects.filter(
+            payments = scoped_queryset(request, Payment.objects).filter(
                 associate__first_name=fresh_sub.associate.first_name,
                 associate__last_name=fresh_sub.associate.last_name,
                 associate__tax_code__iexact=fresh_sub.associate.tax_code,
@@ -240,7 +241,7 @@ def subscription_renew(request):
             if 'courses' in data and len(data['courses']) > 0:
                 for c in data['courses']:
                     u: User = request.user
-                    course = Course.objects.filter(course_id=c['value']).first()
+                    course = scoped_queryset(request, Course.objects).filter(course_id=c['value']).first()
                     add_course_to_subscription(course, fresh_sub, u.sport_association, data=None, is_athlete=False)
 
         logger.info("Subscription renewal completed", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
@@ -335,11 +336,11 @@ def _send_athlete_subscription_email(subscription):
 
 def _handle_quick_subscription(data, request):
     """Handle quick subscription for existing associate."""
-    sport_association = SportAssociation.objects.get(sport_association_id=data['sport_association'])
-    associate = Associate.objects.get(associate_id=data['associate'])
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association'])
+    associate = scoped_queryset(request, Associate.objects).get(associate_id=data['associate'])
 
     with transaction.atomic():
-        sport_association = SportAssociation.objects.select_for_update().get(
+        sport_association = scoped_queryset(request, SportAssociation.objects).select_for_update().get(
             sport_association_id=sport_association.sport_association_id
         )
         # Create subscription using service
@@ -398,7 +399,7 @@ def _prepare_subscription_request(request, data, mode):
     is_quick_sub = mode == 'only_associate'
 
     if request.user.is_authenticated and request.user.role == User.ASSOCIATION and is_quick_sub:
-        data['sport_association'] = SportAssociation.objects.filter(user=request.user).first().sport_association_id
+        data['sport_association'] = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first().sport_association_id
 
     return is_athlete_request, is_quick_sub
 
@@ -456,7 +457,7 @@ def subscription_transfer(request, uid):
     # check if the subscription exists and if the user is the owner of the subscription
     # and check if there is a pending transfer
     try:
-        subscription = Subscription.objects.get(subscription_id=uid)
+        subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
     except Subscription.DoesNotExist:
         return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -535,7 +536,7 @@ def subscription_transfer(request, uid):
             }
         ]
 
-        NotificationService.send_notification(recipient, messages)
+        NotificationService.send_notification(recipient, messages, association_id=subscription.sport_association_id)
 
     serializer = SubscriptionTransferCreateSerializer(data=data)
     if serializer.is_valid():
@@ -590,7 +591,7 @@ def subscription_sign(request):
         if not is_valid_uuid(data['subscription_id']):
             raise ValidationError('not valid payload')
         else:
-            subscription = Subscription.objects.filter(subscription_id=data['subscription_id'])[0]
+            subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=data['subscription_id'])[0]
 
         signature = SignatureRequestSerializer(data=data['signature'])
 
@@ -602,7 +603,7 @@ def subscription_sign(request):
             new_storage_key = None
             try:
                 with transaction.atomic():
-                    subscription = Subscription.objects.select_for_update().get(
+                    subscription = scoped_queryset(request, Subscription.objects).select_for_update().get(
                         subscription_id=subscription.subscription_id
                     )
                     old_storage_key = subscription.signature_storage_key
@@ -694,7 +695,7 @@ def subscription_list_all(request):
         # return all the subscriptions active and not except the newest one not active
         # if there is a newer one with the same associate full name and tax_code exclude it
         if request.user.role == User.ATHLETE:
-            subscriptions = Subscription.objects.filter(
+            subscriptions = scoped_queryset(request, Subscription.objects).filter(
                 sport_association__sport_association_id=sport_association,
                 user=request.user,
                 status_flag__in=[Subscription.NOT_SIGNED, Subscription.PENDING, Subscription.ACCEPTED, Subscription.RESIGNED]
@@ -703,8 +704,8 @@ def subscription_list_all(request):
                 'sport_association'
             )
         else:
-            sport_association = SportAssociation.objects.get(user=request.user)
-            subscriptions = Subscription.objects.filter(
+            sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+            subscriptions = scoped_queryset(request, Subscription.objects).filter(
                 sport_association=sport_association,
                 archived=False
             ).select_related(
@@ -744,7 +745,7 @@ def subscription_list_all(request):
     if request.user.role == User.ATHLETE:
         if sport_association is None:
             return Response({'msg': 'not allowed'}, status=status.HTTP_403_FORBIDDEN)
-        subscriptions = Subscription.objects.filter(
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(
             user=request.user,
             sport_association__sport_association_id=sport_association
         ).select_related(
@@ -752,8 +753,8 @@ def subscription_list_all(request):
             'sport_association'
         ).order_by('-creation_date')
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscriptions = Subscription.objects.filter(
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
             archived=False
         ).select_related(
@@ -781,7 +782,7 @@ def subscription_list_all(request):
             )
 
     if course_id is not None:
-        course_subscriptions = CourseSubscription.objects.filter(
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             course_id=course_id
         ).values_list('subscription_id', flat=True)
 
@@ -1050,7 +1051,7 @@ def subscription_list(request):
 
     # Handle field extraction endpoint
     if params['field']:
-        subscriptions = Subscription.objects.filter(
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(
             sport_association__user=request.user, archived=False
         ).exclude(
             ~Q(associate__tutors__email__isnull=False, associate__tutors__email__gt='',
@@ -1067,7 +1068,7 @@ def subscription_list(request):
         data = get_optimized_subscriptions(request.user)
         return Response({'data': data, "meta": {}}, status=status.HTTP_200_OK)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     subscriptions = _get_base_subscriptions_queryset(sport_association, params)
     subscriptions = _apply_basic_filters(subscriptions, params)
 
@@ -1130,8 +1131,8 @@ def subscription_list_archived(request):
     if is_athlete:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    subscriptions = Subscription.objects.filter(
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         sport_association=sport_association,
         archived=True
     ).select_related(
@@ -1195,7 +1196,7 @@ def subscription_list_archived(request):
                 starting_day=request.user.balance_sheet_start_day,
                 starting_month=request.user.balance_sheet_start_month
             )
-            current_year_sub = Subscription.objects.filter(
+            current_year_sub = scoped_queryset(request, Subscription.objects).filter(
                 sport_association=sport_association,
                 start_date__gte=subscription.end_date,
                 archived=False,
@@ -1226,7 +1227,7 @@ def subscription_associates_draft_list(request):
     if is_athlete:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         associates_draft = AssociateImportDraft.objects.filter(sport_association=sport_association)
     data = {}
     if associates_draft is not None:
@@ -1288,7 +1289,7 @@ def subscription_associates_draft_edit(request, uid):
     logger.info("subscription_associates_draft_edit")
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     associates_draft = AssociateImportDraft.objects.filter(
         sport_association=sport_association,
         associate_import_draft_id=uid
@@ -1370,7 +1371,7 @@ def subscription_associates_draft_delete(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     associates_draft = AssociateImportDraft.objects.filter(
         sport_association=sport_association,
         associate_import_draft_id=uid
@@ -1659,8 +1660,8 @@ def subscription_list_export(request):
     if User.ATHLETE == request.user.role:
         raise Exception("Cannot export info for athlete")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    subscriptions = Subscription.objects.filter(
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         sport_association=sport_association,
         archived=False
     ).select_related(
@@ -1708,13 +1709,13 @@ def subscription_info(request, uid):
     # check if the user is an athlete
     if request.user.role == User.ATHLETE:
         # Get unique tax codes from associates of user's subscriptions
-        user_subscriptions = Subscription.objects.filter(user=request.user)
+        user_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
         tax_codes = user_subscriptions.filter(
             associate__tax_code__isnull=False
         ).values_list('associate__tax_code', flat=True).distinct()
 
         # Get all subscription IDs for users with those tax codes, plus original user subscriptions
-        allowed_subscription_ids = list(Subscription.objects.filter(
+        allowed_subscription_ids = list(scoped_queryset(request, Subscription.objects).filter(
             Q(user=request.user) | Q(associate__tax_code__in=tax_codes)
         ).values_list('subscription_id', flat=True))
         
@@ -1727,23 +1728,23 @@ def subscription_info(request, uid):
             raise PermissionDenied("Subscription not found.")
 
         # Fetch the sport_association with optimized queries
-        sport_association = Subscription.objects.filter(subscription_id=uid).values('sport_association_id').first()
+        sport_association = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).values('sport_association_id').first()
         if sport_association is None:
             raise PermissionDenied("Sport association id not found.")
         
         logger.info(f"sport_association_id: {sport_association['sport_association_id']}")
-        sport_association = SportAssociation.objects.filter(sport_association_id=str(sport_association['sport_association_id'])).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).filter(sport_association_id=str(sport_association['sport_association_id'])).first()
         if sport_association is None:
             raise PermissionDenied("Sport association not found.")
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
-    subscription = Subscription.objects.select_related(
+    subscription = scoped_queryset(request, Subscription.objects).select_related(
         'associate', 'medical', 'medical__document', 'document_pdf', 'sport_association', 'user'
     ).prefetch_related(
         'tags',
         Prefetch('subscriptionfile_set',
-            queryset=SubscriptionFile.objects.select_related('document')
+            queryset=scoped_queryset(request, SubscriptionFile.objects).select_related('document')
         )
     ).filter(subscription_id=uid).first()
     if subscription is None:
@@ -1751,11 +1752,11 @@ def subscription_info(request, uid):
     if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
 
-    course_subs = CourseSubscription.objects.select_related(
+    course_subs = scoped_queryset(request, CourseSubscription.objects).select_related(
         'course', 'payment'
     ).prefetch_related(
         Prefetch('coursesubscriptioninstallment_set',
-            queryset=CourseSubscriptionInstallment.objects.select_related('payment')
+            queryset=scoped_queryset(request, CourseSubscriptionInstallment.objects).select_related('payment')
         )
     ).filter(subscription=subscription)
 
@@ -1815,12 +1816,12 @@ def subscription_payments(request, uid):
     course_subscription_id = request.GET.get('course_subscription_id', None)
     archived = request.GET.get('query[archived]', False)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
     if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
 
-    payments = Payment.objects.filter(
+    payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
     ).filter(
         Q(associate=subscription.associate) |
@@ -1895,9 +1896,9 @@ def subscription_payments(request, uid):
     for idx, payment_data in enumerate(payments_data):
         payment_data['is_carnet'] = False
         if payment_data['subject'] == Payment.COURSE:
-            course_payment = CourseSubscription.objects.all_objects().filter(payment_id=payment_data['payment_id']).first()
+            course_payment = scoped_queryset(request, CourseSubscription.objects.all_objects()).filter(payment_id=payment_data['payment_id']).first()
             if course_payment is None:
-                course_payment = CourseSubscriptionInstallment.objects.all_objects().filter(payment=payment_data['payment_id']).first()
+                course_payment = scoped_queryset(request, CourseSubscriptionInstallment.objects.all_objects()).filter(payment=payment_data['payment_id']).first()
                 if course_payment:
                     course_payment = course_payment.course_subscription
                     payment_data['course_subscriptions'] = {
@@ -1907,7 +1908,7 @@ def subscription_payments(request, uid):
                     }
                 else:
                     # check if it's a carnet payment
-                    carnet_payment = CarnetSubscription.objects.filter(payment=payment_data['payment_id']).first()
+                    carnet_payment = scoped_queryset(request, CarnetSubscription.objects).filter(payment=payment_data['payment_id']).first()
                     if carnet_payment:
                         payment_data['is_carnet'] = True
                         payment_data['carnet'] = {
@@ -1956,7 +1957,7 @@ def subscription_card(request, uid):
             return Response({'msg': 'il token è scaduto'}, status=status.HTTP_400_BAD_REQUEST)
 
         # get the subscription
-        subscription = Subscription.objects.filter(subscription_id=uid).select_related(
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).select_related(
             'associate', 'sport_association', 'sport_association__user').first()
 
         membership_card_configuration: SportAssociationMembershipCardConfiguration = SportAssociationMembershipCardConfiguration.objects.filter(sport_association=subscription.sport_association).first()
@@ -2007,8 +2008,8 @@ def subscription_approve(request, uid):
     is_valid_uuid(uid)
 
     logger.info("subscription_approve")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
     if subscription is None:
         return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
     if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
@@ -2020,7 +2021,7 @@ def subscription_approve(request, uid):
         subscription.acceptance_date = timezone.now()
         # check if there are past subscription for this associate that are approved and have the signature
         if not subscription.has_signature:
-            past_subscriptions = Subscription.objects.filter(
+            past_subscriptions = scoped_queryset(request, Subscription.objects).filter(
                 associate=subscription.associate,
                 status_flag__in=[Subscription.ACCEPTED, Subscription.PENDING],
             ).filter(
@@ -2049,12 +2050,12 @@ def subscription_update(request, uid):
 
     # Authorization check
     if request.user.role == User.ATHLETE:
-        subscription = Subscription.objects.filter(user=request.user, subscription_id=uid).first()
+        subscription = scoped_queryset(request, Subscription.objects).filter(user=request.user, subscription_id=uid).first()
         if subscription is None:
             raise PermissionDenied("User not allowed.")
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscription = Subscription.objects.filter(subscription_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
         if subscription is None:
             raise PermissionDenied("Subscription not found.")
         if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
@@ -2102,7 +2103,7 @@ def subscription_edit(request, uid):
 
     logger.info("subscription_edit")
     # subscription = Subscription.objects.filter(subscription_id=uid).first()
-    associate = Associate.objects.filter(associate_id=uid).first()
+    associate = scoped_queryset(request, Associate.objects).filter(associate_id=uid).first()
     if associate.user is None or associate.user.user_id != request.user.user_id:
         raise PermissionDenied("User not allowed.")
 
@@ -2141,8 +2142,8 @@ def subscription_delete(request, uid):
     try:
         logger.info("subscription_delete")
 
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscription = Subscription.objects.filter(subscription_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
         if subscription is None:
             return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -2163,8 +2164,8 @@ def subscription_delete(request, uid):
 def subscription_archive(request, uid):
     try:
         logger.info("subscription_archive")
-        sport_association = SportAssociation.objects.get(user=request.user)
-        subscription = Subscription.objects.filter(subscription_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
 
         if subscription:
             if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
@@ -2178,7 +2179,7 @@ def subscription_archive(request, uid):
         if subscription.archived:
 
             # getting the course subscription (it might be empty)
-            course_subscriptions = CourseSubscription.objects.filter(subscription=subscription)
+            course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(subscription=subscription)
             # checking all the course subscriptions one by one
             for course_subscription in course_subscriptions:
                 # there are some associated payments
@@ -2194,7 +2195,7 @@ def subscription_archive(request, uid):
                 # check if there are installments
                 if course_subscription.multi_payments:
                     # retrieve all installments
-                    installments = CourseSubscriptionInstallment.objects.filter(course_subscription=course_subscription)
+                    installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(course_subscription=course_subscription)
                     for installment in installments:
                         # check if installment was paid
                         if installment.payment is not None and installment.payment.paid is False:
@@ -2225,7 +2226,7 @@ def subscription_archive(request, uid):
             subscription.save()
 
             # get all remaining unpaid payments and not archived and archive them
-            payments = Payment.objects.filter(
+            payments = scoped_queryset(request, Payment.objects).filter(
                 sport_association=sport_association,
                 associate=subscription.associate,
                 creation_date__range=[subscription.start_date, subscription.end_date],
@@ -2257,8 +2258,8 @@ def subscription_reject(request, uid):
     is_valid_uuid(uid)
 
     logger.info("subscription_reject")
-    sport_association = SportAssociation.objects.get(user=request.user)
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
     if subscription is None:
         return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
     if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
@@ -2287,7 +2288,7 @@ def subscription_medical_appointments_list(request, uid):
 
     is_valid_uuid(uid)
 
-    subscription = Subscription.objects.filter(
+    subscription = scoped_queryset(request, Subscription.objects).filter(
         subscription_id=uid,
         sport_association=request.user.sport_association
     ).first()
@@ -2317,7 +2318,7 @@ def subscription_medical_appointments_add(request, uid):
 
     is_valid_uuid(uid)
 
-    subscription = Subscription.objects.filter(
+    subscription = scoped_queryset(request, Subscription.objects).filter(
         subscription_id=uid,
         sport_association=request.user.sport_association
     ).first()
@@ -2374,7 +2375,7 @@ def subscription_medical_certificate_upload(request, uid):
         )
 
         # Check if subscription or draft
-        subscription = Subscription.objects.filter(subscription_id=uid).first()
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
         if subscription is None:
             # Handle draft
             draft = AssociateImportDraft.objects.filter(associate_import_draft_id=uid).first()
@@ -2432,7 +2433,7 @@ def subscription_medical_certificate_set_certificate_expiration(request, uid):
 
     data = request.data
     expiration_date = data['certificate_expiring_date']
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
     if subscription is None:
         # check if is a draft
         subscription = AssociateImportDraft.objects.filter(associate_import_draft_id=uid).first()
@@ -2504,15 +2505,16 @@ Attenzione: questo è un placeholder, il certificato medico deve essere caricato
         subscription.save()
     else:
         # get medical certificate
-        medical_certificate = subscription.medical
+        medical_certificate = isolate_medical_certificate(request, subscription)
     # set expiration date
     if expiration_date is not None:
         medical_certificate.expiration_date = make_aware(datetime.strptime(expiration_date, '%d/%m/%Y'))
     else:
         subscription.medical = None
         subscription.save()
-        medical_certificate.document.delete()  # delete the document
-        medical_certificate.delete()
+        if not getattr(request, 'impersonation_association', None):
+            medical_certificate.document.delete()  # delete the document
+            medical_certificate.delete()
         return Response({'msg': 'Medical certificate removed'}, status=status.HTTP_200_OK)
     medical_certificate.save()
 
@@ -2528,7 +2530,7 @@ def subscription_medical_certificate_edit(request, uid):
     is_valid_uuid(uid)
 
     data = request.data
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
 
     if subscription is None:
         return Response({'exception': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -2536,7 +2538,7 @@ def subscription_medical_certificate_edit(request, uid):
     if subscription.medical is None:
         return Response({'exception': 'Medical certificate not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    medical_certificate = subscription.medical
+    medical_certificate = isolate_medical_certificate(request, subscription)
 
     # update notes and competitive_medical_certificate boolean value
     if 'notes' in data:
@@ -2556,7 +2558,7 @@ def subscription_medical_certificate_send_email_reminder(request, uid):
 
     logger.info("subscription_medical_certificate_send_email_reminder")
 
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
     if subscription.medical is None:
         raise TypeError("medical certificate not present!")
 
@@ -2606,7 +2608,7 @@ def subscription_medical_certificate_send_email_reminder(request, uid):
 @permission_classes([IsAuthenticated])
 def subscription_import_upload(request):
 
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     if sport_association is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -2659,7 +2661,7 @@ def subscription_import_upload(request):
 @permission_classes([IsAuthenticated])
 def subscription_associates_draft_add(request):
 
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
 
     if sport_association is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -2702,7 +2704,7 @@ def subscription_upload_document(request, uid):
     is_valid_uuid(uid)
 
     # get subscription
-    subscription = Subscription.objects.filter(subscription_id=uid).first()
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
 
     if subscription is None:
         raise TypeError("subscription not found!")
@@ -2742,12 +2744,12 @@ def subscription_delete_document(request, uid, subscription_file_id):
     is_valid_uuid(subscription_file_id)
 
     # check if user is the sport association owner
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     if sport_association is None:
         raise PermissionDenied("User not allowed.")
 
     # get subscription
-    subscription = Subscription.objects.filter(
+    subscription = scoped_queryset(request, Subscription.objects).filter(
         subscription_id=uid,
         sport_association=sport_association
     ).first()
@@ -2756,7 +2758,7 @@ def subscription_delete_document(request, uid, subscription_file_id):
         raise TypeError("subscription not found!")
 
     # get document
-    subscription_file = SubscriptionFile.objects.filter(
+    subscription_file = scoped_queryset(request, SubscriptionFile.objects).filter(
         subscription_file_id=subscription_file_id,
         subscription=subscription
     ).first()
@@ -2765,7 +2767,8 @@ def subscription_delete_document(request, uid, subscription_file_id):
         raise TypeError("subscription file not found!")
 
     # delete document
-    subscription_file.document.delete()
+    if not getattr(request, 'impersonation_association', None):
+        subscription_file.document.delete()
     subscription_file.delete()
 
     return Response({'msg': 'subscription file deleted'}, status=status.HTTP_200_OK)
@@ -2823,7 +2826,7 @@ class SubscriptionMembershipViewSet(viewsets.ModelViewSet):
 
     def delete(self, request, pk=None):
         instance = self.get_object()
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
         if instance.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
@@ -2833,7 +2836,7 @@ class SubscriptionMembershipViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None):
         instance = self.get_object()
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
         if instance.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
@@ -2852,7 +2855,7 @@ class SubscriptionMembershipViewSet(viewsets.ModelViewSet):
 @permission_classes([IsAuthenticated])
 def get_associations_for_federation(request):
     # get all the subscription by filtering by sport association in custom_data
-    subscriptions = Subscription.objects.filter(
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         Q(custom_data__icontains='"type_of_associate": "asd-o-ssd"') |
         Q(custom_data__icontains='"type_of_associate": "scuola-asc"'),
         sport_association=request.user.sport_association
@@ -2922,7 +2925,7 @@ def validate_token_link_and_get_subscriptions(request):
         return Response({'expired': True}, status=status.HTTP_200_OK)
 
     # Get associate IDs that have active subscriptions in the current year
-    active_associate = Subscription.objects.filter(
+    active_associate = scoped_queryset(request, Subscription.objects).filter(
         sport_association=gym_token_link.sport_association,
         status_flag__in=[Subscription.ACCEPTED, Subscription.PENDING],
         end_date__gte=make_aware(datetime.now())
@@ -2935,7 +2938,7 @@ def validate_token_link_and_get_subscriptions(request):
             active_associate_ids.append(sub.associate_id)
 
 
-    candidates = Subscription.objects.filter(
+    candidates = scoped_queryset(request, Subscription.objects).filter(
         sport_association=gym_token_link.sport_association,
         custom_data__icontains=gym_token_link.gym_name[:3] if len(gym_token_link.gym_name) > 3 else gym_token_link.gym_name,
         start_date__lte=make_aware(datetime.now()) - timedelta(days=180), # 180 days before today

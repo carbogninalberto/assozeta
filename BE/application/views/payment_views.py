@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
@@ -70,7 +71,7 @@ def payment_add(request):
         # not allowed
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     data = request.data
     # paid is true only if the user has the auto_paid_payment flag set to true
     data['paid'] = request.user.auto_paid_payment
@@ -112,10 +113,10 @@ def payment_add(request):
             if data['complex_item']['group'] == 'Fornitori':
                 payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
             if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = Subscription.objects.get(
+                payment.associate = scoped_queryset(request, Subscription.objects).get(
                     subscription_id=data['complex_item']['subscription_id']).associate
             if data['complex_item']['group'] == 'Persone':
-                payment.associate = Associate.objects.get(associate_id=data['complex_item']['associate_id'])
+                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
 
         payment.save()
 
@@ -184,7 +185,7 @@ def payment_bulk_add(request):
         logger.warning("Bulk payment add attempt by athlete user", extra={'user_id': str(request.user.user_id)})
         return Response(status=status.HTTP_403_FORBIDDEN)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     data = request.data
 
     # Validate required fields
@@ -240,7 +241,7 @@ def payment_bulk_add(request):
     # Validate associate IDs - single efficient query
     # Note: deleted=False is already handled by SoftDeleteGroupAwareManager
     requested_ids = set(associate_ids)
-    valid_associates = Associate.objects.filter(
+    valid_associates = scoped_queryset(request, Associate.objects).filter(
         associate_id__in=requested_ids,
         sport_association=sport_association,
     ).values_list('associate_id', flat=True)
@@ -352,7 +353,7 @@ def payment_bulk_add(request):
     with transaction.atomic():
         for i in range(0, len(payments_to_create), BATCH_SIZE):
             batch = payments_to_create[i:i + BATCH_SIZE]
-            Payment.objects.bulk_create(batch)
+            scoped_queryset(request, Payment.objects).bulk_create(batch)
 
     logger.info(
         "Bulk payments added successfully",
@@ -394,7 +395,7 @@ def payment_sign(request):
         if not is_valid_uuid(data['payment_id']):
             raise ValidationError('not valid payload')
         else:
-            payment = Payment.objects.filter(payment_id=data['payment_id']).first()
+            payment = scoped_queryset(request, Payment.objects).filter(payment_id=data['payment_id']).first()
             if payment is None:
                 raise ValidationError('payment not found')
 
@@ -466,10 +467,10 @@ def payment_bulk_archive(request):
     if 'payment_ids' not in data.keys():
         raise Exception("missing required field")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # get all payments
-    payments = Payment.objects.filter(
+    payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         payment_id__in=data['payment_ids']
     )
@@ -477,7 +478,7 @@ def payment_bulk_archive(request):
     for payment in payments:
         payment.archived = True
 
-    Payment.objects.bulk_update(payments, ['archived'])
+    scoped_queryset(request, Payment.objects).bulk_update(payments, ['archived'])
 
     return Response({'message': 'All payments archived'}, status=status.HTTP_200_OK)
 
@@ -491,10 +492,10 @@ def payment_bulk_delete(request):
     if 'payment_ids' not in data.keys():
         raise Exception("missing required field")
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # get all payments
-    payments = Payment.objects.filter(
+    payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         payment_id__in=data['payment_ids']
     )
@@ -502,7 +503,7 @@ def payment_bulk_delete(request):
     for payment in payments:
         payment.deleted = True
 
-    Payment.objects.bulk_update(payments, ['deleted'])
+    scoped_queryset(request, Payment.objects).bulk_update(payments, ['deleted'])
 
     return Response({'message': 'All payments deleted'}, status=status.HTTP_200_OK)
 
@@ -517,8 +518,8 @@ def payment_update(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    payment = Payment.objects.filter(payment_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
 
     if payment.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
@@ -545,13 +546,13 @@ def payment_update(request, uid):
             if data['complex_item']['group'] == 'Fornitori':
                 payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
             if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = Subscription.objects.get(
+                payment.associate = scoped_queryset(request, Subscription.objects).get(
                     subscription_id=data['complex_item']['subscription_id']).associate
             if data['complex_item']['group'] == 'Persone':
-                payment.associate = Associate.objects.get(associate_id=data['complex_item']['associate_id'])
+                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
 
         if 'subscription_id' in data.keys() and data['subscription_id']:
-            payment.associate = Subscription.objects.get(subscription_id=data['subscription_id']).associate
+            payment.associate = scoped_queryset(request, Subscription.objects).get(subscription_id=data['subscription_id']).associate
         payment.payment_intent_id = None # reset payment intent id if changing the payment info
         serializer.save()
         # get the invoice for the payment and refresh the document
@@ -572,8 +573,8 @@ def payment_request(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    payment = Payment.objects.filter(payment_id=uid).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
 
     if payment.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
@@ -633,8 +634,8 @@ def payment_delete(request, uid):
 
     is_valid_uuid(uid)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
-    payment = Payment.objects.filter(payment_id=uid, sport_association=request.user.sport_association).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+    payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid, sport_association=request.user.sport_association).first()
     if payment is None:
         return Response({'msg': 'Payment not found.'}, status=status.HTTP_404_NOT_FOUND)
     if payment.sport_association.sport_association_id != sport_association.sport_association_id:
@@ -680,7 +681,7 @@ def payment_archive(request, uid):
     if not request.user.is_sport_association(raise_exception=False):
         return Response({"msg": "User not allowed."}, status=status.HTTP_403_FORBIDDEN)
 
-    payment = Payment.objects.filter(payment_id=uid, sport_association=request.user.sport_association).first()
+    payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid, sport_association=request.user.sport_association).first()
 
     if payment.archived:
         payment.archived = False
@@ -726,9 +727,9 @@ def payment_list(request):
         try:
             sport_association = request.user.sportassociation
         except SportAssociation.DoesNotExist:
-            sport_association = SportAssociation.objects.get(user=request.user)
+            sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
             
-        payments = Payment.objects.filter(
+        payments = scoped_queryset(request, Payment.objects).filter(
             sport_association=sport_association,
             archived=archived
         ).select_related(
@@ -759,11 +760,11 @@ def payment_list(request):
     payments = []
     # case athlete is asking for his payments
     if User.ATHLETE == request.user.role and course_subscription_id is not None:
-        course_subscription = CourseSubscription.objects.filter(
+        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=course_subscription_id
         ).select_related('course').first()
         if course_subscription.multi_payments:
-            installments = CourseSubscriptionInstallment.objects.filter(course_subscription=course_subscription)
+            installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(course_subscription=course_subscription)
             for installment in installments:
                 if installment.amount > 0 or course_subscription.course.sport_association.user.show_zero_payments:
                     payments.append(installment.payment)
@@ -772,7 +773,7 @@ def payment_list(request):
                 course_subscription.course.sport_association.user.show_zero_payments):
             payments.append(course_subscription.payment)
         # check for CarnetSubscription payments
-        carnet_subscriptions = CarnetSubscription.objects.filter(course_subscription=course_subscription).select_related('carnet_id')
+        carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(course_subscription=course_subscription).select_related('carnet_id')
         if carnet_subscriptions is not None:
             for carnet_subscription in carnet_subscriptions:
                 if carnet_subscription.payment and (
@@ -780,18 +781,18 @@ def payment_list(request):
                         carnet_subscription.carnet_id.sport_association.user.show_zero_payments):
                     payments.append(carnet_subscription.payment)
         # convert payments to a QuerySet of Payment objects
-        payments = Payment.objects.filter(payment_id__in=[payment.payment_id for payment in payments])
+        payments = scoped_queryset(request, Payment.objects).filter(payment_id__in=[payment.payment_id for payment in payments])
 
     elif User.ATHLETE == request.user.role:
         # Optimize with prefetch_related to avoid N+1 queries
-        subscriptions = Subscription.objects.filter(user=request.user).select_related(
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user).select_related(
             'sport_association__user',
             'associate'
         ).prefetch_related(
             Prefetch('coursesubscription_set',
-                queryset=CourseSubscription.objects.select_related('course', 'payment').prefetch_related(
+                queryset=scoped_queryset(request, CourseSubscription.objects).select_related('course', 'payment').prefetch_related(
                     Prefetch('coursesubscriptioninstallment_set',
-                        queryset=CourseSubscriptionInstallment.objects.filter(paid=False).select_related('payment')
+                        queryset=scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(paid=False).select_related('payment')
                     )
                 )
             )
@@ -804,7 +805,7 @@ def payment_list(request):
                 subscriptions_associates.append(subscription.associate)
         
         # Build payment query with all filters at once
-        payments = Payment.objects.filter(
+        payments = scoped_queryset(request, Payment.objects).filter(
             Q(user=request.user) | Q(associate__in=subscriptions_associates),
             amount__gte=0,
             expense=False,
@@ -837,7 +838,7 @@ def payment_list(request):
         try:
             sport_association = request.user.sportassociation
         except SportAssociation.DoesNotExist:
-            sport_association = SportAssociation.objects.get(user=request.user)
+            sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         
         # default payment from is today - 365 days
         payment_from = datetime.now() - timezone.timedelta(days=365)
@@ -845,7 +846,7 @@ def payment_list(request):
         payment_to = datetime.now() + timezone.timedelta(days=1)
 
         # Start with base queryset including all needed relations
-        payments = Payment.objects.filter(
+        payments = scoped_queryset(request, Payment.objects).filter(
             sport_association=sport_association,
             archived=archived
         ).select_related(
@@ -974,7 +975,7 @@ def payment_list(request):
         payment_ids = [payment.payment_id for payment in payments]
         course_installments_map = {}
         if payment_ids:
-            course_installments = CourseSubscriptionInstallment.objects.filter(
+            course_installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
                 payment_id__in=payment_ids
             ).select_related('course_subscription__course', 'payment')
 
@@ -1084,7 +1085,7 @@ def payment_stats(request):
     type = request.GET.get('query[type]', None)
     account = request.GET.get('query[account]', None)
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     if sport_association is None:
         return Response({"msg": "Sport association not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -1149,7 +1150,7 @@ def payment_stats(request):
             filters &= Q(custom_accounts__custom_account_id=account)
     
     # Apply all filters at once with select_related for optimization
-    payments = Payment.objects.filter(filters).select_related(
+    payments = scoped_queryset(request, Payment.objects).filter(filters).select_related(
         'custom_accounts',
         'payment_category'
     ).order_by('-creation_date')
@@ -1347,7 +1348,7 @@ def payment_list_export(request):
     if User.ATHLETE == request.user.role:
         raise Exception("Cannot export payments for athlete")
     else:
-        sport_association = SportAssociation.objects.get(user=request.user)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
         # payments = Payment.objects.filter(sport_association=sport_association)
         payment_from = datetime.now() - timezone.timedelta(days=365 * 10)
         # default payment to is today
@@ -1369,7 +1370,7 @@ def payment_list_export(request):
 
         payment_to += + timezone.timedelta(days=1)
         payment_to = payment_to.replace(hour=0, minute=0, second=0, microsecond=0)
-        payments = Payment.objects.filter(
+        payments = scoped_queryset(request, Payment.objects).filter(
             sport_association=sport_association,
             archived=archived).filter(
             (Q(payment_date__range=(payment_from, payment_to)) & Q(payment_date__isnull=False)) |
@@ -1377,11 +1378,11 @@ def payment_list_export(request):
         ).prefetch_related(
             Prefetch(
                 'coursesubscription_set',  # Note: this is the default reverse lookup name
-                queryset=CourseSubscription.objects.all_objects().select_related('course')
+                queryset=scoped_queryset(request, CourseSubscription.objects.all_objects()).select_related('course')
             ),
             Prefetch(
                 'coursesubscriptioninstallment_set',  # Note: this is the default reverse lookup name
-                queryset=CourseSubscriptionInstallment.objects.all_objects().select_related(
+                queryset=scoped_queryset(request, CourseSubscriptionInstallment.objects.all_objects()).select_related(
                     'course_subscription',
                     'course_subscription__course'
                 )
@@ -1693,12 +1694,12 @@ def payment_info(request, uid):
 
     # case athlete is asking for his payment
     if user is not None and User.ATHLETE == request.user.role:
-        payment = Payment.objects.filter(payment_id=uid).first()
+        payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
     elif user is not None and User.ATHLETE != request.user.role:
-        sport_association = SportAssociation.objects.get(user=user)
-        payment = Payment.objects.filter(sport_association=sport_association, payment_id=uid).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
+        payment = scoped_queryset(request, Payment.objects).filter(sport_association=sport_association, payment_id=uid).first()
     else:
-        payment = Payment.objects.filter(payment_id=uid).first()
+        payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
         if payment is None:
             return Response({'msg': 'Pagamento non trovato'}, status=status.HTTP_404_NOT_FOUND)
         sport_association = payment.sport_association
@@ -1707,11 +1708,11 @@ def payment_info(request, uid):
     data = PaymentSerializerInfo(payment).data
 
     if payment.subject == Payment.COURSE:
-        course_subscription = CourseSubscription.objects.filter(payment=payment).first()
+        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(payment=payment).first()
         if course_subscription is None:
-            course_subscription_installment = CourseSubscriptionInstallment.objects.filter(payment=payment).first()
+            course_subscription_installment = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(payment=payment).first()
             if course_subscription_installment is None:
-                carnet_subscription = CarnetSubscription.objects.filter(payment=payment).first()
+                carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).filter(payment=payment).first()
                 if carnet_subscription is not None:
                     data['info'] = {
                         'title': f"Carnet ({carnet_subscription.carnet_id.title})",
@@ -1768,10 +1769,10 @@ def payment_approve(request, uid):
         payment_date = timezone.make_aware(payment_date)
 
     logger.info("payment_approve -> init -> user: {}".format(request.user.user_id))
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     with transaction.atomic():
         # select the payment for safe update
-        payment = Payment.objects.select_for_update().filter(payment_id=uid).first()
+        payment = scoped_queryset(request, Payment.objects).select_for_update().filter(payment_id=uid).first()
         if payment.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
 
@@ -1855,11 +1856,11 @@ def payment_approve(request, uid):
             is_carnet = False
             carnet_sub = None
             if payment.subject is Payment.COURSE:
-                course_subscription = CourseSubscription.objects.filter(payment=payment).first()
+                course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(payment=payment).first()
                 if course_subscription is None:
-                    course_subscription = CourseSubscriptionInstallment.objects.filter(payment=payment).first()
+                    course_subscription = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(payment=payment).first()
                     if course_subscription is None:
-                        carnet_sub = CarnetSubscription.objects.filter(payment=payment).first()
+                        carnet_sub = scoped_queryset(request, CarnetSubscription.objects).filter(payment=payment).first()
                         if carnet_sub:
                             course_subscription = carnet_sub.course_subscription.all()
                             is_carnet = True
@@ -1921,9 +1922,9 @@ def payment_approve(request, uid):
 @permission_classes([IsAuthenticated])
 def payment_cancel(request, uid):
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     # select the payment for safe update
-    payment = Payment.objects.filter(payment_id=uid).first()
+    payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
     if payment.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
 
@@ -1963,11 +1964,11 @@ def payment_generate_invoice(request, uid):
     is_valid_uuid(uid)
 
     logger.info("payemnt_generate_invoice -> init -> user: {}".format(request.user.user_id))
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     # get only_print from request.data
     only_print = request.data.get('only_print', False)
     if only_print:
-        payment = Payment.objects.filter(payment_id=uid).first()
+        payment = scoped_queryset(request, Payment.objects).filter(payment_id=uid).first()
         print_document_invoice.apply_async(
             args=[str(payment.invoice.invoice_id), request.headers.get('authorization')])
         data = {"msg": "generated invoice.", 'payment': PaymentSerializer(payment).data}
@@ -1976,7 +1977,7 @@ def payment_generate_invoice(request, uid):
 
     # select the payment for safe update
     with transaction.atomic():
-        payment = Payment.objects.select_for_update().filter(payment_id=uid).first()
+        payment = scoped_queryset(request, Payment.objects).select_for_update().filter(payment_id=uid).first()
         if payment.sport_association.sport_association_id != sport_association.sport_association_id:
             raise PermissionDenied("User not allowed.")
 
@@ -1989,7 +1990,7 @@ def payment_generate_invoice(request, uid):
         is_valid_uuid(subscription_id)
 
         # get subscription
-        subscription = Subscription.objects.filter(subscription_id=subscription_id).first()
+        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=subscription_id).first()
 
         payment.paid = True
         payment.associate = subscription.associate
@@ -2045,7 +2046,7 @@ def payment_category_list(request):
         logger.info("payment_category_list -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     payment_categories = PaymentCategory.objects.all().filter(
         Q(sport_association=sport_association) | Q(sport_association=None)).order_by('-creation_date')
 
@@ -2069,7 +2070,7 @@ def payment_category_add(request):
 
     serializer = PaymentCategorySerializer(data=request.data)
     # get the sport association of the user
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
 
     # set the sport association of the payment category
     serializer.initial_data['sport_association'] = sport_association.sport_association_id
@@ -2095,7 +2096,7 @@ def payment_category_update(request, uid):
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     # get the sport association of the user
-    sport_association = SportAssociation.objects.filter(user=request.user).first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
 
     # check that the payment category is of the sport association
     payment_category = PaymentCategory.objects.filter(
@@ -2129,7 +2130,7 @@ def payment_category_delete(request, uid):
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
     # get the sport association of the user
-    sport_association = SportAssociation.objects.filter(user=request.user). first()
+    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user). first()
 
     # check that the payment category sport association is the same of the user
     payment_category = PaymentCategory.objects.filter(

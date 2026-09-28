@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 """
 @ copyright: Bakney SRL
 """
@@ -1198,7 +1199,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         }
     ]
 
-    _on_commit_robust(lambda: NotificationService.send_notification(user, messages))
+    _on_commit_robust(lambda: NotificationService.send_notification(user, messages, association_id=subscription.sport_association_id))
 
     if user.role == User.ATHLETE:
         data = {
@@ -1228,10 +1229,10 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
 
 def get_optimized_subscriptions(user):
     # get tax_code of the user
-    tax_codes = Subscription.objects.filter(user=user).values_list('associate__tax_code', flat=True).distinct()
+    tax_codes = scoped_queryset(user, Subscription.objects).filter(user=user).values_list('associate__tax_code', flat=True).distinct()
     if len(tax_codes) == 0:
         []
-    subscriptions = Subscription.objects.filter(Q(user=user) | Q(associate__tax_code__in=tax_codes)).prefetch_related('medical', 'medical__document', 'associate', 'sport_association').order_by('-creation_date')
+    subscriptions = scoped_queryset(user, Subscription.objects).filter(Q(user=user) | Q(associate__tax_code__in=tax_codes)).prefetch_related('medical', 'medical__document', 'associate', 'sport_association').order_by('-creation_date')
     return SubscriptionSerializerAthleteOptimizedList(subscriptions, many=True).data
 
 

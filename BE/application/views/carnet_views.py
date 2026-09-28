@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 """
 @ copyright: Bakney srl
 """
@@ -31,11 +32,11 @@ def carnet_list(request):
 
     serialized_carnets = []
     if request.user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.get(user=request.user)
-        carnets = Carnet.objects.filter(sport_association=sport_association)
+        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
+        carnets = scoped_queryset(request, Carnet.objects).filter(sport_association=sport_association)
         serialized_carnets = CarnetListSerializer(carnets, many=True)
     elif request.user.role == User.ATHLETE:
-        carnets = CarnetSubscription.objects.filter(Q(user_id=request.user) | Q(subscription__associate__user=request.user)).order_by('-creation_date')
+        carnets = scoped_queryset(request, CarnetSubscription.objects).filter(Q(user_id=request.user) | Q(subscription__associate__user=request.user)).order_by('-creation_date')
         serialized_carnets = CarnetSubscriptionSerializer(carnets, many=True)
 
     return Response({'data': serialized_carnets.data}, status=status.HTTP_200_OK)
@@ -62,12 +63,12 @@ def carnet_add(request):
 
     # save carnet
     carnet = serializer.save()
-    carnet.sport_association = SportAssociation.objects.get(user=request.user)
+    carnet.sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
     carnet.save()
 
     # add subscriptions to carnet
     for subscription in data['subscriptions']:
-        if Subscription.objects.filter(subscription_id=subscription).exists():
+        if scoped_queryset(request, Subscription.objects).filter(subscription_id=subscription).exists():
             carnet_assign(request._request, carnet.carnet_id, subscription)
 
     logger.info("Carnet added successfully", extra={'carnet_id': str(carnet.carnet_id), 'title': carnet.title})
@@ -85,17 +86,17 @@ def carnet_subscription_list(request):
     subscription_id = request.query_params.get('subscription_id', None)
 
     if request.user.role != User.ASSOCIATION:
-        if subscription_id not in [str(x) for x in Subscription.objects.filter(user=request.user).values_list(
+        if subscription_id not in [str(x) for x in scoped_queryset(request, Subscription.objects).filter(user=request.user).values_list(
                 'subscription_id', flat=True)]:
             return Response({'msg': 'Not allowed.'}, status=status.HTTP_403_FORBIDDEN)
         else:
-            carnet_subscriptions = CarnetSubscription.objects.filter(
+            carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(
                 subscription__subscription_id=subscription_id)
 
     if subscription_id:
         # get subscription
-        subscription = Subscription.objects.get(subscription_id=subscription_id)
-        carnet_subscriptions = CarnetSubscription.objects.filter(
+        subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
+        carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(
             Q(subscription__subscription_id=subscription_id) | Q(subscription__associate=subscription.associate))
 
     # now serialize the data by extracting:
@@ -149,7 +150,7 @@ def carnet_subscription_disable(request, uid):
         return Response({'msg': 'Missing carnet subscription uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = CarnetSubscription.objects.get(
+        carnet = scoped_queryset(request, CarnetSubscription.objects).get(
             carnet_subscription_id=uid,
             subscription__sport_association__user=request.user
         )
@@ -174,7 +175,7 @@ def carnet_subscription_enable(request, uid):
         return Response({'msg': 'Missing carnet subscription uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = CarnetSubscription.objects.get(
+        carnet = scoped_queryset(request, CarnetSubscription.objects).get(
             carnet_subscription_id=uid,
             subscription__sport_association__user=request.user
         )
@@ -204,7 +205,7 @@ def carnet_subscription_update(request, uid):
     is_valid_uuid(uid)
 
     try:
-        carnet = CarnetSubscription.objects.get(
+        carnet = scoped_queryset(request, CarnetSubscription.objects).get(
             carnet_subscription_id=uid,
             subscription__sport_association__user_id=request.user.user_id
         )
@@ -236,13 +237,13 @@ def carnet_subscription_topup(request, uid):
     logger.info("Topping up carnet", extra={'user_id': str(request.user.user_id), 'carnet_subscription_id': uid})
     try:
         if request.user.is_sport_association(raise_exception=False):
-            old_carnet = CarnetSubscription.objects.get(
+            old_carnet = scoped_queryset(request, CarnetSubscription.objects).get(
                 carnet_subscription_id=uid,
                 subscription__sport_association__user_id=request.user.user_id
             )
         else:
             # if user athlete let's see if he has the right to top up the carnet
-            old_carnet = CarnetSubscription.objects.get(
+            old_carnet = scoped_queryset(request, CarnetSubscription.objects).get(
                 carnet_subscription_id=uid
             )
             if old_carnet.subscription.user != request.user:
@@ -301,7 +302,7 @@ def carnet_subscription_delete(request, uid, uid_course):
         return Response({'msg': 'Missing course subscription uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet_subscription = CarnetSubscription.objects.get(
+        carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).get(
             carnet_subscription_id=uid
         )
         # remove course_subscription
@@ -334,7 +335,7 @@ def carnet_update(request, uid):
         return Response({'msg': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = Carnet.objects.get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
         # update carnet
         carnet.title = serializer.validated_data['title']
         carnet.description = serializer.validated_data['description']
@@ -361,7 +362,7 @@ def carnet_delete(request, uid):
         return Response({'msg': 'Missing carnet uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = Carnet.objects.get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
         carnet.delete()
         return Response({'msg': 'Carnet deleted successfully.'}, status=status.HTTP_200_OK)
     except Carnet.DoesNotExist:
@@ -382,16 +383,16 @@ def carnet_info(request, uid):
         return Response({'msg': 'Missing carnet uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = Carnet.objects.get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
         serialized_carnet = CarnetListInfoSerializer(carnet)
         data = serialized_carnet.data
         data['subscriptions'] = []
         # loop through carnetsubscriptions and add the user info
-        carnet_subscriptions = CarnetSubscription.objects.filter(carnet_id=carnet).order_by('-creation_date')
+        carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(carnet_id=carnet).order_by('-creation_date')
         for sub in carnet_subscriptions:
             sub_data = CarnetSubscriptionSerializer(sub).data
             sub_data['courses'] = []
-            course_subscriptions = CourseSubscription.objects.filter(
+            course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
                 subscription=sub.subscription
             )
             for course_sub in course_subscriptions:
@@ -414,21 +415,21 @@ def carnet_replace(request, uid, uid_subscription):
         return Response({'msg': 'Not allowed.'}, status=status.HTTP_403_FORBIDDEN)
 
     # get sport_association
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # read request data and get course_subscription
     data = request.data
     # get course_subscription_id and check if it exists, if not keep it None
     course_subscription = None
     if 'course_subscription_id' in data:
-        course_subscription = CourseSubscription.objects.filter(
+        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=data['course_subscription_id'],
             course__sport_association=sport_association,
         ).first()
 
     if course_subscription:
         # delete all installments related to the subscription
-        installments = CourseSubscriptionInstallment.objects.filter(
+        installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(
             course_subscription=course_subscription,
             paid=False,
         )
@@ -438,7 +439,7 @@ def carnet_replace(request, uid, uid_subscription):
                     installment.payment.delete()
                 installment.delete()
         # delete unpaid payment otherwise they become orphan payments
-        payment = Payment.objects.filter(
+        payment = scoped_queryset(request, Payment.objects).filter(
             payment_id=course_subscription.payment_id,
             paid=False,
         ).first()
@@ -463,7 +464,7 @@ def carnet_unassign(request, uid, uid_subscription):
     # get sport_association
 
     # get carnet_subscription
-    carnet_subscription = CarnetSubscription.objects.filter(
+    carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).filter(
         carnet_subscription_id=uid_subscription,
     ).first()
 
@@ -488,7 +489,7 @@ def carnet_assign(request, uid, uid_subscription):
     """
 
     # get subscription by uid
-    subscription = Subscription.objects.filter(subscription_id=uid_subscription).first()
+    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid_subscription).first()
     if not subscription:
         return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -503,7 +504,7 @@ def carnet_assign(request, uid, uid_subscription):
 
     # get sport association by user if user is an association
     if request.user.role == User.ASSOCIATION:
-        sport_association = SportAssociation.objects.filter(user=request.user).first()
+        sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
     else:
         sport_association = subscription.sport_association
     if not sport_association:
@@ -511,7 +512,7 @@ def carnet_assign(request, uid, uid_subscription):
 
 
     # get carnet by uid for the association
-    carnet = Carnet.objects.filter(carnet_id=uid, sport_association=sport_association).first()
+    carnet = scoped_queryset(request, Carnet.objects).filter(carnet_id=uid, sport_association=sport_association).first()
     if not carnet:
         return Response({'msg': 'Carnet not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -520,17 +521,17 @@ def carnet_assign(request, uid, uid_subscription):
     # get course_subscription_id and check if it exists, if not keep it None
     course_subscription = None
     if 'course_subscription_id' in data:
-        course_subscription = CourseSubscription.objects.filter(
+        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=data['course_subscription_id']
         ).first()
 
     if 'carnet_subscription_id' in data:
-        carnet_subscription = CarnetSubscription.objects.filter(
+        carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).filter(
             carnet_subscription_id=data['carnet_subscription_id']
         ).first()
         if course_subscription is None and 'course_id' in data:
-            course = Course.objects.filter(course_id=data['course_id']).first()
-            course_subscription = CourseSubscription.objects.filter(
+            course = scoped_queryset(request, Course.objects).filter(course_id=data['course_id']).first()
+            course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
                 course=course,
                 subscription=subscription,
             ).first()

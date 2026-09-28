@@ -1,3 +1,4 @@
+import {contextKey, recoverInvalidImpersonation} from './impersonation.js';
 import {getWebSocketUrl} from './websocketUrl.js';
 import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
@@ -57,6 +58,7 @@ class NotificationWebSocket {
 
         this.ws = new WebSocket(url);
         const socket = this.ws;
+        const identitySnapshot = globalThis.localStorage?.getItem(contextKey) || null;
 
         this.ws.onopen = () => {
             console.log('[NotificationWebSocket] Connected');
@@ -91,6 +93,10 @@ class NotificationWebSocket {
             if (event.code === 4001) {
                 console.error('[NotificationWebSocket] Authentication failed');
                 this.onError?.('Authentication failed');
+                return;
+            }
+
+            if (event.code === 4003 && recoverInvalidImpersonation({impersonation_invalid:true}, identitySnapshot)) {
                 return;
             }
 

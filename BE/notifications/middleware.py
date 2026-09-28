@@ -70,7 +70,12 @@ class JWTAuthMiddleware(BaseMiddleware):
         def selected_user():
             try:
                 actor = User.objects.get(pk=actor_id, is_active=True)
-                return resolve_target(actor, identifier)
+                target = resolve_target(actor, identifier)
+                if (getattr(target, 'impersonation_association', None) and
+                        scope.get('path') == '/ws/agent/' and
+                        (target.role == User.ATHLETE or (target.is_collaborator and target.collaborator_role != User.FULL))):
+                    return None
+                return target
             except (User.DoesNotExist, PermissionDenied):
                 return None
 
@@ -80,6 +85,7 @@ class JWTAuthMiddleware(BaseMiddleware):
             return
         scope['authenticated_user'] = scope['user']
         scope['user'] = target
+        scope['impersonation_association'] = getattr(target, 'impersonation_association', None)
         closed = False
 
         async def checked_send(message):

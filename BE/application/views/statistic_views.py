@@ -1,3 +1,4 @@
+from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
 """
 @ copyright: Bakney SRL
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 @permission_classes([IsAuthenticated])
 def statistic_dashboard_layout(request):
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     if sport_association is None:
         return Response({'error: sport association not found.'}, status.HTTP_404_NOT_FOUND)
@@ -60,7 +61,7 @@ def statistic_dashboard_layout(request):
 @permission_classes([IsAuthenticated])
 def statistic_dashboard(request):
 
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     if sport_association is None:
         return Response({'error: sport association not found.'}, status.HTTP_404_NOT_FOUND)
@@ -76,7 +77,7 @@ def statistic_dashboard(request):
         today = timezone.now()
 
         # Single query that gets both total count and status breakdown
-        subscription_stats = Subscription.objects.filter(
+        subscription_stats = scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
             status_flag__in=[Subscription.ACCEPTED, Subscription.PENDING, Subscription.NOT_SIGNED,
                              Subscription.REJECTED],
@@ -129,7 +130,7 @@ def statistic_dashboard(request):
 
         # Get all payments for the last 31 days in a single query
         # Group by date and sum the amounts
-        daily_payments = Payment.objects.filter(
+        daily_payments = scoped_queryset(request, Payment.objects).filter(
             amount__gt=0,
             paid=True,
             sport_association=sport_association,
@@ -171,7 +172,7 @@ def statistic_dashboard(request):
         start_date = end_date - timedelta(days=30)
 
         # Get daily counts in a single query
-        daily_associates = Subscription.objects.filter(
+        daily_associates = scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
             creation_date__range=(start_date, end_date)
         ).annotate(
@@ -210,7 +211,7 @@ def statistic_dashboard(request):
         start_date = end_date - timedelta(days=7)
 
         # Get all active courses with their subscription counts in a single query
-        courses_with_counts = Course.objects.filter(
+        courses_with_counts = scoped_queryset(request, Course.objects).filter(
             sport_association=sport_association,
             status_flag=Course.ACTIVE
         ).annotate(
@@ -226,7 +227,7 @@ def statistic_dashboard(request):
         best_courses = list(courses_with_counts)
 
         # Get daily subscription counts for the last week in a single query
-        daily_subscriptions = CourseSubscription.objects.filter(
+        daily_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             course__sport_association=sport_association,
             creation_date__range=(start_date, end_date)
         ).annotate(
@@ -251,7 +252,7 @@ def statistic_dashboard(request):
             current_date += timedelta(days=1)
 
         # Get total course associates in a single query
-        total_subscriptions = CourseSubscription.objects.filter(
+        total_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             course__sport_association=sport_association
         ).count()
 
@@ -275,9 +276,9 @@ def statistic_dashboard(request):
             instructor_id = str(instructor.instructor_id) if instructor is not None else None
             if instructor_id is not None:
                 is_instructor = True
-                attentance_registries = AttendanceRegistry.objects.filter(events__iregex=instructor_id)
+                attentance_registries = scoped_queryset(request, AttendanceRegistry.objects).filter(events__iregex=instructor_id)
                 # Optimized query with select_related and prefetch_related
-                attendance_days = AttendanceDay.objects.filter(
+                attendance_days = scoped_queryset(request, AttendanceDay.objects).filter(
                     date__range=(rome_today_start, rome_today_end),
                     attendance_registry__course__sport_association=sport_association,
                     attendance_registry__in=attentance_registries
@@ -288,7 +289,7 @@ def statistic_dashboard(request):
 
         if not is_instructor:
             # Optimized query with select_related
-            attendance_days = AttendanceDay.objects.filter(
+            attendance_days = scoped_queryset(request, AttendanceDay.objects).filter(
                 date__range=(rome_today_start, rome_today_end),
                 attendance_registry__course__sport_association=sport_association,
             ).select_related(
@@ -309,7 +310,7 @@ def statistic_dashboard(request):
         thirty_days_ago = timezone.now() - timedelta(days=30)
 
         # Base query without JSON-specific operations
-        carnet_subscriptions = CarnetSubscription.objects.filter(
+        carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(
             subscription__sport_association__user=request.user,
         ).select_related(
             'subscription',
@@ -409,7 +410,7 @@ def statistic_dashboard(request):
 
         # Optimize query by combining filters and selecting only needed fields
         subscriptions = (
-            Subscription.objects
+            scoped_queryset(request, Subscription.objects)
             .filter(
                 sport_association=sport_association,
                 archived=False,
@@ -466,7 +467,7 @@ def statistic_dashboard(request):
 
         # Optimize query by combining filters and selecting only needed fields
         subscriptions = (
-            Subscription.objects
+            scoped_queryset(request, Subscription.objects)
             .filter(
                 sport_association=sport_association,
                 medical__isnull=False,
@@ -515,7 +516,7 @@ def statistic_dashboard(request):
 
         # Optimize query by combining filters, limiting results, and selecting only needed fields
         subscriptions = (
-            Subscription.objects
+            scoped_queryset(request, Subscription.objects)
             .filter(
                 sport_association=sport_association,
                 status_flag__in=[Subscription.PENDING, Subscription.NOT_SIGNED],
@@ -569,7 +570,7 @@ def statistic_dashboard(request):
         year_start = today_start.replace(month=1, day=1)
 
         # Base queryset
-        base_queryset = Payment.objects.filter(
+        base_queryset = scoped_queryset(request, Payment.objects).filter(
             sport_association=sport_association,
             archived=False,
             payment_date__isnull=False,
@@ -615,7 +616,7 @@ def statistic_dashboard(request):
 
         # Get payments with prefetched subscriptions
         payments = (
-            Payment.objects
+            scoped_queryset(request, Payment.objects)
             .filter(
                 paid=False,
                 archived=False,
@@ -638,7 +639,7 @@ def statistic_dashboard(request):
             payment.expired_days = (today - payment.creation_date.date()).days
 
         # Fetch all relevant subscriptions in a single query and store them in a dictionary
-        subscriptions = Subscription.objects.filter(
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(
             archived=False,
             sport_association=sport_association,
             associate__in=[p.associate_id for p in payments],
@@ -722,7 +723,7 @@ def statistic_athlete_dashboard(request):
         instance_config = InstanceConfiguration.objects.select_related(
             'primary_association__user'
         ).first()
-        if instance_config is None or instance_config.primary_association is None:
+        if not request.impersonation_association and (instance_config is None or instance_config.primary_association is None):
             logger.error(
                 "Athlete dashboard unavailable: primary association is not configured",
                 extra={"user_id": str(request.user.user_id)},
@@ -732,8 +733,8 @@ def statistic_athlete_dashboard(request):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        sport_association = instance_config.primary_association
-        user_subscriptions = Subscription.objects.filter(
+        sport_association = request.impersonation_association or instance_config.primary_association
+        user_subscriptions = scoped_queryset(request, Subscription.objects).filter(
             user=request.user,
             sport_association=sport_association,
         )
@@ -752,7 +753,7 @@ def statistic_athlete_dashboard(request):
         ).values_list('associate__tax_code', flat=True).distinct()
 
         # Family subscriptions remain visible, but only inside this self-hosted association.
-        subscriptions = Subscription.objects.filter(
+        subscriptions = scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
         ).filter(
             Q(user=request.user) |
@@ -811,12 +812,12 @@ def statistic_athlete_dashboard(request):
 
         for subscription in subscriptions_with_lessons:
             # get upcoming lessons for each course
-            course_subscriptions = CourseSubscription.objects.filter(
+            course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
                 subscription=subscription
             )
             for course_subscription in course_subscriptions:
                 # get AttendanceRegistry for each course_subscription
-                attendance_registries = AttendanceRegistry.objects.filter(
+                attendance_registries = scoped_queryset(request, AttendanceRegistry.objects).filter(
                     course=course_subscription.course)
                 for attendance_registry in attendance_registries:
                     # get the next 7 days upcoming lessons
@@ -830,7 +831,7 @@ def statistic_athlete_dashboard(request):
                             # get the next 7 days upcoming lessons
                             if now <= event_start <= next_week:
                                 # let's get the attendance day
-                                attendance_day = AttendanceDay.objects.filter(
+                                attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
                                     attendance_registry=attendance_registry,
                                     date__date=event_start.date(),
                                     auto_marked=False
@@ -919,7 +920,7 @@ def attendance_mark(request, uid):
 
 
     # get subscription
-    subscription = Subscription.objects.filter(
+    subscription = scoped_queryset(request, Subscription.objects).filter(
         subscription_id=uid).first()
     if subscription is None:
         return Response({"msg": "Iscrizione non trovata."}, status.HTTP_404_NOT_FOUND)
@@ -934,14 +935,14 @@ def attendance_mark(request, uid):
 
     if attendance_day_id is None:
         # get course_subscription
-        course_subscriptions = CourseSubscription.objects.filter(
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             subscription=subscription
         ).select_related('course').iterator(chunk_size=100)
 
         for course_subscription in course_subscriptions:
             course_sub = course_subscription
             # get the AttendanceRegistry
-            attendance_registry = AttendanceRegistry.objects.filter(
+            attendance_registry = scoped_queryset(request, AttendanceRegistry.objects).filter(
                 course=course_subscription.course
             ).first()
 
@@ -949,7 +950,7 @@ def attendance_mark(request, uid):
                 continue
 
             # get the attendance day
-            attendance_day = AttendanceDay.objects.filter(
+            attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
                 attendance_registry=attendance_registry,
                 date__date=today.date()
             ).select_related('attendance_registry', 'attendance_registry__course').first()
@@ -965,7 +966,7 @@ def attendance_mark(request, uid):
 
             available_attendance_days.append(attendance_day)
     else:
-        attendance_day = AttendanceDay.objects.filter(
+        attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
             attendance_day_id=attendance_day_id
         ).select_related('attendance_registry', 'attendance_registry__course').first()
 
@@ -977,7 +978,7 @@ def attendance_mark(request, uid):
                 for attendee in attendance_day.attendees):
             already_checked_in = True
         available_attendance_days.append(attendance_day)
-        course_sub = CourseSubscription.objects.filter(
+        course_sub = scoped_queryset(request, CourseSubscription.objects).filter(
             course=attendance_day.attendance_registry.course,
             subscription=subscription
         ).first()
@@ -994,7 +995,7 @@ def attendance_mark(request, uid):
         if attendance_day.attendees is None:
             attendance_day.attendees = []
 
-        carnets = CarnetSubscription.objects.filter(
+        carnets = scoped_queryset(request, CarnetSubscription.objects).filter(
             Q(course_subscription=course_sub) |
             Q(course_subscription__isnull=True),
             subscription=course_sub.subscription,
@@ -1071,7 +1072,7 @@ def attendance_day_delete(request, uid):
     # OLD filter
     # attendance_day = AttendanceDay.objects.filter(
     #     attendance_day_id=uid, auto_marked=False, date__gt=datetime.now()).first()
-    attendance_day = AttendanceDay.objects.filter(attendance_day_id=uid).first()
+    attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(attendance_day_id=uid).first()
     # check if attendance day exists
     if attendance_day is None:  # pragma: no cover
         return Response({'error: attendance day not found.'}, status.HTTP_404_NOT_FOUND)
@@ -1089,7 +1090,7 @@ def attendance_day_mark_absent(request, uid):
 
     is_valid_uuid(uid)
 
-    attendance_day = AttendanceDay.objects.filter(
+    attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
         attendance_day_id=uid).first()
     # check if attendance day exists
     if attendance_day is None:  # pragma: no cover
@@ -1102,6 +1103,12 @@ def attendance_day_mark_absent(request, uid):
 
     # check is valid uuid
     is_valid_uuid(course_subscription_id)
+
+    if getattr(request, 'impersonation_association', None):
+        if not scoped_queryset(request, CourseSubscription.objects).filter(
+                pk=course_subscription_id, course=attendance_day.attendance_registry.course).exists():
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('Iscrizione al corso non disponibile.')
 
     absent = request.data.get('absent', True)
 
@@ -1207,11 +1214,11 @@ def statistic_report(request):
     months, months_number = BalanceSheetData.get_range_from_year_and_starting_date_in_months(bs_month)
     from_date, to_date = BalanceSheetData.get_range_from_year_and_starting_date(
         current_date, starting_day=request.user.balance_sheet_start_day, starting_month=bs_month)
-    sport_association = SportAssociation.objects.get(user=request.user)
+    sport_association = scoped_queryset(request, SportAssociation.objects).get(user=request.user)
 
     # Subscriptions charts
     subscriptions_extract = \
-        Subscription.objects.filter(
+        scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
             archived=False,
             creation_date__range=(from_date, to_date),
@@ -1222,7 +1229,7 @@ def statistic_report(request):
         .values('month', 'c')
 
     subscriptions_extract_approved = \
-        Subscription.objects.filter(
+        scoped_queryset(request, Subscription.objects).filter(
             sport_association=sport_association,
             archived=False,
             creation_date__range=(from_date, to_date),
@@ -1248,18 +1255,18 @@ def statistic_report(request):
             subscriptions_grouped_approved.append(0)
 
     # Courses charts
-    count_courses = Course.objects.filter(
+    count_courses = scoped_queryset(request, Course.objects).filter(
         sport_association=sport_association,
         status_flag=Course.ACTIVE,
         creation_date__range=(from_date, to_date),
     ).count()
-    courses_id = Course.objects.filter(
+    courses_id = scoped_queryset(request, Course.objects).filter(
         sport_association=sport_association,
         status_flag=Course.ACTIVE,
         creation_date__range=(from_date, to_date),
     ).values_list('course_id', flat=True)
 
-    courses_extract = CourseSubscription.objects.filter(
+    courses_extract = scoped_queryset(request, CourseSubscription.objects).filter(
         course__in=courses_id,
     ).values('course__title')\
         .annotate(c=Count('course_subscription_id'), revenue=Sum('course__fee'))\
@@ -1276,7 +1283,7 @@ def statistic_report(request):
         idx += 1
 
     pie_subscriptions = [0, 0, 0, 0]
-    subscriptions = Subscription.objects.filter(
+    subscriptions = scoped_queryset(request, Subscription.objects).filter(
         sport_association=sport_association,
         status_flag__lte=4
     ).values('status_flag').annotate(
@@ -1287,7 +1294,7 @@ def statistic_report(request):
         pie_subscriptions[subscription['status_flag'] - 1] = subscription['count']
 
     # Payment charts - keeping original date behavior
-    payments_extract = Payment.objects.filter(
+    payments_extract = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         archived=False,
         expense=False,
@@ -1314,7 +1321,7 @@ def statistic_report(request):
     ]
 
     # Pie payments - no changes needed here
-    pie_payments = Payment.objects.filter(
+    pie_payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         archived=False,
         expense=False,
@@ -1335,7 +1342,7 @@ def statistic_report(request):
     average_subscriptions_month = mean(subscriptions_grouped_approved)
     total_subscriptions_associates = sum(subscriptions_grouped_approved)
 
-    subscriptions_querylist = Subscription.objects.filter(
+    subscriptions_querylist = scoped_queryset(request, Subscription.objects).filter(
         sport_association=sport_association,
         archived=False,
         status_flag=Subscription.ACCEPTED
@@ -1358,7 +1365,7 @@ def statistic_report(request):
     #     archived=False,
     #     creation_date__range=(from_date, to_date)
     # ).aggregate(Sum('membership_fee'))['membership_fee__sum']
-    total_subscriptions = Payment.objects.filter(
+    total_subscriptions = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         archived=False,
         subject=Payment.SUBSCRIPTION,
@@ -1369,7 +1376,7 @@ def statistic_report(request):
     ).aggregate(Sum('amount'))['amount__sum']
     ## end refactor
 
-    total_payments = Payment.objects.filter(
+    total_payments = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         archived=False,
     ).filter(
@@ -1383,7 +1390,7 @@ def statistic_report(request):
     #     archived=False,
     #     creation_date__range=(from_date, to_date)
     # ).aggregate(Sum('activity_fee'))['activity_fee__sum']
-    total_activities = Payment.objects.filter(
+    total_activities = scoped_queryset(request, Payment.objects).filter(
         sport_association=sport_association,
         archived=False,
         subject=Payment.COURSE,
@@ -1395,7 +1402,7 @@ def statistic_report(request):
     ## end refactor
 
 
-    total_invoices = Invoice.objects.filter(
+    total_invoices = scoped_queryset(request, Invoice.objects).filter(
         sport_association=sport_association,
         archived=False,
         creation_date__range=(from_date, to_date)
@@ -1456,7 +1463,7 @@ def health(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_inconsistencies(request):
-    associates = Associate.objects.filter(user_id=request.user.user_id)
+    associates = scoped_queryset(request, Associate.objects).filter(user_id=request.user.user_id)
 
     missing_tutors = []
 

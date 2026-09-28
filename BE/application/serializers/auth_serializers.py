@@ -328,6 +328,11 @@ class UsersOnboardingSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class UserAuthSerializer(serializers.ModelSerializer):
+    can_impersonate = serializers.SerializerMethodField()
+
+    def get_can_impersonate(self, obj):
+        return bool(obj.is_active and not obj.deleted and (obj.is_superuser or obj.role == User.ASSOCIATION))
+
     '''
     def __init__(self, *args, **kwargs):
         kwargs['partial'] = True
@@ -412,6 +417,7 @@ class UserAuthSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'user_id',
+            'can_impersonate',
             'first_name',
             'last_name',
             'username',

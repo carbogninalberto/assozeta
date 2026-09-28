@@ -1,11 +1,12 @@
 <script>
     import {slide} from 'svelte/transition';
     import {UserSwitch, CaretDown, SignOut, ShieldCheck} from 'phosphor-svelte';
-    import {role, isMobileSidebarOpen} from 'store/stores.js';
-    import {readImpersonation, stopImpersonation} from 'utils/impersonation.js';
+    import {role, userData, isMobileSidebarOpen} from 'store/stores.js';
+    import {readImpersonation, stopImpersonation, canImpersonate} from 'utils/impersonation.js';
     import BasicModal from './modals/BasicModal.svelte';
     import Picker from '../routes/tools/SportAssociationsManager.svelte';
     const context = readImpersonation();
+    const associationActor = context?.actor_role === 'association' || (!context && $role !== 'administrator');
     const legacySession = localStorage.getItem('switched_superuser') === 'true';
     const labels = {association: 'Associazione sportiva', athlete: 'Utente', collaborator: 'Collaboratore'};
     let expanded = false;
@@ -23,12 +24,12 @@
 
 <svelte:window on:open-impersonation-panel={expandPanel} />
 
-{#if context || legacySession || $role === 'administrator'}
-    <section class="identity-panel" aria-label="Identità amministrativa">
+{#if context || legacySession || canImpersonate($userData)}
+    <section class="identity-panel" aria-label="Identità utente">
         <button type="button" class="identity-summary" aria-expanded={expanded} aria-controls="impersonation-details" on:click={() => expanded = !expanded}>
             <span class="identity-icon"><svelte:component this={context || legacySession ? UserSwitch : ShieldCheck} size={21} weight="duotone" /></span>
             <span class="identity-title">
-                <small>{context || legacySession ? 'Stai impersonando' : 'Amministrazione'}</small>
+                <small>{context || legacySession ? 'Stai impersonando' : (associationActor ? 'Associazione' : 'Amministrazione')}</small>
                 <strong title={context?.target?.username}>{context?.target?.username || (legacySession ? 'Sessione precedente' : 'Gestisci accessi')}</strong>
             </span>
             <span class:expanded><CaretDown size={16} /></span>
@@ -37,7 +38,7 @@
             <div id="impersonation-details" class="identity-details" transition:slide={{duration: 150}}>
                 {#if context}
                     <span class="badge badge-light-primary mb-2">{labels[context.target.role]}</span>
-                    <p class="mb-1 font-weight-bold">{context.target.association?.name || 'Account personale'}</p>
+                    <p class="mb-1 font-weight-bold">{context.association?.name || context.target.association?.name || 'Account personale'}</p>
                     <p class="text-muted mb-3 identity-email">{context.target.email}</p>
                     <p class="text-muted mb-3">Stai usando i permessi di questo account.</p>
                 {:else}
@@ -48,7 +49,7 @@
                 </button>
                 {#if context || legacySession}
                     <button type="button" class="btn btn-light btn-sm w-100" disabled={exiting} on:click={exitImpersonation}>
-                        <SignOut size={17} class="mr-1" /> {exiting ? 'Uscita in corso…' : 'Torna all’amministrazione'}
+                        <SignOut size={17} class="mr-1" /> {exiting ? 'Uscita in corso…' : (associationActor ? 'Torna all’associazione' : 'Torna all’amministrazione')}
                     </button>
                 {/if}
                 {#if error}<p class="text-danger mt-3 mb-0" role="alert">{error}</p>{/if}

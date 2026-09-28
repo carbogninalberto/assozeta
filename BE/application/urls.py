@@ -91,6 +91,8 @@ router.register(r'personas', AssociateViewSet, basename='persona')
 router.register(r'personas-subscriptions', AssociateSubscriptionViewSet, basename='persona-subscriptions')
 
 urlpatterns = [
+    path('association/impersonation/users', impersonation_users),
+    path('association/impersonation', impersonation_session),
     path('administration/impersonation/users', impersonation_users),
     path('administration/impersonation', impersonation_session),
     path('', include(router.urls)),

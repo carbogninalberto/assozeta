@@ -166,6 +166,7 @@ class NotificationManager:
                             "id": str(uuid.uuid1()),
                             "type": notification_type,
                             "msg": message['msg'],
+                            "association_id": message.get("association_id"),
                             "users": [],
                             "expires": int(time()) + NOTIFICATION_TTL_SECONDS
                         }
@@ -259,6 +260,7 @@ class NotificationManager:
             "type": notification_type,
             "read": is_read,
             "msg": notification['msg'],
+            "association_id": notification.get("association_id"),
             "issued": issued_timestamp,
             "date": ctime(issued_timestamp)
         }

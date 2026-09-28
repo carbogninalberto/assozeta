@@ -44,6 +44,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         """Handle WebSocket connection."""
         self.user = self.scope.get('user')
+        self.association_scope = self.scope.get('impersonation_association')
 
         # Reject unauthenticated connections
         if isinstance(self.user, AnonymousUser) or not self.user:
@@ -160,6 +161,8 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         Handle push notification from channel layer.
         Called when NotificationService.send_notification() pushes to the group.
         """
+        if not self._visible_notification(event['notification']):
+            return
         await self.send_json({
             'type': 'notification_push',
             'notification': event['notification']
@@ -172,16 +175,29 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json({'type': 'staff_board_changed'})
 
     async def restore_progress(self, event):
+        if self.association_scope:
+            return
         await self.send_json({'type': 'restore_progress', **event['payload']})
 
     async def export_progress(self, event):
+        if self.association_scope:
+            return
         await self.send_json({'type': 'export_progress', **event['payload']})
 
     async def export_completed(self, event):
+        if self.association_scope:
+            return
         await self.send_json({'type': 'export_completed', **event['payload']})
 
     async def export_failed(self, event):
+        if self.association_scope:
+            return
         await self.send_json({'type': 'export_failed', **event['payload']})
+
+    def _visible_notification(self, notification):
+        # Historical account-wide notifications have no tenant provenance and
+        # cannot be exposed while an association is acting as that person.
+        return not self.association_scope or str(notification.get('association_id')) == str(self.association_scope.pk)
 
     # Database operations (wrapped with database_sync_to_async)
     @database_sync_to_async
@@ -192,15 +208,22 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _get_notifications(self, broadcasts):
         """Get notifications for user across broadcasts."""
-        return NotificationService.get_manager().get_notification(
-            str(self.user.user_id),
-            broadcasts=broadcasts
-        )
+        notifications, unread = NotificationService.get_manager().get_notification(
+            str(self.user.user_id), broadcasts=broadcasts)
+        if self.association_scope:
+            notifications = [item for item in (notifications or []) if self._visible_notification(item)]
+            unread = sum(not item.get('read', False) for item in notifications)
+        return notifications, unread
 
     @database_sync_to_async
     def _read_notification(self, notification_id, broadcasts):
         """Mark a notification as read."""
-        return NotificationService.get_manager().read_notification(
+        manager = NotificationService.get_manager()
+        if self.association_scope:
+            notifications, _ = manager.get_notification(str(self.user.user_id), broadcasts=broadcasts)
+            if not any(str(item.get('id')) == str(notification_id) and self._visible_notification(item) for item in (notifications or [])):
+                return
+        return manager.read_notification(
             str(self.user.user_id),
             notification_id,
             broadcasts=broadcasts
@@ -209,7 +232,14 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _read_all_notifications(self, broadcasts):
         """Mark all notifications as read."""
-        return NotificationService.get_manager().read_all_notification(
+        manager = NotificationService.get_manager()
+        if self.association_scope:
+            notifications, _ = manager.get_notification(str(self.user.user_id), broadcasts=broadcasts)
+            for item in notifications or []:
+                if self._visible_notification(item):
+                    manager.read_notification(str(self.user.user_id), item['id'], broadcasts=broadcasts)
+            return
+        return manager.read_all_notification(
             str(self.user.user_id),
             broadcasts=broadcasts
         )
