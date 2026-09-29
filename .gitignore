@@ -51,3 +51,5 @@ selfhost/tests/browser/test-results/
 selfhost/tests/browser/node_modules/
 
 /selfhost/.operations/
+
+.DS_Store
