@@ -3,6 +3,7 @@ import logging
 
 import pytz
 from django.db.models import Q
+from django.utils.html import format_html, escape
 
 from application.models import SportAssociation, Payment, CourseSubscription, CourseSubscriptionInstallment
 from application.models.carnet_models import CarnetSubscription
@@ -32,8 +33,29 @@ def generate_invoice_description(payment: Payment, sport_association: SportAssoc
         'subject': payment.subject,
         'sport_association_id': str(sport_association.sport_association_id)
     })
+    # The payment recipient may differ from the retained subscription's associate.
+    reason = payment.description or (
+        payment.payment_category.name if payment.payment_category else None
+    ) or 'Pagamento'
+    if payment.associate is None:
+        recipient = None
+        if payment.supplier is not None:
+            recipient = payment.supplier.name
+        elif payment.instructor is not None:
+            recipient = payment.instructor.get_full_name()
+        if recipient:
+            return str(format_html(
+                'Ricevuta di pagamento di <b>{}</b> con causale <b>{}</b> '
+                "per l'associazione <b>{}</b>.",
+                recipient, reason, sport_association.denomination,
+            ))
+        return str(format_html(
+            PaymentUtils.PAYMENT_INVOICE_DESCRIPTION[Payment.OTHER],
+            reason, sport_association.denomination,
+        ))
+
     description = PaymentUtils.PAYMENT_INVOICE_DESCRIPTION[payment.subject]
-    if payment.subject is Payment.SUBSCRIPTION:
+    if payment.subject == Payment.SUBSCRIPTION:
         # subscription name
         sub_name = ""
         period_and_sub_label = ""
@@ -41,43 +63,50 @@ def generate_invoice_description(payment: Payment, sport_association: SportAssoc
         if sub:
             period_and_sub_label = f"{sub.get_period()} "
 
-        if payment.meta is not None and payment.meta["subscription_data"]:
-            sub_name = f"{period_and_sub_label}({payment.meta['subscription_data']['name']}) "
+        subscription_data = (payment.meta or {}).get('subscription_data') or {}
+        if subscription_data.get('name'):
+            sub_name = f"{period_and_sub_label}({subscription_data['name']}) "
 
-        sub_memebership = SubscriptionMembership.objects.filter(subscription=sub).first()
+        sub_memebership = SubscriptionMembership.objects.filter(subscription=sub).first() if sub else None
         if sub_memebership:
             sub_name += f" e tesseramento, {sub_memebership.get_period()} ({sub_memebership.membership_type}) "
 
-        description = description.format(sub_name, payment.associate.get_full_name(),
-                                         sport_association.denomination)
-    elif payment.subject is Payment.OTHER:
-        description = description.format(payment.payment_category.name,
-                                         sport_association.denomination)
+        description = format_html(
+            description, sub_name, payment.associate.get_full_name(), sport_association.denomination,
+        )
+    elif payment.subject == Payment.OTHER:
+        description = format_html(
+            description, payment.payment_category.name if payment.payment_category else reason,
+            sport_association.denomination,
+        )
     else:
         course_payment = CourseSubscription.objects.all_objects().filter(payment=payment).first()
         if course_payment is None:
             course_payment = CourseSubscriptionInstallment.objects.all_objects().filter(payment=payment).first()
             if course_payment:
-                description = description.format(payment.associate.get_full_name(),
-                                                 course_payment.course_subscription.course.title,
-                                                 sport_association.denomination)
+                description = format_html(
+                    description, payment.associate.get_full_name(),
+                    course_payment.course_subscription.course.title, sport_association.denomination,
+                )
             else:
                 course_payment = CarnetSubscription.objects.filter(payment=payment).first()
                 if course_payment:
-                    description = description.format(payment.associate.get_full_name(),
-                                                     course_payment.carnet_id.title,
-                                                     sport_association.denomination)
+                    description = format_html(
+                        description, payment.associate.get_full_name(),
+                        course_payment.carnet_id.title, sport_association.denomination,
+                    )
                 else:
-                    description = payment.description
+                    description = escape(reason)
         else:
-            description = description.format(payment.associate.get_full_name(),
-                                             course_payment.course.title,
-                                             sport_association.denomination)
+            description = format_html(
+                description, payment.associate.get_full_name(),
+                course_payment.course.title, sport_association.denomination,
+            )
     logger.info("Invoice description generated", extra={
         'payment_id': str(payment.payment_id),
         'description_length': len(description)
     })
-    return description
+    return str(description)
 
 
 def calculate_simulation(date=None, sport_association=None):

@@ -1909,11 +1909,19 @@ def payment_approve(request, uid):
 
         data = {"msg": "payment mark as payed.", "payment": PaymentSerializer(payment).data}
     if payment.invoice and generate_invoice:
-        print_document_invoice.apply_async(args=[
+        # Defer even when a caller wraps approval in an outer transaction. A
+        # broker failure must not turn a committed approval into an HTTP 500;
+        # approval can be retried to dispatch the same receipt again.
+        invoice_args = [
             str(payment.invoice.invoice_id),
             request.headers.get('authorization'),
             send_receipt_email,
-        ])
+        ]
+
+        def enqueue_invoice():
+            print_document_invoice.apply_async(args=invoice_args)
+
+        transaction.on_commit(enqueue_invoice, robust=True)
         data['payment']['invoice_generating'] = True
     return Response({'data': data}, status=status.HTTP_200_OK)
 

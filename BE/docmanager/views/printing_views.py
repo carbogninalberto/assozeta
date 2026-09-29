@@ -16,6 +16,7 @@ from application.models.user_models import Associate, SportAssociation, Instruct
     SportAssociationModuleTemplates, Folder, SportAssociationDocumentsArchive
 from application.models.utils import filter_mentions, extract_values
 from application.serializers.invoice_serializers import generate_invoice_html
+from application.utils.payments_utils import generate_invoice_description
 from application.utils.api_utils import is_valid_uuid
 from core import settings
 from core.middleware import IsAuthenticated
@@ -304,28 +305,27 @@ def document_invoice(request, uid):
         if response.status_code == 200:
             invoice.document_pdf = document
             invoice.save()
-            # SEND EMAIL TO ASSOCIATE and USER if available
-            p = scoped_queryset(request, Payment.objects).get(invoice=invoice)
-            subject = f"Ricevuta di pagamento {invoice.payment.payment_date.date().strftime('%d/%m/%y')}"
-            message = f"Gentile {p.associate.get_full_name()},\n" \
-                      f"abbiamo il piacere di inviarle la ricevuta di pagamento di {str(invoice.payment.amount).replace(',', ' ').replace('.', ',')} € del {invoice.payment.payment_date.date().strftime('%d/%m/%y')}.\n\n" \
-                      f"Ecco il link per scaricare la ricevuta:\n {settings.APP_URL}/api/document/retrieve/{document.document_id}?download=false&token={invoice.document_pdf.token}\n\n" \
-                      f"Cordiali saluti,\n" \
-                      f"{invoice.sport_association.denomination}"
+            # Delivery remains opt-in and limited to the payment's associate.
+            p = invoice.payment
+            if send_receipt_email and p.associate is not None and p.associate.email:
+                subject = f"Ricevuta di pagamento {invoice.payment.payment_date.date().strftime('%d/%m/%y')}"
+                message = f"Gentile {p.associate.get_full_name()},\n" \
+                          f"abbiamo il piacere di inviarle la ricevuta di pagamento di {str(invoice.payment.amount).replace(',', ' ').replace('.', ',')} € del {invoice.payment.payment_date.date().strftime('%d/%m/%y')}.\n\n" \
+                          f"Ecco il link per scaricare la ricevuta:\n {settings.APP_URL}/api/document/retrieve/{document.document_id}?download=false&token={invoice.document_pdf.token}\n\n" \
+                          f"Cordiali saluti,\n" \
+                          f"{invoice.sport_association.denomination}"
 
-            if p.associate.email:
-                if send_receipt_email is True:
-                    send_mail_async.apply_async(
-                        kwargs={
-                            "subject": subject,
-                            "message": message,
-                            "from_email": settings.DEFAULT_TEAM_EMAIL,
-                            "reply_to": [settings.DEFAULT_SUPPORT_EMAIL],
-                            "recipient_list": [p.associate.email],
-                            "html_message": None,
-                            "fail_silently": False
-                        }
-                    )
+                send_mail_async.apply_async(
+                    kwargs={
+                        "subject": subject,
+                        "message": message,
+                        "from_email": settings.DEFAULT_TEAM_EMAIL,
+                        "reply_to": [settings.DEFAULT_SUPPORT_EMAIL],
+                        "recipient_list": [p.associate.email],
+                        "html_message": None,
+                        "fail_silently": False
+                    }
+                )
         return response
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -357,8 +357,7 @@ def document_invoice_view(request, uid):
 
     # check if invoice subject is OTHER
     if payment.subject == Payment.OTHER:
-        invoice.description = f"Ricevuta di pagamento con causale: <b>{payment.payment_category.name}</b> " + \
-                              f"dell'associazione <b>{invoice.sport_association.denomination}</b>."
+        invoice.description = generate_invoice_description(payment, invoice.sport_association)
 
     stamp_free = False
     if payment.subject == Payment.COURSE or \
@@ -410,16 +409,10 @@ def document_invoice_view(request, uid):
         body_style = "opacity:0.7;text-decoration: line-through;"
         footer += "<br><br><b>RICEVUTA ANNULLATA (non è più valida)</b>"
 
-    if invoice.selected_tutor is None:
-        try:
-            payment.associate.tutor = payment.associate.main_tutor
-            if payment.associate.tutor is not None:
-                payment.associate.is_minor = True
-        except Exception as e:
-            logger.error(e)
-    else:
-        payment.associate.tutor = invoice.selected_tutor
-        payment.associate.is_minor = True
+    if payment.associate is not None:
+        payment.associate.tutor = invoice.selected_tutor or payment.associate.main_tutor
+        if payment.associate.tutor is not None:
+            payment.associate.is_minor = True
 
     # check if the payment is a subscription payment
     sub = payment.get_subscription
@@ -514,7 +507,7 @@ def document_invoice_view(request, uid):
     default_payment_category = invoice.sport_association.user.default_payment_category
     hide_category_name = invoice.sport_association.user.hide_category_name
 
-    if (default_payment_category is not None and payment.payment_category.deleted is False) or \
+    if (default_payment_category is not None and payment.payment_category is not None and payment.payment_category.deleted is False) or \
             (payment.payment_category is not None and not hide_category_name):
         override_label = True
     else:
@@ -538,7 +531,7 @@ def document_invoice_view(request, uid):
             'course_name': payment.get_course_carnet_name(),
             "enumerate_invoices": enumerate_invoices,
             "payment_categories": payment_categories,
-            "custom_data": sub.custom_data if sub else None,
+            "custom_data": sub.custom_data if sub and payment.associate is not None else None,
             "stamp_free": stamp_free,
             "invoice": invoice,
             "payment_method": payment_method,
