@@ -1,9 +1,15 @@
 # Release quality automation
 
-Image publication now depends on the reusable **Self-host release quality**
-workflow. Its separate Ubuntu 24.04 jobs run the legacy upgrade and complete
-failure/recovery scenarios with browser checks enabled. A failed or skipped
-required job cannot allow the publication job to run.
+Release and manually dispatched image publication depend on the reusable
+**Self-host release quality** workflow. It runs the complete backend regression
+suite, UI/SSO checks, and the legacy upgrade and failure/recovery scenarios with
+browser checks enabled. Failed, cancelled or skipped required checks block
+release publication.
+
+Pushes to `main` run static validation and development/production smoke checks
+before publishing edge images; they skip the full quality workflow. Pull requests
+keep their existing path-based selection of backend, UI and upgrade checks.
+The full quality workflow also remains available through manual dispatch.
 
 The harness selects the Docker bridge gateway on Linux and retains
 `host.docker.internal` on Docker Desktop. It creates only disposable

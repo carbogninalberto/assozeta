@@ -20,6 +20,8 @@ permissions:
 
 jobs:
   selfhost-quality:
+    # PRs run affected checks separately; pushes only need the smoke/static gates.
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/selfhost-quality.yml
 
   validate:
@@ -55,7 +57,14 @@ jobs:
 
   publish:
     name: Publish ${{ matrix.name }}
-    if: github.event_name != 'pull_request'
+    # A skipped full-quality job is expected only for branch pushes. Explicit
+    # results keep failures/cancellation from bypassing the publication gates.
+    if: >-
+      ${{ !cancelled() &&
+          needs.validate.result == 'success' &&
+          needs.production-smoke.result == 'success' &&
+          (needs.selfhost-quality.result == 'success' ||
+           (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
     needs: [validate, production-smoke, selfhost-quality]
     runs-on: ubuntu-latest
     permissions:
