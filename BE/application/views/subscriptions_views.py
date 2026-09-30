@@ -1947,6 +1947,9 @@ def subscription_card(request, uid):
         # verify the token
         subscription_token = SubscriptionToken.objects.filter(token=token, subscription_id=uid).first()
         if subscription_token is None:
+            from instance.sso.public_links import source_token
+            subscription_token = source_token('card', token, uid)
+        if subscription_token is None:
             return Response({'msg': 'il token è scaduto'}, status=status.HTTP_400_BAD_REQUEST)
 
         # check if the token is valid
@@ -2918,6 +2921,9 @@ def validate_token_link_and_get_subscriptions(request):
         expires_at__lt=make_aware(datetime.now())
     ).delete()
 
+    if gym_token_link is None:
+        from instance.sso.public_links import source_token
+        gym_token_link = source_token('cumulative', token)
     if gym_token_link is None:
         return Response({'expired': True}, status=status.HTTP_200_OK)
 
