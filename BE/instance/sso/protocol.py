@@ -129,19 +129,19 @@ def upstream(pairing, action, payload=None, *, revocation=False):
     parts = urlsplit(pairing.authority)
     if normalize_origin(parts.scheme + '://' + parts.netloc) + parts.path != pairing.authority:
         raise SSOError('configuration_required', 409)
-    if action not in ('status', 'token', 'disconnect'):
+    if action not in ('status', 'token', 'disconnect', 'public-token'):
         raise ValueError('Unknown SSO action')
     if not pairing.remote_pairing_id:
         raise SSOError('invalid_pairing', 409)
     body = {**(payload or {}), 'pairing_id': str(pairing.remote_pairing_id),
             'secret': decrypt(pairing.secret_encrypted)}
-    if action != 'token':
+    if action in ('status', 'disconnect'):
         body['action'] = 'disconnect' if action == 'disconnect' else 'status'
     try:
         with requests.Session() as session:
             session.trust_env = False
             with session.post(
-                pairing.authority + '/pairing/v1/' + ('token' if action == 'token' else 'status'),
+                pairing.authority + '/pairing/v1/' + (action if action in ('token', 'public-token') else 'status'),
                 json=body, timeout=(3, 8), allow_redirects=False, stream=True,
                 headers={'Accept': 'application/json'},
             ) as response:

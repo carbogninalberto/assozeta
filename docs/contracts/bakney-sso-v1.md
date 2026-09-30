@@ -169,3 +169,21 @@ own container to check root protocol routing and privacy headers.
 Chromium allows the self-signed fixture certificate. No deployed accounts or
 production Bakney service are contacted. Only safe screenshots and a scoped JSON
 report are retained; temporary sources, databases and containers are removed.
+
+## Source-issued public links
+
+Unknown membership-card and cumulative-subscription tokens can be validated with
+Bakney through POST `/pairing/v1/public-token`. The receiver uses only the stored
+pairing secret and configured authority; browser credentials never cross origins.
+The request includes `kind`, source UUID `token`, and card `resource_id`. Bakney
+returns a minimal bound grant with the original expiry only while pairing and
+forwarding remain valid. The receiver verifies pairing/instance/association,
+origin/callback, resource, and expiry before serving local records.
+
+Grants are used only for the current request and are never imported or cached.
+Source expiry, disable/revocation and upstream failures therefore deny subsequent
+requests. Locally issued or previously imported tokens keep normal validation.
+An existing local association/subscription with the same preserved UUID is
+required; this endpoint does not migrate member data. Deploy Bakney's new endpoint
+before this receiver update and the dashboard forwarding update. No migration is
+required for this extension.
