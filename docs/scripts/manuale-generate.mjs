@@ -125,7 +125,7 @@ const staged = [];
 for (const result of reports) {
     const images = result.screenshots;
     const captures = {
-
+        
         'members-search': ['images/faq/ricerca-filtri/', 4],
         'courses-create-edit': ['images/corsi/creazione-modifica/', 4],
         'members-archive-restore': ['images/faq/archiviazione/', 5],
