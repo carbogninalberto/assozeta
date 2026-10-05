@@ -1,0 +1,3 @@
+
+# Preserve binary manual fixture bytes.
+*.pdf binary

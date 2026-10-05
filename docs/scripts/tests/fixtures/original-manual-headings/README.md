@@ -1,0 +1,1 @@
+Original manual headings, copied from the immutable Git revision in provenance.json. Only heading levels, spelling and order are retained. These are independent regression expectations, not application evidence or prose to publish. Updating them requires inspecting the original manual revision; never regenerate expectations from the recipe output.

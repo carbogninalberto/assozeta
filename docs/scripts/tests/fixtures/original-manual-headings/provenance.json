@@ -1,0 +1,183 @@
+{
+  "repository": "https://github.com/Bakney/manuale",
+  "revision": "0475c2c8b4d397982558c8453a4819587e7a9da9",
+  "kind": "heading-only-regression-fixture",
+  "files": {
+    "_snippets/snippet-example.mdx": {
+      "source_sha256": "e54c08fb292dca008b84f9bf66189fc06fa7aefefc19827e11eae484e2b0975d",
+      "headings": 1
+    },
+    "docs/archivio.mdx": {
+      "source_sha256": "2ff037ecf84389369a0f083f9076c51f81e5518952483e0f87d92ce45c424b2b",
+      "headings": 6
+    },
+    "docs/bacheca.mdx": {
+      "source_sha256": "93e9fbbed3d7dfba0de5565a6d9fe756baf3e50bdf94e71f85b6a8f8696bfa96",
+      "headings": 20
+    },
+    "docs/bilancio.mdx": {
+      "source_sha256": "f910098554217667042067df416caf7d0084c9d2a5540d0ded501e93b292b52a",
+      "headings": 6
+    },
+    "docs/calendario.mdx": {
+      "source_sha256": "558fac4424764273fcb72fadde16a8978ac73084c63c13c8262fed6b968055a3",
+      "headings": 22
+    },
+    "docs/camp-e-ritiri.mdx": {
+      "source_sha256": "f733129593fc2bf2f81409393d50dc9a8c11dbcf86ac1ba5b8fa78b64915ac34",
+      "headings": 15
+    },
+    "docs/carnet.mdx": {
+      "source_sha256": "8f24178a7e7e29783d37d9d7006b667639db7659e5eb1646575fdedab9f867c9",
+      "headings": 12
+    },
+    "docs/collaboratori.mdx": {
+      "source_sha256": "9620b95a55d2f5ca269c65ad2576d2b8f18cb5d0e38a40fd814a9702e862c2b7",
+      "headings": 9
+    },
+    "docs/comunicazioni.mdx": {
+      "source_sha256": "d8861e025fd3b5fc1ed8e326422b78bd12aae6426054cb1409fb930910209d01",
+      "headings": 11
+    },
+    "docs/contabilita-avanzata.mdx": {
+      "source_sha256": "e9e8ae81f347085390d77710bea9e307a8d0b812be7ed54e6a443ffee00b9785",
+      "headings": 26
+    },
+    "docs/corsi.mdx": {
+      "source_sha256": "770a97cfe906ca8463a51c2082eebacfe9ce5982f0e92fb110e99a9bd3e9b4ea",
+      "headings": 25
+    },
+    "docs/impostazioni.mdx": {
+      "source_sha256": "6632aa42a4640957a6843e250c4149740007eb34ec3f4863c5285782c251c7b0",
+      "headings": 29
+    },
+    "docs/introduzione.mdx": {
+      "source_sha256": "2aba4ebe8c7f58adf1c22bf6c41abf1a932d84f183475e2a09c2094bb2421efe",
+      "headings": 3
+    },
+    "docs/istruttori.mdx": {
+      "source_sha256": "5ab3eb5e843be5147adb5318d5424f6a4b4c2286d22b366180c6177237c747a2",
+      "headings": 25
+    },
+    "docs/libro-soci.mdx": {
+      "source_sha256": "22d036c28ec4390b5d0a54124f23c12c318dd79c09fb5893a08c980ee574cda9",
+      "headings": 24
+    },
+    "docs/pagamenti.mdx": {
+      "source_sha256": "64a61a2368071b8b10a8e5073e631f05d5c71711db9b8f3153fb27be94084be0",
+      "headings": 14
+    },
+    "docs/registro-presenze.mdx": {
+      "source_sha256": "60ba1a937d458984dc2f077cd2fbd5eb3b3ead21b665a0980e30c9fb53292e5d",
+      "headings": 15
+    },
+    "docs/ricevute.mdx": {
+      "source_sha256": "a9fe9036ba38fc19ad1b074c9ac5ce8f6e27031668e8034cb1b1827a3a216b57",
+      "headings": 7
+    },
+    "faq/come-abilitare-autenticazione-due-fattori.mdx": {
+      "source_sha256": "6750ba81ad3c4587adbf69ef874d1770204c5614e7f0e3837800f62938f79336",
+      "headings": 7
+    },
+    "faq/come-archiviare-dati.mdx": {
+      "source_sha256": "4b2d978dc79ccbec9c8cc76c3e7ab27eb123973e8d7764744d6dc61cbf13ca50",
+      "headings": 8
+    },
+    "faq/come-calcolare-generare-codici-fiscali.mdx": {
+      "source_sha256": "3b57ecf8a8e904eb0d05fcf413d7541ea775945b2378324faa1020fdea2ae466",
+      "headings": 6
+    },
+    "faq/come-cambiare-anno-sportivo-fiscale.mdx": {
+      "source_sha256": "e5edfd7b7c17967f274c2fc07a377b7d438563ea8bcfe51b57cb1fef6a9a89f6",
+      "headings": 6
+    },
+    "faq/come-collegare-google-calendar.mdx": {
+      "source_sha256": "a0e69858703eccb7d677093d961126c79123a8f4366e9ab66cf85bb1d3ecb8d6",
+      "headings": 6
+    },
+    "faq/come-condividere-il-link-iscrizioni.mdx": {
+      "source_sha256": "5377644d2e71ae1d8da6dd263564bbc6220e06b1d463334c71917411d955c3bd",
+      "headings": 8
+    },
+    "faq/come-configurare-i-pagamenti-online.mdx": {
+      "source_sha256": "648f3db7fe82ecd8711e7cd5d684093178178e52c2bc604e89743a100d01c776",
+      "headings": 8
+    },
+    "faq/come-generare-bilancio.mdx": {
+      "source_sha256": "7d5d6aaccabfe5fd55475e08eb5d0ad4c5b297d6042fd3088fe41723bd46ef21",
+      "headings": 6
+    },
+    "faq/come-gestire-i-certificati-medici.mdx": {
+      "source_sha256": "5fe8a6624dcfb1e74e2a89fd894fe2162ac1562fcacf93aa90bcb0dec0a0b92a",
+      "headings": 5
+    },
+    "faq/come-inviare-email-nuovi-iscritti.mdx": {
+      "source_sha256": "a68a13853ca932a1dc38bdd7a8df4173811ab353a9fcd82aeedc6a75b6673ef6",
+      "headings": 3
+    },
+    "faq/come-invitare-collaboratori.mdx": {
+      "source_sha256": "9c5c350240677820203001a8e80c02f97ae49995d41b101d3f9fee749683f8a5",
+      "headings": 6
+    },
+    "faq/come-si-crea-un-socio.mdx": {
+      "source_sha256": "ef807889023a1ea8f76cf70a470e391598e4bcdca505dbeab7e57cb07654beeb",
+      "headings": 8
+    },
+    "faq/come-si-importano-dei-soci.mdx": {
+      "source_sha256": "82f4a1bbc05df4ced7d11ee07ef02decfd09624d6a03a3fcdb824313ed2a6eb4",
+      "headings": 5
+    },
+    "faq/come-stampare-tessere-atleti.mdx": {
+      "source_sha256": "466ec99f2a2d8bd4096b5f25eaffdbcbe957fb8797fef3f2c13ce303359604e5",
+      "headings": 3
+    },
+    "faq/come-usare-ricerca-filtri-atleti.mdx": {
+      "source_sha256": "4cf2a3e963733b99f7044ecb7bc757100a5dc279a1fd70621c52f5ade55fcc8b",
+      "headings": 11
+    },
+    "faq/i-miei-dati-sono-al-sicuro.mdx": {
+      "source_sha256": "1e37aca27f756c00087f8b59051f9bcb55868984f300b0bf4c87c6ce8594ab1c",
+      "headings": 5
+    },
+    "faq/quali-sono-piani-abbonamento.mdx": {
+      "source_sha256": "02512bdb360eb9ceac32d6b3c94770c0c1dc56c3d3138366be581de3b860fceb",
+      "headings": 6
+    },
+    "tutorials/come-assegnare-i-tag-agli-atleti.mdx": {
+      "source_sha256": "5d27eba81f5b905db25f508ae937d705d87f722c3662d22483f47c80e5b0815a",
+      "headings": 5
+    },
+    "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx": {
+      "source_sha256": "620705c25c5635777e90c37b05c17737bc7fd988a0984a86deef940555892ff5",
+      "headings": 15
+    },
+    "tutorials/come-esportare-dati-associazione.mdx": {
+      "source_sha256": "20229282372b02ef40e708342daf4a64d9a859fb416280a8d5be93cc1b93040c",
+      "headings": 9
+    },
+    "tutorials/come-gestire-certificati-medici.mdx": {
+      "source_sha256": "d787cb8ace6bb3bf355cc09d7388a93a751ac1146be1cc24ffe271295758b736",
+      "headings": 15
+    },
+    "tutorials/come-gestire-registro-presenze-carnet.mdx": {
+      "source_sha256": "0603351ea17a2a94b71aad9038e7c03f9adf23ebd075d75a8c9dee22be9bfba7",
+      "headings": 18
+    },
+    "tutorials/come-impostare-automazioni-workflow.mdx": {
+      "source_sha256": "b5e1a6824f5abf347bfe05a286119e3cd9d996bd4433bdc2217a7af8ac23a2f9",
+      "headings": 26
+    },
+    "tutorials/come-impostare-gestire-istruttori.mdx": {
+      "source_sha256": "094371288d2552995566fdf75e929d73e4e68e970c2b81b75a2e67347848c26d",
+      "headings": 18
+    },
+    "tutorials/come-impostare-pagamenti-rateizzati.mdx": {
+      "source_sha256": "c17a2593f622092e27f894d8014d25abbeedebee73d945e3689a276900f30b83",
+      "headings": 13
+    },
+    "tutorials/come-impostare-stripe-pagamenti-online.mdx": {
+      "source_sha256": "150ae397f5a5638883b9b852985b2d18752ae978550fa6dc6c02b6f22f731ba7",
+      "headings": 11
+    }
+  }
+}

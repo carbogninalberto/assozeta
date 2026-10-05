@@ -1,0 +1,38 @@
+# Install in Bakney/manuale/.github/workflows/notify-assozeta.yml.
+# Requires an explicitly configured cross-repository dispatch credential.
+name: Reconcile manual changes with Assozeta
+
+on:
+  push:
+    branches: [main, add/manuale]
+    paths: ['**/*.mdx', 'images/**', 'mint.json', 'docs.json', 'SCREENSHOTS-NEEDED.md', '.manuale-evidence.json', '.manuale-authoring.json', '.github/workflows/notify-assozeta.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Request verification at the exact manual commit
+        env:
+          DISPATCH_TOKEN: ${{ secrets.ASSOZETA_DISPATCH_TOKEN }}
+          MANUAL_REVISION: ${{ github.sha }}
+          TARGET_REPOSITORY: carbogninalberto/assozeta
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          token = os.environ['DISPATCH_TOKEN']
+          if not token:
+              raise SystemExit('Configure ASSOZETA_DISPATCH_TOKEN before enabling this workflow')
+          payload = json.dumps({'event_type': 'manuale-updated',
+              'client_payload': {'manual_revision': os.environ['MANUAL_REVISION']}}).encode()
+          request = urllib.request.Request('https://api.github.com/repos/' + os.environ['TARGET_REPOSITORY'] + '/dispatches',
+              data=payload, headers={'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json'}, method='POST')
+          with urllib.request.urlopen(request, timeout=15) as response:
+              if response.status != 204:
+                  raise SystemExit('Repository dispatch was not accepted')
+          print('Assozeta verification requested for the exact manual revision')
+          PY

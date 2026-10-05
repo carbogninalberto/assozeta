@@ -1,0 +1,30 @@
+// Inputs shared by the real scenarios and the reviewed manual projections.
+export const paymentSources = [
+    'UI/src/components/Sidebar.svelte', 'UI/src/routes.js', 'UI/src/utils/Permissions.js',
+    'UI/src/routes/accounting/payment/PaymentList.svelte',
+    'UI/src/routes/accounting/payment/modals/AddEditModal.svelte',
+    'UI/src/routes/accounting/payment/PaymentDrawer.svelte',
+    'UI/src/routes/accounting/payment/partials/payment-overview.svelte',
+    'UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte',
+    'UI/src/components/buttons/ApproveButton.svelte', 'UI/src/components/buttons/EditButton.svelte',
+    'BE/application/views/payment_views.py', 'BE/application/serializers/payment_serializers.py',
+    'BE/application/models/payment_models.py', 'BE/application/models/user_models.py',
+    'BE/application/models/invoices_models.py', 'BE/application/services/invoice_service.py',
+    'BE/application/permissions_registry.py',
+];
+export const receiptSources = [...paymentSources,
+    'UI/src/routes/accounting/receipts/ReceiptList.svelte',
+    'UI/src/routes/accounting/receipts/invoiceActionState.js',
+    'UI/src/components/modals/InvoicePreviewModal.svelte',
+    'UI/src/routes/accounting/receipts/modals/ShareModal.svelte',
+    'BE/application/views/invoice_views.py', 'BE/application/serializers/invoice_serializers.py',
+    'BE/application/printing_tasks.py', 'BE/docmanager/views/printing_views.py',
+    'BE/docmanager/views/document_view.py', 'BE/application/utils/printing.py', 'BE/docmanager/tasks.py',
+    'BE/templates/document/application/invoice.html',
+];
+export const receiptMutationSources = [...receiptSources,
+    'UI/src/routes/accounting/receipts/modals/EditModal.svelte',
+    'UI/src/components/filters/FilterSelect.svelte',
+    'UI/src/routes/profile/sections/Settings.svelte',
+    'BE/application/views/profile_views.py', 'BE/application/serializers/auth_serializers.py',
+];

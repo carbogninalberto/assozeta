@@ -35,6 +35,8 @@ __pycache__/
 /BE/staticfiles/
 /BE/storage/
 /BE/VERSION
+/BE/CODE_REVISION
+/BE/manuale/
 
 # Generated self-host configuration and data
 /selfhost/.env
@@ -48,7 +50,8 @@ __pycache__/
 # Disposable release-quality evidence and browser output
 quality-reports/
 selfhost/tests/browser/test-results/
-selfhost/tests/browser/node_modules/
+selfhost/tests/browser/node_modules
+/UI/node_modules
 
 /selfhost/.operations/
 

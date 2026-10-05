@@ -10,10 +10,12 @@ x-backend-dev: &backend-dev
   environment:
     DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
     ASSOZETA_DEPLOYMENT_MODE: development
+    MANUAL_SOURCE_ROOT: /manual-code
   init: true
   volumes:
     - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
     - ../BE:/app
+    - ..:/manual-code:ro
     - dev_static:/app/staticfiles
   networks:
     - dev

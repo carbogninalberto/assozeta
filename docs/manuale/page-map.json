@@ -1,0 +1,1431 @@
+{
+  "format": 1,
+  "mapping_status": "review_targets",
+  "description": "Mappa completa delle pagine verso punti di ingresso del codice. La mappatura non verifica le singole affermazioni: serve una ricetta revisionata e, per le procedure, uno scenario reale riuscito.",
+  "domains": {
+    "overview": {
+      "routes": [
+        "/",
+        "/manuale"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/statistic_views.py",
+          "symbols": [
+            "statistic_dashboard"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User",
+            "SportAssociation"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "dashboard": {
+      "routes": [
+        "/"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/statistic_views.py",
+          "symbols": [
+            "statistic_dashboard",
+            "statistic_dashboard_layout"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/dashboard/Dashboard.svelte"
+      ],
+      "constraints": []
+    },
+    "members": {
+      "routes": [
+        "/personas/list",
+        "/members/list",
+        "/members/members-book",
+        "/members/list/detail/:subscriptionId/:page?",
+        "/members/add"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/personas_views.py",
+          "symbols": [
+            "AssociateViewSet",
+            "AssociateSubscriptionViewSet"
+          ]
+        },
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_list",
+            "subscription_add",
+            "subscription_info",
+            "subscription_update"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "Associate"
+          ]
+        },
+        {
+          "path": "BE/application/models/subscriptions_models.py",
+          "symbols": [
+            "Subscription"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "courses": {
+      "routes": [
+        "/course/list",
+        "/course/overview/:id?/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/course_views.py",
+          "symbols": [
+            "course_list",
+            "course_add",
+            "course_update",
+            "course_overview",
+            "CourseSubscriptionViewSet"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/courses_models.py",
+          "symbols": [
+            "Course",
+            "CourseSubscription",
+            "CourseSubscriptionInstallment"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "instructors": {
+      "routes": [
+        "/course/instructor/list",
+        "/course/instructor/add",
+        "/course/instructor/info/:id"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/instructor_views.py",
+          "symbols": [
+            "instructor_list",
+            "instructor_add",
+            "instructor_info",
+            "instructor_lessons_hours",
+            "instructor_hours_add"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "Instructor",
+            "InstructorHours"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "camps": {
+      "routes": [
+        "/course/camps-and-retreats/list",
+        "/course/camps-and-retreats/overview/:id?",
+        "/course/camps-and-retreats/overview/:id?/detail/:periodId?",
+        "/camps-and-retreats/forms/:id?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/camp_and_retreats_views.py",
+          "symbols": [
+            "camps_and_retreats_add",
+            "camps_and_retreats_periods_add",
+            "camps_and_retreats_periods_services_add",
+            "camps_and_retreats_subscriptions_add"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/courses_models.py",
+          "symbols": [
+            "CampsAndRetreats",
+            "CampsAndRetreatsPeriod",
+            "CampsAndRetreatsPeriodsService",
+            "CampsAndRetreatsSubscription"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "calendar": {
+      "routes": [
+        "/calendar",
+        "/shared-calendar/:id?",
+        "/course/overview/:id?/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/attendee_views.py",
+          "symbols": [
+            "full_events_calendar",
+            "full_events_calendar_update",
+            "full_events_calendar_export",
+            "calendar_update"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/attendee_models.py",
+          "symbols": [
+            "GlobalCalendarEvents",
+            "AttendanceRegistry"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "carnet": {
+      "routes": [
+        "/course/carnet/list",
+        "/course/carnet/add",
+        "/course/carnet/list/detail/:carnetId/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/carnet_views.py",
+          "symbols": [
+            "carnet_list",
+            "carnet_add",
+            "carnet_info",
+            "carnet_assign",
+            "carnet_subscription_topup"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/carnet_models.py",
+          "symbols": [
+            "Carnet",
+            "CarnetSubscription"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "attendance": {
+      "routes": [
+        "/attendance-scanner-mode",
+        "/course/overview/:id?/:page?",
+        "/members/list/detail/:subscriptionId/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/attendee_views.py",
+          "symbols": [
+            "attendees",
+            "attendees_update",
+            "subscription_attendance"
+          ]
+        },
+        {
+          "path": "BE/application/views/statistic_views.py",
+          "symbols": [
+            "attendance_mark",
+            "attendance_day_mark_absent",
+            "attendance_day_delete"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/attendee_models.py",
+          "symbols": [
+            "AttendanceRegistry",
+            "AttendanceDay"
+          ]
+        },
+        {
+          "path": "BE/application/models/carnet_models.py",
+          "symbols": [
+            "CarnetSubscription"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "payments": {
+      "routes": [
+        "/payment/list/:id?",
+        "/payment/category/list"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/payment_views.py",
+          "symbols": [
+            "payment_list",
+            "payment_add",
+            "payment_update",
+            "payment_approve",
+            "payment_cancel",
+            "payment_category_list"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment",
+            "PaymentCategory"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/accounting/payment/modals/AddEditModal.svelte"
+      ],
+      "constraints": []
+    },
+    "receipts": {
+      "routes": [
+        "/invoice/list",
+        "/invoice/archive",
+        "/payment/list/:id?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/invoice_views.py",
+          "symbols": [
+            "invoice_list",
+            "invoice_update",
+            "invoice_delete"
+          ]
+        },
+        {
+          "path": "BE/application/views/payment_views.py",
+          "symbols": [
+            "payment_generate_invoice",
+            "payment_approve"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/invoices_models.py",
+          "symbols": [
+            "Invoice",
+            "InvoiceRows"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Validit\u00e0 fiscale e requisiti legali dei documenti",
+          "reason": "La generazione tecnica di un documento non dimostra la sua conformit\u00e0 fiscale."
+        },
+        {
+          "claim": "Receipt deletion requires the temporary-deletion setting and is limited to seven days",
+          "status": "unsupported",
+          "reason": "The flag and age conditions in invoice_delete are commented out; the UI setting is also commented out. Deletion resets the linked payment to unpaid. Browser execution of the 29-day receipt remains pending.",
+          "sources": [
+            "BE/application/views/invoice_views.py:invoice_delete",
+            "UI/src/routes/profile/sections/Settings.svelte"
+          ]
+        }
+      ],
+      "templates": [
+        "BE/templates/document/application/invoice.html"
+      ]
+    },
+    "accounting": {
+      "routes": [
+        "/customers-invoice/list",
+        "/suppliers-invoice/list",
+        "/accounting/list",
+        "/accounting-transfer/list",
+        "/suppliers-and-customers/list"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/invoice_views.py",
+          "symbols": [
+            "invoice_suppliers_list",
+            "invoice_suppliers_add",
+            "invoice_customers_list",
+            "invoice_customers_add"
+          ]
+        },
+        {
+          "path": "BE/application/views/balance_sheet_views.py",
+          "symbols": [
+            "balance_sheet_accounts_list",
+            "balance_sheet_accounts_add",
+            "balance_sheet_accounts_transfer_add"
+          ]
+        },
+        {
+          "path": "BE/application/views/supplier_views.py",
+          "symbols": [
+            "supplier_list",
+            "supplier_add"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/invoices_models.py",
+          "symbols": [
+            "InvoiceSuppliers",
+            "CustomerInvoice"
+          ]
+        },
+        {
+          "path": "BE/application/models/balance_sheet_models.py",
+          "symbols": [
+            "CustomAccounts",
+            "CustomAccountsTransfer"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "SupplierAndCustomers"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "balance": {
+      "routes": [
+        "/balance-sheet/list"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/balance_sheet_views.py",
+          "symbols": [
+            "balance_sheet"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/balance_sheet_models.py",
+          "symbols": [
+            "BalanceSheet"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Adeguatezza del bilancio a obblighi contabili e fiscali specifici",
+          "reason": "I calcoli e la stampa sono verificabili; gli obblighi dell\u2019associazione richiedono una verifica separata."
+        }
+      ]
+    },
+    "communications": {
+      "routes": [
+        "/communication/messages",
+        "/communication/configuration"
+      ],
+      "handlers": [
+        {
+          "path": "BE/communications/views.py",
+          "symbols": [
+            "communication_messages_list",
+            "communication_messages_add",
+            "configuration_smtp_update",
+            "configuration_send_email"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/communications/models.py",
+          "symbols": [
+            "CommunicationConfiguration",
+            "Message",
+            "MessageTransaction"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Consegna effettiva di email al destinatario",
+          "reason": "Un gateway SMTP locale pu\u00f2 dimostrare l\u2019invio dal software, non la consegna di un provider esterno."
+        }
+      ]
+    },
+    "archive": {
+      "routes": [
+        "/archive",
+        "/members/archive",
+        "/course/archive",
+        "/payment/archive",
+        "/invoice/archive"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/archive_views.py",
+          "symbols": [
+            "FolderViewSet",
+            "DocumentArchiveViewSet"
+          ]
+        },
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_archive"
+          ]
+        },
+        {
+          "path": "BE/application/views/payment_views.py",
+          "symbols": [
+            "payment_archive"
+          ]
+        },
+        {
+          "path": "BE/application/views/course_views.py",
+          "symbols": [
+            "course_disable"
+          ]
+        },
+        {
+          "path": "BE/application/views/invoice_views.py",
+          "symbols": [
+            "invoice_bulk_archive"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "Folder",
+            "SportAssociationDocumentsArchive"
+          ]
+        },
+        {
+          "path": "BE/application/models/subscriptions_models.py",
+          "symbols": [
+            "Subscription"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment"
+          ]
+        },
+        {
+          "path": "BE/application/models/invoices_models.py",
+          "symbols": [
+            "Invoice"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "unsupported",
+          "claim": "La voce Archivio della sidebar mostra schede Soci, Corsi, Pagamenti e Documenti",
+          "reason": "La sidebar apre l\u2019archivio documentale; gli elenchi archiviati dei domini hanno route proprie."
+        }
+      ]
+    },
+    "collaborators": {
+      "routes": [
+        "/connected-collaborators",
+        "/invite/:token"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/collaborator_views.py",
+          "symbols": [
+            "collaborators_list",
+            "collaborators_add",
+            "collaborators_accept",
+            "collaborators_update",
+            "collaborators_delete"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User",
+            "CollaborationInvites"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Recapito dell\u2019email di invito",
+          "reason": "Serve una verifica esplicita del gateway email; la creazione di un invito non dimostra il recapito."
+        }
+      ]
+    },
+    "settings": {
+      "routes": [
+        "/profile",
+        "/members/subscription/template"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/profile_views.py",
+          "symbols": [
+            "profile_info",
+            "profile_update",
+            "profile_settings",
+            "profile_update_subscription_template"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User",
+            "SportAssociation",
+            "SportAssociationMembershipCardConfiguration"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/profile/sections/Settings.svelte",
+        "UI/src/routes/profile/sections/Account.svelte"
+      ],
+      "constraints": []
+    },
+    "sharing": {
+      "routes": [
+        "/members/list",
+        "/members/subscription/share-module-link",
+        "/subscribe/:sportAssociationUsername?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_add"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "SportAssociation"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/association/Members/ShareModuleLink.svelte"
+      ],
+      "constraints": []
+    },
+    "medical": {
+      "routes": [
+        "/members/list/detail/:subscriptionId/:page?",
+        "/"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_medical_certificate_upload",
+            "subscription_medical_certificate_set_certificate_expiration",
+            "subscription_medical_certificate_edit",
+            "subscription_medical_certificate_send_email_reminder"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/subscriptions_models.py",
+          "symbols": [
+            "MedicalCertificate",
+            "MedicalAppointments"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/association/Members/detail/sections/Medical.svelte"
+      ],
+      "constraints": []
+    },
+    "cards": {
+      "routes": [
+        "/card/:subscriptionId/:token?/:print?",
+        "/members/list/detail/:subscriptionId/:page?",
+        "/members/subscription/template"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_card"
+          ]
+        },
+        {
+          "path": "BE/application/views/printing_views.py",
+          "symbols": [
+            "printing_generate"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "SportAssociationMembershipCardConfiguration"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "tax-code": {
+      "routes": [
+        "/members/add",
+        "/members/list/detail/:subscriptionId/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_calculate_tax_code"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "Associate"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Attribuzione ufficiale o certificazione del codice fiscale",
+          "reason": "Il calcolo locale non sostituisce un\u2019attribuzione ufficiale."
+        }
+      ]
+    },
+    "import": {
+      "routes": [
+        "/members/import",
+        "/members/list-draft"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_import_upload",
+            "subscription_import_status",
+            "subscription_associates_draft_list",
+            "subscription_associates_draft_approve"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/subscriptions_models.py",
+          "symbols": [
+            "AssociateImportDraft",
+            "AssociateImportDraftStatus"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "google": {
+      "routes": [
+        "/profile",
+        "/calendar",
+        "/course/overview/:id?/:page?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/google_views.py",
+          "symbols": [
+            "google_check",
+            "google_calendar_config",
+            "google_oauth2callback",
+            "google_calendar_export_course"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User"
+          ]
+        },
+        {
+          "path": "BE/application/models/attendee_models.py",
+          "symbols": [
+            "GlobalCalendarEvents"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/profile/sections/Integrations.svelte"
+      ],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Autorizzazione OAuth e sincronizzazione con Google Calendar",
+          "reason": "Richiede credenziali e un account di prova del servizio esterno."
+        }
+      ]
+    },
+    "two-factor": {
+      "routes": [
+        "/profile",
+        "/login"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/two_fa_views.py",
+          "symbols": [
+            "two_fa_info",
+            "two_fa_setup",
+            "two_fa_update"
+          ]
+        },
+        {
+          "path": "BE/application/views/auth_views.py",
+          "symbols": [
+            "oauth2_login"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/profile/sections/TwoFactor.svelte"
+      ],
+      "constraints": []
+    },
+    "security": {
+      "routes": [
+        "/profile"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/profile_views.py",
+          "symbols": [
+            "profile_update_password"
+          ]
+        },
+        {
+          "path": "BE/core/authentication.py",
+          "symbols": [
+            "ScopedJWTAuthentication"
+          ]
+        },
+        {
+          "path": "BE/core/middleware.py",
+          "symbols": [
+            "IsAuthenticated"
+          ]
+        },
+        {
+          "path": "BE/instance/restore/views.py",
+          "symbols": [
+            "DataRestoreView",
+            "DataRestoreBackupsView",
+            "DataRestoreDownloadView"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "User"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/profile/sections/DataManagement.svelte"
+      ],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Conformit\u00e0 GDPR, localizzazione italiana, datacenter Aruba e distribuzione geografica dei backup",
+          "reason": "Dipendono dalla gestione e dall\u2019infrastruttura dell\u2019istanza e non sono dimostrabili dal codice dell\u2019applicazione."
+        },
+        {
+          "status": "unsupported",
+          "claim": "Backup automatici ogni quattro ore, conservazione di 30 giorni e cifratura garantita di tutti i backup",
+          "reason": "Queste garanzie del servizio ospitato non sono verificate per l\u2019istanza Assozeta."
+        }
+      ]
+    },
+    "billing": {
+      "routes": [
+        "/profile",
+        "/subscription",
+        "/subscription/upgrade",
+        "/billing-checkout"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/billing_views.py",
+          "symbols": [
+            "billing_active_plan",
+            "billing_checkout"
+          ]
+        },
+        {
+          "path": "BE/application/management/commands/seed_selfhost.py",
+          "symbols": [
+            "Command"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/billing_models.py",
+          "symbols": [
+            "BillingPlan",
+            "BillingSubscription"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/stripe/BillingCheckout.svelte",
+        "UI/src/routes/Upgrade.svelte",
+        "UI/src/routes/subscription/Subscription.svelte"
+      ],
+      "constraints": [
+        {
+          "status": "unsupported",
+          "claim": "Tre piani acquistabili Base, Pro e Teams e checkout mensile o annuale",
+          "reason": "Il checkout della piattaforma restituisce 410; seed_selfhost configura il Piano Pro per l\u2019istanza."
+        }
+      ]
+    },
+    "forms": {
+      "routes": [
+        "/members/modules",
+        "/members/modules/composer/:id?",
+        "/members/modules/overview/:module_id?",
+        "/forms/:custom_link/:response_id?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/modules_views.py",
+          "symbols": [
+            "modules_list",
+            "modules_add",
+            "modules_update",
+            "modules_response_add",
+            "modules_response_approve"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/modules_models.py",
+          "symbols": [
+            "Module",
+            "ModuleResponses"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "export": {
+      "routes": [
+        "/members/list",
+        "/payment/list/:id?",
+        "/profile"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/subscriptions_views.py",
+          "symbols": [
+            "subscription_list_export"
+          ]
+        },
+        {
+          "path": "BE/application/views/payment_views.py",
+          "symbols": [
+            "payment_list_export"
+          ]
+        },
+        {
+          "path": "BE/application/views/export_views.py",
+          "symbols": [
+            "AssociationExportViewSet",
+            "AssociationImportViewSet"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/subscriptions_models.py",
+          "symbols": [
+            "Subscription"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/association/Members/shared/ExportData.svelte",
+        "UI/src/routes/profile/sections/DataManagement.svelte"
+      ],
+      "constraints": []
+    },
+    "installments": {
+      "routes": [
+        "/course/list",
+        "/course/overview/:id?/:page?",
+        "/payment/list/:id?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/course_views.py",
+          "symbols": [
+            "course_add",
+            "course_overview_add",
+            "course_installment_make_payment"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/courses_models.py",
+          "symbols": [
+            "CourseSubscription",
+            "CourseSubscriptionInstallment"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": []
+    },
+    "stripe": {
+      "routes": [
+        "/profile",
+        "/stripe/onboarding",
+        "/stripe/pay/:id?/:one_fee_payment?"
+      ],
+      "handlers": [
+        {
+          "path": "BE/application/views/stripe_views.py",
+          "symbols": [
+            "stripe_connect_disabled_response",
+            "stripe_info",
+            "stripe_on_boarding",
+            "stripe_pay",
+            "stripe_webhook"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/application/models/user_models.py",
+          "symbols": [
+            "SportAssociation"
+          ]
+        },
+        {
+          "path": "BE/application/models/payment_models.py",
+          "symbols": [
+            "Payment"
+          ]
+        }
+      ],
+      "ui_sources": [
+        "UI/src/routes/profile/sections/Stripe.svelte",
+        "UI/src/routes/profile/sections/InstanceIntegrations.svelte"
+      ],
+      "constraints": [
+        {
+          "status": "unsupported",
+          "claim": "Onboarding Stripe Connect dall\u2019account dell\u2019associazione",
+          "reason": "Gli endpoint Connect sono disabilitati e restituiscono 410 per Stripe diretto self-hosted."
+        },
+        {
+          "status": "needs_external_verification",
+          "claim": "Pagamento reale, metodi disponibili, conferma e webhook Stripe",
+          "reason": "Richiedono un account Stripe di prova, credenziali e verifica esplicita dell\u2019interazione esterna."
+        }
+      ]
+    },
+    "automation": {
+      "routes": [
+        "/communication/automation",
+        "/communication/automation/editor/:workflow_id?",
+        "/email-builder/:id/:workflow_id"
+      ],
+      "handlers": [
+        {
+          "path": "BE/communications/views.py",
+          "symbols": [
+            "communication_workflows_list",
+            "communication_workflows_add",
+            "communication_workflows_update",
+            "communication_workflows_details"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "path": "BE/communications/models.py",
+          "symbols": [
+            "AutomationWorkflow",
+            "MessageTransaction"
+          ]
+        }
+      ],
+      "ui_sources": [],
+      "constraints": [
+        {
+          "status": "needs_external_verification",
+          "claim": "Consegna di messaggi eseguiti da un workflow",
+          "reason": "La configurazione e le esecuzioni locali non dimostrano il recapito esterno."
+        }
+      ]
+    }
+  },
+  "pages": [
+    {
+      "path": "docs/archivio.mdx",
+      "domains": [
+        "archive"
+      ]
+    },
+    {
+      "path": "docs/bacheca.mdx",
+      "domains": [
+        "dashboard"
+      ]
+    },
+    {
+      "path": "docs/bilancio.mdx",
+      "domains": [
+        "balance"
+      ]
+    },
+    {
+      "path": "docs/calendario.mdx",
+      "domains": [
+        "calendar"
+      ]
+    },
+    {
+      "path": "docs/camp-e-ritiri.mdx",
+      "domains": [
+        "camps"
+      ]
+    },
+    {
+      "path": "docs/carnet.mdx",
+      "domains": [
+        "carnet"
+      ]
+    },
+    {
+      "path": "docs/collaboratori.mdx",
+      "domains": [
+        "collaborators"
+      ]
+    },
+    {
+      "path": "docs/comunicazioni.mdx",
+      "domains": [
+        "communications"
+      ]
+    },
+    {
+      "path": "docs/contabilita-avanzata.mdx",
+      "domains": [
+        "accounting"
+      ]
+    },
+    {
+      "path": "docs/corsi.mdx",
+      "domains": [
+        "courses"
+      ]
+    },
+    {
+      "path": "docs/impostazioni.mdx",
+      "domains": [
+        "settings"
+      ]
+    },
+    {
+      "path": "docs/introduzione.mdx",
+      "domains": [
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/istruttori.mdx",
+      "domains": [
+        "instructors"
+      ]
+    },
+    {
+      "path": "docs/libro-soci.mdx",
+      "domains": [
+        "members"
+      ]
+    },
+    {
+      "path": "docs/pagamenti.mdx",
+      "domains": [
+        "payments"
+      ]
+    },
+    {
+      "path": "docs/registro-presenze.mdx",
+      "domains": [
+        "attendance"
+      ]
+    },
+    {
+      "path": "docs/ricevute.mdx",
+      "domains": [
+        "receipts"
+      ]
+    },
+    {
+      "path": "faq/come-abilitare-autenticazione-due-fattori.mdx",
+      "domains": [
+        "two-factor"
+      ]
+    },
+    {
+      "path": "faq/come-archiviare-dati.mdx",
+      "domains": [
+        "archive"
+      ]
+    },
+    {
+      "path": "faq/come-calcolare-generare-codici-fiscali.mdx",
+      "domains": [
+        "tax-code"
+      ]
+    },
+    {
+      "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
+      "domains": [
+        "settings"
+      ]
+    },
+    {
+      "path": "faq/come-collegare-google-calendar.mdx",
+      "domains": [
+        "google"
+      ]
+    },
+    {
+      "path": "faq/come-condividere-il-link-iscrizioni.mdx",
+      "domains": [
+        "sharing"
+      ]
+    },
+    {
+      "path": "faq/come-configurare-i-pagamenti-online.mdx",
+      "domains": [
+        "stripe"
+      ]
+    },
+    {
+      "path": "faq/come-generare-bilancio.mdx",
+      "domains": [
+        "balance"
+      ]
+    },
+    {
+      "path": "faq/come-gestire-i-certificati-medici.mdx",
+      "domains": [
+        "medical"
+      ]
+    },
+    {
+      "path": "faq/come-inviare-email-nuovi-iscritti.mdx",
+      "domains": [
+        "communications"
+      ]
+    },
+    {
+      "path": "faq/come-invitare-collaboratori.mdx",
+      "domains": [
+        "collaborators"
+      ]
+    },
+    {
+      "path": "faq/come-si-crea-un-socio.mdx",
+      "domains": [
+        "members"
+      ]
+    },
+    {
+      "path": "faq/come-si-importano-dei-soci.mdx",
+      "domains": [
+        "import"
+      ]
+    },
+    {
+      "path": "faq/come-stampare-tessere-atleti.mdx",
+      "domains": [
+        "cards"
+      ]
+    },
+    {
+      "path": "faq/come-usare-ricerca-filtri-atleti.mdx",
+      "domains": [
+        "members"
+      ]
+    },
+    {
+      "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
+      "domains": [
+        "security",
+        "two-factor"
+      ]
+    },
+    {
+      "path": "faq/quali-sono-piani-abbonamento.mdx",
+      "domains": [
+        "billing"
+      ]
+    },
+    {
+      "path": "tutorials/come-assegnare-i-tag-agli-atleti.mdx",
+      "domains": [
+        "members"
+      ]
+    },
+    {
+      "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
+      "domains": [
+        "forms"
+      ]
+    },
+    {
+      "path": "tutorials/come-esportare-dati-associazione.mdx",
+      "domains": [
+        "export"
+      ]
+    },
+    {
+      "path": "tutorials/come-gestire-certificati-medici.mdx",
+      "domains": [
+        "medical"
+      ]
+    },
+    {
+      "path": "tutorials/come-gestire-registro-presenze-carnet.mdx",
+      "domains": [
+        "attendance"
+      ]
+    },
+    {
+      "path": "tutorials/come-impostare-automazioni-workflow.mdx",
+      "domains": [
+        "automation"
+      ]
+    },
+    {
+      "path": "tutorials/come-impostare-gestire-istruttori.mdx",
+      "domains": [
+        "instructors"
+      ]
+    },
+    {
+      "path": "tutorials/come-impostare-pagamenti-rateizzati.mdx",
+      "domains": [
+        "installments"
+      ]
+    },
+    {
+      "path": "tutorials/come-impostare-stripe-pagamenti-online.mdx",
+      "domains": [
+        "stripe"
+      ]
+    }
+  ]
+}
