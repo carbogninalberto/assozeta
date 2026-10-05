@@ -240,7 +240,7 @@ export const attendanceCarnetReviewedSources = Object.freeze({
     "UI/src/routes/association/course/carnet/add/sections/Section2.svelte": "ff2cf863264b2cf0d5656ac2061f8407a5d18c9a0c314fdb75811f6674631965",
     "UI/src/routes/association/course/carnet/detail/CarnetDetail.svelte": "d4e8c43ac7b52deb843f9f4540b1a3c3cea539af8a3ce1e2a42468d20df17395",
     "UI/src/routes/association/course/carnet/detail/sections/Info.svelte": "6326b6ff03fc46c26d120fce5a0198c7b392b84d43d398d8a81805320f86c2f7",
-    "UI/src/routes/association/course/carnet/detail/sections/Usage.svelte": "1e8a4d82a2accd1c441f468b74ee9b4159a4e52ad497936cc05a1baca8f42f16",
+    "UI/src/routes/association/course/carnet/detail/sections/Usage.svelte": "569092d44ead6627058eecaf5c0f7bb391dc47f16be54cde5808ca9769c4be4d",
     "UI/src/routes/association/course/carnet/detail/modals/AddCarnetModal.svelte": "55c0f58e2cca383df60adc17c72cd34afd2cdec1a77c7c35e62606d7def7ff1a",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "34017cc9d3bb103ff10b326cf95876190ce6060886c018816bd85bf8bbaa64fe",
     "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",

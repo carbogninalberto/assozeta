@@ -28,5 +28,8 @@ try {
  assert.deepEqual(requests.filter(p=>p.startsWith('/carnet/')),[],'pending parent info must never request undefined carnet');
  await page.evaluate(()=>window.usage.$set({info:{carnet_id:'5c7c2a61-58e0-4d32-9c84-eed93038981d',subscriptions:[]}}));
  await expect.poll(()=>requests.filter(p=>p.startsWith('/carnet/'))).toEqual(['/carnet/5c7c2a61-58e0-4d32-9c84-eed93038981d/info']);assert.deepEqual(errors,[]);
- console.log('PASS: actual Usage/table waits for parent carnet UUID, then fetches that exact carnet only.');
+ await page.evaluate(()=>window.usage.$set({info:{carnet_id:'5c7c2a61-58e0-4d32-9c84-eed93038981d',subscriptions:[]}}));
+ await expect.poll(()=>requests.filter(p=>p.startsWith('/carnet/')).length).toBe(2);
+ assert.deepEqual(errors,[]);
+ console.log('PASS: actual Usage/table waits for parent carnet UUID, fetches once on mount, and refreshes changed assignments.');
 } finally {await browser?.close();}

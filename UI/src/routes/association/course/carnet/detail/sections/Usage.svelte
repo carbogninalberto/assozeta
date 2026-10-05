@@ -28,9 +28,9 @@
 
     let datatable;
     let displayedSubscriptions;
-    $: if (datatable && info?.subscriptions !== displayedSubscriptions) {
+    $: if (info?.subscriptions !== displayedSubscriptions) {
         displayedSubscriptions = info?.subscriptions;
-        datatable.reload();
+        if (datatable) datatable.reload();
     }
     let courses = writable([]);
     let selectedCourseId;
