@@ -1,6 +1,6 @@
 <script>
     import {onMount} from 'svelte';
-    import {profilePages, readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
+    import {profilePages, readProfileLocation, navigateProfile, isProfileLocation} from 'utils/profileNavigation.js';
     import {refreshToken, sessionToken, expires, role, currentPage, userData, subPage} from 'store/stores.js';
     import {isMobile} from 'store/breakpointStore.js';
 
@@ -22,6 +22,8 @@
     let navigationReady = false;
     let previousTab = null;
     function checkParams() {
+        // Hash listeners may run before the router destroys this component.
+        if (!isProfileLocation()) return;
         const {page, tab} = readProfileLocation();
         if ($role === 'administrator') {
             const requested = page || $subPage;
@@ -214,8 +216,8 @@
                 {/if}
                 <div class="navi-item mb-2">
                     <a
-                        href="/#/profile"
-                        on:click={() => changeSubPage('info')}
+                        href="/#/profile?page=info"
+                        on:click|preventDefault={() => changeSubPage('info')}
                         class="navi-link py-4 {$subPage == 'info' ? 'active' : ''}">
                         <span class="menu-icon m-0 mr-md-3">
                             <User size="24" weight="duotone" />
@@ -225,8 +227,8 @@
                 </div>
                 <div class="navi-item mb-2">
                     <a
-                        href="/#/profile"
-                        on:click={() => changeSubPage('twofa')}
+                        href="/#/profile?page=twofa"
+                        on:click|preventDefault={() => changeSubPage('twofa')}
                         class="navi-link py-4 {$subPage == 'twofa' ? 'active' : ''}">
                         <span class="menu-icon m-0 mr-md-3">
                             <FingerprintSimple size="24" weight="duotone" />
@@ -238,8 +240,8 @@
                 {#if $role != 'athlete' && canPerformAction('other.settings.read')}
                     <div class="navi-item mb-2">
                         <a
-                            href="/#/profile"
-                            on:click={() => changeSubPage('stripe')}
+                            href="/#/profile?page=stripe"
+                            on:click|preventDefault={() => changeSubPage('stripe')}
                             class="navi-link py-4 {$subPage == 'stripe' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3">
                                 <StripeLogo size="24" weight="duotone" />
@@ -251,8 +253,8 @@
                 <!-- These 2 sections need to be visible -->
                 <div class="navi-item mb-2">
                     <a
-                        href="/#/profile"
-                        on:click={() => changeSubPage('password')}
+                        href="/#/profile?page=password"
+                        on:click|preventDefault={() => changeSubPage('password')}
                         class="navi-link py-4 {$subPage == 'password' ? 'active' : ''}">
                         <span class="menu-icon m-0 mr-md-3">
                             <Password size="24" weight="duotone" />
@@ -263,8 +265,8 @@
                 {#if $role != 'athlete' && canPerformAction('other.settings.read')}
                     <div class="navi-item mb-2">
                         <a
-                            href="/#/profile"
-                            on:click={() => changeSubPage('settings')}
+                            href="/#/profile?page=settings"
+                            on:click|preventDefault={() => changeSubPage('settings')}
                             class="navi-link py-4 {$subPage == 'settings' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3">
                                 <Sliders size="24" weight="duotone" />
@@ -274,8 +276,8 @@
                     </div>
                     <div class="navi-item mb-2">
                         <a
-                            href="/#/profile"
-                            on:click={() => changeSubPage('integrations')}
+                            href="/#/profile?page=integrations"
+                            on:click|preventDefault={() => changeSubPage('integrations')}
                             class="navi-link py-4 {$subPage == 'integrations' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3">
                                 <Plugs size="24" weight="duotone" />
@@ -285,8 +287,8 @@
                     </div>
                     <div class="navi-item mb-2">
                         <a
-                            href="/#/profile"
-                            on:click={() => changeSubPage('data-management')}
+                            href="/#/profile?page=data-management"
+                            on:click|preventDefault={() => changeSubPage('data-management')}
                             class="navi-link py-4 {$subPage == 'data-management' ? 'active' : ''}">
                             <span class="menu-icon m-0 mr-md-3">
                                 <Database size="24" weight="duotone" />

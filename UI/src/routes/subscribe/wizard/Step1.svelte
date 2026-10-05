@@ -26,9 +26,7 @@
         wizardData.formData.associate_data.is_minor = isMinor(wizardData.formData.associate_data.born_date);
     }
 
-    function handleBornDateChange() {
-        wizardData.formData = updateIsMinor(wizardData.formData, 'date_input_born_date', __bakney.env.DEBUG);
-    }
+    $: wizardData.formData.associate_data.is_minor = isMinor(wizardData.formData.associate_data.born_date);
 
     onMount(() => {
         initSelectpicker(document.getElementById('sex'));
@@ -284,7 +282,7 @@
     }
 
     const isMinor = function (input) {
-        let date = moment(input, 'DD/MM/YYYY');
+        let date = moment(input, ['DD/MM/YYYY', 'YYYY-MM-DD'], true);
         let now = moment();
         let years = now.diff(date, 'years');
         return years < 18;
@@ -394,7 +392,7 @@
                 <DateInput id="bkn_datetimepicker_bornDate" inputId="date_input_born_date" name="bornDateAssociate"
                     format="L" placeholder="GG/MM/AAAA"
                     bind:value={wizardData.formData.associate_data.born_date}
-                    on:change={handleBornDateChange} />
+                     />
                 <!-- <span class="form-text text-muted">Per favore inserisci la data di nascita.</span> -->
             </div>
     </div>

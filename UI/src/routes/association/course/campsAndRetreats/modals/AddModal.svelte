@@ -38,6 +38,7 @@
         if (res.status == 200 || res.status == 201) {
             datatableHandle.reload();
             document.getElementById('camps_and_retreats_form').reset();
+            show = false;
 
             toast.success('Creato con successo.');
 
@@ -86,8 +87,7 @@
         if (!campsAndRetreatsForm) initForm();
         campsAndRetreatsForm?.validate().then(function (status) {
             if (status === 'Valid') {
-                create(getDataFromForm(e));
-                show = false;
+                return create(getDataFromForm(e));
             } else {
                 swal.fire({
                     text: 'Per favore, inserisci tutti i dati e riprova.',

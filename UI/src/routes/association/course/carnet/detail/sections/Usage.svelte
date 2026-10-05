@@ -27,6 +27,11 @@
     export let info;
 
     let datatable;
+    let displayedSubscriptions;
+    $: if (datatable && info?.subscriptions !== displayedSubscriptions) {
+        displayedSubscriptions = info?.subscriptions;
+        datatable.reload();
+    }
     let courses = writable([]);
     let selectedCourseId;
     let updating = false;
@@ -429,6 +434,7 @@
 <div class="row pt-0 pb-4">
     <div class="col-12">
         <h2 class="pb-8 pt-4">Utilizzo del Carnet</h2>
+        {#if info?.carnet_id}
         <BKNDatatable
             bind:datatable
             {columns}
@@ -444,6 +450,7 @@
             serverFiltering={false}
             serverSorting={false}
             showDividerFilter={false} />
+        {/if}
     </div>
 </div>
 

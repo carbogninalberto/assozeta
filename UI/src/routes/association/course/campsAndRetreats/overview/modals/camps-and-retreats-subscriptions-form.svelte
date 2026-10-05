@@ -154,7 +154,7 @@
                 }}>
                 Annulla
             </button>
-            {#if (isEdit && canPerformAction('association.campsandretreats.update')) || (!isEdit && canPerformAction('association.campsandretreats.create'))}
+            {#if (isEdit && canPerformAction('association.campsandretreats.update')) || (!isEdit && (isAssociateView || canPerformAction('association.campsandretreats.create')))}
                 <button type="submit" class="btn btn-primary font-weight-bold">
                     {#if isEdit}
                         Salva

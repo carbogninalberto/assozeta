@@ -13,13 +13,15 @@
     import DataManagement from './sections/DataManagement.svelte';
     import SelfInstance from './sections/SelfInstance.svelte';
     import {onMount} from 'svelte';
-    import {readProfileLocation, navigateProfile} from 'utils/profileNavigation.js';
+    import {readProfileLocation, navigateProfile, isProfileLocation} from 'utils/profileNavigation.js';
     import {apiFetch, originalFetch} from 'utils/ApiMiddleware.js';
     import {readStoredStatus} from './sections/independentStatus.js';
     import {getApiHost, isSelfHostedMode} from 'store/instanceStore.js';
     role.useLocalStorage();
 
     function syncAdministratorPage() {
+        // Hash listeners may run before the router destroys this component.
+        if (!isProfileLocation()) return;
         if ($role !== 'administrator') return;
         const {page} = readProfileLocation();
         const next = ['self-instance', 'data-management'].includes(page) ? page : 'self-instance';

@@ -594,11 +594,11 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                 <div class="{showTessera ? 'd-flex' : 'd-none'} bg-white pt-4 justify-content-start">
                     <Tessera
                         member={info}
-                        showQRCode={$userData?.sport_association?.membership_card_configuration?.customized_template
+                        showQRCode={info?.membership_card_configuration?.customized_template
                             ?.show_qr_code}
-                        template={$userData?.sport_association?.membership_card_configuration?.customized_template
+                        template={info?.membership_card_configuration?.customized_template
                             ?.template}
-                        color={$userData?.sport_association?.membership_card_configuration?.customized_template
+                        color={info?.membership_card_configuration?.customized_template
                             ?.color} />
                 </div>
             </div>

@@ -34,6 +34,7 @@
     let updating = false;
     let datatableKey = 0;
     let ready = false;
+    const editModals = new Map();
 
     async function fetchData() {
         const res = await apiFetch(
@@ -59,6 +60,8 @@
     });
 
     onDestroy(() => {
+        for (const modal of editModals.values()) modal.$destroy();
+        editModals.clear();
         document.querySelectorAll('.popover').forEach(popover => popover.remove());
         document.querySelectorAll('.tooltip').forEach(popover => popover.remove());
     });
@@ -311,6 +314,7 @@
                         },
                     });
 
+                    editModals.get(row.carnet_subscription_id)?.$destroy();
                     let editModal = new EditModal({
                         target: document.querySelector(`#action-col-${row.carnet_subscription_id}`),
                         intro: true,
@@ -319,6 +323,8 @@
                             row: row,
                         },
                     });
+
+                    editModals.set(row.carnet_subscription_id, editModal);
 
                     editBtn.$on('open', data => {
                         showModal(`editModal-${row.carnet_subscription_id}`);

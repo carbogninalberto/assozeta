@@ -47,7 +47,10 @@
                 'Content-Type': 'application/json',
                 Authorization: 'Bearer ' + $sessionToken,
             },
-            body: JSON.stringify(newCarnet),
+            body: JSON.stringify({
+                ...newCarnet,
+                fee: String(newCarnet.fee ?? '').trim().replace(',', '.'),
+            }),
         });
         // spinner stop
         UiApp.unblockPage();

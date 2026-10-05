@@ -55,7 +55,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text fs-1-1">€</span>
                 </div>
-                <input name="fee" type="text" inputmode="decimal" class="form-control fs-1-1" id="bkn_inputmask_fee" placeholder="60,00" />
+                <input bind:value={newCarnet.fee} name="fee" type="text" inputmode="decimal" class="form-control fs-1-1" id="bkn_inputmask_fee" placeholder="60,00" />
             </div>
         </div>
 

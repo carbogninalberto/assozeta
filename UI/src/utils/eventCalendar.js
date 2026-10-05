@@ -14,14 +14,17 @@ export function normalizeCalendarEvent(event, {legacyTimezone = 'utc'} = {}) {
     const usesUtc = hasUtcContract || legacyTimezone === 'utc' || (
         legacyTimezone === 'auto' && isCourseEvent
     );
-    const start = usesUtc ? toEventCalendarUtc(event?.start) : event?.start;
+    // All-day dates are calendar days, not instants. Passing UTC midnight
+    // as an offset timestamp makes EventCalendar round the end into the next day.
+    const normalizeDate = event?.allDay ? toCalendarDay : usesUtc ? toEventCalendarUtc : value => value;
+    const start = normalizeDate(event?.start);
     const rawEnd = isMissingCalendarDate(event?.end) ? event?.start : event?.end;
 
     return {
         ...event,
         id: event?.id || event?.event_id,
         start,
-        end: usesUtc ? toEventCalendarUtc(rawEnd) : rawEnd,
+        end: normalizeDate(rawEnd),
     };
 }
 
@@ -43,6 +46,10 @@ export function serializeCalendarEvent(event) {
             timeContract: UTC_TIME_CONTRACT,
         },
     };
+}
+
+function toCalendarDay(value) {
+    return typeof value === 'string' ? value.slice(0, 10) : value;
 }
 
 function toEventCalendarUtc(value) {

@@ -14,6 +14,7 @@
     import DateInput from 'components/inputs/DateInput.svelte';
     import DateRangePicker from 'components/inputs/DateRangePicker.svelte';
     import {hideModal} from 'shim/modal.js';
+    import {initializeInstructorPeriod} from './instructorPeriod.js';
 
     const dispatch = createEventDispatcher();
 
@@ -43,6 +44,9 @@
     };
     export let datatableHandle;
     export let edit = false;
+
+    // Initialize before child bindings can replace absent dates with empty strings.
+    if (edit) row = initializeInstructorPeriod(row);
 
     let form;
     let courses = [];

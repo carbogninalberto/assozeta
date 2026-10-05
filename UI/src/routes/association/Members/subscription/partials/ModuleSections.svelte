@@ -170,8 +170,7 @@
                 <label class="checkbox checkbox-sm font-weight-bold">
                     <input
                         type="checkbox"
-                        bind:checked={section.show_to_members}
-                        on:input={() => userData.set(userData)} />
+                        bind:checked={section.show_to_members} />
                     <span class="mr-3" />
                     Visibile ai <b class="font-weight-boldest ml-1">SOCI</b>
                 </label>
@@ -179,8 +178,7 @@
                 <label class="checkbox checkbox-sm font-weight-bold ml-6">
                     <input
                         type="checkbox"
-                        bind:checked={section.show_to_both}
-                        on:input={() => userData.set(userData)} />
+                        bind:checked={section.show_to_both} />
                     <span class="mr-3" />
                     Visibile a <b class="font-weight-boldest ml-1">SOCI E TESSERATI</b>
                 </label>
@@ -188,8 +186,7 @@
                 <label class="checkbox checkbox-sm font-weight-bold ml-6">
                     <input
                         type="checkbox"
-                        bind:checked={section.show_to_athletes}
-                        on:input={() => userData.set(userData)} />
+                        bind:checked={section.show_to_athletes} />
                     <span class="mr-3" />
                     Visibile ai <b class="font-weight-boldest ml-1">TESSERATI</b>
                 </label>
@@ -205,7 +202,6 @@
                             type="text"
                             class="form-control"
                             bind:value={section.name}
-                            on:input={() => userData.set(userData)}
                             placeholder="Nome sezione..." />
                     </div>
                 </div>

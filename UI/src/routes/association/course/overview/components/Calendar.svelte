@@ -390,7 +390,6 @@
         if (!response.error) {
             normalizeCalendarEvents(response.response).forEach(event => calendar.addEvent(event));
             calendarStatus = response.response.data.status;
-            google_calendar_id = response.response.data.google_calendar_id;
             google_sync_enabled = response.response.data.google_sync_enabled;
             calendarReady = true;
         }

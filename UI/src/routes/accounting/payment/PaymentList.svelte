@@ -1280,6 +1280,10 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     }
 
     async function fetchCustomAccounts() {
+        if (!canPerformAction('bookeeping.management.accounts.read')) {
+            accounts = [];
+            return;
+        }
         const res = await apiFetch(__bakney.env.API.BALANCE_SHEET_ACCOUNTS.LIST + '?related=false', {
             method: 'GET',
         });
@@ -1521,6 +1525,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                     options={[{value: '', label: 'Stato'}, {value: 'true', label: 'Pagato'}, {value: 'false', label: 'In attesa'}]} />
                             </div>
                         </div>
+                        {#if canPerformAction('bookeeping.management.accounts.read')}
                         <div class="my-2 my-md-0 mr-2">
                             <div class="h-4">
                                 <SmartSelect
@@ -1549,6 +1554,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                     }} />
                             </div>
                         </div>
+                        {/if}
                         <div class="my-1 my-md-0 mr-2">
                             <div class="d-flex align-items-center">
                                 <FilterSelect

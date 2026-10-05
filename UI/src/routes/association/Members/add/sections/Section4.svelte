@@ -1,90 +1,91 @@
 <script>
-	import { Upload, X } from 'lucide-svelte';
-    import {onMount} from 'svelte';
+    import {Upload, X} from 'lucide-svelte';
+    import {onMount, onDestroy} from 'svelte';
     import {signature, sessionToken, medicalCertificate} from 'store/stores.js';
     import {Warning} from 'phosphor-svelte';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
     import DateInput from 'components/inputs/DateInput.svelte';
     import {createDropzone} from 'shim/dropzone.js';
+    import {apiFetch} from 'utils/ApiMiddleware.js';
+    import {uploadCertificate, expirationFromResponse} from '../../detail/sections/modals/medicalCertificateUpload.js';
 
     signature.useLocalStorage();
     sessionToken.useLocalStorage();
     medicalCertificate.useLocalStorage();
-
     let aiSuggestion = false;
+    let uploading = false;
+    let uploadError = '';
+    let uploadController;
+    let generation = 0;
+    let disposed = false;
+    let dropzone;
 
-    const uploadMedicalCertificateUrl = __bakney.env.API.DOCUMENT.MEDICAL_CERTIFICATE;
+    function clearAttachment(event) {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        generation++;
+        uploadController?.abort();
+        uploadController = null;
+        if (uploading) unblockPage();
+        uploading = false;
+        uploadError = '';
+        aiSuggestion = false;
+        medicalCertificate.set({...$medicalCertificate, medical_id: null, filename: ''});
+        dropzone?.removeAllFiles();
+        if (dropzone?._input) dropzone._input.value = '';
+    }
 
+    async function receiveFile(file) {
+        if (uploading || disposed) return;
+        const current = ++generation;
+        const controller = new AbortController();
+        uploadController = controller;
+        uploading = true;
+        uploadError = '';
+        blockPage({overlayColor: '#000000', state: 'primary', message: 'Caricamento in corso...'});
+        try {
+            // The wizard returns a certificate uid; the profile returns a document id.
+            // Adapt only the response shape, retaining the shared authenticated file validation.
+            const response = await uploadCertificate({file,
+                url: __bakney.env.API.DOCUMENT.MEDICAL_CERTIFICATE,
+                signal: controller.signal,
+                api: async (url, options) => {
+                    const result = await apiFetch(url, options);
+                    return {...result, response: {...result?.response, medical: result?.response?.uid}};
+                }});
+            if (disposed || current !== generation) return;
+            const expiration = expirationFromResponse(response.expiring_date);
+            medicalCertificate.set({...$medicalCertificate, medical_id: response.uid, filename: file.name,
+                ...(expiration ? {certificate_expring_date: expiration} : {})});
+            aiSuggestion = Boolean(expiration);
+        } catch (error) {
+            if (!disposed && current === generation && !controller.signal.aborted)
+                uploadError = error.message || 'Il caricamento non è riuscito. Riprova.';
+        } finally {
+            if (!disposed && current === generation) {
+                uploading = false;
+                uploadController = null;
+                if (dropzone?._input) dropzone._input.value = '';
+                unblockPage();
+            }
+        }
+    }
 
     onMount(() => {
-        $medicalCertificate.certificate_expring_date = moment().format('DD/MM/YYYY');
-
-        const id = '#bkn_dropzone';
-
-        var previewNode = document.querySelector(id + ' .dropzone-item');
-        if (previewNode) {
-            previewNode.id = '';
-            previewNode.remove();
-        }
-
-        var dropzoneItems = document.querySelector('.dropzone-items');
-        if (!dropzoneItems) return;
-        var previewTemplate = dropzoneItems.innerHTML;
-
-        var myDropzone5 = createDropzone(document.querySelector(id), {
-            accept: 'image/*,application/pdf',
-            multiple: false,
+        if (!$medicalCertificate?.certificate_expring_date)
+            medicalCertificate.set({...$medicalCertificate, certificate_expring_date: moment().format('DD/MM/YYYY')});
+        dropzone = createDropzone(document.querySelector('#bkn_dropzone'), {
+            accept: 'image/*,application/pdf', multiple: false,
         });
-
-        myDropzone5.on('processing', function (file) {
-            blockPage({
-                overlayColor: '#000000',
-                state: 'primary',
-                message: 'Caricamento in corso...',
-            });
-        });
-
-        myDropzone5.on('addedfile', function (file) {
-            var el = document.querySelector(id + ' .dropzone-item');
-            if (el) el.style.display = '';
-        });
-
-        myDropzone5.on('success', function (file, response) {
-            $medicalCertificate.medical_id = response.uid;
-            $medicalCertificate.filename = file.name;
-            medicalCertificate.set($medicalCertificate);
-            aiSuggestion = false;
-            if (response.expiring_date) {
-                aiSuggestion = true;
-                $medicalCertificate.certificate_expring_date = moment(response.expiring_date, 'YYYY-MM-DD').format(
-                    'DD/MM/YYYY'
-                );
-            }
-            unblockPage();
-        });
-
-        myDropzone5.on('removedfile', function (file) {
-            medicalCertificate.set({medical_id: null, filename: ''});
-        });
-
-        myDropzone5.on('totaluploadprogress', function (progress) {
-            var el = document.querySelector(id + ' .progress-bar');
-            if (el) el.style.width = progress + '%';
-        });
-
-        myDropzone5.on('sending', function (file) {
-            var el = document.querySelector(id + ' .progress-bar');
-            if (el) el.style.opacity = '1';
-        });
-
-        myDropzone5.on('complete', function (progress) {
-            var thisProgressBar = id + ' .dz-complete';
-            setTimeout(function () {
-                document.querySelectorAll(thisProgressBar + ' .progress-bar, ' + thisProgressBar + ' .progress').forEach(function (el) {
-                    el.style.opacity = '0';
-                });
-            }, 300);
-        });
+        dropzone?.on('addedfile', receiveFile);
+        dropzone?.on('removedfile', clearAttachment);
+    });
+    onDestroy(() => {
+        disposed = true;
+        generation++;
+        uploadController?.abort();
+        dropzone?.destroy();
+        if (uploading) unblockPage();
     });
 </script>
 
@@ -105,35 +106,17 @@
                 ><Upload size={16} style="vertical-align: text-top" /> Carica Certificato</a>
         </div>
 
-        <div class="dropzone-items">
-            <div class="dropzone-item" style="display:none">
-                <div class="dropzone-file">
-                    <div class="dropzone-filename" title="file caricato!">
-                        <span data-dz-name="">file caricato!</span>
-                        <strong
-                            >(
-                            <span data-dz-size="">340kb</span>)</strong>
-                    </div>
-                    <div class="dropzone-error" data-dz-errormessage="Errore nel caricamento del file." />
-                </div>
-                <div class="dropzone-progress">
-                    <div class="progress">
-                        <div
-                            class="progress-bar bg-primary"
-                            role="progressbar"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                            aria-valuenow="0"
-                            data-dz-uploadprogress="" />
-                    </div>
-                </div>
-                <div class="dropzone-toolbar">
-                    <span class="dropzone-delete" data-dz-remove="">
-                        <X size={16} />
-                    </span>
-                </div>
+        {#if uploading}
+            <p role="status" aria-busy="true">Caricamento in corso...</p>
+        {/if}
+        {#if $medicalCertificate.filename}
+            <div class="dropzone-items py-3 d-flex align-items-center">
+                <span>Documento caricato: {$medicalCertificate.filename}</span>
+                <button type="button" class="btn btn-xs btn-light-danger ml-3"
+                    aria-label="Rimuovi certificato selezionato" on:click={clearAttachment}><X size={16} /></button>
             </div>
-        </div>
+        {/if}
+        {#if uploadError}<p role="alert" class="text-danger mt-3">{uploadError}</p>{/if}
         <span class="form-text text-muted">La dimensione massima del file è 5MB.</span>
         <!-- TODO: add expiration date selection -->
     </div>

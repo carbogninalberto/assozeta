@@ -32,8 +32,15 @@
         inputValue = String(value).replace('.', ',');
     }
 
-    function updateValue() {
-        value = parseFloat(String(inputValue).replace(',', '.'));
+    function updateValue(event) {
+        const normalized = String(event.currentTarget.value).trim().replace(',', '.');
+        // Keep partial or invalid input visible without overwriting the last
+        // valid amount. A complete decimal updates both the binding and event.
+        if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return;
+        const parsed = Number(normalized);
+        if (!Number.isFinite(parsed)) return;
+        value = parsed;
+        dispatch('update', value);
     }
 
     function mountInputMask() {
@@ -51,6 +58,7 @@
         type="text"
         inputmode="decimal"
         bind:value={inputValue}
+        on:input={updateValue}
         class="form-control"
         placeholder="0,00"
         id="numeric_input_{id}"

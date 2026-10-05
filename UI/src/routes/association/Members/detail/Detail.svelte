@@ -45,6 +45,16 @@
 
     let searchKey = '';
     let changes = false;
+    let mounted = false;
+    let disposed = false;
+    let loadedSubscriptionId = inDrawer ? subscriptionId : params.subscriptionId;
+    $: selectedSubscriptionId = inDrawer ? subscriptionId : params.subscriptionId;
+    $: if (mounted && selectedSubscriptionId && selectedSubscriptionId !== loadedSubscriptionId) {
+        loadedSubscriptionId = selectedSubscriptionId;
+        changes = false;
+        data = {};
+        fetchData(params.page || 'info');
+    }
 
     let isFederation =
         $userData?.preview_and_custom_features?.find(x => x.name === 'Iscrizioni per Enti e Federazioni') !== undefined;
@@ -69,41 +79,33 @@
             }
             // console.warn('params', params);
             // // fetch data from server
-            await fetchData();
+            await fetchData(params.page || 'info');
         } finally {
+            mounted = true;
             unblockPage();
         }
     });
 
     async function fetchData(page, reset = false) {
+        const requestedSubscriptionId = inDrawer ? subscriptionId : params.subscriptionId;
         let prevActiveTab = activeTab;
         switchTab('');
         // activeTab = '';
         const res = await apiFetch(
-            replaceUID(__bakney.env.API.SUBSCRIPTION.INFO, inDrawer ? subscriptionId : params.subscriptionId),
+            replaceUID(__bakney.env.API.SUBSCRIPTION.INFO, requestedSubscriptionId),
             {
                 method: 'GET',
             }
         );
 
+        if (disposed || requestedSubscriptionId !== (inDrawer ? subscriptionId : params.subscriptionId)) return;
         if (!res.error) {
             data = res.response.data;
         } else {
             toast.error('Qualcosa è andato storto.');
         }
 
-        switchTab(prevActiveTab);
-
-        if (page && !reset) {
-            setTimeout(() => {
-                switchTab(page);
-            }, 600);
-        } else if (reset) {
-            setTimeout(() => {
-                activeTab = page;
-                switchTab(activeTab);
-            }, 600);
-        }
+        switchTab(page || prevActiveTab);
     }
 
     function switchTab(tab) {
@@ -146,6 +148,8 @@
     }
 
     onDestroy(() => {
+        disposed = true;
+        mounted = false;
         dispatch('close');
     });
 </script>
