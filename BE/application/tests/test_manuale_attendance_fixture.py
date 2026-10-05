@@ -1,4 +1,5 @@
 """The attendance matrix coexists with the reset baseline and cleans only itself."""
+import os
 import tempfile
 from datetime import date, datetime, time, timezone
 from pathlib import Path
@@ -14,6 +15,7 @@ from application.tests.base import BaseTestCase
 
 
 class ManualAttendanceFixtureTests(BaseTestCase):
+    @patch.dict(os.environ, {'ASSOZETA_MANUAL_RUN_ID': 'attendance-unit-test'})
     def test_real_preparation_retains_duplicate_protection_and_cleanup_preserves_baseline(self):
         with tempfile.TemporaryDirectory() as temporary, patch('application.management.commands.seed_manuale.assert_disposable'), \
                 patch('redis.Redis'), patch('notifications.services.NotificationService.invalidate_user_broadcasts_cache'):
