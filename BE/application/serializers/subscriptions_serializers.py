@@ -473,6 +473,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionInfoSerializer(serializers.ModelSerializer):
+    membership_card_configuration = serializers.SerializerMethodField()
+
+    def get_membership_card_configuration(self, obj):
+        return SportAssociationSearchSerializer().get_membership_card_configuration(obj.sport_association)
+
     user = UserSerializer()
     associate = AssociatePersonaSerializer()
     medical_expiration_date = serializers.DateField(source='medical.expiration_date', read_only=True, allow_null=True)

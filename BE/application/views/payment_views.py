@@ -899,16 +899,16 @@ def payment_list(request):
                 logger.exception(f"Error parsing payment range: {e}")
         
         # Add all other filters
-        if subject is not None:
+        if subject:
             filters &= Q(subject=subject)
             
-        if type is not None:
+        if type:
             filters &= Q(type=type)
             
-        if paid is not None:
+        if paid:
             filters &= Q(paid=(paid == 'true'))
             
-        if expense is not None:
+        if expense:
             filters &= Q(expense=(expense == 'true'))
             
         if payment_categories:

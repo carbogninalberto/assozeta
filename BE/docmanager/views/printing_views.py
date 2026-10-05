@@ -60,7 +60,9 @@ def document_subscription(request, uid):
         response = printing_service.print_and_store_pdf(request, document=document, url=url, headers=headers)
         if response.status_code == 200:
             subscription.document_pdf = document
-            subscription.save()
+            # Rendering performs network I/O. Persist only its result so this
+            # earlier instance cannot overwrite concurrent registration edits.
+            subscription.save(update_fields=['document_pdf'])
         return response
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -304,7 +306,7 @@ def document_invoice(request, uid):
         response = printing_service.print_and_store_pdf(request, document=document, url=url, headers=headers)
         if response.status_code == 200:
             invoice.document_pdf = document
-            invoice.save()
+            invoice.save(update_fields=['document_pdf'])
             # Delivery remains opt-in and limited to the payment's associate.
             p = invoice.payment
             if send_receipt_email and p.associate is not None and p.associate.email:

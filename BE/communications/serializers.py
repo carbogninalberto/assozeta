@@ -67,6 +67,18 @@ class CommunicationConfigurationPatchSerializer(serializers.ModelSerializer):
         )
 
 
+class MessageInputSerializer(serializers.ModelSerializer):
+    # Keep writable input separate from escaped list output. Method fields in
+    # MessageSerializer are read-only and discard these values during creation.
+    message = serializers.CharField(allow_blank=False, trim_whitespace=False)
+    subject = serializers.CharField(max_length=255, required=False,
+        allow_blank=True, allow_null=True, trim_whitespace=False)
+
+    class Meta:
+        model = Message
+        fields = ('type', 'message', 'subject')
+
+
 class MessageSerializer(serializers.ModelSerializer):
     message = serializers.SerializerMethodField(read_only=True)
     subject = serializers.SerializerMethodField(read_only=True)

@@ -73,10 +73,10 @@ def profile_update(request):
         if user_data.initial_data['sport_association']['address_city'] is not None:
             sport_association.address_city = user_data.initial_data['sport_association']['address_city']
 
-        if user_data.initial_data['sport_association']['document_header'] is not None:
+        if 'document_header' in user_data.initial_data['sport_association']:
             sport_association.document_header = user_data.initial_data['sport_association']['document_header']
 
-        if user_data.initial_data['sport_association']['invoice_footer'] is not None:
+        if 'invoice_footer' in user_data.initial_data['sport_association']:
             sport_association.invoice_footer = user_data.initial_data['sport_association']['invoice_footer']
 
         if user_data.initial_data['sport_association']['enable_quotes_management'] is not None:
@@ -94,10 +94,10 @@ def profile_update(request):
         if user_data.initial_data['sport_association']['sport'] is not None:
             sport_association.sport = user_data.initial_data['sport_association']['sport']
 
-        if user_data.initial_data['sport_association']['president_signature'] is not None:
+        if 'president_signature' in user_data.initial_data['sport_association']:
             sport_association.president_signature = user_data.initial_data['sport_association']['president_signature']
 
-        if user_data.initial_data['sport_association']['stamp'] is not None:
+        if 'stamp' in user_data.initial_data['sport_association']:
             sport_association.stamp = user_data.initial_data['sport_association']['stamp']
 
         if user_data.initial_data['sport_association']['president_first_name'] is not None:
@@ -248,6 +248,7 @@ def profile_update_subscription_template(request):
             else:
                 # should not allow empty plans and multiple subscription fee active
                 sport_association.multiple_subscription_fee = False
+                sport_association.subscription_fee_plans = []
 
         if sport_association_data.initial_data['membership_fee'] is not None:
             if sport_association_data.initial_data['membership_fee'] == '':

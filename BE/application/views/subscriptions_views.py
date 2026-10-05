@@ -1821,14 +1821,12 @@ def subscription_payments(request, uid):
     if subscription.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
 
+    member_scope = Q(associate=subscription.associate)
+    tax_code = (subscription.associate.tax_code or '').strip()
+    if tax_code:
+        member_scope |= Q(associate__tax_code__iexact=tax_code)
     payments = scoped_queryset(request, Payment.objects).filter(
-        sport_association=sport_association,
-    ).filter(
-        Q(associate=subscription.associate) |
-        (Q(associate__tax_code__iexact=subscription.associate.tax_code)
-         & Q(associate__isnull=False)
-         & ~Q(associate__tax_code__exact='')  # Excludes empty strings
-         & ~Q(associate__tax_code__regex=r'^\s*$'))  # Excludes whitespace-only strings
+        member_scope, sport_association=sport_association,
     ).order_by('-creation_date')
 
     if subject is not None:
@@ -1991,9 +1989,17 @@ def subscription_card(request, uid):
 
         return Response({'member': data['member']}, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        # create the SubscriptionToken
+        # GET deliberately accepts the short-lived bearer token; minting one
+        # requires the association's authenticated update permission instead.
+        request, authenticated = IsAuthenticated.has_permission_and_return_request(request)
+        if not authenticated or request.user.role != User.ASSOCIATION:
+            return Response({'msg': 'User not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+        subscription = scoped_queryset(request, Subscription.objects).filter(
+            subscription_id=uid, sport_association=request.user.sport_association).first()
+        if subscription is None:
+            return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
         token = SubscriptionToken.objects.create(
-            subscription_id=uid,
+            subscription=subscription,
             expiration_date=timezone.now() +  timedelta(days=3)
         )
 
@@ -2360,11 +2366,61 @@ def subscription_medical_appointments_delete(request, uid, medical_appointments_
     return Response({'data': 'medical appointment created.'}, status=status.HTTP_200_OK)
 
 
+def _medical_certificate_targets(request):
+    """Apply ordinary ownership as well as the existing impersonation boundary."""
+    subscriptions = scoped_queryset(request, Subscription.objects)
+    drafts = scoped_queryset(request, AssociateImportDraft.objects)
+    if getattr(request, 'impersonation_association', None):
+        return subscriptions, drafts
+    if request.user.role == User.ATHLETE:
+        # Match ordinary subscription_update ownership; an athlete does not
+        # own an association's bulk-import drafts.
+        return subscriptions.filter(user=request.user), drafts.none()
+    associations = SportAssociation.objects.filter(user=request.user)
+    return (subscriptions.filter(sport_association__in=associations),
+            drafts.filter(sport_association__in=associations))
+
+
+def _medical_certificate_has_foreign_reference(certificate, association):
+    return (Subscription._base_manager.filter(medical=certificate).exclude(sport_association=association).exists()
+            or AssociateImportDraft.objects.exclude(sport_association=association).filter(
+                data__medical_certificate__medical_id=str(certificate.pk)).exists())
+
+
+def _medical_certificate_for_update(request, subscription):
+    """Keep foreign subscriptions, including hidden ones, on their original copy."""
+    certificate = isolate_medical_certificate(request, subscription)
+    if certificate and _medical_certificate_has_foreign_reference(certificate, subscription.sport_association):
+        certificate = MedicalCertificate.objects.create(
+            document=certificate.document, user=certificate.user,
+            expiration_date=certificate.expiration_date,
+            competitive_medical_certificate=certificate.competitive_medical_certificate,
+            notes=certificate.notes)
+        subscription.medical = certificate
+        subscription.save(update_fields=['medical'])
+    return certificate
+
+
+def _medical_document_is_referenced(document):
+    # Shared documents can also belong to invoices, uploaded files, instructor
+    # archives or hidden subscriptions. Deleting one must not cascade into them.
+    return any(relation.related_model._base_manager.filter(
+        **{relation.field.name: document.pk}).exists()
+        for relation in Document._meta.related_objects)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def subscription_medical_certificate_upload(request, uid):
 
     logger.info("upload_medical_certificate")
+    is_valid_uuid(uid)
+
+    subscriptions, drafts = _medical_certificate_targets(request)
+    subscription = subscriptions.filter(subscription_id=uid).first()
+    draft = drafts.filter(associate_import_draft_id=uid).first() if subscription is None else None
+    if subscription is None and draft is None:
+        return Response({'error': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
 
     try:
         medical_certificate_file = request.data.get('medical_certificate')
@@ -2374,14 +2430,8 @@ def subscription_medical_certificate_upload(request, uid):
             medical_certificate_file, request.user
         )
 
-        # Check if subscription or draft
-        subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
+        # The permitted target is resolved before any record or file is created.
         if subscription is None:
-            # Handle draft
-            draft = AssociateImportDraft.objects.filter(associate_import_draft_id=uid).first()
-            if draft is None:
-                raise TypeError("subscription not found!")
-
             MedicalCertificateService.attach_certificate_to_draft(
                 medical_certificate_doc, document, draft
             )
@@ -2430,39 +2480,43 @@ def subscription_import_status(request):
 def subscription_medical_certificate_set_certificate_expiration(request, uid):
 
     logger.info("set_certificate_expiration")
+    is_valid_uuid(uid)
 
+    subscriptions, drafts = _medical_certificate_targets(request)
+    subscription = subscriptions.filter(subscription_id=uid).first()
+    draft = drafts.filter(associate_import_draft_id=uid).first() if subscription is None else None
+    if subscription is None and draft is None:
+        return Response({'exception': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
     data = request.data
     expiration_date = data['certificate_expiring_date']
-    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
-    if subscription is None:
-        # check if is a draft
-        subscription = AssociateImportDraft.objects.filter(associate_import_draft_id=uid).first()
-        if subscription is None:
-            raise TypeError("subscription not found!")
-        else:
-            if 'medical_certificate' not in subscription.data.keys():
-                subscription.data['medical_certificate'] = {
-                    'medical_id': None,
-                    'filename': None,
-                    'certificate_expring_date': None
-                }
-                subscription.save()
-            # get medical certificate from draft data and set expiration date
-            if 'medical_id' not in subscription.data['medical_certificate'].keys():
-                medical_certificate = None
-            else:
-                medical_certificate = MedicalCertificate.objects.filter(
-                    medical_id=subscription.data['medical_certificate']['medical_id']).first()
-            if medical_certificate is None:
-                medical_certificate = MedicalCertificate.objects.create(user=request.user)
-            medical_certificate.expiration_date = make_aware(datetime.strptime(expiration_date, '%d/%m/%Y'))
-            medical_certificate.save()
-            # set medical certificate to subscription
-            subscription.data['medical_certificate']['medical_id'] = str(medical_certificate.medical_id)
-            subscription.data['medical_certificate']['certificate_expring_date'] = str(expiration_date)
+    if draft is not None:
+        subscription = draft
+        if 'medical_certificate' not in subscription.data.keys():
+            subscription.data['medical_certificate'] = {
+                'medical_id': None,
+                'filename': None,
+                'certificate_expring_date': None
+            }
             subscription.save()
-            # and we are not sending the email to the user because the subscription is not created yet
-            return Response({'msg': f"Medical certificate update with date {medical_certificate.expiration_date}"}, status=status.HTTP_200_OK)
+        # A draft cannot reference another uploader's certificate for mutation.
+        medical_certificate = MedicalCertificate.objects.filter(
+            medical_id=subscription.data['medical_certificate'].get('medical_id'), user=request.user).first()
+        if medical_certificate and _medical_certificate_has_foreign_reference(
+                medical_certificate, subscription.sport_association):
+            medical_certificate = MedicalCertificate.objects.create(
+                document=medical_certificate.document, user=medical_certificate.user,
+                expiration_date=medical_certificate.expiration_date,
+                competitive_medical_certificate=medical_certificate.competitive_medical_certificate,
+                notes=medical_certificate.notes)
+        if medical_certificate is None:
+            medical_certificate = MedicalCertificate.objects.create(user=request.user)
+        medical_certificate.expiration_date = make_aware(datetime.strptime(expiration_date, '%d/%m/%Y'))
+        medical_certificate.save()
+        subscription.data['medical_certificate']['medical_id'] = str(medical_certificate.medical_id)
+        subscription.data['medical_certificate']['certificate_expring_date'] = str(expiration_date)
+        subscription.save()
+        # Drafts do not send an email before a subscription exists.
+        return Response({'msg': f"Medical certificate update with date {medical_certificate.expiration_date}"}, status=status.HTTP_200_OK)
     if subscription.medical is None:
         # create empty medical certificate
         medical_certificate = MedicalCertificate.objects.create(user=request.user)
@@ -2505,7 +2559,7 @@ Attenzione: questo è un placeholder, il certificato medico deve essere caricato
         subscription.save()
     else:
         # get medical certificate
-        medical_certificate = isolate_medical_certificate(request, subscription)
+        medical_certificate = _medical_certificate_for_update(request, subscription)
     # set expiration date
     if expiration_date is not None:
         medical_certificate.expiration_date = make_aware(datetime.strptime(expiration_date, '%d/%m/%Y'))
@@ -2513,8 +2567,10 @@ Attenzione: questo è un placeholder, il certificato medico deve essere caricato
         subscription.medical = None
         subscription.save()
         if not getattr(request, 'impersonation_association', None):
-            medical_certificate.document.delete()  # delete the document
+            document = medical_certificate.document
             medical_certificate.delete()
+            if document and not _medical_document_is_referenced(document):
+                document.delete()
         return Response({'msg': 'Medical certificate removed'}, status=status.HTTP_200_OK)
     medical_certificate.save()
 
@@ -2530,7 +2586,8 @@ def subscription_medical_certificate_edit(request, uid):
     is_valid_uuid(uid)
 
     data = request.data
-    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
+    subscriptions, _ = _medical_certificate_targets(request)
+    subscription = subscriptions.filter(subscription_id=uid).first()
 
     if subscription is None:
         return Response({'exception': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -2538,7 +2595,7 @@ def subscription_medical_certificate_edit(request, uid):
     if subscription.medical is None:
         return Response({'exception': 'Medical certificate not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    medical_certificate = isolate_medical_certificate(request, subscription)
+    medical_certificate = _medical_certificate_for_update(request, subscription)
 
     # update notes and competitive_medical_certificate boolean value
     if 'notes' in data:
@@ -2557,8 +2614,12 @@ def subscription_medical_certificate_edit(request, uid):
 def subscription_medical_certificate_send_email_reminder(request, uid):
 
     logger.info("subscription_medical_certificate_send_email_reminder")
+    is_valid_uuid(uid)
 
-    subscription = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid).first()
+    subscriptions, _ = _medical_certificate_targets(request)
+    subscription = subscriptions.filter(subscription_id=uid).first()
+    if subscription is None:
+        return Response({'exception': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
     if subscription.medical is None:
         raise TypeError("medical certificate not present!")
 

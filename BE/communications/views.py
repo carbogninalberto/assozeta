@@ -10,7 +10,7 @@ from application.permissions_registry import check_collaborator_permission
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
 from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
-from .serializers import CommunicationConfigurationSerializer, MessageSerializer, \
+from .serializers import CommunicationConfigurationSerializer, MessageSerializer, MessageInputSerializer, \
     CommunicationConfigurationPatchSerializer, PostSerializer, \
     EmailSerializer, MessageTransactionSerializer, AutomationWorkflowSerializer, StaffBoardMessageSerializer, StaffBoardMessageInputSerializer
 from .staff_board import message_actor, publish_staff_board_change
@@ -224,7 +224,7 @@ def communication_messages_detail(request, message_id):
 
     message_transactions = MessageTransaction.objects.filter(
         message=message
-    ).order_by('-created_at')
+    ).order_by('-sent_on', 'message_transaction_id')
 
     if not message_transactions:
         return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
@@ -256,11 +256,8 @@ def communication_messages_delete(request, message_id):
 def communication_messages_add(request):
 
     request.user.is_sport_association()
-    data = request.data
-    data['sport_association'] = request.user.sport_association.sport_association_id
-
     # add the message
-    serializer = MessageSerializer(data=data)
+    serializer = MessageInputSerializer(data=request.data)
 
     if not serializer.is_valid():
         return Response({'msg': 'message not valid.'}, status=status.HTTP_400_BAD_REQUEST)
