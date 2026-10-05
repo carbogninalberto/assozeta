@@ -13,3 +13,6 @@ __pycache__/
 .coverage
 .git/
 .DS_Store
+manuale/
+VERSION
+CODE_REVISION

@@ -48,6 +48,7 @@ Production commands:
   restart
   status
   logs [SERVICE]
+  sync-manual               Install the published manual for the configured release.
   backup [DIRECTORY]
   restore ARCHIVE [--yes]
   recover-upgrade ARCHIVE [--yes]
@@ -701,6 +702,7 @@ EMAIL_USE_SSL=False
 AI_API_KEY=
 AI_MODEL=deepseek-v4-flash
 AI_BASE_URL=https://api.deepseek.com
+MANUAL_CORPUS_BASE_URL=
 WEB_CONCURRENCY=2
 CELERY_CONCURRENCY=2
 TZ=Europe/Rome
@@ -888,6 +890,14 @@ stop_prod_data_services() {
 
 start_prod_app_services() {
     force_recreate=${1:-false}
+
+    # Populate the persistent manual before serving requests. A temporarily
+    # unavailable publisher must not prevent the application from starting.
+    if [ -n "$(env_value MANUAL_CORPUS_BASE_URL "$PROD_ENV")" ]; then
+        if ! prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus; then
+            log "manual refresh failed; retained content still requires the running revision/version"
+        fi
+    fi
 
     if [ "$force_recreate" = true ]; then
         prod_compose up -d --force-recreate worker beat || return $?
@@ -1674,6 +1684,11 @@ run_locked_prod_command() {
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;
         pull) validate_prod; prod_compose pull ;;
+        sync-manual)
+            [ "$#" -eq 0 ] || die "sync-manual does not accept arguments"
+            validate_prod
+            prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus
+            ;;
         migrate) migrate_prod ;;
         start) start_prod ;;
         stop) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose stop ;;
@@ -1727,7 +1742,7 @@ case "$command" in
             run_locked_prod_command "$command" "$@"
         fi
         ;;
-    configure|install|pull|migrate|start|stop|restart|backup|restore|recover-upgrade|reconcile-updates|uninstall) run_locked_prod_command "$command" "$@" ;;
+    configure|install|pull|migrate|start|stop|restart|sync-manual|backup|restore|recover-upgrade|reconcile-updates|uninstall) run_locked_prod_command "$command" "$@" ;;
     validate) validate_prod ;;
     status) preflight; status_prod ;;
     logs) preflight; [ -f "$PROD_ENV" ] || die "run configure first"; prod_compose logs --follow --tail=200 "$@" ;;

@@ -10,6 +10,35 @@ DEFINITIONS = (ROOT / 'selfhost/bin/assozeta').read_text().split('\ncommand=${1:
 
 
 class MaintenanceLifecycleTests(unittest.TestCase):
+    def test_configured_manual_refresh_precedes_start_and_failure_does_not_block_startup(self):
+        for configured, failure, recreate in ((False, False, False), (True, False, False),
+                                               (True, True, False), (True, True, True)):
+            with self.subTest(configured=configured, failure=failure, recreate=recreate), TemporaryDirectory() as directory:
+                (Path(directory) / '.env').write_text('MANUAL_CORPUS_BASE_URL=' + (
+                    'https://manual.invalid/corpus' if configured else '') + '\n')
+                script = DEFINITIONS + r'''
+prod_compose() {
+    printf 'compose %s\n' "$*"
+    case "$*" in
+        *sync_manuale_corpus*) test "$TEST_MANUAL_FAILURE" != true ;;
+        *) return 0 ;;
+    esac
+}
+require_background_services_running() { return 0; }
+wait_public_readiness() { return 0; }
+start_prod_app_services "$TEST_RECREATE"
+'''
+                result = subprocess.run(['sh', '-c', script], capture_output=True, text=True,
+                    env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
+                         'TEST_MANUAL_FAILURE': str(failure).lower(), 'TEST_RECREATE': str(recreate).lower()})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual('sync_manuale_corpus' in result.stdout, configured)
+                if configured:
+                    self.assertLess(result.stdout.index('sync_manuale_corpus'), result.stdout.index('compose up'))
+                self.assertEqual('manual refresh failed' in result.stdout, failure)
+                self.assertIn('worker beat', result.stdout)
+                self.assertIn('api web', result.stdout)
+
     def test_development_prepares_host_directory_before_compose(self):
         with TemporaryDirectory() as directory:
             script = DEFINITIONS + r'''

@@ -13,10 +13,12 @@ x-backend: &backend
   environment:
     DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
     ASSOZETA_DEPLOYMENT_MODE: production
+    MANUAL_INDEX_PATH: /app/manuale/index.json
   init: true
   volumes:
     - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
     - django_static:/app/staticfiles
+    - manuale_data:/app/manuale
   networks:
     - internal
   logging: *default-logging
@@ -143,6 +145,7 @@ services:
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - django_static:/app/staticfiles
+      - manuale_data:/app/manuale
       - updater_api:/run/assozeta-updater:ro
     depends_on:
       postgres:
@@ -232,5 +235,6 @@ volumes:
   redis_data:
   minio_data:
   django_static:
+  manuale_data:
   caddy_data:
   caddy_config:
