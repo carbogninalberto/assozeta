@@ -1,4 +1,5 @@
 from django.urls import path, include
+from .manuale.views import manual_sections, manual_asset
 
 from .views.archive_views import FolderViewSet, DocumentArchiveViewSet, SportAssociationModuleTemplatesViewSet
 from .views.export_views import AssociationExportViewSet, AssociationImportViewSet
@@ -91,6 +92,8 @@ router.register(r'personas', AssociateViewSet, basename='persona')
 router.register(r'personas-subscriptions', AssociateSubscriptionViewSet, basename='persona-subscriptions')
 
 urlpatterns = [
+    path('manuale/sections', manual_sections, name='manual_sections'),
+    path('manuale/assets/<path:asset_path>', manual_asset, name='manual_asset'),
     path('association/impersonation/users', impersonation_users),
     path('association/impersonation', impersonation_session),
     path('administration/impersonation/users', impersonation_users),

@@ -125,6 +125,24 @@ MCP_AGENT_WS_RATE_LIMIT = env.int('MCP_AGENT_WS_RATE_LIMIT', 10)
 MCP_AGENT_WS_TIMEOUT = env.int('MCP_AGENT_WS_TIMEOUT', 240)
 MCP_AGENT_HISTORY_CAP = env.int('MCP_AGENT_HISTORY_CAP', 50)
 
+# Knowledge is served only for the explicitly bound implementation/release.
+# Generation and MCP/agent retrieval share the same atomic corpus artifact.
+MANUAL_URL = env.str('MANUAL_URL', 'https://manuale.bakney.com/docs/introduzione')
+MANUAL_INDEX_PATH = env.str('MANUAL_INDEX_PATH', str(BASE_DIR / 'manuale' / 'index.json'))
+MANUAL_ASSET_ROOT = env.str('MANUAL_ASSET_ROOT', '')
+MANUAL_CORPUS_BASE_URL = env.str('MANUAL_CORPUS_BASE_URL', '')
+def _get_manual_application_revision():
+    revision_file = BASE_DIR / 'CODE_REVISION'
+    if revision_file.exists():
+        revision = revision_file.read_text().strip()
+        return '' if revision == 'unknown' else revision
+    return env.str('MANUAL_APPLICATION_REVISION', '')
+
+MANUAL_APPLICATION_REVISION = _get_manual_application_revision()
+MANUAL_SOURCE_ROOT = env.str('MANUAL_SOURCE_ROOT', '')
+MANUAL_RUN_ID = env.str('ASSOZETA_MANUAL_RUN_ID', '')
+MANUAL_DEVELOPMENT_ROOT = env.str('MANUAL_DEVELOPMENT_ROOT', str(BASE_DIR / 'manuale' / 'development'))
+
 # Pdf Rendering ENGINE
 PUPPETEER_HOST = env.str('PUPPETEER_HOST')
 PUPPETEER_PORT = env.str('PUPPETEER_PORT')
@@ -302,6 +320,9 @@ EMAIL_BACKEND = 'instance.email_configuration.EmailBackend'
 # Use in-memory backend during tests (no real emails sent)
 import sys
 if 'test' in sys.argv:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+elif MANUAL_RUN_ID and ASSOZETA_DEPLOYMENT_MODE == 'development':
+    # Run-owned manual fixtures may enqueue notifications; keep delivery local.
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 EMAIL_HOST = os.environ.get('EMAIL_HOST')

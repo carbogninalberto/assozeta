@@ -22,6 +22,7 @@ from application.mcp_server.query_builder import QueryBuilder
 from application.mcp_server.exporters.csv_exporter import CSVExporter
 from application.mcp_server.exporters.xlsx_exporter import XLSXExporter
 from application.mcp_server.exporters.pdf_exporter import PDFExporter
+from application.manuale.tools import MANUAL_TOOL_DEFINITIONS, MANUAL_TOOL_FUNCTIONS, MANUAL_TOOL_PARAMETERS
 
 logger = logging.getLogger(__name__)
 
@@ -1093,6 +1094,9 @@ TOOL_DEFINITIONS = [
 ]
 
 
+TOOL_DEFINITIONS.extend(MANUAL_TOOL_DEFINITIONS)
+
+
 def create_mcp_server(sport_association_id: str) -> Server:
     """Create and configure an MCP server instance."""
     server = Server("bakney-sport-data")
@@ -1125,7 +1129,13 @@ def create_mcp_server(sport_association_id: str) -> Server:
                         close_old_connections()
                 return await sync_to_async(invoke)()
 
-            if name == 'get_schema':
+            if name in MANUAL_TOOL_FUNCTIONS:
+                # Never accept identity, revision, filesystem, or feature overrides
+                # from a JSON-RPC caller. Stdio knowledge access is public.
+                allowed = MANUAL_TOOL_PARAMETERS[name]
+                result = await _call(MANUAL_TOOL_FUNCTIONS[name], sport_association_id=sport_association_id,
+                                     **{key: value for key, value in arguments.items() if key in allowed})
+            elif name == 'get_schema':
                 result = await _call(tool_get_schema, sport_association_id=sport_association_id, **arguments)
             elif name == 'query_data':
                 result = await _call(tool_query_data, sport_association_id=sport_association_id, **arguments)

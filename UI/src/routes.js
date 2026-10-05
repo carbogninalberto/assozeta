@@ -54,6 +54,10 @@ function isAssociation() {
 
 // Export the route definition object
 export default {
+    '/manuale': wrap({
+        asyncComponent: () => import('./routes/manuale/Manuale.svelte'),
+        conditions: [isLogged],
+    }),
     // Exact path
     '/': wrap({
         // Dashboard Component

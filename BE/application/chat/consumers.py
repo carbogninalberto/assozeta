@@ -53,6 +53,9 @@ class WebSocketAgentCallback:
             'type': 'message_end',
         })
 
+    async def on_manual_section(self, section: dict) -> None:
+        await self.consumer.send_json({'type': 'manual_section', 'section': section})
+
     async def on_export_ready(self, export_data: dict) -> None:
         if 'save_info' in export_data:
             self.consumer.last_save_info = export_data['save_info']
@@ -138,9 +141,6 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             logger.warning('Agent WS rejected: AI configuration unavailable')
             await self.close(code=4004)
             return
-        if not self.ai_config['enabled']:
-            await self.close(code=4004)
-            return
 
         # Concurrency check
         self.concurrency_guard = ConcurrencyGuard(user_id)
@@ -180,12 +180,19 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'type': 'message',
             'content': (
-                "Ciao! Sono il tuo agente AI.\n\n"
-                "Posso aiutarti a:\n"
-                "- Cercare informazioni su **tesserati, iscrizioni, corsi, pagamenti**\n"
-                "- Contare e visualizzare dati (es. \"Quanti iscritti ho quest'anno?\")\n"
-                "- Preparare **export in Excel, CSV o PDF**\n\n"
-                "Chiedimi quello che ti serve!"
+                "Ciao! Posso cercare istruzioni verificate nel manuale di Assozeta. "
+                "Scrivi la tua domanda oppure [sfoglia il manuale d’uso](/#/manuale). "
+                "Se mancano informazioni verificate, te lo segnalo. "
+                "Le analisi dei dati e gli export richiedono la configurazione AI."
+            ) if not self.ai_config['enabled'] else (
+                "Ciao! Posso aiutarti a cercare informazioni nell’associazione "
+                "e a capire come usare Assozeta.\n\n"
+                "- **Cerca nei dati**: per esempio, «Quanti iscritti ho quest’anno?»\n"
+                "- **Trova una guida**: per esempio, «Come posso assegnare un tag?»\n"
+                "- **Prepara un export** dei dati che ti servono.\n\n"
+                "Quando cerchi istruzioni, ti indico la guida disponibile nel manuale. "
+                "Se mancano informazioni verificate, te lo segnalo.\n\n"
+                "[Sfoglia il manuale d’uso](/#/manuale) oppure scrivi qui la tua domanda."
             ),
         })
 
@@ -194,7 +201,8 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         from application.agent.core import Agent
         from application.agent.providers.ai_provider import AIProvider
 
-        provider = AIProvider(api_key=self.ai_config['api_key'], model=self.ai_config['model'], base_url=self.ai_config['base_url'])
+        provider = (AIProvider(api_key=self.ai_config['api_key'], model=self.ai_config['model'], base_url=self.ai_config['base_url'])
+                    if self.ai_config['enabled'] else None)
         callback = WebSocketAgentCallback(self)
 
         self.agent = Agent(
@@ -221,6 +229,12 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content):
         """Handle incoming WebSocket messages."""
         msg_type = content.get('type')
+        if msg_type in {'save_report', 'delete_report', 'list_reports'}:
+            from instance.integration_configuration import effective_integration
+            current = await database_sync_to_async(effective_integration)('ai')
+            if not current['enabled']:
+                await self.send_json({'type': 'error', 'message': 'Questa funzione richiede la configurazione AI.'})
+                return
 
         if msg_type == 'ping':
             await self.send_json({
@@ -263,12 +277,10 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
         from instance.integration_configuration import effective_integration
         try:
             current = await database_sync_to_async(effective_integration)('ai')
-            if not current['enabled']:
-                await self.send_json({'type': 'error', 'message': 'Il bot AI è disattivato per questa istanza.'})
-                return
             if current != self.ai_config:
                 from application.agent.providers.ai_provider import AIProvider
-                self.agent.provider = AIProvider(api_key=current['api_key'], model=current['model'], base_url=current['base_url'])
+                self.agent.provider = (AIProvider(api_key=current['api_key'], model=current['model'], base_url=current['base_url'])
+                                       if current['enabled'] else None)
                 self.agent.max_iterations = current['max_iterations']
                 self.agent.history_cap = current['history_cap']
                 self.throttle.max_messages = current['ws_rate_limit']

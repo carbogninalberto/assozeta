@@ -45,6 +45,7 @@ class AgentWebSocket {
         this.onMessage = null;
         this.onMessageChunk = null;
         this.onMessageEnd = null;
+        this.onManualSection = null;
         this.onToolCall = null;
         this.onExportReady = null;
         this.onReportSaved = null;
@@ -127,6 +128,10 @@ class AgentWebSocket {
 
             case 'message_end':
                 this.onMessageEnd?.();
+                break;
+
+            case 'manual_section':
+                this.onManualSection?.(data.section);
                 break;
 
             case 'tool_call':
@@ -250,6 +255,9 @@ class AgentWebSocket {
     }
     setOnMessageEnd(handler) {
         this.onMessageEnd = handler;
+    }
+    setOnManualSection(handler) {
+        this.onManualSection = handler;
     }
     setOnToolCall(handler) {
         this.onToolCall = handler;

@@ -90,6 +90,7 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
             'supportEmail': obj.support_email,
             'primaryColor': obj.primary_color,
             'displaySettings': obj.get_display_settings(),
+            'manualUrl': '/#/manuale',
         }
 
     def get_oauth(self, obj):

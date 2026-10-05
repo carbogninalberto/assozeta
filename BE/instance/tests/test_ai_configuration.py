@@ -105,9 +105,13 @@ class AIConfigurationTests(TestCase):
         consumer.send_json = AsyncMock()
         consumer._run_agent_with_timeout = AsyncMock()
         self.client.put(self.endpoint, self.payload(enabled=False), format='json')
-        async_to_sync(consumer._handle_user_message)({'message': 'hello'})
-        consumer.send_json.assert_awaited_once()
-        consumer._run_agent_with_timeout.assert_not_awaited()
+        async def manual_only():
+            await consumer._handle_user_message({'message': 'Come creo un tag?'})
+            await consumer.agent_task
+        async_to_sync(manual_only)()
+        self.assertIsNone(consumer.agent.provider)
+        consumer._run_agent_with_timeout.assert_awaited_once()
+        consumer._run_agent_with_timeout.reset_mock()
         self.client.put(self.endpoint, self.payload(enabled=True, model='new-model', max_iterations=8, history_cap=22, ws_rate_limit=6, ws_timeout=44), format='json')
         async def run():
             with patch('application.agent.providers.ai_provider.AIProvider') as provider:
@@ -121,11 +125,23 @@ class AIConfigurationTests(TestCase):
         consumer._run_agent_with_timeout.assert_awaited_once_with('hello', 44)
 
     @patch('channels.db.close_old_connections')
-    def test_disabled_bot_rejects_new_socket(self, close_connections):
+    def test_disabled_ai_opens_manual_only_socket(self, close_connections):
         from application.chat.consumers import AgentConsumer
         self.client.put(self.endpoint, self.payload(enabled=False), format='json')
         consumer = AgentConsumer()
         consumer.scope = {'user': self.owner}
         consumer.close = AsyncMock()
-        async_to_sync(consumer.connect)()
-        consumer.close.assert_awaited_once_with(code=4004)
+        consumer.accept = AsyncMock()
+        consumer.send_json = AsyncMock()
+        async def run():
+            with patch('application.agent.providers.ai_provider.AIProvider') as provider, \
+                 patch('application.chat.consumers.ConcurrencyGuard'):
+                await consumer.connect()
+                provider.assert_not_called()
+                self.assertIsNone(consumer.agent.provider)
+                consumer.accept.assert_awaited_once()
+                consumer.close.assert_not_awaited()
+                self.assertIn('manuale', consumer.send_json.call_args.args[0]['content'])
+                await consumer.receive_json({'type': 'list_reports'})
+                self.assertEqual(consumer.send_json.call_args.args[0]['type'], 'error')
+        async_to_sync(run)()
