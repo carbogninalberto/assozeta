@@ -144,8 +144,9 @@ for (const viewport of viewports) {
                 const response = await page.reload();
                 expect(response.status()).toBe(503);
                 await expect(page.getByRole('heading', {name: 'Torniamo tra poco'})).toBeVisible();
-                const status = await page.request.post(`${input.origin}/instance-update-status`, {
-                    headers: {Authorization: `Bearer ${input.token}`}, data: {},
+                // Node-side API requests do not use Chromium's host-resolver mapping.
+                const status = await page.request.post(`${input.requestOrigin || input.origin}/instance-update-status`, {
+                    headers: {Authorization: `Bearer ${input.token}`, Host: input.host}, data: {},
                 });
                 expect(status.status()).toBe(200);
                 const state = await status.json();
