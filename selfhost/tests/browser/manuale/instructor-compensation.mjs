@@ -8,6 +8,12 @@ import fs from 'node:fs';
 const id = 'instructor-compensation';
 const spec = organizationAuthoredWorkflows[id];
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+// List endpoints order by fixture timestamps that share one frozen value (and the
+// instructor list is unordered), so compare record sets, not physical row order.
+// Some list endpoints return keyed objects; their keys are the record identities.
+const recordSet = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort());
+const sameRecords = (left, right) => recordSet(left) === recordSet(right);
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
@@ -32,6 +38,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const originalInstructors = (await read('instructor/list')).data;
         const owned = {instructor: null, course: null, category: null, payments: new Set(), hours: [], memberships: [], calendar: false};
         let cleanupError;
+        let primaryError;
         try {
             // Explicit fixture preparation through real authorized APIs. These are not
             // published as instructor/course creation or payment-approval procedures.
@@ -121,7 +128,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(percentage.paid).toBe(false); expect(percentage.payment).toBeNull();
             expect(percentage.calculation_data).toHaveLength(1);
             expect(percentage.calculation_data[0].full_athlete_name).toBe('Luca Verdi');
-            proof('source_payments_preserved', JSON.stringify((await allPayments()).filter(item => sourcePayments.some(p => p.payment_id === item.payment_id))) === JSON.stringify(sourceSnapshot));
+            proof('source_payments_preserved', sameRecords((await allPayments()).filter(item => sourcePayments.some(p => p.payment_id === item.payment_id)), sourceSnapshot));
             const percentageRow = page.locator('[data-row]').filter({hasText: percentage.notes});
             await expect(percentageRow).toContainText('24,00');
             await take('percentage-persists-after-reload');
@@ -141,7 +148,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await take('compensation-confirmation', confirmation);
             const beforeCancel = await allPayments();
             await confirmation.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('cancellation_did_not_create_payment', JSON.stringify(await allPayments()) === JSON.stringify(beforeCancel));
+            proof('cancellation_did_not_create_payment', sameRecords(await allPayments(), beforeCancel));
             await page.locator('#bkn_datatable_approve_selected').click();
             const compensation = page.waitForResponse(res => new URL(res.url()).pathname === `/api/instructor/${uid}/hours/add/compensation`
                 && res.request().method() === 'POST');
@@ -271,21 +278,33 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                 const res = await reader.api(route, {method, data}); expect(res.status()).toBe(403); denied.push(res.status());
                 report.expected_denials.push({identity: 'reader', path: '/api/' + route, status: res.status()});
             }
-            proof('reader_write_denials', denied.length); expect(await hours()).toEqual(beforeDenials);
+            proof('reader_write_denials', denied.length); expect(sameRecords(await hours(), beforeDenials)).toBe(true);
             const readerReport = await read('instructor/report?' + requestRange, reader.api);
-            proof('reader_report_read_allowed', JSON.stringify(readerReport.data.results) === JSON.stringify(reportData.results));
+            proof('reader_report_read_allowed', sameRecords(readerReport.data.results, reportData.results));
+        } catch (error) {
+            primaryError = error;
+            throw error;
         } finally {
             // Remove only resources this invocation created, even after assertion failure.
             // Hours deletion also removes their generated Document, prior to payment deletion.
             if (owned.course) {
-                for (const payment of await allPayments()) {
-                    if (payment.course?.course_id === owned.course) owned.payments.add(payment.payment_id);
+                try {
+                    for (const payment of await allPayments()) {
+                        if (payment.course?.course_id === owned.course) owned.payments.add(payment.payment_id);
+                    }
+                    const linkedSubscriptions = (await read(`course-subscriptions/list?course_id=${owned.course}`)).data;
+                    owned.memberships = [...new Set([...owned.memberships, ...linkedSubscriptions.map(item => item.course_subscription_id)])];
+                } catch {
+                    cleanupError = cleanupError || 'Owned course reconciliation read failed';
                 }
-                const linkedSubscriptions = (await read(`course-subscriptions/list?course_id=${owned.course}`)).data;
-                owned.memberships = [...new Set([...owned.memberships, ...linkedSubscriptions.map(item => item.course_subscription_id)])];
             }
             if (owned.instructor) {
-                const remaining = await read(`instructor/${owned.instructor}/hours/list?pagination[perpage]=100`);
+                let remaining = {data: []};
+                try {
+                    remaining = await read(`instructor/${owned.instructor}/hours/list?pagination[perpage]=100`);
+                } catch {
+                    cleanupError = cleanupError || 'Owned hours reconciliation read failed';
+                }
                 for (const row of remaining.data) {
                     if (row.payment) owned.payments.add(row.payment);
                     // This newly created instructor has no preexisting rows. Reconcile
@@ -316,12 +335,14 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                 const res = await api(`payment/category/${owned.category}/delete`, {method: 'DELETE'});
                 if (![200, 404].includes(res.status())) cleanupError = 'Owned category cleanup failed';
             }
-            if (cleanupError) throw new Error(cleanupError);
+            // Report cleanup privately without hiding the original assertion.
+            if (cleanupError) report.cleanup_error = cleanupError;
+            if (cleanupError && !primaryError) throw new Error(cleanupError);
         }
-        proof('baseline_records_preserved', JSON.stringify(await allPayments()) === JSON.stringify(originalPayments)
-            && JSON.stringify((await read('subscription/list?pagination[perpage]=100')).data) === JSON.stringify(originalMembers)
-            && JSON.stringify((await read('course/list?all=1')).data) === JSON.stringify(originalCourses));
-        proof('owned_resources_cleaned', JSON.stringify((await read('instructor/list')).data) === JSON.stringify(originalInstructors));
+        proof('baseline_records_preserved', sameRecords(await allPayments(), originalPayments)
+            && sameRecords((await read('subscription/list?pagination[perpage]=100')).data, originalMembers)
+            && sameRecords((await read('course/list?all=1')).data, originalCourses));
+        proof('owned_resources_cleaned', sameRecords((await read('instructor/list')).data, originalInstructors));
         expect(facts).toEqual(spec.outcome.expected); report[spec.outcome.field] = facts;
         report.checks = ['real percentage calculation, exclusion and persisted amount', 'compensation cancellation and scoped unpaid expense links',
             'real PDF generation via hours-list fallback, retrieval and preview', 'real attendance row matches parsed XLSX report',
