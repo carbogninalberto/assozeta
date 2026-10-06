@@ -50,7 +50,9 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # A complete run measured ~70 min on hosted runners: ~39 min for 60 sequential
+    # captures, then generation, rendering, retrieval and embedded-reader checks.
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
         with:

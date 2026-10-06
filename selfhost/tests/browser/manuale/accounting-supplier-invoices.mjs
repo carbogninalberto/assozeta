@@ -7,6 +7,8 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
         const read=async route=>{const response=await api(route);expect(response.status()).toBe(200);return response.json();};
         const list=async()=>Object.values((await read('invoice-suppliers/list?pagination[perpage]=100')).data);
         const ordered=rows=>[...rows].sort((a,b)=>a.invoice_supplier_id.localeCompare(b.invoice_supplier_id));
+        // Seeded rows share one frozen timestamp, so list order is not part of the contract.
+        const records=rows=>(Array.isArray(rows)?rows.map(row=>JSON.stringify(row)):Object.entries(rows).map(entry=>JSON.stringify(entry))).sort();
         const baseline=ordered(await list()),payments=(await read('payment/list?pagination[perpage]=100')).data;
         const accounts=(await read('balance-sheet/accounts/list')).data;
         const categories=(await read('payment/category/list')).data;
@@ -87,10 +89,10 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
                 report.cleanup_failures=[...(report.cleanup_failures||[]),label];if(!error)error=cause;}
             if(error&&report.cleanup_failures?.length)throw error;
         }
-        expect(ordered(await list())).toEqual(baseline);expect((await read('payment/list?pagination[perpage]=100')).data).toEqual(payments);
-        expect((await read('balance-sheet/accounts/list')).data).toEqual(accounts);
+        expect(ordered(await list())).toEqual(baseline);expect(records((await read('payment/list?pagination[perpage]=100')).data)).toEqual(records(payments));
+        expect(records((await read('balance-sheet/accounts/list')).data)).toEqual(records(accounts));
         expect((await read('supplier/list?all=true')).data.find(r=>r.supplier_id===supplier)).toBeUndefined();
-        expect((await read('payment/category/list')).data.filter(c=>c.payment_category_id!==category)).toEqual(categories);
+        expect(records((await read('payment/category/list')).data.filter(c=>c.payment_category_id!==category))).toEqual(records(categories));
         if(category)expect((await read('payment/category/list')).data.find(c=>c.payment_category_id===category).deleted).toBe(true);
         report[spec.outcome.field]={invoice_created_via_ui:true,invoice_payment_link_preserved:true,expense_amount:12,created_unpaid:true,
             readonly_amount_account_supplier:true,invoice_edit_reopened:true,expense_amount_preserved_after_edit:true,paid_via_ui_persisted:true,
