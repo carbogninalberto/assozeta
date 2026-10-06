@@ -1,6 +1,10 @@
 import {setCheckbox} from './controls.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {paymentMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/payment-maintenance-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'payment-categories-manage', spec = paymentMaintenanceAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async ({page, api, open, actor, input, capture, report}) => {
@@ -78,8 +82,8 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             if (owned) {try {expect((await api(`payment/category/${owned}/delete`,{method:'DELETE'})).status()).toBe(200);}
                 catch (cause) {report.cleanup_failures=['owned category soft deletion']; if(!error)throw cause;}}
         }
-        expect((await list()).filter(c=>c.payment_category_id!==owned)).toEqual(baseline);
-        expect((await read('payment/list?pagination[perpage]=100')).data).toEqual(baselinePayments);
+        expect(records((await list()).filter(c=>c.payment_category_id!==owned))).toEqual(records(baseline));
+        expect(records((await read('payment/list?pagination[perpage]=100')).data)).toEqual(records(baselinePayments));
         report[spec.outcome.field]={created_reopened:true,edited_reopened:true,delete_cancel_preserved:true,soft_deleted_reopened:true,
             reader_write_denials:3,shared_category_write_denials:2,baseline_categories_preserved:true,payments_preserved:true,owned_category_soft_deleted:true};
         expect(report[spec.outcome.field]).toEqual(spec.outcome.expected);

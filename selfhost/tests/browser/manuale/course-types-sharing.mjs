@@ -2,6 +2,10 @@ import {setCheckbox} from './controls.mjs';
 import {scenario, expect} from './scenario.mjs';
 import manualConfig from '../playwright.manual.config.mjs';
 import {courseSettingsAuthoredWorkflows} from '../../../../docs/manuale/course-settings-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id='course-types-sharing',spec=courseSettingsAuthoredWorkflows[id];
 await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
     actions:async({page,api,open,actor,context,input,capture,report})=>{
@@ -120,7 +124,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
             }
             if(failures.length){report.cleanup_failures=failures.map(()=> 'Owned course/payment deletion failed');if(!error)throw new Error('Owned course cleanup failed');}
         }
-        expect(await list()).toEqual(baselineCourses);expect(await payments()).toEqual(baselinePayments);
+        expect(records(await list())).toEqual(records(baselineCourses));expect(records(await payments())).toEqual(records(baselinePayments));
         report[spec.outcome.field]={multiple_quotes_saved_reopened:true,selected_quote_creates_unpaid_payment:true,quote_change_preserves_recorded_payment:true,
             membership_defaults_saved_reopened:true,individual_membership_period_saved:true,individual_fee_creates_unpaid_payment:true,
             calendar_link_matches_actual_course:true,clipboard_matches_displayed_link:true,embedded_source_matches_link:true,anonymous_calendar_read:true,

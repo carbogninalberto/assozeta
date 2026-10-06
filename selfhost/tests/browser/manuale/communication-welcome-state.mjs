@@ -3,6 +3,10 @@
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus} from './focus.mjs';
 import {communicationCompleteAuthoredWorkflows} from '../../../../docs/manuale/communication-complete-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'communication-welcome-state';
 const spec = communicationCompleteAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
@@ -229,7 +233,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                 proof.owned_workflow_removed = true;
             }
             context.off('request', observe);
-            const after = await read('communications/workflows/list'); expect(after).toEqual(baseline);
+            const after = await read('communications/workflows/list'); expect(records(after)).toEqual(records(baseline));
             proof.unrelated_workflows_unchanged = true;
         }
         if (finished) {

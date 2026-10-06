@@ -1,6 +1,10 @@
 // Real UI handlers and persisted API reads; the run owner executes this file.
 import {scenario, expect} from './scenario.mjs';
 import {campsCalendarSources} from './camps-calendar-sources.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
 await scenario({id: 'camps-calendar-manage', prefix: 'images/camp-calendario/gestione',
     sources: campsCalendarSources, actions: async ({page, api, actor, open, input, capture, report}) => {
@@ -124,7 +128,7 @@ await scenario({id: 'camps-calendar-manage', prefix: 'images/camp-calendario/ges
         await page.getByRole('heading', {name: 'Servizi della settimana', exact: true}).scrollIntoViewIfNeeded();
         await take(12, 'deleted-service-absent-after-reload');
         expect((await json(`camps-and-retreats/${campId}/subscriptions/list`)).data).toEqual([]);
-        expect((await json('payment/list?pagination[perpage]=100')).data).toEqual(originalPayments);
+        expect(records((await json('payment/list?pagination[perpage]=100')).data)).toEqual(records(originalPayments));
         const reader = await actor('reader');
         await reader.open('Attività', '/#/course/camps-and-retreats/list');
         await expect(reader.page.getByRole('button', {name: 'Camp e Ritiri', exact: true})).toHaveCount(0);
@@ -170,7 +174,7 @@ await scenario({id: 'camps-calendar-manage', prefix: 'images/camp-calendario/ges
         await page.getByRole('button', {name: 'Oggi', exact: true}).click();
         const modal = page.locator('#addElement');
         await expect(page.getByRole('button', {name: 'lista giorno', exact: true})).toHaveClass(/ec-active/);
-        expect((await json('calendar/events?get_lesson=false')).data.events).toEqual(beforeViews);
+        expect(records((await json('calendar/events?get_lesson=false')).data.events)).toEqual(records(beforeViews));
         const fillEvent = async (title, description) => {
             await page.getByRole('button', {name: 'Nuovo evento', exact: true}).click();
             await expect(modal).toBeVisible();

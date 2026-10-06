@@ -6,6 +6,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {inflateRawSync} from 'node:zlib';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const recordSet = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
 // Shared with the instructor report scenario. Importing this file launches no scenario.
 export function zipParts(bytes) {
@@ -238,8 +242,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
             if (cleanupFailure) throw new Error(cleanupFailure);
         }
         const finalPayments = Object.values((await payments()).data).filter(row => input.payment_ids.includes(row.payment_id));
-        proof('baseline_records_preserved', JSON.stringify((await members()).data) === JSON.stringify(baselineMembers)
-            && JSON.stringify(finalPayments) === JSON.stringify(Object.values(baselinePayments)));
+        proof('baseline_records_preserved', JSON.stringify(recordSet((await members()).data)) === JSON.stringify(recordSet(baselineMembers))
+            && JSON.stringify(recordSet(finalPayments)) === JSON.stringify(recordSet(Object.values(baselinePayments))));
         expect(facts).toEqual(spec.outcome.expected); report[spec.outcome.field] = facts;
         report.checks = ['real Book CSV and filtered XLSX parsed', 'monthly and general payment downloads compared',
             'real Celery ZIP completed, reopened, downloaded and inspected', 'reader export denied; only owned artifacts deleted'];

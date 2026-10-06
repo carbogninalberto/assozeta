@@ -2,6 +2,10 @@
 import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {communicationCompleteAuthoredWorkflows} from '../../../../docs/manuale/communication-complete-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'communication-message-compose';
 const spec = communicationCompleteAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
@@ -146,7 +150,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             ]) proof[field] = (await reader.api(route, {method, ...(data ? {data} : {})})).status();
             expect([proof.reader_create_email_status, proof.reader_create_post_status,
                 proof.reader_delete_email_status, proof.reader_delete_post_status]).toEqual([403, 403, 403, 403]);
-            expect(await read('communications/messages/list')).toEqual(beforeDenials);
+            expect(records(await read('communications/messages/list'))).toEqual(records(beforeDenials));
             proof.reader_denials_preserve_state = true;
             expect(taken.size).toBe(spec.checkpoints.length); expect(outgoingRequests).toBe(0);
             proof.outgoing_requests = outgoingRequests;
@@ -161,7 +165,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             }
             proof.owned_messages_removed = owned.size === 2;
             context.off('request', observe);
-            expect(await read('communications/messages/list')).toEqual(baseline);
+            expect(records(await read('communications/messages/list'))).toEqual(records(baseline));
             proof.unrelated_messages_unchanged = true;
         }
         if (finished) {

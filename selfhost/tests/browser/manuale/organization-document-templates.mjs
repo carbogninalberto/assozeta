@@ -6,6 +6,10 @@ import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
 import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/organization-basics-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'organization-document-templates', spec = organizationBasicsAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async ({page, api, open, actor, input, capture, report}) => {
@@ -118,9 +122,9 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             for (const fileId of owned.files) expect((await api(`subscription/${memberId}/delete-document/${fileId}`, {method: 'DELETE'})).status()).toBe(200);
             if (owned.template) expect((await api(`templates/${owned.template}/delete`, {method: 'DELETE'})).status()).toBe(204);
             await page.context().unroute(viewPattern, authenticate);
-            expect(await templates()).toEqual(baseline.templates); expect((await info()).subscription_files).toEqual(baseline.files);
-            proof('baseline_records_preserved', JSON.stringify((await json('subscription/list?pagination[perpage]=100')).data) === JSON.stringify(baseline.members)
-                && JSON.stringify((await json('payment/list?pagination[perpage]=100')).data) === JSON.stringify(baseline.payments));
+            expect(records(await templates())).toEqual(records(baseline.templates)); expect((await info()).subscription_files).toEqual(baseline.files);
+            proof('baseline_records_preserved', JSON.stringify(records((await json('subscription/list?pagination[perpage]=100')).data)) === JSON.stringify(records(baseline.members))
+                && JSON.stringify(records((await json('payment/list?pagination[perpage]=100')).data)) === JSON.stringify(records(baseline.payments)));
             proof('owned_template_and_generated_file_removed', true);
         }
         expect(facts).toEqual(spec.outcome.expected); report[spec.outcome.field] = facts;

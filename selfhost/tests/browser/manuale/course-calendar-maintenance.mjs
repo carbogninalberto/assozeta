@@ -1,6 +1,10 @@
 import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {courseCalendarMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/course-calendar-maintenance-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
 const id = 'course-calendar-maintenance';
 const spec = courseCalendarMaintenanceAuthoredWorkflows[id];
@@ -45,6 +49,8 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             || row.course?.value === owned.course || row.course?.course_id === owned.course);
         const state = async () => ({calendar: await calendar(), attendance: await attendance(), enrollments: await enrollments(), payments: await payments()});
         const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+        const stateRecords = value => Object.fromEntries(Object.entries(value).map(([key, item]) =>
+            [key, Array.isArray(item) ? records(item) : item]));
         const membersWithCurrentPaymentSummary = async () => {
             // The subscription serializer derives exactly these two fields from
             // active payments. Course preparation/removal changes those totals,
@@ -286,7 +292,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                 [`course/${owned.course}/attendees/${remainingAttendance.attendance_day_id}/update`, 'POST', {attendees: []}],
             ]) {const denied = await reader.api(route, {method, data}); expect(denied.status(), route).toBe(403); denials++;
                 report.expected_denials.push({identity: 'reader', path: '/api/' + route, status: denied.status()});}
-            proof('reader_write_denials', denials); expect(await state()).toEqual(beforeDenials);
+            proof('reader_write_denials', denials); expect(stateRecords(await state())).toEqual(stateRecords(beforeDenials));
 
             await page.goto(cardUrl()); await row('GIULIA BIANCHI').getByRole('button', {name: 'Pagamenti', exact: true}).click();
             await expect(paymentModal).toBeVisible(); await expect(paymentModal.locator('[data-row]')).toHaveCount(2);

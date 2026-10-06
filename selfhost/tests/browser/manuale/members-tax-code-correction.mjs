@@ -2,6 +2,10 @@
 import {scenario, expect} from './scenario.mjs';
 import {memberAuthoredWorkflows} from '../../../../docs/manuale/member-authored-workflows.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'members-tax-code-correction', spec = memberAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async ({page, api, open, actor, input, capture, report}) => {
@@ -70,7 +74,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             proof('denials_preserve_saved_code', (await persona()).tax_code === documentCode);
             const stripPersona = ({associate, ...rest}) => rest;
             proof('subscription_fields_preserved', JSON.stringify(stripPersona(after)) === JSON.stringify(stripPersona(originalSubscription)));
-            expect((await json('personas/list?pagination[perpage]=100')).data.filter(row => row.associate_id !== uid)).toEqual(originalOthers);
+            expect(records((await json('personas/list?pagination[perpage]=100')).data.filter(row => row.associate_id !== uid))).toEqual(records(originalOthers));
         } finally {
             if (prepared) {
                 // Restore every editable field that the full form can normalize.

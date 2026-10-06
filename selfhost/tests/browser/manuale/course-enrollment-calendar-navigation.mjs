@@ -1,5 +1,9 @@
 import {scenario, expect} from './scenario.mjs';
 import {campsPersonasAuthoredWorkflows} from '../../../../docs/manuale/camps-personas-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id='course-enrollment-calendar-navigation',spec=campsPersonasAuthoredWorkflows[id];
 await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,actions:async({page,api,open,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8);expect(input.fixture_profile||'baseline').toBe('baseline');
@@ -63,7 +67,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
         const storedPayment=({course,subscription_id,...fields})=>fields;
         expect(remainingQuota.map(storedPayment)).toEqual(addedPayments.map(storedPayment));
         expect(remainingQuota[0].course).toEqual({label:title,value:owned.course});expect(remainingQuota[0].subscription_id).toBeNull();
-        expect(await members()).toEqual(beforeRemovalMembers);
+        expect(records(await members())).toEqual(records(beforeRemovalMembers));
         proof('course_removal_preserves_single_fee_and_association',true);
         expect((await calendar()).events).toHaveLength(1);await take('course-athlete-removed-association-and-calendar-preserved');
         const readerRemoval=(await reader.api(`course-subscriptions/${registrations[0].course_subscription_id}/delete`,{method:'DELETE'})).status();proof('reader_course_enrollment_write_denied',readerRemoval===403);

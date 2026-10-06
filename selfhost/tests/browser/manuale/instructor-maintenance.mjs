@@ -183,9 +183,9 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await rowByNotes(removable.notes).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             const confirm = page.locator('.swal2-popup'); await expect(confirm).toContainText("Vuoi eliminare l'istruttore?");
             await take('single-hours-delete-confirmation', confirm);
-            const beforeCancel = (await hours()).map(stableHour);
+            const beforeCancel = stableHours(await hours());
             await confirm.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('row_delete_cancel_preserved_state', JSON.stringify((await hours()).map(stableHour)) === JSON.stringify(beforeCancel));
+            proof('row_delete_cancel_preserved_state', JSON.stringify(stableHours(await hours())) === JSON.stringify(beforeCancel));
             await rowByNotes(removable.notes).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             const removed = page.waitForResponse(res => new URL(res.url()).pathname === `/api/instructor/${uid}/hours/${removable.instructor_hours_id}/delete`
                 && res.request().method() === 'DELETE');
@@ -197,7 +197,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(page.locator('.card-widget').filter({hasText: 'COMPENSO TOTALE'})).toContainText('104,00');
             await take('single-hours-deleted-and-summary-reopened');
 
-            const beforeLessons = (await hours()).map(stableHour);
+            const beforeLessons = stableHours(await hours());
             const beforeLessonPayments = await allPayments();
             await open('Attività', '/#/course/list');
             await page.locator('[data-row]').filter({hasText: course[0].title}).getByText(course[0].title, {exact: true}).click();
@@ -244,7 +244,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await take('existing-lesson-replacement-reopened', editLesson.locator('.modal-content'));
             await editLesson.getByRole('button', {name: 'Chiudi', exact: true}).first().click(); await expect(editLesson).not.toBeVisible();
             proof('replacement_calendar_hours_recomputed', await calendarHours(uid) === 1 && await calendarHours(secondUid) === 1);
-            proof('lesson_did_not_create_compensation', JSON.stringify((await hours()).map(stableHour)) === JSON.stringify(beforeLessons)
+            proof('lesson_did_not_create_compensation', JSON.stringify(stableHours(await hours())) === JSON.stringify(beforeLessons)
                 && records(await allPayments()) === records(beforeLessonPayments));
 
             const reader = await actor('reader');
@@ -256,7 +256,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(readHourly.locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
             await take('reader-maintenance-controls-disabled', reader.page.locator('.datatable-table').first(), reader.page);
             const denials = [];
-            const beforeDenials = {hours: (await hours()).map(stableHour), calendar: (await calendar()).events, payments: await allPayments()};
+            const beforeDenials = {hours: stableHours(await hours()), calendar: (await calendar()).events, payments: await allPayments()};
             for (const [route, method, data] of [
                 [`instructor/${uid}/hours/${hourly.instructor_hours_id}/update`, 'PATCH', {amount: 1}],
                 [`instructor/${uid}/hours/${hourly.instructor_hours_id}/delete`, 'DELETE', {}],
@@ -265,8 +265,8 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             ]) {const res = await reader.api(route, {method, data}); expect(res.status(), route).toBe(403); denials.push(res.status());
                 report.expected_denials.push({identity: 'reader', path: '/api/' + route, status: res.status()});}
             proof('reader_write_denials', denials.length);
-            expect((await hours()).map(stableHour)).toEqual(beforeDenials.hours); expect((await calendar()).events).toEqual(beforeDenials.calendar);
-            expect(await allPayments()).toEqual(beforeDenials.payments);
+            expect(stableHours(await hours())).toEqual(beforeDenials.hours); expect(records((await calendar()).events)).toEqual(records(beforeDenials.calendar));
+            expect(records(await allPayments())).toEqual(records(beforeDenials.payments));
 
             await openCard();
             const history = await hours(); rememberDocuments(history); expect(history).toHaveLength(3);

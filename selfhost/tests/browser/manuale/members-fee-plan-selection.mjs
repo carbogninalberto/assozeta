@@ -4,6 +4,10 @@ import {setCheckbox} from './controls.mjs';
 import {memberAuthoredWorkflows} from '../../../../docs/manuale/member-authored-workflows.mjs';
 import {createMember} from './member-create-flow.mjs';
 import {reloadOrganizationProfile} from './organization-access-sources.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'members-fee-plan-selection', spec = memberAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async scenarioContext => {
@@ -82,10 +86,10 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(await profile()).toEqual(saved);
             const currentMembers = Object.values((await json('subscription/list?pagination[perpage]=100')).data)
                 .filter(row => row.subscription_id !== created.subscription_id);
-            expect(currentMembers).toEqual(originalMembers);
+            expect(records(currentMembers)).toEqual(records(originalMembers));
             const currentPayments = Object.values((await json('payment/list?pagination[perpage]=100')).data)
                 .filter(row => row.payment_id !== created.payment.payment_id);
-            expect(currentPayments).toEqual(originalPayments);
+            expect(records(currentPayments)).toEqual(records(originalPayments));
         } finally {
             if (configChanged) {
                 const restored = await api('profile/update/subscription/template', {method: 'PATCH', data: {sport_association: original}});

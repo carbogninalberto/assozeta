@@ -123,7 +123,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
         for(const[route,method,data]of[[`camps-and-retreats/${owned.camp}/subscriptions/add`,'POST',{subscription:manualId,periods:[]}],
             [`camps-and-retreats/${manual.camps_and_retreats_subscription_id}/subscriptions/update`,'PATCH',{periods:[]}],
             [`camps-and-retreats/${manual.camps_and_retreats_subscription_id}/subscriptions/delete`,'DELETE',{}]])denials.push((await reader.api(route,{method,data})).status());
-        proof('reader_camp_enrollment_writes_denied',denials.every(code=>code===403));expect(await enrollments()).toEqual(beforeDenial);await take('camp-reader-enrollments-write-controls-disabled',undefined,reader.page);
+        proof('reader_camp_enrollment_writes_denied',denials.every(code=>code===403));expect(sameEnrollments(await enrollments(),beforeDenial)).toBe(true);await take('camp-reader-enrollments-write-controls-disabled',undefined,reader.page);
         await overview();const deleteRow=async(name,record)=>{await row(name).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();const popup=page.locator('.swal2-popup');
             await expect(popup).toContainText('Eliminare il camp?');const response=onSave(`camps-and-retreats/${record.camps_and_retreats_subscription_id}/subscriptions/delete`,'DELETE');
             await popup.getByRole('button',{name:'Elimina',exact:true}).click();expect((await response).status()).toBe(200);owned.enrollments.delete(record.camps_and_retreats_subscription_id);};

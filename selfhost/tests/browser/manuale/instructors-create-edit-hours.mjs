@@ -4,6 +4,10 @@ import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/orga
 const spec = organizationBasicsAuthoredWorkflows['instructors-create-edit-hours'];
 import {instructorWorkflowSources} from './instructor-sources.mjs';
 import {focusRegion} from './focus.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
 await scenario({id: 'instructors-create-edit-hours', prefix: 'images/istruttori/creazione-ore',
     sources: spec.sources, actions: async ({page, api, open, actor, input, capture, report}) => {
@@ -186,7 +190,7 @@ await scenario({id: 'instructors-create-edit-hours', prefix: 'images/istruttori/
                 }
                 expect((await api(`instructor/${uid}/delete`, {method: 'DELETE'})).status()).toBe(200);
             }
-            expect(await instructors()).toEqual(initial);
+            expect(records(await instructors())).toEqual(records(initial));
         }
         report.instructor_workflow.owned_resources_cleaned = true;
     }});

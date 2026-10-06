@@ -3,6 +3,10 @@ import {scenario, expect} from './scenario.mjs';
 import {runAttendanceCarnet} from './attendance-carnet.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
 import {attendanceCarnetAuthoredWorkflows} from '../../../../docs/manuale/attendance-carnet-authored-workflows.mjs';
+// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
+// record sets: identical rows and contents, independent of physical row order.
+const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'attendance-carnet-maintenance', spec = attendanceCarnetAuthoredWorkflows[id];
 await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
     actions: async scenarioContext => {
@@ -104,7 +108,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         let popup = page.locator('.swal2-popup'); await expect(popup).toContainText('Giulia Bianchi');
         await take('carnet-topup-confirm-cancel', page, popup);
         await popup.getByRole('button', {name: 'Annulla', exact: true}).click();
-        expect((await carnetInfo()).subscriptions).toHaveLength(1); expect(await listPayments()).toEqual(initialPayments);
+        expect((await carnetInfo()).subscriptions).toHaveLength(1); expect(records(await listPayments())).toEqual(records(initialPayments));
         proof('cancel_topup_preserves_records', true); await take('carnet-topup-cancelled');
         await recharge.click(); popup = page.locator('.swal2-popup');
         await take('carnet-topup-confirm-new-assignment', page, popup);
@@ -124,7 +128,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         proof('topup_original_assignment_preserved', true);
         const payments = await listPayments(), newPayment = payments.find(row => row.payment_id === newAssignment.payment);
         proof('topup_new_payment_amount', Number(newPayment.amount)); proof('topup_new_payment_unpaid', newPayment.paid === false);
-        expect(payments.filter(row => row.payment_id !== newAssignment.payment)).toEqual(initialPayments);
+        expect(records(payments.filter(row => row.payment_id !== newAssignment.payment))).toEqual(records(initialPayments));
         proof('topup_payment_count', payments.length);
         await expect(page.locator('[data-row]').filter({hasText: 'Giulia Bianchi'})).toHaveCount(2);
         await take('carnet-topup-new-row-and-payment');
@@ -137,7 +141,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         ];
         for (const [endpoint, method, data] of denials) expect((await reader.api(endpoint, {method, data})).status()).toBe(403);
         proof('reader_write_denials', denials.length);
-        expect((await carnetInfo()).subscriptions).toEqual(after); expect(await listPayments()).toEqual(payments);
+        expect((await carnetInfo()).subscriptions).toEqual(after); expect(records(await listPayments())).toEqual(records(payments));
         expect((await get(`course/${input.course_id}/attendees`)).events).toHaveLength(1);
         proof('denials_preserve_state', true);
         await page.goto(input.origin + courseUrl + '/attendance');
