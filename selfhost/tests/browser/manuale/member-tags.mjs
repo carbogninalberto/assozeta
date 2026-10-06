@@ -8,6 +8,8 @@ const nameOf = row => `${row.associate.first_name} ${row.associate.last_name}`;
 const stableMembers = rows => rows.map(row => ({id: row.subscription_id, associate: row.associate,
     status: row.status_flag, type: row.type, role: row.role, start: row.start_date, end: row.end_date,
     number: row.subscription_number, medical: row.medical, payment: row.payment}))
+    // Members share one frozen creation timestamp; compare by identity, not row order.
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)))
     .sort((a, b) => a.id.localeCompare(b.id));
 const tagState = rows => rows.map(row => ({id: row.subscription_id,
     tags: (row.tags || []).map(tag => tag.tag_id).sort()})).sort((a, b) => a.id.localeCompare(b.id));

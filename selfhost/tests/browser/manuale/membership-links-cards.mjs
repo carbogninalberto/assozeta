@@ -263,7 +263,11 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             if (cleanupFailures.length) {report.cleanup_failures = cleanupFailures; if (!originalError) throw new Error('Membership evidence cleanup failed');}
         }
         proof('configuration_preserved', JSON.stringify(await settings()) === JSON.stringify(originalSettings));
-        proof('business_records_preserved', JSON.stringify(await businessRecords()) === JSON.stringify(originalRecords));
+        const currentRecords = await businessRecords();
+        // Seeded rows share one frozen timestamp, so compare record sets, not row order.
+        const recordSet = rows => JSON.stringify(rows.map(row => JSON.stringify(row)).sort());
+        proof('business_records_preserved', ['subscriptions', 'payments'].every(key =>
+            recordSet(currentRecords[key]) === recordSet(originalRecords[key])));
         proof('local_downloads_cleaned', downloadedPngCount === 1 && downloads.length === 0 && pages.every(browserPage => browserPage.isClosed()));
         proof('token_cleanup_delegated_to_owned_fixture_reset', tokens.length === 1 && report.private_cleanup.status === 'awaiting_runner_fixture_reset');
         expect(facts).toEqual(spec.outcome.expected); report[spec.outcome.field] = facts;

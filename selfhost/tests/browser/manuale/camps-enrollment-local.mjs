@@ -19,6 +19,8 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
     const title='Ritiro iscrizioni Aurora',periodTitle='Due giornate di allenamento',manualId=input.subscription_ids[1],publicId=input.subscription_ids[0];
     const recipient=input.identities.recipient;expect(recipient).toBeTruthy();expect(recipient.user_id).not.toBe(input.user_id);
     const facts={},proof=(key,value)=>{expect(value,key).toEqual(spec.outcome.expected[key]);facts[key]=value;};
+    // Frozen-clock enrollments share created_at, the list's only ordering key.
+    const sameEnrollments=(a,b)=>JSON.stringify(a.map(r=>JSON.stringify(r)).sort())===JSON.stringify(b.map(r=>JSON.stringify(r)).sort());
     const enrollments=async()=>owned.camp?(await read(`camps-and-retreats/${owned.camp}/subscriptions/list`)).data:[];
     const take=async(checkpoint,focus,browserPage=page)=>{await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
         const mask=[browserPage.locator('img.qrcode'),browserPage.locator('a[href*="/camps-and-retreats/forms/"]')];
@@ -106,7 +108,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
         await setCheckbox(selection(publicForm),true);await setCheckbox(serviceSelection(publicForm),true);await take('camp-public-authenticated-person-period-service',publicForm,participant.page);
         const beforeForeignPerson=await enrollments();
         const foreignPerson=await participant.api(`camps-and-retreats/${owned.camp}/subscriptions/add`,{method:'POST',data:{subscription:manualId,periods:[{camps_and_retreats_period:owned.period,services:[]}]}});
-        proof('participant_cannot_enroll_another_unrelated_person',foreignPerson.status()===403&&JSON.stringify(await enrollments())===JSON.stringify(beforeForeignPerson));
+        proof('participant_cannot_enroll_another_unrelated_person',foreignPerson.status()===403&&sameEnrollments(await enrollments(),beforeForeignPerson));
         const publicSave=onSave(`camps-and-retreats/${owned.camp}/subscriptions/add`,'POST',participant.page);
         await publicForm.getByRole('button',{name:'Iscrivi',exact:true}).click();const publicResponse=await publicSave;expect(publicResponse.status()).toBe(201);
         await expect(participant.page).toHaveURL(/#\/payment\/list$/);await participant.page.reload();
@@ -126,7 +128,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
             await expect(popup).toContainText('Eliminare il camp?');const response=onSave(`camps-and-retreats/${record.camps_and_retreats_subscription_id}/subscriptions/delete`,'DELETE');
             await popup.getByRole('button',{name:'Elimina',exact:true}).click();expect((await response).status()).toBe(200);owned.enrollments.delete(record.camps_and_retreats_subscription_id);};
         await row('Giulia Bianchi').locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();const popup=page.locator('.swal2-popup');await take('camp-enrollment-removal-confirmation',popup);
-        const beforeCancel=await enrollments();await popup.getByRole('button',{name:'Annulla',exact:true}).click();proof('removal_cancel_preserves_enrollments',JSON.stringify(await enrollments())===JSON.stringify(beforeCancel));
+        const beforeCancel=await enrollments();await popup.getByRole('button',{name:'Annulla',exact:true}).click();proof('removal_cancel_preserves_enrollments',sameEnrollments(await enrollments(),beforeCancel));
         await deleteRow('Giulia Bianchi',publicEnrollment);await page.reload();expect(await enrollments()).toHaveLength(1);
         proof('unpaid_enrollment_removal_removes_its_payment',!(await paymentRows()).some(p=>p.payment_id===publicEnrollment.periods[0].payment.payment_id));
         await take('camp-unpaid-enrollment-removed-after-reload');

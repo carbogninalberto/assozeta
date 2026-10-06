@@ -1,6 +1,9 @@
 import {scenario, expect} from './scenario.mjs';
 import {instructorMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/instructor-maintenance-authored-workflows.mjs';
 import crypto from 'node:crypto';
+// Seeded and frozen-clock rows share timestamps, so list order is not part of the contract.
+const records = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
+    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort());
 
 const id = 'instructor-maintenance';
 const spec = instructorMaintenanceAuthoredWorkflows[id];
@@ -242,7 +245,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await editLesson.getByRole('button', {name: 'Chiudi', exact: true}).first().click(); await expect(editLesson).not.toBeVisible();
             proof('replacement_calendar_hours_recomputed', await calendarHours(uid) === 1 && await calendarHours(secondUid) === 1);
             proof('lesson_did_not_create_compensation', JSON.stringify((await hours()).map(stableHour)) === JSON.stringify(beforeLessons)
-                && JSON.stringify(await allPayments()) === JSON.stringify(beforeLessonPayments));
+                && records(await allPayments()) === records(beforeLessonPayments));
 
             const reader = await actor('reader');
             await reader.open('Attività', '/#/course/instructor/list/');
@@ -277,7 +280,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await targetRow.locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click(); await expect(confirm).toContainText("Vuoi eliminare l'istruttore?");
             await take('instructor-list-delete-confirmation', confirm);
             const beforeDeleteCancel = await allInstructors(); await confirm.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('instructor_delete_cancel_preserved_state', JSON.stringify(await allInstructors()) === JSON.stringify(beforeDeleteCancel));
+            proof('instructor_delete_cancel_preserved_state', records(await allInstructors()) === records(beforeDeleteCancel));
             await targetRow.locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             const instructorRemoved = page.waitForResponse(res => new URL(res.url()).pathname === `/api/instructor/${uid}/delete`
                 && res.request().method() === 'DELETE');
