@@ -38,3 +38,35 @@ class ManualDiagnosticsTests(unittest.TestCase):
             self.assertEqual([item['id'] for item in result['reports']], ['evaluation'])
             self.assertEqual(result['reports'][0]['status'], 'invalid-report')
             self.assertNotIn('SECRET', json.dumps(result))
+
+    def test_failure_keeps_script_lines_matchers_and_routes_without_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            run = Path(directory)
+            (run / 'instructor-compensation.json').write_text(json.dumps({
+                'status': 'failed',
+                'error': 'Error: SECRET label\n\nexpect(received).toBe(expected)\nExpected: "SECRET"\nReceived: "SECRET2"',
+                'error_stack': 'Error: SECRET\n    at fn (file:///home/runner/SECRET/application/'
+                               'selfhost/tests/browser/manuale/instructor-compensation.mjs:257:31)\n'
+                               '    at scenario (/tmp/SECRET/selfhost/tests/browser/manuale/scenario.mjs:84:9)',
+                'browser_errors': ['SECRET'],
+                'failed_responses': [
+                    {'path': '/api/instructor/0f3c2a10-aaaa-4bbb-8ccc-ddddeeeeffff/hours/add', 'status': 403,
+                     'method': 'POST', 'identity': 'reader'},
+                    {'path': '/api/document/retrieve/abcdefSECRET?token=SECRET', 'status': 404,
+                     'method': 'SECRET', 'identity': 'SECRET USER'}],
+                'screenshots': []}))
+            failure = module.summarize(run)['reports'][0]['failure']
+            self.assertNotIn('SECRET', json.dumps(failure))
+            self.assertEqual(failure['locations'], [
+                {'script': 'selfhost/tests/browser/manuale/instructor-compensation.mjs', 'line': 257},
+                {'script': 'selfhost/tests/browser/manuale/scenario.mjs', 'line': 84}])
+            self.assertEqual(failure['error'], {'timeout': False, 'matcher': 'toBe'})
+            self.assertEqual(failure['failed_responses'][0],
+                             {'method': 'POST', 'route': '/api/instructor/:value/hours/add', 'status': 403, 'identity': 'reader'})
+            self.assertEqual(failure['failed_responses'][1],
+                             {'method': '<other>', 'route': '/api/document/retrieve/:value', 'status': 404, 'identity': '<other>'})
+            self.assertEqual(failure['browser_error_count'], 1)
+
+    def test_timeout_action_is_retained_without_selector(self):
+        kind = module.error_kind('TimeoutError: locator.click: Timeout 45000ms exceeded.\nwaiting for SECRET')
+        self.assertEqual(kind, {'timeout': True, 'action': 'locator.click'})
