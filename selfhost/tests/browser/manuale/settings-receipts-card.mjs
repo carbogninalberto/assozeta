@@ -177,9 +177,11 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         expect(paid.paid).toBe(true); expect(paid.invoice.number).toBe(101);
         expect(paid.payment_date.slice(0, 10)).toBe(chosenDate);
         await expect(details).toBeVisible(); await details.locator('button.close').click();
+        // Approval already queued the PDF. The receipts list queues another one for any
+        // receipt still without a document, which can replace the PDF after it is read.
+        await expect.poll(async () => Boolean((await invoice(paid.invoice.invoice_id)).document_pdf), {timeout: 90000}).toBe(true);
         await openReceipts();
         await expect(page.locator('[data-row]')).toHaveCount(2);
-        await expect.poll(async () => Boolean((await invoice(paid.invoice.invoice_id)).document_pdf), {timeout: 90000}).toBe(true);
         const receipt = await invoice(paid.invoice.invoice_id);
         expect(receipt.number).toBe(101); expect(receipt.creation_date.slice(0, 10)).toBe(chosenDate);
         const preserved = await invoice(existingId);

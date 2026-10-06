@@ -137,8 +137,10 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             if (categoryId) try {expect((await api(`payment/category/${categoryId}/delete`, {method: 'DELETE'})).status()).toBe(200);} catch (cause) {cleanupFailures.push('owned category soft deletion');}
             if (cleanupFailures.length) {report.cleanup_failures = cleanupFailures; if (!error) throw new Error('Classification cleanup failed');}
         }
-        expect(await payments()).toEqual(baselinePayments);
-        expect((await categories()).filter(item => item.payment_category_id !== categoryId)).toEqual(baselineCategories);
+        // Seeded rows share one frozen timestamp, so compare record sets, not row order.
+        const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row)) : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+        expect(records(await payments())).toEqual(records(baselinePayments));
+        expect(records((await categories()).filter(item => item.payment_category_id !== categoryId))).toEqual(records(baselineCategories));
         expect((await savedCategory()).deleted).toBe(true);
         report[spec.outcome.field] = {tax_enabled_after_create: true, tax_checked_after_reopen: true, unrelated_rename_preserves_flag: true,
             tax_disabled_after_reopen: true, total_with_two_extras: 50, base_after_reopen: 35, total_after_one_removed: 45,
