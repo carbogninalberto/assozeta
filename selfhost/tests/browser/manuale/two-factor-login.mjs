@@ -31,6 +31,13 @@ function totp(secret, milliseconds) {
     return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000).padStart(6, '0');
 }
 
+// Keep the failing script line for sanitized diagnostics; values stay redacted.
+function redactedError(error, privateValues) {
+    const redacted = new Error(redactReport(String(error?.message ?? error), privateValues));
+    if (error?.stack) redacted.stack = redactReport(error.stack, privateValues);
+    return redacted;
+}
+
 // Install before setup, including on every later navigation. Failure diagnostics
 // in scenario.mjs also mask these entire containers, not only form inputs.
 function markPrivateContainers() {
@@ -71,6 +78,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         let cleanupAllowed = false;
         let finished = false;
         let secret;
+        let primaryError;
         const read = async route => {
             const response = await api(route);
             expect(response.status()).toBe(200);
@@ -164,6 +172,9 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                     identity: 'fresh-owned-account', reason: 'Wrong six-digit OTP rejected before creating a session.'});
             }
             await loginPage.goto(input.origin + '/#/login');
+            // App boot persists JSON "null"; the mounted login route clears storage.
+            // Assert the unauthenticated state only after that real mount.
+            await expect(loginPage.locator('input[name="username_login"]')).toBeVisible();
             expect(await loginPage.evaluate(() => localStorage.getItem('sessionToken') === null)).toBe(true);
             await loginPage.locator('input[name="username_login"]').fill(input.login_username);
             await loginPage.locator('input[name="password_login"]').fill(input.login_password);
@@ -298,7 +309,8 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(browserFailures).toEqual([]);
             finished = true;
         } catch (error) {
-            throw new Error(redactReport(error.message, privateValues));
+            primaryError = redactedError(error, privateValues);
+            throw primaryError;
         } finally {
             try {
                 if (cleanupAllowed) {
@@ -312,7 +324,10 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                     expect(proof.scoped_cleanup_disabled).toBe(true);
                 }
             } catch (error) {
-                throw new Error(redactReport(error.message, privateValues));
+                // A cleanup failure is reported privately, without hiding the original failure.
+                const cleanupError = redactedError(error, privateValues);
+                report.cleanup_error = cleanupError.message;
+                throw primaryError ?? cleanupError;
             } finally {
                 for (const fresh of freshContexts) await fresh.close().catch(() => {});
             }
