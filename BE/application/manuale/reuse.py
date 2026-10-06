@@ -269,7 +269,7 @@ def target(state):
             'tooling_hashes_sha256': digest(canonical(state['tooling_hashes'])), 'reference_date': state['reference_date']}
 
 
-def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_recipes, manifest):
+def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_recipes, manifest, prior_plan):
     previous, current = old_recipes.get(identifier), new_recipes[identifier]
     if previous != current or old_registry['shared_dependencies'] != new_registry['shared_dependencies']:
         raise ReuseError('recipe-version-script-or-dependency-contract-changed')
@@ -293,7 +293,16 @@ def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_
               'release': old['release'], 'capture_id': old.get('capture_id')}
     origin_manifest = 'manifest.json'
     if binding.get('reuse'):
-        prior = validate_reuse_plan(old)
+        # The baseline's own reuse plan is identical for every recipe in this build;
+        # validate it once (including a failure) instead of once per retained recipe.
+        if 'result' not in prior_plan:
+            try:
+                prior_plan['result'] = validate_reuse_plan(old)
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                prior_plan['result'] = exc
+        if isinstance(prior_plan['result'], Exception):
+            raise prior_plan['result']
+        prior = prior_plan['result']
         prior_entry = prior['recipes'].get(identifier)
         if not prior_entry:
             raise ReuseError('missing-original-reuse-provenance')
@@ -338,11 +347,12 @@ def build_reuse_plan(state, baseline_run, *, stage=True):
     plan = {'format': 1, 'status': 'validated', 'target': target(state), 'fresh_recipes': fresh,
             'reused_recipes': [], 'rejected': [], 'recipes': {}}
     staged = []
+    prior_plan = {}
     for identifier in recipes:
         if identifier in fresh:
             continue
         try:
-            entry, origin_manifest = _entry(state, old, identifier, old_registry, current_registry, old_recipes, recipes, manifest)
+            entry, origin_manifest = _entry(state, old, identifier, old_registry, current_registry, old_recipes, recipes, manifest, prior_plan)
             plan['recipes'][identifier] = entry
             plan['reused_recipes'].append(identifier)
             staged.append((identifier, origin_manifest))
