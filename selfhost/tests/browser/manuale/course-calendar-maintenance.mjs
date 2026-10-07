@@ -141,7 +141,9 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const generalSaved = responseFor(`course/${owned.course}/update`, 'PATCH');
             await page.getByRole('button', {name: 'Salva', exact: true}).click(); expect((await generalSaved).status()).toBe(200); await page.reload();
             const general = await course(); proof('general_plan_reopened', same(general.events.map(event => Number(event.amount)), [70, 50]));
-            proof('assigned_rates_and_payments_preserved', same(await enrollments(), beforeGeneral.enrollments) && same(await payments(), beforeGeneral.payments));
+            expect(records(await enrollments())).toEqual(records(beforeGeneral.enrollments));
+            expect(records(await payments())).toEqual(records(beforeGeneral.payments));
+            proof('assigned_rates_and_payments_preserved', true);
             await row('GIULIA BIANCHI').getByRole('button', {name: 'Pagamenti', exact: true}).click();
             const paymentModal = page.locator('#payments-modal-' + input.subscription_ids[0]);
             await expect(paymentModal).toBeVisible(); await expect(paymentModal.locator('[data-row]')).toHaveCount(2);
@@ -246,7 +248,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(beforeCancel.attendance.find(item => item.attendance_day_id === selectedAttendance.attendance_day_id).attendees)
                 .toEqual([{course_subscription_id: target.course_subscription_id}]);
             await confirmLessonRemoval(changed, 'Elimina', 'lesson-single-delete-confirmation', true);
-            proof('lesson_delete_cancel_preserved_state', same(await state(), beforeCancel));
+            proof('lesson_delete_cancel_preserved_state', same(stateRecords(await state()), stateRecords(beforeCancel)));
             await confirmLessonRemoval(changed, 'Elimina');
             const remainingAfterSingle = (await calendar()).events;
             const attendanceAfterSingle = await attendance();
@@ -265,8 +267,11 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await page.getByRole('button', {name: 'Presenze', exact: true}).click(); await page.reload();
             await expect(page.locator('#bkn_content').getByText(allDayTitle, {exact: true})).toHaveCount(3);
             await take('calendar-and-register-after-scoped-deletions');
-            proof('lesson_changes_preserved_payments_and_enrollments', same(await payments(), beforeLessonChanges.payments)
-                && same(await enrollments(), beforeLessonChanges.enrollments));
+            // Payment dates/creation timestamps can tie, and enrollments have no
+            // ordering contract. Preserve every row and field, including duplicates.
+            expect(records(await payments())).toEqual(records(beforeLessonChanges.payments));
+            expect(records(await enrollments())).toEqual(records(beforeLessonChanges.enrollments));
+            proof('lesson_changes_preserved_payments_and_enrollments', true);
 
             const reader = await actor('reader');
             await reader.page.goto(cardUrl() + '/calendar?event_id=' + allDay[0].event_id);
@@ -303,7 +308,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(popup).toContainText("Eliminare l'iscrizione?"); await expect(popup).toContainText('rate non pagate');
             await take('athlete-removal-confirmation', popup);
             const beforeMemberCancel = await state(); await popup.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('athlete_delete_cancel_preserved_state', same(await state(), beforeMemberCancel));
+            proof('athlete_delete_cancel_preserved_state', same(stateRecords(await state()), stateRecords(beforeMemberCancel)));
             await row('GIULIA BIANCHI').locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             const removedEnrollment = responseFor(`course-subscriptions/${target.course_subscription_id}/delete`, 'DELETE');
             await popup.getByRole('button', {name: 'Elimina', exact: true}).click(); expect((await removedEnrollment).status()).toBe(204); await page.reload();
@@ -329,21 +334,21 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await row(title).locator('button:is([title="Nascondi il corso dal profilo dell\'associazione archiviandolo"],[data-original-title="Nascondi il corso dal profilo dell\'associazione archiviandolo"])').click();
             await expect(popup).toContainText('Vuoi spostare in archivio il corso?'); await take('archive-course-confirmation', popup);
             await popup.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('archive_cancel_preserved_state', (await course()).status_flag === 2 && same(await state(), beforeArchive));
+            proof('archive_cancel_preserved_state', (await course()).status_flag === 2 && same(stateRecords(await state()), stateRecords(beforeArchive)));
             await row(title).locator('button:is([title="Nascondi il corso dal profilo dell\'associazione archiviandolo"],[data-original-title="Nascondi il corso dal profilo dell\'associazione archiviandolo"])').click();
             const archived = responseFor(`course/${owned.course}/disable`, 'POST');
             await popup.getByRole('button', {name: 'Sposta in archivio', exact: true}).click(); expect((await archived).status()).toBe(200);
             await page.getByRole('button', {name: 'Archivio', exact: true}).click(); await page.reload();
             await expect(row(title)).toBeVisible(); await expect(row(title)).toContainText('non visibile');
             await expect(row(title).locator('button:is([title="Elimina Corso"],[data-original-title="Elimina Corso"])')).toBeEnabled();
-            proof('archive_preserved_related_data', (await course()).status_flag === 1 && same(await state(), beforeArchive));
+            proof('archive_preserved_related_data', (await course()).status_flag === 1 && same(stateRecords(await state()), stateRecords(beforeArchive)));
             await take('archived-course-before-deletion', row(title));
             await reader.page.goto(input.origin + '/#/course/archive');
             await expect(row(title, reader.page).locator('button:is([title="Elimina Corso"],[data-original-title="Elimina Corso"])')).toBeDisabled();
             await row(title).locator('button:is([title="Elimina Corso"],[data-original-title="Elimina Corso"])').click();
             await expect(popup).toContainText('Vuoi eliminare definitivamente il corso?'); await take('course-delete-confirmation', popup);
             const beforeCourseCancel = await state(); await popup.getByRole('button', {name: 'Annulla', exact: true}).click();
-            proof('course_delete_cancel_preserved_state', same(await state(), beforeCourseCancel) && (await course()).status_flag === 1);
+            proof('course_delete_cancel_preserved_state', same(stateRecords(await state()), stateRecords(beforeCourseCancel)) && (await course()).status_flag === 1);
             const remainingUnpaidIds = (await coursePayments()).filter(item => !item.paid).map(item => item.payment_id);
             expect(remainingUnpaidIds).toHaveLength(2);
             expect((await coursePayments()).filter(item => !item.paid).every(item => item.meta?.course_subscription_id === control.course_subscription_id)).toBe(true);
