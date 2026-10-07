@@ -15,7 +15,7 @@ export const paymentReviewedSources = Object.freeze({
     "BE/docmanager/views/document_view.py": "990fa77d97d984ed0971b230ff8d20e36a8b4a65c2c21222f6b580cca5fb3b37",
     "BE/docmanager/views/printing_views.py": "f9127869836c46408d9e5f48fc16733c6fce66efedb2e2fa7f96344095e01753",
     "BE/templates/document/application/invoice.html": "5a0b5f66655c8b7d288a42dba051e9a9ff2cc3e49e7f6227f442ddd2c926039d",
-    "UI/src/components/Sidebar.svelte": "9f8344602ae269b5dbbf90dfd6f75e5154f3d5774ad544ac41105b74af2e333c",
+    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
     "UI/src/components/filters/FilterSelect.svelte": "556100c1c9aecd36f7aad7a3de0ad389ecd908517a8e8934586474ff111c35e5",
     "UI/src/components/modals/InvoicePreviewModal.svelte": "d65ee4f5163e304ff2f4a5de11fbca7f724c388e7c1e652e3d1b44d98fc21ed6",
     "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",

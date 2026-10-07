@@ -276,7 +276,7 @@ export const accountingBalanceReviewedSources = Object.freeze({
     "BE/application/views/invoice_views.py": "bb0f44ec825d4050322f306d280e078178b1978e42a5964c80c8d400b187a331",
     "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
     "BE/application/views/supplier_views.py": "a332d25f18ba6b713cf75785aa58194bdf1165e313f8c3981efd33f3d3628321",
-    "UI/src/components/Sidebar.svelte": "9f8344602ae269b5dbbf90dfd6f75e5154f3d5774ad544ac41105b74af2e333c",
+    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
     "UI/src/components/invoice/InvoiceForm.svelte": "2038f91a400229decbec387a661cdc95336afea0c2c2c565253826db67955b30",
     "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
     "UI/src/routes/accounting/accounts/Accounts.svelte": "c8cd2533480465f1abd729ac3b822dfd2d1b967a48140d1081d6bc6664bf3d56",

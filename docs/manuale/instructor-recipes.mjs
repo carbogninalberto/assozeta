@@ -5,7 +5,7 @@ export const instructorReviewedSources = Object.freeze({
     "BE/application/serializers/user_serializers.py": "b6c13df61ad39bf22722f3fc69659129fd0cedbbda588e7cbc727989b00e07f6",
     "BE/application/views/instructor_views.py": "3d957e0a987583744dda1db2d0040eb8b0abdc90b5bf85546debc4a0405d189c",
     "BE/core/settings.py": "346fd7a15f10dcd25c3adef653e9c983e33b99037036e30f7ec192edc1ab1835",
-    "UI/src/components/Sidebar.svelte": "9f8344602ae269b5dbbf90dfd6f75e5154f3d5774ad544ac41105b74af2e333c",
+    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
     "UI/src/components/buttons/EditButton.svelte": "052f6ca21b3a85dfd713d62d96ccf7c81d8b4af93e15aa109a02e6fcbc74dfe9",
     "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
