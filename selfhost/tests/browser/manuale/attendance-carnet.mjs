@@ -117,8 +117,12 @@ export async function runAttendanceCarnet({page, api, open, actor, input, captur
     await linkModal.getByText('Ginnastica per tutti', {exact: true}).click();
     await capture(page, 8, 'select-enrolled-course-for-carnet', linkModal.locator('.modal-content'));
     const linked = page.waitForResponse(r => r.url().endsWith(`/carnet/${carnet.carnet_id}/assign/${input.subscription_ids[0]}`) && r.request().method() === 'POST');
+    // A successful assignment calls window.location.reload() itself; a concurrent
+    // page.reload() would abort one of the two navigations. Let the app's finish first.
+    const reloadedByApp = page.waitForEvent('load');
     await linkModal.getByRole('button', {name: 'Assegna carnet', exact: true}).click();
     expect((await linked).status()).toBe(200);
+    await reloadedByApp;
     await expect(page.getByText('Utilizzo del Carnet', {exact: true})).toBeVisible();
     await page.reload();
     const linkedAssignment = (await carnetInfo()).subscriptions[0];

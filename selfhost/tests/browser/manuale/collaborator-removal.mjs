@@ -37,6 +37,7 @@ await scenario({id: 'collaborator-removal', prefix: spec.prefix.replace(/\/$/, '
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(target, number, checkpoint, locator);
         };
+        // Icon delete buttons lose their accessible name once tooltips move title to data-original-title.
         const row = (target, email) => target.locator('[data-row]').filter({has: target.getByText(email, {exact:true})});
         await open('Collaboratori', '/#/connected-collaborators');
         await expect(row(page, removable.email)).toContainText('PAOLO TESTA');
@@ -45,21 +46,21 @@ await scenario({id: 'collaborator-removal', prefix: spec.prefix.replace(/\/$/, '
         await take(1, 'removable-accepted-account-and-separate-pending-invite');
         const reader = await actor('reader');
         await reader.open('Collaboratori', '/#/connected-collaborators');
-        await expect(row(reader.page, removable.email).getByRole('button', {name: 'Elimina', exact: true})).toBeDisabled();
-        await expect(row(reader.page, pending.email).getByRole('button', {name: 'Elimina', exact: true})).toBeDisabled();
+        await expect(row(reader.page, removable.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
+        await expect(row(reader.page, pending.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
         const deniedAccount = await reader.api(`collaborators/${removableId}/delete`, {method: 'DELETE'});
         const deniedInvite = await reader.api(`collaborators/${inviteId}/delete`, {method: 'DELETE'});
         expect(deniedAccount.status()).toBe(403); expect(deniedInvite.status()).toBe(403);
         expect(await list()).toEqual(initial);
         await take(2, 'reader-cannot-delete-account-or-invite', reader.page);
-        await row(page, removable.email).getByRole('button', {name: 'Elimina', exact: true}).click();
+        await row(page, removable.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
         await expect(page.getByText('Vuoi eliminare il collaboratore?', {exact: true})).toBeVisible();
         await take(3, 'account-removal-confirmation-and-cancel', page, page.locator('.swal2-popup'));
         await page.getByRole('button', {name: 'Annulla', exact: true}).click();
         expect(await list()).toEqual(initial);
         expect((await json('profile/info', removedSession)).user_data.user_id).toBe(removableId);
         const removeThroughUi = async (email, uid) => {
-            await row(page, email).getByRole('button', {name: 'Elimina', exact: true}).click();
+            await row(page, email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             await expect(page.getByText('Vuoi eliminare il collaboratore?', {exact: true})).toBeVisible();
             const deleted = page.waitForResponse(response => new URL(response.url()).pathname === `/api/collaborators/${uid}/delete`
                 && response.request().method() === 'DELETE');
@@ -79,7 +80,7 @@ await scenario({id: 'collaborator-removal', prefix: spec.prefix.replace(/\/$/, '
         expect(removedTokenProfile.status()).toBe(401); expect(removedTokenMembers.status()).toBe(401);
         expect((await json('profile/info', reader.api)).user_data.user_id).toBe(input.identities.reader.user_id);
         // Pending invite is a different row and identifier; do not demonstrate accepted-invite deletion.
-        await row(page, pending.email).getByRole('button', {name: 'Elimina', exact: true}).click();
+        await row(page, pending.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
         await expect(page.getByText('Vuoi eliminare il collaboratore?', {exact: true})).toBeVisible();
         await take(5, 'pending-invite-removal-confirmation', page, page.locator('.swal2-popup'));
         await page.getByRole('button', {name: 'Annulla', exact: true}).click();

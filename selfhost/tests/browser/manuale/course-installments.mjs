@@ -104,8 +104,10 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             }
             await expect(drawer.locator('input[name="fee"]').first()).toHaveValue('300,00');
             await take('different-amounts-in-creation-generator', drawer.locator('#bkn_form'));
+            // Tooltip initialization moves title to data-original-title, removing the
+            // icon button's accessible name; match either attribute.
             await drawer.locator('#amount_rate_2').locator('xpath=ancestor::div[contains(@class,"form-group")][1]')
-                .getByRole('button', {name: 'Elimina', exact: true}).click();
+                .locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
             await expect(drawer.locator('#amount_rate_2')).toHaveCount(0);
             await expect(drawer.locator('input[name="fee"]').first()).toHaveValue('250,00');
             await take('preparatory-rate-removal-updates-total', drawer.locator('#bkn_form'));
