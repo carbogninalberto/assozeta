@@ -269,8 +269,14 @@ lettura. Un riavvio o una ricreazione dei container conserva il volume; un nuovo
 corpus riusa le immagini già valide. Un errore mantiene l'indice precedente e le
 sue schermate, sempre soggetti alla compatibilità della versione corrente.
 Un volume nuovo può essere ripopolato dal corpus pubblico. Non cancellare il
-volume durante un normale aggiornamento; non esiste una pulizia automatica delle
-immagini storiche in questa versione.
+volume durante un normale aggiornamento. Dopo ogni sincronizzazione riuscita,
+la pulizia elimina soltanto i PNG per hash non più referenziati e vecchi di almeno
+24 ore. Per immagini appena escluse dall’indice attivo, le 24 ore decorrono dal
+ritiro, così le letture in corso conservano una finestra di tolleranza. Le immagini
+attive, i file recenti, i link simbolici e i file estranei restano intatti. Un lock
+sul volume serializza download, promozione e pulizia tra processi API e CLI.
+Un errore di download non avvia la pulizia; un errore di pulizia dopo la promozione
+viene segnalato nei log e ritentato alla prossima sincronizzazione riuscita.
 
 Per una release successiva: aggiornare soltanto le guide interessate, eseguire la
 verifica sul commit applicativo definitivo con `--reuse-evidence`, committare il

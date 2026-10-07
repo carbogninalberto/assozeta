@@ -3,10 +3,12 @@
 No user/tool argument selects this URL. Failed downloads retain the previous
 valid index; applicability is checked again by the normal retrieval path.
 """
+import fcntl
 import json
 import logging
 import os
 import re
+import stat
 import tempfile
 import threading
 import time
@@ -24,6 +26,7 @@ _lock = threading.Lock()
 _attempted = {}
 MAX_BYTES = 64 * 1024 * 1024
 MAX_IMAGE_BYTES = 16 * 1024 * 1024
+ASSET_GRACE_SECONDS = 24 * 60 * 60
 
 
 def validate_url(url):
@@ -103,7 +106,69 @@ def corpus_url():
     return base + '/' + revision + '/' + quote(settings.RUNNING_VERSION, safe='') + '.json'
 
 
+def _retire_previous_assets(current_hashes):
+    """Start the grace period when an image leaves the active index, not at download."""
+    try:
+        previous = ManualIndex.load_runtime(settings.MANUAL_INDEX_PATH)
+    except (OSError, ValueError, KeyError, TypeError):
+        return
+    now = time.time()
+    for image in (image for chunk in previous.value['chunks'] for image in chunk['screenshots']):
+        expected = image.get('sha256', '')
+        if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-f]{64}', expected):
+            continue
+        if expected in current_hashes:
+            continue
+        path = asset_cache_root() / (expected + '.png')
+        try:
+            if stat.S_ISREG(path.lstat().st_mode):
+                os.utime(path, (now, now), follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        # Other filesystem errors abort before promotion, retaining the active
+        # index rather than retiring a screenshot without its grace period.
+
+
+def _prune_assets(current_hashes):
+    """Only successful promotions collect old, unreferenced, owned PNG files."""
+    root = asset_cache_root()
+    cutoff = time.time() - ASSET_GRACE_SECONDS
+    removed = 0
+    try:
+        for path in root.iterdir():
+            if not re.fullmatch(r'[0-9a-f]{64}\.png', path.name) or path.stem in current_hashes:
+                continue
+            try:
+                info = path.lstat()
+                if stat.S_ISREG(info.st_mode) and info.st_mtime < cutoff:
+                    path.unlink()
+                    removed += 1
+            except OSError:
+                logger.warning('Manual screenshot cleanup deferred; active corpus retained.')
+    except FileNotFoundError:
+        pass
+    except OSError:
+        logger.warning('Manual screenshot cleanup deferred; active corpus retained.')
+    return removed
+
+
 def synchronize():
+    # API workers and the operator command share the persistent volume. Hold
+    # an OS lock across downloads, promotion and collection so one publisher
+    # cannot delete the screenshots another publisher is about to activate.
+    if not corpus_url():
+        raise EvidenceError('Manual corpus source is not configured')
+    root = Path(settings.MANUAL_INDEX_PATH).parent
+    root.mkdir(parents=True, exist_ok=True)
+    with (root / '.sync.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            return _synchronize_locked()
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def _synchronize_locked():
     url = corpus_url()
     if not url:
         raise EvidenceError('Manual corpus source is not configured')
@@ -137,10 +202,12 @@ def synchronize():
         # hundreds of additional ten-second failures before installation exits.
         for start in range(0, len(pending), 8):
             list(executor.map(install_image, pending[start:start + 8]))
+    _retire_previous_assets(images)
     promote(index.value, settings.MANUAL_INDEX_PATH)
+    pruned = _prune_assets(images)
     return {'status': 'updated', 'corpus_identity': index.value['identity'],
             'content_identity': index.value['content_identity'], 'manual_revision': metadata['manual_revision'],
-            'screenshots': len(images)}
+            'screenshots': len(images), 'pruned_screenshots': pruned}
 
 
 def refresh_if_due():
