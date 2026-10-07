@@ -142,6 +142,12 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=4004)
             return
 
+        from application.manuale.availability import manual_available
+        self.manual_available = await database_sync_to_async(manual_available)()
+        if not self.ai_config['enabled'] and not self.manual_available:
+            await self.close(code=4004)
+            return
+
         # Concurrency check
         self.concurrency_guard = ConcurrencyGuard(user_id)
         if not self.concurrency_guard.acquire():
@@ -193,6 +199,9 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
                 "Quando cerchi istruzioni, ti indico la guida disponibile nel manuale. "
                 "Se mancano informazioni verificate, te lo segnalo.\n\n"
                 "[Sfoglia il manuale d’uso](/#/manuale) oppure scrivi qui la tua domanda."
+            ) if self.manual_available else (
+                "Ciao! Posso aiutarti a cercare informazioni nell’associazione "
+                "e a preparare export dei dati. Scrivi qui la tua domanda."
             ),
         })
 

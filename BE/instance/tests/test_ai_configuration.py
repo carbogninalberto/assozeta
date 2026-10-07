@@ -124,6 +124,7 @@ class AIConfigurationTests(TestCase):
         self.assertEqual(consumer.throttle.max_messages, 6)
         consumer._run_agent_with_timeout.assert_awaited_once_with('hello', 44)
 
+    @override_settings(MANUAL_CORPUS_BASE_URL='https://manual.example/corpus')
     @patch('channels.db.close_old_connections')
     def test_disabled_ai_opens_manual_only_socket(self, close_connections):
         from application.chat.consumers import AgentConsumer
@@ -145,3 +146,16 @@ class AIConfigurationTests(TestCase):
                 await consumer.receive_json({'type': 'list_reports'})
                 self.assertEqual(consumer.send_json.call_args.args[0]['type'], 'error')
         async_to_sync(run)()
+
+    @patch('channels.db.close_old_connections')
+    def test_no_ai_or_manual_rejects_an_unavailable_assistant(self, close_connections):
+        from application.chat.consumers import AgentConsumer
+        self.client.put(self.endpoint, self.payload(enabled=False), format='json')
+        consumer = AgentConsumer()
+        consumer.scope = {'user': self.owner}
+        consumer.close = AsyncMock()
+        consumer.accept = AsyncMock()
+        with patch('application.manuale.availability.manual_available', return_value=False):
+            async_to_sync(consumer.connect)()
+        consumer.close.assert_awaited_once_with(code=4004)
+        consumer.accept.assert_not_awaited()

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import override_settings
 from rest_framework.test import APIClient
 
@@ -41,6 +43,25 @@ class ManualReaderTests(BaseAPITestCase):
         self.manifest['pages'][0]['sections'][0]['audience'] = 'maintainer'
         promote(manual_fixtures.ManualIndexTests.index(self).value, self.index_path)
         self.assertEqual(self.client.get('/manuale/sections').json()['results'], [])
+
+    def test_manual_advertising_tracks_configured_source_and_installed_corpus(self):
+        def advertised():
+            status = self.client.get('/instance/status').json()
+            config = self.client.get('/instance/config').json()
+            self.assertEqual(status['manual_enabled'], config['features']['manualEnabled'])
+            return config['features']['manualEnabled']
+
+        self.assertTrue(advertised())
+        with override_settings(MANUAL_INDEX_PATH=str(self.root / 'missing.json')):
+            self.assertFalse(advertised())
+            with override_settings(MANUAL_CORPUS_BASE_URL='https://manual.example/corpus'):
+                with patch('application.manuale.sync.urlopen') as download:
+                    self.assertTrue(advertised())
+                    download.assert_not_called()
+        with override_settings(RUNNING_VERSION='wrong-release'):
+            self.assertFalse(advertised())
+        self.index_path.write_text('{broken')
+        self.assertFalse(advertised())
 
     def test_wrong_release_and_unknown_question_do_not_redirect_to_public_manual(self):
         with override_settings(RUNNING_VERSION='different-release'):

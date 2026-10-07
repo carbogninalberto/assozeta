@@ -59,7 +59,7 @@
     import {toast} from 'svelte-sonner';
     import SmartSelect from 'components/formBuilder/preview-blocks/smart-select-input.svelte';
     import {ChevronRight, Ellipsis} from 'lucide-svelte';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
 
     role.useLocalStorage();
     isExpired.useLocalStorage();
@@ -1006,7 +1006,7 @@
                         </div>
                     {/if}
                 {/if}
-                {#if $oemConfig?.displaySettings?.sidebar?.showManual}
+                {#if $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
                     <!-- svelte-ignore a11y-role-supports-aria-props -->
                     <div
                         id="manuale_assozeta"

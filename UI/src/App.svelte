@@ -14,7 +14,7 @@
         unreadNotificationsCounter,
         preventBackHistoryUnsavedChanges,
     } from 'store/stores.js';
-    import {instanceStatus, loadInstanceConfig, isSelfHostedMode, oemConfig, metaConfig} from 'store/instanceStore.js';
+    import {instanceStatus, loadInstanceConfig, isSelfHostedMode, oemConfig, metaConfig, assistantEnabled} from 'store/instanceStore.js';
     import DashboardLayout from './layouts/DashboardLayout.svelte';
     import {slide} from 'svelte/transition';
     import {setPermissions} from 'utils/Permissions';
@@ -445,7 +445,7 @@
     {#if $userDataStore?.onboarding && !($userDataStore?.onboarding?.create_membership && $userDataStore?.onboarding?.view_membership && $userDataStore?.onboarding?.approve_payment && $userDataStore?.onboarding?.download_invoice && $userDataStore?.onboarding?.view_collaborators && $userDataStore?.onboarding?.view_settings)}
         <OnboardingChecklist />
     {/if}
-    {#if $role === 'association'}
+    {#if $role === 'association' && $assistantEnabled}
         <AgentChatWidget />
     {/if}
 {:else}

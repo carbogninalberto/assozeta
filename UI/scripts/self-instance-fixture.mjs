@@ -7,7 +7,8 @@ const defaults = {enabled: false, api_key_configured: false, model: 'deepseek-v4
 let ai = {...defaults};
 let failSave = false;
 let maintenance = false;
-const config = () => ({oem: {name: 'Associazione Aurora', abbreviation: 'Aurora', primaryColor: '#351dc2', supportEmail: 'support@example.test'}, features: {selfHosted: true, aiEnabled: ai.enabled}});
+let manual = false;
+const config = () => ({oem: {name: 'Associazione Aurora', abbreviation: 'Aurora', primaryColor: '#351dc2', supportEmail: 'support@example.test'}, features: {selfHosted: true, aiEnabled: ai.enabled, manualEnabled: manual}});
 const server = await createServer({
     root, configFile: false, logLevel: 'error',
     define: {__bakney: JSON.stringify({OEM_CONFIG: {selfHosted: true}, env: {API_HOST: '/api'}})},
@@ -33,8 +34,9 @@ const server = await createServer({
                 const path = req.url.replace('/fixture/api', '');
                 res.setHeader('Content-Type', 'application/json');
                 const send = value => res.end(JSON.stringify(value));
-                if (req.url === '/fixture/reset') {ai = {...defaults}; failSave = false; maintenance = false; return send({});}
+                if (req.url === '/fixture/reset') {ai = {...defaults}; failSave = false; maintenance = false; manual = false; return send({});}
                 if (req.url === '/fixture/failure') {failSave = body.enabled; return send({});}
+                if (req.url === '/fixture/manual') {manual = body.enabled; return send({});}
                 if (req.url === '/fixture/maintenance') {maintenance = body.enabled; return send({});}
                 if (path === '/admin') return send({config: config(), mode: 'production', running_version: 'v1.2.3', configured_version: 'v1.2.3'});
                 if (path === '/admin/updates') return send({available: true, can_update: true, active: maintenance ? {id: 'fixture', stage: 'backup', target_version: 'v1.2.4'} : null, history: []});

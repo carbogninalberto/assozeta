@@ -30,7 +30,7 @@
     import HeaderActions from './HeaderActions.svelte';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
 
     userData.useLocalStorage();
     sessionToken.useLocalStorage();
@@ -206,7 +206,7 @@
         <!--begin::Topbar-->
         <div class="topbar">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            {#if $role !== 'athlete' && $oemConfig?.displaySettings?.sidebar?.showManual}
+            {#if $role !== 'athlete' && $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <a
                     class="topbar-item"

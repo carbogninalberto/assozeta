@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {get} from 'svelte/store';
-import {aiEnabled, instanceConfig, oemConfig, uploadInstanceLogo, loadInstanceConfig} from './instanceStore.js';
+import {aiEnabled, manualEnabled, assistantEnabled, instanceConfig, oemConfig, uploadInstanceLogo, loadInstanceConfig} from './instanceStore.js';
 
 test('upload updates reactive branding and cached config only after success', async () => {
     const originalFetch = globalThis.fetch;
@@ -46,7 +46,7 @@ test('AI visibility requires an explicit enabled flag and reacts to saved config
     instanceConfig.set(null);
 });
 
-test('legacy installations load AI visibility from the server status', async () => {
+test('legacy installations load optional feature visibility from the server status', async () => {
     const originalFetch = globalThis.fetch;
     const originalConfig = globalThis.__bakney;
     globalThis.__bakney = {OEM_CONFIG: {name: 'Legacy'}, env: {HOST: '/api'}};
@@ -55,14 +55,27 @@ test('legacy installations load AI visibility from the server status', async () 
             instanceConfig.set(null);
             globalThis.fetch = async url => {
                 assert.equal(url, '/api/instance/status');
-                return {ok: true, json: async () => ({ai_enabled: enabled})};
+                return {ok: true, json: async () => ({ai_enabled: enabled, manual_enabled: !enabled})};
             };
             assert.equal(await loadInstanceConfig(), true);
             assert.equal(get(aiEnabled), enabled);
+            assert.equal(get(manualEnabled), !enabled);
         }
     } finally {
         globalThis.fetch = originalFetch;
         globalThis.__bakney = originalConfig;
         instanceConfig.set(null);
     }
+});
+
+
+test('manual-only assistance requires a configured manual and AI remains independent', () => {
+    for (const [ai, manual] of [[false, false], [true, false], [false, true], [true, true]]) {
+        instanceConfig.set({features: {aiEnabled: ai, manualEnabled: manual}});
+        assert.equal(get(manualEnabled), manual);
+        assert.equal(get(assistantEnabled), ai || manual);
+    }
+    instanceConfig.set(null);
+    assert.equal(get(manualEnabled), false);
+    assert.equal(get(assistantEnabled), false);
 });
