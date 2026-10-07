@@ -32,8 +32,20 @@ export async function scenario({id, prefix, sources, actions}) {
         const identity = name ? input.identities[name] : input;
         const context = await browser.newContext(manualConfig.use);
         const headers = {Authorization: `Bearer ${identity.token}`};
-        const api = async (relative, options = {}) => context.request.fetch(input.origin + '/api/' + relative,
+        const send = (relative, options) => context.request.fetch(input.origin + '/api/' + relative,
             {...options, headers: {...headers, ...options.headers}});
+        const api = async (relative, options = {}) => {
+            try {
+                return await send(relative, options);
+            } catch (error) {
+                // The preview server closes idle keep-alive sockets after 5 s; a reused
+                // socket closed at that instant resets. Retry only idempotent reads once.
+                if (!['GET', 'HEAD'].includes((options.method || 'GET').toUpperCase())
+                    || !/ECONNRESET|socket hang up|EPIPE/.test(String(error?.message))) throw error;
+                report.transport_retries = (report.transport_retries || 0) + 1;
+                return send(relative, options);
+            }
+        };
         const health = await api('healthz');
         expect((await health.json()).manual_capture).toEqual({run_id: state.run_id,
             application_revision: state.application_input.revision, reference_time: input.reference_date + 'T12:00:00+00:00'});

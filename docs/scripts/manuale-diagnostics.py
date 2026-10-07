@@ -13,7 +13,8 @@ STATUSES = {'passed', 'failed', 'running', 'pending', 'unaffected'}
 # API routes. Messages, expected/received values, URLs and identifiers stay private.
 SCRIPT_FRAME = re.compile(r'((?:selfhost/tests/browser/manuale|docs/manuale)/[a-z0-9-]+\.mjs):(\d{1,5}):\d{1,5}')
 MATCHER = re.compile(r'\.((?:not\.)?to[A-Z][A-Za-z]{1,40})\(')
-ACTION = re.compile(r'^(?:[A-Za-z]{1,40}Error: )?((?:page|locator|frame|apiRequestContext|browserContext|browser)\.[a-z][A-Za-z]{0,40}):')
+ACTION = re.compile(r'^(?:[A-Za-z]{0,40}Error: )?((?:page|locator|frame|apiRequestContext|browserContext|browser)\.[a-z][A-Za-z]{0,40}):')
+TRANSPORT = re.compile(r'\b(ECONNRESET|ECONNREFUSED|ECONNABORTED|EPIPE|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|EHOSTUNREACH)\b|socket hang up')
 METHODS = {'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'}
 # Route words only (e.g. oauth2, two-fa); any identifier-like segment is replaced.
 ROUTE_SEGMENT = re.compile(r'[a-z]{1,30}(?:[_-][a-z]{1,30}){0,4}\d?')
@@ -39,6 +40,9 @@ def error_kind(message):
     action = ACTION.match(first)
     if action:
         kind['action'] = action.group(1)
+    transport = TRANSPORT.search(message)
+    if transport:
+        kind['transport'] = transport.group(1) or 'socket hang up'
     return kind
 
 

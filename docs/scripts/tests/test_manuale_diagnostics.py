@@ -70,3 +70,8 @@ class ManualDiagnosticsTests(unittest.TestCase):
     def test_timeout_action_is_retained_without_selector(self):
         kind = module.error_kind('TimeoutError: locator.click: Timeout 45000ms exceeded.\nwaiting for SECRET')
         self.assertEqual(kind, {'timeout': True, 'action': 'locator.click'})
+
+    def test_transport_error_code_is_retained_without_url(self):
+        kind = module.error_kind('Error: apiRequestContext.fetch: read ECONNRESET\nCall log:\n  - GET http://SECRET/api/x')
+        self.assertEqual(kind, {'timeout': False, 'action': 'apiRequestContext.fetch', 'transport': 'ECONNRESET'})
+        self.assertEqual(module.error_kind('apiRequestContext.fetch: socket hang up')['transport'], 'socket hang up')
