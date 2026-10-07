@@ -14,7 +14,7 @@
         unreadNotificationsCounter,
         preventBackHistoryUnsavedChanges,
     } from 'store/stores.js';
-    import {aiEnabled, instanceStatus, loadInstanceConfig, isSelfHostedMode, oemConfig, metaConfig} from 'store/instanceStore.js';
+    import {instanceStatus, loadInstanceConfig, isSelfHostedMode, oemConfig, metaConfig, assistantEnabled} from 'store/instanceStore.js';
     import DashboardLayout from './layouts/DashboardLayout.svelte';
     import {slide} from 'svelte/transition';
     import {setPermissions} from 'utils/Permissions';
@@ -41,6 +41,7 @@
     userDataStore.useLocalStorage();
 
     let isLoaded = false;
+    $: isManualPage = $location === '/manuale';
     let offline = false;
     let ga;
     let refreshingToken = false;
@@ -432,12 +433,19 @@
 {:else if !instanceConfigured}
     <SetupWizard />
     <!-- Normal app flow -->
+{:else if isManualPage}
+    <!-- Keep the authenticated route and shared bootstrap, with the reader's own navigation. -->
+    <Router
+        {routes}
+        on:routeLoading={() => (isLoaded = false)}
+        on:routeLoaded={() => (isLoaded = true)}
+        on:conditionsFailed={() => push('/login')} />
 {:else if JSON.parse(localStorage.getItem('sessionToken')) !== null && !$location.includes('/card') && !$location.includes('/attendance-scanner-mode') && !$location.includes('/welcome') && !$location.includes('/forms/') && !$location.includes('/email-builder') && !$location.includes('/subscribe/') && !$location.includes('/subscribe-family/') && !$location.includes('/subscribe-multiple/') && !$location.includes('/invite') && !$location.includes('/reset') && !$location.includes('/shared-calendar') && !$location.includes('/stripe/cart-pay') && $location != '/error' && $location != '/login' && localStorage.getItem('sessionToken') != null && localStorage.getItem('currentPage') != 'login' && sessionStorage.getItem('inconsistencies') == null}
     <DashboardLayout routerComponent={Router} {routes} />
     {#if $userDataStore?.onboarding && !($userDataStore?.onboarding?.create_membership && $userDataStore?.onboarding?.view_membership && $userDataStore?.onboarding?.approve_payment && $userDataStore?.onboarding?.download_invoice && $userDataStore?.onboarding?.view_collaborators && $userDataStore?.onboarding?.view_settings)}
         <OnboardingChecklist />
     {/if}
-    {#if $aiEnabled && $role === 'association'}
+    {#if $role === 'association' && $assistantEnabled}
         <AgentChatWidget />
     {/if}
 {:else}

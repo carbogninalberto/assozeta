@@ -29,6 +29,10 @@ class AgentCallback(Protocol):
         """End of a streamed message segment."""
         ...
 
+    async def on_manual_section(self, section: dict) -> None:
+        """Verified structured guide attached to the current streamed message."""
+        ...
+
     async def on_export_ready(self, export_data: dict) -> None:
         """An export file is ready for download."""
         ...
@@ -68,6 +72,10 @@ class CLICallback:
 
     async def on_message_end(self) -> None:
         print(flush=True)
+
+    async def on_manual_section(self, section: dict) -> None:
+        # The CLI already receives the complete extractive text and citation.
+        pass
 
     async def on_export_ready(self, export_data: dict) -> None:
         filename = export_data.get('filename', 'export')

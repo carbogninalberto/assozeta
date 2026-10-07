@@ -45,12 +45,18 @@
 
     async function fetchData() {
         loading = true;
-        const res = await apiFetch(`${__bakney.env.API.PROFILE.ASSOCIATES_COURSE}/${id}`, {signal: controller.signal});
-        if (!res.error) {
-            associatesUnsubscribed = res.response.associates_unsubscribed;
-            full = associatesUnsubscribed?.length == 0;
+        try {
+            const res = await apiFetch(`${__bakney.env.API.PROFILE.ASSOCIATES_COURSE}/${id}`, {signal: controller.signal});
+            if (!controller.signal.aborted && !res.error) {
+                associatesUnsubscribed = res.response.associates_unsubscribed;
+                full = associatesUnsubscribed?.length == 0;
+            }
+        } catch (error) {
+            // Destroying this panel intentionally cancels its pending request.
+            if (!controller.signal.aborted || error.name !== 'AbortError') throw error;
+        } finally {
+            if (!controller.signal.aborted) loading = false;
         }
-        loading = false;
     }
 
     async function subscribeAthletes() {

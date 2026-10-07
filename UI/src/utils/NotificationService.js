@@ -25,6 +25,7 @@ import NotificationWebSocket from './NotificationWebSocket.js';
 import {get} from 'svelte/store';
 import {apiFetch} from './ApiMiddleware.js';
 import {exportProgress} from 'store/exportProgressStore.js';
+import {role} from 'store/stores.js';
 
 class NotificationService {
     constructor() {
@@ -168,6 +169,8 @@ class NotificationService {
     }
 
     async syncActiveExport() {
+        // Athlete notifications share this socket but have no association exports.
+        if (get(role) !== 'association') return;
         if (this.activeExportSync) return this.activeExportSync;
         this.activeExportSync = (async () => {
             try {

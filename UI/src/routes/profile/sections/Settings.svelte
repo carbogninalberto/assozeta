@@ -39,6 +39,8 @@
         auto_paid_payment: false,
     };
     let fetchedData = null;
+    let storedCardTemplate = null;
+    let displayedCardTemplate = null;
     let fetching = false;
     let paymentCategories = [];
 
@@ -76,6 +78,7 @@
         apiFetch(__bakney.env.API.PROFILE.SETTINGS).then(res => {
             if (!res.error) {
                 settings = res.response.settings;
+                storedCardTemplate = structuredClone(settings.membership_card_configuration?.customized_template ?? null);
                 // check if membership_card_configuration is not defined
                 if (!settings.membership_card_configuration) {
                     settings.membership_card_configuration = {
@@ -107,6 +110,7 @@
                         }
                     }
                 }
+                displayedCardTemplate = JSON.stringify(settings.membership_card_configuration.customized_template);
                 fetchedData = JSON.stringify(settings);
                 $userData.temporary_invoice_deletion = settings.temporary_invoice_deletion;
                 $userData.dark_mode = settings.dark_mode;
@@ -122,15 +126,20 @@
     }
 
     async function updateSettings() {
+        // Display defaults do not change a stored template when saving another preference.
+        const payload = structuredClone(settings);
+        if (JSON.stringify(payload.membership_card_configuration.customized_template) === displayedCardTemplate) {
+            payload.membership_card_configuration.customized_template = storedCardTemplate;
+        }
         let res = await apiFetch(__bakney.env.API.PROFILE.SETTINGS, {
             method: 'POST',
-            body: JSON.stringify(settings),
+            body: JSON.stringify(payload),
         });
 
         if (!res.error) {
 toast.success('Impostazioni generali aggiornate.');
             fetchInfo();
-            $userData.sport_association.membership_card_configuration = settings.membership_card_configuration;
+            $userData.sport_association.membership_card_configuration = payload.membership_card_configuration;
         } else {
             let modalText =
                 res.status == 403 ? 'Operazione non permessa.' : 'Scusa, ho individuato degli errori, riprova.';

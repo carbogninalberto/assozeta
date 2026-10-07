@@ -73,6 +73,18 @@
         });
     }
 
+    function editExpiration() {
+        if (!canPerformAction('association.members.update')) return;
+        const modal = new AddMedicalCertificate({
+            target: document.querySelector('#portal-elements'),
+            props: {show: true, id: info.subscription_id, mode: 'only-date', data: info},
+        });
+        modal.$on('update', () => {
+            modal.$destroy();
+            setTimeout(() => dispatch('reset', 'medical'), 1000);
+        });
+    }
+
     function getRemainingDays(row) {
         const currentDate = new Date();
         const expirationDate = new Date(row.medical_expiration_date);
@@ -119,32 +131,21 @@
                                     >{new Date(info.medical_expiration_date).toLocaleDateString('it-IT')}</span>
                                 ({getRemainingDays(info)} giorni rimanenti).
                             </span>
+                            {#if !info.archived && canPerformAction('association.members.update')}
+                                <button type="button" class="btn btn-xs btn-light-primary ml-2"
+                                    on:click={editExpiration}>Modifica scadenza</button>
+                            {/if}
                         {:else}
                             <span class="text-dark-75">{info.plain_medical_label || 'Scadenza certificato mancante'}, </span>
                             <!-- svelte-ignore a11y-missing-attribute -->
                             <!-- svelte-ignore a11y-click-events-have-key-events -->
                             <!-- svelte-ignore a11y-no-static-element-interactions -->
-                            <a
-                                on:click={() => {
-                                    let medicalCertificateModal = new AddMedicalCertificate({
-                                        target: document.querySelector('#portal-elements'),
-                                        props: {
-                                            show: true,
-                                            id: info.subscription_id,
-                                            mode: 'only-date',
-                                        },
-                                    });
-
-                                    medicalCertificateModal.$on('update', () => {
-                                        // destroy the modal
-                                        medicalCertificateModal.$destroy();
-                                        setTimeout(() => {
-                                            dispatch('reset', 'medical');
-                                        }, 1000);
-                                    });
-                                }}
-                                class="text-primary"
-                                style="cursor: pointer">impostala ora!</a>
+                            {#if !info.archived && canPerformAction('association.members.update')}
+                                <a
+                                    on:click={editExpiration}
+                                    class="text-primary"
+                                    style="cursor: pointer">impostala ora!</a>
+                            {/if}
                         {/if}
                         <div class="input-group px-0 mt-1">
                             <span class="switch switch-sm switch-icon m-auto px-0" style="margin-left: 0px !important;"

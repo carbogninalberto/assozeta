@@ -178,6 +178,46 @@ class ProfileUpdateTests(AuditlogDisabledMixin, TransactionTestCase):
         self.sport_association.refresh_from_db()
         self.assertEqual(self.sport_association.denomination, 'Updated Association')
 
+    def print_profile_payload(self, values):
+        # Other endpoint fields retain their existing null/omitted behavior.
+        association = dict.fromkeys(('denomination', 'tax_code', 'address', 'address_cap',
+            'address_city', 'enable_quotes_management', 'configuration', 'federation',
+            'enroll_number', 'sport', 'president_first_name', 'president_last_name',
+            'stripe_available_methods', 'invoice_template', 'subscription_template',
+            'extra_text_invoices'))
+        association['checkout_info'] = self.sport_association.checkout_info
+        association.update(values)
+        return {'user_data': {'first_name': None, 'last_name': None, 'username': None,
+            'avatar_image': None, 'sport_association': association}}
+
+    def test_print_fields_can_be_saved_cleared_and_reloaded(self):
+        fields = ('document_header', 'invoice_footer', 'president_signature', 'stamp')
+        stored = {field: 'owned-print-fixture-' + field for field in fields}
+        saved = self.client.patch('/profile/update', self.print_profile_payload(stored), format='json')
+        self.assertEqual(saved.status_code, status.HTTP_200_OK)
+        self.sport_association.refresh_from_db()
+        for field, value in stored.items():
+            self.assertEqual(getattr(self.sport_association, field), value)
+            self.assertEqual(saved.data['user_data']['sport_association'][field], value)
+        cleared = self.client.patch('/profile/update',
+            self.print_profile_payload(dict.fromkeys(fields)), format='json')
+        self.assertEqual(cleared.status_code, status.HTTP_200_OK)
+        self.sport_association.refresh_from_db()
+        for field in fields:
+            self.assertIsNone(getattr(self.sport_association, field), field)
+            self.assertIsNone(cleared.data['user_data']['sport_association'][field], field)
+
+    def test_omitted_print_fields_preserve_existing_values(self):
+        fields = ('document_header', 'invoice_footer', 'president_signature', 'stamp')
+        for field in fields:
+            setattr(self.sport_association, field, 'preserve-' + field)
+        self.sport_association.save(update_fields=fields)
+        response = self.client.patch('/profile/update', self.print_profile_payload({}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.sport_association.refresh_from_db()
+        for field in fields:
+            self.assertEqual(getattr(self.sport_association, field), 'preserve-' + field, field)
+
     def test_update_profile_unauthenticated(self):
         """Test profile update requires authentication."""
         self.client.force_authenticate(user=None)

@@ -104,7 +104,8 @@ export default defineConfig({
     },
     build: {
         outDir: './dist/public',
-        sourcemap: "hidden",
+        sourcemap: process.env.ASSOZETA_MANUAL_BUILD === '1' ? false : "hidden",
+        reportCompressedSize: process.env.ASSOZETA_MANUAL_BUILD !== '1',
         rollupOptions: {
             treeshake: true,
             output: {

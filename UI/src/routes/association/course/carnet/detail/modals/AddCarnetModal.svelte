@@ -149,7 +149,7 @@
                 </button>
                 <button
                     type="submit"
-                    disabled={!value || (selectableCarnet && !id)}
+                    disabled={!value || !id}
                     class="btn btn-primary font-weight-bold">
                     Assegna
                 </button>

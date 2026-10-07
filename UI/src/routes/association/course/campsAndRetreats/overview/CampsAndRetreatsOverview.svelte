@@ -232,7 +232,7 @@
                                 target: document.querySelector(`#action-col-${row.camps_and_retreats_subscription_id}`),
                                 intro: true,
                                 props: {
-                                    // disabled: !canPerformAction('association.modules.edit'),
+                                    disabled: !canPerformAction('association.campsandretreats.update'),
                                     popover_text: 'Modifica',
                                 },
                             });

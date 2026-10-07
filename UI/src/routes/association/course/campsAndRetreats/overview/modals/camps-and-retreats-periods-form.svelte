@@ -13,7 +13,7 @@
     const dispatch = createEventDispatcher();
 
     export let id;
-    export let data;
+    export let data = {};
 
     export let show = false;
     export let isInModal = false;
@@ -96,6 +96,8 @@
 
 <form id="camps_and_retreats_periods_form" on:submit|preventDefault={handleValidation}>
     <input type="hidden" name="camps_and_retreats" value={id} />
+    <input type="hidden" name="start_date" value={data?.start_date || ''} />
+    <input type="hidden" name="end_date" value={data?.end_date || ''} />
     <div class="text-left">
         <div class="row px-0 mx-0">
             <div class="col-12 px-4">

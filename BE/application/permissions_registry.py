@@ -1,4 +1,4 @@
-from application.impersonation import acting_user
+from application.impersonation import acting_user, is_manual_reader_request
 """
 Centralized permission registry for collaborator access control.
 
@@ -491,6 +491,11 @@ def check_collaborator_permission(request):
     """
     # Skip if not a collaborator
     if not getattr(request, 'collaborator', False):
+        return
+
+    # These authenticated GETs contain only public, version-bound documentation.
+    # They never expose technical evidence or association records.
+    if is_manual_reader_request(request):
         return
 
     # Get the original collaborator user (before swap to connected_user)

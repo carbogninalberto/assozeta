@@ -1,5 +1,6 @@
 import {apiFetch} from './ApiMiddleware';
 import {isMobileSidebarOpen} from 'store/stores.js';
+import {normalizeDateForApi} from './dateValues.js';
 export {waitForElementAndExecute} from './waitForElement.js';
 
 export const getAthletesEmails = async function () {
@@ -215,21 +216,16 @@ export const compareObjects = (obj1, obj2) => {
 
 
 export const updateIsMinor = (newAssociate, inputDataValueId, DEBUG) => {
-    // to be fixed i guess
-    newAssociate.associate_data.born_date = document.getElementById(inputDataValueId).value;
+    const date = normalizeDateForApi(document.getElementById(inputDataValueId).value);
+    const [year, month, day] = date ? date.split('-') : [];
+    newAssociate.associate_data.born_date = date ? `${day}/${month}/${year}` : '';
+    const dateFormatted = date ? new Date(Number(year), Number(month) - 1, Number(day)) : new Date(NaN);
 
-    // [dd, mm, yyyy]
-    let dateParts = newAssociate.associate_data.born_date.split('/');
-    // new Date requires mm/dd/yyyy
-    let dateFormatted = dateParts[1] + "/" + dateParts[0] + "/" + dateParts[2];
-
-    if (_calculateAge(new Date(dateFormatted)) < 18)
-        newAssociate.associate_data.is_minor = true;
-    else
-        newAssociate.associate_data.is_minor = false;
-
-    if (DEBUG)
-        console.log('onInputBornDate', _calculateAge(new Date(dateFormatted)), newAssociate.associate_data.born_date, newAssociate.associate_data.is_minor);
+    const today = new Date();
+    let age = today.getFullYear() - dateFormatted.getFullYear();
+    if (today.getMonth() < dateFormatted.getMonth() ||
+        (today.getMonth() === dateFormatted.getMonth() && today.getDate() < dateFormatted.getDate())) age -= 1;
+    newAssociate.associate_data.is_minor = age >= 0 && age < 18;
 
     return newAssociate;
 };

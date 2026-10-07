@@ -234,7 +234,9 @@
         <div class="content-wrapper">
             <div class='columns' style="margin-bottom:9pt;">
                 <div class='column is-6'>
-                    <img class='logo' src="{{ invoice.sport_association.logo | safe }}"/>
+                    {% if invoice.sport_association.logo %}
+                        <img class='logo' src="{{ invoice.sport_association.logo | safe }}"/>
+                    {% endif %}
                 </div>
                 <div class='column is-6 text-right'>
                     <h2 style='font-size: 9pt;margin:0'>

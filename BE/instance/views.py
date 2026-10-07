@@ -47,8 +47,10 @@ class InstanceStatusView(APIView):
         config = InstanceConfiguration.get_config()
         from .integration_configuration import effective_integration
         ai = effective_integration('ai', config, decrypt=False)
+        from application.manuale.availability import manual_available
         return Response({
             "ai_enabled": ai['enabled'],
+            "manual_enabled": manual_available(),
             "configured": config is not None,
             "version": getattr(settings, 'RUNNING_VERSION', 'v0.0.0'),
             "instance_name": config.name if config else None,

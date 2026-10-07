@@ -98,14 +98,14 @@
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     {#if activeTab === 'info'}
                         <button
-                            disabled={activeTab !== 'info' || !canPerformAction('association.carnet.update')}
+                            disabled={!data.carnet_id || activeTab !== 'info' || !canPerformAction('association.carnet.update')}
                             bind:this={updateBtn}
                             type="reset"
                             on:click={updateData}
                             class="btn btn-primary font-weight-bolder">Salva</button>
                     {:else if activeTab === 'usage'}
                         <button
-                            disabled={!canPerformAction('association.carnet.update')}
+                            disabled={!data.carnet_id || !canPerformAction('association.carnet.update')}
                             on:click={() => {
                                 let addCarnetModal = new AddCarnetModal({
                                     target: document.body,

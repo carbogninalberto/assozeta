@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readProfileLocation, navigateProfile, profileTab} from './profileNavigation.js';
+import {readProfileLocation, navigateProfile, profileTab, isProfileLocation} from './profileNavigation.js';
 
 test('profile links accept reordered parameters and reject unknown pages', () => {
     assert.deepEqual(readProfileLocation('#/profile?tab=restore&page=data-management'),{page:'data-management',tab:'restore'});
@@ -30,4 +30,9 @@ test('profile navigation preserves the deployment path and changes tab history',
         assert.equal(profileTab('self-instance',['overview','updates'],'overview'),'updates');
         assert.equal(changes.at(-1),'replace');
     } finally {delete globalThis.window;delete globalThis.HashChangeEvent;}
+});
+
+test('profile event handlers can ignore navigation outside the profile', () => {
+    for (const hash of ['#/profile', '#/profile?page=settings&tab=general']) assert.equal(isProfileLocation(hash), true);
+    for (const hash of ['#/balance-sheet/list', '#/members/list', '#/profile-other', '#/']) assert.equal(isProfileLocation(hash), false);
 });

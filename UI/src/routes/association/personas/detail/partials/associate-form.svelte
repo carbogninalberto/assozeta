@@ -418,7 +418,8 @@
                     required: true,
                     placeholder: 'Inserisci il codice fiscale',
                     style: 'text-transform:uppercase',
-                }} />
+                }}
+                on:change={e => (associate.tax_code = e.detail)} />
             <div class="d-flex justify-content-end align-items-center mb-0 mt-8">
                 <GenerateTaxCodeButton bind:data={associate} on:codice={e => (associate.tax_code = e.detail)} />
             </div>

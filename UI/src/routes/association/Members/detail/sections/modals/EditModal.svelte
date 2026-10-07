@@ -4,7 +4,7 @@
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import Portal from 'svelte-portal';
     import {getDataFromForm} from 'utils/Functions';
-    import {createEventDispatcher} from 'svelte';
+    import {createEventDispatcher, onDestroy} from 'svelte';
     import {toast} from 'svelte-sonner';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
     import {hideModal} from 'shim/modal.js';
@@ -15,6 +15,14 @@ import Portal from 'svelte-portal';
     export let row;
 
     let editForm;
+    let disposed = false;
+    onDestroy(() => {
+        disposed = true;
+        editForm?.destroy();
+        const modal = document.getElementById(`editModal-${id}`);
+        hideModal(`editModal-${id}`);
+        modal?._hideCleanup?.cleanup();
+    });
 
     function initForm() {
         editForm?.destroy();
@@ -57,9 +65,17 @@ import Portal from 'svelte-portal';
             });
 
             if (res.status == 200) {
-                dispatch('update');
+                if (disposed) return;
                 toast.success('Modificato con successo.');
-                hideModal(`editModal-${id}`);
+                const modal = document.getElementById(`editModal-${id}`);
+                if (modal?.classList.contains('show')) {
+                    modal.addEventListener('hidden.bs.modal', () => {
+                        if (!disposed) dispatch('update');
+                    }, {once: true});
+                    hideModal(`editModal-${id}`);
+                } else {
+                    dispatch('update');
+                }
             } else {
                 toast.error(res.response?.msg || 'Errore durante la modifica.');
             }

@@ -136,7 +136,7 @@
         }).registerValidator('notMinor', function () {
             return {
                 validate: function (input) {
-                    let date = moment(input.value, 'DD/MM/YYYY');
+                    let date = moment(input.value, ['YYYY-MM-DD', 'DD/MM/YYYY'], true);
                     let now = moment();
                     let years = now.diff(date, 'years');
                     console.log(years);

@@ -24,6 +24,7 @@ Artifacts and evidence:
 
 Data and automation:
 
+- [Italian manual automation and MCP knowledge](./manuale/README.md)
 - [Inventory JSON](./matrix/architecture-inventory.json)
 - [Inventory markdown](./matrix/architecture-inventory.md)
 - [Matrix index](./matrix/README.md)

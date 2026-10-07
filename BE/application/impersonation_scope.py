@@ -65,6 +65,7 @@ def scoped_queryset(identity, manager):
 # Account credentials, integrations and instance administration are account-wide,
 # so an association-scoped session cannot operate them.
 ATHLETE_VIEWS = {
+    'manual_sections', 'manual_asset',
     'profile_info', 'profile_associates_course', 'profile_associates_sport_association',
     'profile_settings_tables', 'statistic_athlete_dashboard', 'search_profile',
     'subscription_list', 'subscription_list_all', 'subscription_info',

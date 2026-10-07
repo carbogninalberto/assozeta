@@ -9,6 +9,7 @@
     import {createEventDispatcher} from 'svelte';
     import {blockPage, unblockPage} from 'store/loadingStore.js';
     import DateInput from 'components/inputs/DateInput.svelte';
+    import {normalizeDateForApi} from 'utils/dateValues.js';
     import {initSelectpicker, refreshSelectpicker} from 'shim/select.js';
     import {createDropzone} from 'shim/dropzone.js';
     import {hideModal} from 'shim/modal.js';
@@ -18,6 +19,11 @@
     sessionToken.useLocalStorage();
 
     export let athlete = {};
+    if (athlete.associate) {
+        for (const field of ['membership_start_date', 'membership_end_date']) {
+            athlete.associate[field] = normalizeDateForApi(athlete.associate[field]) ?? '';
+        }
+    }
     export let idx;
     export let certificate_expring_date = moment().format('DD/MM/YYYY');
 
@@ -351,7 +357,7 @@
         }).registerValidator('notMinor', function () {
             return {
                 validate: function (input) {
-                    let date = moment(input.value, 'DD/MM/YYYY');
+                    let date = moment(input.value, ['YYYY-MM-DD', 'DD/MM/YYYY'], true);
                     let now = moment();
                     let years = now.diff(date, 'years');
                     return {
@@ -623,7 +629,7 @@
                             type="text"
                             inputmode="numeric"
                             maxlength="5"
-                            pattern="[0-9]{5}"
+                            pattern={'[0-9]{5}'}
                             class="form-control form-control-solid form-control-lg"
                             id="bkn_inputmask_cap_{idx}"
                             placeholder="CAP di Residenza" />
@@ -784,7 +790,7 @@
                                 type="text"
                                 inputmode="numeric"
                                 maxlength="5"
-                                pattern="[0-9]{5}"
+                                pattern={'[0-9]{5}'}
                                 class="form-control form-control-solid form-control-lg"
                                 id="bkn_inputmask_cap_tutor_{idx}"
                                 placeholder="CAP di Residenza" />

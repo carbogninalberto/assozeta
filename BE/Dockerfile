@@ -48,6 +48,7 @@ CMD ["uvicorn", "core.asgi:application", "--host", "0.0.0.0", "--port", "8000", 
 FROM base AS production
 
 ARG VERSION=v0.0.0
+ARG CODE_REVISION=unknown
 
 RUN groupadd --gid 10001 assozeta \
     && useradd --uid 10001 --gid assozeta --create-home assozeta
@@ -55,8 +56,11 @@ RUN groupadd --gid 10001 assozeta \
 COPY --from=dependencies /opt/venv /opt/venv
 COPY --chown=assozeta:assozeta . .
 RUN printf '%s\n' "$VERSION" > VERSION \
+    && printf '%s\n' "$CODE_REVISION" > CODE_REVISION \
     && chmod +x entrypoint.sh \
-    && chown assozeta:assozeta VERSION
+    && mkdir -p /app/manuale \
+    && chown assozeta:assozeta /app/manuale \
+    && chown assozeta:assozeta VERSION CODE_REVISION
 
 USER assozeta
 

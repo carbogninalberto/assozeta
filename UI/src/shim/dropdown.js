@@ -97,8 +97,17 @@ function positionFixedMenu(menu, toggle) {
 }
 
 function addOverflowListeners(menu) {
-    function onOverflow() {
-        closeDropdown(menu);
+    function onOverflow(event) {
+        // Scrolling a menu's own list must preserve the current selection.
+        // Parent layout transitions can also emit scroll events as the menu
+        // opens: keep it anchored rather than closing it before it can be used.
+        if (event.target instanceof Node && menu.contains(event.target)) return;
+        const rec = _registry.get(menu);
+        if (!rec?.toggle.isConnected) {
+            closeDropdown(menu);
+            return;
+        }
+        positionFixedMenu(menu, rec.toggle);
     }
     window.addEventListener('scroll', onOverflow, true);
     window.addEventListener('resize', onOverflow, true);

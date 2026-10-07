@@ -218,7 +218,7 @@
             reverseButtons: true,
         }).then(async function (result) {
             if (result.isConfirmed) {
-                let records = datatable.getSelectedRecords().dataSet;
+                let records = datatable.dataSet;
                 let checkedNodes = datatable?.getSelectedRecords();
                 let count = checkedNodes.length;
                 let associate_import_draft_ids = [];
@@ -267,7 +267,7 @@
         });
 
         approveModal.$on('confirm', async data => {
-            let records = datatable.getSelectedRecords().dataSet;
+            let records = datatable.dataSet;
             let checkedNodes = datatable?.getSelectedRecords();
             let count = checkedNodes.length;
             UiApp.blockPage({

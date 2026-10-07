@@ -674,7 +674,9 @@ def invoice_suppliers_add(request):
     if custom_accounts is None:
         return Response({'error': 'Nessun conto bancario attivo trovato.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    supplier = SupplierAndCustomers.objects.filter(supplier_id=data['supplier_id']).first()
+    supplier = SupplierAndCustomers.objects.filter(
+        supplier_id=data['supplier_id'], sport_association=request.user.sport_association
+    ).first()
 
     if supplier is None:
         return Response({'error': 'Fornitore non trovato.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -682,7 +684,16 @@ def invoice_suppliers_add(request):
     # create associated payment
     if data['payment_date'] is None:
         # set payment date to today with also time
-        data['payment_date'] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        data['payment_date'] = timezone.now().isoformat()
+
+    # A similarly named category owned by another association must not be used
+    # for this expense. Prefer the association's active category, then a shared
+    # active category. Return an actionable error instead of dereferencing None.
+    categories = PaymentCategory.objects.filter(name__iexact="Pagamento Fornitore", deleted=False)
+    payment_category = categories.filter(sport_association=request.user.sport_association).first() \
+        or categories.filter(sport_association__isnull=True).first()
+    if payment_category is None:
+        return Response({'error': 'Causale Pagamento Fornitore non disponibile.'}, status=status.HTTP_400_BAD_REQUEST)
 
     payment_data = {
         'subject': Payment.OTHER,
@@ -694,7 +705,7 @@ def invoice_suppliers_add(request):
         'paid': data['paid'] if data['paid'] else False,
         'payment_date': data['payment_date'] if data['paid'] else None,
         'creation_date': data['payment_date'],
-        'payment_category': PaymentCategory.objects.filter(name__iexact="Pagamento Fornitore").first().payment_category_id,
+        'payment_category': payment_category.payment_category_id,
         'custom_accounts': custom_accounts.custom_account_id,
     }
 

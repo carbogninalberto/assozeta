@@ -30,7 +30,7 @@
     import HeaderActions from './HeaderActions.svelte';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
 
     userData.useLocalStorage();
     sessionToken.useLocalStorage();
@@ -198,7 +198,7 @@
                 </button>
             {/if}
             <HeaderActions {quickAddItems} showQuickAdd={$role === 'association'}
-                showAI={$role === 'association' && canPerformAction('association.report.read')}
+                showAI={$role === 'association'}
                 on:itemClick={openQuickAdd} />
         </div>
         <!--end::Header Menu Wrapper-->
@@ -206,11 +206,14 @@
         <!--begin::Topbar-->
         <div class="topbar">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            {#if $role !== 'athlete' && $oemConfig?.manualUrl && $oemConfig?.displaySettings?.sidebar?.showManual}
+            {#if $role !== 'athlete' && $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div
+                <a
                     class="topbar-item"
-                    on:click={() => window.open($oemConfig.manualUrl, '_blank')}
+                    href="/#/manuale"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Manuale d'uso"
                     data-offset="10px,0px">
                     <div class="btn btn-icon btn-clean btn-dropdown btn-lg pulse pulse-light-primary">
                         <span class="svg-icon svg-icon-xl svg-icon-primary">
@@ -220,7 +223,7 @@
                         </span>
                         <span class="pulse-ring" />
                     </div>
-                </div>
+                </a>
             {/if}
 
             {#if $oemConfig?.displaySettings?.navbar?.showNotifications && canPerformAction('other.notifications.read')}

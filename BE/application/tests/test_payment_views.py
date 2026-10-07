@@ -1,4 +1,5 @@
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.test import TestCase
 from rest_framework import status
@@ -129,6 +130,35 @@ class PaymentCreationTests(PaymentViewsTestCase):
 
 
 class PaymentStateTransitionTests(PaymentViewsTestCase):
+    def test_approve_without_pdf_or_email_keeps_local_receipt_and_other_business_rows(self):
+        from application.models import Invoice
+        from application.models.user_models import EmailLog
+        payment = self.create_payment(paid=False, expense=False, subject=Payment.OTHER, amount=Decimal('105.00'))
+        foreign_owner = create_test_user(role=User.ASSOCIATION)
+        foreign_association = create_test_sport_association(user=foreign_owner)
+        foreign = create_test_payment(user=foreign_owner, sport_association=foreign_association,
+            associate=create_test_associate(sport_association=foreign_association, user=foreign_owner))
+        foreign_before = Payment._base_manager.filter(pk=foreign.pk).values().get()
+        emails_before = list(EmailLog._base_manager.order_by('pk').values())
+        with patch('application.views.payment_views.print_document_invoice') as rendering:
+            response = self.client.post(f'/payment/{payment.pk}/approve', {
+                'payment_date': '2026-09-30', 'generate_invoice': False, 'send_receipt_email': False,
+            }, format='json')
+        self.assertEqual(response.status_code, 200, response.content)
+        rendering.apply_async.assert_not_called()
+        rendering.apply.assert_not_called()
+        payment.refresh_from_db()
+        self.assertTrue(payment.paid)
+        self.assertEqual(payment.amount, Decimal('105.00'))
+        self.assertIsNotNone(payment.invoice_id)
+        receipt = Invoice.objects.get(pk=payment.invoice_id)
+        self.assertEqual(receipt.sport_association_id, self.sport_association.pk)
+        self.assertEqual(receipt.activity_fee, Decimal('105.00'))
+        self.assertEqual(receipt.membership_fee, Decimal('0.00'))
+        self.assertIsNone(receipt.document_pdf_id)
+        self.assertEqual(Payment._base_manager.filter(pk=foreign.pk).values().get(), foreign_before)
+        self.assertEqual(list(EmailLog._base_manager.order_by('pk').values()), emails_before)
+
     def test_approve_payment(self):
         payment = self.create_payment(paid=False)
 
@@ -259,6 +289,42 @@ class PaymentPermissionTests(PaymentViewsTestCase):
 
 
 class PaymentListTests(PaymentViewsTestCase):
+    def test_empty_ui_reset_returns_all_tenant_rows_and_concrete_filters_still_apply(self):
+        cash = self.create_payment(type=Payment.CASH, paid=True, expense=False, subject=Payment.SUBSCRIPTION)
+        transfer = self.create_payment(type=Payment.TRANSFER, paid=False, expense=False, subject=Payment.COURSE)
+        expense = self.create_payment(type=Payment.CASH, paid=False, expense=True, subject=Payment.OTHER)
+        foreign_owner = create_test_user(role=User.ASSOCIATION)
+        foreign_association = create_test_sport_association(user=foreign_owner)
+        foreign = create_test_payment(user=foreign_owner, sport_association=foreign_association,
+            associate=create_test_associate(sport_association=foreign_association, user=foreign_owner),
+            type=Payment.CASH, paid=True, expense=False)
+        before = list(Payment._base_manager.order_by('pk').values())
+        reset = {f'query[{name}]': '' for name in ('type', 'paid', 'subject', 'expense')}
+
+        def ids(filters):
+            response = self.client.get('/payment/list', {'pagination[perpage]': 100, **filters})
+            self.assertEqual(response.status_code, 200, response.content)
+            values = {row['payment_id'] for row in response.json()['data']}
+            self.assertNotIn(str(foreign.pk), values)
+            return values
+
+        own = {str(item.pk) for item in (cash, transfer, expense)}
+        self.assertEqual(ids({}), own)
+        self.assertEqual(ids(reset), own)
+        for filters, expected in (
+            ({'query[type]': Payment.CASH}, {str(cash.pk), str(expense.pk)}),
+            ({'query[type]': Payment.TRANSFER}, {str(transfer.pk)}),
+            ({'query[paid]': 'true'}, {str(cash.pk)}),
+            ({'query[paid]': 'false'}, {str(transfer.pk), str(expense.pk)}),
+            ({'query[expense]': 'true'}, {str(expense.pk)}),
+            ({'query[expense]': 'false'}, {str(cash.pk), str(transfer.pk)}),
+            ({'query[subject]': str(Payment.OTHER)}, {str(expense.pk)}),
+        ):
+            with self.subTest(filters=filters):
+                self.assertEqual(ids({**reset, **filters}), expected)
+        self.assertEqual(ids(reset), own)
+        self.assertEqual(list(Payment._base_manager.order_by('pk').values()), before)
+
     def test_list_returns_payments(self):
         payment = self.create_payment()
 
@@ -547,3 +613,32 @@ class PaymentBulkAddTests(PaymentViewsTestCase):
             str(foreign_associate.associate_id),
             response.data['data']['invalid_associate_ids'],
         )
+
+
+class SubscriptionPaymentIdentityTests(PaymentViewsTestCase):
+    def test_missing_tax_code_does_not_match_other_members(self):
+        subscription = create_test_subscription(sport_association=self.sport_association,
+            associate=self.associate, user=self.user)
+        own = self.create_payment()
+        for tax_code in (None, '', '   '):
+            with self.subTest(tax_code=tax_code):
+                self.associate.tax_code = tax_code
+                self.associate.save(update_fields=['tax_code'])
+                other = create_test_associate(sport_association=self.sport_association, tax_code=tax_code, deleted=True)
+                foreign = create_test_payment(sport_association=self.sport_association, user=self.user, associate=other)
+                response = self.client.get(f'/subscription/{subscription.pk}/payments')
+                self.assertEqual(response.status_code, 200)
+                identifiers = {str(row['payment_id']) for row in response.data['data']}
+                self.assertIn(str(own.pk), identifiers)
+                self.assertNotIn(str(foreign.pk), identifiers)
+
+    def test_real_tax_code_keeps_same_person_history(self):
+        self.associate.tax_code = 'BNCLGU96C50H501A'
+        self.associate.save(update_fields=['tax_code'])
+        previous = create_test_associate(sport_association=self.sport_association, tax_code='bnclgu96c50h501a', deleted=True)
+        subscription = create_test_subscription(sport_association=self.sport_association,
+            associate=self.associate, user=self.user)
+        historical = create_test_payment(sport_association=self.sport_association, user=self.user, associate=previous)
+        response = self.client.get(f'/subscription/{subscription.pk}/payments')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(str(historical.pk), {str(row['payment_id']) for row in response.data['data']})

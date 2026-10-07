@@ -36,6 +36,7 @@
     let lessonsError = false;
     let lessonsRequest = 0;
     let loading = true;
+    const rowEditModals = new Map();
     let visibleMultiaction = false;
     let selectedCounter = 0;
     let datatable;
@@ -197,6 +198,8 @@
                     '?download=false&token=' +
                     row.document_token;
                 waitForElementAndExecute(`#action-col-${row.instructor_hours_id}`, () => {
+                    rowEditModals.get(row.instructor_hours_id)?.$destroy();
+                    rowEditModals.delete(row.instructor_hours_id);
                     if (document.querySelector(`#action-col-${row.instructor_hours_id}`))
                         document.querySelector(`#action-col-${row.instructor_hours_id}`).innerHTML = '';
 
@@ -263,6 +266,7 @@
                             edit: true,
                         },
                     });
+                    rowEditModals.set(row.instructor_hours_id, editModal);
 
                     editModal.$on('close', data => {
                         fetchInfoWidget();
@@ -418,6 +422,8 @@
     });
 
     onDestroy(() => {
+        rowEditModals.forEach(modal => modal.$destroy());
+        rowEditModals.clear();
         document.querySelectorAll('.popover').forEach(popover => popover.remove());
     });
 </script>
@@ -442,7 +448,7 @@
                     <!--begin::Button-->
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <button
-                        disabled={!canPerformAction('association.instructor.hours.create')}
+                        disabled={loading || !canPerformAction('association.instructor.hours.create')}
                         class="btn btn-sm btn-primary font-weight-bolder m-2"
                         on:click={() => {
                             showModal(`modal-${id}`);
@@ -625,6 +631,7 @@
 
 
 
+{#if !loading}
 <AddEditModal
     edit={false}
     {id}
@@ -633,3 +640,4 @@
     on:close={() => {
         fetchInfoWidget();
     }} />
+{/if}

@@ -1,5 +1,9 @@
 export const profilePages = ['info', 'twofa', 'stripe', 'password', 'settings', 'integrations', 'data-management', 'self-instance'];
 
+export function isProfileLocation(hash = window.location.hash) {
+    return hash.replace(/^#/, '').split('?')[0] === '/profile';
+}
+
 export function readProfileLocation(hash = window.location.hash) {
     const [path, query = ''] = hash.replace(/^#/, '').split('?');
     const params = new URLSearchParams(query);

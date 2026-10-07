@@ -59,10 +59,10 @@
                             <div
                                 class="font-size-sm bg-white text-dark-75 mt-3 border border-secondary"
                                 style="padding: 1rem;border-radius: 0.55rem;">
-                                {@html course_pinned.description
+                                {@html (course_pinned.description || '')
                                     .replace(/&lt;/g, '<')
                                     .replace(/&gt;/g, '>')
-                                    .substring(0, 120)}{course_pinned.description.length > 120 ? '...' : ''}
+                                    .substring(0, 120)}{(course_pinned.description || '').length > 120 ? '...' : ''}
                             </div>
                         </div>
                     </div>
@@ -224,10 +224,10 @@
                                 <div
                                     class="font-size-sm bg-white text-dark-75 mt-3 border border-secondary"
                                     style="padding: 1rem;border-radius: 0.55rem;">
-                                    {@html course.description
+                                    {@html (course.description || '')
                                         .replace(/&lt;/g, '<')
                                         .replace(/&gt;/g, '>')
-                                        .substring(0, 120)}{course.description.length > 120 ? '...' : ''}
+                                        .substring(0, 120)}{(course.description || '').length > 120 ? '...' : ''}
                                 </div>
                             </div>
                         </div>

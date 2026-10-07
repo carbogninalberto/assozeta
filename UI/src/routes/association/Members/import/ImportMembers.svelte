@@ -19,6 +19,7 @@
     let valid = false;
     let fileData;
     let ktDropzone;
+    let importing = false;
 
     onMount(() => {
         UiWizard2.init();
@@ -39,37 +40,31 @@
     }
 
     async function importAssociates() {
-        // UiApp.blockPage({
-        //     overlayColor: '#000000',
-        //     state: 'primary',
-        //     message: 'Importazione dati avviata...',
-        // });
-        // const reader = new FileReader();
-        // reader.readAsBinaryString(fileData.associates_file);
-        // let contentFile = await readFileAsync(fileData.associates_file);
-
-        let bodyRequest = {
-            document_id: fileData.document_id || '',
-            map: fileData.map || '',
-            default: fileData.default || {},
-        };
-
-        // const res = await
-        apiFetch(__bakney.env.API.SUBSCRIPTION.IMPORT.UPLOAD, {
-            method: 'POST',
-            body: JSON.stringify(bodyRequest),
-        });
-        // spinner stop
-        // UiApp.unblockPage();
-
-        // if (!res.error) {
-        // Track import (we don't have exact count here, but we know import was started)
-setTimeout(() => {
-            location.href = '/#/members/list-draft';
-        }, 1000);
-
-        toast.success('Attendi qualche minuto fino a quando tutti i dati saranno importati.');
-        document.dispatchEvent(new CustomEvent('onboarding-checklist-event', {detail: {key: 'create_membership'}}));
+        if (importing || !valid || !fileData?.document_id) return;
+        importing = true;
+        try {
+            const result = await apiFetch(__bakney.env.API.SUBSCRIPTION.IMPORT.UPLOAD, {
+                method: 'POST',
+                body: JSON.stringify({
+                    document_id: fileData.document_id,
+                    map: fileData.map || {},
+                    default: fileData.default || {},
+                }),
+            });
+            if (result?.error || result?.status !== 200) {
+                toast.error(result?.response?.msg || 'Importazione non riuscita. Controlla i dati e riprova.');
+                return;
+            }
+            setTimeout(() => {
+                location.href = '/#/members/list-draft';
+            }, 1000);
+            toast.success('Attendi qualche minuto fino a quando tutti i dati saranno importati.');
+            document.dispatchEvent(new CustomEvent('onboarding-checklist-event', {detail: {key: 'create_membership'}}));
+        } catch (error) {
+            toast.error('Importazione non riuscita. Riprova.');
+        } finally {
+            importing = false;
+        }
     }
 
     var UiWizard2 = (function () {
@@ -535,6 +530,7 @@ setTimeout(() => {
                                     <div class="mb-12">
                                         <button
                                             id="subscription_submit"
+                                            disabled={importing || !valid}
                                             type="button"
                                             class="btn btn-primary font-weight-bolder px-10 py-3"
                                             data-wizard-type="action-submit">Importa Atleti</button>

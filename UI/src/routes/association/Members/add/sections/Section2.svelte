@@ -239,7 +239,7 @@
                     type="text"
                     inputmode="numeric"
                     maxlength="5"
-                    pattern="[0-9]{5}"
+                    pattern={'[0-9]{5}'}
                     class="form-control form-control-solid form-control-lg"
                     id="bkn_inputmask_cap"
                     placeholder="CAP di Residenza" />

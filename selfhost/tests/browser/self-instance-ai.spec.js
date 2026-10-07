@@ -1,6 +1,21 @@
 import {test, expect} from '@playwright/test';
 
 for (const viewport of [{width: 1440, height: 1000}, {width: 390, height: 844}]) {
+    test(`manual-only assistance follows corpus configuration at ${viewport.width}px`, async ({page, request}) => {
+        await page.setViewportSize(viewport);
+        await request.post('/fixture/reset');
+        await page.goto('/');
+        await expect(page.getByRole('heading', {name: 'Panoramica', exact: true})).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Assistenza manuale', exact: true})).toHaveCount(0);
+        await request.post('/fixture/manual', {data: {enabled: true}});
+        await page.reload();
+        await expect(page.getByRole('button', {name: 'Assistenza manuale', exact: true})).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Agente AI', exact: true})).toHaveCount(0);
+        await request.post('/fixture/manual', {data: {enabled: false}});
+        await page.reload();
+        await expect(page.getByRole('heading', {name: 'Panoramica', exact: true})).toBeVisible();
+        await expect(page.getByRole('button', {name: 'Assistenza manuale', exact: true})).toHaveCount(0);
+    });
     test(`AI configuration and navigation at ${viewport.width}px`, async ({page, request}) => {
         await page.setViewportSize(viewport);
         await request.post('/fixture/reset');

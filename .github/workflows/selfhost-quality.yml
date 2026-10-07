@@ -94,6 +94,13 @@ jobs:
           node selfhost/tests/browser/data-restore-ui.mjs
           node UI/scripts/test-data-management-navigation.mjs
           node UI/scripts/test-administration.mjs
+          node UI/scripts/test-camp-creation.mjs
+          node UI/scripts/test-carnet-assignment.mjs
+          node UI/scripts/test-carnet-loading.mjs
+          node UI/scripts/test-instructor-lifecycle.mjs
+      - name: Verify AI and manual availability
+        working-directory: selfhost/tests/browser
+        run: npm exec -- playwright test --config self-instance-ai.config.js
       - name: Verify full application reload behind Caddy
         working-directory: selfhost/tests/browser
         env:

@@ -1,0 +1,170 @@
+name: Verify manual workflows and MCP knowledge
+
+on:
+  pull_request:
+    paths:
+      - 'BE/**'
+      - 'UI/**'
+      - 'docs/manuale/**'
+      - 'docs/scripts/manuale*'
+      - 'docs/scripts/tests/test_manuale*.py'
+      - 'skills/assozeta-manuale/**'
+      - 'selfhost/tests/browser/**'
+      - 'selfhost/compose.dev.yml'
+      - 'selfhost/bin/assozeta'
+      - '.github/workflows/manuale.yml'
+  push:
+    branches: [main, add/manuale]
+    paths:
+      - 'BE/**'
+      - 'UI/**'
+      - 'docs/manuale/**'
+      - 'docs/scripts/manuale*'
+      - 'docs/scripts/tests/test_manuale*.py'
+      - 'skills/assozeta-manuale/**'
+      - 'selfhost/tests/browser/**'
+      - 'selfhost/compose.dev.yml'
+      - 'selfhost/bin/assozeta'
+      - '.github/workflows/manuale.yml'
+  workflow_dispatch:
+    inputs:
+      manual_ref:
+        description: Manual branch, tag, or commit (defaults to MANUAL_REF variable, then main)
+        type: string
+      edit_content:
+        description: Draft bounded MDX edits with an installed authenticated Codex CLI (trusted default branch only)
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [manuale-updated]
+  schedule:
+    - cron: '15 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manuale-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    # A complete run measured ~70 min on hosted runners: ~39 min for 60 sequential
+    # captures, then generation, rendering, retrieval and embedded-reader checks.
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Select trusted opt-in editorial mode
+        id: editor-mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          APPLICATION_REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EDIT_REQUESTED: ${{ inputs.edit_content || false }}
+          AUTO_EDIT: ${{ vars.MANUAL_AUTO_EDIT }}
+          DISPATCH_MANUAL_REF: ${{ inputs.manual_ref }}
+          TRUSTED_MANUAL_REF: ${{ vars.MANUAL_REF || 'main' }}
+        run: |
+          python3 - <<'PY'
+          import os
+          event = os.environ['EVENT_NAME']
+          default_ref = 'refs/heads/' + os.environ['DEFAULT_BRANCH']
+          trusted_application = os.environ['APPLICATION_REF'] == default_ref
+          dispatch_edit = event == 'workflow_dispatch' and os.environ['EDIT_REQUESTED'] == 'true'
+          auto_edit = event in ('push', 'schedule') and os.environ['AUTO_EDIT'] == 'true'
+          trusted_manual = not os.environ['DISPATCH_MANUAL_REF'] or os.environ['DISPATCH_MANUAL_REF'] == os.environ['TRUSTED_MANUAL_REF']
+          if dispatch_edit and not (trusted_application and trusted_manual):
+              raise SystemExit('Content editing requires the default application branch and the configured trusted MANUAL_REF; run plain verification for other dispatch inputs.')
+          enabled = (dispatch_edit or auto_edit) and trusted_application and trusted_manual
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('enabled=' + str(enabled).lower() + '\n')
+          PY
+      - name: Require an installed CLI for requested editorial mode
+        if: steps.editor-mode.outputs.enabled == 'true'
+        run: |
+          if ! command -v codex >/dev/null 2>&1; then
+            echo '::error::Content editing requested, but Codex CLI is unavailable. Provision an approved pinned CLI on the trusted runner; this workflow does not install it.'
+            exit 1
+          fi
+      - name: Install the offline index test dependency
+        run: python3 -m pip install -r docs/manuale/requirements-offline.txt
+      - uses: ./.github/actions/prepare-storage
+      - name: Fetch the public manual at the requested revision
+        env:
+          MANUAL_REF: ${{ inputs.manual_ref || github.event.client_payload.manual_revision || vars.MANUAL_REF || 'main' }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, subprocess
+          reference = os.environ['MANUAL_REF']
+          if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', reference):
+              raise SystemExit('Invalid manual revision')
+          manual = pathlib.Path(os.environ['RUNNER_TEMP']) / 'manuale'
+          subprocess.run(['git', 'clone', 'https://github.com/Bakney/manuale.git', str(manual)], check=True)
+          subprocess.run(['git', '-C', str(manual), 'fetch', 'origin', reference], check=True)
+          subprocess.run(['git', '-C', str(manual), 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+          PY
+      - name: Install browser dependencies
+        run: |
+          npm --prefix selfhost/tests/browser ci
+          cd selfhost/tests/browser
+          npx playwright install --with-deps chromium
+      - name: Check runtime access before source verification
+        # Report missing runtime before the larger source verification batch.
+        # The full runner repeats the bounded check against its current session.
+        run: python3 docs/scripts/manuale.py doctor --output quality-reports/manuale-runtime-check.json
+      - name: Validate local source mappings and deterministic recipe behavior
+        run: python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
+      - name: Verify browser capture helpers and dropdown behavior
+        run: node --test selfhost/tests/browser/manuale/*.test.mjs
+      - name: Run isolated fixtures, captures, rendering, evidence, MCP, and agent verification
+        if: steps.editor-mode.outputs.enabled != 'true'
+        run: |
+          python3 docs/scripts/manuale.py run \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --output "$GITHUB_WORKSPACE/quality-reports/manuale-ci"
+      - name: Draft bounded content, then run the same real verification
+        if: steps.editor-mode.outputs.enabled == 'true'
+        env:
+          CODEX_API_KEY: ${{ secrets.CODEX_API_KEY }}
+        run: |
+          python3 docs/scripts/manuale.py run \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --output "$GITHUB_WORKSPACE/quality-reports/manuale-ci" \
+            --edit-content --editor-timeout 180 --editor-max-sections 12
+      - name: Retain verified artifacts and explicit coverage gaps
+        if: always()
+        run: |
+          python3 docs/scripts/manuale-diagnostics.py --run "$GITHUB_WORKSPACE/quality-reports/manuale-ci"
+      - name: Upload manual verification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-verification
+          path: |
+            quality-reports/manuale-runtime-check.json
+            quality-reports/manuale-ci/export/
+            quality-reports/manuale-ci/editorial/manual.patch
+            quality-reports/manuale-ci/editorial/tooling.patch
+            quality-reports/manuale-ci/editorial/report.json
+            quality-reports/manuale-ci/coverage.json
+            quality-reports/manuale-ci/render.json
+            quality-reports/manuale-ci/authoring-preflight.json
+            quality-reports/manuale-ci/workflow-coverage.json
+            quality-reports/manuale-ci/evidence-reuse.json
+            quality-reports/manuale-ci/diagnostics-public/
+          if-no-files-found: warn
+          retention-days: 14

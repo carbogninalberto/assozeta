@@ -69,10 +69,10 @@
                                     <span
                                         class="font-size-sm text-dark-75"
                                         style="padding: 1rem; background: var(--bg-surface-secondary); border-radius: 0.55rem;">
-                                        {@html carnet.description
+                                        {@html (carnet.description || '')
                                             .replace(/&lt;/g, '<')
                                             .replace(/&gt;/g, '>')
-                                            .substring(0, 120)}{carnet.description.length > 120 ? '...' : ''}
+                                            .substring(0, 120)}{(carnet.description || '').length > 120 ? '...' : ''}
                                     </span>
                                     <!-- <p class="text-dark-75 font-size-md font-weight-normal pt-2 mb-0">
                         </p> -->

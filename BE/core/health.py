@@ -2,12 +2,18 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 
 @require_GET
 def health(request):
-    return JsonResponse({"status": "ok", "version": settings.RUNNING_VERSION})
+    result = {"status": "ok", "version": settings.RUNNING_VERSION}
+    if settings.MANUAL_RUN_ID:
+        result['manual_capture'] = {'run_id': settings.MANUAL_RUN_ID,
+                                    'application_revision': settings.MANUAL_APPLICATION_REVISION,
+                                    'reference_time': timezone.now().isoformat()}
+    return JsonResponse(result)
 
 
 @require_GET

@@ -278,7 +278,9 @@
         <div class="content-wrapper">
             <div class='columns' style='width: 19cm;margin-left:0px;margin-top:0px;padding-top:3px'>
                 <div class='column is-6 my-auto' style='margin:auto;padding:0px'>
-                    <img class='logo my-auto' src="{{ subscription.sport_association.logo | safe }}"/>
+                    {% if subscription.sport_association.logo %}
+                        <img class='logo my-auto' src="{{ subscription.sport_association.logo | safe }}"/>
+                    {% endif %}
                 </div>
                 <div class='column is-4' style='margin:auto;padding:0px'>
                     <h1 class='title' style='font-size:1rem;text-align:right;margin:0;margin-right:1rem;padding:0px'>

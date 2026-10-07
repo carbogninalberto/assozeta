@@ -10,8 +10,11 @@ import logging
 from django.conf import settings
 
 from application.agent.callbacks import AgentCallback
+from application.manuale.answers import manual_section_attachment
 from application.agent.prompts import get_system_prompt
 from application.agent.providers.base import LLMProvider, LLMResponse
+from application.manuale.tools import (MANUAL_TOOL_FUNCTIONS, MANUAL_TOOL_NAMES, MANUAL_TOOL_PARAMETERS,
+                                      grounded_answer, is_manual_question, is_manual_diagnostic_question, manual_diagnostic_answer)
 from application.mcp_server.server import (
     TOOL_DEFINITIONS,
     tool_get_schema,
@@ -45,6 +48,7 @@ TOOL_FUNCTIONS = {
     'save_report': tool_save_report,
     'list_reports': tool_list_reports,
 }
+TOOL_FUNCTIONS.update(MANUAL_TOOL_FUNCTIONS)
 
 # OpenAI-compatible tool definitions
 TOOLS_FOR_LLM = [
@@ -143,6 +147,11 @@ class Agent:
         # Strip None values from arguments (LLMs sometimes send null for optional params)
         arguments = {k: v for k, v in arguments.items() if v is not None}
 
+        if tool_name in MANUAL_TOOL_NAMES:
+            allowed = MANUAL_TOOL_PARAMETERS[tool_name]
+            arguments = {key: value for key, value in arguments.items() if key in allowed}
+            arguments['user_id'] = self.user_id
+
         # Inject sport_association_id (and user_id for tools that need it)
         arguments['sport_association_id'] = self.sport_association_id
         if self.user_id and tool_name in ('save_report', 'list_reports'):
@@ -195,6 +204,24 @@ class Agent:
         pending_exports: list[dict] = []
         pending_report_saves: list[dict] = []
         await self.callback.on_status('thinking')
+
+        if self.provider is None or is_manual_diagnostic_question(user_message) or is_manual_question(user_message):
+            await self.callback.on_status('querying')
+            diagnostic = is_manual_diagnostic_question(user_message)
+            tool = 'get_manual_gaps' if diagnostic else 'search_manual'
+            arguments = {} if diagnostic else {'query': user_message}
+            await self.callback.on_tool_call(tool, arguments)
+            result = json.loads(await self._execute_tool(tool, arguments))
+            answer = manual_diagnostic_answer(result) if diagnostic else grounded_answer(result)
+            self.messages.append({'role': 'assistant', 'content': answer})
+            await self.callback.on_message_chunk(answer)
+            attachment = None if diagnostic else manual_section_attachment(result)
+            on_manual_section = getattr(self.callback, 'on_manual_section', None)
+            if attachment and on_manual_section:
+                await on_manual_section(attachment)
+            await self.callback.on_message_end()
+            await self.callback.on_done()
+            return
 
         for iteration in range(self.max_iterations):
             # Call LLM with streaming

@@ -53,11 +53,11 @@
     }
 
     onMount(() => {
-        setTimeout(() => {
-            if ($userData.sport_association.multiple_subscription_fee) {
-                $newUserAccount.plan_id = $userData.sport_association.subscription_fee_plans[0].id || '';
-            }
-        }, 400);
+        if ($userData.sport_association.multiple_subscription_fee) {
+            const selectedId = $newUserAccount.plan_id?.value ?? $newUserAccount.plan_id;
+            $newUserAccount.plan_id = availablePlans?.find(plan => plan.value === selectedId)
+                ?? availablePlans?.[0] ?? null;
+        }
     });
 </script>
 

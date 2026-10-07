@@ -182,9 +182,19 @@ class ValidationInstance {
     this.fields = options.fields || {};
     this.listeners = [];
     this.events = new Map();
+    this.customValidators = new Map();
     this.excludedPlugin = Object.values(options.plugins || {}).find(plugin => plugin instanceof Excluded);
 
     this.bindTriggers();
+  }
+
+  registerValidator(name, factory) {
+    const validator = factory();
+    if (typeof validator?.validate !== 'function') {
+      throw new TypeError('A custom validator must implement validate');
+    }
+    this.customValidators.set(name, validator);
+    return this;
   }
 
   bindTriggers() {
@@ -234,7 +244,8 @@ class ValidationInstance {
         valid = isEmpty(value) || regexp.test(String(value));
       }
       else if (validator === 'emailAddress') valid = isEmpty(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
-      else if (validator === 'date') valid = validateDate(value, options);
+      else if (validator === 'date') valid = validateDate(value,
+        element?.type === 'date' ? {...options, format: 'YYYY-MM-DD'} : options);
       else if (validator === 'stringLength') {
         const length = String(value || '').length;
         valid = isEmpty(value) || ((options.min === undefined || length >= options.min) && (options.max === undefined || length <= options.max));
@@ -249,6 +260,9 @@ class ValidationInstance {
         valid = typeof result === 'object' && result !== null && 'valid' in result ? result.valid : result;
       } else if (validator === 'remote') {
         valid = await validateRemote(field, value, options);
+      } else if (this.customValidators.has(validator)) {
+        const result = await this.customValidators.get(validator).validate({...input, options});
+        valid = typeof result === 'object' && result !== null ? result.valid === true : result === true;
       }
 
       if (!valid) {

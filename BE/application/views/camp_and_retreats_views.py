@@ -1,10 +1,13 @@
+from django.db import transaction
+
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 
 from application.models import CampsAndRetreats, CampsAndRetreatsPeriod, CampsAndRetreatsPeriodsService, \
-    CampsAndRetreatsSubscription, CampsAndRetreatsSubscriptionPeriod
+    CampsAndRetreatsSubscription, CampsAndRetreatsSubscriptionPeriod, Subscription, User
 from application.serializers.camps_and_retreats_serializers import CampsAndRetreatsSerializer, \
     CampsAndRetreatsInfoSerializer, CampsAndRetreatsPeriodSerializer, CampsAndRetreatsPeriodInfoSerializer, CampsAndRetreatsSubscriptionInfoSerializer, CampsAndRetreatsPeriodsServiceAddSerializer, \
     CampsAndRetreatsSubscriptionListInfoSerializer, CampsAndRetreatsPublicInfoSerializer
@@ -388,31 +391,80 @@ def camps_and_retreats_subscriptions_list(request, uid):
     return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
 
+def _validate_camp_enrollment_scope(request, camp, registration, periods):
+    """Validate the complete relationship before creating an enrollment or quota."""
+    if registration is None:
+        raise ValidationError({"subscription": "An existing registration is required."})
+    if registration.sport_association_id != camp.sport_association_id or registration.archived or registration.deleted:
+        raise PermissionDenied("The registration does not belong to this camp association.")
+    if request.user.is_sport_association(raise_exception=False):
+        if camp.sport_association.user_id != request.user.pk:
+            raise PermissionDenied("Camp not available to this association.")
+    elif request.user.role == User.ATHLETE:
+        directly_owned = registration.user_id == request.user.pk or registration.associate.user_id == request.user.pk
+        family_id = registration.associate.family_id
+        # A missing family is never evidence of a relationship between strangers.
+        family_owned = bool(family_id) and Subscription.objects.filter(
+            user=request.user, sport_association_id=camp.sport_association_id,
+            associate__family_id=family_id, archived=False, deleted=False,
+        ).exists()
+        if not directly_owned and not family_owned:
+            raise PermissionDenied("Registration not available to this account.")
+    else:
+        raise PermissionDenied("Account cannot enroll a participant.")
+
+    if not isinstance(periods, list):
+        raise ValidationError({"periods": "A list of periods is required."})
+    uuid_field = serializers.UUIDField()
+    seen_periods = set()
+    for period in periods:
+        if not isinstance(period, dict):
+            raise ValidationError({"periods": "Each selected period must be an object."})
+        period_id = uuid_field.run_validation(period.get('camps_and_retreats_period'))
+        if period_id in seen_periods:
+            raise ValidationError({"periods": "A period can be selected only once."})
+        seen_periods.add(period_id)
+        period['camps_and_retreats_period'] = str(period_id)
+        if not CampsAndRetreatsPeriod.objects.filter(pk=period_id, camps_and_retreats=camp).exists():
+            raise PermissionDenied("Period does not belong to the selected camp.")
+        services = period.get('services', [])
+        period['services'] = services
+        if not isinstance(services, list):
+            raise ValidationError({"services": "A list of services is required."})
+        seen_services = set()
+        for service in services:
+            if not isinstance(service, dict):
+                raise ValidationError({"services": "Each selected service must be an object."})
+            service_id = uuid_field.run_validation(service.get('camps_and_retreats_period_service_id'))
+            if service_id in seen_services:
+                raise ValidationError({"services": "A service can be selected only once."})
+            seen_services.add(service_id)
+            service['camps_and_retreats_period_service_id'] = str(service_id)
+            if not CampsAndRetreatsPeriodsService.objects.filter(pk=service_id, camps_and_retreats_period_id=period_id).exists():
+                raise PermissionDenied("Service does not belong to the selected period.")
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def camps_and_retreats_subscriptions_add(request, uid):
     try:
         is_valid_uuid(uid)
-        request.data['camps_and_retreats'] = uid
-        serializer = CampsAndRetreatsSubscriptionInfoSerializer(data=request.data)
-
-        if serializer.is_valid(raise_exception=True):
+        payload = request.data.copy()
+        payload['camps_and_retreats'] = uid
+        serializer = CampsAndRetreatsSubscriptionInfoSerializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        camp = serializer.validated_data['camps_and_retreats']
+        registration = serializer.validated_data['subscription']
+        periods = payload.get('periods', [])
+        _validate_camp_enrollment_scope(request, camp, registration, periods)
+        # Roll back the enrollment and quota together if payment generation fails.
+        with transaction.atomic():
             subscription = serializer.save()
-            subscription.save()
-
-            # get periods
-            periods = request.data.get('periods', [])
-
-            # add new ones
             add_new_periods(periods, subscription)
-
-            # generate payment for the periods
             generate_payment_for_periods(subscription)
-
-        return Response({
-            "message": "Added successfully",
-            "subscription": serializer.data
-        }, status=status.HTTP_201_CREATED)
+        return Response({"message": "Added successfully", "subscription": serializer.data}, status=status.HTTP_201_CREATED)
+    except PermissionDenied:
+        raise
     except ValidationError as e:
         logger.error(f"Validation error adding: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -202,6 +202,9 @@ phase "start production stack"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" start
 
 phase "verify public production endpoints"
+compose exec -T api python -c 'import os; from pathlib import Path; assert os.getuid() == 10001; root = Path("/app/manuale"); assert not (root / "development").exists(); (root / ".production-smoke").write_text("persistent-manual")'
+compose up -d --wait --force-recreate api
+compose exec -T api python -c 'from pathlib import Path; assert Path("/app/manuale/.production-smoke").read_text() == "persistent-manual"'
 curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \
     http://localhost:58080/ >/dev/null
 curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \

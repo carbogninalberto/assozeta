@@ -28,6 +28,13 @@
     let updating = false;
     let searchKey = '';
 
+    // Registry loads the events before the enrolled members. Refresh an already
+    // opened dialog when those members arrive instead of leaving its spinner up.
+    $: {
+        courseSubscriptions;
+        fetchData();
+    }
+
     onMount(async () => {
         document.getElementById(`attendance-day-${id}`)?.addEventListener('shown.bs.modal', async () => {
             await fetchData();

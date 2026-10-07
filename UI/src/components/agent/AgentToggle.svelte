@@ -4,14 +4,12 @@
     import {isAgentOpen, agentProcessing} from 'store/agentStore.js';
 </script>
 
-{#if $aiEnabled}
     <button type="button" class="btn btn-icon btn-clean btn-sm position-relative agent-toggle-btn"
-        class:agent-toggle-active={$isAgentOpen} aria-label="Agente AI" aria-pressed={$isAgentOpen}
-        on:click={() => ($isAgentOpen = !$isAgentOpen)} title="Agente AI">
+        class:agent-toggle-active={$isAgentOpen} aria-label={$aiEnabled ? 'Agente AI' : 'Assistenza manuale'} aria-pressed={$isAgentOpen}
+        on:click={() => ($isAgentOpen = !$isAgentOpen)} title={$aiEnabled ? 'Agente AI' : 'Assistenza manuale'}>
         <Robot size={18} weight={$isAgentOpen ? 'fill' : 'duotone'} />
         {#if $agentProcessing}<span class="agent-processing-dot" />{/if}
     </button>
-{/if}
 
 <style>
     .agent-toggle-active {background: var(--primary-light, #eee9ff); color: var(--primary);}

@@ -6,7 +6,7 @@
     import * as easing from 'svelte/easing';
     import {FloppyDisk, Pencil, PlusCircle, Rectangle, Repeat, TrashSimple, Warning} from 'phosphor-svelte';
     import {apiFetch} from 'utils/ApiMiddleware';
-    import {dndzone} from 'svelte-dnd-action';
+    import {dndzone as sortableZone} from 'svelte-dnd-action';
     import AffiliateAlert from 'components/widgets/AffiliateAlert.svelte';
     import Associates from 'components/widgets/Associates.svelte';
     import Payments from 'components/widgets/Payments.svelte';
@@ -23,6 +23,21 @@
     import StaffBoard from 'components/widgets/StaffBoard.svelte';
     import {toast} from 'svelte-sonner';
     sessionToken.useLocalStorage();
+
+    // The sorter's aria-disabled marks the whole list, including live widget
+    // actions. Disable dragging through its option and retain its keyboard
+    // roles, instructions and announcements without disabling descendants.
+    function dndzone(node, options) {
+        const action = sortableZone(node, options);
+        node.removeAttribute('aria-disabled');
+        return {
+            update(nextOptions) {
+                action.update(nextOptions);
+                node.removeAttribute('aria-disabled');
+            },
+            destroy() {action.destroy();},
+        };
+    }
 
     let componentsMap = {
         associates: {

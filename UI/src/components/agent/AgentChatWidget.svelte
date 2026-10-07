@@ -3,6 +3,8 @@
     import {quintOut} from 'svelte/easing';
     import Portal from 'svelte-portal';
     import SvelteMarkdown from 'svelte-markdown';
+    import ManualAnswer from 'routes/manuale/ManualAnswer.svelte';
+    import {attachManualSection} from 'routes/manuale/manualPresentation.js';
     import {
         Robot,
         X,
@@ -23,7 +25,7 @@
     import AgentWebSocket from 'utils/AgentWebSocket.js';
     import {sessionToken, userData} from 'store/stores.js';
     import {isAgentOpen, agentProcessing, reportSavedTrigger} from 'store/agentStore.js';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {aiEnabled, oemConfig} from 'store/instanceStore.js';
     import {onMount, onDestroy, afterUpdate, tick} from 'svelte';
     import BasicModal from 'components/modals/BasicModal.svelte';
 
@@ -65,6 +67,10 @@
         export_data: 'Preparazione export',
         save_report: 'Salvataggio report',
         list_reports: 'Elenco report salvati',
+        search_manual: 'Ricerca nel manuale',
+        get_manual_section: 'Lettura della guida',
+        get_manual_evidence: 'Verifica delle fonti',
+        get_manual_gaps: 'Verifica delle guide disponibili',
     };
 
     function getToolLabel(tool) {
@@ -147,6 +153,10 @@
                     messages = messages;
                 }
             }
+        });
+
+        ws.setOnManualSection(section => {
+            messages = attachManualSection(messages, streamingMsgId, section);
         });
 
         ws.setOnMessageEnd(() => {
@@ -390,7 +400,7 @@
             <div class="agent-header">
                 <div class="agent-header-title">
                     <Robot size={20} weight="duotone" class="text-primary" />
-                    <span>Agente AI</span>
+                    <span>{$aiEnabled ? 'Agente AI' : 'Assistenza manuale'}</span>
                 </div>
                 <div class="agent-header-actions ml-2">
                     {#if !isMinimized}
@@ -459,7 +469,9 @@
                                 Ciao! Sono l'agente AI di {$userData?.sport_association?.denomination ||
                                     'questo gestionale'}.
                             </p>
-                            <p class="agent-empty-sub">Chiedimi informazioni su soci, corsi, pagamenti e altro.</p>
+                            <p class="agent-empty-sub">Cerca informazioni nei dati dell’associazione oppure chiedimi come usare Assozeta.</p>
+                            <p class="agent-empty-sub">Per esempio: «Come posso assegnare un tag?»</p>
+                            <a href="/#/manuale" target="_blank" rel="noopener noreferrer">Apri il manuale d’uso</a>
                         </div>
                     {/if}
 
@@ -475,6 +487,8 @@
                                 <div class="agent-bubble agent-bubble-agent">
                                     {#if msg.streaming}
                                         <span class="agent-streaming-text">{msg.content}</span>
+                                    {:else if msg.manualSection}
+                                    <ManualAnswer section={msg.manualSection} />
                                     {:else}
                                         <SvelteMarkdown source={msg.content} options={{mangle: false}} />
                                     {/if}

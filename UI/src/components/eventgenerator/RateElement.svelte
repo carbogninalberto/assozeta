@@ -1,6 +1,6 @@
 <script>
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
-    import {afterUpdate, createEventDispatcher, onDestroy, onMount} from 'svelte';
+    import {createEventDispatcher} from 'svelte';
     import {slide} from 'svelte/transition';
     import DateInput from 'components/inputs/DateInput.svelte';
 
@@ -10,31 +10,14 @@
     export let editableAmounts = false;
     export let isSubscription = false;
 
-    $: editableAmounts, mountInputMask();
     $: event, dispatch('update', event);
 
     $: {
         if (event.amount == null || event.amount == 'NaN' || isNaN(event.amount)) event.amount = '0.00';
     }
 
-    onMount(() => {
-        editableAmounts = false;
-        mountInputMask();
-    });
-
-    afterUpdate(() => {
-        mountInputMask();
-    });
-
-    onDestroy(() => {
-        editableAmounts = false;
-    });
-
-    function mountInputMask() {
-        if (!editableAmounts) return;
-
-        if (document.getElementById(`amount_rate_${event.id}`))
-            document.getElementById(`amount_rate_${event.id}`).value = event.amount.replace('.', ',');
+    function updateAmount(value) {
+        event = {...event, amount: value.replace(',', '.')};
     }
 </script>
 
@@ -59,6 +42,8 @@
                             inputmode="decimal"
                             class="form-control fs-1-1"
                             id="amount_rate_{event.id}"
+                            value={String(event.amount).replace('.', ',')}
+                            on:input={input => updateAmount(input.currentTarget.value)}
                             placeholder="" />
                     </div>
                 {:else}

@@ -382,8 +382,11 @@ def carnet_info(request, uid):
     if not uid:
         return Response({'msg': 'Missing carnet uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    is_valid_uuid(uid)
+
     try:
-        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(
+            carnet_id=uid, sport_association__user=request.user)
         serialized_carnet = CarnetListInfoSerializer(carnet)
         data = serialized_carnet.data
         data['subscriptions'] = []

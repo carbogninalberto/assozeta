@@ -40,7 +40,7 @@ test('repairs legacy missing end values so one bad event cannot empty the calend
 
     assert.equal(events.length, 2);
     assert.equal(events[0].end, events[0].start);
-    assert.equal(events[0].end, '2024-05-29T17:00:00.000+00:00');
+    assert.equal(events[0].end, '2024-05-29');
     assert.equal(events[1].start, '2026-09-01T13:00:00.000+00:00');
     assert.equal(events[1].end, '2026-09-01T14:00:00.000+00:00');
 });
@@ -94,4 +94,13 @@ test('serializes summer and winter local instants as real UTC and marks the cont
     assert.equal(events[1].start, '2026-12-10T14:00:00.000Z');
     assert.equal(events[1].end, '2026-12-10T15:00:00.000Z');
     assert.equal(events[0].extendedProps.timeContract, 'utc-v1');
+});
+
+ test('preserves all-day exclusive end dates without converting them to local instants', () => {
+    const [event] = normalizeCalendarEvents([{
+        event_id: 'all-day', allDay: true, start: '2026-09-30T00:00:00.000Z',
+        end: '2026-10-01T00:00:00.000Z', extendedProps: {timeContract: 'utc-v1'},
+    }]);
+    assert.equal(event.start, '2026-09-30');
+    assert.equal(event.end, '2026-10-01');
 });

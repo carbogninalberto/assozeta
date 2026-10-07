@@ -114,6 +114,11 @@ def end(actor, identifier):
     cache.delete(key)
 
 
+def is_manual_reader_request(request):
+    path = request.path.strip('/').removeprefix('api/')
+    return request.method == 'GET' and (path == 'manuale/sections' or path.startswith('manuale/assets/'))
+
+
 def resolve_request_identity(request, actor=None):
     if getattr(request, '_identity_resolved', False):
         return request.user
@@ -154,7 +159,7 @@ def resolve_request_identity(request, actor=None):
             raise PermissionDenied('Nessuna associazione principale configurata per l’export.')
         scope = config.primary_association.user
     if active_admin(actor) and not request.impersonating and not administration and not (
-        path == 'profile/info' or path == 'sport-associations/list' or
+        path == 'profile/info' or path == 'sport-associations/list' or is_manual_reader_request(request) or
         re.fullmatch(r'sport-associations/[0-9a-fA-F-]{36}/admin-update', path) or path.startswith(('association/export/', 'oauth2/', 'notifications/'))
     ):
         raise PermissionDenied('Seleziona un utente da impersonificare per accedere a questa sezione.')

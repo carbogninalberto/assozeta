@@ -253,7 +253,9 @@
             <!-- Logo and Date Section -->
             <div class='columns' style="margin-bottom:9pt;padding-top:10px">
                 <div class='column is-6'>
-                    <img class='logo' src="{{ subscription.sport_association.logo | safe }}"/>
+                    {% if subscription.sport_association.logo %}
+                        <img class='logo' src="{{ subscription.sport_association.logo | safe }}"/>
+                    {% endif %}
                 </div>
                 <div class='column is-4'>
                     <h2 style='font-size: 9pt;margin:0;text-align:right'>

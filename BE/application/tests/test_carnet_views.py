@@ -258,6 +258,31 @@ class CarnetInfoTests(BaseTransactionTestCase):
         self.sport_association = create_test_sport_association(user=self.user)
         self.client.force_authenticate(user=self.user)
 
+    def test_malformed_carnet_id_returns_400_without_business_writes(self):
+        create_test_carnet(self.sport_association)
+        foreign_owner = create_test_user(role=User.ASSOCIATION)
+        create_test_carnet(create_test_sport_association(user=foreign_owner), public=False)
+        models = (Carnet, CarnetSubscription, Payment)
+        before = {model: list(model._base_manager.order_by('pk').values()) for model in models}
+        for value in ('undefined', 'null', 'not-a-uuid'):
+            with self.subTest(value=value):
+                self.assertEqual(self.client.get(f'/carnet/{value}/info').status_code, 400)
+                for model in models:
+                    self.assertEqual(list(model._base_manager.order_by('pk').values()), before[model])
+        self.client.force_authenticate(user=create_test_user(role=User.ATHLETE))
+        self.assertEqual(self.client.get('/carnet/undefined/info').status_code, 403)
+
+    def test_foreign_carnet_info_is_hidden_and_own_carnet_remains_readable(self):
+        own = create_test_carnet(self.sport_association, public=False)
+        foreign_owner = create_test_user(role=User.ASSOCIATION)
+        foreign = create_test_carnet(create_test_sport_association(user=foreign_owner), public=False)
+        before = list(Carnet._base_manager.order_by('pk').values())
+        self.assertEqual(self.client.get(f'/carnet/{foreign.pk}/info').status_code, 404)
+        response = self.client.get(f'/carnet/{own.pk}/info')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['data']['carnet_id'], str(own.pk))
+        self.assertEqual(list(Carnet._base_manager.order_by('pk').values()), before)
+
     def test_get_carnet_info_success(self):
         carnet = create_test_carnet(self.sport_association)
         response = self.client.get(f'/carnet/{carnet.carnet_id}/info')

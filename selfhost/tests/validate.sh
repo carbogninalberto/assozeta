@@ -41,6 +41,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_upgrade_preflight
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_update_cleanup.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_quality.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_sync_repo.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_manual_sync.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_operational_diagnostics.py
 
 ASSOZETA_SELFHOST_DIR="$ROOT/selfhost" ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
@@ -57,11 +58,16 @@ assert config["volumes"]["updater_status"]["external"]
 '
 
 ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
-    docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.yml" config --format json | python3 -c '
+    docker compose --env-file "$TEMPORARY/prod.env" -f "$ROOT/selfhost/compose.yml" --profile tools config --format json | python3 -c '
 import json, sys
 config = json.load(sys.stdin)
 for service in ("web", "api"):
     assert all("docker.sock" not in mount["target"] for mount in config["services"][service]["volumes"])
+for service in ("api", "worker", "beat", "migrate"):
+    backend = config["services"][service]
+    assert backend["environment"]["MANUAL_INDEX_PATH"] == "/app/manuale/index.json"
+    assert any(mount["source"] == "manuale_data" and mount["target"] == "/app/manuale"
+               and not mount.get("read_only", False) for mount in backend["volumes"])
 web = config["services"]["web"]["volumes"]
 assert any(mount["source"] == "updater_status" and mount["read_only"] for mount in web)
 assert not any(mount["source"] == "updater_api" for mount in web)

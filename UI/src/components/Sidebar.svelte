@@ -59,7 +59,7 @@
     import {toast} from 'svelte-sonner';
     import SmartSelect from 'components/formBuilder/preview-blocks/smart-select-input.svelte';
     import {ChevronRight, Ellipsis} from 'lucide-svelte';
-    import {oemConfig} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
 
     role.useLocalStorage();
     isExpired.useLocalStorage();
@@ -1006,15 +1006,16 @@
                         </div>
                     {/if}
                 {/if}
-                {#if $oemConfig?.displaySettings?.sidebar?.showManual && $oemConfig?.manualUrl}
+                {#if $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
                     <!-- svelte-ignore a11y-role-supports-aria-props -->
                     <div
                         id="manuale_assozeta"
                         class:d-none={$role == 'athlete'}
-                        class="menu-item menu-item-submenu"
+                        class="menu-item"
+                        class:menu-item-active={$currentPage === 'manuale'}
                         aria-haspopup="true"
                         data-menu-toggle="hover">
-                        <a href={$oemConfig.manualUrl} class="menu-link" target="_blank" on:click={collapseSidebar}>
+                        <a href="/#/manuale" target="_blank" rel="noopener noreferrer" class="menu-link">
                             <span class="menu-icon">
                                 <Info size={24} weight="duotone" />
                             </span>

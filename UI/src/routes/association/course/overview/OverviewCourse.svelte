@@ -66,6 +66,8 @@
     let datatable;
     let updateBtn;
     let editingInfo = false;
+    let overviewRequest = 0;
+    let overviewLoaded = false;
 
     let loadRegistry = false;
 
@@ -84,6 +86,7 @@
     }
 
     export let fetchData = async function () {
+        const request = ++overviewRequest;
         // fetch attendance fetchRegistryData
         fetchRegistryData();
         const url = replaceUID(__bakney.env.API.COURSE.OVERVIEW, id);
@@ -96,7 +99,7 @@
             },
         });
 
-        if (!res.error) {
+        if (!res.error && request === overviewRequest && !editingInfo) {
             courseInfo = res.response.data;
             courseInfo.course.creation_date = new Date(courseInfo.course.creation_date).toLocaleDateString('it-IT');
             // read sanitized XSS description
@@ -108,6 +111,9 @@
             if (courseInfo?.course?.multiple_quotes === null) {
                 courseInfo.course.multiple_quotes = [];
             }
+            courseInfo.course.fee = String(courseInfo.course.fee).replace('.', ',');
+            courseInfo.course.one_fee = String(courseInfo.course.one_fee).replace('.', ',');
+            overviewLoaded = true;
         }
         // fetch calendar status
         const calendarResponse = await apiFetch(replaceUID(__bakney.env.API.COURSE.CALENDAR, id));
@@ -115,8 +121,6 @@
             calendarStatus = calendarResponse.response.data.status;
         }
 
-        courseInfo.course.fee = courseInfo.course.fee.replace('.', ',');
-        courseInfo.course.one_fee = courseInfo.course.one_fee.replace('.', ',');
     };
 
     async function syncGoogleCalendar() {
@@ -329,6 +333,8 @@
         }, 500);
     }
     function toggleEdit(e) {
+        // Invalidate reads started before the user began editing.
+        overviewRequest += 1;
         editingInfo = !editingInfo;
         // remove focus from button
         e.target.blur();
@@ -360,6 +366,7 @@
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <button
                         type="reset"
+                        disabled={!overviewLoaded}
                         on:click={e => toggleEdit(e)}
                         class="btn btn-{editingInfo ? 'light-' : ''}primary font-weight-boldest mr-2">
                         {editingInfo ? 'Annulla' : 'Modifica'}

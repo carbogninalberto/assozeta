@@ -16,6 +16,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
     export let suppliers = [];
 
     let editForm;
+    let selectedPaid = {value: row.paid, label: row.paid ? 'Pagata' : 'Non pagata'};
 
     function initForm() {
         editForm?.destroy();
@@ -229,7 +230,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                         {value: false, label: 'Non pagata'},
                                         {value: true, label: 'Pagata'},
                                     ]}
-                                    value={{value: row.paid, label: row.paid ? 'Pagata' : 'Non pagata'}}
+                                    bind:value={selectedPaid}
                                     id="paid_{id}"
                                     placeholder="Seleziona stato"
                                     name="paid" />

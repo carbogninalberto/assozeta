@@ -3,6 +3,8 @@ import asyncio
 import json
 import os
 import sys
+import tempfile
+from pathlib import Path
 from io import StringIO
 from unittest.mock import AsyncMock, patch
 
@@ -10,6 +12,7 @@ from django.core.management import call_command
 from django.test import SimpleTestCase
 
 from django.db import connection
+from django.conf import settings
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -30,6 +33,48 @@ class MCPStdioCommandTests(SimpleTestCase):
 
 
 class MCPStdioTests(BaseTransactionTestCase):
+    def test_manual_retrieval_citations_and_public_evidence_boundary_over_existing_transport(self):
+        from application.manuale.index import build_index, digest, file_digest, promote, sections
+        association = create_test_sport_association()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'BE').mkdir()
+            (root / 'docs').mkdir()
+            source = root / 'BE/guide.py'
+            source.write_text('def assign_tag():\n    return True\n')
+            page = root / 'docs/tag.mdx'
+            page.write_text('## Assegnare un tag\nSeleziona il tesserato e premi Assegna Tag.\n')
+            manifest = {'metadata': {'application_revision': 'manual-test', 'manual_revision': 'manual-source-test',
+                                     'release': settings.RUNNING_VERSION, 'manual_url': 'https://manual.example'},
+                        'pages': [{'path': 'docs/tag.mdx', 'sections': [{'id': 'assegnare-un-tag', 'status': 'verified',
+                            'content_sha256': digest(sections(page.read_text())['assegnare-un-tag']['mdx']),
+                            'evidence': [{'path': 'BE/guide.py', 'start': 1, 'end': 2, 'symbol': 'assign_tag', 'sha256': file_digest(source)}]}]}]}
+            corpus = root / 'index.json'
+            promote(build_index(root, root, manifest), corpus)
+            params = StdioServerParameters(command=sys.executable,
+                args=['manage.py', 'run_mcp_server', '--association-id', str(association.pk)],
+                env={**os.environ, 'DBNAME': connection.settings_dict['NAME'],
+                     'MANUAL_INDEX_PATH': str(corpus), 'MANUAL_APPLICATION_REVISION': 'manual-test', 'MANUAL_SOURCE_ROOT': ''})
+
+            async def exercise():
+                async with stdio_client(params) as (read, write):
+                    async with ClientSession(read, write) as session:
+                        await session.initialize()
+                        retrieved = await session.call_tool('search_manual', {'query': 'assegnare tag'})
+                        result = json.loads(retrieved.content[0].text)
+                        self.assertEqual(result['status'], 'verified')
+                        self.assertEqual(result['results'][0]['url'], 'https://manual.example/docs/tag#assegnare-un-tag')
+                        self.assertNotIn('evidence', result['results'][0])
+                        evidence = await session.call_tool('get_manual_evidence', {'section_id': 'docs/tag#assegnare-un-tag'})
+                        self.assertEqual(json.loads(evidence.content[0].text)['status'], 'forbidden')
+                        missing = await session.call_tool('search_manual', {'query': 'teletrasporto satellitare'})
+                        self.assertEqual(json.loads(missing.content[0].text)['status'], 'no_evidence')
+                        # Existing association-scoped data access still works after manual tools.
+                        count = await session.call_tool('count_data', {'model_name': 'Course'})
+                        self.assertEqual(json.loads(count.content[0].text), {'count': 0})
+
+            asyncio.run(asyncio.wait_for(exercise(), timeout=45))
+
     def test_handshake_and_tenant_scoped_orm_queries(self):
         association = create_test_sport_association()
         course = create_test_course(sport_association=association, title='Visible')
@@ -43,7 +88,10 @@ class MCPStdioTests(BaseTransactionTestCase):
                 async with ClientSession(read, write) as session:
                     await session.initialize()
                     tools = await session.list_tools()
-                    self.assertEqual(len(tools.tools), 11)
+                    self.assertEqual(len(tools.tools), 15)
+                    self.assertTrue({'search_manual', 'get_manual_section', 'get_manual_evidence', 'get_manual_gaps'}.issubset({tool.name for tool in tools.tools}))
+                    gaps = json.loads((await session.call_tool('get_manual_gaps', {})).content[0].text)
+                    self.assertEqual(gaps['status'], 'forbidden')
                     for _ in range(2):
                         result = await session.call_tool('count_data', {'model_name':'Course'})
                         self.assertEqual(json.loads(result.content[0].text), {'count':1})

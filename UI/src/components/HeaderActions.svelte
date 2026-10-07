@@ -1,4 +1,5 @@
 <script>
+    import {assistantEnabled} from 'store/instanceStore.js';
     import {PlusCircle} from 'phosphor-svelte';
     import BasicDropdown from './dropdowns/basic-dropdown.svelte';
     import AgentToggle from './agent/AgentToggle.svelte';
@@ -16,7 +17,7 @@
             </span>
         </BasicDropdown>
     {/if}
-    {#if showAI}<AgentToggle />{/if}
+    {#if showAI && $assistantEnabled}<AgentToggle />{/if}
 </div>
 
 <style>

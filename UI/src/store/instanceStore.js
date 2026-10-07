@@ -24,6 +24,8 @@ export const instanceConfig = writable(null);
 
 // Fail closed until the server has supplied the feature flag.
 export const aiEnabled = derived(instanceConfig, config => config?.features?.aiEnabled === true);
+export const manualEnabled = derived(instanceConfig, config => config?.features?.manualEnabled === true);
+export const assistantEnabled = derived([aiEnabled, manualEnabled], ([ai, manual]) => ai || manual);
 
 export function applyRuntimeConfig(config) {
     if (!config) return;
@@ -249,7 +251,7 @@ export async function loadInstanceConfig() {
             const response = await fetch(getEndpoint('INSTANCE', 'STATUS', getApiHost()));
             if (response.ok) {
                 const status = await response.json();
-                instanceConfig.update(config => ({...config, features: {...config?.features, aiEnabled: status.ai_enabled === true}}));
+                instanceConfig.update(config => ({...config, features: {...config?.features, aiEnabled: status.ai_enabled === true, manualEnabled: status.manual_enabled === true}}));
             }
         } catch { /* Keep the optional AI feature hidden when status is unavailable. */ }
         instanceStatus.set({
@@ -285,7 +287,7 @@ export async function loadInstanceConfig() {
         const cached = getCachedConfig();
         if (cached) {
             applyRuntimeConfig(cached);
-            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true}});
+            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true, manualEnabled: status.manual_enabled === true}});
             instanceStatus.set({
                 loading: false,
                 configured: true,
@@ -324,7 +326,7 @@ export async function loadInstanceConfig() {
         const cached = getCachedConfig();
         if (cached) {
             applyRuntimeConfig(cached);
-            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true}});
+            instanceConfig.set({...cached, features: {...cached.features, aiEnabled: status.ai_enabled === true, manualEnabled: status.manual_enabled === true}});
             instanceStatus.set({
                 loading: false,
                 configured: true,

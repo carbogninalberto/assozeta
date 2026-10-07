@@ -117,7 +117,7 @@ class CarnetSubscriptionSerializer(serializers.ModelSerializer):
     subscription = SubscriptionSerializerSimplify()
     course = serializers.SerializerMethodField()
     creation_date = serializers.DateTimeField(required=True)
-    payment = serializers.UUIDField(required=False)
+    payment = serializers.UUIDField(source='payment_id', read_only=True, allow_null=True)
     meta = serializers.JSONField(default=None, required=False)
     carnet = serializers.SerializerMethodField()
 

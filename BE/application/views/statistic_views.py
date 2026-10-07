@@ -47,12 +47,11 @@ def statistic_dashboard_layout(request):
 
     dashboard_layout = request.data.get('dashboard_layout', None)
 
-    if request.user.is_collaborator:
-        acting_user(request).dashboard_layout = dashboard_layout
-        acting_user(request).save()
-    else:
-        request.user.dashboard_layout = dashboard_layout
-        request.user.save()
+    # Authentication scopes request.user to the association owner. The layout
+    # belongs to the effective account, including an impersonated collaborator.
+    layout_user = acting_user(request) if request.collaborator else request.user
+    layout_user.dashboard_layout = dashboard_layout
+    layout_user.save(update_fields=['dashboard_layout'])
 
     return Response({'data': 'dashboard layout updated'}, status=status.HTTP_200_OK)
 
@@ -327,7 +326,7 @@ def statistic_dashboard(request):
                 meta__lessons_left__lt=4
             ).exclude(
                 Q(meta__lessons_left=0) &
-                ~Q(meta__lessons_registry__exists=True)
+                ~Q(meta__has_key='lessons_registry')
             )
         else:
             # SQLite fallback - fetch all and filter in Python
@@ -1072,7 +1071,13 @@ def attendance_day_delete(request, uid):
     # OLD filter
     # attendance_day = AttendanceDay.objects.filter(
     #     attendance_day_id=uid, auto_marked=False, date__gt=datetime.now()).first()
-    attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(attendance_day_id=uid).first()
+    # IsAuthenticated resolves collaborators to the association owner and
+    # checks the attendance update permission. Bound the UUID lookup to that
+    # owner as well as any active impersonation scope.
+    attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
+        attendance_day_id=uid,
+        attendance_registry__course__sport_association__user=request.user,
+    ).first()
     # check if attendance day exists
     if attendance_day is None:  # pragma: no cover
         return Response({'error: attendance day not found.'}, status.HTTP_404_NOT_FOUND)
@@ -1090,8 +1095,20 @@ def attendance_day_mark_absent(request, uid):
 
     is_valid_uuid(uid)
 
-    attendance_day = scoped_queryset(request, AttendanceDay.objects).filter(
-        attendance_day_id=uid).first()
+    # Ordinary athlete requests need the same tenant/person boundary as an
+    # impersonated athlete. A known date UUID must not grant write access.
+    if request.user.role == User.ATHLETE:
+        config = InstanceConfiguration.get_config()
+        association = getattr(request, 'impersonation_association', None) or (
+            config.primary_association if config else None)
+        if association is None:
+            return Response({'error: attendance day not found.'}, status.HTTP_404_NOT_FOUND)
+        attendance_days = scoped_queryset(request, AttendanceDay.objects).filter(
+            attendance_registry__course__sport_association=association)
+    else:
+        attendance_days = scoped_queryset(request, AttendanceDay.objects).filter(
+            attendance_registry__course__sport_association__user=request.user)
+    attendance_day = attendance_days.filter(attendance_day_id=uid).first()
     # check if attendance day exists
     if attendance_day is None:  # pragma: no cover
         return Response({'error: attendance day not found.'}, status.HTTP_404_NOT_FOUND)
@@ -1104,11 +1121,18 @@ def attendance_day_mark_absent(request, uid):
     # check is valid uuid
     is_valid_uuid(course_subscription_id)
 
-    if getattr(request, 'impersonation_association', None):
-        if not scoped_queryset(request, CourseSubscription.objects).filter(
-                pk=course_subscription_id, course=attendance_day.attendance_registry.course).exists():
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied('Iscrizione al corso non disponibile.')
+    course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
+        pk=course_subscription_id, course=attendance_day.attendance_registry.course,
+        subscription__sport_association=attendance_day.attendance_registry.course.sport_association)
+    if request.user.role == User.ATHLETE:
+        tax_codes = Subscription.objects.filter(user=request.user, sport_association=association).exclude(
+            associate__tax_code__isnull=True).exclude(associate__tax_code='').values('associate__tax_code')
+        course_subscriptions = course_subscriptions.filter(
+            Q(subscription__user=request.user) | Q(subscription__associate__user=request.user) |
+            Q(subscription__associate__tax_code__in=tax_codes))
+    if not course_subscriptions.exists():
+        from rest_framework.exceptions import PermissionDenied
+        raise PermissionDenied('Iscrizione al corso non disponibile.')
 
     absent = request.data.get('absent', True)
 

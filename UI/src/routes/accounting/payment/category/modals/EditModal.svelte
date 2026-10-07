@@ -169,7 +169,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                                 <label>Detraibile fiscalmente<b>*</b></label>
                                 <span class="switch switch-sm switch-icon">
                                     <label>
-                                        <input name="tax_deductible" type="checkbox" />
+                                        <input name="tax_deductible" type="checkbox" checked={row.tax_deductible} />
                                         <span />
                                     </label>
                                 </span>
