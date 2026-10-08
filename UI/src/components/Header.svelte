@@ -30,7 +30,7 @@
     import HeaderActions from './HeaderActions.svelte';
     import NotificationsDrawer from './NotificationsDrawer.svelte';
     import {canPerformAction} from 'utils/Permissions';
-    import {oemConfig, manualEnabled} from 'store/instanceStore.js';
+    import {oemConfig, manualEnabled, assistantEnabled} from 'store/instanceStore.js';
 
     userData.useLocalStorage();
     sessionToken.useLocalStorage();
@@ -198,7 +198,7 @@
                 </button>
             {/if}
             <HeaderActions {quickAddItems} showQuickAdd={$role === 'association'}
-                showAI={$role === 'association'}
+                showAI={$role === 'association' && $assistantEnabled}
                 on:itemClick={openQuickAdd} />
         </div>
         <!--end::Header Menu Wrapper-->
