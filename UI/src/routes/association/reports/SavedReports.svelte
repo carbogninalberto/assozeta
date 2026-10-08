@@ -412,7 +412,51 @@
                     <!--end::Search-->
 
                     <!--begin::Datatable-->
-                    <div class="datatable datatable-bordered datatable-head-custom" id="bkn_datatable_saved_reports" />
+                    <div class="datatable datatable-bordered datatable-head-custom datatable-default" id="bkn_datatable_saved_reports">
+                        <table class="datatable-table d-table w-100">
+                            <thead class="datatable-head">
+                                <tr class="datatable-row">
+                                    <th class="datatable-cell"><span>Report</span></th>
+                                    <th class="datatable-cell"><span>Aggiornato</span></th>
+                                    <th class="datatable-cell text-right"><span>Azioni</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="datatable-body">
+                                {#each filteredReports as report (report.saved_report_id)}
+                                    <tr class="datatable-row" data-row={report.saved_report_id}>
+                                        <td class="datatable-cell">
+                                            <button
+                                                type="button"
+                                                class="btn btn-link p-0 text-left font-weight-bolder text-dark-75"
+                                                on:click={() => openDetail(report)}>
+                                                {report.name}
+                                            </button>
+                                            {#if report.description}
+                                                <div class="text-muted font-size-sm">{report.description}</div>
+                                            {/if}
+                                        </td>
+                                        <td class="datatable-cell text-muted font-size-sm text-nowrap">
+                                            {formatRelativeTime(report.updated_at)}
+                                        </td>
+                                        <td class="datatable-cell text-right text-nowrap">
+                                            <PlayButton
+                                                popover_text="Esegui"
+                                                disabled={runningId === report.saved_report_id}
+                                                on:open={() => runReport(report.saved_report_id)} />
+                                            <EyeButton popover_text="Dettagli" on:open={() => openDetail(report)} />
+                                            <DeleteButton on:open={() => deleteReport(report.saved_report_id)} />
+                                        </td>
+                                    </tr>
+                                {:else}
+                                    <tr class="datatable-row">
+                                        <td class="datatable-cell text-center text-muted py-10" colspan="3">
+                                            Nessun report corrisponde alla ricerca
+                                        </td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+                    </div>
                     <!--end::Datatable-->
                 {/if}
             </div>
@@ -632,6 +676,17 @@
 {/if}
 
 <style>
+    /* Svelte renders these rows directly; no legacy plugin reveals the table. */
+    #bkn_datatable_saved_reports .datatable-head {
+        visibility: visible;
+        display: table-header-group;
+    }
+
+    #bkn_datatable_saved_reports .datatable-body {
+        visibility: visible;
+        display: table-row-group;
+    }
+
     :global(.sr-spinner) {
         animation: sr-spin 0.8s linear infinite;
     }
