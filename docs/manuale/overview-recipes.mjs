@@ -3,7 +3,7 @@ import {registrationFormsReviewedSources} from './registration-forms-recipes.mjs
 // The original introduction structure and cards, with application-grounded links.
 export const overviewReviewedSources = Object.freeze({
     "UI/src/App.svelte": "72745a2871a54ee1246e7c8601f8a14fca58387b9890daff5020aebe846c2f05",
-    "UI/src/components/Header.svelte": "fb36b0bcc994132bb820ad139bc2983739bc25c7ec48f02da57684af894ee43a",
+    "UI/src/components/Header.svelte": "2054a99e494f3404e6f89a95f3d81047fbf3b13a1af9d8d8a9f6a8028a9425c2",
     "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
     "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
     "UI/src/routes/manuale/Manuale.svelte": "1eace920cdddc1d56458d2a004035d323ea547c483bfc9784b7ed3f9ee57b411",
