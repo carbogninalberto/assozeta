@@ -282,7 +282,7 @@ class AssociationImportIdentityTests(TestCase):
         self.assertEqual(existing_owner.password, existing_password)
         self.assertTrue(existing_owner.check_password('ExistingOwner!123'))
 
-    def test_export_includes_only_owner_password_hash(self):
+    def test_export_includes_password_hashes_for_all_users(self):
         owner = User.objects.create_user(
             username='owner@example.com',
             email='owner@example.com',
@@ -295,6 +295,13 @@ class AssociationImportIdentityTests(TestCase):
             password='Member!123',
             role=User.ATHLETE,
         )
+        collaborator = User.objects.create_user(
+            username='collaborator@example.com',
+            email='collaborator@example.com',
+            password='Collaborator!123',
+            role=User.COLLABORATOR,
+            connected_user=owner,
+        )
         association = SportAssociation.objects.create(
             user=owner,
             denomination='Password Export ASD',
@@ -302,11 +309,9 @@ class AssociationImportIdentityTests(TestCase):
         )
         service = AssociationExportService(association.sport_association_id)
 
-        owner_data = service.serialize_record(owner)
-        member_data = service.serialize_record(member)
-
-        self.assertEqual(owner_data['password'], owner.password)
-        self.assertNotIn('password', member_data)
+        self.assertEqual(service.serialize_record(owner)['password'], owner.password)
+        self.assertEqual(service.serialize_record(member)['password'], member.password)
+        self.assertEqual(service.serialize_record(collaborator)['password'], collaborator.password)
 
     def test_source_uuids_are_preserved_for_imported_uuid_models(self):
         owner_id = uuid.uuid4()
@@ -543,6 +548,77 @@ class AssociationImportMediaTests(TestCase):
             temp_file.close()
             os.remove(temp_file.name)
             raise
+
+    def test_first_install_import_keeps_collaborator_and_athlete_passwords(self):
+        with tempfile.TemporaryDirectory() as storage_dir:
+            with override_settings(
+                STORAGES={
+                    'default': {
+                        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+                        'OPTIONS': {'location': storage_dir},
+                    },
+                    'staticfiles': {
+                        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+                    },
+                },
+                AWS_S3_PUBLIC_BASE_URL='',
+            ):
+                owner = User.objects.create_user(
+                    username='owner@example.com',
+                    email='owner@example.com',
+                    password='Owner!123',
+                    role=User.ASSOCIATION,
+                )
+                collaborator = User.objects.create_user(
+                    username='collaborator@example.com',
+                    email='collaborator@example.com',
+                    password='Collaborator!123',
+                    role=User.COLLABORATOR,
+                    connected_user=owner,
+                )
+                athlete = User.objects.create_user(
+                    username='athlete@example.com',
+                    email='athlete@example.com',
+                    password='Athlete!123',
+                    role=User.ATHLETE,
+                )
+                association = SportAssociation.objects.create(
+                    user=owner,
+                    denomination='Credentials ASD',
+                    tax_code='12345678901',
+                )
+                associate = Associate.objects.create(
+                    user=athlete,
+                    sport_association=association,
+                    first_name='Athlete',
+                    last_name='Member',
+                    tax_code='THLMBR00A01H501Z',
+                )
+                Subscription.objects.create(
+                    sport_association=association,
+                    associate=associate,
+                    user=athlete,
+                    custom_data={},
+                    additional_fields={},
+                )
+                collaborator_id, athlete_id = collaborator.pk, athlete.pk
+
+                export_document = AssociationExportService(association.sport_association_id).export()
+                zip_path = self._copy_storage_file_to_temp_zip(export_document.filepath)
+
+                try:
+                    Subscription.objects.all().delete()
+                    Associate.objects.all().delete()
+                    SportAssociation.original_objects.all().delete()
+                    User.original_objects.all().delete()
+
+                    service = AssociationImportService(zip_path, ImportOptions())
+                    service.import_all()
+                finally:
+                    os.remove(zip_path)
+
+        self.assertTrue(User.original_objects.get(pk=collaborator_id).check_password('Collaborator!123'))
+        self.assertTrue(User.original_objects.get(pk=athlete_id).check_password('Athlete!123'))
 
     def test_private_subscription_signature_media_round_trips_and_is_rekeyed(self):
         with tempfile.TemporaryDirectory() as storage_dir:

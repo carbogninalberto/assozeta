@@ -35,7 +35,9 @@ relationships remain intact. Business references from that account to replaced
 payment categories are mapped to the imported categories. Existing user accounts
 keep their credentials; accounts outside the replaced graph are not modified.
 Removed collaborators lose their association link and are deactivated. New users
-follow the existing importer's credential and privilege sanitization rules.
+follow the existing importer's privilege sanitization rules and keep their
+archived password hash, so collaborators and athletes can sign in with their
+previous password; accounts without a supported hash cannot sign in until reset.
 Local detachment records allow a later recovery to reconnect those collaborators
 and restore their archived active state while retaining their credentials. An
 unrelated account, or a detached account subsequently activated or linked
@@ -99,8 +101,10 @@ before a resumed attempt. Uploads are removed after cancellation or terminal
 execution; the hourly cleanup task expires old reviews and retries cleanup.
 Recovery ZIPs and previous business objects are retained deliberately. Recovery
 exports retain deleted business fields, including Stripe payment intent IDs;
-ordinary migration exports keep their existing sanitization rules. Recovery
-files contain personal data and potentially encoded credentials: downloads are
+ordinary migration exports keep their existing sanitization rules. Every export,
+including recovery files, contains personal data and the salted password hash of
+each exported user (owner, collaborators and athletes); two-factor secrets and
+integration tokens are never exported. Recovery downloads are
 owner-authorized and marked `Cache-Control: no-store`. Store downloaded backups
 privately. No automatic retention policy deletes recovery ZIPs or old business
 objects; operators should include them in their storage policy.

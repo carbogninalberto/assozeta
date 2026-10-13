@@ -1,10 +1,10 @@
 """
-Tests for export_service - owner-password export/import contract.
+Tests for export_service - user password-hash export/import contract.
 
 Ported from SaaS test_export_service.py, adapted for self-host:
 - Uses self-host fixtures and models
-- Validates self-host EXCLUDED_FIELDS contract: password for owner only,
-  two_fa_secret/stripe_account_id always excluded
+- Validates self-host EXCLUDED_FIELDS contract: validated password hashes for
+  every exported user, two_fa_secret/stripe_account_id always excluded
 """
 import base64
 import json
@@ -48,34 +48,44 @@ class AssociationExportPasswordTests(TestCase):
         self.assertNotIn('stripe_account_id', data)
         self.assertNotIn('integration_google_credentials', data)
 
-    def test_non_owner_user_passwords_are_never_exported(self):
-        non_owners = [
-            create_test_user(role=User.COLLABORATOR),
-            create_test_user(role=User.ATHLETE),
-            create_test_user(role=User.ATHLETE),
-        ]
-        for user in non_owners:
+    def test_non_owner_user_password_hashes_are_exported_exactly(self):
+        collaborator = create_test_user(role=User.COLLABORATOR, password='collaborator-password')
+        athlete = create_test_user(role=User.ATHLETE, password='athlete-password')
+        for user in (collaborator, athlete):
             user.connected_user = self.owner
             user.save(update_fields=['connected_user'])
 
-        matching_user = non_owners[0]
-        matching_user.role = self.owner.role
-        matching_user.email = self.owner.email
-        matching_user.username = self.owner.username
-        self.assertNotIn('password', self.service.serialize_record(matching_user))
+        self.assertEqual(
+            self.service.serialize_record(collaborator)['password'], collaborator.password,
+        )
+        self.assertEqual(self.service.serialize_record(athlete)['password'], athlete.password)
 
         with tempfile.TemporaryDirectory() as output_dir:
             self.service.export_model_to_json(User, output_dir, '02_users')
             with open(os.path.join(output_dir, 'data', '02_users.json'), encoding='utf-8') as users_file:
-                records = json.load(users_file)
+                records = {record['user_id']: record for record in json.load(users_file)}
 
-        self.assertEqual(len(records), 4)
-        owner_id = str(self.association.user_id)
-        for record in records:
-            if record['user_id'] == owner_id:
-                self.assertEqual(record['password'], self.owner.password)
-            else:
-                self.assertNotIn('password', record)
+        self.assertEqual(records[str(self.owner.pk)]['password'], self.owner.password)
+        self.assertEqual(records[str(collaborator.pk)]['password'], collaborator.password)
+        self.assertEqual(records[str(athlete.pk)]['password'], athlete.password)
+        for record in records.values():
+            self.assertNotIn('two_fa_secret', record)
+            self.assertNotIn('stripe_account_id', record)
+            self.assertNotIn('integration_google_credentials', record)
+
+    def test_invalid_non_owner_password_hashes_are_omitted(self):
+        collaborator = create_test_user(role=User.COLLABORATOR)
+        collaborator.connected_user = self.owner
+        digest = base64.b64encode(b'\0' * 32).decode('ascii')
+        rejected_hashes = {
+            'unusable': make_password(None),
+            'unsupported': f'pbkdf2_sha256$1$salt${digest}',
+        }
+
+        for case, encoded in rejected_hashes.items():
+            with self.subTest(case=case):
+                collaborator.password = encoded
+                self.assertNotIn('password', self.service.serialize_record(collaborator))
 
     def test_invalid_owner_password_hashes_are_omitted(self):
         digest = base64.b64encode(b'\0' * 32).decode('ascii')

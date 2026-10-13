@@ -660,13 +660,10 @@ class AssociationExportService:
                         logger.warning(f"Error serializing M2M {m2m_field_name} on {model_name}: {e}")
                         data[f'_m2m_{m2m_field_name}'] = []
 
-        # Preserve only the owner's encoded password for self-host migration.
-        # Other user credentials remain excluded from application exports.
-        if (
-            model_name == 'User'
-            and obj.pk == self.sport_association.user_id
-            and is_restorable_password_hash(obj.password)
-        ):
+        # Every exported account (owner, collaborators, athletes) keeps its
+        # encoded password so users can still sign in after migration or
+        # restore. Only validated hashes are written.
+        if model_name == 'User' and is_restorable_password_hash(obj.password):
             data['password'] = obj.password
 
         # Collect document references for file export
