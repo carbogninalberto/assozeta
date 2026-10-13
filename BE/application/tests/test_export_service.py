@@ -19,8 +19,10 @@ from django.test import TestCase, override_settings
 
 from application.models.user_models import User
 from application.services.export_service import AssociationExportService
+from application.models.subscriptions_models import Signature
 from application.tests.fixtures.factories import (
     create_test_sport_association,
+    create_test_subscription,
     create_test_user,
 )
 
@@ -50,10 +52,10 @@ class AssociationExportPasswordTests(TestCase):
 
     def test_non_owner_user_password_hashes_are_exported_exactly(self):
         collaborator = create_test_user(role=User.COLLABORATOR, password='collaborator-password')
+        collaborator.connected_user = self.owner
+        collaborator.save(update_fields=['connected_user'])
         athlete = create_test_user(role=User.ATHLETE, password='athlete-password')
-        for user in (collaborator, athlete):
-            user.connected_user = self.owner
-            user.save(update_fields=['connected_user'])
+        create_test_subscription(sport_association=self.association, user=athlete)
 
         self.assertEqual(
             self.service.serialize_record(collaborator)['password'], collaborator.password,
@@ -73,9 +75,25 @@ class AssociationExportPasswordTests(TestCase):
             self.assertNotIn('stripe_account_id', record)
             self.assertNotIn('integration_google_credentials', record)
 
+    def test_reference_only_and_deleted_users_never_carry_a_hash(self):
+        signer = create_test_user(role=User.ATHLETE, password='signer-password')
+        Signature.objects.create(user=signer, signature='data')
+        unrelated = create_test_user(role=User.ATHLETE, password='unrelated-password')
+        deleted = create_test_user(role=User.COLLABORATOR, password='deleted-password')
+        deleted.connected_user = self.owner
+        deleted.deleted = True
+        deleted.save(update_fields=['connected_user', 'deleted'])
+        other_association = create_test_sport_association()
+        create_test_subscription(sport_association=other_association, user=unrelated)
+
+        for user in (signer, unrelated, deleted):
+            with self.subTest(user=user.username):
+                self.assertNotIn('password', self.service.serialize_record(user))
+
     def test_invalid_non_owner_password_hashes_are_omitted(self):
         collaborator = create_test_user(role=User.COLLABORATOR)
         collaborator.connected_user = self.owner
+        collaborator.save(update_fields=['connected_user'])
         digest = base64.b64encode(b'\0' * 32).decode('ascii')
         rejected_hashes = {
             'unusable': make_password(None),

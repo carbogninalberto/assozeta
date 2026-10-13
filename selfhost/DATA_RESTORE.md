@@ -103,8 +103,10 @@ Recovery ZIPs and previous business objects are retained deliberately. Recovery
 exports retain deleted business fields, including Stripe payment intent IDs;
 ordinary migration exports keep their existing sanitization rules. Every export,
 including recovery files, contains personal data and the salted password hash of
-each exported user (owner, collaborators and athletes); two-factor secrets and
-integration tokens are never exported. Recovery downloads are
+each account that signs in through the association (owner, its collaborators and
+athletes with a subscription); users exported only as references and deleted
+accounts carry no hash. Two-factor secrets and integration tokens are never
+exported. Recovery downloads are
 owner-authorized and marked `Cache-Control: no-store`. Store downloaded backups
 privately. No automatic retention policy deletes recovery ZIPs or old business
 objects; operators should include them in their storage policy.

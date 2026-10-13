@@ -32,7 +32,7 @@ Assozeta è un'applicazione full-stack per digitalizzare la gestione quotidiana 
 
 Il progetto riunisce in un solo spazio anagrafiche, iscrizioni, corsi, presenze, documenti, pagamenti, contabilità e comunicazioni. La disponibilità effettiva delle funzioni dipende dal backend, dal piano e dalla configurazione dell'istanza e dai servizi esterni abilitati.
 
-Il backend implementa export e import completi nel formato applicativo `bakney_sport_export_v1`. Non è dichiarata una compatibilità generale con backup storici o con formati prodotti da altre versioni. Gli export applicativi includono l'hash della password di ogni utente esportato (proprietario, collaboratori e atleti) per consentirne l'accesso dopo il ripristino: devono quindi essere protetti come dati sensibili.
+Il backend implementa export e import completi nel formato applicativo `bakney_sport_export_v1`. Non è dichiarata una compatibilità generale con backup storici o con formati prodotti da altre versioni. Gli export applicativi includono l'hash della password degli account che accedono tramite l'associazione (proprietario, suoi collaboratori e atleti con almeno un'iscrizione) per consentirne l'accesso dopo il ripristino; gli utenti esportati solo come riferimento e gli account eliminati non includono l'hash: devono quindi essere protetti come dati sensibili.
 
 ## Funzionalità
 

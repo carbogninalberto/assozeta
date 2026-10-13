@@ -307,6 +307,20 @@ class AssociationImportIdentityTests(TestCase):
             denomination='Password Export ASD',
             tax_code='12345678901',
         )
+        associate = Associate.objects.create(
+            user=member,
+            sport_association=association,
+            first_name='Password',
+            last_name='Member',
+            tax_code='PSSMBR00A01H501Z',
+        )
+        Subscription.objects.create(
+            sport_association=association,
+            associate=associate,
+            user=member,
+            custom_data={},
+            additional_fields={},
+        )
         service = AssociationExportService(association.sport_association_id)
 
         self.assertEqual(service.serialize_record(owner)['password'], owner.password)
