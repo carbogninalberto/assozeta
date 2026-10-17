@@ -147,8 +147,10 @@ class ReplacementImporter(AssociationImportService):
         return len(self.staged_media)
 
     def restore_user_links(self, old_user_ids):
-        # Revoke old collaborator linkage; retain accounts/passwords. Restore only
-        # relationships present in this archive, mapping the source owner locally.
+        # Revoke old collaborator linkage; retain existing local accounts and
+        # passwords (users created from the archive already got its hash).
+        # Restore only relationships present in this archive, mapping the
+        # source owner locally.
         incoming_users = {str(row['user_id']) for row in self.archive.records['User']}
         removed = User.original_objects.filter(pk__in=old_user_ids - incoming_users, connected_user=self.local_owner).exclude(pk=self.local_owner.pk)
         for user_id in removed.values_list('pk', flat=True):
