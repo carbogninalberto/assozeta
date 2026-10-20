@@ -55,8 +55,11 @@ explain why static and resolved counts differ. One plain Django callback,
 `/chat/test/`, needs manual method characterization. Debug routes remain visible
 in static discovery but are absent from the production resolver.
 
-The runtime snapshot uses the committed environment example, synthetic key
-values and a database-connection prohibition. Django's audit resolver setup
+The runtime snapshot uses `BE/requirements.txt`, records resolved dependency
+versions, and uses the committed environment example, synthetic key values and a
+database-connection prohibition. A previous developer virtualenv had newer
+Django/Celery-results/Silk packages; regeneration against repository requirements
+removed three newer dependency-only fields from the metadata snapshot. Django's audit resolver setup
 attempts database access, which is denied and recorded in the local diagnostic
 log. This snapshot proves no persisted schema, installed schedule or audit
 resolver state. It is not a schema-only database export.
@@ -101,18 +104,21 @@ Configuration reuses the existing DB/Redis variables and optional deployment
 comparison and Django's nonempty-string `REDIS_SSLAUTH` behavior are preserved.
 `godotenv` and `go-redis/v9` are named compatibility/infrastructure extensions;
 the latter uses a separate short-lived probe key, never Django cache pickle or
-Channels/Celery payload encoding. Other environment settings remain unported.
+Channels/Celery payload encoding. JWT key parsing now supports the existing raw/multiline and base64 precedence.
+Other environment settings remain unported.
 
 TDD evidence from this worktree:
 
 | Check | Result and scope |
 | --- | --- |
-| Inventory tests | 11 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
-| Go unit/race tests | Config, service, handler and CSRF admission tests pass; undefined implementations failed first |
+| Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
+| Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
-| Portable Django regression | 18 tests pass on disposable PostgreSQL: 16 configured contracts, fresh setup/restore and initial historical import |
+| Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
 | Portable Go contracts | The same 3 health contracts pass over real HTTP |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
+| Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
+| Password parser fuzzing | 441,963 executions in a five-second bounded run pass; explicit cost-limit and malformed-input tests also pass |
 | Workflow syntax | `actionlint` passes |
 | Existing self-host validation | `make selfhost-test` passes (configuration/updater/manual-sync checks) |
 | Local image | Linux arm64 image builds; isolated `id -u` returns 10001 and server help executes; no release publication |
@@ -132,6 +138,32 @@ schema adapter; it is not migration-history evidence. The Go harness uses no
 business tables and is not the full scenario fixture adapter. The shutdown check
 proves a clean idle exit, not draining active uploads, WebSockets or tasks.
 
+### Credential primitives, not endpoint parity
+
+`pkg/jwt` preserves the Ed25519/SimpleJWT format, four-hour access/thirty-day
+refresh lifetimes and the actual non-rotating refresh behavior. SimpleJWT 5.3.1
+copies the original `iat` and custom claims to renewed access tokens. REST does
+not configure issuer/audience validation; WebSocket authentication must separately
+apply its existing issuer/audience checks. JSON numbers retain integer precision.
+
+`pkg/crypto` verifies the five configured Django password families and imported
+raw bcrypt, including historical Argon2 variants. Its narrow internal Go upstream
+Argon2 adaptation retains provenance/license and is tested against Django/cffi.
+New PBKDF2-SHA256 hashes are readable by Django. Verification never writes account
+state. Cost limits are explicit errors; deployment parameter census, aggregate
+resource budgets and login admission limits still need evidence.
+
+These packages are not wired to auth routes. Account status, duplicate-login
+selection, legacy rehash, 2FA, cookies, trusted actor/effective identity, scope and
+impersonation remain unimplemented in Go. No authentication ledger row is marked
+verified. Tests use fresh synthetic credentials in private temporary files and
+save only counts/results/version metadata. The dependency adapter is intentionally
+outside portable HTTP contracts. See the reproduction commands in `TESTS/README.md`.
+
+The first foundation CI run exposed a missing Echo import after formatting. It
+was fixed in `8110caa`; the next Go CI job passed. Whole-backend and release parity
+must still be evaluated separately from the Go foundation job.
+
 ## Required acceptance matrix
 
 Every row below is required before this draft can claim completion.
@@ -141,9 +173,9 @@ Every row below is required before this draft can claim completion.
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot; no schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
-| 4. Identity/permissions | Existing denial contracts pass on Django | Password/JWT/session interoperability, trusted identities, full role/scope denials in Go |
+| 4. Identity/permissions | Django denial contracts and bidirectional credential primitive tests | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
-| 6. Environment | DB/Redis subset and precedence tests | Auth, storage, providers, logging, manual, instance flags and complete value compatibility |
+| 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
@@ -154,5 +186,5 @@ Every row below is required before this draft can claim completion.
 | 14. Completion audit | Explicitly not satisfied | Verify every requirement against authoritative current evidence; no missing behavior |
 
 The next implementation work is to close health/config compatibility gaps and
-establish authentication fixtures plus shared-schema integration. Route switching
+implement authentication services plus shared-schema integration. Route switching
 and installable Go artifacts must wait for tested API and background ownership.

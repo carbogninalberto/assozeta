@@ -1,7 +1,7 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. It currently implements only
-the monitoring foundation. It cannot serve the frontend, authenticate users or
+the monitoring foundation plus JWT/password compatibility primitives. It cannot serve the frontend, authenticate users or
 replace Django. See the [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
 and the [full requirements](../docs/architecture/go-migration/requirements.md).
 
@@ -23,6 +23,14 @@ It builds the Go executable in a temporary directory, creates a private Unix-soc
 PostgreSQL cluster and loopback Redis/API processes, runs portable HTTP contracts,
 forces dependency failures/recovery and removes only its own resources. It requires
 Go, PostgreSQL binaries and `redis-server`; missing dependencies fail the run.
+
+The bidirectional credential adapter uses the actual Django token service and
+hashers. From the repository root, install
+`TESTS/adapters/django/requirements-credentials.txt` into a disposable Python 3.12
+virtualenv and run `python TESTS/adapters/django/credentials.py`. It generates and
+deletes synthetic keys/tokens/hashes, prohibits database access, and invokes Go
+interop tests. See `pkg/jwt/README.md` and `pkg/crypto/README.md` for the protocol
+and remaining service-level requirements. Auth endpoints are not registered yet.
 
 For a disposable manually configured environment, `go run ./cmd/server` reads the
 process environment. `-env-file PATH` optionally reads the **existing** deployment

@@ -3,6 +3,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -10,11 +11,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	JWTSigningKey        string `json:"-"`
+	JWTVerifyingKey      string `json:"-"`
 	CSRFTrustedOrigins   []string
 	ListenAddress        string
 	Version              string
@@ -89,11 +93,40 @@ func Parse(values map[string]string) (Config, error) {
 		query.Set("sslrootcert", values["DBSSLROOTCERT"])
 	}
 	dsn := url.URL{Scheme: "postgres", User: url.UserPassword(values["DBUSER"], values["DBPASSWORD"]), RawQuery: query.Encode()}
-	return Config{CSRFTrustedOrigins: strings.FieldsFunc(get("CSRF_TRUSTED_ORIGINS", ""), func(r rune) bool { return r == ',' }), ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
+	privateKey, err := environmentKey(values, "JWT_SECRET_KEY")
+	if err != nil {
+		return Config{}, err
+	}
+	publicKey, err := environmentKey(values, "JWT_PUBLIC_KEY")
+	if err != nil {
+		return Config{}, err
+	}
+	return Config{JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
+		CSRFTrustedOrigins: strings.FieldsFunc(get("CSRF_TRUSTED_ORIGINS", ""), func(r rune) bool { return r == ',' }), ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
 		// Existing Django code uses string truthiness, not env.bool, for this flag.
 		RedisTLS: values["REDIS_SSLAUTH"] != "", RedisRootCertificate: values["REDIS_SSLCERT"]}, nil
+}
+
+// Match core.settings.env_key: nonempty base64 takes priority; raw values use
+// django-environ's multiline expansion. Errors identify only the variable name.
+func environmentKey(values map[string]string, name string) (string, error) {
+	if encoded := values[name+"_B64"]; encoded != "" {
+		// Python b64decode(validate=False) ignores non-alphabet characters.
+		filtered := strings.Map(func(r rune) rune {
+			if strings.ContainsRune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", r) {
+				return r
+			}
+			return -1
+		}, encoded)
+		decoded, err := base64.StdEncoding.DecodeString(filtered)
+		if err != nil || !utf8.Valid(decoded) {
+			return "", fmt.Errorf("invalid %s_B64", name)
+		}
+		return string(decoded), nil
+	}
+	return strings.NewReplacer(`\n`, "\n", `\r`, "\r").Replace(values[name]), nil
 }
 
 func validPort(value string) bool {

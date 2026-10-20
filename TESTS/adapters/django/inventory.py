@@ -4,6 +4,7 @@ Run with the backend Python environment. Uses synthetic example configuration,
 never developer .env credentials. Output is discovery, not parity evidence.
 """
 import hashlib
+from importlib.metadata import version
 import inspect
 import json
 import os
@@ -13,6 +14,10 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
+
+
+def is_application_source(path):
+    return path.is_relative_to(ROOT / 'BE')
 
 
 def methods(callback):
@@ -53,7 +58,7 @@ def routes(patterns, prefix=''):
         target = cls or inspect.unwrap(callback)
         filename = inspect.getsourcefile(target)
         source = Path(filename) if filename else None
-        local = source and source.is_relative_to(ROOT)
+        local = source and is_application_source(source)
         yield {'upstream_path': '/' + path, 'name': pattern.name,
                'methods': methods(callback),
                'django': target.__module__ + '.' + target.__qualname__,
@@ -89,6 +94,9 @@ def main():
         from application.mcp_server.server import TOOL_DEFINITIONS
         result = {
             'format': 1, 'configuration': 'production URL tree, committed example, database access prohibited',
+            'dependencies': {name: version(name) for name in (
+                'Django', 'djangorestframework', 'djangorestframework-simplejwt',
+                'PyJWT', 'celery', 'django-celery-results', 'django-silk')},
             'routes': list(routes(get_resolver().url_patterns)),
             'websockets': list(routes(routing.websocket_urlpatterns + chat_routing.websocket_urlpatterns + notification_routing.websocket_urlpatterns)),
             'tasks': sorted(name for name in app.tasks if not name.startswith('celery.')),

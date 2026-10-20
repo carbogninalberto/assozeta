@@ -1,10 +1,15 @@
 """Behavioral tests for the Django-specific resolver adapter's metadata."""
 import functools
 import unittest
-from TESTS.adapters.django.inventory import methods, qualified
+from TESTS.adapters.django.inventory import ROOT, methods, qualified, is_application_source
 
 
 class RuntimeInventoryTests(unittest.TestCase):
+    def test_virtualenv_inside_worktree_is_not_application_source(self):
+        self.assertFalse(is_application_source(ROOT / 'quality-reports/python/site-packages/vendor/views.py'))
+        self.assertFalse(is_application_source(ROOT / '.venv/lib/site-packages/vendor/views.py'))
+        self.assertTrue(is_application_source(ROOT / 'BE/core/health.py'))
+
     def test_function_method_decorator_is_inspected_through_wrappers(self):
         def view():
             pass
