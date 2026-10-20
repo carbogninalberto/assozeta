@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+# Validate the complete image-owned package before accepting requests. The
+# persistent download volume cannot hide or replace these release assets.
+python -m application.manuale.bundle --root /app/release-manual \
+  --revision "$(cat /app/CODE_REVISION)" --release "$(cat /app/VERSION)" \
+  --required "$(cat /app/MANUAL_REQUIRED)"
+
 exec gunicorn core.asgi:application \
   --worker-class uvicorn.workers.UvicornWorker \
   --workers "${WEB_CONCURRENCY:-4}" \

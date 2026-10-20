@@ -44,6 +44,10 @@ def _load(sport_association_id, user_id=None, *, validate=True):
     if index is not None:
         context['revision'] = index.value['metadata']['application_revision']
     else:
+        from .bundle import load_installed_bundle
+        bundled = load_installed_bundle()
+        if bundled is not None:
+            return bundled, context
         refresh_if_due()
         index = ManualIndex.load_runtime(settings.MANUAL_INDEX_PATH)
         index.asset_root = settings.MANUAL_ASSET_ROOT or str(asset_cache_root())

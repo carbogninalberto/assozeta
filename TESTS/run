@@ -48,7 +48,7 @@ def browser(base_url, fixture_path, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('suite', choices=['smoke', 'regression', 'performance', 'all'], nargs='?', default='smoke')
+    parser.add_argument('suite', choices=['smoke', 'regression', 'performance', 'all', 'manual'], nargs='?', default='smoke')
     parser.add_argument('--adapter', choices=['django', 'django-native'], default='django')
     parser.add_argument('--base-url', help='Existing disposable backend (Django, Go, etc.); no adapter is started')
     parser.add_argument('--fixture', type=Path, help='Fixture manifest matching TESTS/README.md')
@@ -62,6 +62,8 @@ def main():
     args = parser.parse_args()
     if bool(args.base_url) != bool(args.fixture):
         parser.error('--base-url and --fixture must be supplied together')
+    if args.suite == 'manual' and not args.base_url:
+        parser.error('manual requires an installed disposable release --base-url and --fixture')
     if args.samples < 1 or args.warmup < 0:
         parser.error('samples must be positive; warmup must be nonnegative')
     if args.suite == 'performance' and args.scenario in ('fresh', 'import'):
@@ -88,7 +90,7 @@ def main():
                 if args.suite in ('performance', 'all') and scenario == 'configured':
                     benchmark(base_url, json.loads(fixture_path.read_text()), args.output / 'performance.json', args.samples, args.warmup)
                 if args.suite != 'performance':
-                    report['checks'].append({'scenario': scenario, **tests(base_url, fixture_path, modules[scenario])})
+                    report['checks'].append({'scenario': scenario, **tests(base_url, fixture_path, 'TESTS.contracts.test_manual' if args.suite == 'manual' else modules[scenario])})
                 if args.browser and scenario == 'configured':
                     browser(base_url, fixture_path, args.output)
                     report['checks'].append({'scenario': 'browser', 'success': True})

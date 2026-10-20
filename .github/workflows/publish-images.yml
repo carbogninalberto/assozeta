@@ -19,6 +19,12 @@ permissions:
   contents: read
 
 jobs:
+  manual-release:
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/manuale-release.yml
+    with:
+      release: ${{ github.event.release.tag_name || github.sha }}
+
   selfhost-quality:
     # PRs run affected checks separately; pushes only need the smoke/static gates.
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
@@ -63,9 +69,11 @@ jobs:
       ${{ !cancelled() &&
           needs.validate.result == 'success' &&
           needs.production-smoke.result == 'success' &&
+          (needs.manual-release.result == 'success' ||
+           (github.event_name == 'push' && needs.manual-release.result == 'skipped')) &&
           (needs.selfhost-quality.result == 'success' ||
            (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
-    needs: [validate, production-smoke, selfhost-quality]
+    needs: [validate, production-smoke, selfhost-quality, manual-release]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -101,6 +109,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Download the verified release manual
+        if: matrix.name == 'backend' && github.event_name != 'push'
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-runtime
+          path: BE/release-manual
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -140,6 +155,7 @@ jobs:
           build-args: |
             VERSION=${{ github.event.release.tag_name || github.sha }}
             CODE_REVISION=${{ github.sha }}
+            REQUIRE_MANUAL=${{ github.event_name != 'push' }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           provenance: true
@@ -202,7 +218,7 @@ jobs:
   release-bundle:
     name: Attach self-host bundle
     if: github.event_name == 'release'
-    needs: [publish, verify-release-images]
+    needs: [publish, verify-release-images, manual-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write

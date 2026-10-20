@@ -2,3 +2,5 @@
 numpy==2.5.3
 # Decode real PNGs for the full-run repeatability comparison (same pin as BE).
 Pillow==11.1.0
+# Parse release workflow graphs in offline gate tests.
+PyYAML==6.0.3

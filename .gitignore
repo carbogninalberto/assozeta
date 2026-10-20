@@ -55,3 +55,8 @@ selfhost/tests/browser/node_modules
 /selfhost/.operations/
 
 .DS_Store
+
+# Verified release build input; produced by the manual release job.
+BE/release-manual/*
+!BE/release-manual/.gitkeep
+BE/MANUAL_REQUIRED
