@@ -23,6 +23,8 @@ def load_bundle(root, *, revision, release, required=False, verify_assets=False)
     receipt = json.loads(owned_path(root, 'bundle.json').read_text())
     index = ManualIndex.load_runtime(index_path)
     metadata = index.value['metadata']
+    if not isinstance(receipt, dict) or not isinstance(metadata, dict) or not isinstance(metadata.get('verification'), dict):
+        raise EvidenceError('Invalid release manual provenance')
     if not hasattr(index, '_bundle_file_sha256'):
         index._bundle_file_sha256 = file_digest(index_path)
     index.check_version(revision=revision, release=release)

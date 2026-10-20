@@ -86,3 +86,11 @@ class BundleTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 self.bundle()
         self.assertFalse((self.root / 'bundle').exists())
+
+    def test_malformed_receipt_is_rejected_as_invalid_evidence(self):
+        self.bundle()
+        from application.manuale.bundle import load_bundle
+        root = self.root / 'bundle/runtime'
+        write(root, 'bundle.json', ['not', 'a', 'receipt'])
+        with self.assertRaises(index.EvidenceError):
+            load_bundle(root, revision=self.revision, release='v-fixture', required=True)

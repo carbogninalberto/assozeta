@@ -27,13 +27,19 @@ volume `manuale_data`. Una release che richiede il manuale ma lo contiene corrot
 o incompleto non supera l'avvio; non ripiega su istruzioni incompatibili.
 
 Prima di pubblicare immagini installabili, la pipeline esegue la prova reale
-`selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION`. La prova usa
+`selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
+--previous-package PREVIOUS_RUNTIME --previous-release PREVIOUS_VERSION`. La prova usa
 immagini di produzione, database usa e getta, contratti HTTP indipendenti in
 `TESTS/`, browser e chat WebSocket senza AI. La baseline vuota riproduce lo stato
 del manuale osservato nella v1.0.17 usando lo schema corrente; non costituisce
-una prova sul vecchio binario v1.0.17. Non usa dati o servizi di produzione.
+una prova sul vecchio binario v1.0.17. La prova verifica anche aggiornamento e
+rollback fra due versioni distinte, entrambe valutate sullo stesso commit: una
+seconda esecuzione controlla la compatibilità delle catture riusabili e ripete
+rendering, lettore e MCP/assistente per la versione di prova precedente. Non
+rinomina il corpus della prima versione. Non usa dati o servizi di produzione.
 
-Per ripetere la pipeline senza pubblicare una release, eseguire manualmente
+Le PR che modificano questa integrazione eseguono la stessa pipeline senza
+pubblicare immagini. Per ripeterla senza pubblicare una release, eseguire manualmente
 **Build and rehearse the release manual** sul branch della PR, specificando una
 versione di prova. L'upload del runtime avviene soltanto dopo il successo della
 prova. Una verifica fallita impedisce la pubblicazione delle immagini di release

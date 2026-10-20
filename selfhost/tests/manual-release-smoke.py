@@ -32,10 +32,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('package', type=Path)
     parser.add_argument('release')
+    parser.add_argument('--previous-package', type=Path, required=True)
+    parser.add_argument('--previous-release', required=True)
     args = parser.parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     bundle = load_bundle(args.package, revision=revision, release=args.release,
                          required=True, verify_assets=True)
+    previous_bundle = load_bundle(args.previous_package, revision=revision, release=args.previous_release,
+                                  required=True, verify_assets=True)
+    if args.previous_release == args.release:
+        raise ValueError('Upgrade rehearsal requires two distinct, independently evaluated versions')
     output = ROOT / 'quality-reports/manual-release'
     output.mkdir(parents=True, exist_ok=True)
     result = {'status': 'running', 'application_revision': revision, 'release': args.release,
@@ -96,6 +102,11 @@ def main():
             shutil.copytree(args.package, context / 'release-manual', dirs_exist_ok=True)
             backend = image('bundled', context, '--target', 'production', '--build-arg', 'VERSION=' + args.release,
                             '--build-arg', 'CODE_REVISION=' + revision, '--build-arg', 'REQUIRE_MANUAL=true')
+            shutil.rmtree(context / 'release-manual')
+            shutil.copytree(args.previous_package, context / 'release-manual')
+            previous_backend = image('previous', context, '--target', 'production',
+                '--build-arg', 'VERSION=' + args.previous_release, '--build-arg', 'CODE_REVISION=' + revision,
+                '--build-arg', 'REQUIRE_MANUAL=true')
             web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
             renderer = image('renderer', ROOT / 'selfhost/renderer')
             command([cli, 'configure', '--domain', f'localhost:{port}', '--version', 'test'], env=env)
@@ -149,15 +160,49 @@ def main():
             set_env({'ASSOZETA_BACKEND_REF': backend})
             command([cli, 'start'], env=env); ready(); contracts('upgrade-empty', browser=True)
             record('configured installation with empty manual volume acquires the release manual on startup')
+            # Both packages have independently evaluated version bindings. The
+            # source commit is intentionally identical to isolate selection from
+            # unrelated schema migrations in this release-delivery rehearsal.
+            previous_expected = {**fixture['manual'], 'release': args.previous_release,
+                                 'corpus_identity': previous_bundle.value['identity']}
+            original_expected = fixture['manual']
+            def select_expected(expected):
+                fixture['manual'] = expected
+                fixture_path.write_text(json.dumps(fixture))
+            set_env({'ASSOZETA_BACKEND_REF': previous_backend})
+            command([cli, 'start'], env=env); ready()
+            select_expected(previous_expected); contracts('previous-compatible')
+            set_env({'ASSOZETA_BACKEND_REF': backend})
+            command([cli, 'start'], env=env); ready()
+            select_expected(original_expected); contracts('upgrade-compatible')
+            record('upgrade from a different verified package selects the new version')
+            set_env({'ASSOZETA_BACKEND_REF': previous_backend})
+            command([cli, 'start'], env=env); ready()
+            select_expected(previous_expected); contracts('rollback-compatible', browser=True)
+            record('rollback selects the previous version with its own compatible manual')
+            set_env({'ASSOZETA_BACKEND_REF': backend})
+            command([cli, 'start'], env=env); ready(); select_expected(original_expected)
             # Reject corrupt candidate image startup while the valid deployment
             # and its package remain untouched, then recreate the original image.
-            damaged = work / 'damaged'
-            damaged.mkdir()
-            (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN rm /app/release-manual/index.json\nUSER assozeta\n')
-            corrupt = image('corrupt', damaged)
-            attempt = subprocess.run(['docker', 'run', '--rm', corrupt], stdout=log, stderr=log, timeout=60)
-            if attempt.returncode == 0:
-                raise RuntimeError('Missing required manual did not reject candidate startup')
+            first_image = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
+            # Supply fault commands as JSON exec-form RUN, avoiding shell path interpolation.
+            faults = {
+                'missing-index': "from pathlib import Path; Path('/app/release-manual/index.json').unlink()",
+                'corrupt-index': "from pathlib import Path; Path('/app/release-manual/index.json').write_text('{}')",
+                'wrong-version': "from pathlib import Path; Path('/app/VERSION').write_text('incompatible')",
+                'missing-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ').unlink()',
+                'corrupt-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ").write_bytes(b'corrupt')",
+            }
+            for name, mutation in faults.items():
+                damaged = work / name
+                damaged.mkdir()
+                (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
+                    json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
+                corrupt = image(name, damaged)
+                attempt = subprocess.run(['docker', 'run', '--rm', corrupt], stdout=log, stderr=log, timeout=60)
+                if attempt.returncode == 0:
+                    raise RuntimeError(name + ' did not reject candidate startup')
+            record('missing/corrupt index and PNGs and mismatched version reject candidate startup')
             contracts('retained-after-failure')
             command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
             ready(); contracts('rollback')
