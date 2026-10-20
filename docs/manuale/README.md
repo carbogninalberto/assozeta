@@ -37,7 +37,11 @@ una prova sul vecchio binario v1.0.17. La prova verifica anche aggiornamento e
 rollback fra due versioni distinte, entrambe valutate sullo stesso commit: una
 seconda esecuzione controlla la compatibilità delle catture riusabili e ripete
 rendering, lettore e MCP/assistente per la versione di prova precedente. Non
-rinomina il corpus della prima versione. Non usa dati o servizi di produzione.
+rinomina il corpus della prima versione. Verifica inoltre il normale comando
+`start` dopo un'interruzione fra creazione e avvio del container API, e il
+ripristino automatico dei servizi dopo il download fallito di un candidato.
+Entrambi devono tornare a servire il pacchetto compatibile conservato.
+Non usa dati o servizi di produzione.
 
 Le PR che modificano questa integrazione eseguono la stessa pipeline senza
 pubblicare immagini. Per ripeterla senza pubblicare una release, eseguire manualmente

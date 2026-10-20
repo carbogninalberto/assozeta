@@ -190,6 +190,28 @@ def main():
             command(compose('up', '-d', '--wait', '--force-recreate', 'api', 'worker', 'beat'), env=env)
             ready(); contracts('recreated')
             record('container recreation retains the image-matched manual')
+            # Stop at the real create/start boundary, as if activation had been
+            # interrupted after replacing the container but before starting it.
+            command(compose('create', '--no-deps', '--force-recreate', 'api'), env=env)
+            candidate = subprocess.check_output([str(arg) for arg in compose('ps', '-a', '-q', 'api')],
+                                                env=env, text=True).strip()
+            state = subprocess.check_output(['docker', 'inspect', '--format', '{{.State.Status}}', candidate],
+                                            text=True).strip()
+            if state != 'created':
+                raise RuntimeError('Activation interruption did not leave an unstarted candidate')
+            command([cli, 'start'], env=env)
+            ready(); contracts('interrupted-start-recovery')
+            record('normal CLI startup recovers activation interrupted between container creation and startup')
+            # Exercise the shipped upgrade error path: backup stops services,
+            # the missing candidate fails to pull, and the CLI restores them.
+            unavailable = subprocess.run([str(cli), 'upgrade', 'manual-unavailable-candidate'],
+                                         env=env, stdout=log, stderr=log)
+            configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
+                              if line.startswith('ASSOZETA_VERSION='))
+            if unavailable.returncode == 0 or configured != args.release:
+                raise RuntimeError('Failed candidate download did not retain the installed release')
+            ready(); contracts('failed-upgrade-recovery')
+            record('failed CLI candidate download restores services with the retained compatible manual')
             # Empty persistent manual volume, already configured association:
             # the observed manual state of v1.0.17, without historical code claims.
             command([cli, 'upgrade', 'manual-empty-baseline'], env=env); ready()
