@@ -1,6 +1,15 @@
 {
   "format": 1,
   "configuration": "production URL tree, committed example, database access prohibited",
+  "dependencies": {
+    "Django": "5.2.1",
+    "djangorestframework": "3.16.1",
+    "djangorestframework-simplejwt": "5.3.1",
+    "PyJWT": "2.15.1",
+    "celery": "5.6.2",
+    "django-celery-results": "2.5.1",
+    "django-silk": "5.3.2"
+  },
   "routes": [
     {
       "upstream_path": "/healthz",
@@ -18684,15 +18693,6 @@
           "decimal_places": null
         },
         {
-          "name": "date_started",
-          "column": "date_started",
-          "type": "DateTimeField",
-          "null": true,
-          "primary_key": false,
-          "max_digits": null,
-          "decimal_places": null
-        },
-        {
           "name": "date_done",
           "column": "date_done",
           "type": "DateTimeField",
@@ -18931,24 +18931,6 @@
           "primary_key": false,
           "max_digits": 8,
           "decimal_places": 5
-        },
-        {
-          "name": "profiling_data",
-          "column": "profiling_data",
-          "type": "TextField",
-          "null": true,
-          "primary_key": false,
-          "max_digits": null,
-          "decimal_places": null
-        },
-        {
-          "name": "sql_query_count",
-          "column": "sql_query_count",
-          "type": "PositiveIntegerField",
-          "null": true,
-          "primary_key": false,
-          "max_digits": null,
-          "decimal_places": null
         }
       ],
       "many_to_many": []

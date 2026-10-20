@@ -104,3 +104,30 @@ func TestDotenvDoesNotOverrideProcessAndKeepsQuotedValues(t *testing.T) {
 		t.Fatal("Load must not publish credentials into process environment")
 	}
 }
+
+func TestJWTEnvironmentMatchesDjangoKeyPrecedence(t *testing.T) {
+	env := environment()
+	env["JWT_SECRET_KEY"] = "raw\\nprivate\\nkey"
+	env["JWT_PUBLIC_KEY"] = "raw\\npublic\\nkey"
+	cfg, err := Parse(env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.JWTSigningKey != "raw\nprivate\nkey" || cfg.JWTVerifyingKey != "raw\npublic\nkey" {
+		t.Fatal("literal multiline keys not expanded")
+	}
+	env["JWT_SECRET_KEY_B64"] = "ZW5jb2RlZCBwcml2YXRl"
+	env["JWT_PUBLIC_KEY_B64"] = "ZW5j b2RlZCBwdWJsaWM=\n"
+	cfg, err = Parse(env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.JWTSigningKey != "encoded private" || cfg.JWTVerifyingKey != "encoded public" {
+		t.Fatal("base64 key precedence changed")
+	}
+	env["JWT_SECRET_KEY_B64"] = "invalid-secret-value"
+	_, err = Parse(env)
+	if err == nil || strings.Contains(err.Error(), "invalid-secret-value") {
+		t.Fatal("invalid encoded key error must not leak input")
+	}
+}

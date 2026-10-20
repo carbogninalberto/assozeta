@@ -246,3 +246,26 @@ Migration discovery and status are maintained in
 [`docs/architecture/go-migration/`](../docs/architecture/go-migration/README.md).
 Static inventory tests use the standard library; the runtime inventory exporter
 is explicitly Django-specific and lives under `adapters/django/`.
+
+
+### Bidirectional credential adapter
+
+The backend-specific adapter checks actual Django/SimpleJWT/hashers against Go,
+then verifies Go-issued tokens and hashes in Django. It does not import either
+implementation into portable contracts, and it does not prove HTTP login or
+permission parity. Run from the repository root with Go available:
+
+```sh
+python3.12 -m venv quality-reports/go-migration/python
+quality-reports/go-migration/python/bin/python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+quality-reports/go-migration/python/bin/python TESTS/adapters/django/credentials.py
+```
+
+Only the committed example environment is read. Database access is prohibited;
+synthetic credential files are private and temporary. The persistent
+`quality-reports/go-migration/credentials.json` records counts, dependency versions
+and success, without keys/tokens/hashes. Failures do not preserve stale passing
+results. Argon2 is installed explicitly to exercise the configured optional hasher.
+Use this same virtualenv for runtime inventory to avoid newer developer packages
+changing the recorded model metadata. Unpinned transitive Python packages retain
+the repository's resolution policy; actual resolved versions are recorded.

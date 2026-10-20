@@ -78,6 +78,17 @@ jobs:
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
           go -C BE_GO test -race ./...
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+      - name: Verify Django and Go credentials in both directions
+        run: |
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/credentials.py
       - name: Install disposable integration dependencies
         run: |
           sudo apt-get update
@@ -93,7 +104,9 @@ jobs:
         if: always()
         with:
           name: go-foundation-evidence
-          path: quality-reports/go-migration/go-health/
+          path: |
+            quality-reports/go-migration/go-health/
+            quality-reports/go-migration/credentials.json
 
   quality:
     name: Run affected quality checks
