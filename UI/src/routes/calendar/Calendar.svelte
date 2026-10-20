@@ -366,8 +366,10 @@
                     lazyFetching: false,
                     eventSources: [{
                         events: async function (fetchInfo) {
-                            const startStr = moment(fetchInfo.start).format('YYYY-MM-DD');
-                            const endStr = moment(fetchInfo.end).format('YYYY-MM-DD');
+                            // Send local midnight with its UTC offset: bare dates are read as UTC midnight,
+                            // which drops events early in the local day from day/week ranges.
+                            const startStr = encodeURIComponent(moment(fetchInfo.start).format());
+                            const endStr = encodeURIComponent(moment(fetchInfo.end).format());
 
                             UiApp.block('#general_calendar', {
                                 message: 'Caricamento in corso...',
