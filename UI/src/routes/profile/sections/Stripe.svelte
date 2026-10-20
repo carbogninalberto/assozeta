@@ -65,7 +65,6 @@
                             <span
                                 class="label label-light-success label-inline font-weight-bolder label-lg"
                                 style="display: flex; padding: 2rem; font-size: 1.3rem;">
-                                <li class="mr-2" />
                                 Stripe Configurato
                             </span>
                         </div>

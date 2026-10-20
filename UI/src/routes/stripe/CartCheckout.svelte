@@ -361,7 +361,6 @@
                                         <Circle size="18" color="#FFFFFF" unit="px" duration="1s" />
                                         <span class="ml-2">Pagamento in corso</span>
                                     {:else}
-                                        <li class="mr-2" />
                                         Paga ora
                                     {/if}
                                 </button>
