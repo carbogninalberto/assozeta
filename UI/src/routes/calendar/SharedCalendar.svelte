@@ -114,6 +114,29 @@
 
                     events: events.map(mapEventForCalendar),
 
+                    // List rows render the description as part of the event content: nodes appended in
+                    // eventDidMount are dropped whenever the calendar re-renders the title.
+                    eventContent: function (info) {
+                        var description = info.event.extendedProps && info.event.extendedProps.description;
+                        if (!info.view.type.startsWith('list') || !description) return undefined;
+                        var nodes = [];
+                        if (!info.event.allDay) {
+                            var time = document.createElement('time');
+                            time.className = 'ec-event-time';
+                            time.textContent = info.timeText;
+                            nodes.push(time);
+                        }
+                        var title = document.createElement('h4');
+                        title.className = 'ec-event-title';
+                        title.textContent = info.event.title;
+                        var descriptionEl = document.createElement('div');
+                        descriptionEl.className = 'ec-description';
+                        descriptionEl.textContent = description;
+                        title.appendChild(descriptionEl);
+                        nodes.push(title);
+                        return {domNodes: nodes};
+                    },
+
                     eventDidMount: function (info) {
                         var el = info.el;
 
@@ -140,11 +163,6 @@
                                 var titleEl = el.querySelector('.ec-event-title');
                                 if (titleEl) {
                                     titleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
-                                }
-                            } else {
-                                var listTitleEl = el.querySelector('.ec-event-title') || el.querySelector('.ec-list-item-title');
-                                if (listTitleEl) {
-                                    listTitleEl.insertAdjacentHTML('beforeend', '<div class="ec-description">' + info.event.extendedProps.description + '</div>');
                                 }
                             }
                         }
