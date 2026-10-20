@@ -89,7 +89,7 @@ Sono conteggiate le iscrizioni non archiviate valide alla data corrente, di tipo
         'lezioni-di-oggi': `Il nome attuale è **Registro presenze lezioni**. Elenca le lezioni nella finestra della giornata, con il corso, gli istruttori quando indicati e i riepiloghi di presenza.
 In assenza di lezioni compare **Nessuna lezione oggi**, come nella bacheca dimostrativa.
 Un collaboratore associato a un profilo istruttore vede le lezioni collegate a quell'istruttore; gli altri account vedono quelle dell'associazione.
-<Note>La registrazione delle presenze dal pulsante **Presenze** richiede una verifica dedicata. Questa pagina descrive il riquadro e non conferma un salvataggio di presenze. Il pulsante ha inoltre un limite nell'interfaccia per il piano gratuito; non dedurre altre differenze fra edizioni da questo esempio.</Note>`,
+<Note>La registrazione delle presenze dal pulsante **Presenze** richiede una verifica dedicata. Questa pagina descrive il riquadro e non conferma un salvataggio di presenze. Il pulsante non richiede un abbonamento alla piattaforma.</Note>`,
         'carnet-in-esaurimento': `Elenca i carnet con meno di quattro lezioni residue, ordinati dal numero minore di lezioni rimaste.
 Un carnet senza lezioni residue viene incluso soltanto se il suo registro contiene attività negli ultimi 30 giorni.
 Le voci mostrano la persona, il carnet e le lezioni rimaste. Un elenco vuoto non è una conferma generale dell'assenza di carnet nell'associazione.`,
@@ -183,23 +183,23 @@ const commonRefs = [
 
 // Frozen semantic review, updated only after inspecting the changed sources.
 export const dashboardReviewedSources = Object.freeze({
-    "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
+    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/routes/dashboard/Dashboard.svelte": "d5cd8e48b8fb6f07c310735ae87169911c145daae237a5e84ec21d1876e41f9a",
     "UI/src/components/modals/WidgetModal.svelte": "49dcfaaf9fbb33e2b3503b9d6dd1bfdc64551a251fa97a9a32729638b1ea525a",
     "UI/src/components/widgets/StaffBoard.svelte": "1e22ec4c29067df662454be5e7acccc81388ae2717b86a0ab742818be0b6ffc0",
-    "UI/src/utils/Permissions.js": "100a24508b57b6c73a323ab4f128ee2c79aef3212a2cd0178172199d59e51854",
-    "BE/application/views/statistic_views.py": "c948d6e6c9d0846eca66f8d1c13ffa97d7e2071a7e4f27ebd2022ccd28623fb7",
+    "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
+    "BE/application/views/statistic_views.py": "9a97f4e8fac492aff785b6636165a4583510473d057616fd9f2f1e0a9b0693de",
     "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
-    "BE/application/serializers/auth_serializers.py": "edecff4a6618fc1862dc681056df9ab699de1a8cbb80cc004cf3f5642b7a1798",
-    "BE/application/models/user_models.py": "3834a5655391ca750830d03175d7f663276697e50ab3fcfffcfd9ad45b7b931c",
+    "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+    "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
     "BE/application/impersonation.py": "04337e8ece4eb8027f396392835170e56ff176a06b2565b70c87455417b5035e",
     "UI/src/components/widgets/Associates.svelte": "5bb400b1d4716eaa0a8fb48186f328ecedddf2b0ab2aab66893ba426acf2eeab",
     "UI/src/components/widgets/Payments.svelte": "4e3e6fe698b9208613e9a2ee270294b601ab5a5b89abb7ba3a48c7eec86328b5",
     "UI/src/components/widgets/BestCourses.svelte": "345edb15c8c27c746c2bb2d88da65293d257d59f12a2761ea19d4549c2e0cdb0",
     "UI/src/components/widgets/Subscriptions.svelte": "275ee58e414aa192eb400c03fe47bb34c9e2c5eb7a2376f36e413f1f93c95b25",
-    "UI/src/components/widgets/TodayLessons.svelte": "89c5f1bac42bb7c462cf47b84711a0065852d9c99fd6a4e119857c143c263c34",
-    "UI/src/components/widgets/ExpiringCarnets.svelte": "053b91063fc92d73ed9a928529947aaa419bdea44281bbb07221647773c6a2a8",
+    "UI/src/components/widgets/TodayLessons.svelte": "f326520f681e642ab0c8fceb7ca2df82169dfdfde8c1fae67da54c1a2ca6ea6e",
+    "UI/src/components/widgets/ExpiringCarnets.svelte": "4bcea1d25d2ff49845207240e59b3bb768a9ea3a0f8683aca42cc0b06fe7e534",
     "UI/src/components/widgets/SubscriptionsToApprove.svelte": "643903b6af944a5e63ca9f12e5b449e637af6125e870ed3a6c7472c5501a8d8a",
     "UI/src/components/widgets/ExpiringMedicalCertificates.svelte": "92b85d8bcd047a6fd097096a0b455244540408feddaac6eaff318477ad5e0592",
     "UI/src/components/widgets/IncomeAndExpenses.svelte": "d7c5a167a21ce0ad992cf4ebd50db81165766b6e305cf1d4e6db352a2dce41de",

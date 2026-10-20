@@ -13,14 +13,14 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
     "UI/src/routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte": "cdb4e69ab6a4b231385aecacdd8c427aa0ca03652c79e50bee154ee3626ea7d7",
     "UI/src/routes/association/course/overview/partials/course-subscriptions-list.svelte": "061c496436d114b9ed587e8c9f5c8b83ab94a518a142e5118f0a911f3be6ea93",
-    "BE/application/tasks.py": "fa819d44d7013b60455306b01d1e9a0f4a33e3f6e8759754316ff3cf937e6e8a",
+    "BE/application/tasks.py": "e2d1ec425d9436eb90f1cdb1df56aba3ce84e8b3050cdb9357d219c711693530",
     "BE/application/signals.py": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f",
     "UI/src/components/eventgenerator/EventGenerator.svelte": "ce771bd5b1543d294f59094218cabe6a19ac15571e92de91dd12210eb7738af9",
     "UI/src/components/eventgenerator/RateElement.svelte": "fb5f41fdcd81fa3a2628ba8e5031f895542b21614e7587ada586cf711192f77b",
-    "UI/src/routes/profile/sections/Settings.svelte": "f620ddf62f5a04e8b8b978674e32338496dcd55e15a290a9cb8804b21e28fe2e",
+    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
     "UI/src/routes/association/course/overview/components/Calendar.svelte": "5cdbdd7e450b7ccbcc87eee2349be0b156e9bdb2b79f79f750da99656fb6224e",
     "UI/src/routes/association/course/overview/components/modals/EditCalendarEvent.svelte": "9e524c5317b89a1c86c0d5153ba07b9286c9acbb560cef636324d302905819d3",
-    "UI/src/routes/accounting/payment/PaymentList.svelte": "34017cc9d3bb103ff10b326cf95876190ce6060886c018816bd85bf8bbaa64fe",
+    "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
     "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "b40fb3c86aa525f87e4f7268ddb7dede3f544e959d28e6baa227419d615a009e",
     "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
     "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
@@ -28,8 +28,8 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
     "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
     "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
-    "BE/application/views/invoice_views.py": "bb0f44ec825d4050322f306d280e078178b1978e42a5964c80c8d400b187a331",
-    "UI/src/routes/profile/sections/Stripe.svelte": "d9afbbae8b0b6532a42d4a5db00a034b7d94be48e1e30abaf5390ac4f26f954a",
+    "BE/application/views/invoice_views.py": "b6db30b40d0c54c663d5d80a7037161bd68642aeb1056926f5d09baba08394b5",
+    "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
     "UI/src/routes/profile/sections/SelfInstance.svelte": "fd9b5525f04b57a78cdcbceaaa4f25ed4b107149b86117f469e4663a16992e71",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "4ee10eb96a9f8dfde6239babafe405745386965bb5b670993a0381d4fe172c56",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte": "3b7f9908dc8f4c995d3591caa97f3af3f66634fc2c9f9ca70d30b753e9667cb5",
@@ -38,7 +38,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
     "BE/application/views/stripe_views.py": "d35f1a6f13dcec42d032fe77eb01547f71543dffc8ae1e66e8407524119def40",
     "UI/src/routes/activities/payment/PaymentList.svelte": "9f913de33eea435d9a5c0487f28b1df466ee8198d66564fd7ffdeee817256151",
-    "UI/src/routes/stripe/Checkout.svelte": "514acb44f3798ecdd5ec981116a8ce3e49de4b77cd675d038439f948746cca1f",
+    "UI/src/routes/stripe/Checkout.svelte": "d27a91080312d428b50d7a23111d1a27257774816a0b2344388233c6604f49b6",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
 });
 
@@ -356,7 +356,7 @@ export const coursePaymentAdditionalSourceContracts = Object.freeze([
     ],
     [
         "UI/src/routes/profile/sections/Stripe.svelte",
-        "{#if typeof __bakney !== 'undefined' && __bakney.STRIPE_KEY}",
+        "{#if stripeConfigured}",
         34
     ],
     [

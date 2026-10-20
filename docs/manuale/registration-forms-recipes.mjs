@@ -106,7 +106,7 @@ Il campo **Taglia maglietta** mostra **Esempio: M** e **Indica la taglia desider
 La verifica termina in questo passaggio: non vengono compilati dati di una nuova persona, firmati documenti o inviate richieste.
 ${image(12, 'Campo aggiuntivo nel modulo pubblico, con gli altri dati personali oscurati')}`);
     const limits = `<Note>Questa procedura usa il proprietario. Il collaboratore dimostrativo può consultare il modulo, ma il pulsante superiore **Salva** è disattivato e il server rifiuta il suo tentativo di modifica.
-La disponibilità della voce **Modulo Iscrizioni** dipende anche dal piano: nel menu del piano gratuito conduce all'aggiornamento del piano. Non dedurre da questa prova differenze ulteriori tra piani.</Note>
+La voce **Modulo Iscrizioni** è disponibile secondo i permessi dell'account, senza richiedere un abbonamento alla piattaforma.</Note>
 ${image(13, 'Modulo consultato dal collaboratore con il pulsante Salva disattivato')}`;
     const notRun = 'La variante richiede una propria prova browser e controlli dello stato salvato.';
     return [
@@ -176,8 +176,8 @@ Il destinatario iniziale è dimostrativo: sostituiscilo con quello corretto nel 
 
 // These canonical hashes seal the semantic review, separately from capture hashes.
 export const registrationFormsReviewedSources = Object.freeze({
-    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
-    "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
+    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/routes/association/Members/subscription/Template.svelte": "e01e73eb4435b7ea9ecf35971dd59182c4b6752fd404921e44a0770a64682903",
     "UI/src/routes/association/Members/subscription/partials/TypesModule.svelte": "f83c5113b5bf8ce41420ceafe5a8311802284cb4c9e4ca2891e94c0cca5924bd",
     "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",
@@ -191,19 +191,19 @@ export const registrationFormsReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/MembersBook.svelte": "e123edd1de7d765f5a9b98d9ad019940ed2de36c40df3d78d1e605205849ae7d",
     "UI/src/components/modals/ShareModuleSubscriptionLink.svelte": "999bf9e16be7b8389a0181cd7f5c45f383dcb9c690925b653b9bf7d3333261ea",
     "UI/src/routes/association/Members/subscription/share/link-share-header.svelte": "384f60f3b95d3d1acaecf7ede4d2d01d9d29763740a31c84d0c87994a1a30246",
-    "UI/src/routes/subscribe/Subscribe.svelte": "631e8c05133e9267e9e82bec8a941b61ac3bf5afbb7b79548156f32e63e6160c",
-    "UI/src/routes/subscribe/wizard/Step0.svelte": "764b6c9c39b7845650f0e8fec792c051d6d9fe259f4fd32a9e630726fc5ad737",
+    "UI/src/routes/subscribe/Subscribe.svelte": "378e90166b90d806ad9b1eface40d2cd9125c08cb35b248868ac6e9bb3b1e51b",
+    "UI/src/routes/subscribe/wizard/Step0.svelte": "3350b71dd2dd2b3cfe1790f9e91ca4d2bf5e70bd94247c5ab59b49965a9d1edf",
     "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
     "UI/src/routes/subscribe/wizard/partials/additional-fields.svelte": "25eacb675ca1f76cf2ceae6af39126b8e32032acc6e395a414b087d838d311b3",
     "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
-    "UI/src/utils/Permissions.js": "100a24508b57b6c73a323ab4f128ee2c79aef3212a2cd0178172199d59e51854",
+    "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
     "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
     "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
     "BE/application/views/search_views.py": "0cc8b4378133ef496ae8d193ad0904456dc92f394f8a04aebf9a5e3d58e1e380",
-    "BE/application/serializers/auth_serializers.py": "edecff4a6618fc1862dc681056df9ab699de1a8cbb80cc004cf3f5642b7a1798",
-    "BE/application/models/user_models.py": "3834a5655391ca750830d03175d7f663276697e50ab3fcfffcfd9ad45b7b931c",
+    "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+    "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-    "UI/src/routes/profile/sections/Settings.svelte": "f620ddf62f5a04e8b8b978674e32338496dcd55e15a290a9cb8804b21e28fe2e",
+    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
     "UI/src/routes/association/archive/TemplatesList.svelte": "2fb5b32a1326a36787f24bca61ad8a456f420c90742d8da30938fa3d72d6f173",
     "UI/src/routes/association/archive/detail/partials/template-form.svelte": "83348b084cf65b145bbd366c0f388abe6cdb8156064e07708346dc72d6141cad",
     "UI/src/routes/association/Members/detail/sections/Cloud.svelte": "dc79dccd5dd5c90a20903493c5483d8cb84eab327f33fc7ee3f47512e46d8896",
