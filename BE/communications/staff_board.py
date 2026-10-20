@@ -117,7 +117,7 @@ def staff_board_group(association_id):
 
 def readable_association_id(user_id):
     """Recheck current role/permissions when joining and delivering a socket event."""
-    from application.models import User, BillingSubscription, BillingPlan, SportAssociation
+    from application.models import User, SportAssociation
     user = User.objects.filter(pk=user_id, is_active=True).first()
     if not user or user.role not in (User.ASSOCIATION, User.COLLABORATOR):
         return None
@@ -129,8 +129,6 @@ def readable_association_id(user_id):
         owner_id = user.connected_user_id
     else:
         owner_id = user.pk
-    if not BillingSubscription.objects.filter(user_id=owner_id, billing_plan__billing_type__in=(BillingPlan.PRO_PLAN, BillingPlan.TEAMS_PLAN)).exists():
-        return None
     association_id = SportAssociation.objects.filter(user_id=owner_id, user__is_active=True).values_list('pk', flat=True).first()
     return str(association_id) if association_id else None
 

@@ -1,7 +1,7 @@
 // Reviewed text-only behavior. Operational/legal guarantees remain explicit gaps.
 export const referenceReviewedSources = Object.freeze({
-    "BE/application/management/commands/seed_selfhost.py": "1ca816e3c6daa58905d66cf459ab08e3cf8479bcaa5bd42b7215737a666921c2",
-    "BE/application/views/billing_views.py": "65292240bd56a557c5b4d582f18fa984ae3d9b311980275e7f3892886d0ecfaf",
+    "BE/application/management/commands/seed_selfhost.py": "de0393c2d68e684dc715c729036104822ea7edc625274f42fccf39e80b0e663b",
+    "BE/application/views/billing_views.py": "28ee7ec15b5bc759546d5df4aaaf4558fe577cbedc8ab60a5256f7dcda06a4c8",
     "BE/core/authentication.py": "4ea4b9041f1c19aef3105fa9518edb3fb880d1deddef46be7dff701c7a3da3d2",
     "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
@@ -15,7 +15,12 @@ const referenceSourceContracts = Object.freeze({
     "billingSeed": [
         "BE/application/management/commands/seed_selfhost.py",
         "class Command(BaseCommand):",
-        42
+        6
+    ],
+    "billingActive": [
+        "BE/application/views/billing_views.py",
+        "def billing_active_plan(request):",
+        8
     ],
     "billingCheckout": [
         "BE/application/views/billing_views.py",
@@ -60,6 +65,7 @@ const referenceSourceContracts = Object.freeze({
 });
 
 function reviewedPageTemplates() {
+    const billingActive = referenceSourceContracts.billingActive;
     const billingSeed = referenceSourceContracts.billingSeed;
     const billingCheckout = referenceSourceContracts.billingCheckout;
     const authentication = referenceSourceContracts.authentication;
@@ -77,10 +83,9 @@ function reviewedPageTemplates() {
             section('piani-di-abbonamento', 'verified', `# Piani di abbonamento
 
 Questa guida riguarda l'abbonamento alla **piattaforma Assozeta** nelle installazioni self-hosted.
-Il piano configurato all'inizializzazione è **Piano Pro**, con importi mensile e annuale pari a zero.
-Quando l'associazione principale è configurata, il piano viene associato al suo proprietario con una validità di lunga durata.
+Non serve un abbonamento attivo alla piattaforma. L'inizializzazione non crea un piano software né un abbonamento per il proprietario.
 
-<Note>La quota di iscrizione o di un corso è un pagamento dell'associazione, distinto dall'abbonamento alla piattaforma.</Note>`, [billingSeed, payment], ['self_hosted']),
+<Note>La quota di iscrizione o di un corso è un pagamento dell'associazione, distinto dall'abbonamento alla piattaforma.</Note>`, [billingSeed, billingActive, payment], ['self_hosted']),
             section('confronto-tra-i-piani', 'verified', `## Confronto tra i piani
 
 In questa installazione self-hosted non viene proposto un acquisto tra **Base**, **Pro** e **Teams**: l'acquisto alla piattaforma è disattivato.
@@ -91,8 +96,8 @@ Il percorso di acquisto del Piano Base descritto dal precedente manuale non è d
 Per le funzioni gestionali consulta i singoli capitoli; non assumere i limiti o le condizioni commerciali del servizio pubblico.`, [billingSeed, billingCheckout], ['self_hosted'], 'Public Base purchase/table does not describe the self-hosted configuration.'),
             section('piano-pro', 'verified', `## Piano Pro
 
-**Piano Pro** è il nome del piano creato dall'inizializzazione self-hosted. Gli importi registrati sono zero.
-Il nome non conferma che un servizio esterno sia già configurato: per pagamenti online e collegamenti usa le rispettive guide e verifica la configurazione effettiva dell'installazione.`, [billingSeed], ['self_hosted']),
+**Piano Pro** è un nome storico del servizio pubblico. L'installazione self-hosted non richiede questo piano e non lo crea all'inizializzazione.
+I servizi esterni richiedono comunque una configurazione: per pagamenti online e collegamenti usa le rispettive guide e verifica la configurazione effettiva dell'installazione.`, [billingSeed, billingActive], ['self_hosted']),
             section('piano-teams', 'unsupported', `## Piano Teams
 
 La procedura di acquisto del Piano Teams del servizio pubblico non si applica a questa installazione self-hosted.

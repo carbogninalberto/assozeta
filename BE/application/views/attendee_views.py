@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 
 import logging
 
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation, IsAthleteUser
+from application.permissions import IsAssociationUser, IsAthleteUser
 from application.utils.api_utils import is_valid_uuid, ColorPalette, get_seconds_from_reminder_units, \
     REMINDER_UNITS_MAP_TEXT
 from django.db import transaction
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['POST', 'DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def calendar_update(request, uid):
     """
     API endpoint to update the calendar of a course
@@ -380,7 +380,7 @@ def calendar(request, uid):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def attendees_update(request, uid, attendance_day_uid):
     """
     API endpoint to update an attendance registry event
@@ -517,7 +517,7 @@ def attendees_update(request, uid, attendance_day_uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def attendees(request, uid):
     """
     API endpoint to get the attendance registry for the current course
@@ -604,7 +604,7 @@ def attendees(request, uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation | IsAthleteUser])
+@permission_classes([IsAuthenticated, IsAssociationUser | IsAthleteUser])
 def subscription_attendance(request, uid):
     """
     API endpoint to get the attendance registry for the current course
@@ -683,7 +683,7 @@ def subscription_attendance(request, uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation | IsAthleteUser])
+@permission_classes([IsAuthenticated, IsAssociationUser | IsAthleteUser])
 def subscription_calendar(request, uid):
     """
     API endpoint to get the attendance registry for the current course
@@ -722,7 +722,7 @@ def subscription_calendar(request, uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def full_events_calendar(request):
     """
     API endpoint to get the attendance registry for the current course
@@ -830,7 +830,7 @@ def full_events_calendar(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 @transaction.atomic
 def full_events_calendar_update(request):
     # Lock the association as well as existing rows so concurrent first writes
@@ -912,7 +912,7 @@ def full_events_calendar_update(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def full_events_calendar_export(request):
     """
     API endpoint to get the attendance registry for the current course

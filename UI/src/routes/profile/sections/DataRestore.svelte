@@ -338,6 +338,12 @@
                     <div><dt>Data export</dt><dd>{selected.preview.export_date ? new Date(selected.preview.export_date).toLocaleString('it-IT') : 'Non indicata'}</dd></div>
                     <div><dt>Contenuto</dt><dd>{selected.preview.records} record · {selected.preview.files} allegati inclusi</dd></div>
                 </dl>
+                {#if selected.preview.skipped_records?.BillingPlan || selected.preview.skipped_records?.PreviewAndCustomFeatures}
+                    <InstanceAlert>I dati dei vecchi abbonamenti software non vengono importati:
+                        {selected.preview.skipped_records.BillingPlan || 0} piani e
+                        {selected.preview.skipped_records.PreviewAndCustomFeatures || 0} abilitazioni commerciali.
+                        Le funzioni dell'associazione sono disponibili senza un abbonamento software.</InstanceAlert>
+                {/if}
                 {#if selected.preview.missing_relations}
                     <details class="report-section" open={review}>
                     <summary><span>Rapporto del backup</span><span class="report-count">{selected.preview.missing_relations} collegamenti da verificare</span></summary>

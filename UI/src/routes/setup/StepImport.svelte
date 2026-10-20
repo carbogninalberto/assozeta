@@ -311,6 +311,13 @@
         {/if}
     {/if}
 
+    {#if config.importResult?.skipped_records?.BillingPlan || config.importResult?.skipped_records?.PreviewAndCustomFeatures}
+        <p>I vecchi abbonamenti software non sono stati importati:
+            {config.importResult.skipped_records.BillingPlan || 0} piani e
+            {config.importResult.skipped_records.PreviewAndCustomFeatures || 0} abilitazioni commerciali.
+            Non sono necessari per usare l'associazione.</p>
+    {/if}
+
     <!-- Import progress -->
     {#if importing}
         <div class="import-progress text-center py-4">

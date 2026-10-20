@@ -5,7 +5,7 @@
     import {scale} from 'svelte/transition';
 
     import {apiFetch} from 'utils/ApiMiddleware.js';
-    import {sessionToken, subPage, userData, billingData} from 'store/stores.js';
+    import {sessionToken, subPage, userData} from 'store/stores.js';
     import {Warning, WarningCircle} from 'phosphor-svelte';
     import {canPerformAction} from 'utils/Permissions';
     import {toast} from 'svelte-sonner';
@@ -15,7 +15,6 @@
     sessionToken.useLocalStorage();
     subPage.useLocalStorage();
     userData.useLocalStorage();
-    billingData.useLocalStorage();
 
     export let changes = false;
     let validButton = false;

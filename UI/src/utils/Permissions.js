@@ -178,179 +178,20 @@ export const allPermissions = [
 ];
 
 permissions.useLocalStorage();
-// prettier-ignore
-const planBasedResources = {
-    1: [
-        'association.dashboard.read',
-        'association.personas.read',
-        'association.personas.create',
-        'association.personas.update',
-        'association.personas.delete',
-        'association.templates.read',
-        'association.templates.create',
-        'association.templates.update',
-        'association.templates.delete',
-        'association.members.read',
-        'association.members.create',
-        'association.members.update',
-        'association.members.delete',
-        'association.courses.read',
-        'association.courses.create',
-        'association.courses.update',
-        'association.courses.delete',
-        'association.campsandretreats.read',
-        'association.campsandretreats.create',
-        'association.campsandretreats.update',
-        'association.campsandretreats.delete',
-        'bookeeping.payments.read',
-        'bookeeping.payments.create',
-        'bookeeping.payments.update',
-        'bookeeping.payments.delete',
-        'bookeeping.documents.invoices.read',
-        'bookeeping.documents.invoices.create',
-        'bookeeping.documents.invoices.update',
-        'bookeeping.documents.invoices.delete',
-        'association.calendar.read',
-        'association.events.read',
-        'association.events.create',
-        'association.events.update',
-        'association.events.delete',
-        'other.settings.read',
-        'other.settings.update',
-        'other.notifications.read',
-    ],
-    2: [
-        'association.modules.read',
-        'association.modules.create',
-        'association.modules.update',
-        'association.modules.delete',
-        'association.members.archive.read',
-        'association.members.archive.update',
-        'association.carnet.read',
-        'association.carnet.create',
-        'association.carnet.update',
-        'association.carnet.delete',
-        'association.instructor.read',
-        'association.instructor.create',
-        'association.instructor.update',
-        'association.instructor.delete',
-        'association.courses.attendance',
-        'association.instructor.hours.read',
-        'association.instructor.hours.create',
-        'association.instructor.hours.update',
-        'association.instructor.hours.delete',
-        'association.courses.attendance.read',
-        'association.courses.attendance.update',
-        'association.archive.read',
-        'association.archive.update',
-        'association.report.read',
-        'bookeeping.payments.archive.read',
-        'bookeeping.payments.archive.update',
-        'bookeeping.documents.invoices.archive.read',
-        'bookeeping.documents.invoices.archive.update',
-        'bookeeping.documents.clientinvoices.read',
-        'bookeeping.documents.clientinvoices.create',
-        'bookeeping.documents.clientinvoices.update',
-        'bookeeping.documents.clientinvoices.delete',
-        'bookeeping.documents.supplierinvoices.read',
-        'bookeeping.documents.supplierinvoices.create',
-        'bookeeping.documents.supplierinvoices.update',
-        'bookeeping.documents.supplierinvoices.delete',
-        'bookeeping.management.suppliers.read',
-        'bookeeping.management.suppliers.create',
-        'bookeeping.management.suppliers.update',
-        'bookeeping.management.suppliers.delete',
-        'bookeeping.management.accounts.read',
-        'bookeeping.management.accounts.create',
-        'bookeeping.management.accounts.update',
-        'bookeeping.management.accounts.delete',
-        'bookeeping.management.accountstransfers.read',
-        'bookeeping.management.accountstransfers.create',
-        'bookeeping.management.accountstransfers.update',
-        'bookeeping.management.accountstransfers.delete',
-        'bookeeping.management.balancesheet.read',
-        'bookeeping.management.balancesheet.update',
-        'other.users.collaborators.read',
-        'other.users.collaborators.create',
-        'other.users.collaborators.update',
-        'other.users.collaborators.delete',
-        'association.communication.messages.read',
-        'association.communication.messages.create',
-        'association.communication.messages.update',
-        'association.communication.messages.delete',
-        'association.communication.workflows.read',
-        'association.communication.workflows.create',
-        'association.communication.workflows.update',
-        'association.communication.workflows.delete',
-        'association.communication.settings.read',
-        'association.communication.settings.update',
-        'other.audit.read',
-    ],
-    3: [
-        // 'association.secretary',
-        // 'association.collaboration.full',
-        // 'association.communication.full',
-    ]
-};
-
-const permissionsMap = {
-    1: {
-        association: planBasedResources[1],
-    },
-    2: {
-        association: [...planBasedResources[1], ...planBasedResources[2]],
-    },
-    3: {
-        association: [...planBasedResources[1], ...planBasedResources[2], ...planBasedResources[3]],
-    },
-};
-
-export const isFreePlan = function () {
-    const billingData = localStorage.getItem('billingData');
-    const activePlan = billingData ? JSON.parse(billingData)?.active_plan : 1;
-    return activePlan?.billing_type === 1;
-};
-
-/**
- * this function is used to set the permissions for the user base on plan and role
- * @param {*} planType {1, 2, 3} where 1 is base plan, 2 is pro plan and 3 is teams plan
- * @param {*} role {association, athlete, secretary}
- */
-export const setPermissions = function (planType, role) {
+/** Set role permissions after userData has been published to local storage. */
+export const setPermissions = function (role) {
     localStorage.removeItem('permissions');
-    // get collaborators permissions list from local storage userData
-    const userData = localStorage.getItem('userData');
-    // get collaborator permissions if set in userData
-    const collaboratorPermissions = (userData && JSON.parse(userData).collaborator_permissions) || null;
-    //console.debug('PERMISSIONS:', collaboratorPermissions);
-    // if the collaborator has permissions, set them
-    if (collaboratorPermissions && JSON.parse(userData).collaborator_role != 1) {
-        if (collaboratorPermissions.length > 0 && JSON.parse(userData).collaborator_role != 1) {
-            // if the collaborator has permissions, set them
-            permissions.set(collaboratorPermissions);
-            return;
-        } else if (collaboratorPermissions.length == 0) {
-            permissions.set(['other.settings.read']);
-            return;
-        }
-    }
-    // if it's not set, set it to the default, this is also set all persmissions to collaborator role 1
-    const planPermissions = permissionsMap[Number(planType)];
-    if (!planPermissions || planPermissions[role] === undefined) {
-        console.error('Unsupported permissions context', {planType, role});
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    if (role !== 'association') {
         permissions.set([]);
         return;
     }
-
-    // set all permissions
+    if (userData.collaborator_role && Number(userData.collaborator_role) !== 1) {
+        const grants = Array.isArray(userData.collaborator_permissions) ? userData.collaborator_permissions : [];
+        permissions.set(grants.length ? grants : ['other.settings.read']);
+        return;
+    }
     permissions.set(allPermissions);
-
-    // try {
-    //     // permissions.set(permissionsMap[planType][role]);
-    // } catch (error) {
-    //     console.warn('setPermissions error setting default', error);
-    //     // permissions.set(permissionsMap[1]['association']);
-    // }
 };
 
 /**

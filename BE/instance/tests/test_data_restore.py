@@ -448,6 +448,34 @@ class RestoreTests(TransactionTestCase):
         self.assertIsNone(old_collaborator.connected_user_id)
         self.assertEqual(User.objects.get(username='new-collaborator').connected_user_id, self.owner.pk)
 
+    def test_restore_keeps_archived_hashes_for_new_users_and_local_credentials(self):
+        from django.contrib.auth.hashers import make_password
+        local_collaborator = User.objects.create_user(username='local-collaborator', password='LocalCollaborator',
+                                                      connected_user=self.owner, role=User.COLLABORATOR)
+        local_credentials = local_collaborator.password
+        users = [{'user_id': self.source_owner, 'username': 'source-owner', 'password': make_password('SourceOwner')},
+                 {'user_id': str(local_collaborator.pk), 'username': 'local-collaborator', 'role': User.COLLABORATOR,
+                  'connected_user_id': self.source_owner, 'password': make_password('ArchivedLocal')},
+                 {'user_id': str(uuid.uuid4()), 'username': 'archived-collaborator', 'role': User.COLLABORATOR,
+                  'connected_user_id': self.source_owner, 'password': make_password('ArchivedCollaborator')},
+                 {'user_id': str(uuid.uuid4()), 'username': 'archived-athlete', 'role': User.ATHLETE,
+                  'connected_user_id': self.source_owner, 'password': make_password('ArchivedAthlete')}]
+        op = self.start(self.upload(self.archive({'User': users})))
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertTrue(User.objects.get(username='archived-collaborator').check_password('ArchivedCollaborator'))
+        self.assertTrue(User.objects.get(username='archived-athlete').check_password('ArchivedAthlete'))
+        local_collaborator.refresh_from_db()
+        self.assertEqual(local_collaborator.password, local_credentials)
+        self.owner.refresh_from_db()
+        self.assertTrue(self.owner.check_password('LocalSecret'))
+        # The safety backup taken before replacement carries the local hashes.
+        with default_storage.open(op.backup_path) as source, zipfile.ZipFile(source) as zf:
+            recovered = {row['user_id']: row for row in json.loads(zf.read('data/02_users.json'))}
+        self.assertEqual(recovered[str(local_collaborator.pk)]['password'], local_credentials)
+        self.assertEqual(recovered[str(self.owner.pk)]['password'], self.owner.password)
+
     def test_unrelated_document_collision_fails_without_deleting_it(self):
         from docmanager.models import Document
         unrelated = Document.objects.create(filename='unrelated.txt')

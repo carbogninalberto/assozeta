@@ -22,9 +22,6 @@ from django.db import models
 from django.db.models import Exists, Model, OuterRef
 from django.utils import timezone
 
-from application.models import (
-    BillingPlan,
-)
 from application.models.attendee_models import (
     AttendanceDay,
     AttendanceRegistry,
@@ -83,7 +80,6 @@ from application.models.user_models import (
     Group,
     Instructor,
     InstructorHours,
-    PreviewAndCustomFeatures,
     Reminder,
     SportAssociation,
     SportAssociationDocumentsArchive,
@@ -133,7 +129,6 @@ class AssociationExportService:
     # Format: (Model class, filename prefix, [optional: 'system' for system data])
     EXPORT_ORDER: List[Tuple] = [
         # System defaults (needed for fresh install)
-        (BillingPlan, '00_billing_plans', 'system'),
 
         # Tier 1: Root entity
         (SportAssociation, '01_sport_association'),
@@ -236,7 +231,6 @@ class AssociationExportService:
         (CumulativeSubscriptionGymLinks, '63_cumulative_gym_links'),
 
         # Tier 20: System-like models
-        (PreviewAndCustomFeatures, '64_preview_features', 'system'),
 
         # Tier 21: Documents archive
         (SportAssociationDocumentsArchive, '65_documents_archive'),
@@ -277,7 +271,6 @@ class AssociationExportService:
         'CourseSubscription': ['membership_payments'],
         'CampsAndRetreatsPeriod': ['camps_and_Retreats_period_services'],
         'CampsAndRetreatsSubscriptionPeriod': ['camps_and_retreats_period_services'],
-        'User': ['preview_and_custom_features'],
     }
 
     def __init__(
@@ -300,6 +293,7 @@ class AssociationExportService:
         self.errors: List[str] = []
         self.progress_callback = progress_callback
         self._last_progress_percent = -1
+        self._credential_user_ids_cache: Optional[Set[uuid.UUID]] = None
 
     def _report_progress(
         self,
@@ -582,10 +576,6 @@ class AssociationExportService:
         if model_name == 'CumulativeSubscriptionGymLinks':
             return qs.filter(sport_association=self.sport_association)
 
-        # PreviewAndCustomFeatures - through User M2M (export features used by owner)
-        if model_name == 'PreviewAndCustomFeatures':
-            owner = self.sport_association.user
-            return qs.filter(user=owner)
 
         # Document - collected separately
         if model_name == 'Document':
@@ -660,11 +650,14 @@ class AssociationExportService:
                         logger.warning(f"Error serializing M2M {m2m_field_name} on {model_name}: {e}")
                         data[f'_m2m_{m2m_field_name}'] = []
 
-        # Preserve only the owner's encoded password for self-host migration.
-        # Other user credentials remain excluded from application exports.
+        # Accounts that sign in through this association (owner, its
+        # collaborators, athletes with a subscription here) keep their encoded
+        # password so they can still sign in after migration or restore. Users
+        # exported only as references (signatures, certificates) or deleted
+        # accounts never carry a hash. Only validated hashes are written.
         if (
             model_name == 'User'
-            and obj.pk == self.sport_association.user_id
+            and obj.pk in self._credential_user_ids()
             and is_restorable_password_hash(obj.password)
         ):
             data['password'] = obj.password
@@ -673,6 +666,22 @@ class AssociationExportService:
         self._collect_document_references(obj, data)
 
         return data
+
+    def _credential_user_ids(self) -> Set[uuid.UUID]:
+        """Users whose password hash may be exported, computed once per export."""
+        if self._credential_user_ids_cache is None:
+            association = self.sport_association
+            athlete_ids = Subscription.objects.filter(
+                sport_association=association, user__isnull=False,
+            ).values_list('user_id', flat=True)
+            self._credential_user_ids_cache = set(
+                User.original_objects.filter(deleted=False).filter(
+                    models.Q(pk=association.user_id)
+                    | models.Q(connected_user_id=association.user_id)
+                    | models.Q(pk__in=athlete_ids)
+                ).values_list('pk', flat=True)
+            )
+        return self._credential_user_ids_cache
 
     def _collect_document_references(self, obj: Model, data: Dict[str, Any]):
         """Collect all document IDs from the record for file export."""

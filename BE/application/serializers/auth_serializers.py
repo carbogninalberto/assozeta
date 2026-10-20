@@ -162,7 +162,7 @@ class UserSerializerSearch(serializers.ModelSerializer):
     online_payments = serializers.SerializerMethodField()
 
     def get_preview_and_custom_features(self, obj):
-        return [preview.name for preview in obj.preview_and_custom_features.all()]
+        return [feature['name'] for feature in obj.get_preveiw_and_custom_features()]
 
     def get_online_payments(self, obj):
         if obj.role == User.ATHLETE:

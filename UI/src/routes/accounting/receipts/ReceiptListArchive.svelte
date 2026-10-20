@@ -6,7 +6,7 @@
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware.js';
     import {sessionToken, userData, permissions} from 'store/stores.js';
     import DocumentButton from 'components/buttons/DocumentButton.svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import ShareModal from './modals/ShareModal.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
     import Tabs from 'components/Tabs.svelte';
@@ -365,7 +365,7 @@
                     <div
                         class="dropdown dropdown-inline m-2"
                         on:click={() => {
-                            if (isFreePlan()) location.href = '/#/subscription/upgrade';
+
                         }}>
                         <button
                             disabled={!canPerformAction('bookeeping.documents.invoices.archive.read')}

@@ -134,6 +134,9 @@ class InstanceConfigSerializer(serializers.ModelSerializer):
             'showCourseAthletes': obj.show_course_athletes,
             'showMinorExemption': obj.show_minor_exemption,
             'showTutorial': obj.show_tutorial,
+            'familyRegistration': settings.FAMILY_REGISTRATION_ENABLED,
+            'federationRegistration': settings.FEDERATION_REGISTRATION_ENABLED,
+            'multipleRegistration': settings.MULTIPLE_REGISTRATION_ENABLED,
         }
 
     def get_setup(self, obj):

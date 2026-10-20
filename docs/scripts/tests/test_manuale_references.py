@@ -29,6 +29,7 @@ const pages = referencePages((relative, symbol, length) => {
 console.log(JSON.stringify({pages:pages.length,verified:pages.flatMap(page=>page.sections).filter(section=>section.status==='verified').length,
  external:pages.flatMap(page=>page.sections).filter(section=>section.status==='needs_external_verification').length,
  unsupported:pages.flatMap(page=>page.sections).filter(section=>section.status==='unsupported').length,
+ bodies:Object.fromEntries(pages.flatMap(page=>page.sections.map(section=>[section.id,section.body]))),
  headings:Object.fromEntries(pages.map(page=>[page.path,page.sections.map(section=>section.body.split('\n')[0])]))}));
 '''
 
@@ -58,6 +59,16 @@ class ReferenceRecipeTests(unittest.TestCase):
         for relative, headings in generated['headings'].items():
             original = (Path(__file__).parent / 'fixtures/original-manual-headings' / relative).read_text()
             self.assertEqual(headings, re.findall(r'^#{1,6} .+$', original, re.MULTILINE))
+
+    def test_software_subscription_is_not_required_or_seeded(self):
+        result = self.generate()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        bodies = json.loads(result.stdout)['bodies']
+        self.assertIn("Non serve un abbonamento attivo", bodies['piani-di-abbonamento'])
+        self.assertIn("non crea un piano software", bodies['piani-di-abbonamento'])
+        self.assertIn("nome storico", bodies['piano-pro'])
+        self.assertIn("quota di iscrizione", bodies['piani-di-abbonamento'])
+        self.assertNotIn("validità di lunga durata", '\n'.join(bodies.values()))
 
     def test_changed_behavior_or_import_invalidates_the_recipe_even_if_symbols_remain(self):
         for relative, old, new in [

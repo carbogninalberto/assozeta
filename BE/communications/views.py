@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from application.models.user_models import EmailLog, User
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions import IsAssociationUser
 from application.permissions_registry import check_collaborator_permission
 from application.serializers.user_serializers import EmailLogSerializer
 from application.utils.api_utils import is_valid_uuid
@@ -190,7 +190,7 @@ def configuration_smtp_update(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_messages_list(request):
 
     request.user.is_sport_association()
@@ -206,7 +206,7 @@ def communication_messages_list(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_messages_detail(request, message_id):
 
     request.user.is_sport_association()
@@ -235,7 +235,7 @@ def communication_messages_detail(request, message_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_messages_delete(request, message_id):
 
     request.user.is_sport_association()
@@ -252,7 +252,7 @@ def communication_messages_delete(request, message_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_messages_add(request):
 
     request.user.is_sport_association()
@@ -268,7 +268,7 @@ def communication_messages_add(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_workflows_list(request):
 
     request.user.is_sport_association()
@@ -283,7 +283,7 @@ def communication_workflows_list(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_workflows_add(request):
 
     request.user.is_sport_association()
@@ -304,7 +304,7 @@ def communication_workflows_add(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_workflows_delete(request, workflow_id):
 
     request.user.is_sport_association()
@@ -321,7 +321,7 @@ def communication_workflows_delete(request, workflow_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_workflows_update(request, workflow_id):
 
     request.user.is_sport_association()
@@ -366,7 +366,7 @@ def communication_workflows_update(request, workflow_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def communication_workflows_details(request, workflow_id):
 
     request.user.is_sport_association()
@@ -387,7 +387,7 @@ def communication_workflows_details(request, workflow_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def staff_board_messages_list(request):
     """
     Internal staff board: list all messages of the association, pinned first.
@@ -406,7 +406,7 @@ def staff_board_messages_list(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def staff_board_messages_add(request):
     check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
@@ -432,7 +432,7 @@ def staff_board_messages_add(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def staff_board_messages_update(request, staff_board_message_id):
     check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:
@@ -469,7 +469,7 @@ def staff_board_messages_update(request, staff_board_message_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def staff_board_messages_delete(request, staff_board_message_id):
     check_collaborator_permission(request)
     if request.user.role == User.ATHLETE:

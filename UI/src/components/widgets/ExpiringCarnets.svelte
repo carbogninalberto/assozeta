@@ -5,7 +5,6 @@
     import {link, push} from 'svelte-spa-router';
     import moment from 'moment';
     import {apiFetch} from 'utils/ApiMiddleware';
-    import {isFreePlan} from 'utils/Permissions';
 
     permissions.useLocalStorage();
 
@@ -79,21 +78,12 @@
                             </span>
                         </div>
                         <div class="d-flex justify-content-center mt-1">
-                            {#if isFreePlan()}
-                                <a
-                                    href="/subscription/upgrade"
-                                    use:link
-                                    class="d-flex align-items-center btn btn-outline-secondary btn-sm py-1 px-2 font-weight-boldest">
-                                    Modifica
-                                </a>
-                            {:else}
-                                <a
+                            <a
                                     href="/members/list/detail/{carnet?.subscription?.subscription_id}/carnet"
                                     use:link
                                     class="d-flex align-items-center btn btn-outline-secondary btn-sm py-1 px-2 font-weight-boldest">
                                     Modifica
                                 </a>
-                            {/if}
                         </div>
                     </div>
                 {/each}

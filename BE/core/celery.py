@@ -97,16 +97,6 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour='0', minute='15'),
         'args': ()
     },
-    'auto-move-users-to-base-plan': {
-        'task': 'auto_move_users_to_base_plan',
-        'schedule': crontab(hour='0', minute='0'),
-        'args': ()
-    },
-    'nurturing-warm-leads': {
-        'task': 'nurturing_warm_leads',
-        'schedule': crontab(hour='10', minute='20'),
-        'args': ()
-    },
     'auto-archive-subscription': {
         'task': 'auto_archive_subscription',
         'schedule': crontab(

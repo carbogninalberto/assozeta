@@ -97,12 +97,12 @@ export function tagPages(id, report, source) {
 
 // Discovery baseline only; this metadata cannot grant source or workflow verification.
 export const tagReviewedSources = Object.freeze({
-    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
-    "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
-    "UI/src/utils/Permissions.js": "100a24508b57b6c73a323ab4f128ee2c79aef3212a2cd0178172199d59e51854",
+    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+    "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
     "UI/src/components/tables/BKNDatatable.svelte": "a236f1526b3033905925d3354b4361907c2f3e96699efc1e59cc1e927c6b9692",
-    "BE/application/views/subscriptions_views.py": "d7022114e515be2da57e83b59fbe8042b06a273b61db7030839b31c1297022dc",
+    "BE/application/views/subscriptions_views.py": "1f55021d86c1df051b8b02be483fd463aae04462866a783572933740a4aa11d7",
     "BE/application/services/subscription_service.py": "95a5be71f2a72859d80e4f19dbcbcb2c8e61d43180152e7258cffe7ce772201d",
     "BE/application/models/subscriptions_models.py": "b6b592e5ced8b685df6196e877ad75679bdf650c0d79774de9c537455eab465a",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",

@@ -161,6 +161,9 @@ class RegistrationFormsProjectionTests(unittest.TestCase):
             self.assertEqual(pages[identifier]['status'], 'pending')
         for identifier in ['2-whatsapp', '3-email']:
             self.assertEqual(pages[identifier]['status'], 'needs_external_verification')
+        bodies = '\n'.join(page['body'] for page in pages.values())
+        self.assertIn("senza richiedere un abbonamento alla piattaforma", bodies)
+        self.assertNotIn("piano gratuito", bodies)
         self.assertIn('**mailto**', pages['3-email']['body'])
         self.assertIn('**Socio e Tesserato**', pages['configurare-il-modulo-d-iscrizione']['body'])
         self.assertIn('**Salva** della pagina', pages['campi-aggiuntivi']['body'])

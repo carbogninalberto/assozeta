@@ -1,6 +1,6 @@
 <script>
     import {onDestroy, onMount} from 'svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import * as easing from 'svelte/easing';
     import {slide, scale} from 'svelte/transition';
     import ContentLoader from 'svelte-content-loader';
@@ -362,10 +362,14 @@
                         }, 100);
                     },
 
+                    // Refetch on every view change/navigation so events edited elsewhere are never stale.
+                    lazyFetching: false,
                     eventSources: [{
                         events: async function (fetchInfo) {
-                            const startStr = moment(fetchInfo.start).format('YYYY-MM-DD');
-                            const endStr = moment(fetchInfo.end).format('YYYY-MM-DD');
+                            // Send local midnight with its UTC offset: bare dates are read as UTC midnight,
+                            // which drops events early in the local day from day/week ranges.
+                            const startStr = encodeURIComponent(moment(fetchInfo.start).format());
+                            const endStr = encodeURIComponent(moment(fetchInfo.end).format());
 
                             UiApp.block('#general_calendar', {
                                 message: 'Caricamento in corso...',
@@ -773,8 +777,7 @@
 
 <!--begin::Entry-->
 <div  class="d-flex flex-column-fluid">
-    {#if !isFreePlan()}
-        <!--begin::Container-->
+    <!--begin::Container-->
         <div class="container">
             <!--begin::Card-->
             <div class="card card-custom gutter-b">
@@ -871,9 +874,7 @@
                 </div>
             </div>
         </div>
-        <!--end::Container-->{:else}
-        <Upgrade />
-    {/if}
+        <!--end::Container-->
 </div>
 <!--end::Entry-->
 

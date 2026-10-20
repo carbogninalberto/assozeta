@@ -208,25 +208,25 @@ export function organizationAccessPages(id, report, source) {
 
 // Discovery baseline only; this metadata cannot grant source or workflow verification.
 export const organizationAccessReviewedSources = Object.freeze({
-    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
-    "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
-    "UI/src/utils/Permissions.js": "100a24508b57b6c73a323ab4f128ee2c79aef3212a2cd0178172199d59e51854",
+    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+    "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
     "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
     "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
-    "BE/application/serializers/auth_serializers.py": "edecff4a6618fc1862dc681056df9ab699de1a8cbb80cc004cf3f5642b7a1798",
-    "BE/application/models/user_models.py": "3834a5655391ca750830d03175d7f663276697e50ab3fcfffcfd9ad45b7b931c",
+    "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+    "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-    "UI/src/routes/profile/sections/Settings.svelte": "f620ddf62f5a04e8b8b978674e32338496dcd55e15a290a9cb8804b21e28fe2e",
+    "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
     "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
     "BE/application/models/subscriptions_models.py": "b6b592e5ced8b685df6196e877ad75679bdf650c0d79774de9c537455eab465a",
-    "BE/application/views/subscriptions_views.py": "d7022114e515be2da57e83b59fbe8042b06a273b61db7030839b31c1297022dc",
+    "BE/application/views/subscriptions_views.py": "1f55021d86c1df051b8b02be483fd463aae04462866a783572933740a4aa11d7",
     "BE/application/serializers/subscriptions_serializers.py": "1e53f7d66701653856b6d5701f5bd80a6d5febb06872a27abc9a50615859f451",
     "UI/src/routes/connectedCollaborators/ConnectedCollaborators.svelte": "e4a1f60f0fd4683722136602d0e0f3db8f67f9d5cb2b3b71972ae810f50eedf6",
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "UI/src/routes/connectedCollaborators/modals/EditModal.svelte": "0dee9f7d4cbf0fbdda753774b5497998b80422504ae930712f84ef7ead47130b",
     "UI/src/components/PermissionsComponent.svelte": "7141ca3deab090a2364016d6d9139515e07a839f101d5ead2498f6446e5c7500",
-    "BE/application/views/collaborator_views.py": "2f23bc4e052414615a267744cfbc97785cd65778f505651809bed97f1cf5bf3d",
+    "BE/application/views/collaborator_views.py": "ffa954fe33b662b6cf580c8e19474ca8a24d19b517af83f92fdf392263f48c4d",
     "BE/application/serializers/collaborators_serializers.py": "a79281391ff5d528e8e61fb693c47ac9f3711d181a1765a178f659495c3ec09f",
     "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58"
 });

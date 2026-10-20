@@ -24,7 +24,7 @@ from django.db import connection, models, transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
-from application.models import BillingPlan
+from application.services.legacy_backup import skipped_records
 from application.models.attendee_models import (
     AttendanceDay,
     AttendanceRegistry,
@@ -83,7 +83,6 @@ from application.models.user_models import (
     Group,
     Instructor,
     InstructorHours,
-    PreviewAndCustomFeatures,
     Reminder,
     SportAssociation,
     SportAssociationDocumentsArchive,
@@ -155,8 +154,6 @@ class AssociationImportService:
     # Note: The import service uses manifest to look up actual filenames,
     # so these filenames are defaults that can be overridden by the manifest
     IMPORT_ORDER: List[tuple] = [
-        # Skip system data during import (BillingPlan should already exist)
-        # ('00_billing_plans.json', BillingPlan, 'system'),
 
         # Tier 1: Root entity
         ('01_sport_association.json', SportAssociation),
@@ -259,9 +256,6 @@ class AssociationImportService:
         ('62_subscription_transfers.json', SubscriptionTransfer),
         ('63_cumulative_gym_links.json', CumulativeSubscriptionGymLinks),
 
-        # Tier 20: System-like models
-        ('64_preview_features.json', PreviewAndCustomFeatures),
-
         # Tier 21: Documents archive
         ('65_documents_archive.json', SportAssociationDocumentsArchive),
     ]
@@ -356,9 +350,6 @@ class AssociationImportService:
         'SoldProducts': 'sold_product_id',
         'SubscriptionTransfer': 'subscription_transfer_id',
         'CumulativeSubscriptionGymLinks': 'cumulative_subscription_gym_links_id',
-
-        # System-like models
-        'PreviewAndCustomFeatures': 'preview_and_custom_features_id',
     }
 
     # Foreign key mappings: model -> list of (fk_field, related_model) (complete mapping)
@@ -577,9 +568,6 @@ class AssociationImportService:
         'CumulativeSubscriptionGymLinks': [
             ('sport_association_id', 'SportAssociation'),
         ],
-
-        # System-like models
-        'PreviewAndCustomFeatures': [],  # No FKs, it's M2M to User
     }
 
     def __init__(self, zip_path: str, options: ImportOptions):
@@ -629,6 +617,7 @@ class AssociationImportService:
 
         # Stats and errors
         self.stats: Dict[str, int] = {}
+        self.skipped_records: Dict[str, int] = {}
         self.errors: List[str] = []
 
         # Deferred FK resolution tracking
@@ -830,6 +819,7 @@ class AssociationImportService:
 
                 # Read and validate manifest
                 manifest = json.loads(zf.read('manifest.json'))
+                self.skipped_records = skipped_records(zf, manifest)
 
                 # Check version
                 if manifest.get('export_format') != 'bakney_sport_export_v1':
@@ -1245,6 +1235,7 @@ class AssociationImportService:
             data[pk_field] = new_pk
 
         if model_name == 'User':
+            data.pop('_m2m_preview_and_custom_features', None)
             # Skip only the exact owner selected by SportAssociation.user_id.
             # Other role=ASSOCIATION rows can be legitimate shared users and
             # must be imported/reused normally.
@@ -1635,6 +1626,7 @@ class AssociationImportService:
             with zipfile.ZipFile(self.zip_path, 'r') as zf:
                 # Read manifest
                 manifest = json.loads(zf.read('manifest.json'))
+                self.skipped_records = skipped_records(zf, manifest)
                 logger.info(
                     f"Importing association: {manifest['association']['denomination']}"
                 )

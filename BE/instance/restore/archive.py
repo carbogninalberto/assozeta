@@ -11,6 +11,7 @@ from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
 from application.services.import_service import AssociationImportService
 from application.services.export_service import AssociationExportService
+from application.services.legacy_backup import DEPRECATED_SECTIONS, skipped_records
 
 
 class RestoreError(ValueError):
@@ -102,6 +103,8 @@ class Archive:
                 raise RestoreError('Il backup segnala errori di esportazione. Genera un export completo.')
             expected = {m.__name__: ('system' if len(item) > 2 else 'data') + '/' + item[1] + '.json'
                         for item in AssociationExportService.EXPORT_ORDER for m in [item[0]]}
+            expected.update(DEPRECATED_SECTIONS)
+            self.skipped_records = skipped_records(zf, self.manifest)
             expected['SportAssociationInvoices'] = 'data/48_sport_association_invoices.json'
             specs = self.manifest.get('models_exported', [])
             seen = set()
@@ -115,8 +118,9 @@ class Archive:
                 rows = json.loads(zf.read(filename))
                 if not isinstance(rows, list) or len(rows) != spec['count'] or any(not isinstance(r, dict) for r in rows):
                     raise RestoreError(f'Conteggio o contenuto non valido: {filename}.')
-                self.records[name] = rows
-            required = {m.__name__ for _, m in AssociationImportService.IMPORT_ORDER} - {'PreviewAndCustomFeatures'}
+                if name not in DEPRECATED_SECTIONS:
+                    self.records[name] = rows
+            required = {m.__name__ for _, m in AssociationImportService.IMPORT_ORDER}
             if required - seen:
                 raise RestoreError('Export incompleto: mancano ' + ', '.join(sorted(required - seen)) + '.')
             associations = self.records['SportAssociation']
@@ -244,6 +248,7 @@ class Archive:
     def summary(self):
         return {'association': self.association.get('denomination', ''),
                 'export_date': self.manifest.get('export_date'),
+                'skipped_records': self.skipped_records,
                 'records': sum(len(rows) for name, rows in self.records.items()
                                if name not in ('BillingPlan', 'PreviewAndCustomFeatures')),
                 'files': len(self.media), 'missing_media': self.missing_media,

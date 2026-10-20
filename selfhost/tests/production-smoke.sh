@@ -251,11 +251,45 @@ EOF
     exit 1
 }
 
-entitlement_count=$(db_query "SELECT count(*) FROM instance_instanceconfiguration cfg JOIN application_sportassociation sa ON cfg.primary_association_id = sa.sport_association_id JOIN bakney_user u ON sa.user_id = u.user_id JOIN billing_subscription bs ON bs.user_id = u.user_id JOIN billing_plan bp ON bs.billing_plan_id = bp.billing_plan_id WHERE cfg.self_hosted IS TRUE AND u.email = '$owner_email' AND bs.auto_renewal IS TRUE AND bs.renewal_type = 2 AND bs.ends_on > now() + interval '30000 days';")
-[ "$entitlement_count" = 1 ] || {
-    printf 'Expected one long-lived self-host billing entitlement for owner, got %s.\n' "$entitlement_count" >&2
+owner_count=$(db_query "SELECT count(*) FROM instance_instanceconfiguration cfg JOIN application_sportassociation sa ON cfg.primary_association_id = sa.sport_association_id JOIN bakney_user u ON sa.user_id = u.user_id WHERE cfg.self_hosted IS TRUE AND u.email = '$owner_email';")
+[ "$owner_count" = 1 ] || {
+    printf 'Expected one configured association owner, got %s.\n' "$owner_count" >&2
     exit 1
 }
+
+assert_no_software_subscription() {
+    entitlement_count=$(db_query "SELECT count(*) FROM billing_subscription bs JOIN bakney_user u ON bs.user_id = u.user_id WHERE u.email = '$owner_email';")
+    [ "$entitlement_count" = 0 ] || {
+        printf 'Expected no software subscription for owner, got %s.\n' "$entitlement_count" >&2
+        exit 1
+    }
+}
+assert_no_software_subscription
+
+login_response="$TEMPORARY/owner-login.json"
+login_status=$(curl --silent --show-error --output "$login_response" --write-out '%{http_code}' \
+    --request POST --header 'content-type: application/json' \
+    --data "{\"username\":\"$owner_email\",\"password\":\"SmokePassword123!\"}" \
+    http://localhost:58080/api/oauth2/login)
+[ "$login_status" = 200 ] || {
+    printf 'Expected owner login without a software subscription, got HTTP %s.\n' "$login_status" >&2
+    exit 1
+}
+owner_token=$(python3 -c 'import json, sys; token = json.load(open(sys.argv[1]))["access_token"]; assert token; print(token)' "$login_response")
+access_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+    --header "Authorization: Bearer $owner_token" http://localhost:58080/api/collaborators/list)
+[ "$access_status" = 200 ] || {
+    printf 'Expected owner access without a software subscription, got HTTP %s.\n' "$access_status" >&2
+    exit 1
+}
+billing_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+    --header "Authorization: Bearer $owner_token" http://localhost:58080/api/billing/active-plan)
+[ "$billing_status" = 410 ] || {
+    printf 'Expected retired software billing endpoint, got HTTP %s.\n' "$billing_status" >&2
+    exit 1
+}
+assert_no_software_subscription
+unset owner_token
 
 setup_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
     --request POST \

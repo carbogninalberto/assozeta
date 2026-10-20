@@ -163,7 +163,6 @@ class InstanceSetupView(APIView):
                     )
 
                 if association:
-                    self._ensure_selfhost_billing(association.user)
                     config.primary_association = association
                     config.save()
 
@@ -250,33 +249,6 @@ class InstanceSetupView(APIView):
         )
 
         return association
-
-    @staticmethod
-    def _ensure_selfhost_billing(user):
-        """Keep self-hosted owners on the included Pro plan."""
-        import datetime
-
-        from django.utils import timezone
-
-        from application.models.billing_models import BillingPlan, BillingSubscription
-
-        billing_plan = BillingPlan.objects.filter(name__exact="Piano Pro").first()
-        if not billing_plan:
-            billing_plan = BillingPlan.objects.first()
-        if not billing_plan:
-            raise ValueError("No billing plan is available for the self-hosted owner.")
-
-        defaults = {
-            'auto_renewal': True,
-            'renewal_type': BillingSubscription.ANNUALLY,
-            'ends_on': timezone.now() + datetime.timedelta(days=36500),
-            'billing_plan': billing_plan,
-        }
-        subscriptions = BillingSubscription.objects.filter(user=user)
-        if subscriptions.exists():
-            subscriptions.update(**defaults)
-        else:
-            BillingSubscription.objects.create(user=user, **defaults)
 
     def _link_imported_instance(self, config, import_task_id):
         """Link an association from a completed import task."""

@@ -7,7 +7,6 @@
         notifications,
         refreshToken,
         expires,
-        billingData,
         permissions,
         role,
         userData as userDataStore,
@@ -48,8 +47,7 @@
     let isSwitchedUser = localStorage.getItem('switched_superuser') === 'true';
     const loadUserContext = createUserContextLoader({
         fetchProfile: () => apiFetch(__bakney.env.API.PROFILE.INFO),
-        fetchBilling: () => apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
-        userData: userDataStore, billingData, permissions, role, setPermissions,
+        userData: userDataStore, permissions, role, setPermissions,
     });
     let showTestimonial = false;
 

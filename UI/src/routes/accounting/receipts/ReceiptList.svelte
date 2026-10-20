@@ -18,7 +18,7 @@
     import * as easing from 'svelte/easing';
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
     import DocumentButton from 'components/buttons/DocumentButton.svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import EditButton from 'components/buttons/EditButton.svelte';
     import EditModal from './modals/EditModal.svelte';
     import ShareModal from './modals/ShareModal.svelte';
@@ -564,7 +564,7 @@ toast.success(`${selectedCounter} Ricevute Eliminate.`);
                     <div
                         class="dropdown dropdown-inline m-2"
                         on:click={() => {
-                            if (isFreePlan()) location.href = '/#/subscription/upgrade';
+
                         }}>
                         <button
                             disabled={!canPerformAction('bookeeping.documents.invoices.read')}

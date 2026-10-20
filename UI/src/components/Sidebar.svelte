@@ -7,17 +7,14 @@
         currentPage,
         subPage,
         role,
-        isExpired,
-        billingData,
         permissions,
         userData,
         sidebarCollapsed,
         selectedGroup,
     } from 'store/stores.js';
     import {collapseSidebar} from 'utils/Functions.js';
-    import {onMount} from 'svelte';
     import {apiFetch} from 'utils/ApiMiddleware.js';
-    import {setPermissions, canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import {
         Stack,
         Users,
@@ -62,8 +59,6 @@
     import {oemConfig, manualEnabled} from 'store/instanceStore.js';
 
     role.useLocalStorage();
-    isExpired.useLocalStorage();
-    billingData.useLocalStorage();
     permissions.useLocalStorage();
     userData.useLocalStorage();
     selectedGroup.useLocalStorage();
@@ -73,9 +68,6 @@
     let visibleLogo = true;
     const IS_BETA = __bakney.IS_BETA || false;
 
-    let planType = '🚀 Piano di Valutazione';
-    let showPlan = false;
-    let daysLeft = -1;
     let brandLogo;
     let prevPermissions = [];
 
@@ -106,55 +98,7 @@
 
     $: brandLogo = $oemConfig?.logo || '';
 
-    onMount(async () => {
-        if ($role === 'association')
-            await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(res => {
-                // TODO: check if plan active & show plan in the case is expired
-                if (!res.error) {
-                    showPlan = true;
-                    const planData = res.response.data;
-                    const currentDate = new Date();
-                    const planDate = new Date(planData?.ends_on);
-                    planType = '🚀 ' + (planData?.active_plan?.name || 'Piano di Valutazione');
-                    $isExpired = currentDate > planDate; //&& res.response.data.active_plan.billing_type != 1;
-                    daysLeft = Math.max(Math.floor((planDate - currentDate) / (1000 * 60 * 60 * 24)), -1);
-                    billingData.set(planData);
-                    setPermissions(planData?.active_plan?.billing_type, $role);
-
-                    if ($isExpired) {
-                        window.location.href = '/#/subscription/upgrade';
-                        $sidebarCollapsed = true;
-                        toast.error('Abbonamento scaduto. Rinnovalo per continuare.');
-                    }
-                }
-            });
-    });
 </script>
-
-{#if daysLeft && daysLeft > 0 && parseInt(daysLeft) < 4}
-    <Portal target="body">
-        <div
-            transition:slide={{duration: 350, y: 5}}
-            class="plan-status text-white"
-            style="backdrop-filter: blur(5px);background: var(--danger) !important;-webkit-backdrop-filter: blur(5px);opacity: 0.85;">
-            Piano in scadenza tra {daysLeft}
-            {daysLeft == 1 ? 'giorno' : 'giorni'}
-            <a href="/#/subscription" class="mx-1 text-danger bg-light-danger px-2 py-0 rounded my-4 ml-2">
-                RINNOVA ORA
-            </a>
-        </div>
-    </Portal>
-{:else if parseInt(daysLeft) === 0}
-    <Portal target="body">
-        <div
-            transition:slide={{duration: 350, y: 5}}
-            class="plan-status text-white"
-            style="backdrop-filter: blur(5px);background: var(--danger) !important;-webkit-backdrop-filter: blur(5px);opacity: 0.85;">
-            Piano scaduto
-            <a href="/#/subscription" class="mx-1 text-white bg-dark px-2 py-0 rounded my-4"> RINNOVALO ORA </a>
-        </div>
-    </Portal>
-{/if}
 
 <!--begin::Aside-->
 <div class="aside aside-left aside-fixed d-flex flex-column flex-row-auto" collapsed={$sidebarCollapsed} id="bkn_aside">
@@ -299,9 +243,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/members/subscription/template'}
+                                                    href={'/#/members/subscription/template'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -324,9 +266,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/members/modules'}
+                                                    href={'/#/members/modules'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -409,9 +349,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/course/carnet/list/'}
+                                                    href={'/#/course/carnet/list/'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -434,9 +372,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/course/instructor/list/'}
+                                                    href={'/#/course/instructor/list/'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -482,9 +418,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/communication/messages'}
+                                                    href={'/#/communication/messages'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -505,9 +439,7 @@
                                                 aria-haspopup="true"
                                                 data-menu-toggle="hover">
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/communication/staff-board'}
+                                                    href={'/#/communication/staff-board'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -525,9 +457,7 @@
                                                 aria-haspopup="true"
                                                 data-menu-toggle="hover">
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/communication/automation'}
+                                                    href={'/#/communication/automation'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -547,9 +477,7 @@
                                                 data-menu-toggle="hover">
                                                 <!-- class="menu-link coming-soon-item" -->
                                                 <a
-                                                    href={isFreePlan()
-                                                        ? '/#/subscription/upgrade'
-                                                        : '/#/communication/configuration'}
+                                                    href={'/#/communication/configuration'}
                                                     class="menu-link"
                                                     on:click={collapseSidebar}>
                                                     <span class="menu-icon">
@@ -592,7 +520,7 @@
                             aria-haspopup="true"
                             data-menu-toggle="hover">
                             <a
-                                href={isFreePlan() ? '/#/subscription/upgrade' : '/#/report'}
+                                href={'/#/report'}
                                 class="menu-link"
                                 on:click={collapseSidebar}>
                                 <span class="menu-icon">
@@ -608,7 +536,7 @@
                             aria-haspopup="true"
                             data-menu-toggle="hover">
                             <a
-                                href={isFreePlan() ? '/#/subscription/upgrade' : '/#/saved-reports'}
+                                href={'/#/saved-reports'}
                                 class="menu-link"
                                 on:click={collapseSidebar}>
                                 <span class="menu-icon">
@@ -707,9 +635,7 @@
                                             <!-- svelte-ignore a11y-role-supports-aria-props -->
                                             <div
                                                 on:click={() => {
-                                                    isFreePlan()
-                                                        ? (location.href = '/#/subscription/upgrade')
-                                                        : (location.href = '/#/customers-invoice/list');
+                                                    location.href = '/#/customers-invoice/list';
                                                 }}
                                                 class="menu-item menu-item-submenu {$subPage == 'customers-invoice-list'
                                                     ? 'menu-item-active'
@@ -733,9 +659,7 @@
                                             <!-- svelte-ignore a11y-role-supports-aria-props -->
                                             <div
                                                 on:click={() => {
-                                                    isFreePlan()
-                                                        ? (location.href = '/#/subscription/upgrade')
-                                                        : (location.href = '/#/suppliers-invoice/list');
+                                                    location.href = '/#/suppliers-invoice/list';
                                                 }}
                                                 class="menu-item menu-item-submenu {$subPage == 'suppliers-invoice-list'
                                                     ? 'menu-item-active'
@@ -769,9 +693,7 @@
                             <span
                                 class="menu-link menu-toggle"
                                 on:click={() => {
-                                    if (isFreePlan()) {
-                                        location.href = '/#/subscription/upgrade';
-                                    } else {
+                                    {
                                         toggleMenu('balanceSheet');
                                     }
                                 }}>
@@ -1080,26 +1002,6 @@
             <div
                 class="version border border-2 mx-auto"
                 style="flex-shrink: 0; width: 200px; background: var(--bg-surface-secondary); border-radius: 1rem; margin-bottom:0; padding: 1rem; max-width: -webkit-fill-available;">
-                {#if $role !== 'administrator' && showPlan && $userData.collaborator_role == 1 && $oemConfig?.displaySettings?.sidebar?.showPlanUpgrades}
-                    <div class="d-flex align-items-center justify-content-center flex-column text-dark">
-                        {#if Capacitor.getPlatform() !== 'ios'}
-                            <a
-                                class="btn btn-primary btn-sm font-weight-boldest py-1 px-2 mb-2 d-flex align-items-center font-size-lg shadow-xs"
-                                href="/#/subscription"
-                                style="outline: 1px solid var(--primary) !important; border-top: 1px solid var(--bg-surface);">
-                                <CreditCard size={22} weight="duotone" class="mr-2" />
-                                Piano e rinnovi
-                            </a>
-                        {/if}
-                        <div class="mb-2">
-                            <span class="plan-bold">{planType}</span>
-                            {#if $billingData?.active_plan?.billing_type != 1}
-                                ·
-                                <span class="font-weight-bolder text-dark">{daysLeft} giorni rimasti</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/if}
                 <!-- svelte-ignore missing-declaration -->
                 <span
                     ><b>build {__bakney.build.VERSION}</b> · {$oemConfig?.abbreviation || 'assozeta'} © {new Date().getFullYear()}

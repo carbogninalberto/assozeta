@@ -13,7 +13,7 @@ from application.models import BalanceSheet
 from application.models.balance_sheet_models import CustomAccounts, CustomAccountsTransfer
 from application.models.user_models import SportAssociation, User
 
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions import IsAssociationUser
 from application.serializers.auth_serializers import SportAssociationSerializer
 from application.serializers.balance_sheet import CustomAccountSerializer, CustomAccountTransferSerializer, \
     CustomAccountTransferInfoSerializer
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet(request):
     user = request.user
     logger.info("Balance sheet operation", extra={'user_id': str(user.user_id), 'method': request.method})
@@ -309,7 +309,7 @@ def balance_sheet(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_archived(request):
     user = request.user
     logger.info("Retrieving archived balance sheets", extra={'user_id': str(user.user_id)})
@@ -348,7 +348,7 @@ def balance_sheet_archived(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 # @cache_endpoint('custom_accounts_list', timeout=60 * 60 * 24 * 7)
 def balance_sheet_accounts_list(request):
     get_related = request.query_params.get('related', 'true')
@@ -399,7 +399,7 @@ def balance_sheet_accounts_list(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_add(request):
     user = request.user
     logger.info("Creating custom account", extra={'user_id': str(user.user_id)})
@@ -436,7 +436,7 @@ def balance_sheet_accounts_add(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_update(request, uid):
     user = request.user
     logger.info("Updating custom account", extra={'user_id': str(user.user_id), 'account_id': uid})
@@ -479,7 +479,7 @@ def balance_sheet_accounts_update(request, uid):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_delete(request, uid):
     user = request.user
     logger.info("Deleting custom account", extra={'user_id': str(user.user_id), 'account_id': uid})
@@ -515,7 +515,7 @@ def balance_sheet_accounts_delete(request, uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_transfer_list(request):
     user = request.user
     logger.info("Retrieving account transfers", extra={'user_id': str(user.user_id)})
@@ -546,7 +546,7 @@ def balance_sheet_accounts_transfer_list(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_transfer_add(request):
     user = request.user
     logger.info("Creating account transfer", extra={'user_id': str(user.user_id)})
@@ -583,7 +583,7 @@ def balance_sheet_accounts_transfer_add(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_transfer_update(request, uid):
     user = request.user
     logger.info("Updating account transfer", extra={'user_id': str(user.user_id), 'transfer_id': uid})
@@ -622,7 +622,7 @@ def balance_sheet_accounts_transfer_update(request, uid):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def balance_sheet_accounts_transfer_delete(request, uid):
     user = request.user
     logger.info("Deleting account transfer", extra={'user_id': str(user.user_id), 'transfer_id': uid})

@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from application.models import BillingPlan, SportAssociation, User
+from application.models import SportAssociation, User
 from application.serializers.auth_serializers import UserAuthSerializer
 from instance.models import InstanceConfiguration
 
@@ -13,7 +13,6 @@ from instance.models import InstanceConfiguration
 class InstanceSetupOnboardingTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        BillingPlan.objects.create(name='Piano Pro', billing_type=BillingPlan.PRO_PLAN)
 
     def _fresh_payload(self, domain='fresh.example.test'):
         return {

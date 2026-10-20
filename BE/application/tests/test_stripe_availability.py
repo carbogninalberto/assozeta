@@ -307,7 +307,7 @@ class StripeAvailabilityTests(TestCase):
         create_account.assert_not_called()
         create_account_link.assert_not_called()
 
-    def test_platform_billing_checkout_disabled_but_included_pro_plan_remains(self):
+    def test_platform_billing_endpoints_disabled_without_creating_entitlements(self):
         BillingPlan.objects.create(
             name='Piano Pro',
             description='Included self-hosted Pro plan',
@@ -321,9 +321,8 @@ class StripeAvailabilityTests(TestCase):
         active_plan_response = self.client.get('/billing/active-plan')
 
         self.assertEqual(checkout_response.status_code, status.HTTP_410_GONE)
-        self.assertEqual(active_plan_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(active_plan_response.data['data']['active_plan']['name'], 'Piano Pro')
-        self.assertTrue(BillingSubscription.objects.filter(user=self.owner).exists())
+        self.assertEqual(active_plan_response.status_code, status.HTTP_410_GONE)
+        self.assertFalse(BillingSubscription.objects.filter(user=self.owner).exists())
 
     @override_settings(STRIPE_KEY='sk_test_direct', STRIPE_PUBLIC_KEY='pk_test_direct')
     @patch('application.views.payment_views.stripe.BalanceTransaction.list')

@@ -115,8 +115,7 @@ services:
         touch /run/assozeta-operations/lifecycle.lock &&
         chmod 666 /run/assozeta-operations/lifecycle.lock &&
         python manage.py migrate --noinput &&
-        python manage.py collectstatic --noinput --clear &&
-        python manage.py seed_selfhost
+        python manage.py collectstatic --noinput --clear
     depends_on:
       postgres:
         condition: service_healthy

@@ -10,7 +10,7 @@
     import {onDestroy, onMount} from 'svelte';
     import {replaceUID, apiFetch, updateTableSettings} from 'utils/ApiMiddleware.js';
     import {SlidersHorizontal, Export, FileCsv, FileXls} from 'phosphor-svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import {waitForElementAndExecute} from 'utils/Functions.js';
     import Tabs from 'components/Tabs.svelte';
     import {toast} from 'svelte-sonner';
@@ -493,7 +493,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     <div
                         class="dropdown dropdown-inline m-2"
                         on:click={() => {
-                            if (isFreePlan()) location.href = '/#/subscription/upgrade';
+
                         }}>
                         <button
                             disabled={!canPerformAction('bookeeping.payments.archive.read')}

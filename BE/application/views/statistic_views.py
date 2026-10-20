@@ -27,7 +27,7 @@ from application.models.subscriptions_models import Subscription
 from application.models.user_models import SportAssociation, Associate, User, Instructor
 from django.conf import settings
 
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions import IsAssociationUser
 from application.serializers.user_serializers import AssociateSerializer
 from application.utils.api_utils import BalanceSheetData, is_valid_uuid
 from communications.models import MessageTransaction, Message
@@ -1191,7 +1191,7 @@ def attendance_day_mark_absent(request, uid):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def statistic_report(request):
 
 

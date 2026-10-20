@@ -23,8 +23,6 @@ function checkAssociationAccess(permission, redirectPath = '/#/subscription/list
         return false;
     }
 
-    if (!isPlanActive()) return false;
-
     return isLogged() && get(role) === 'association';
 }
 
@@ -38,14 +36,6 @@ function isLogged() {
         // parseInt(localStorage.getItem('expires') || 0) > new Date().getTime() &&
         localStorage.getItem('sessionToken') && localStorage.getItem('sessionToken') != 'null'
     );
-}
-
-function isPlanActive() {
-    // if expired show the renewal page
-    subPage.set('');
-    const isExpired = localStorage.getItem('isExpired') === 'true';
-    if (isExpired) window.location.href = '/#/subscription/upgrade';
-    return !isExpired || localStorage.getItem('role') === 'athlete';
 }
 
 function isAssociation() {
@@ -83,7 +73,6 @@ export default {
         // Condition is logged
         conditions: [
             () => {
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('dashboard');
@@ -97,13 +86,11 @@ export default {
     '/calendar': wrap({
         asyncComponent: () => import('./routes/calendar/Calendar.svelte'),
 
-        // Condition is logged and plan is active
+        // Condition is logged and authorized
         conditions: [
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.calendar.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged() && get(role) == 'association') {
                     currentPage.set('calendar');
@@ -121,7 +108,6 @@ export default {
         conditions: [
             () => {
                 if (!isAssociation()) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('users');
@@ -167,7 +153,6 @@ export default {
         // Condition is logged and admin
         conditions: [
             () => {
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('search');
@@ -185,8 +170,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.personas.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('members');
@@ -359,8 +342,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.members.create')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('members');
                     return true;
@@ -377,8 +358,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.members.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     subPage.set('members-template');
@@ -397,8 +376,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.members.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     subPage.set('members-link');
@@ -427,9 +404,8 @@ export default {
                     return true;
                 }
                 if (!isAssociation()) return false;
-                // Associations need permission and plan checks
+                // Associations need the corresponding permission
                 if (!canPerformAction('bookeeping.payments.read')) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -450,8 +426,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.payments.archive.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('payment');
@@ -470,7 +444,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.payments.read')) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -537,8 +510,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.members.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('members');
@@ -603,8 +574,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.documents.invoices.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('invoice');
@@ -623,8 +592,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.documents.invoices.archive.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -645,8 +612,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.documents.clientinvoices.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('invoice');
@@ -665,8 +630,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.documents.supplierinvoices.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -687,8 +650,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.management.balancesheet.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('balance-sheet');
@@ -706,8 +667,6 @@ export default {
         conditions: [
             () => {
                 if (!canPerformAction('bookeeping.management.accounts.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -728,7 +687,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.management.suppliers.read')) return false;
 
-                if (!isPlanActive()) return false;
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('balance-sheet');
@@ -748,7 +706,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('bookeeping.management.accountstransfers.read')) return false;
 
-                if (!isPlanActive()) return false;
                 if (isLogged()) {
                     clearDatatableMeta();
                     currentPage.set('balance-sheet');
@@ -768,8 +725,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.courses.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('course-list');
@@ -788,8 +743,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.courses.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('course-list');
@@ -807,8 +760,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.courses.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('course');
@@ -831,8 +782,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.campsandretreats.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('camps-and-retreats-list');
@@ -850,8 +799,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.campsandretreats.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('course');
@@ -871,8 +818,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.campsandretreats.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('camps-and-retreats-list');
@@ -891,8 +836,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.carnet.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('carnet-list');
@@ -910,8 +853,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.carnet.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -933,8 +874,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.instructor.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('instructor-list');
@@ -954,8 +893,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.instructor.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('course');
                     subPage.set('instructor-list');
@@ -973,8 +910,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.instructor.create')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('course');
@@ -994,8 +929,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.archive.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('archive');
                     return true;
@@ -1012,7 +945,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('other.audit.read')) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged() && get(role) === 'association') {
                     currentPage.set('audit');
@@ -1029,8 +961,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.templates.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('archive');
@@ -1049,8 +979,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.report.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('report');
                     return true;
@@ -1066,7 +994,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.report.read')) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('saved-reports');
@@ -1083,8 +1010,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.carnet.create')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('course');
@@ -1103,8 +1028,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.courses.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     clearDatatableMeta();
@@ -1125,8 +1048,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.communication.messages.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('communication');
                     subPage.set('messages-list');
@@ -1144,8 +1065,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.communication.messages.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('communication');
@@ -1165,8 +1084,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.communication.workflows.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('communication');
                     subPage.set('message-automation');
@@ -1185,8 +1102,6 @@ export default {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.communication.workflows.read')) return false;
 
-                if (!isPlanActive()) return false;
-
                 if (isLogged()) {
                     currentPage.set('automation');
                     subPage.set('message-automation');
@@ -1204,8 +1119,6 @@ export default {
             () => {
                 if (!isAssociation()) return false;
                 if (!canPerformAction('association.communication.settings.read')) return false;
-
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('communication');
@@ -1242,7 +1155,6 @@ export default {
         conditions: [
             () => {
                 if (isSelfHostedMode()) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('onboarding');
@@ -1261,7 +1173,6 @@ export default {
         conditions: [
             () => {
                 if (isSelfHostedMode()) return false;
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('onboarded');
@@ -1313,7 +1224,6 @@ export default {
         // Condition is logged and admin
         conditions: [
             () => {
-                if (!isPlanActive()) return false;
 
                 if (isLogged()) {
                     currentPage.set('update-tutors');
@@ -1323,52 +1233,6 @@ export default {
             // add another call
         ],
     }),
-    '/subscription': wrap({
-        asyncComponent: () => import('./routes/subscription/Subscription.svelte'),
-
-        // Condition is logged and admin
-        conditions: [
-            () => {
-                if (!isAssociation()) return false;
-                if (isLogged()) {
-                    currentPage.set('profile');
-                    return true;
-                }
-            },
-            // add another call
-        ],
-    }),
-    '/billing-checkout': wrap({
-        asyncComponent: () => import('./routes/stripe/BillingCheckout.svelte'),
-
-        // Condition is logged and admin
-        conditions: [
-            () => {
-                if (!isAssociation()) return false;
-                if (isLogged()) {
-                    currentPage.set('profile');
-                    return true;
-                }
-            },
-            // add another call
-        ],
-    }),
-
-    '/subscription/upgrade': wrap({
-        asyncComponent: () => import('./routes/Upgrade.svelte'),
-
-        // Condition is logged and admin
-        conditions: [
-            () => {
-                if (!isAssociation()) return false;
-                if (isLogged()) {
-                    return true;
-                }
-            },
-            // add another call
-        ],
-    }),
-
     '/tools/sport-associations-manager': wrap({
         asyncComponent: () => import('./routes/tools/SportAssociationsManager.svelte'),
 

@@ -5,8 +5,7 @@
     import * as easing from 'svelte/easing';
     import {onMount, onDestroy} from 'svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
-    import {isFreePlan} from 'utils/Permissions.js';
-    import Upgrade from 'routes/Upgrade.svelte';
+        import Upgrade from 'routes/Upgrade.svelte';
     import {toast} from 'svelte-sonner';
     import BaseNumberWidget from 'components/widgets/BaseNumberWidget.svelte';
     import BKNDatatable from 'components/tables/BKNDatatable.svelte';
@@ -132,8 +131,7 @@
 
 <!--begin::Entry-->
 <div >
-    {#if !isFreePlan()}
-        <div class="row mb-2 d-flex justify-content-start">
+    <div class="row mb-2 d-flex justify-content-start">
             <BaseNumberWidget
                 title="Presenze ultimi 30 giorni"
                 value={stats.total_attendance_last_30_days}
@@ -189,7 +187,4 @@
                 {/if}
             </div>
         </div>
-    {:else}
-        <Upgrade />
-    {/if}
 </div>

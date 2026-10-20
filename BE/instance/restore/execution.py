@@ -39,8 +39,9 @@ def save_operation(op, **changes):
 
 
 class RecoveryExport(AssociationExportService):
-    # Local rollback must retain every field of rows we delete. User accounts
-    # survive replacement, so their credential exclusions still apply. Ordinary
+    # Local rollback must retain every field of rows we delete. User rows keep
+    # the ordinary exclusions; their validated password hashes are still added
+    # by serialize_record, so recovered accounts can sign in. Ordinary
     # migration exports keep their existing sanitization contract.
     EXCLUDED_FIELDS = {'User': AssociationExportService.EXCLUDED_FIELDS['User']}
 

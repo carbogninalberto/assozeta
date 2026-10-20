@@ -50,7 +50,7 @@ from application.models.user_models import SportAssociation, SportAssociationMem
 from application.models.subscriptions_models import Signature, MedicalCertificate, AssociateImportDraft, \
     SubscriptionTransfer, Tags, SubscriptionFile, AssociateImportDraftStatus, MedicalAppointments, SubscriptionToken, \
     SubscriptionMembership, CumulativeSubscriptionGymLinks
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions import IsAssociationUser
 from application.serializers.courses_serializers import CourseDetailSerializer, \
     CourseSubscriptionOverviewSerializer
 from application.serializers.payment_serializers import PaymentSerializer, PaymentOptimizedSerializer
@@ -2169,7 +2169,7 @@ def subscription_delete(request, uid):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def subscription_archive(request, uid):
     try:
         logger.info("subscription_archive")

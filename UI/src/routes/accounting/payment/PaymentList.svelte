@@ -29,7 +29,7 @@
     import EditButton from 'components/buttons/EditButton.svelte';
     import DeleteButton from 'components/buttons/DeleteButton.svelte';
     import ApproveButton from 'components/buttons/ApproveButton.svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import {waitForElementAndExecute} from 'utils/Functions.js';
     import Tabs from 'components/Tabs.svelte';
     import DocumentButton from 'components/buttons/DocumentButton.svelte';
@@ -1331,7 +1331,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     <div
                         class="dropdown dropdown-inline m-2"
                         on:click={() => {
-                            if (isFreePlan()) location.href = '/#/subscription/upgrade';
+
                         }}>
                         <button
                             disabled={!canPerformAction('bookeeping.payments.read')}
@@ -1374,7 +1374,7 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     {#if canPerformAction('bookeeping.payments.create')}
                         <a
-                            href={!isFreePlan() ? '/#/payment/category/list' : '/#/subscription/upgrade'}
+                            href={'/#/payment/category/list'}
                             class="btn btn-sm btn-light-primary font-weight-boldest d-flex align-items-center m-2">
                             <Article size={18} weight="duotone" />
                             <span class="ml-0 ml-md-1">Centri di costo (causali)</span>

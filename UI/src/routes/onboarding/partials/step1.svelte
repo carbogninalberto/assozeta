@@ -4,7 +4,7 @@
     import TextInput from 'components/formBuilder/preview-blocks/text-input.svelte';
     import {DayMonthPicker} from 'components/pickers';
     import {Info, Warning} from 'phosphor-svelte';
-    import {billingData, role, userData} from 'store/stores';
+    import {role, userData} from 'store/stores';
     import {apiFetch} from 'utils/ApiMiddleware';
     import {getDataFromForm} from 'utils/Functions';
     import confetti from 'canvas-confetti';
@@ -32,12 +32,9 @@
             });
             toast.success('Configurazione del tuo gestionale completata');
 
-            const [profileResult, billingResult] = await Promise.all([
-                apiFetch(__bakney.env.API.PROFILE.INFO),
-                apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN),
-            ]);
+            const profileResult = await apiFetch(__bakney.env.API.PROFILE.INFO);
 
-            if (profileResult.error || billingResult.error) {
+            if (profileResult.error) {
                 isLoading = false;
                 toast.error('Impossibile aggiornare i dati del profilo. Riprova.');
                 return;
@@ -46,8 +43,7 @@
             const currentRole = profileResult.response.info.role;
             userData.set(profileResult.response.user_data);
             role.set(currentRole);
-            billingData.set(billingResult.response.data);
-            setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
+            setPermissions(currentRole);
 
             window.location.replace('/#/');
         } else {

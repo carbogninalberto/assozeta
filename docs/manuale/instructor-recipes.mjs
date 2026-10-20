@@ -1,13 +1,13 @@
 // Draft editorial provenance only; this map does not alter runtime verification.
 export const instructorReviewedSources = Object.freeze({
-    "BE/application/models/user_models.py": "3834a5655391ca750830d03175d7f663276697e50ab3fcfffcfd9ad45b7b931c",
+    "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
     "BE/application/serializers/user_serializers.py": "b6c13df61ad39bf22722f3fc69659129fd0cedbbda588e7cbc727989b00e07f6",
     "BE/application/views/instructor_views.py": "3d957e0a987583744dda1db2d0040eb8b0abdc90b5bf85546debc4a0405d189c",
-    "BE/core/settings.py": "346fd7a15f10dcd25c3adef653e9c983e33b99037036e30f7ec192edc1ab1835",
-    "UI/src/components/Sidebar.svelte": "5fd791241452c301697730caf21a841c29a186876c33834b579d7846610d2568",
+    "BE/core/settings.py": "fa6333d78857609abbe0c2d7603e97efe4e60502e3edf078dbf3b8016de91377",
+    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
     "UI/src/components/buttons/EditButton.svelte": "052f6ca21b3a85dfd713d62d96ccf7c81d8b4af93e15aa109a02e6fcbc74dfe9",
-    "UI/src/routes.js": "58bddc98548095f14f39fa3141277de8cd00e2133faf49f6761131b109d254b0",
+    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
     "UI/src/routes/association/course/instructor/add/AddInstructor.svelte": "1797eb719e0c25e696388720bd3258f08a0561694be9568759a2228a8ae599b8",
     "UI/src/routes/association/course/instructor/add/sections/Section1.svelte": "991fbfebdbf28eb862ce140436ee8444b3ec16dd2c187bad61cce31600b23a28",
@@ -15,7 +15,7 @@ export const instructorReviewedSources = Object.freeze({
     "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte": "19133f13c71dbcf769df0371d32248cff54c7fa2e4291d42c5c28969bd1152e9",
     "UI/src/routes/association/course/instructor/modals/EditModal.svelte": "002185a9e3f93ba4e6260b0f529f7e153494aac6df71d829f6d2320f319b48dc",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
-    "UI/src/utils/Permissions.js": "100a24508b57b6c73a323ab4f128ee2c79aef3212a2cd0178172199d59e51854"
+    "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644"
 });
 
 // Pure reviewed drafts; capture validation and source verification precede installation.
