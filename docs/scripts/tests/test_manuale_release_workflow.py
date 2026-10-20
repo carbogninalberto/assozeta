@@ -1,4 +1,7 @@
 """Release graph invariants; the rehearsal separately exercises real artifacts."""
+import ast
+import itertools
+import re
 from pathlib import Path
 import unittest
 import yaml
@@ -37,3 +40,25 @@ class ReleaseWorkflowTests(unittest.TestCase):
         upload = next(step for step in steps if step.get('with', {}).get('name') == 'manuale-release-runtime')
         self.assertNotIn('always()', upload.get('if', ''))
         self.assertEqual(upload['with']['if-no-files-found'], 'error')
+
+    def test_failed_manual_gate_cannot_allow_release_publication(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
+        expression = jobs['publish']['if'].strip().removeprefix('${{').removesuffix('}}').strip()
+        for event, manual, quality, cancelled in itertools.product(
+                ('release', 'workflow_dispatch', 'push'),
+                ('success', 'failure', 'cancelled', 'skipped'),
+                ('success', 'failure', 'cancelled', 'skipped'), (True, False)):
+            with self.subTest(event=event, manual=manual, quality=quality, cancelled=cancelled):
+                values = {'validate': 'success', 'production-smoke': 'success',
+                          'manual-release': manual, 'selfhost-quality': quality}
+                source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
+                source = source.replace('github.event_name', repr(event))
+                source = source.replace('!cancelled()', repr(not cancelled)).replace('&&', ' and ').replace('||', ' or ')
+                tree = ast.parse('(' + source + ')', mode='eval')
+                allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.Constant)
+                self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
+                permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
+                expected = not cancelled and (
+                    manual == 'success' or event == 'push' and manual == 'skipped') and (
+                    quality == 'success' or event == 'push' and quality == 'skipped')
+                self.assertEqual(permitted, expected)

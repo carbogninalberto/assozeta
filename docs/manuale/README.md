@@ -29,7 +29,8 @@ o incompleto non supera l'avvio; non ripiega su istruzioni incompatibili.
 Prima di pubblicare immagini installabili, la pipeline esegue la prova reale
 `selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
 --previous-package PREVIOUS_RUNTIME --previous-release PREVIOUS_VERSION`. La prova usa
-immagini di produzione, database usa e getta, contratti HTTP indipendenti in
+immagini di produzione, un registry locale usa e getta per i comandi CLI di
+aggiornamento e rollback, database isolati, contratti HTTP e MCP indipendenti in
 `TESTS/`, browser e chat WebSocket senza AI. La baseline vuota riproduce lo stato
 del manuale osservato nella v1.0.17 usando lo schema corrente; non costituisce
 una prova sul vecchio binario v1.0.17. La prova verifica anche aggiornamento e

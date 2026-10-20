@@ -19,7 +19,11 @@ class InstalledManual(unittest.TestCase):
         cls.fixture = json.loads(Path(os.environ['TESTS_FIXTURE']).read_text())
         cls.expected = cls.fixture['manual']
         cls.public = Client(os.environ['TESTS_BASE_URL'])
-        cls.owner, _ = cls.public.login(cls.fixture['accounts']['missing'])
+        token = cls.fixture.get('session', {}).get('access_token')
+        if token:
+            cls.owner = Client(cls.public.base_url, token)
+        else:
+            cls.owner, _ = cls.public.login(cls.fixture['accounts']['missing'])
         status, response = cls.owner.request('GET', '/manuale/sections')
         if status != 200 or response.get('status') != 'verified' or not response.get('results'):
             raise AssertionError(f'Installed manual unavailable: HTTP {status}, {response.get("status")}')

@@ -52,13 +52,15 @@ def main():
         work = Path(temporary)
         log = (work / 'execution.log').open('w')
         env_file = work / 'instance.env'
-        cli = ROOT / 'selfhost/bin/assozeta'
+        installation = work / 'selfhost'
+        cli = installation / 'bin/assozeta'
+        registry_name = project + '-registry'
         env = {**os.environ, 'ASSOZETA_ENV_FILE': str(env_file)}
         def command(argv, **kwargs):
             return subprocess.run([str(arg) for arg in argv], check=True, stdout=log,
                                   stderr=log, **kwargs)
         def compose(*argv):
-            return ['docker', 'compose', '--env-file', env_file, '-f', ROOT / 'selfhost/compose.yml', *argv]
+            return ['docker', 'compose', '--env-file', env_file, '-f', installation / 'compose.yml', *argv]
         def set_env(values):
             lines = env_file.read_text().splitlines()
             found = set()
@@ -94,7 +96,7 @@ def main():
             # this build context. The runtime package is the sole generated input.
             archive = work / 'backend.tar'
             with archive.open('wb') as stream:
-                subprocess.run(['git', 'archive', 'HEAD', 'BE'], cwd=ROOT, stdout=stream, check=True)
+                subprocess.run(['git', 'archive', 'HEAD', 'BE', 'selfhost'], cwd=ROOT, stdout=stream, check=True)
             command(['tar', '-xf', archive, '-C', work])
             context = work / 'BE'
             empty = image('empty', context, '--target', 'production', '--build-arg', 'VERSION=manual-empty-baseline',
@@ -109,9 +111,32 @@ def main():
                 '--build-arg', 'REQUIRE_MANUAL=true')
             web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
             renderer = image('renderer', ROOT / 'selfhost/renderer')
-            command([cli, 'configure', '--domain', f'localhost:{port}', '--version', 'test'], env=env)
-            set_env({'COMPOSE_PROJECT_NAME': project, 'ASSOZETA_BACKEND_REF': backend,
-                     'ASSOZETA_WEB_REF': web, 'ASSOZETA_RENDERER_REF': renderer,
+            registry_port = free_port()
+            command(['docker', 'run', '-d', '--name', registry_name,
+                     '-p', f'127.0.0.1:{registry_port}:5000', 'registry:2.8.3'])
+            registry = f'localhost:{registry_port}'
+            deadline = time.monotonic() + 60
+            while True:
+                try:
+                    if Client('http://' + registry, timeout=1).request('GET', '/v2/')[0] == 200:
+                        break
+                except OSError:
+                    pass
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('Disposable image registry failed readiness')
+                time.sleep(.5)
+            repositories = {name: registry + '/' + project + '-' + name for name in ('backend', 'web', 'renderer')}
+            for version, application_image in ((args.release, backend), (args.previous_release, previous_backend),
+                                                ('manual-empty-baseline', empty)):
+                for name, source in (('backend', application_image), ('web', web), ('renderer', renderer)):
+                    target = repositories[name] + ':' + version
+                    command(['docker', 'tag', source, target]); images.append(target)
+                    command(['docker', 'push', target])
+            command([cli, 'configure', '--domain', f'localhost:{port}', '--version', args.release], env=env)
+            set_env({'COMPOSE_PROJECT_NAME': project,
+                     'ASSOZETA_BACKEND_IMAGE': repositories['backend'],
+                     'ASSOZETA_WEB_IMAGE': repositories['web'],
+                     'ASSOZETA_RENDERER_IMAGE': repositories['renderer'],
                      'HTTPS_PORT': free_port(), 'MANUAL_CORPUS_BASE_URL': ''})
             command([cli, 'start'], env=env)
             ready()
@@ -126,6 +151,13 @@ def main():
                 headers={'X-Setup-Token': setup_token})
             if status != 200:
                 raise RuntimeError(f'Disposable setup failed: HTTP {status}')
+            owner, login = public.login(account)
+            association_id = login['user_data']['sport_association']['sport_association_id']
+            status, _ = owner.request('PATCH', '/onboarding/update', {'membership_data': {
+                'season': {'day': 1, 'month': 9}, 'fiscal': {'day': 1, 'month': 1},
+                'subscription_fee': '20.00', 'membership_fee': '20.00'}})
+            if status != 200 or owner.request('GET', '/profile/info')[1]['user_data']['requires_welcome']:
+                raise RuntimeError('Disposable association onboarding did not complete through the public API')
             # Select a supported query from the existing shared reader plan.
             planned = subprocess.check_output(['node', '--input-type=module', '-e',
                 "import fs from 'node:fs'; import {readerPlan} from './selfhost/tests/browser/manuale/reader-plan.mjs'; "
@@ -133,7 +165,7 @@ def main():
                 "console.log(JSON.stringify({query:p.query,id:p.section.id,title:p.section.title,sections:p.sections.length}));",
                 str(args.package / 'index.json')], cwd=ROOT, text=True)
             plan = json.loads(planned)
-            fixture = {'accounts': {'missing': account}, 'manual': {'release': args.release,
+            fixture = {'accounts': {'missing': account}, 'session': {'access_token': owner.token}, 'manual': {'release': args.release,
                 'application_revision': revision, 'corpus_identity': bundle.value['identity'],
                 'public_sections': plan['sections'], 'query': plan['query'], 'section_id': plan['id'],
                 'section_title': plan['title']}}
@@ -143,6 +175,13 @@ def main():
                 command([ROOT / 'TESTS/run', 'manual', '--base-url', origin + '/api', '--fixture', fixture_path,
                          '--output', output / phase], cwd=ROOT)
                 if browser:
+                    mcp_configuration = {'command': 'python', 'args': ['manage.py', 'run_mcp_server',
+                        '--association-id', association_id, '--transport', 'stdio'],
+                        'manual': fixture['manual'], 'course_count': 0}
+                    mcp = subprocess.run([str(arg) for arg in compose('exec', '-T', 'api', 'python', '-',
+                        json.dumps(mcp_configuration))], input=(ROOT / 'TESTS/mcp/manual.py').read_bytes(),
+                        stdout=subprocess.PIPE, stderr=log, timeout=120, env=env, check=True)
+                    (output / phase / 'mcp.json').write_bytes(mcp.stdout)
                     command(['node', ROOT / 'TESTS/browser/manual-release.mjs'], cwd=ROOT,
                             env={**os.environ, 'TESTS_ORIGIN': origin, 'TESTS_FIXTURE': str(fixture_path),
                                  'TESTS_OUTPUT': str(output / phase / 'browser')})
@@ -153,13 +192,11 @@ def main():
             record('container recreation retains the image-matched manual')
             # Empty persistent manual volume, already configured association:
             # the observed manual state of v1.0.17, without historical code claims.
-            set_env({'ASSOZETA_BACKEND_REF': empty})
-            command([cli, 'start'], env=env); ready()
+            command([cli, 'upgrade', 'manual-empty-baseline'], env=env); ready()
             if public.request('GET', '/instance/status')[1]['manual_enabled']:
                 raise RuntimeError('Empty baseline unexpectedly advertises a manual')
-            set_env({'ASSOZETA_BACKEND_REF': backend})
-            command([cli, 'start'], env=env); ready(); contracts('upgrade-empty', browser=True)
-            record('configured installation with empty manual volume acquires the release manual on startup')
+            command([cli, 'upgrade', args.release], env=env); ready(); contracts('upgrade-empty', browser=True)
+            record('CLI upgrade from a configured installation with an empty manual volume delivers the release manual')
             # Both packages have independently evaluated version bindings. The
             # source commit is intentionally identical to isolate selection from
             # unrelated schema migrations in this release-delivery rehearsal.
@@ -169,19 +206,15 @@ def main():
             def select_expected(expected):
                 fixture['manual'] = expected
                 fixture_path.write_text(json.dumps(fixture))
-            set_env({'ASSOZETA_BACKEND_REF': previous_backend})
-            command([cli, 'start'], env=env); ready()
+            command([cli, 'upgrade', args.previous_release], env=env); ready()
             select_expected(previous_expected); contracts('previous-compatible')
-            set_env({'ASSOZETA_BACKEND_REF': backend})
-            command([cli, 'start'], env=env); ready()
+            command([cli, 'upgrade', args.release], env=env); ready()
             select_expected(original_expected); contracts('upgrade-compatible')
             record('upgrade from a different verified package selects the new version')
-            set_env({'ASSOZETA_BACKEND_REF': previous_backend})
-            command([cli, 'start'], env=env); ready()
+            command([cli, 'upgrade', args.previous_release], env=env); ready()
             select_expected(previous_expected); contracts('rollback-compatible', browser=True)
             record('rollback selects the previous version with its own compatible manual')
-            set_env({'ASSOZETA_BACKEND_REF': backend})
-            command([cli, 'start'], env=env); ready(); select_expected(original_expected)
+            command([cli, 'upgrade', args.release], env=env); ready(); select_expected(original_expected)
             # Reject corrupt candidate image startup while the valid deployment
             # and its package remain untouched, then recreate the original image.
             first_image = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
@@ -199,9 +232,17 @@ def main():
                 (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
                     json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
                 corrupt = image(name, damaged)
-                attempt = subprocess.run(['docker', 'run', '--rm', corrupt], stdout=log, stderr=log, timeout=60)
-                if attempt.returncode == 0:
-                    raise RuntimeError(name + ' did not reject candidate startup')
+                attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
+                log.write(attempt.stdout + attempt.stderr)
+                expected_error = {
+                    'missing-index': 'FileNotFoundError', 'missing-image': 'FileNotFoundError',
+                    'corrupt-index': 'Invalid or unsupported manual index',
+                    'wrong-version': 'No verified manual for the running application',
+                    'corrupt-image': 'Bundled screenshot differs from verified evidence',
+                }[name]
+                if (attempt.returncode == 0 or expected_error not in attempt.stderr
+                        or 'Starting gunicorn' in attempt.stderr or 'ImproperlyConfigured' in attempt.stderr):
+                    raise RuntimeError(name + ' did not reject candidate startup at the manual validation gate')
             record('missing/corrupt index and PNGs and mismatched version reject candidate startup')
             contracts('retained-after-failure')
             command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
@@ -211,7 +252,8 @@ def main():
         finally:
             if env_file.exists():
                 subprocess.run(compose('down', '-v', '--remove-orphans'), stdout=log, stderr=log, env=env)
-            for tag in images:
+            subprocess.run(['docker', 'rm', '-f', registry_name], stdout=log, stderr=log)
+            for tag in reversed(images):
                 subprocess.run(['docker', 'image', 'rm', tag], stdout=log, stderr=log)
             log.close()
             # Raw logs and credentials remain private; publish only the bounded
