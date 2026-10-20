@@ -22,8 +22,8 @@ from channels.layers import get_channel_layer
 
 from django.db import transaction, OperationalError
 
-from application.models import BillingPlan, BillingSubscription, AttendanceRegistry, AttendanceDay, Payment, \
-    NurturingEmailsPlan, NurturingEmails, Reminders
+from application.models import AttendanceRegistry, AttendanceDay, Payment, \
+    Reminders
 from application.models.carnet_models import CarnetSubscription
 from application.models.courses_models import CourseSubscription, CourseSubscriptionInstallment, Course
 from application.models.subscriptions_models import Subscription, MedicalCertificate, SubscriptionToken
@@ -608,193 +608,30 @@ def auto_archive_subscription():
 
 @shared_task(name="auto_move_users_to_base_plan")
 def auto_move_users_to_base_plan():
-    try:
-        logger.info("Starting auto_move_users_to_base_plan task", extra={'task_name': 'auto_move_users_to_base_plan'})
-        # getting pro and teams plan
-        plans = BillingPlan.objects.filter(billing_type__in=[2, 3])
-        # getting all billing subscriptions plans
-        sub_plan = BillingSubscription.objects.filter(billing_plan__in=plans).values_list('user_id', flat=True)
-        # check if ends before today, timezone is considered
-        sub_plan = sub_plan.filter(
-            ends_on__isnull=False,
-            ends_on__range=[datetime.now() - timedelta(days=1), datetime.now()]
-        )
-
-        if len(sub_plan) > 0:
-            logger.info("Found users to move to base plan", extra={'task_name': 'auto_move_users_to_base_plan', 'count': len(sub_plan)})
-            # getting all the users that have a subscription plan
-            users = User.objects.filter(user_id__in=sub_plan, role=1)
-            # send email to the users
-            for user in users:
-                logger.info("Sending plan expired email", extra={'task_name': 'auto_move_users_to_base_plan', 'user_id': str(user.user_id)})
-                # send email to the user
-                send_email_template(
-                    subject="Il tuo piano è scaduto",
-                    template="email/plan/subscription_expired.html",
-                    data={
-                        'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'app_host': settings.APP_URL
-                    },
-                    recipient_list=[user.email],
-                    sport_association_id=user.sport_association.sport_association_id,
-                    reply_to=[settings.DEFAULT_SUPPORT_EMAIL],
-                )
-        logger.info("Completed auto_move_users_to_base_plan task", extra={'task_name': 'auto_move_users_to_base_plan'})
-    except Exception:
-        logger.error("Error in auto_move_users_to_base_plan task", extra={'task_name': 'auto_move_users_to_base_plan'}, exc_info=True)
+    # Drain messages queued by older releases without sending renewal notices.
+    # The recurring schedule is retired; business memberships are unrelated.
+    return {'deprecated': True}
 
 
 @shared_task(name="nurturing_warm_leads")
 def nurturing_warm_leads():
-    if settings.IS_WHITELABEL:
-        return
-    try:
-        logger.info("Starting nurturing_warm_leads task", extra={'task_name': 'nurturing_warm_leads'})
-
-        # get current Date, not datetime
-        current_date = datetime.now().date()
-
-        # get all nurturingEmailsPlan that are active today
-        nurturing_emails_plan_list = NurturingEmailsPlan.objects.filter(
-            Q(exclude_date_from_of_the_year__lte=current_date)
-            | Q(exclude_date_from_of_the_year__isnull=True),
-            Q(exclude_date_to_of_the_year__gte=current_date)
-            | Q(exclude_date_to_of_the_year__isnull=True),
-            Q(active_specific_date_of_the_year__exact=current_date)
-            | Q(active_specific_date_of_the_year__isnull=True),
-        )
-
-        # get the free plan
-        free_plan = BillingPlan.objects.filter(billing_type=BillingPlan.BASE_PLAN).first()
-
-        # loop through nurturingEmailsPlan and send email
-        for nurturing_emails_plan in nurturing_emails_plan_list:
-            # extract the billing subscriptions
-            billing_subscriptions = BillingSubscription.objects.all()
-
-            # if this email is only for free plan, filter the billing subscriptions
-            if nurturing_emails_plan.only_free_plan:
-                billing_subscriptions = billing_subscriptions.filter(
-                    billing_plan=free_plan
-                )
-
-            # loop through billing plans - use iterator to avoid loading all in memory
-            for billing_subscription in billing_subscriptions.select_related('user').iterator(chunk_size=100):
-                # skip if the email is already sent
-                if NurturingEmails.objects.filter(
-                        user=billing_subscription.user,
-                        nurturing_plan=nurturing_emails_plan
-                ).exists():
-                    continue
-
-                # check if to look for expiration date
-                if nurturing_emails_plan.check_date_conditions:
-                    # get the expiration date
-                    expiration_date = billing_subscription.ends_on.date()
-                    # get the days after registration
-                    days_after_registration = (current_date - billing_subscription.user.date_joined.date()).days
-                    # get the days before expiration
-                    days_before_expiration = (expiration_date - current_date).days
-                    # get the days after expiration
-                    days_after_expiration = (current_date - expiration_date).days
-
-                    # nurturing plan, just for the seek of readability
-                    n_plan = nurturing_emails_plan
-
-                    at_least_these_days_after_registration = n_plan.at_least_these_days_after_registration
-                    at_most_these_days_after_registration = n_plan.at_most_these_days_after_registration
-                    at_least_these_days_before_expiration = n_plan.at_least_these_days_before_expiration
-                    at_most_these_days_before_expiration = n_plan.at_most_these_days_before_expiration
-                    at_least_these_days_after_expiration = n_plan.at_least_these_days_after_expiration
-                    at_most_these_days_after_expiration = n_plan.at_most_these_days_after_expiration
-
-                    # DATE CONDITIONS are mutually exclusive (in pairs of least and most)
-                    # if most and least are 0, it means that the condition is not set
-
-                    if at_least_these_days_after_registration > 0:
-                        if days_after_registration < at_least_these_days_after_registration:
-                            continue
-
-                    if at_most_these_days_after_registration > 0:
-                        if days_after_registration > at_most_these_days_after_registration:
-                            continue
-
-                    if at_least_these_days_before_expiration > 0:
-                        if days_before_expiration < at_least_these_days_before_expiration:
-                            continue
-
-                    if at_most_these_days_before_expiration > 0:
-                        if days_before_expiration > at_most_these_days_before_expiration:
-                            continue
-
-                    if at_least_these_days_after_expiration > 0:
-                        if days_after_expiration < at_least_these_days_after_expiration:
-                            continue
-
-                    if at_most_these_days_after_expiration > 0:
-                        if days_after_expiration > at_most_these_days_after_expiration:
-                            continue
-
-                # check if there is a required nurturing plan
-                if nurturing_emails_plan.required_nurturing_plan is not None:
-                    # check from model NurturingEmails
-                    nurturing_emails = NurturingEmails.objects.filter(
-                        user=billing_subscription.user,
-                        nurturing_plan=nurturing_emails_plan.required_nurturing_plan,
-                        sent_date__lt=datetime.now() - timedelta(days=1)
-                    )
-
-                    # if there is no required nurturing plan, skip
-                    if len(nurturing_emails) == 0:
-                        logger.debug("Skipping user, required nurturing plan not met", extra={'task_name': 'nurturing_warm_leads', 'user_id': str(billing_subscription.user.user_id), 'required_plan': nurturing_emails_plan.required_nurturing_plan.name})
-                        continue
-
-                data = {
-                    'first_name': billing_subscription.user.first_name,
-                    'last_name': billing_subscription.user.last_name,
-                    'app_host': settings.APP_URL
-                }
-                # perform the nurturing plan
-                message = render_to_string(nurturing_emails_plan.email_template, data)
-                # send email
-                send_mail_async.apply_async(
-                    kwargs={
-                        "subject": nurturing_emails_plan.email_subject,
-                        "message": message,
-                        "from_email": settings.DEFAULT_TEAM_EMAIL,
-                        "reply_to": [settings.DEFAULT_SUPPORT_EMAIL],
-                        "recipient_list": [billing_subscription.user.email],
-                        "html_message": message,
-                        "fail_silently": False
-                    }
-                )
-
-                # save the nurturing email
-                NurturingEmails.objects.create(
-                    user=billing_subscription.user,
-                    nurturing_plan=nurturing_emails_plan
-                )
-        logger.info("Completed nurturing_warm_leads task", extra={'task_name': 'nurturing_warm_leads'})
-    except Exception:
-        logger.error("Error in nurturing_warm_leads task", extra={'task_name': 'nurturing_warm_leads'}, exc_info=True)
+    # Drain legacy SaaS marketing messages without querying commercial data.
+    return {'deprecated': True}
 
 
 @shared_task(name="auto_mark_attendance")
 def auto_mark_attendance():
     try:
         print("[auto_mark_attendance] auto mark attendance")
-        # getting pro and teams plan
-        plans = BillingPlan.objects.filter(billing_type__in=[2, 3])
-        # getting all billing subscriptions plans
-        sub_plan = BillingSubscription.objects.filter(billing_plan__in=plans).values_list('user_id', flat=True)
-        # getting all the user with role 1 that have auto mark attendance enabled and plan is at least pro
-        users_qs = User.objects.filter(role=1, auto_mark_attendance=True).filter(user_id__in=sub_plan)
+        # This association setting is independent of software billing.
+        users_qs = User.objects.filter(role=User.ASSOCIATION, auto_mark_attendance=True)
         print(f"[auto_mark_attendance] found {users_qs.count()} users")
         users = users_qs.iterator(chunk_size=50)
         for user in users:
             # get user sport association
             sport_association = SportAssociation.objects.filter(user=user).first()
+            if sport_association is None:
+                continue
             # getting all active courses
             courses = Course.objects.filter(status_flag=Course.ACTIVE, sport_association=sport_association)
             print(f"[auto_mark_attendance] found {len(courses)} courses")
@@ -2163,6 +2000,7 @@ Il team {WHITELABEL_NAME}
             'document_id': str(document.document_id),
             'filename': document.filename,
             'stats': service.stats,
+            'skipped_records': service.skipped_records,
         }
 
     except Exception as e:
@@ -2345,6 +2183,7 @@ def import_association_data(
             'denomination': association.denomination,
             'owner_email': association.user.email,
             'stats': service.stats,
+            'skipped_records': service.skipped_records,
             'warnings': service.errors,
         }
 

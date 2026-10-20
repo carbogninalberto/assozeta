@@ -13,7 +13,7 @@
     import * as easing from 'svelte/easing';
     import {onDestroy, onMount} from 'svelte';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import {PaperPlaneTilt, PlusCircle, TrashSimple, X, XCircle} from 'phosphor-svelte';
     import Upgrade from 'routes/Upgrade.svelte';
     import {waitForElementAndExecute} from 'utils/Functions';
@@ -877,8 +877,7 @@
 
 <!--begin::Entry-->
 <div >
-    {#if !isFreePlan()}
-        <div class="row mt-2">
+    <div class="row mt-2">
             <div class="col-8 col-md-10">
                 <h3 class="card-label font-size-h2">
                     Pagamenti
@@ -1039,9 +1038,6 @@
                 <!--end: Datatable-->
             </div>
         </div>
-    {:else}
-        <Upgrade />
-    {/if}
 </div>
 
 <svelte:head>

@@ -51,6 +51,12 @@ BAKNEY_SSO_API_BASE = env.str('BAKNEY_SSO_API_BASE', 'https://app.bakney.com/api
 BAKNEY_SSO_UI_ORIGIN = env.str('BAKNEY_SSO_UI_ORIGIN', 'https://app.bakney.com').rstrip('/')
 INSTANCE_SETUP_TOKEN = env.str('INSTANCE_SETUP_TOKEN', '')
 
+# Instance product choices, never software-plan entitlements.
+FAMILY_REGISTRATION_ENABLED = env.bool('FAMILY_REGISTRATION_ENABLED', True)
+FEDERATION_REGISTRATION_ENABLED = env.bool('FEDERATION_REGISTRATION_ENABLED', False)
+MULTIPLE_REGISTRATION_ENABLED = env.bool('MULTIPLE_REGISTRATION_ENABLED', False)
+
+
 
 # STRIPE CONFIGURATION
 STRIPE_PUBLIC_KEY = env.str('STRIPE_PUBLIC_KEY', '')

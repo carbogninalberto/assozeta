@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Portable suite entrypoint; defaults to a disposable local Django environment."""
+import argparse
+import contextlib
+import json
+import os
+import signal
+import subprocess
+from pathlib import Path
+import sys
+import unittest
+from uuid import uuid4
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from TESTS.performance import benchmark
+
+
+def tests(base_url, fixture_path, module):
+    os.environ['TESTS_BASE_URL'] = base_url
+    os.environ['TESTS_FIXTURE'] = str(fixture_path)
+    suite = unittest.defaultTestLoader.loadTestsFromName(module)
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    return {'run': result.testsRun, 'failures': len(result.failures),
+            'errors': len(result.errors), 'skipped': len(result.skipped), 'success': result.wasSuccessful()}
+
+
+def browser(base_url, fixture_path, output):
+    process = subprocess.Popen(['node', str(ROOT / 'TESTS/browser/subscription-access.mjs')],
+        cwd=ROOT, start_new_session=os.name != 'nt',
+        env={**os.environ, 'TESTS_BASE_URL': base_url, 'TESTS_FIXTURE': str(fixture_path.resolve()),
+             'TESTS_OUTPUT': str(output.resolve() / 'browser')})
+    try:
+        code = process.wait(timeout=600)
+        if code:
+            raise subprocess.CalledProcessError(code, process.args)
+    finally:
+        # A stuck browser must not outlive its disposable backend.
+        if os.name != 'nt':
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        elif process.poll() is None:
+            process.kill()
+        process.wait(timeout=10)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('suite', choices=['smoke', 'regression', 'performance', 'all'], nargs='?', default='smoke')
+    parser.add_argument('--adapter', choices=['django', 'django-native'], default='django')
+    parser.add_argument('--base-url', help='Existing disposable backend (Django, Go, etc.); no adapter is started')
+    parser.add_argument('--fixture', type=Path, help='Fixture manifest matching TESTS/README.md')
+    parser.add_argument('--scenario', choices=['configured', 'fresh', 'import'],
+                        help='Run one fixture scenario; external targets default to configured')
+    parser.add_argument('--output', type=Path, default=ROOT / 'quality-reports/contracts' / uuid4().hex[:12])
+    parser.add_argument('--samples', type=int, default=50)
+    parser.add_argument('--warmup', type=int, default=5)
+    parser.add_argument('--browser', action='store_true', help='Exercise real frontend login/navigation (requires installed UI and Playwright packages)')
+    parser.add_argument('--migrations', action='store_true', help='Django adapter: replay full migration history instead of fast current-schema setup')
+    args = parser.parse_args()
+    if bool(args.base_url) != bool(args.fixture):
+        parser.error('--base-url and --fixture must be supplied together')
+    if args.samples < 1 or args.warmup < 0:
+        parser.error('samples must be positive; warmup must be nonnegative')
+    if args.suite == 'performance' and args.scenario in ('fresh', 'import'):
+        parser.error('performance requires the configured fixture scenario')
+    if args.browser and not (ROOT / 'UI/dist/public/index.html').exists():
+        parser.error('--browser requires: npm run build:vite:production --prefix UI')
+    args.output.mkdir(parents=True, exist_ok=True)
+    if not args.base_url:
+        if args.adapter == 'django-native':
+            from TESTS.adapters.django.native import django_environment
+        else:
+            from TESTS.adapters.django.runtime import django_environment
+        print(f'Starting isolated {args.adapter} adapter.', flush=True)
+    report = {'suite': args.suite, 'adapter': 'external' if args.base_url else args.adapter, 'checks': []}
+    scenarios = ([args.scenario or 'configured'] if args.scenario or args.base_url else
+                 ['configured', 'fresh', 'import'] if args.suite in ('regression', 'all') else ['configured'])
+    modules = {'configured': 'TESTS.contracts.test_access', 'fresh': 'TESTS.contracts.test_lifecycle',
+               'import': 'TESTS.contracts.test_initial_import'}
+    try:
+        for scenario in scenarios:
+            environment = (contextlib.nullcontext((args.base_url, args.fixture)) if args.base_url
+                           else django_environment(scenario, args.output, args.migrations))
+            with environment as (base_url, fixture_path):
+                if args.suite in ('performance', 'all') and scenario == 'configured':
+                    benchmark(base_url, json.loads(fixture_path.read_text()), args.output / 'performance.json', args.samples, args.warmup)
+                if args.suite != 'performance':
+                    report['checks'].append({'scenario': scenario, **tests(base_url, fixture_path, modules[scenario])})
+                if args.browser and scenario == 'configured':
+                    browser(base_url, fixture_path, args.output)
+                    report['checks'].append({'scenario': 'browser', 'success': True})
+    except KeyboardInterrupt:
+        report['checks'].append({'success': False, 'error': 'Interrupted'})
+    except Exception as exc:
+        report['checks'].append({'success': False, 'error': str(exc), 'type': type(exc).__name__})
+        print(f'{type(exc).__name__}: {exc}', file=sys.stderr)
+    finally:
+        (args.output / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
+    print(f'Results: {args.output}', flush=True)
+    return 0 if all(check['success'] for check in report['checks']) else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

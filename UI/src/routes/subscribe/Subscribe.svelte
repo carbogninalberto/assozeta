@@ -171,7 +171,7 @@
         if (!res.error) {
             toast.success('Nuova iscrizione creata con successo.');
             setTimeout(() => {
-                if (localStorage.getItem('sessionToken') && localStorage.getItem('isExpired') === 'false') {
+                if (localStorage.getItem('sessionToken')) {
                     // check the role from the localstorage "role"
                     if (JSON.parse(localStorage.getItem('role')) === 'association') {
                         // redirect to the page #/members/list

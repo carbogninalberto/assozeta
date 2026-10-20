@@ -26,7 +26,7 @@ from application.models.balance_sheet_models import CustomAccounts
 from application.models.invoices_models import Invoice, InvoiceSuppliers, CustomerInvoice
 from application.models.payment_models import Payment, SupplierAndCustomers, PaymentCategory
 from application.models.user_models import SportAssociation, User, Associate
-from application.permissions import IsTeamsPlanAssociation, IsProPlanAssociation
+from application.permissions import IsAssociationUser
 from application.serializers.invoice_serializers import InvoiceSerializer, InvoiceSuppliersSerializer, \
     CustomerInvoiceSerializer, generate_invoice_xml, generate_invoice_json
 from application.serializers.payment_serializers import PaymentSerializer, PaymentEntrySerializer, \
@@ -417,7 +417,7 @@ def invoice_bulk_archive(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def invoice_list_archived(request):
 
     is_athlete = True if User.ATHLETE == request.user.role else False

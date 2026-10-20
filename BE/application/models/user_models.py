@@ -201,15 +201,8 @@ class User(AbstractUser):
         return credentials
 
     def get_preveiw_and_custom_features(self):
-        features = self.preview_and_custom_features.all()
-        # create a list of dictionaries
-        features_list = []
-        for feature in features:
-            features_list.append({
-                'name': feature.name,
-                'description': feature.description
-            })
-        return features_list
+        from instance.registration_features import registration_features
+        return registration_features()
 
     @cached_property
     def google_sync_enabled(self):

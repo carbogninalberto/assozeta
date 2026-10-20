@@ -1,0 +1,516 @@
+{
+  "provenance": {
+    "repository": "django-bakney-sport",
+    "revision": "0058de5909734bdd0f00867abbdb723649de4238",
+    "note": "Synthetic identities/data; frozen export section names from this revision. Never regenerate from current export order."
+  },
+  "account": {
+    "username": "legacy-owner@example.test",
+    "password": "ContractPass!123"
+  },
+  "ids": {
+    "owner": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+    "association": "7616fd26-589f-5551-b17f-0478e305434d",
+    "person": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+    "payment": "54f20853-07d2-532b-9f9a-4d7d1b411c2b",
+    "subscription": "c493a68f-2401-5339-b079-3f62db825c39",
+    "document": "238c77cc-288f-5a21-bc36-763577732652"
+  },
+  "entries": {
+    "system/00_billing_plans.json": [
+      {
+        "billing_plan_id": "a7525c05-3dc7-5fa8-81cf-2a642de35877",
+        "name": "Legacy expired Pro",
+        "billing_type": 2,
+        "monthly_fee": 29,
+        "annually_fee": 290
+      }
+    ],
+    "data/01_sport_association.json": [
+      {
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+        "denomination": "Historical contract club",
+        "tax_code": "12345678901",
+        "subscription_fee": "20.00",
+        "membership_fee": "25.00"
+      }
+    ],
+    "data/02_users.json": [
+      {
+        "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab",
+        "username": "legacy-owner@example.test",
+        "email": "legacy-owner@example.test",
+        "password": "pbkdf2_sha256$1000000$syntheticfixture$TcPsoVZfg0j3DpWeu36EbtbBY9egK5Ofgyatqi7qLGw=",
+        "role": 1,
+        "first_name": "Legacy",
+        "last_name": "Owner",
+        "is_active": true,
+        "_m2m_preview_and_custom_features": [
+          "a47211d6-c280-5be8-8b36-61a03df07a2d"
+        ]
+      }
+    ],
+    "data/03_groups.json": [],
+    "data/04_users_onboarding.json": [],
+    "data/05_collaboration_invites.json": [],
+    "data/06_families.json": [],
+    "data/07_associates.json": [
+      {
+        "associate_id": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "first_name": "Historical",
+        "last_name": "Member"
+      }
+    ],
+    "data/08_associate_tutor_relations.json": [],
+    "data/09_vat_management.json": [],
+    "data/10_payment_categories.json": [],
+    "data/11_custom_accounts.json": [],
+    "data/12_tags.json": [],
+    "data/13_course_tags.json": [],
+    "data/14_folders.json": [],
+    "data/15_suppliers_and_customers.json": [],
+    "data/16_products_and_services.json": [],
+    "data/17_headquarters.json": [],
+    "data/18_materials.json": [],
+    "data/19_module_templates.json": [],
+    "data/20_membership_card_config.json": [],
+    "data/21_communication_config.json": [],
+    "data/22_notification_templates.json": [],
+    "data/23_instructors.json": [],
+    "data/24_instructor_hours.json": [],
+    "data/25_subscriptions.json": [
+      {
+        "subscription_id": "c493a68f-2401-5339-b079-3f62db825c39",
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "associate_id": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+        "payment_id": "54f20853-07d2-532b-9f9a-4d7d1b411c2b",
+        "signature_url": "https://legacy.example.test/signature.png",
+        "user_id": "f4b360ff-0fa7-58a2-bf1b-f2016dba1fab"
+      }
+    ],
+    "data/26_subscription_memberships.json": [],
+    "data/27_subscription_tokens.json": [],
+    "data/28_subscription_files.json": [],
+    "data/29_medical_certificates.json": [],
+    "data/30_medical_appointments.json": [],
+    "data/31_course_locations.json": [],
+    "data/32_courses.json": [],
+    "data/33_course_subscriptions.json": [],
+    "data/34_course_subscription_installments.json": [],
+    "data/35_carnets.json": [],
+    "data/36_carnet_subscriptions.json": [],
+    "data/37_camps_and_retreats.json": [],
+    "data/38_camps_periods.json": [],
+    "data/39_camps_period_services.json": [],
+    "data/40_camps_subscriptions.json": [],
+    "data/41_camps_subscription_periods.json": [],
+    "data/42_signatures.json": [],
+    "data/43_payments.json": [
+      {
+        "payment_id": "54f20853-07d2-532b-9f9a-4d7d1b411c2b",
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "associate_id": "af8f8de9-fb66-5159-b063-0c5e8621ba23",
+        "amount": "25.00",
+        "description": "Historical membership",
+        "paid": false
+      }
+    ],
+    "data/44_invoices.json": [],
+    "data/45_invoice_rows.json": [],
+    "data/46_invoice_suppliers.json": [],
+    "data/47_customer_invoices.json": [],
+    "data/48_sport_association_invoices.json": [],
+    "data/49_balance_sheets.json": [],
+    "data/50_attendance_registries.json": [],
+    "data/51_attendance_days.json": [],
+    "data/52_messages.json": [],
+    "data/53_message_transactions.json": [],
+    "data/54_automation_workflows.json": [],
+    "data/55_reminders.json": [],
+    "data/56_email_logs.json": [],
+    "data/57_global_calendar_events.json": [],
+    "data/58_event_reminders.json": [],
+    "data/59_modules.json": [],
+    "data/60_module_responses.json": [],
+    "data/61_sold_products.json": [],
+    "data/62_subscription_transfers.json": [],
+    "data/63_cumulative_gym_links.json": [],
+    "system/64_preview_features.json": [
+      {
+        "preview_and_custom_features_id": "a47211d6-c280-5be8-8b36-61a03df07a2d",
+        "name": "Iscrizioni per Enti e Federazioni",
+        "description": "Retired per-customer entitlement"
+      }
+    ],
+    "data/65_documents_archive.json": [
+      {
+        "sport_association_documents_archive_id": "43377a92-2b28-58be-b115-009697baf9e4",
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "document_id": "238c77cc-288f-5a21-bc36-763577732652",
+        "date": "2026-09-01"
+      }
+    ],
+    "data/99_documents.json": [
+      {
+        "document_id": "238c77cc-288f-5a21-bc36-763577732652",
+        "filename": "historical.txt",
+        "filepath": "legacy/historical.txt"
+      }
+    ],
+    "manifest.json": {
+      "version": "1.0.0",
+      "export_format": "bakney_sport_export_v1",
+      "export_date": "2026-09-01T00:00:00Z",
+      "association": {
+        "sport_association_id": "7616fd26-589f-5551-b17f-0478e305434d",
+        "denomination": "Historical contract club"
+      },
+      "models_exported": [
+        {
+          "name": "BillingPlan",
+          "file": "system/00_billing_plans.json",
+          "count": 1
+        },
+        {
+          "name": "SportAssociation",
+          "file": "data/01_sport_association.json",
+          "count": 1
+        },
+        {
+          "name": "User",
+          "file": "data/02_users.json",
+          "count": 1
+        },
+        {
+          "name": "Group",
+          "file": "data/03_groups.json",
+          "count": 0
+        },
+        {
+          "name": "UsersOnboarding",
+          "file": "data/04_users_onboarding.json",
+          "count": 0
+        },
+        {
+          "name": "CollaborationInvites",
+          "file": "data/05_collaboration_invites.json",
+          "count": 0
+        },
+        {
+          "name": "Family",
+          "file": "data/06_families.json",
+          "count": 0
+        },
+        {
+          "name": "Associate",
+          "file": "data/07_associates.json",
+          "count": 1
+        },
+        {
+          "name": "AssociateTutorRelation",
+          "file": "data/08_associate_tutor_relations.json",
+          "count": 0
+        },
+        {
+          "name": "VatManagement",
+          "file": "data/09_vat_management.json",
+          "count": 0
+        },
+        {
+          "name": "PaymentCategory",
+          "file": "data/10_payment_categories.json",
+          "count": 0
+        },
+        {
+          "name": "CustomAccounts",
+          "file": "data/11_custom_accounts.json",
+          "count": 0
+        },
+        {
+          "name": "Tags",
+          "file": "data/12_tags.json",
+          "count": 0
+        },
+        {
+          "name": "CourseTags",
+          "file": "data/13_course_tags.json",
+          "count": 0
+        },
+        {
+          "name": "Folder",
+          "file": "data/14_folders.json",
+          "count": 0
+        },
+        {
+          "name": "SupplierAndCustomers",
+          "file": "data/15_suppliers_and_customers.json",
+          "count": 0
+        },
+        {
+          "name": "ProductsAndServices",
+          "file": "data/16_products_and_services.json",
+          "count": 0
+        },
+        {
+          "name": "SportAssociationHeadquarter",
+          "file": "data/17_headquarters.json",
+          "count": 0
+        },
+        {
+          "name": "SportAssociationMaterial",
+          "file": "data/18_materials.json",
+          "count": 0
+        },
+        {
+          "name": "SportAssociationModuleTemplates",
+          "file": "data/19_module_templates.json",
+          "count": 0
+        },
+        {
+          "name": "SportAssociationMembershipCardConfiguration",
+          "file": "data/20_membership_card_config.json",
+          "count": 0
+        },
+        {
+          "name": "CommunicationConfiguration",
+          "file": "data/21_communication_config.json",
+          "count": 0
+        },
+        {
+          "name": "NotificationTemplates",
+          "file": "data/22_notification_templates.json",
+          "count": 0
+        },
+        {
+          "name": "Instructor",
+          "file": "data/23_instructors.json",
+          "count": 0
+        },
+        {
+          "name": "InstructorHours",
+          "file": "data/24_instructor_hours.json",
+          "count": 0
+        },
+        {
+          "name": "Subscription",
+          "file": "data/25_subscriptions.json",
+          "count": 1
+        },
+        {
+          "name": "SubscriptionMembership",
+          "file": "data/26_subscription_memberships.json",
+          "count": 0
+        },
+        {
+          "name": "SubscriptionToken",
+          "file": "data/27_subscription_tokens.json",
+          "count": 0
+        },
+        {
+          "name": "SubscriptionFile",
+          "file": "data/28_subscription_files.json",
+          "count": 0
+        },
+        {
+          "name": "MedicalCertificate",
+          "file": "data/29_medical_certificates.json",
+          "count": 0
+        },
+        {
+          "name": "MedicalAppointments",
+          "file": "data/30_medical_appointments.json",
+          "count": 0
+        },
+        {
+          "name": "CourseLocation",
+          "file": "data/31_course_locations.json",
+          "count": 0
+        },
+        {
+          "name": "Course",
+          "file": "data/32_courses.json",
+          "count": 0
+        },
+        {
+          "name": "CourseSubscription",
+          "file": "data/33_course_subscriptions.json",
+          "count": 0
+        },
+        {
+          "name": "CourseSubscriptionInstallment",
+          "file": "data/34_course_subscription_installments.json",
+          "count": 0
+        },
+        {
+          "name": "Carnet",
+          "file": "data/35_carnets.json",
+          "count": 0
+        },
+        {
+          "name": "CarnetSubscription",
+          "file": "data/36_carnet_subscriptions.json",
+          "count": 0
+        },
+        {
+          "name": "CampsAndRetreats",
+          "file": "data/37_camps_and_retreats.json",
+          "count": 0
+        },
+        {
+          "name": "CampsAndRetreatsPeriod",
+          "file": "data/38_camps_periods.json",
+          "count": 0
+        },
+        {
+          "name": "CampsAndRetreatsPeriodsService",
+          "file": "data/39_camps_period_services.json",
+          "count": 0
+        },
+        {
+          "name": "CampsAndRetreatsSubscription",
+          "file": "data/40_camps_subscriptions.json",
+          "count": 0
+        },
+        {
+          "name": "CampsAndRetreatsSubscriptionPeriod",
+          "file": "data/41_camps_subscription_periods.json",
+          "count": 0
+        },
+        {
+          "name": "Signature",
+          "file": "data/42_signatures.json",
+          "count": 0
+        },
+        {
+          "name": "Payment",
+          "file": "data/43_payments.json",
+          "count": 1
+        },
+        {
+          "name": "Invoice",
+          "file": "data/44_invoices.json",
+          "count": 0
+        },
+        {
+          "name": "InvoiceRows",
+          "file": "data/45_invoice_rows.json",
+          "count": 0
+        },
+        {
+          "name": "InvoiceSuppliers",
+          "file": "data/46_invoice_suppliers.json",
+          "count": 0
+        },
+        {
+          "name": "CustomerInvoice",
+          "file": "data/47_customer_invoices.json",
+          "count": 0
+        },
+        {
+          "name": "SportAssociationInvoices",
+          "file": "data/48_sport_association_invoices.json",
+          "count": 0
+        },
+        {
+          "name": "BalanceSheet",
+          "file": "data/49_balance_sheets.json",
+          "count": 0
+        },
+        {
+          "name": "AttendanceRegistry",
+          "file": "data/50_attendance_registries.json",
+          "count": 0
+        },
+        {
+          "name": "AttendanceDay",
+          "file": "data/51_attendance_days.json",
+          "count": 0
+        },
+        {
+          "name": "Message",
+          "file": "data/52_messages.json",
+          "count": 0
+        },
+        {
+          "name": "MessageTransaction",
+          "file": "data/53_message_transactions.json",
+          "count": 0
+        },
+        {
+          "name": "AutomationWorkflow",
+          "file": "data/54_automation_workflows.json",
+          "count": 0
+        },
+        {
+          "name": "Reminder",
+          "file": "data/55_reminders.json",
+          "count": 0
+        },
+        {
+          "name": "EmailLog",
+          "file": "data/56_email_logs.json",
+          "count": 0
+        },
+        {
+          "name": "GlobalCalendarEvents",
+          "file": "data/57_global_calendar_events.json",
+          "count": 0
+        },
+        {
+          "name": "Reminders",
+          "file": "data/58_event_reminders.json",
+          "count": 0
+        },
+        {
+          "name": "Module",
+          "file": "data/59_modules.json",
+          "count": 0
+        },
+        {
+          "name": "ModuleResponses",
+          "file": "data/60_module_responses.json",
+          "count": 0
+        },
+        {
+          "name": "SoldProducts",
+          "file": "data/61_sold_products.json",
+          "count": 0
+        },
+        {
+          "name": "SubscriptionTransfer",
+          "file": "data/62_subscription_transfers.json",
+          "count": 0
+        },
+        {
+          "name": "CumulativeSubscriptionGymLinks",
+          "file": "data/63_cumulative_gym_links.json",
+          "count": 0
+        },
+        {
+          "name": "PreviewAndCustomFeatures",
+          "file": "system/64_preview_features.json",
+          "count": 1
+        },
+        {
+          "name": "SportAssociationDocumentsArchive",
+          "file": "data/65_documents_archive.json",
+          "count": 1
+        },
+        {
+          "name": "Document",
+          "file": "data/99_documents.json",
+          "count": 1
+        }
+      ],
+      "statistics": {
+        "files_failed": 0,
+        "files_exported": 1
+      }
+    }
+  },
+  "text_files": {
+    "files/documents/238c77cc-288f-5a21-bc36-763577732652/historical.txt": "Synthetic historical attachment.\n"
+  }
+}

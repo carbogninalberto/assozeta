@@ -149,12 +149,11 @@
     function checkLogin() {
         // check that user is logged in by checking local storage for:
         // - sessionToken
-        // - isExpired
         // - userData
         // - refreshToken
         // - expires
 
-        if (localStorage.getItem('sessionToken') && localStorage.getItem('isExpired') === 'false') {
+        if (localStorage.getItem('sessionToken')) {
             wizardData.toStep(1);
         } else {
             // if not logged in, open window to login page and wait until the session token is set
@@ -166,7 +165,7 @@
             );
 
             const interval = setInterval(() => {
-                if (localStorage.getItem('sessionToken') && localStorage.getItem('isExpired') === 'false') {
+                if (localStorage.getItem('sessionToken')) {
                     clearInterval(interval);
                     loginWindow.close();
                     wizardData.toStep(1);

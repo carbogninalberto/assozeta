@@ -14,7 +14,6 @@
         currentPage,
         userData,
         tablesSettings,
-        billingData,
     } from 'store/stores.js';
     import {getBase64FromUrl} from 'utils/Functions.js';
     import {onMount, tick} from 'svelte';
@@ -29,7 +28,6 @@
     role.useLocalStorage();
     currentPage.useLocalStorage();
     userData.useLocalStorage();
-    billingData.useLocalStorage();
     tablesSettings.useLocalStorage();
 
     let agreeCheckbox = false;
@@ -474,28 +472,15 @@
                 tablesSettings.set(response.tables_settings);
                 currentPage.set('dashboard');
 
-                await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(async billingResult => {
-                    if (!billingResult.error) {
-                        billingData.set(billingResult.response.data);
-                        await apiFetch(__bakney.env.API.PROFILE.INFO).then(profileResult => {
-                            if (!profileResult.error) {
-                                const currentRole = profileResult.response.info.role;
-                                role.set(currentRole);
-                                setPermissions(billingResult.response.data?.active_plan?.billing_type, currentRole);
-                            }
-                        });
-                    } else {
-                        apiFetch(__bakney.env.API.PROFILE.INFO).then(res => {
-                            if (!res.error && res.response.info.role != $role) {
-                                role.set(res.response.info.role);
-                            }
-                        });
-                    }
-
-                    if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
-                        location.href = '/#/welcome';
-                    else location.href = '/';
-                });
+                const profileResult = await apiFetch(__bakney.env.API.PROFILE.INFO);
+                if (!profileResult.error) {
+                    userData.set(profileResult.response.user_data);
+                    setPermissions(profileResult.response.info.role);
+                    role.set(profileResult.response.info.role);
+                }
+                if (!collaborator && response.role != 'athlete' && location.href != '/welcome')
+                    location.href = '/#/welcome';
+                else location.href = '/';
                 // location.replace('/');
                 // replace('/');
             });
@@ -678,13 +663,7 @@
                 } else if (!isSelfHostedMode() && check_onboarded && !check_onboarding) {
                     location.href = '/#/stripe/onboarded';
                 } else {
-                    if (response.role == 'association')
-                        await apiFetch(__bakney.env.API.BILLING.ACTIVE_PLAN).then(res => {
-                            if (!res.error) {
-                                billingData.set(res.response.data);
-                                setPermissions(res.response.data?.active_plan?.billing_type, response.role);
-                            }
-                        });
+                    setPermissions(response.role);
                     location.href = '/';
                 }
             }, 1000);

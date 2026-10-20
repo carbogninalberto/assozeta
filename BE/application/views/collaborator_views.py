@@ -13,7 +13,7 @@ from core.tasks import send_mail_async
 
 from application.models import User
 from application.models.user_models import CollaborationInvites
-from application.permissions import IsProPlanAssociation, IsTeamsPlanAssociation
+from application.permissions import IsAssociationUser
 from application.serializers.auth_serializers import UserSerializer
 from application.serializers.collaborators_serializers import CollaboratorSerializer, CollaborationInviteSerializer
 from application.utils.api_utils import is_valid_uuid, check_email
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def collaborators_list(request):
     if not request.user.is_sport_association(raise_exception=False):
         raise PermissionDenied(detail='User is not a sport association')
@@ -59,7 +59,7 @@ def collaborators_list(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def collaborators_add(request):
     if not request.user.is_sport_association(raise_exception=False):
         raise PermissionDenied(detail='User is not a sport association')
@@ -162,7 +162,7 @@ def collaborators_accept(request, token):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated, IsProPlanAssociation | IsTeamsPlanAssociation])
+@permission_classes([IsAuthenticated, IsAssociationUser])
 def collaborators_update(request, uid):
     if not request.user.is_sport_association(raise_exception=False):
         raise PermissionDenied(detail='User is not a sport association')

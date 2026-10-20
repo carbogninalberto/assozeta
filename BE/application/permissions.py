@@ -1,27 +1,18 @@
 from rest_framework.permissions import BasePermission
-from application.models import User, BillingSubscription, BillingPlan
+from application.models import User
 
 
-class IsProPlanAssociation(BasePermission):
+class IsAssociationUser(BasePermission):
+    """Association business access; role restrictions are independent of billing.
+
+    IsAuthenticated resolves collaborator/impersonation scope and enforces the
+    existing collaborator permission registry before this permission is checked.
+    """
     def has_permission(self, request, view):
-
-        if request.user.role == User.ATHLETE:
-            return False
-        else:
-            billing_subscription = BillingSubscription.objects.get(user=request.user)
-            return bool(billing_subscription.billing_plan.billing_type == BillingPlan.PRO_PLAN)
-
-
-class IsTeamsPlanAssociation(BasePermission):
-    def has_permission(self, request, view):
-
-        if request.user.role == User.ATHLETE:
-            return False
-        else:
-            billing_subscription = BillingSubscription.objects.get(user=request.user)
-            return bool(billing_subscription.billing_plan.billing_type == BillingPlan.TEAMS_PLAN)
+        return bool(request.user and request.user.is_authenticated and
+                    request.user.role in (User.ASSOCIATION, User.COLLABORATOR))
 
 
 class IsAthleteUser(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == User.ATHLETE
+        return bool(request.user and request.user.is_authenticated and request.user.role == User.ATHLETE)

@@ -22,9 +22,6 @@ from django.db import models
 from django.db.models import Exists, Model, OuterRef
 from django.utils import timezone
 
-from application.models import (
-    BillingPlan,
-)
 from application.models.attendee_models import (
     AttendanceDay,
     AttendanceRegistry,
@@ -83,7 +80,6 @@ from application.models.user_models import (
     Group,
     Instructor,
     InstructorHours,
-    PreviewAndCustomFeatures,
     Reminder,
     SportAssociation,
     SportAssociationDocumentsArchive,
@@ -133,7 +129,6 @@ class AssociationExportService:
     # Format: (Model class, filename prefix, [optional: 'system' for system data])
     EXPORT_ORDER: List[Tuple] = [
         # System defaults (needed for fresh install)
-        (BillingPlan, '00_billing_plans', 'system'),
 
         # Tier 1: Root entity
         (SportAssociation, '01_sport_association'),
@@ -236,7 +231,6 @@ class AssociationExportService:
         (CumulativeSubscriptionGymLinks, '63_cumulative_gym_links'),
 
         # Tier 20: System-like models
-        (PreviewAndCustomFeatures, '64_preview_features', 'system'),
 
         # Tier 21: Documents archive
         (SportAssociationDocumentsArchive, '65_documents_archive'),
@@ -277,7 +271,6 @@ class AssociationExportService:
         'CourseSubscription': ['membership_payments'],
         'CampsAndRetreatsPeriod': ['camps_and_Retreats_period_services'],
         'CampsAndRetreatsSubscriptionPeriod': ['camps_and_retreats_period_services'],
-        'User': ['preview_and_custom_features'],
     }
 
     def __init__(
@@ -583,10 +576,6 @@ class AssociationExportService:
         if model_name == 'CumulativeSubscriptionGymLinks':
             return qs.filter(sport_association=self.sport_association)
 
-        # PreviewAndCustomFeatures - through User M2M (export features used by owner)
-        if model_name == 'PreviewAndCustomFeatures':
-            owner = self.sport_association.user
-            return qs.filter(user=owner)
 
         # Document - collected separately
         if model_name == 'Document':

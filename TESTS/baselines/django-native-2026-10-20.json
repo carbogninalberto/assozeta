@@ -1,0 +1,90 @@
+{
+  "measured_at": "2026-10-20T21:20:49.891612+00:00",
+  "client_platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "client_python": "3.14.6",
+  "concurrency": 1,
+  "transport": "HTTP; new connection per request",
+  "dataset": {
+    "primary_association": {
+      "people": 100,
+      "payments": 100,
+      "courses": 10
+    },
+    "associations": 4,
+    "accounts": 8
+  },
+  "server_environment": {
+    "backend": "Django",
+    "django": "5.2.17",
+    "python": "3.14.6",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "http_workers": 1,
+    "task_workers": 1,
+    "debug": false,
+    "sql_profiler": false,
+    "schema_setup": "current models",
+    "database_storage": "dedicated temporary PostgreSQL; fsync off",
+    "storage": "local temporary files",
+    "cache": "in-process",
+    "email": "in-memory"
+  },
+  "results": [
+    {
+      "path": "/profile/info",
+      "samples": 50,
+      "warmup": 5,
+      "errors": [],
+      "latency_ms": {
+        "p50": 311.76,
+        "p95": 447.618,
+        "p99": 465.666
+      },
+      "throughput_requests_per_second": 3.108,
+      "duration_seconds": 16.088
+    },
+    {
+      "path": "/personas/list",
+      "samples": 50,
+      "warmup": 5,
+      "errors": [],
+      "latency_ms": {
+        "p50": 347.316,
+        "p95": 1318.12,
+        "p99": 2180.69
+      },
+      "throughput_requests_per_second": 2.23,
+      "duration_seconds": 22.423
+    },
+    {
+      "path": "/course/list",
+      "samples": 50,
+      "warmup": 5,
+      "errors": [],
+      "latency_ms": {
+        "p50": 1038.228,
+        "p95": 2059.212,
+        "p99": 3233.46
+      },
+      "throughput_requests_per_second": 0.813,
+      "duration_seconds": 61.528
+    },
+    {
+      "path": "/payment/list",
+      "samples": 50,
+      "warmup": 5,
+      "errors": [],
+      "latency_ms": {
+        "p50": 2201.689,
+        "p95": 4314.986,
+        "p99": 4756.925
+      },
+      "throughput_requests_per_second": 0.382,
+      "duration_seconds": 130.949
+    }
+  ],
+  "notes": [
+    "Initial read baseline on a shared developer workstation with concurrent build/test activity.",
+    "Compare on the same adapter, host load and dataset. No production-capacity claim or timing gate.",
+    "Authentication is outside the measured loops. SQL profiling is disabled."
+  ]
+}

@@ -1,6 +1,6 @@
 <script>
     import {onDestroy, onMount} from 'svelte';
-    import {canPerformAction, isFreePlan} from 'utils/Permissions.js';
+    import {canPerformAction} from 'utils/Permissions.js';
     import * as easing from 'svelte/easing';
     import {slide, scale} from 'svelte/transition';
     import ContentLoader from 'svelte-content-loader';
@@ -777,8 +777,7 @@
 
 <!--begin::Entry-->
 <div  class="d-flex flex-column-fluid">
-    {#if !isFreePlan()}
-        <!--begin::Container-->
+    <!--begin::Container-->
         <div class="container">
             <!--begin::Card-->
             <div class="card card-custom gutter-b">
@@ -875,9 +874,7 @@
                 </div>
             </div>
         </div>
-        <!--end::Container-->{:else}
-        <Upgrade />
-    {/if}
+        <!--end::Container-->
 </div>
 <!--end::Entry-->
 

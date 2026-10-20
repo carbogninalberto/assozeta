@@ -6,8 +6,7 @@
     import {link, push} from 'svelte-spa-router';
     import moment from 'moment';
     import {apiFetch} from 'utils/ApiMiddleware';
-    import {isFreePlan} from 'utils/Permissions';
-    import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
+        import { initTooltips, destroyTooltips } from 'shim/tooltip.js';
     import { initPopovers, destroyPopovers } from 'shim/popover.js';
 
     permissions.useLocalStorage();
@@ -98,19 +97,11 @@
                                     >{lesson?.total_expected_absences || 0} non ci sarò</span
                                 ></span>
 
-                            {#if isFreePlan()}
-                                <a
-                                    href="/subscription/upgrade"
-                                    use:link
-                                    class="btn btn-sm btn-outline-secondary mt-3 font-weight-boldest"
-                                    disabled>Presenze</a>
-                            {:else}
-                                <button
+                            <button
                                     data-toggle="modal"
                                     data-target="#attendance-day-{lesson?.attendance_day_id}"
                                     class="btn btn-sm py-1 px-2 btn-outline-secondary mt-1 font-weight-boldest"
                                     >Presenze</button>
-                            {/if}
                         </div>
                     </div>
                     <MarkAttendees
