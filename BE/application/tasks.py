@@ -2000,7 +2000,6 @@ Il team {WHITELABEL_NAME}
             'document_id': str(document.document_id),
             'filename': document.filename,
             'stats': service.stats,
-            'skipped_records': service.skipped_records,
         }
 
     except Exception as e:
