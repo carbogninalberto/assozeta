@@ -230,3 +230,19 @@ HTTP requests blocked. The full packaging/deployment driver is
 server command supplied by the adapter. It verifies the matching release/corpus,
 search and section retrieval, public permission boundaries, unsupported questions
 and an existing association data tool. It imports no Django/application code.
+
+## Go migration foundation
+
+Configured smoke/regression runs now also execute
+`contracts/test_health.py`: public liveness/readiness and the existing CSRF-before-
+method-rejection behavior. These contracts contain no application imports.
+
+`python3 TESTS/adapters/go/health.py` runs those same three contracts against the
+Go executable with private PostgreSQL and Redis, then verifies dependency failure,
+recovery and clean SIGTERM exit. This is **not yet the Go business fixture adapter**;
+it does not satisfy the configured/fresh/import scenarios documented above.
+
+Migration discovery and status are maintained in
+[`docs/architecture/go-migration/`](../docs/architecture/go-migration/README.md).
+Static inventory tests use the standard library; the runtime inventory exporter
+is explicitly Django-specific and lives under `adapters/django/`.
