@@ -7,42 +7,47 @@ nel codice Assozeta e negli scenari reali.
 
 ## Preparazione della release
 
-L'obiettivo della release è distribuire il manuale italiano già supportato,
-senza estendere la copertura. Il resoconto storico sotto conserva la verifica
-originale; non certifica automaticamente revisioni successive.
+La consegna automatica usa il workflow `manuale-release.yml`, richiamato dalla
+pipeline delle immagini prima della pubblicazione. La release contiene testo,
+indice e PNG verificati per la propria revisione e versione nell'immagine
+backend, sotto `/app/release-manual`. Installazione, aggiornamento, ricreazione
+e rollback selezionano il pacchetto insieme all'immagine. Non occorrono un URL
+del corpus, credenziali AI, un abbonamento software o un deploy del sito.
 
-La produzione usa il volume persistente `manuale_data` condiviso dai servizi
-backend. La sincronizzazione verifica hash e formato delle immagini prima di
-sostituire atomicamente l'indice. Il lettore autenticato controlla nuovamente gli
-hash; un aggiornamento fallito conserva il pacchetto precedente compatibile.
-Le build escludono pacchetti locali e file di versione dello sviluppatore.
+La sincronizzazione opzionale nel volume `manuale_data` resta un percorso
+separato per pacchetti pubblicati esternamente. `sync-manual` non è necessario
+per le release con il manuale incluso. Un pacchetto obbligatorio mancante,
+corrotto o incompatibile impedisce l'avvio dell'immagine candidata; non viene
+sostituito da istruzioni appartenenti a un'altra versione.
 
-Il comando `./selfhost/bin/assozeta sync-manual` aggiorna il pacchetto senza
-migrazioni o seed. Avvio e aggiornamento tentano la sincronizzazione quando
-configurata, senza impedire l'avvio dell'applicazione in caso di errore.
-Restano obbligatori i controlli di pubblicazione, revisione esatta e versione.
-Vedi [installazione e aggiornamenti](README.md#installazione-in-produzione-e-aggiornamenti).
+Criteri di consegna della PR:
 
-Criteri di consegna:
+1. Integrare `main` e la stesura mantenuta in `Bakney/manuale`, conservando i
+   controlli di accesso, l'importazione dei backup e le lacune esplicite.
+2. Verificare il manuale sulla revisione applicativa finale committata; riusare
+   catture precedenti soltanto dopo i controlli di compatibilità del runner.
+3. Verificare rendering, testo, immagini autenticate, navigazione, ricerca,
+   lettore incorporato e assistente/MCP reali senza provider AI.
+4. Preparare il bundle dalle prove valutate. La stesura di input è committata;
+   MDX e PNG generati restano artefatti con provenienza
+   `generated-from-committed` e stato `release-bundled`. Non occorre creare un
+   commit editoriale artificiale per ciascuna release.
+5. Eseguire `selfhost/tests/manual-release-smoke.sh` con due versioni valutate:
+   installazione pulita, baseline con volume vuoto, aggiornamento, ricreazione,
+   rollback, rifiuto di candidati danneggiati e conservazione del pacchetto valido.
+   I contratti indipendenti si trovano in `TESTS/`.
+6. Superare i controlli della PR e dimostrare che un errore di verifica blocca
+   immagini installabili e manifest di aggiornamento. Conservare i risultati
+   della prova reale; la sola configurazione YAML non dimostra la consegna.
 
-1. Eseguire i test backend su PostgreSQL isolato, i test frontend e le verifiche
-   operative, incluse installazione pulita, aggiornamento e riavvio.
-2. Creare commit separati e coerenti per correzioni, integrazione, strumenti e
-   documentazione, verificando prima lo stato dei remoti.
-3. Verificare il manuale sulla revisione applicativa finale committata; riusare
-   prove precedenti solo quando il runner ne conferma la compatibilità.
-4. Verificare lettore, immagini autenticate, navigazione, ricerca, apertura in
-   nuova scheda e assistente senza provider tramite browser reale.
-5. Committare i byte esatti del manuale risultante nel repository del manuale,
-   preparare il pacchetto e pubblicare i branch di lavoro autorizzati.
-6. Prima dell'attivazione in produzione, pubblicare separatamente sito e prove,
-   verificare la revisione distribuita e promuovere il corpus tramite gli
-   strumenti esistenti. Un pacchetto `prepared` non equivale a `published`.
+La pubblicazione esterna del sito continua a usare il percorso distinto
+`prepared` → `published` e i suoi controlli. Non condiziona la disponibilità
+del manuale incluso nell'immagine. La configurazione del riferimento editoriale
+e i comandi sono descritti nel [README](README.md#manuale-incluso-nelle-release).
 
-I log locali e il piano dei commit sono conservati nella directory ignorata
-`quality-reports/manuale-release-readiness/`. Conservare prove e backup fino
-alla pubblicazione dei branch. Le esecuzioni finali contengono i riferimenti
-esatti ai commit e i risultati aggiornati, senza modificare le prove storiche.
+I resoconti storici sotto non certificano la revisione corrente. I risultati
+correnti devono provenire dal run esatto, dai contratti della prova di release
+in `quality-reports/manual-release/` e dai controlli GitHub della PR.
 
 ## Retained verified local delivery — 5 October 2026
 
