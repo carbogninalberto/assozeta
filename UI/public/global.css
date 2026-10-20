@@ -1646,6 +1646,7 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 .ec-list .ec-event {
 	border-left: 0 !important;
 	padding: 0.75rem 1.25rem !important;
+	text-align: start;
 }
 .ec-list .ec-event-tag {
 	display: none;
@@ -1685,7 +1686,7 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 	font-size: 0.8rem;
 	font-weight: 400;
 	line-height: 1.35;
-	color: var(--text-muted, #92929C);
+	color: var(--text-muted, #92929C) !important;
 }
 .ec-list .ec-day-head {
 	background-color: var(--bg-surface-secondary, #F3F6F9) !important;
