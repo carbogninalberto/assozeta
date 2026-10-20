@@ -362,6 +362,8 @@
                         }, 100);
                     },
 
+                    // Refetch on every view change/navigation so events edited elsewhere are never stale.
+                    lazyFetching: false,
                     eventSources: [{
                         events: async function (fetchInfo) {
                             const startStr = moment(fetchInfo.start).format('YYYY-MM-DD');
