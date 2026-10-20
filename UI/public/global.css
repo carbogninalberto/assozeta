@@ -1642,6 +1642,96 @@ th.datatable-cell, td.datatable-cell, th.datatable-cell-check, .datatable.datata
 	background-color: #EBEDF3;
 }
 
+/* List rows read as aligned columns: time | dot | title + description. */
+.ec-list .ec-event {
+	border-left: 0 !important;
+	padding: 0.75rem 1.25rem !important;
+}
+.ec-list .ec-event-tag {
+	display: none;
+}
+.ec-list .ec-event .ec-event-body {
+	display: grid !important;
+	grid-template-columns: 7.5rem 1.25rem minmax(0, 1fr);
+	align-items: start !important;
+	gap: 0 0.75rem !important;
+}
+.ec-list .ec-event-time {
+	grid-column: 1;
+	grid-row: 1;
+	font-size: 0.9rem;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--text-secondary, #7E8299);
+	font-variant-numeric: tabular-nums;
+}
+.ec-list .ec-event .ec-event-body::before {
+	grid-column: 2;
+	grid-row: 1;
+	align-self: start;
+	justify-self: center;
+	margin: 0.35rem 0 0 !important;
+}
+.ec-list .ec-event-title {
+	grid-column: 3;
+	grid-row: 1;
+	font-size: 0.95rem !important;
+	line-height: 1.4 !important;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.ec-list .ec-description {
+	margin-top: 0.15rem;
+	font-size: 0.8rem;
+	font-weight: 400;
+	line-height: 1.35;
+	color: var(--text-muted, #92929C);
+}
+.ec-list .ec-day-head {
+	background-color: var(--bg-surface-secondary, #F3F6F9) !important;
+	color: var(--text-secondary, #7E8299) !important;
+	font-size: 0.8rem !important;
+	font-weight: 600 !important;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 0.6rem 1.25rem !important;
+}
+.ec-list .ec-day-head .ec-day-side {
+	color: var(--text-muted, #92929C);
+	font-weight: 500;
+	text-transform: none;
+	letter-spacing: 0;
+}
+.ec-list .ec-today .ec-day-head time:first-child {
+	color: var(--primary, #351DC2);
+}
+@media (max-width: 480px) {
+	.ec-list .ec-event {
+		padding: 0.6rem 0.75rem !important;
+	}
+	.ec-list .ec-event .ec-event-body {
+		grid-template-columns: 1.25rem minmax(0, 1fr);
+		row-gap: 0.15rem !important;
+	}
+	.ec-list .ec-event-time {
+		grid-column: 1 / -1;
+		font-size: 0.8rem;
+	}
+	.ec-list .ec-event .ec-event-body::before,
+	.ec-list .ec-event-title {
+		grid-row: 2;
+	}
+	.ec-list .ec-event .ec-event-body::before {
+		grid-column: 1;
+	}
+	.ec-list .ec-event-title {
+		grid-column: 2;
+	}
+	.ec-list .ec-day-head {
+		padding: 0.5rem 0.75rem !important;
+	}
+}
+
 .ec-event-title {
 	font-weight: 600 !important;
 	font-size: 1rem !important;
