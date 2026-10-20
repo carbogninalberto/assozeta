@@ -19,6 +19,7 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
+      golang: ${{ steps.filter.outputs.golang }}
       backend: ${{ steps.filter.outputs.backend }}
       ui: ${{ steps.filter.outputs.ui }}
       selfhost: ${{ steps.filter.outputs.selfhost }}
@@ -31,6 +32,9 @@ jobs:
         with:
           predicate-quantifier: every
           filters: |
+            golang:
+              - '{BE_GO/**,BE/**,TESTS/**,docs/architecture/go-migration/**,.github/workflows/pull-request-quality.yml}'
+              - '!**/*.md'
             backend:
               - '{BE/**,TESTS/**,run_tests.sh,selfhost/compose.dev.yml,selfhost/bin/assozeta,selfhost/config/**,selfhost/.env*,.github/workflows/selfhost-quality.yml,.github/actions/prepare-storage/**,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
@@ -52,6 +56,44 @@ jobs:
               - '!selfhost/tests/test_*.py'
             workflows:
               - '.github/workflows/**'
+
+  golang:
+    name: Go foundation and inventory
+    needs: changes
+    if: needs.changes.outputs.golang == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Check inventory and Go code
+        run: |
+          python3 -m unittest discover -s TESTS/inventory -v
+          python3 -m TESTS.inventory.catalog --check
+          test -z "$(gofmt -l BE_GO)"
+          go -C BE_GO vet ./...
+          go -C BE_GO test -race ./...
+      - name: Install disposable integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Rehearse health and dependency failure recovery
+        run: python3 TESTS/adapters/go/health.py
+      - name: Build isolated Go image and verify non-root execution
+        run: |
+          docker build -t assozeta-go-foundation:test BE_GO
+          test "$(docker run --rm --network none --entrypoint id assozeta-go-foundation:test -u)" = "10001"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-foundation-evidence
+          path: quality-reports/go-migration/go-health/
 
   quality:
     name: Run affected quality checks
@@ -107,7 +149,7 @@ jobs:
   result:
     name: PR quality
     if: always()
-    needs: [changes, quality, selfhost, stack, workflows]
+    needs: [changes, golang, quality, selfhost, stack, workflows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every selected check to pass
