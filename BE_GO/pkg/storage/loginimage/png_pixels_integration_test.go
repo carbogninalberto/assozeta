@@ -23,7 +23,7 @@ func TestPNGScanlinesAgainstPillow(t *testing.T) {
 		Data, Expected, JPEG []byte
 		Invalid              bool
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 801 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 803 {
 		t.Fatal("invalid PNG fixture", err)
 	}
 	encoder, err := NewJPEGEncoder(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), jpegTestLimits())
@@ -45,13 +45,8 @@ func TestPNGScanlinesAgainstPillow(t *testing.T) {
 			t.Errorf("%s: PNG pixels differ: %v", tc.Name, err)
 		}
 		if err == nil {
-			normalized := got
-			// Same-size JPEG composition only. A resized mode-1 image still
-			// needs its own nearest-neighbour path in the complete processor.
-			if normalized.Mode == "1" {
-				normalized.Mode = "L"
-			}
-			transformed, e := Transform(context.Background(), normalized, got.Width, got.Height, 8<<20)
+
+			transformed, e := Transform(context.Background(), got, got.Width, got.Height, 8<<20)
 			if tc.JPEG == nil {
 				if !errors.Is(e, ErrUnsupportedMode) {
 					t.Errorf("%s: unsupported JPEG mode admitted", tc.Name)

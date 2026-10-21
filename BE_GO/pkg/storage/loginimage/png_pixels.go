@@ -11,7 +11,8 @@ import (
 var ErrPNGDecode = errors.New("login PNG pixel decoding failed")
 
 // PNGPixelSpec describes one PNG tile after file/header admission. Compressed
-// bytes are the tile's concatenated IDAT payload, without chunk framing or CRCs.
+// bytes contain one zlib stream, without chunk framing or CRCs. Callers must
+// handle chunk boundaries separately: concatenation can change Pillow errors.
 // This primitive does not perform PNG metadata admission or APNG composition.
 type PNGPixelSpec struct {
 	Width, Height int
@@ -70,6 +71,7 @@ func DecodePNGScanlines(ctx context.Context, spec PNGPixelSpec, data []byte, max
 	if spec.Interlace {
 		passes = [][4]int{{0, 0, 8, 8}, {4, 0, 8, 8}, {0, 4, 4, 8}, {2, 0, 4, 4}, {0, 2, 2, 4}, {1, 0, 2, 2}, {0, 1, 1, 2}}
 	}
+passesLoop:
 	for _, pass := range passes {
 		x0, y0, dx, dy := pass[0], pass[1], pass[2], pass[3]
 		if x0 >= spec.Width || y0 >= spec.Height {
@@ -83,7 +85,8 @@ func DecodePNGScanlines(ctx context.Context, spec PNGPixelSpec, data []byte, max
 				return empty, err
 			}
 			row := current[:count+1]
-			if err := pngReadRow(reader, row); err != nil {
+			ended, err := pngReadRow(reader, row)
+			if err != nil {
 				if ctx.Err() != nil {
 					return empty, ctx.Err()
 				}
@@ -144,6 +147,11 @@ func DecodePNGScanlines(ctx context.Context, spec PNGPixelSpec, data []byte, max
 					}
 				}
 			}
+			if ended {
+				// Pillow accepts Z_STREAM_END after a complete row and leaves
+				// all pixels not yet visited (including Adam7 passes) zero.
+				break passesLoop
+			}
 			copy(previous, row[1:])
 		}
 	}
@@ -188,21 +196,26 @@ func pngPixelMode(depth, color int) (string, int, int) {
 	}
 	return "", 0, 0
 }
-func pngReadRow(reader io.Reader, row []byte) error {
+func pngReadRow(reader io.Reader, row []byte) (ended bool, err error) {
 	for len(row) > 0 {
 		n, err := reader.Read(row)
 		row = row[n:]
 		if err != nil {
-			if len(row) == 0 && (errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF)) {
-				return nil
+			if len(row) == 0 {
+				if errors.Is(err, io.EOF) {
+					return true, nil
+				}
+				if errors.Is(err, io.ErrUnexpectedEOF) {
+					return false, nil
+				}
 			}
-			return err
+			return false, err
 		}
 		if n == 0 {
-			return io.ErrNoProgress
+			return false, io.ErrNoProgress
 		}
 	}
-	return nil
+	return false, nil
 }
 func pngPaeth(a, b, c byte) byte {
 	p := int(a) + int(b) - int(c)

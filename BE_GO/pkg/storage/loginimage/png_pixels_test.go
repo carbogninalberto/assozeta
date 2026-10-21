@@ -80,3 +80,30 @@ func TestPNGInvalidSpecificationsAndMidDecodeCancellation(t *testing.T) {
 		}
 	}
 }
+
+func TestPNGScanlineEarlyStreamEnd(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		interlace bool
+		raw, want []byte
+	}{
+		{"complete row", false, []byte{0, 1, 2, 3}, []byte{1, 2, 3, 0, 0, 0}},
+		{"complete Adam7 row", true, []byte{0, 42}, []byte{42, 0, 0, 0, 0, 0}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			data := pngCompressed(t, tc.raw)
+			spec := PNGPixelSpec{Width: 3, Height: 2, Depth: 8, Interlace: tc.interlace}
+			got, err := DecodePNGScanlines(context.Background(), spec, data, 1<<20)
+			if err != nil || got.Mode != "L" || !bytes.Equal(got.Pixels, tc.want) {
+				t.Fatalf("valid early stream end: got %v, %v", got, err)
+			}
+			// Without a complete trailer this is truncated input, not a valid end.
+			for _, broken := range [][]byte{data[:len(data)-4], pngCompressed(t, tc.raw[:len(tc.raw)-1])} {
+				got, err = DecodePNGScanlines(context.Background(), spec, broken, 1<<20)
+				if !errors.Is(err, ErrPNGDecode) || got.Pixels != nil {
+					t.Fatalf("incomplete row/stream accepted: %v, %v", got, err)
+				}
+			}
+		})
+	}
+}

@@ -28,8 +28,8 @@ from cancellation or resource-budget failures.
   returns the original. `Decide` reports `ErrDimensions` for that condition.
 
 `Transform` receives a normalized decoded 8-bit raster. It supports L, RGB, RGBA,
-RGBX, CMYK and YCbCr channels. File codecs must normalize one-bit L data and other
-supported input representations correctly before calling it. RGBA is pasted onto
+RGBX, CMYK and YCbCr channels, plus mode `1` represented as unpacked 0/255
+bytes. File codecs must normalize supported input representations correctly. RGBA is pasted onto
 white **before** resampling, with the same integer rounding as Pillow. Other modes
 retain their channels; the encoder applies their mode-specific packing.
 
@@ -248,9 +248,8 @@ Grayscale 2/4-bit samples expand to L; one-bit samples retain mode `1` as unpack
 0/255 bytes. Palette indices retain P, 8-bit gray-alpha retains LA, and grayscale
 16-bit retains I;16 with little-endian samples. RGB/RGBA 16-bit samples use their
 high bytes. Pillow's 16-bit gray-alpha case expands to RGBA, unlike 8-bit LA.
-These distinctions matter: P/LA/I;16 cannot be saved as JPEG, and resizing mode 1
-requires a separate nearest-neighbour path rather than the existing Lanczos
-transform. That resized mode-1 path remains to implement in the full processor.
+These distinctions matter: P/LA/I;16 cannot be saved as JPEG. Mode `1` uses the
+nearest-neighbour path described below, retaining its binary samples.
 
 Input, output and two maximum-width row buffers count toward an explicit logical
 working-byte budget checked before allocation. Zlib internals and allocator/RSS
@@ -260,17 +259,21 @@ rows and during filter/unpack loops. Inputs are immutable and concurrent calls
 share no decoder state. Missing zlib trailers after all required scanlines are
 tolerated; a checksum failure reached while producing a required row fails.
 Surplus inflated bytes are ignored, so a corrupt checksum beyond those bytes
-must not reject an otherwise accepted image.
+must not reject an otherwise accepted image. A valid zlib stream end after a
+complete row is also accepted, leaving unvisited pixels zero, including in Adam7.
+An incomplete row or missing trailer before the remaining rows still fails.
+These rules apply to a single compressed stream: blindly concatenating file IDAT
+chunks changes Pillow's checksum/error timing and is not a complete file reader.
 
-`TESTS/adapters/django/login_png_pixels.py` establishes 801 explicit cases:
+`TESTS/adapters/django/login_png_pixels.py` establishes 803 explicit cases:
 750 sample/filter/interlace combinations across five sizes, including buffers
-larger than the deflate window, plus 51 truncation/filter/checksum cases. Expected
+larger than the deflate window, plus 53 truncation/filter/checksum/early-end cases. Expected
 pixels are constructed directly from samples and independently compared with
 Pillow; outputs are not merely copied from the reference decoder. The account
 adapter also calls the actual Django helper for all cases. At unchanged sizes,
-478 produce exact JPEG bytes from decoded pixels/white alpha composition, while
+480 produce exact JPEG bytes from decoded pixels/white alpha composition, while
 300 unsupported modes and 23 invalid pixel streams preserve the original URI.
-Mode 1 is normalized to L only for this unchanged-size JPEG test. The Go test
+Mode `1` passes through the production transform and encoder. The Go test
 checks the separate transform/encoder composition without claiming PNG file
 admission. Limits at the exact boundary, integer overflow, mid-decode cancellation
 and 32 concurrent Adam7 decodes are covered. The non-root/read-only/networkless
@@ -317,5 +320,33 @@ accounting and 32 concurrent readers. The non-root/read-only/networkless image
 runs the same header oracle alongside the existing JPEG and PNG pixel checks.
 
 Still open for complete PNG files: gathering/validating pixel chunks, post-pixel
-metadata and error behavior, first-frame canvas composition, resized mode-1
-nearest-neighbour transforms, whole-file admission/limits and response wiring.
+metadata and error behavior, first-frame canvas composition, whole-file
+admission/limits and response wiring.
+
+
+## One-bit nearest-neighbour transforms
+
+Pillow forces nearest-neighbour sampling for mode `1` even when its caller asks
+for Lanczos. `Transform` preserves this behavior, including float32 source-box
+endpoints and the accumulated double coordinates in
+[Pillow 11.1 Geometry.c](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/Geometry.c).
+For example, resizing two pixels `[black, white]` to seven keeps the fourth pixel
+black; recomputing each coordinate with multiplication changes that boundary.
+The retained Pillow license covers this derived implementation as well.
+
+Binary rasters require every byte to be 0 or 255. Both transformation and JPEG
+encoding reject other sample values before producing output. Identity transforms
+clone pixels without allocating an index table; resizes reserve input, output and
+one integer index per target column against the logical byte budget. Cancellation
+is checked during validation, coordinate construction and pixel copying. The
+encoder supplies validated binary samples as L to the existing native helper.
+
+`login_bilevel.py` checks 210 exact nearest/JPEG vectors, including horizontal and
+vertical boundary scans, constant patterns, identity, shrink and enlargement.
+Another 18 ordinary one-IDAT PNG cases check the actual Django helper at small,
+exactly 1 MiB and 1 MiB + 1 file sizes, including zero target dimensions. Go composes
+header admission, size decision, scanline decoding, transformation and encoding
+for these fixtures. Exact budgets, invalid samples, ownership, cancellation and
+32 concurrent transformations/encodes also pass. The shipped non-root, read-only,
+networkless image runs the same oracle. These tests do not establish complete PNG
+chunk/post-pixel/APNG handling or public login wiring.

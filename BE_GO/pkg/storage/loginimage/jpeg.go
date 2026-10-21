@@ -86,6 +86,14 @@ func (e *JPEGEncoder) EncodeWithComment(ctx context.Context, input Raster, comme
 	if size > e.limits.MaxRasterBytes {
 		return nil, ErrWorkingLimit
 	}
+	codecMode := input.Mode
+	if input.Mode == "1" {
+		if err := validateBilevel(ctx, input.Pixels); err != nil {
+			return nil, err
+		}
+		// Our bilevel raster is already unpacked to Pillow's grayscale samples.
+		codecMode = "L"
+	}
 	// Pillow's non-suspending COM write must fit its initial destination block.
 	// An exactly full block also fails. Preserve that malformed-save fallback.
 	block := max(65536, input.Width*4)
@@ -96,7 +104,7 @@ func (e *JPEGEncoder) EncodeWithComment(ctx context.Context, input Raster, comme
 	if comment != nil && len(comment)+prefix+4 >= block {
 		return nil, ErrJPEGEncode
 	}
-	arguments := []string{"encode", input.Mode, strconv.Itoa(input.Width), strconv.Itoa(input.Height), strconv.Itoa(e.limits.MaxEncodedBytes)}
+	arguments := []string{"encode", codecMode, strconv.Itoa(input.Width), strconv.Itoa(input.Height), strconv.Itoa(e.limits.MaxEncodedBytes)}
 	if comment != nil {
 		arguments = append(arguments, strconv.Itoa(len(comment)))
 	}
