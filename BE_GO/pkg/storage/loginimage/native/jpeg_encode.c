@@ -1,7 +1,8 @@
 /* Narrow, process-isolated JPEG encoder for the Go login image adapter.
  * Uses libjpeg's default quality (75), sampling, DCT and marker policy, as
  * Pillow 11.1.0 does for Image.save(format="JPEG") without encoder options.
- * Protocol: encode MODE WIDTH HEIGHT MAX_OUTPUT_BYTES; packed raster on stdin.
+ * Protocol: encode MODE WIDTH HEIGHT MAX_OUTPUT_BYTES [COMMENT_BYTES];
+ * optional comment followed by packed raster on stdin.
  * No bytes are emitted until complete input and successful encoding are proven.
  * Exit 2: invalid input; 3: codec/allocation/I/O failure; 4: output budget.
  */
@@ -19,7 +20,7 @@ struct encoder {
     jmp_buf failed;
     int status;
     unsigned char chunk[4096];
-    unsigned char *row, *output;
+    unsigned char *row, *output, *comment;
     size_t used, capacity, limit;
 };
 
@@ -74,11 +75,15 @@ static int positive_size(const char *value, size_t *result) {
     *result = number;
     return number != 0;
 }
+int decode_jpeg(int argc, char **argv);
+
 int main(int argc, char **argv) {
-    size_t width, height, limit;
-    if (argc != 6 || strcmp(argv[1], "encode") ||
+    if (argc > 1 && !strcmp(argv[1], "decode")) return decode_jpeg(argc, argv);
+    size_t width, height, limit, comment_size = 0;
+    if ((argc != 6 && argc != 7) || strcmp(argv[1], "encode") ||
         !positive_size(argv[3], &width) || !positive_size(argv[4], &height) ||
         !positive_size(argv[5], &limit) || width > JPEG_MAX_DIMENSION || height > JPEG_MAX_DIMENSION) return 2;
+    if (argc == 7 && ((strcmp(argv[6], "0") && !positive_size(argv[6], &comment_size)) || comment_size > 65533)) return 2;
     int channels;
     J_COLOR_SPACE color;
     if (!strcmp(argv[2], "L")) { channels = 1; color = JCS_GRAYSCALE; }
@@ -87,6 +92,9 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[2], "YCbCr")) { channels = 3; color = JCS_YCbCr; }
     else if (!strcmp(argv[2], "CMYK")) { channels = 4; color = JCS_CMYK; }
     else return 2;
+    size_t pillow_block = width * 4 > 65536 ? width * 4 : 65536;
+    size_t marker_prefix = color == JCS_CMYK ? 18 : 20;
+    if (argc == 7 && comment_size + marker_prefix + 4 >= pillow_block) return 2;
     if (width > SIZE_MAX / (size_t)channels / height) return 2;
     struct encoder *s = calloc(1, sizeof(*s));
     if (!s) return 3;
@@ -100,7 +108,7 @@ int main(int argc, char **argv) {
     if (setjmp(s->failed)) {
         int status = s->status;
         jpeg_destroy_compress(&s->jpeg);
-        free(s->row); free(s->output); free(s);
+        free(s->row); free(s->output); free(s->comment); free(s);
         return status;
     }
     jpeg_create_compress(&s->jpeg);
@@ -116,7 +124,13 @@ int main(int argc, char **argv) {
     size_t row_size = width * (size_t)channels;
     s->row = malloc(row_size);
     if (!s->row) fail(s, 3);
+    if (argc == 7) {
+        s->comment = malloc(comment_size ? comment_size : 1);
+        if (!s->comment) fail(s, 3);
+        if (fread(s->comment, 1, comment_size, stdin) != comment_size) fail(s, 2);
+    }
     jpeg_start_compress(&s->jpeg, TRUE);
+    if (s->comment) jpeg_write_marker(&s->jpeg, JPEG_COM, s->comment, (unsigned int)comment_size);
     while (s->jpeg.next_scanline < s->jpeg.image_height) {
         if (fread(s->row, 1, row_size, stdin) != row_size) fail(s, 2);
         /* Pillow's CMYK;I packing uses inverted Adobe CMYK samples. */
@@ -129,6 +143,6 @@ int main(int argc, char **argv) {
     jpeg_finish_compress(&s->jpeg);
     if (fwrite(s->output, 1, s->used, stdout) != s->used || fflush(stdout)) fail(s, 3);
     jpeg_destroy_compress(&s->jpeg);
-    free(s->row); free(s->output); free(s);
+    free(s->row); free(s->output); free(s->comment); free(s);
     return 0;
 }

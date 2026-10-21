@@ -79,7 +79,10 @@ ten actual Django decisions and 19,535 Base64 cases; see
 `pkg/storage/loginimage/README.md`. A bounded native libjpeg encoder now matches
 180 exact Pillow JPEG vectors, and all 54 transformed rasters also match as JPEG.
 The non-root Go image delivers the static helper and license notices; its actual
-codec passes the same 180-vector oracle. File decoding, whole-pipeline resource
+codec passes the same 180-vector oracle. JPEG pixel decoding now adds 312 exact
+pixel/comment cases and 1,556 invalid streams, checked against the actual Django
+helper and shipped codec. Inherited comments and Pillow's long-comment save
+failure are preserved. Lazy headers, other file decoders, whole-pipeline resource
 admission and login wiring remain required.
 
 The account adapter also checks association/family/group resource predicates

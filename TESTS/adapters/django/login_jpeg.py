@@ -55,7 +55,12 @@ def vectors():
 
 def build_codec(output, log, tool_env):
     flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg'], text=True, env=tool_env))
-    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(NATIVE), *flags, '-o', str(output)],
+    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), *flags, '-o', str(output)],
+        check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
+
+
+def build_fault_codec(output, log, tool_env):
+    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(ROOT / 'BE_GO/pkg/storage/loginimage/testdata/fault_codec.c'), '-o', str(output)],
         check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
 
 
@@ -64,13 +69,12 @@ def run(work, log, tool_env):
     version = subprocess.check_output(['pkg-config', '--modversion', 'libjpeg'], text=True, env=tool_env).strip()
     codec = work / 'image-codec'; fault = work / 'fault-codec'
     build_codec(codec, log, tool_env)
-    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(ROOT / 'BE_GO/pkg/storage/loginimage/testdata/fault_codec.c'), '-o', str(fault)],
-        check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
+    build_fault_codec(fault, log, tool_env)
     cases = vectors(); path = work / 'login-jpeg.json'
     path.write_text(json.dumps(cases)); path.chmod(0o600)
     print(f'JPEG oracle: {len(cases)} vectors; Pillow {__version__}/libjpeg-turbo {features.version("libjpeg_turbo")}, native {version}', flush=True)
     try:
-        subprocess.run(['go', 'test', '-race', '-tags=imageintegration', './pkg/storage/loginimage', '-run', '^TestJPEG'],
+        subprocess.run(['go', 'test', '-race', '-tags=imageintegration', './pkg/storage/loginimage', '-run', '^TestJPEG(AgainstPillow|ProcessFailureAndAdmission|NativeProtocol)$'],
             cwd=ROOT / 'BE_GO', check=True, timeout=180,
             env={**tool_env, 'ASSOZETA_LOGIN_JPEG_FIXTURE': str(path), 'ASSOZETA_LOGIN_JPEG_CODEC': str(codec), 'ASSOZETA_LOGIN_JPEG_FAULT_CODEC': str(fault)})
     finally:

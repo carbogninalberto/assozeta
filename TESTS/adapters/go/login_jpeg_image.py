@@ -15,6 +15,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.login_jpeg import vectors
+from TESTS.adapters.django.login_jpeg_decode import vectors as decode_vectors
 
 
 def main():
@@ -29,6 +30,8 @@ def main():
         work = Path(directory); work.chmod(0o755)
         (work / 'jpeg.json').write_text(json.dumps(vectors()))
         (work / 'jpeg.json').chmod(0o644)
+        (work / 'decode.json').write_text(json.dumps(decode_vectors()))
+        (work / 'decode.json').chmod(0o644)
         subprocess.run(['go', 'test', '-c', '-tags=imageintegration', '-o', str(work / 'jpeg.test'), './pkg/storage/loginimage'],
             cwd=ROOT / 'BE_GO', env={**tool_env, 'GOOS': 'linux', 'GOARCH': architecture, 'CGO_ENABLED': '0'}, check=True, timeout=180)
         (work / 'jpeg.test').chmod(0o755)
@@ -44,8 +47,9 @@ def main():
                 print(notice.strip(), flush=True)
         subprocess.run(['docker', 'run', '--rm', '--network', 'none', '--read-only',
             '--mount', f'type=bind,source={work},target=/fixtures,readonly',
+            '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^TestJPEG(AgainstPillow|NativeProtocol)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^TestJPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol)$', '-test.v'],
             check=True, timeout=180)
 
 

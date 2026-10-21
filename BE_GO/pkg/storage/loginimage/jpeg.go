@@ -28,13 +28,23 @@ type JPEGLimits struct {
 // JPEGEncoder runs the bundled libjpeg helper without a shell. Construct one
 // shared instance to enforce process admission across requests. It accepts
 // normalized rasters after Transform; it does not open image files.
-type JPEGEncoder struct {
+type JPEGEncoder struct{ *jpegProcess }
+
+type jpegProcess struct {
 	path   string
 	limits JPEGLimits
 	slots  chan struct{}
 }
 
 func NewJPEGEncoder(path string, limits JPEGLimits) (*JPEGEncoder, error) {
+	process, err := newJPEGProcess(path, limits)
+	if err != nil {
+		return nil, err
+	}
+	return &JPEGEncoder{process}, nil
+}
+
+func newJPEGProcess(path string, limits JPEGLimits) (*jpegProcess, error) {
 	if limits.MaxRasterBytes <= 0 || limits.MaxEncodedBytes <= 0 || limits.Concurrency <= 0 || limits.Timeout <= 0 {
 		return nil, ErrJPEGLimits
 	}
@@ -42,12 +52,21 @@ func NewJPEGEncoder(path string, limits JPEGLimits) (*JPEGEncoder, error) {
 	if !filepath.IsAbs(path) || err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 {
 		return nil, ErrJPEGCodecUnavailable
 	}
-	return &JPEGEncoder{path: path, limits: limits, slots: make(chan struct{}, limits.Concurrency)}, nil
+	return &jpegProcess{path: path, limits: limits, slots: make(chan struct{}, limits.Concurrency)}, nil
 }
 
 func (e *JPEGEncoder) Encode(ctx context.Context, input Raster) ([]byte, error) {
+	return e.EncodeWithComment(ctx, input, nil)
+}
+
+// EncodeWithComment preserves Pillow's inherited JPEG comment. nil means no
+// comment; a non-nil empty slice emits an empty COM marker.
+func (e *JPEGEncoder) EncodeWithComment(ctx context.Context, input Raster, comment []byte) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
+	}
+	if len(comment) > 65533 {
+		return nil, ErrJPEGEncode
 	}
 	c := channels(input.Mode)
 	if c == 0 || input.Mode == "RGBA" {
@@ -67,6 +86,31 @@ func (e *JPEGEncoder) Encode(ctx context.Context, input Raster) ([]byte, error) 
 	if size > e.limits.MaxRasterBytes {
 		return nil, ErrWorkingLimit
 	}
+	// Pillow's non-suspending COM write must fit its initial destination block.
+	// An exactly full block also fails. Preserve that malformed-save fallback.
+	block := max(65536, input.Width*4)
+	prefix := 20
+	if input.Mode == "CMYK" {
+		prefix = 18
+	}
+	if comment != nil && len(comment)+prefix+4 >= block {
+		return nil, ErrJPEGEncode
+	}
+	arguments := []string{"encode", input.Mode, strconv.Itoa(input.Width), strconv.Itoa(input.Height), strconv.Itoa(e.limits.MaxEncodedBytes)}
+	if comment != nil {
+		arguments = append(arguments, strconv.Itoa(len(comment)))
+	}
+	result, err := e.run(ctx, arguments, io.MultiReader(bytes.NewReader(comment), bytes.NewReader(input.Pixels)), e.limits.MaxEncodedBytes, ErrJPEGEncode)
+	if err != nil {
+		return nil, err
+	}
+	if len(result) < 4 || result[0] != 0xff || result[1] != 0xd8 || result[len(result)-2] != 0xff || result[len(result)-1] != 0xd9 {
+		return nil, ErrJPEGEncode
+	}
+	return result, nil
+}
+
+func (e *jpegProcess) run(ctx context.Context, arguments []string, input io.Reader, outputLimit int, failure error) ([]byte, error) {
 	runCtx, cancel := context.WithTimeout(ctx, e.limits.Timeout)
 	defer cancel()
 	select {
@@ -82,14 +126,14 @@ func (e *JPEGEncoder) Encode(ctx context.Context, input Raster) ([]byte, error) 
 	// confusing the externally visible request/timeout error with our own kill.
 	childCtx, kill := context.WithCancel(runCtx)
 	defer kill()
-	output := jpegOutput{limit: e.limits.MaxEncodedBytes, kill: kill}
-	cmd := exec.CommandContext(childCtx, e.path, "encode", input.Mode, strconv.Itoa(input.Width), strconv.Itoa(input.Height), strconv.Itoa(e.limits.MaxEncodedBytes))
+	output := jpegOutput{limit: outputLimit, kill: kill}
+	cmd := exec.CommandContext(childCtx, e.path, arguments...)
 	cmd.Env = []string{"LC_ALL=C"}
-	cmd.Stdin = bytes.NewReader(input.Pixels)
+	cmd.Stdin = input
 	cmd.Stdout = &output
 	cmd.Stderr = io.Discard
 	cmd.WaitDelay = time.Second
-	err = cmd.Run()
+	err := cmd.Run()
 	if requestErr := runCtx.Err(); requestErr != nil {
 		return nil, requestErr
 	}
@@ -102,19 +146,15 @@ func (e *JPEGEncoder) Encode(ctx context.Context, input Raster) ([]byte, error) 
 			if status.ExitCode() == 4 {
 				return nil, ErrWorkingLimit
 			}
-			return nil, ErrJPEGEncode
+			return nil, failure
 		}
 		var pathError *os.PathError
 		if errors.As(err, &pathError) {
 			return nil, ErrJPEGCodecUnavailable
 		}
-		return nil, ErrJPEGEncode
+		return nil, failure
 	}
-	result := output.buffer.Bytes()
-	if len(result) < 4 || result[0] != 0xff || result[1] != 0xd8 || result[len(result)-2] != 0xff || result[len(result)-1] != 0xd9 {
-		return nil, ErrJPEGEncode
-	}
-	return result, nil
+	return output.buffer.Bytes(), nil
 }
 
 type jpegOutput struct {

@@ -9,8 +9,8 @@ RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server
 # bounded child process. Static linking also avoids cross-stage musl ABI drift.
 FROM alpine:3.21 AS codec-builder
 RUN apk add --no-cache build-base libjpeg-turbo-dev libjpeg-turbo-static libjpeg-turbo-doc
-COPY pkg/storage/loginimage/native/jpeg_encode.c /src/jpeg_encode.c
-RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c -ljpeg -lm -o /image-codec && \
+COPY pkg/storage/loginimage/native/*.c /src/
+RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c /src/jpeg_decode.c -ljpeg -lm -o /image-codec && \
     apk info -v | grep '^libjpeg-turbo-static-' > /codec-version
 
 FROM alpine:3.21
