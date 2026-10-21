@@ -1169,3 +1169,16 @@ The `dd146b7` quality run reported an empty initial frontend-version label in
 run Go. An unchanged local rerun passed all eleven browser cases; the CI failure
 is recorded as not reproduced, not fixed. Evidence:
 `quality-reports/go-migration/storage-credentials/ui-job.log` and `reload-ui.log`.
+
+
+AssumeRole compatibility now adds 44 authored S3Storage/Boto3 cases against a
+private HTTP endpoint that independently verifies SigV4 signatures, signing
+identity, tokens, exact fields and request counts. Source-profile/environment
+roles preserve omitted or explicit duration, session naming and local parameter
+rejection. Nested roles use the preceding identity. Malformed/missing/expired STS
+credentials return fixed errors before the SDK can dereference absent fields.
+The previous 44-case credential oracle, Go race/vet and real MinIO checks pass
+again. See `TESTS/adapters/django/storage_roles.py` and
+`quality-reports/go-migration/storage-roles/`. MFA, metadata/ECS roles, SSO, web
+identity, full INI/refresh behavior and production composition remain unverified;
+this does not implement another task or activate a backend.

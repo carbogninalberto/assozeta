@@ -82,34 +82,35 @@ func expandSharedPath(value string) string {
 // declarations. Boto3's RawConfigParser rejects them before selecting identity.
 // Validate the shared-file structure before handing provider resolution to SDK.
 // Files are trusted deployment inputs, capped at 1 MiB each for startup bounds.
-func validateSharedFile(path string) error {
+func readSharedFile(path string) (map[string]map[string]string, error) {
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		return nil
+		return nil, nil
 	}
 	if err != nil {
-		return ErrConfiguration
+		return nil, ErrConfiguration
 	}
 	if !info.Mode().IsRegular() {
-		return nil
+		return nil, nil
 	}
 	if info.Size() > 1<<20 {
-		return ErrConfiguration
+		return nil, ErrConfiguration
 	}
 	file, err := os.Open(path)
 	if err != nil {
-		return ErrConfiguration
+		return nil, ErrConfiguration
 	}
 	defer file.Close()
 	data, err := io.ReadAll(io.LimitReader(file, (1<<20)+1))
 	if err != nil || len(data) > 1<<20 || !utf8.Valid(data) {
-		return ErrConfiguration
+		return nil, ErrConfiguration
 	}
 	text := strings.ReplaceAll(strings.ReplaceAll(string(data), "\r\n", "\n"), "\r", "\n")
-	sections := map[string]map[string]bool{}
+	sections := map[string]map[string]string{}
 	current := ""
 	hasSection, hasOption := false, false
 	indentation := 0
+	option := ""
 	for _, line := range strings.Split(text, "\n") {
 		stripped := strings.TrimSpace(line)
 		if stripped == "" || strings.HasPrefix(stripped, "#") || strings.HasPrefix(stripped, ";") {
@@ -123,6 +124,7 @@ func validateSharedFile(path string) error {
 			indent++
 		}
 		if hasSection && hasOption && indent > indentation {
+			sections[current][option] += "\n" + stripped
 			continue
 		}
 		indentation = indent
@@ -131,28 +133,29 @@ func validateSharedFile(path string) error {
 			if end > 1 {
 				current = stripped[1:end]
 				if _, exists := sections[current]; exists && current != "DEFAULT" {
-					return ErrConfiguration
+					return nil, ErrConfiguration
 				}
 				if sections[current] == nil {
-					sections[current] = map[string]bool{}
+					sections[current] = map[string]string{}
 				}
 				hasSection, hasOption = true, false
 				continue
 			}
 		}
 		if !hasSection {
-			return ErrConfiguration
+			return nil, ErrConfiguration
 		}
 		delimiter := strings.IndexAny(stripped, "=:")
 		if delimiter < 0 {
-			return ErrConfiguration
+			return nil, ErrConfiguration
 		}
 		key := strings.ToLower(strings.TrimSpace(stripped[:delimiter]))
-		if key == "" || sections[current][key] {
-			return ErrConfiguration
+		if _, exists := sections[current][key]; key == "" || exists {
+			return nil, ErrConfiguration
 		}
-		sections[current][key] = true
+		sections[current][key] = strings.TrimSpace(stripped[delimiter+1:])
+		option = key
 		hasOption = true
 	}
-	return nil
+	return sections, nil
 }

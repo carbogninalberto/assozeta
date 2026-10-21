@@ -69,10 +69,9 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	if err != nil {
 		return nil, err
 	}
-	for _, path := range []string{configFile, credentialsFile} {
-		if err := validateSharedFile(path); err != nil {
-			return nil, err
-		}
+	profiles, aliases, err := readRoleProfiles(configFile, credentialsFile)
+	if err != nil {
+		return nil, err
 	}
 	if client == nil {
 		transport := http.DefaultTransport
@@ -113,6 +112,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 		}
 	}
 	if profile != "" {
+		profile = sdkProfileName(profiles, aliases, profile)
 		options = append(options, sdkconfig.WithSharedConfigProfile(profile))
 	}
 	if o.Profile == "" {
@@ -141,7 +141,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	if cfg.Credentials == nil {
 		return nil, ErrConfiguration
 	}
-	cfg, err = secureProcessProviders(ctx, cfg, options, 0)
+	cfg, err = secureProcessProviders(ctx, cfg, options, profiles, 0)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
