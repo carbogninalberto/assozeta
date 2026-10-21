@@ -10,14 +10,16 @@ import subprocess
 import threading
 import time
 import unittest
-from wsgiref.simple_server import make_server, WSGIRequestHandler
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
 def run(work, log, tool_env, cache_address):
     from django.conf import settings
-    from django.core.wsgi import get_wsgi_application
+    from django.core.asgi import get_asgi_application
+    from django.core.cache import cache
+    import redis
+    import uvicorn
     from application.models import User
     from application.impersonation import begin
     from application.services.jwt_token_service import JWTTokenService
@@ -45,16 +47,38 @@ def run(work, log, tool_env, cache_address):
     fixture['jwt_documents']=[]
     append_cases(fixture['jwt_documents'],dict(AccessToken(fixture['owner_access']).payload),
                  load_pem_private_key(settings.JWT_SECRET_KEY.encode(),password=None),int(time.time()))
+    redis_host,redis_port=cache_address.rsplit(':',1)
+    raw_cache=redis.Redis(host=redis_host,port=int(redis_port),db=1,password='synthetic-identity-only')
+    def session_data(n=1,backend='django.contrib.auth.backends.ModelBackend'):
+        user=User.original_objects.get(pk=uid(n))
+        return {'_auth_user_id':uid(n),'_auth_user_backend':backend,'_auth_user_hash':user.get_session_auth_hash()}
+    session_values={'active':session_data(),'inactive':session_data(3),'deleted':session_data(4),
+                    'social-inactive':session_data(3,'social_core.backends.google.GoogleOAuth2'),
+                    'wrong':{**session_data(),'_auth_user_hash':'wrong'},'malformed':[],
+                    'invalid-id':{**session_data(),'_auth_user_id':'invalid'},
+                    'invalid-hash':{**session_data(),'_auth_user_hash':10**4300}}
+    fixture['sessions']={name:'refresh-session-'+name for name in [*session_values,'missing']}
+    session_payloads={}
+    for name,value in session_values.items():
+        logical='django.contrib.sessions.cache'+fixture['sessions'][name]
+        cache.set(logical,value,300)
+        key=cache.make_key(logical)
+        session_payloads[key]=raw_cache.get(key)
+    def reset_sessions():
+        for key,value in session_payloads.items():raw_cache.set(key,value,ex=300)
+    def session_readback():
+        for key,value in session_payloads.items():
+            current=raw_cache.get(key)
+            if key.endswith('refresh-session-wrong'):assert current is None,'invalid hash was not revoked'
+            else:assert current==value,'refresh changed session cache data'
     path = work / 'refresh-http.json'; path.write_text(json.dumps(fixture)); path.chmod(0o600)
     def snapshot():
         return {model._meta.label:list(model._base_manager.order_by('pk').values())
                 for model in apps.get_models() if model._meta.managed and not model._meta.proxy}
     before = snapshot()
-    class QuietHandler(WSGIRequestHandler):
-        def log_message(self, *args):
-            pass
-    server = make_server('127.0.0.1', 0, get_wsgi_application(), handler_class=QuietHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    # Released HTTP runs core.asgi through Uvicorn, including its actual global middleware.
+    server=uvicorn.Server(uvicorn.Config(get_asgi_application(),host='127.0.0.1',port=0,lifespan='off',log_level='critical'))
+    thread=threading.Thread(target=server.run,daemon=True);thread.start()
     def contracts(base):
         os.environ.update(TESTS_BASE_URL=base, TESTS_REFRESH_FIXTURE=str(path))
         suite=unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_refresh')
@@ -64,7 +88,13 @@ def run(work, log, tool_env, cache_address):
         return result.testsRun
     api = None
     try:
-        count = contracts(f'http://127.0.0.1:{server.server_port}')
+        deadline=time.monotonic()+5
+        while not server.started:
+            assert thread.is_alive() and time.monotonic()<deadline,'private refresh ASGI server failed to start'
+            time.sleep(0.01)
+        django_base=f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}'
+        count=contracts(django_base)
+        session_readback();reset_sessions()
         subprocess.run(['go','build','-o',str(work/'refresh-server'),'./cmd/server'],cwd=ROOT/'BE_GO',check=True,timeout=120,env=tool_env,stdout=log,stderr=subprocess.STDOUT)
         with socket.socket() as listener:
             listener.bind(('127.0.0.1',0)); port=listener.getsockname()[1]
@@ -72,7 +102,7 @@ def run(work, log, tool_env, cache_address):
         environment={**tool_env,'DBTYPE':'POSTGRES','DBNAME':'assozeta_contract_accounts','DBUSER':'contracts',
             'DBPASSWORD':'test-only','DBHOST':str(work),'DBPORT':'5432','REDIS_HOST':redis_host,'REDIS_PORT':redis_port,
             'REDIS_USERNAME':'default','REDIS_PASSWORD':'synthetic-identity-only','GO_LISTEN_ADDR':f'127.0.0.1:{port}',
-            'SECRET_KEY':'synthetic-session-secret','JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY,
+            'SECRET_KEY':settings.SECRET_KEY,'JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY,
             'DEBUG':'False','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
             'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET}
         api=subprocess.Popen([str(work/'refresh-server')],cwd=work,env=environment,stdout=log,stderr=subprocess.STDOUT)
@@ -83,6 +113,7 @@ def run(work, log, tool_env, cache_address):
             except OSError: return False
         poll(ready,bool,timeout=30)
         assert contracts(base)==count
+        session_readback()
         # Verify signatures using Django in addition to portable payload checks.
         # No token is written to reports or logs.
         status, refreshed = Client(base).request('POST','/oauth2/refresh-token',{'refresh_token':fixture['refresh']})
@@ -90,14 +121,17 @@ def run(work, log, tool_env, cache_address):
         assert AccessToken(refreshed['access_token'])['user_id'] == uid(30)
         status, unbound = Client(base).request('POST','/oauth2/refresh-token',{'refresh_token':None})
         assert status == 200 and 'user_id' not in RefreshToken(unbound['refresh_token'])
-        status, accepted = Client(f'http://127.0.0.1:{server.server_port}').request('POST','/oauth2/refresh-token',{'refresh_token':unbound['refresh_token']})
+        status, accepted = Client(django_base).request('POST','/oauth2/refresh-token',{'refresh_token':unbound['refresh_token']})
         assert status == 200 and accepted['refresh_token'] == unbound['refresh_token']
         assert snapshot() == before, 'refresh changed persisted business/auth/audit/job state'
         return count
     finally:
-        server.shutdown(); server.server_close(); thread.join(timeout=5)
+        server.should_exit=True;thread.join(timeout=10)
         if api is not None and api.poll() is None:
             api.terminate()
             try: api.wait(timeout=30)
             except subprocess.TimeoutExpired: api.kill(); api.wait(timeout=5)
+        for key in session_payloads:raw_cache.delete(key)
+        raw_cache.close()
         path.unlink(missing_ok=True)
+        assert not thread.is_alive(),'private refresh ASGI server did not drain'

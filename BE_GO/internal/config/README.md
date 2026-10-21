@@ -30,7 +30,8 @@ Its value follows `env.str`, including leading-dollar references, literal escape
 sequences, Unicode, whitespace and an explicitly empty assignment. Unlike JWT
 keys it has no base64 override or multiline expansion. These are settings-assignment
 semantics; Django may reject an empty secret when it initializes runtime settings.
-The value is not yet connected to session middleware in the public server.
+The composition root supplies the value to session authentication on the public
+refresh route. Public login and other route composition remain open.
 
 JWT raw keys must be present unless a nonempty base64 value supplies the key.
 Base64 takes precedence and is decoded without subsequent multiline expansion.

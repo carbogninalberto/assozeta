@@ -4,6 +4,7 @@ No application/ORM/Go imports. Signature verification is additional adapter work
 this contract asserts protocol, claims, cookies and denial precedence explicitly.
 """
 import base64
+import concurrent.futures
 import json
 import os
 from pathlib import Path
@@ -50,6 +51,77 @@ class RefreshContracts(unittest.TestCase):
         self.assertEqual(value.value, body['access_token'])
         self.assertTrue(value['httponly']); self.assertTrue(value['secure'])
         self.assertEqual((value['samesite'], value['path'], value['max-age']), ('Strict', '/', '14400'))
+
+    def session_headers(self,kind):
+        return {'Cookie':'sessionid='+self.fixture['sessions'][kind]}
+
+    def varies_cookie(self,headers):
+        self.assertIn('cookie',[value.strip().lower() for value in headers.get('Vary','').split(',')])
+
+    def test_refresh_responses_vary_on_session_cookie(self):
+        for data,status in [({'refresh_token':self.fixture['refresh']},200),({},400),({'refresh_token':'invalid'},401)]:
+            result=self.request(data)
+            self.assertEqual(result[0],status);self.varies_cookie(result[2])
+
+    def test_existing_session_never_changes_refreshed_identity(self):
+        for kind in ('active','inactive','deleted','social-inactive'):
+            with self.subTest(kind=kind):
+                status,body,headers=self.request({'refresh_token':self.fixture['refresh']},self.session_headers(kind))
+                self.assertEqual(status,200);self.varies_cookie(headers)
+                self.assertEqual(claims(body['access_token'])['user_id'],self.fixture['target'])
+                cookie=SimpleCookie();cookie.load('; '.join(headers.get_all('Set-Cookie',[])))
+                self.assertEqual(set(cookie),{'BKN_AUTH'})
+                self.assertEqual(cookie['BKN_AUTH'].value,body['access_token'])
+
+    def test_missing_and_revoked_sessions_delete_cookie_without_losing_auth_cookie(self):
+        deletion='sessionid=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax'
+        for kind in ('missing','wrong'):
+            with self.subTest(kind=kind):
+                status,body,headers=self.request({'refresh_token':self.fixture['refresh']},self.session_headers(kind))
+                self.assertEqual(status,200);self.varies_cookie(headers)
+                cookies=headers.get_all('Set-Cookie',[])
+                self.assertEqual(len(cookies),2);self.assertIn(deletion,cookies)
+                parsed=SimpleCookie();parsed.load('; '.join(cookies))
+                self.assertEqual(set(parsed),{'BKN_AUTH','sessionid'})
+                self.assertEqual(parsed['BKN_AUTH'].value,body['access_token'])
+        status,body,headers=self.request({'refresh_token':'invalid'},self.session_headers('missing'))
+        self.assertEqual(status,401);self.varies_cookie(headers)
+        self.assertEqual(headers.get_all('Set-Cookie'),[deletion])
+
+    def test_invalid_session_precedes_refresh_method_bearer_negotiation_and_body(self):
+        for kind in ('malformed','invalid-id','invalid-hash'):
+            for method in ('POST','GET','OPTIONS'):
+                with self.subTest(kind=kind,method=method):
+                    status,body,headers=self.request(b'broken-json',{**self.session_headers(kind),'Authorization':'Bearer invalid','Accept':'text/plain','Content-Type':'application/json'},method)
+                    self.assertEqual(status,500)
+                    self.assertIn('Server Error (500)',body)
+                    self.assertEqual(headers['Content-Type'],'text/html; charset=utf-8')
+                    self.varies_cookie(headers)
+                    self.assertIsNone(headers.get('Set-Cookie'))
+                    self.assertIsNone(headers.get('Allow'))
+                    self.assertIsNone(headers.get('WWW-Authenticate'))
+
+    def test_session_cannot_replace_bearer_or_supply_scope(self):
+        status,body,headers=self.request({'refresh_token':self.fixture['refresh']},{**self.session_headers('active'),'Authorization':'Bearer invalid'})
+        self.assertEqual(status,401);self.assertEqual(body['code'],'token_not_valid')
+        self.assertIsNone(headers.get('Set-Cookie'));self.varies_cookie(headers)
+        status,body,headers=self.request({'refresh_token':self.fixture['refresh']},{**self.session_headers('active'),'User-Id':'00000000-0000-4000-8000-000000000008','X-Impersonation-Id':'forged','X-Group-Id':'forged'})
+        self.assertEqual(status,200);self.assertEqual(claims(body['access_token'])['user_id'],self.fixture['target'])
+
+    def test_concurrent_refresh_sessions_remain_separate(self):
+        kinds=('active','inactive','deleted','social-inactive','malformed')
+        def run(i):
+            kind=kinds[i%len(kinds)]
+            return kind,self.request({'refresh_token':self.fixture['refresh']},self.session_headers(kind))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+            for kind,(status,body,headers) in pool.map(run,range(32)):
+                self.varies_cookie(headers)
+                if kind=='malformed':
+                    self.assertEqual(status,500);self.assertIn('Server Error (500)',body)
+                    self.assertIsNone(headers.get('Set-Cookie'))
+                else:
+                    self.assertEqual(status,200)
+                    self.assertEqual(claims(body['access_token'])['user_id'],self.fixture['target'])
 
     def test_missing_refresh_field(self):
         for data in ({}, {'irrelevant': 1}, []):

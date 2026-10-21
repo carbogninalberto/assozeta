@@ -5,7 +5,8 @@ handler and puts a `LoginAuditContext` in a private request-context key.
 `SessionAuditContext` implements the handler's audit-reader signature and rejects
 requests that have not passed through this middleware. Cookie identity remains
 separate from Bearer authentication, impersonation, scope and the account being
-logged into. This component is **not registered by the composition root**.
+logged into. The composition root now registers this middleware on the public
+`/oauth2/refresh-token` route. Public login and other route composition remain open.
 
 ## Authoritative transport
 
@@ -93,12 +94,14 @@ is local under `quality-reports/go-migration/session-http/`; the later exception
 and configuration cases are under `quality-reports/go-migration/session-config/`.
 
 The controlled terminal does not implement credentials or mutate session data.
-Session writes/rotation, root wiring, full middleware ordering
+Session writes/rotation, remaining route wiring, full middleware ordering
 (including body admission, restore, CORS, locale, security and compression),
 exact transport responses for every cache/database/authentication error, complete
 proxy/versioned routing and public-login workflows remain unverified. The current
 middleware maps resolver failures to the characterized production HTML response;
 that is not Django's complete exception-response policy. Configuration now reads
 the existing `SECRET_KEY` with 67 settings-comparison cases, but the composition
-root does not yet wire this session component. The endpoint ledger remains
+root wires this session component to refresh. The additional 36 public-refresh
+contracts run against real Django ASGI and the Go executable; see
+[refresh composition](../handler/refresh.md). The endpoint ledger remains
 `implementing` and activation is not permitted by this evidence.

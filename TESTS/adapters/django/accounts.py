@@ -19,9 +19,9 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['session-auth'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['session-auth','refresh'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/session-auth' if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -132,7 +132,7 @@ def main():
                     session_auth_cases=session_auth(work,log,tool_env,identity_cache)
                     from TESTS.adapters.django.session_http import run as session_http
                     session_http_contracts=session_http(work,log,tool_env,identity_cache)
-                    if options.only:
+                    if options.only == 'session-auth':
                         connections.close_all()
                         report={'success':True,'scope':'session-auth component with supporting account/identity fixtures only',
                                 'session_auth_cases':session_auth_cases,'session_http_contracts_per_backend':session_http_contracts,'schema':'current Django models; migration history not exercised','customer_data':'none'}
@@ -142,6 +142,14 @@ def main():
                     assert cache.get(f'impersonation-upload:{uid(12000)}:{uid(1104)}') is None, 'Go upload-grant revocation not visible in Django'
                     from TESTS.adapters.django.refresh_http import run as refresh_http
                     refresh_contracts = refresh_http(work, log, tool_env, identity_cache)
+                    if options.only == 'refresh':
+                        connections.close_all()
+                        report={'success':True,'scope':'refresh HTTP with supporting account/identity/session fixtures only',
+                                'refresh_http_contracts_per_backend':refresh_contracts,'session_auth_cases':session_auth_cases,
+                                'session_http_contracts_per_backend':session_http_contracts,
+                                'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     from TESTS.adapters.django.login_transport import run as login_transport
                     login_transport_contracts = login_transport(work, log, tool_env)
                     from TESTS.adapters.django.social_login import run as social_login
