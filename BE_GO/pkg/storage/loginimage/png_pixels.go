@@ -65,6 +65,15 @@ func DecodePNGScanlines(ctx context.Context, spec PNGPixelSpec, data []byte, max
 		return empty, ErrPNGDecode
 	}
 	defer reader.Close()
+	return decodePNGRows(ctx, spec, mode, sourceChannels, outputChannels, size, rowBytes,
+		func(row []byte) (bool, error) { return pngReadRow(reader, row) })
+}
+
+// decodePNGRows shares filtering/unpacking between raw zlib and chunk-aware readers.
+// The caller reserves all buffers and supplies only bounded, complete rows.
+func decodePNGRows(ctx context.Context, spec PNGPixelSpec, mode string, sourceChannels, outputChannels int,
+	size, rowBytes int64, readRow func([]byte) (bool, error)) (Raster, error) {
+	empty := Raster{}
 	output := make([]byte, int(size))
 	current, previous := make([]byte, int(rowBytes)+1), make([]byte, int(rowBytes))
 	passes := [][4]int{{0, 0, 1, 1}}
@@ -85,7 +94,7 @@ passesLoop:
 				return empty, err
 			}
 			row := current[:count+1]
-			ended, err := pngReadRow(reader, row)
+			ended, err := readRow(row)
 			if err != nil {
 				if ctx.Err() != nil {
 					return empty, ctx.Err()

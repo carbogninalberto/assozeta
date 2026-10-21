@@ -181,3 +181,17 @@ fixture adapter, query/performance evidence and release/updater rehearsals.
 Health routes also remain uncertified for manual metadata, version-file precedence,
 global middleware, error-body and proxy parity. Keep the PR draft; the foundation
 checks do not authorize activation or release.
+
+
+The PNG chunk-stream component now preserves Pillow's per-IDAT/64 KiB reads and
+row-limited zlib calls, including DDAT/fdAT, sequence checks, active-chunk truncation
+and checksum timing. Go reuses its filter/sample unpacker. All 852 explicit
+pixel/chunk cases compare pixels and consumed file state; the built non-root,
+read-only/networkless image runs the same oracle. Positive logical budgets,
+malformed protocol, process failures, timeout, queued/running cancellation,
+mid-unpack cancellation and 32 concurrent decodes are covered. Native ASan/UBSan
+checks require exact successful frames and exact invalid-input exits without
+diagnostics. Static zlib and its version/license ship in the existing helper;
+the server remains CGO-free. Post-pixel metadata/error handling, first-frame
+canvas composition and full PNG/image/login wiring remain open. The ledger's
+status counts are unchanged; no endpoint is newly declared verified.

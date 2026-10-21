@@ -3,7 +3,7 @@
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
 transformation, bounded libjpeg JPEG encoding/decoding, and PNG header/pixel
-decoding. It does
+and chunk-stream decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
 JPEG file pipeline are available as separate components.
@@ -89,7 +89,7 @@ limits, not a total RSS cap; libjpeg working memory and Go allocator overhead ar
 additional. `JPEGFileProcessor` supplies admission across the JPEG stages.
 
 `BE_GO/Dockerfile` compiles the helper against Alpine 3.21's static libjpeg-turbo
-in a separate build stage. The server remains `CGO_ENABLED=0`; the final image
+and static zlib in a separate build stage. The server remains `CGO_ENABLED=0`; the final image
 contains `/app/image-codec`, its library version and license notices, runs as UID
 10001 and needs no compiler or Python. The helper is not yet wired into login.
 This software is based in part on the work of the Independent JPEG Group.
@@ -319,9 +319,9 @@ metadata, cancellation during text inflation/conversion, Unicode character
 accounting and 32 concurrent readers. The non-root/read-only/networkless image
 runs the same header oracle alongside the existing JPEG and PNG pixel checks.
 
-Still open for complete PNG files: gathering/validating pixel chunks, post-pixel
-metadata and error behavior, first-frame canvas composition, whole-file
-admission/limits and response wiring.
+Still open for complete PNG files: post-pixel metadata and error behavior,
+first-frame canvas composition, whole-file admission/limits and response wiring.
+The separate stream decoder below now preserves pixel-chunk boundaries.
 
 
 ## One-bit nearest-neighbour transforms
@@ -350,3 +350,55 @@ for these fixtures. Exact budgets, invalid samples, ownership, cancellation and
 32 concurrent transformations/encodes also pass. The shipped non-root, read-only,
 networkless image runs the same oracle. These tests do not establish complete PNG
 chunk/post-pixel/APNG handling or public login wiring.
+
+
+## PNG chunk-stream decoding
+
+`PNGStreamDecoder` accepts an admitted tile, its first data-payload offset/length
+and the last APNG sequence number. The bundled native helper uses static zlib,
+with the 64 KiB per-chunk reads of
+[Pillow 11.1 PngImagePlugin.load_read](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/PngImagePlugin.py)
+and the row-limited inflate calls of
+[ZipDecode.c](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/ZipDecode.c).
+Go applies the same filter/sample unpacker used by `DecodePNGScanlines`. This
+preserves all fifteen modes and Adam7 without duplicating sample conversion in C.
+
+Chunk boundaries affect acceptance. For the explicit 3×2 L fixture, a corrupt
+checksum in one IDAT is rejected; splitting after byte 11 lets Pillow finish its
+pixels before the second IDAT, so that checksum is never decompressed. The reader
+also preserves empty chunks, DDAT continuation, fdAT length/sequence checks and
+requested-versus-actual byte accounting when the active chunk is truncated.
+Pixel CRCs are skipped, as in Pillow. It returns the file position, remaining
+declared chunk bytes and sequence at the last pixel read so later metadata parsing
+can continue from the correct state. A later truncated IDAT can still fail in
+`load_end`; successful pixel decoding alone does not accept the complete file.
+
+Construction requires positive file/working-byte limits, child concurrency and
+a timeout. One deadline covers queueing, inflation and Go unpacking. Before
+spawning, Go checks input, maximum filtered-row payload/frame, normalized pixels
+and two full-width row buffers against the logical working budget. The child
+separately bounds its file and filtered-row allocations and emits a framed result
+only after decoding completes. These checks do not cap aggregate process RSS,
+allocator growth, zlib internals or the simultaneous copies across the pipe.
+The existing process boundary supplies environment isolation, bounded stdout,
+child killing/reaping and admission reuse. Every failure returns no pixels.
+
+`login_png_stream.py` specifies 852 cases: the existing 803 independently
+constructed pixel/filter cases plus 49 chunk/read-boundary cases. A delegating
+Pillow observer checks explicitly calculated file positions, remainders and APNG
+sequences for successful decodes; invalid pixel streams and a post-pixel truncation
+are distinguished. Tests cover exact byte budgets, malformed native arguments and
+frames, invalid filters, overflow, disappearing executables, running/queued
+cancellation, timeout, mid-unpack cancellation and 32 concurrent Adam7 decodes.
+The shipped non-root/read-only/networkless image runs the pixel and native-protocol
+oracles and verifies the delivered zlib license and package version.
+
+`TESTS/adapters/go/login_png_sanitizer.py` also runs all 852 cases under
+AddressSanitizer/UndefinedBehaviorSanitizer: successful frames must exactly equal
+the separately verified ordinary helper, invalid streams must exit 2 with no
+output, and diagnostics fail the check. Eighteen additional malformed-protocol
+and budget cases check exact failure exits under both builds. Thus a sanitizer
+abort cannot be hidden
+by Go's generic decoding-error mapping. CI runs this check alongside the full
+account adapter and image oracle. This component is not yet the complete PNG
+file processor or public login image service.

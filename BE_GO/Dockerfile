@@ -8,10 +8,12 @@ RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
 # bounded child process. Static linking also avoids cross-stage musl ABI drift.
 FROM alpine:3.21 AS codec-builder
-RUN apk add --no-cache build-base libjpeg-turbo-dev libjpeg-turbo-static libjpeg-turbo-doc
+RUN apk add --no-cache build-base libjpeg-turbo-dev libjpeg-turbo-static libjpeg-turbo-doc zlib-dev zlib-static
 COPY pkg/storage/loginimage/native/*.c /src/
-RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c /src/jpeg_decode.c -ljpeg -lm -o /image-codec && \
-    apk info -v | grep '^libjpeg-turbo-static-' > /codec-version
+RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c /src/jpeg_decode.c /src/png_stream.c -ljpeg -lz -lm -o /image-codec && \
+    apk info -v | grep '^libjpeg-turbo-static-' > /codec-version && \
+    apk info -v | grep '^zlib-static-' > /zlib-version && \
+    sed '/^#ifndef ZLIB_H/,$d' /usr/include/zlib.h > /zlib-license
 
 FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata && \
@@ -20,6 +22,8 @@ WORKDIR /app
 COPY --from=builder /server /app/server
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
+COPY --from=codec-builder /zlib-version /app/licenses/zlib-version.txt
+COPY --from=codec-builder /zlib-license /app/licenses/zlib-LICENSE
 COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/LICENSE.md /app/licenses/libjpeg-turbo-LICENSE.md
 COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/README.ijg /app/licenses/libjpeg-turbo-README.ijg
 COPY pkg/storage/loginimage/NOTICE /app/licenses/loginimage-NOTICE
