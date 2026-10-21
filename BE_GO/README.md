@@ -89,6 +89,15 @@ cases and reruns the metadata/decoder vectors. Actual Django and the shipped
 image agree. Other file decoders, admission across formats and login wiring
 remain required.
 
+The PNG pixel primitive now covers all 15 depth/color combinations, five filters
+and Adam7 with 801 explicit Pillow cases. Expected samples are constructed
+independently. The actual Django helper agrees on 478 unchanged-size JPEG outputs,
+300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
+runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
+mid-decode cancellation and 32 concurrent decodes pass. PNG chunk/metadata
+admission, APNG composition and resized mode-1 nearest-neighbour behavior remain
+open; this primitive is not a complete PNG file processor.
+
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512
 references. See `internal/repository/scoped_resources.md` for preserved historical

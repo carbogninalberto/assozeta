@@ -7533,7 +7533,8 @@
         "BE_GO/pkg/storage/loginimage/native/jpeg_decode.c",
         "BE_GO/pkg/storage/loginimage/jpeg_header.go",
         "BE_GO/pkg/storage/loginimage/jpeg_metadata.go",
-        "BE_GO/pkg/storage/loginimage/jpeg_file.go"
+        "BE_GO/pkg/storage/loginimage/jpeg_file.go",
+        "BE_GO/pkg/storage/loginimage/png_pixels.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7634,7 +7635,10 @@
         "BE_GO/pkg/storage/loginimage/jpeg_metadata_integration_test.go",
         "TESTS/adapters/django/login_jpeg_file.py",
         "BE_GO/pkg/storage/loginimage/jpeg_file_test.go",
-        "BE_GO/pkg/storage/loginimage/jpeg_file_integration_test.go"
+        "BE_GO/pkg/storage/loginimage/jpeg_file_integration_test.go",
+        "TESTS/adapters/django/login_png_pixels.py",
+        "BE_GO/pkg/storage/loginimage/png_pixels_test.go",
+        "BE_GO/pkg/storage/loginimage/png_pixels_integration_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7650,7 +7654,8 @@
         "180 exact Pillow JPEG vectors cover five modes, four deterministic patterns and nine sizes. Metadata/quality/sampling expectations anchor the oracle. Input/output limits, exact output ceilings, malformed native protocol, process failure, environment isolation, timeout, queued/running cancellation and 32 concurrent encodes pass. The shipped static codec also passes the same 180 vectors and native protocol in the actual non-root, read-only, networkless Go image. Tested libjpeg-turbo versions: Pillow 3.1.0, local 3.2.0, image 3.0.4; no other codec/architecture equivalence is assumed.",
         "JPEG decoder: 312 exact pixel/comment cases and 1,556 explicit invalid streams; the actual Django compress_base64 helper agrees on all 1,868 output/fallback cases. Of the decoded cases, 310 re-encode byte-exactly and two preserve long-comment save failure. Progressive/optimized/sampling/RGB/CMYK/YCCK/restart/metadata cases, tolerated corruption, every incomplete prefix of selected baseline/progressive streams and comment ordering/size boundaries are covered. Native framing, exact raster budgets, process failure, queued/running cancellation, timeout and 32 concurrent decodes pass. The shipped non-root read-only/networkless codec passes the same cases. Native sanitizer checks assert exact exit codes and complete frames, so generic error mapping cannot conceal failures. Other formats and full image-service parity remain open.",
         "Lazy JPEG marker phase: 1,352 explicit Pillow recognition outcomes, covering all marker codes, payload truncation, precision/component/quantization semantics, metadata marker checks, comments, pixel warnings/hard limits, ordinary encoded headers and prefixes across the first SOS boundary. Three actual Django header-only passthrough cases retain the original despite undecodable pixels. Go checks consumed-header budgets, immutable/non-aliased metadata, EXIF/comment ordering, MPF offsets, scanning cancellation and 32 concurrent readers. The image rehearsal runs the same marker oracle. Raw metadata retention alone is not full Image.open admission; the subsequent metadata stage is covered separately.",
-        "JPEG metadata: 226 explicitly expected EXIF/MPF first-frame outcomes, exact JPEG bytes, directory/record cancellation and 32 concurrent MPO inspections. Complete JPEG file pipeline: 73 explicit disk-size/lazy/fallback cases plus all metadata and 1,868 decoder cases; actual Django helper and shipped non-root read-only/networkless image agree. Per-stage logical budgets, 32 concurrent resizes and whole-pipeline queued/running cancellation with child reaping and admission reuse pass. Other file formats and public login remain open."
+        "JPEG metadata: 226 explicitly expected EXIF/MPF first-frame outcomes, exact JPEG bytes, directory/record cancellation and 32 concurrent MPO inspections. Complete JPEG file pipeline: 73 explicit disk-size/lazy/fallback cases plus all metadata and 1,868 decoder cases; actual Django helper and shipped non-root read-only/networkless image agree. Per-stage logical budgets, 32 concurrent resizes and whole-pipeline queued/running cancellation with child reaping and admission reuse pass. Other file formats and public login remain open.",
+        "PNG compressed pixels: 801 explicit cases compare independently constructed samples with Pillow across 15 depth/color combinations, five filters, Adam7, large buffers and malformed streams. Actual Django helper results distinguish 478 exact unchanged-size JPEG outputs, 300 unsupported-mode fallbacks and 23 invalid-stream fallbacks. Go checks pixel/transform/JPEG composition, exact logical budgets, overflow, mid-decode cancellation and 32 concurrent Adam7 decodes; the non-root read-only/networkless image runs the same oracle. PNG chunk/metadata admission, APNG composition and resized mode-1 nearest-neighbour behavior remain open; this is not complete PNG file parity."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",

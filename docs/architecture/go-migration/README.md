@@ -589,6 +589,15 @@ metadata and 1,868 decoder cases end to end. Actual Django helper output/fallbac
 32 concurrent resizes, per-stage budgets and whole-pipeline queued/running
 cancellation pass. The non-root image runs the same metadata/file oracles.
 
+The PNG pixel primitive now covers all 15 depth/color combinations, five filters
+and Adam7 with 801 explicit Pillow cases. Expected samples are constructed
+independently. The actual Django helper agrees on 478 unchanged-size JPEG outputs,
+300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
+runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
+mid-decode cancellation and 32 concurrent decodes pass. PNG chunk/metadata
+admission, APNG composition and resized mode-1 nearest-neighbour behavior remain
+open; this primitive is not a complete PNG file processor.
+
 This is not wired as a complete image processor. Full format recognition,
 other decoders and metadata/mode/truncation policy, admission across file formats
 and full response/HTTP composition remain required. See the
