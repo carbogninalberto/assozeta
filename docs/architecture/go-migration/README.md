@@ -1049,3 +1049,11 @@ PostgreSQL groups include heartbeat overlap, transactional rollback, replay and 
 executed 4,096-token plan. The ledger is `implementing`; production rate limiting,
 scheduling and lifecycle ownership remain open. See
 [the task contract](../../../BE_GO/internal/service/subscription_token_cleanup.md).
+
+### Associate age update
+
+The concrete service preserves the existing 6,575-day threshold and scoped model
+behavior, with audit/index creation and fenced completion in one transaction. Eight
+required PostgreSQL groups cover exact readback, deliberate atomicity corrections,
+failures, concurrency and heartbeat. Production registration/scheduling remain open;
+see [the task contract](../../../BE_GO/internal/service/associate_age_update.md).

@@ -209,3 +209,8 @@ fenced completion in the same transaction, with exact Django date/audit readback
 Ten required PostgreSQL groups cover failure, replay, concurrent cleanup and actual
 heartbeat. Rate limiting and scheduler/production ownership remain unimplemented.
 See `internal/service/subscription_token_cleanup.md`.
+
+Associate age updates now preserve the existing 6,575-day threshold, soft-deletion
+scope and audit/index behavior through one atomic fenced transaction. Eight real
+PostgreSQL groups pass, including failures and heartbeat. Production scheduling
+and ownership remain open. See `internal/service/associate_age_update.md`.
