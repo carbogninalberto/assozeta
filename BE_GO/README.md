@@ -116,8 +116,14 @@ The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
 proxies/multiline values follow their existing Django settings; DB/Redis values
 remain literal. Google client ID and secret must be present (empty is accepted).
-See `internal/config/README.md` for the 67-case environment comparison, required
+See `internal/config/README.md` for the 79-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
+The root also composes CORS before routing/session admission using the existing
+CORS settings. See `internal/middleware/cors.md` for 51 isolated HTTP contracts,
+32 URL comparisons, four actual-root contracts and remaining global middleware gaps.
+Current Django security headers follow CORS, so preflight retains its bypass.
+Six isolated and five actual-root contracts cover defaults, explicit empty fields,
+denials, errors and streaming; see `internal/middleware/security_headers.md`.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
 The server requires the existing `SECRET_KEY` and valid

@@ -2657,7 +2657,9 @@
         "BE_GO/internal/handler/authenticated_rest.go",
         "BE_GO/internal/service/retired_billing.go",
         "BE_GO/internal/dto/retired_billing.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/billing_views.py",
@@ -2691,11 +2693,24 @@
         "TESTS/adapters/django/retired_billing.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/retired_billing_test.go",
-        "BE_GO/internal/service/retired_billing_integration_test.go"
+        "BE_GO/internal/service/retired_billing_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "10 portable methods first pass on Django ASGI and fail against unregistered Go routes, then pass on both real servers. Missing/expired/cancelled/paid/no-expiration plan fixtures retain 410. Role/scope, method/metadata, session, scoped-vs-unused body handling and 32 concurrent requests are covered. Managed-table and session-byte readback is unchanged; cleanup restores preexisting state.",
-        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim."
+        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Intentional current-main retirement: software subscription gating and platform checkout stay disabled. Existing HTTP tombstones remain required for old clients; association/course memberships, payments and communications are not deprecated.",
@@ -2724,7 +2739,9 @@
         "BE_GO/internal/handler/authenticated_rest.go",
         "BE_GO/internal/service/retired_billing.go",
         "BE_GO/internal/dto/retired_billing.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/billing_views.py",
@@ -2758,11 +2775,24 @@
         "TESTS/adapters/django/retired_billing.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/retired_billing_test.go",
-        "BE_GO/internal/service/retired_billing_integration_test.go"
+        "BE_GO/internal/service/retired_billing_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "10 portable methods first pass on Django ASGI and fail against unregistered Go routes, then pass on both real servers. Missing/expired/cancelled/paid/no-expiration plan fixtures retain 410. Role/scope, method/metadata, session, scoped-vs-unused body handling and 32 concurrent requests are covered. Managed-table and session-byte readback is unchanged; cleanup restores preexisting state.",
-        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim."
+        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Intentional current-main retirement: software subscription gating and platform checkout stay disabled. Existing HTTP tombstones remain required for old clients; association/course memberships, payments and communications are not deprecated.",
@@ -7448,7 +7478,9 @@
         "BE_GO/internal/service/identifier_availability.go",
         "BE_GO/internal/repository/identifier_availability.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/middleware/session_audit.go"
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7481,11 +7513,24 @@
         "TESTS/adapters/django/identifier_availability.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/identifier_availability_test.go",
-        "BE_GO/internal/service/identifier_availability_integration_test.go"
+        "BE_GO/internal/service/identifier_availability_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "16 portable HTTP methods first passed on actual Django ASGI and failed against the unregistered Go routes, then pass on both real servers. Controlled inactive/deleted/duplicate/literal fixtures, Unicode bounds, options/errors, actor/scope/session precedence and 32 concurrent requests have explicit expected results. All managed models remain unchanged.",
-        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed."
+        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Current-model run-syncdb fixtures only; historical schemas, versioned routing, complete global middleware and activation gates remain open. See BE_GO/internal/handler/identifier_availability.md."
@@ -7514,7 +7559,9 @@
         "BE_GO/internal/service/identifier_availability.go",
         "BE_GO/internal/repository/identifier_availability.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/middleware/session_audit.go"
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7547,11 +7594,24 @@
         "TESTS/adapters/django/identifier_availability.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/identifier_availability_test.go",
-        "BE_GO/internal/service/identifier_availability_integration_test.go"
+        "BE_GO/internal/service/identifier_availability_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "16 portable HTTP methods first passed on actual Django ASGI and failed against the unregistered Go routes, then pass on both real servers. Controlled inactive/deleted/duplicate/literal fixtures, Unicode bounds, options/errors, actor/scope/session precedence and 32 concurrent requests have explicit expected results. All managed models remain unchanged.",
-        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed."
+        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Current-model run-syncdb fixtures only; historical schemas, versioned routing, complete global middleware and activation gates remain open. See BE_GO/internal/handler/identifier_availability.md."
@@ -8070,7 +8130,9 @@
         "BE_GO/internal/middleware/session_audit.go",
         "BE_GO/internal/service/session_auth.go",
         "BE_GO/internal/repository/session_cache.go",
-        "BE_GO/internal/repository/session_accounts.go"
+        "BE_GO/internal/repository/session_accounts.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -8120,7 +8182,18 @@
         "TESTS/adapters/django/jwt_document.py",
         "BE_GO/pkg/jwt/canonical_test.go",
         "TESTS/adapters/django/environment.py",
-        "BE_GO/internal/config/environment_integration_test.go"
+        "BE_GO/internal/config/environment_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "2026-10-21: 26 portable refresh contracts pass against actual Django WSGI and Go HTTP using the same private PostgreSQL/Redis/key state. Django validates Go signatures and accepts a Go-generated refresh credential over HTTP. All managed model tables compare unchanged.",
@@ -8132,7 +8205,9 @@
         "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json.",
         "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log.",
         "The Go composition root now registers DjangoSessionAudit on public refresh, using concrete PostgreSQL/Redis session repositories and configured SECRET_KEY. Thirty-six portable contracts pass on actual Django ASGI/Uvicorn and the Go executable, including six new session methods and 32 mixed concurrent requests. Stale-session deletion preserves BKN_AUTH, malformed sessions preempt Bearer/body/method/negotiation, and session identity cannot supply API scope or change token claims. Managed-model snapshots and shared-session cache readback agree. Full global-header/middleware and activation gates remain open; no status promotion. Evidence: quality-reports/go-migration/refresh-session/.",
-        "Complete accounts and focused --only refresh rehearsals pass after public session composition: 36 public refresh, 43 session identity and 27 controlled session HTTP contracts per backend, with all existing full-account checks retained. Go race/vet, inventory/drift and actual health/dependency-loss/recovery pass. Results: quality-reports/go-migration/refresh-session/full-accounts-results.json and focused-results.json. Current-model schema only; all activation gates remain binding."
+        "Complete accounts and focused --only refresh rehearsals pass after public session composition: 36 public refresh, 43 session identity and 27 controlled session HTTP contracts per backend, with all existing full-account checks retained. Go race/vet, inventory/drift and actual health/dependency-loss/recovery pass. Results: quality-reports/go-migration/refresh-session/full-accounts-results.json and focused-results.json. Current-model schema only; all activation gates remain binding.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Registered upstream route in the Go composition root; remains implementing, not verified. Global maintenance/restore fencing, middleware, all locale/charset variants, malformed multipart/body-limit edge cases, proxy/version routing and release/browser switching gates remain open.",
@@ -12680,7 +12755,9 @@
         "BE_GO/internal/service/identity.go",
         "BE_GO/internal/middleware/session_audit.go",
         "BE_GO/cmd/server/main.go",
-        "BE_GO/internal/handler/authenticated_rest.go"
+        "BE_GO/internal/handler/authenticated_rest.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/application/views/two_fa_views.py",
@@ -12713,11 +12790,24 @@
         "TESTS/adapters/django/two_factor_info.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/two_factor_info_test.go",
-        "BE_GO/internal/service/two_factor_info_integration_test.go"
+        "BE_GO/internal/service/two_factor_info_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "10 portable methods first pass on actual Django ASGI and fail on unregistered Go, then pass against both real servers. Same owner and collaborator credentials observe two current-state changes per backend. Managed-model snapshots and session cache bytes remain unchanged by requests; fixture cleanup restores preexisting rows.",
-        "PostgreSQL race test measures one SELECT for owner/athlete and two for collaborator identity resolution, zero extra status queries. Thirty-two mixed concurrent reads execute 48 SELECTs within four test database connections. Public HTTP evidence separately includes impersonation/foreign-reference denial; no global middleware query count or latency claim."
+        "PostgreSQL race test measures one SELECT for owner/athlete and two for collaborator identity resolution, zero extra status queries. Thirty-two mixed concurrent reads execute 48 SELECTs within four test database connections. Public HTTP evidence separately includes impersonation/foreign-reference denial; no global middleware query count or latency claim.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Current-model run-syncdb only; setup/update 2FA endpoints, complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md."
@@ -13481,7 +13571,9 @@
         "BE_GO/internal/repository/health.go",
         "BE_GO/internal/middleware/csrf.go",
         "BE_GO/internal/config/config.go",
-        "BE_GO/internal/config/registration.go"
+        "BE_GO/internal/config/registration.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/core/health.py",
@@ -13512,12 +13604,25 @@
         "BE_GO/internal/middleware/csrf_test.go",
         "TESTS/adapters/go/health.py",
         "TESTS/adapters/django/environment.py",
-        "BE_GO/internal/config/environment_integration_test.go"
+        "BE_GO/internal/config/environment_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
         "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
-        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log."
+        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Portable normal-runtime health/status admission and real dependency failure/recovery verified. Not endpoint parity yet: manual_capture fields, version-file precedence, Django CSRF error HTML, global middleware/maintenance and versioned proxy behavior still need implementation/evidence."
@@ -13546,7 +13651,9 @@
         "BE_GO/internal/repository/health.go",
         "BE_GO/internal/middleware/csrf.go",
         "BE_GO/internal/config/config.go",
-        "BE_GO/internal/config/registration.go"
+        "BE_GO/internal/config/registration.go",
+        "BE_GO/internal/middleware/cors.go",
+        "BE_GO/internal/middleware/security_headers.go"
       ],
       "dependencies": [
         "BE/core/health.py",
@@ -13577,12 +13684,25 @@
         "BE_GO/internal/middleware/csrf_test.go",
         "TESTS/adapters/go/health.py",
         "TESTS/adapters/django/environment.py",
-        "BE_GO/internal/config/environment_integration_test.go"
+        "BE_GO/internal/config/environment_integration_test.go",
+        "TESTS/contracts/test_cors.py",
+        "TESTS/contracts/test_cors_public.py",
+        "TESTS/contracts/cors_origins.py",
+        "TESTS/adapters/django/cors.py",
+        "BE_GO/internal/middleware/cors_test.go",
+        "BE_GO/internal/middleware/cors_integration_test.go",
+        "TESTS/contracts/test_security_headers.py",
+        "TESTS/contracts/test_security_headers_public.py",
+        "TESTS/adapters/django/security_headers.py",
+        "BE_GO/internal/middleware/security_headers_test.go",
+        "BE_GO/internal/middleware/security_headers_integration_test.go"
       ],
       "evidence": [
         "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
         "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
-        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log."
+        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log.",
+        "CORS root increment: 51 portable HTTP methods per backend across five policies and 32 declared Python URL comparisons pass on actual Django ASGI/Uvicorn and Go controlled terminals. Four additional methods pass on both actual application roots with managed-model/session readback unchanged. Preflight precedes routing/session/auth and still works on five Go paths with PostgreSQL/Redis unavailable. The environment oracle now passes 79 declarations including existing CORS settings/defaults/proxies. Evidence: quality-reports/go-migration/cors/; contract and remaining global middleware/debug/stream/proxy limits: BE_GO/internal/middleware/cors.md.",
+        "Security header increment: six portable methods per backend compare current Django SecurityMiddleware defaults against Go, with explicit/empty response fields, all HTTP methods/statuses, streaming, forwarded protocol and 32 concurrent requests. Five actual-root methods verify health/authentication/CSRF/method/not-found responses and CORS preflight bypass. No new configuration or HSTS/redirect/frame policy is introduced. See BE_GO/internal/middleware/security_headers.md and quality-reports/go-migration/security-headers/. Complete global middleware/restore/proxy parity remains open."
       ],
       "notes": [
         "Portable normal-runtime health/status admission and real dependency failure/recovery verified. Not endpoint parity yet: manual_capture fields, version-file precedence, Django CSRF error HTML, global middleware/maintenance and versioned proxy behavior still need implementation/evidence."

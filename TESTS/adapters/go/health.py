@@ -71,7 +71,7 @@ def main():
                     'DBPORT': '5432', 'REDIS_HOST': '127.0.0.1', 'REDIS_PORT': str(redis_port),
                     'REDIS_PASSWORD': 'go-contract-only', 'GO_LISTEN_ADDR': f'127.0.0.1:{http_port}',
                     'RUNNING_VERSION': 'v0.0.0-contract',
-                    'SECRET_KEY':'synthetic-session-secret','DEBUG':'False','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'',
+                    'SECRET_KEY':'synthetic-session-secret','DEBUG':'False','CORS_ALLOWED_ORIGINS':'https://allowed.example.test','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'',
                     'JWT_SECRET_KEY':(work/'key.pem').read_text(), 'JWT_PUBLIC_KEY':(work/'public.pem').read_text()}
                 api = subprocess.Popen([str(work / 'server')], cwd=work, env=environment, stdout=log, stderr=subprocess.STDOUT)
                 base_url = f'http://127.0.0.1:{http_port}'
@@ -101,6 +101,13 @@ def main():
                 expected['checks']['redis'] = False
                 assert client.request('GET', '/readyz') == (503, expected)
                 result['checks'].append({'name': 'both-dependencies-lost', 'passed': True})
+                for path in ('/readyz','/oauth2/refresh-token','/two-fa/info','/billing/checkout','/missing-cors-route'):
+                    status,body,headers=client.request('OPTIONS',path,headers={
+                        'Origin':'https://allowed.example.test','Access-Control-Request-Method':'POST',
+                        'Cookie':'sessionid=synthetic-preflight-only','Authorization':'Bearer invalid'},include_headers=True)
+                    assert (status,body)==(200,'') and headers['Access-Control-Allow-Origin']=='https://allowed.example.test'
+                    assert 'cookie' not in headers['Vary'].lower() and headers.get('Set-Cookie') is None
+                result['checks'].append({'name':'cors-preflight-with-both-dependencies-lost','paths':5,'passed':True})
                 start_pg(); pg_started = True
                 cache = start_cache()
                 poll(observe, lambda value: value == (200, {'status': 'ready', 'checks': {'database': True, 'redis': True}}), timeout=30)

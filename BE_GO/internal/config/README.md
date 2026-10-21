@@ -44,7 +44,9 @@ Registration flags retain their separately tested Django boolean/default rules.
 `DEBUG` must be present, including an explicitly empty value. `RATELIMIT_ENABLE`
 defaults to `not DEBUG`, including when a reference target is missing. Explicit
 values and reference chains use Django boolean parsing; no new variable is added.
-CSRF origin lists keep whitespace and discard empty comma-separated items. The
+`CORS_ORIGIN_ALLOW_ALL` defaults to `DEBUG` and follows the same boolean/proxy
+rules. `CORS_ALLOWED_ORIGINS` defaults to an empty list. CORS and CSRF origin lists
+keep whitespace and discard empty comma-separated items. The
 installed django-environ raises when a proxy resolves to a nonempty list because
 it casts that list again; Go also rejects that startup configuration. Empty-list
 and missing-target defaults remain accepted. Changing this behavior requires an
@@ -55,7 +57,7 @@ omits the session secret, provider credentials, JWT keys and the Redis password;
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Sixty-seven declared cases execute selected unchanged AST assignments
+environment. Seventy-nine declared cases execute selected unchanged AST assignments
 from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,
 precedence, raw/proxy differences, multiline/base64 behavior, unchanged process

@@ -946,3 +946,28 @@ retained compatibility responses, not reactivated software subscriptions or
 platform checkout. Association/course payments remain in scope. The focused
 `--only retired-billing` mode includes supporting fixtures, not the entire accounts
 suite. See [the compatibility contract](../../../BE_GO/internal/handler/retired_billing.md).
+
+
+CORS now runs before route/session/authentication admission in the actual Go root.
+The existing allow-all flag derives from DEBUG; lists retain Django environment
+semantics, bringing the configuration oracle to 79 cases. Fifty-one portable HTTP
+methods per backend across five policies and 32 declared URL comparisons verify
+preflight, scheme/netloc policy, Vary, Latin-1 reflection, streaming, concurrency,
+and malformed-list errors after terminal effects. Four further methods run on
+actual Django ASGI and the compiled Go root with model/session readback unchanged.
+Five actual-root preflights succeed while PostgreSQL and Redis are unavailable.
+The CORS-specific public assertions do not claim exact locale/compression Vary or
+complete global middleware. See [the CORS contract](../../../BE_GO/internal/middleware/cors.md)
+and `quality-reports/go-migration/cors/`. No ledger row becomes verified, and all
+14 acceptance gates remain binding.
+
+
+The root also applies current Django security response headers after CORS:
+`nosniff`, same-origin referrer policy and same-origin opener policy. Six portable
+methods per backend verify controlled terminals, explicit/empty response fields,
+streaming, errors and concurrent policy isolation; five further methods verify
+actual application success and denial paths. CORS preflight skips these headers.
+HSTS, forced redirects and X-Frame-Options remain absent under current settings.
+See [the security-header contract](../../../BE_GO/internal/middleware/security_headers.md)
+and `quality-reports/go-migration/security-headers/`. Trusted-host, restore,
+locale/compression and versioned/proxy behavior remain separate acceptance gaps.

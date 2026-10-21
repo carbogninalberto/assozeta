@@ -21,7 +21,7 @@ NAMES={'SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_en
        'SOCIAL_AUTH_APPLE_ID_CLIENT':'apple','SOCIAL_AUTH_APPLE_ID_TEAM':'apple_team',
        'SOCIAL_AUTH_APPLE_ID_KEY':'apple_key','SOCIAL_AUTH_APPLE_ID_SECRET':'apple_secret',
        'JWT_SECRET_KEY':'jwt_private','JWT_PUBLIC_KEY':'jwt_public','DBPASSWORD':'database_password',
-       'REDIS_PASSWORD':'redis_password','CSRF_TRUSTED_ORIGINS':'origins',
+       'REDIS_PASSWORD':'redis_password','CSRF_TRUSTED_ORIGINS':'origins','CORS_ORIGIN_ALLOW_ALL':'cors_all','CORS_ALLOWED_ORIGINS':'cors_origins',
        'FAMILY_REGISTRATION_ENABLED':'family','FEDERATION_REGISTRATION_ENABLED':'federation',
        'MULTIPLE_REGISTRATION_ENABLED':'multiple'}
 
@@ -40,12 +40,14 @@ def main():
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
     expected={'session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
-              'origins':[],'family':True,'federation':False,'multiple':False}
+              'origins':[],'cors_all':False,'cors_origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
     def add(name,*,lines='',process=None,remove=(),want=None,error=False):
         values={k:v for k,v in base.items() if k not in remove}
         text=''.join(k+'='+v+'\n' for k,v in values.items())+lines
-        cases.append({'name':name,'file':text,'process':process or {},'expected':{**expected,**(want or {})},'error':error})
+        declared={**expected,**(want or {})}
+        if not want or 'cors_all' not in want:declared['cors_all']=declared['debug']
+        cases.append({'name':name,'file':text,'process':process or {},'expected':declared,'error':error})
     add('default providers and registration')
     add('all provider values',lines='SOCIAL_AUTH_APPLE_ID_CLIENT=apple-client\nSOCIAL_AUTH_APPLE_ID_TEAM=apple-team\nSOCIAL_AUTH_APPLE_ID_KEY=apple-key\nSOCIAL_AUTH_APPLE_ID_SECRET=apple-secret\n',want={'apple':'apple-client','apple_team':'apple-team','apple_key':'apple-key','apple_secret':'apple-secret'})
     for variable in ('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET','JWT_SECRET_KEY','JWT_PUBLIC_KEY'):
@@ -116,7 +118,19 @@ def main():
     add('empty process session secret wins',process={'SECRET_KEY':''},want={'session_secret':''})
     add('session secret file proxy reads process',lines='SECRET_KEY=$SESSION_ALIAS\n',process={'SESSION_ALIAS':'synthetic-process-secret'},want={'session_secret':'synthetic-process-secret'})
     add('session secret quoted Unicode and spaces',lines="SECRET_KEY=' è synthetic # secret  '\n",want={'session_secret':' è synthetic # secret  '})
-    assert len(cases)==67
+    add('cors all independent of debug',lines='CORS_ORIGIN_ALLOW_ALL=yes\n',want={'cors_all':True})
+    add('cors explicit false in development',lines='DEBUG=True\nCORS_ORIGIN_ALLOW_ALL=0\n',want={'debug':True,'rate_enabled':False,'cors_all':False})
+    add('cors empty flag in development',lines='DEBUG=True\nCORS_ORIGIN_ALLOW_ALL=\n',want={'debug':True,'rate_enabled':False,'cors_all':False})
+    add('cors flag proxy',lines='CORS_ORIGIN_ALLOW_ALL=$CORS_ALIAS\nCORS_ALIAS=yes\n',want={'cors_all':True})
+    add('cors missing proxy inherits debug',lines='DEBUG=True\nCORS_ORIGIN_ALLOW_ALL=$MISSING\n',want={'debug':True,'rate_enabled':False,'cors_all':True})
+    add('cors flag proxy cycle',lines='CORS_ORIGIN_ALLOW_ALL=$CORS_ALIAS\nCORS_ALIAS=$CORS_ORIGIN_ALLOW_ALL\n',error=True)
+    add('cors origins retain spaces and drop empty fields',lines='CORS_ALLOWED_ORIGINS=https://one.example.test,, https://two.example.test,\n',want={'cors_origins':['https://one.example.test',' https://two.example.test']})
+    add('cors origins process wins',lines='CORS_ALLOWED_ORIGINS=https://file.example.test\n',process={'CORS_ALLOWED_ORIGINS':'https://process.example.test'},want={'cors_origins':['https://process.example.test']})
+    add('cors nonempty origins proxy raises',lines='CORS_ALLOWED_ORIGINS=$CORS_ALIAS\nCORS_ALIAS=https://one.example.test\n',error=True)
+    add('cors empty origins proxy',lines='CORS_ALLOWED_ORIGINS=$CORS_ALIAS\nCORS_ALIAS=,,\n')
+    add('cors missing origins proxy',lines='CORS_ALLOWED_ORIGINS=$MISSING\n')
+    add('cors null origin is a literal string',lines='CORS_ALLOWED_ORIGINS=null\n',want={'cors_origins':['null']})
+    assert len(cases)==79
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:
