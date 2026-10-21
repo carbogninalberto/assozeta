@@ -60,7 +60,7 @@ const server = await createServer({
                 res.statusCode = 404; send({error: 'Fixture endpoint missing: ' + path});
             });
         },
-    }, svelte({configFile: false})],
+    }, svelte({configFile: false, compilerOptions: {hmr: false, compatibility: {componentApi: 4}}})],
     server: {host: '127.0.0.1', port: 5193, strictPort: true},
 });
 await server.listen();

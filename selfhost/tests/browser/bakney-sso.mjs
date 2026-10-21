@@ -63,7 +63,7 @@ async function checkProductionProxy() {
     const log=await fs.open(path.join(temp,'caddy.log'),'w');
     const processHandle=spawn(docker,['run','--rm','--name',name,'--network','assozeta-dev_dev','--add-host',`api:${ip}`,
         '-e','SITE_ADDRESS=:80','-p','127.0.0.1:5447:80','-v',`${root}/selfhost/caddy/Caddyfile:/etc/caddy/Caddyfile:ro`,
-        '-v',`${root}/UI/dist/public:/srv:ro`,'caddy:2.9.1-alpine'],{stdio:['ignore',log.fd,log.fd]});
+        '-v',`${root}/UI/dist/public:/srv:ro`,'caddy:2.11.7-alpine'],{stdio:['ignore',log.fd,log.fd]});
     containers.push({name,processHandle});await log.close();
     const read=(url,method='GET')=>new Promise((resolve,reject)=>{
         const req=http.request({host:'127.0.0.1',port:5447,path:url,method,headers:{Host:'club.assozeta.test','Content-Type':'application/json'}},res=>{
@@ -178,7 +178,7 @@ try {
         const ui=await snapshot(process.env.ASSOZETA_BAKNEY_UI,'bakney-ui');
         await fs.symlink(path.join(process.env.ASSOZETA_BAKNEY_UI,'node_modules'),path.join(ui,'node_modules'));
         // Compile the actual pairing components/transport and dedicated handoff entry unchanged.
-        await fs.writeFile(path.join(ui,'sso.integration.config.mjs'),`import {defineConfig} from 'vite';import {svelte} from '@sveltejs/vite-plugin-svelte';import path from 'node:path';import {buildConfig} from './endpoints.js';export default defineConfig({plugins:[svelte()],resolve:{alias:{utils:path.resolve('src/utils'),store:path.resolve('src/store')}},define:buildConfig(undefined,{name:'Bakney',selfHosted:false}),build:{outDir:'sso-dist',rollupOptions:{input:{harness:'testing/pairing/harness.html',handoff:'handoff.html'}}}});`);
+        await fs.writeFile(path.join(ui,'sso.integration.config.mjs'),`import {defineConfig} from 'vite';import {svelte} from '@sveltejs/vite-plugin-svelte';import path from 'node:path';import {buildConfig} from './endpoints.js';export default defineConfig({plugins:[svelte({compilerOptions:{hmr:false,compatibility:{componentApi:4}}})],resolve:{alias:{utils:path.resolve('src/utils'),store:path.resolve('src/store')}},define:buildConfig(undefined,{name:'Bakney',selfHosted:false}),build:{outDir:'sso-dist',rollupOptions:{input:{harness:'testing/pairing/harness.html',handoff:'handoff.html'}}}});`);
         command(process.execPath,[path.join(ui,'node_modules/vite/bin/vite.js'),'build','--config','sso.integration.config.mjs'],{cwd:ui,maxBuffer:20*1024*1024});
         bakneyDist=path.join(ui,'sso-dist');
     }

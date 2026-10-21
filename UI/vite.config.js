@@ -159,10 +159,13 @@ export default defineConfig({
         configFile: false,
         compilerOptions: {
             dev: !production,
-            enableSourcemap: true,
-        },
-        hot: {
-            preserveLocalState: true
+            // Svelte HMR wraps components in a way that breaks `new Component(...)`;
+            // edits trigger a full reload instead.
+            hmr: false,
+            // Keep the Svelte 4 class API (new Component, $on, $set, $destroy).
+            compatibility: {
+                componentApi: 4,
+            },
         },
         preprocess: sveltePreprocess({
             typescript: true,

@@ -734,63 +734,65 @@
                     <div class="form-group row mx-auto" style="max-width: 80rem;">
                         <div class="card-body p-4 pt-5">
                             <table class="balance-sheet-table">
-                                <tr>
-                                    <th style="width:80%;text-align: left;">D) LIQUIDIT&Agrave;</th>
-                                    <th />
-                                </tr>
-                                <tr>
-                                    <th style="width:80%;text-align: left;">Di cui in cassa</th>
-                                    <th>
-                                        <!-- {#if balanceSheet.draft}
-                                            <NumericInput
-                                                bind:value={balanceSheet.cash}
-                                                id={'balance_sheet_cash'}
-                                                on:update={e => {
-                                                    balanceSheet.cash = parseFloat(e.detail);
-                                                }}
-                                                editable={balanceSheet.draft} />
-                                        {:else} -->
-                                        <span>{fixedDecimal(balanceSheet.cash)} €</span>
-                                        <!-- {/if} -->
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th style="width:80%;text-align: left;">Di cui in banca</th>
-                                    <th>
-                                        <!-- {#if balanceSheet.draft}
-                                            <NumericInput
-                                                bind:value={balanceSheet.bank}
-                                                id={'balance_sheet_bank'}
-                                                on:update={e => {
-                                                    balanceSheet.bank = parseFloat(e.detail);
-                                                }}
-                                                editable={balanceSheet.draft} />
-                                        {:else} -->
-                                        <span>{fixedDecimal(balanceSheet.bank)} €</span>
-                                        <!-- {/if} -->
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th style="width:80%;text-align: left;">Di cui altro</th>
-                                    <th>
-                                        <!-- {#if balanceSheet.draft}
-                                            <NumericInput
-                                                bind:value={balanceSheet.other}
-                                                id={'balance_sheet_bank'}
-                                                on:update={e => {
-                                                    balanceSheet.other = parseFloat(e.detail);
-                                                }}
-                                                editable={balanceSheet.draft} />
-                                        {:else} -->
-                                        <span>{fixedDecimal(balanceSheet.other || 0)} €</span>
-                                        <!-- {/if} -->
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th style="width:80%;text-align: left;">Totale disponibilità liquide</th>
-                                    <th
-                                        >{fixedDecimal(balanceSheet.cash + balanceSheet.bank + balanceSheet.other)} €</th>
-                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <th style="width:80%;text-align: left;">D) LIQUIDIT&Agrave;</th>
+                                        <th />
+                                    </tr>
+                                    <tr>
+                                        <th style="width:80%;text-align: left;">Di cui in cassa</th>
+                                        <th>
+                                            <!-- {#if balanceSheet.draft}
+                                                <NumericInput
+                                                    bind:value={balanceSheet.cash}
+                                                    id={'balance_sheet_cash'}
+                                                    on:update={e => {
+                                                        balanceSheet.cash = parseFloat(e.detail);
+                                                    }}
+                                                    editable={balanceSheet.draft} />
+                                            {:else} -->
+                                            <span>{fixedDecimal(balanceSheet.cash)} €</span>
+                                            <!-- {/if} -->
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:80%;text-align: left;">Di cui in banca</th>
+                                        <th>
+                                            <!-- {#if balanceSheet.draft}
+                                                <NumericInput
+                                                    bind:value={balanceSheet.bank}
+                                                    id={'balance_sheet_bank'}
+                                                    on:update={e => {
+                                                        balanceSheet.bank = parseFloat(e.detail);
+                                                    }}
+                                                    editable={balanceSheet.draft} />
+                                            {:else} -->
+                                            <span>{fixedDecimal(balanceSheet.bank)} €</span>
+                                            <!-- {/if} -->
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:80%;text-align: left;">Di cui altro</th>
+                                        <th>
+                                            <!-- {#if balanceSheet.draft}
+                                                <NumericInput
+                                                    bind:value={balanceSheet.other}
+                                                    id={'balance_sheet_bank'}
+                                                    on:update={e => {
+                                                        balanceSheet.other = parseFloat(e.detail);
+                                                    }}
+                                                    editable={balanceSheet.draft} />
+                                            {:else} -->
+                                            <span>{fixedDecimal(balanceSheet.other || 0)} €</span>
+                                            <!-- {/if} -->
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:80%;text-align: left;">Totale disponibilità liquide</th>
+                                        <th
+                                            >{fixedDecimal(balanceSheet.cash + balanceSheet.bank + balanceSheet.other)} €</th>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>

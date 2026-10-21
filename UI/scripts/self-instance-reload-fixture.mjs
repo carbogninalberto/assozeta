@@ -65,7 +65,7 @@ try {
                         if (!result.error) saveRuntimeConfig(result.response.config);
                         new SelfInstance({target: document.getElementById('app')});
                     });`;
-            }}, svelte({configFile: false})],
+            }}, svelte({configFile: false, compilerOptions: {hmr: false, compatibility: {componentApi: 4}}})],
             build: {outDir: join(temp, String(revision)), emptyOutDir: true, rollupOptions: {input: join(temp, 'index.html'), output: {entryFileNames: 'build-assets/[name]-[hash].js', assetFileNames: 'build-assets/[name]-[hash][extname]'}}},
         });
     }

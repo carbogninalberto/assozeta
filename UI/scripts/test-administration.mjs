@@ -75,7 +75,7 @@ const server = await createServer({root:ui,configFile:false,logLevel:'error',
             if(url.pathname==='/api/billing')return send({data:{active_plan:{billing_type:3}}});
             send({detail:'Unexpected fixture API'},404);
         });},
-    },svelte({configFile:false})]});
+    },svelte({configFile:false,compilerOptions:{hmr:false,compatibility:{componentApi:4}}})]});
 let browser;
 try{
     await server.listen();browser=await chromium.launch({headless:true});

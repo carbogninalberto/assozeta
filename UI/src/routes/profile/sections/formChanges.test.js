@@ -146,9 +146,9 @@ test('floating save button renders the caller disabled state without changing ot
         configFile: false, logLevel: 'error', appType: 'custom',
         server: {middlewareMode: true, watch: null, hmr: false},
         plugins: [{name: 'portal-test-boundary', enforce: 'pre',
-            resolveId(id) { if (id === 'svelte-portal') return '\0test-portal'; },
-            load(id) { if (id === '\0test-portal') return "import {create_ssr_component} from 'svelte/internal'; export default create_ssr_component((result, props, bindings, slots) => slots.default?.({}) || '');"; },
-        }, svelte({configFile: false})],
+            resolveId(id) { if (id === 'svelte-portal') return '/@test/portal.svelte'; },
+            load(id) { if (id === '/@test/portal.svelte') return '<slot />'; },
+        }, svelte({configFile: false, compilerOptions: {hmr: false, compatibility: {componentApi: 4}}})],
     });
     try {
         const {default: SaveBar} = await server.ssrLoadModule('/src/components/inputs/BottomBarFixedSave.svelte');

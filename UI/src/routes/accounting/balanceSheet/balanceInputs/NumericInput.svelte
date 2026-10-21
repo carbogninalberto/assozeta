@@ -53,7 +53,7 @@
         <span class="input-group-text fs-1-1">€</span>
     </div>
     <input
-        onClick="this.select();"
+        on:click={(event) => event.currentTarget.select()}
         disabled={!editable}
         type="text"
         inputmode="decimal"
