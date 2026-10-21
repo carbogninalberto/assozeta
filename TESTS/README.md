@@ -641,3 +641,14 @@ invokes the actual Django helper; the shipped image runs the same oracle. Exact
 budgets, overflow, ownership, mid-operation cancellation, 32 concurrent mixed-image
 pipelines and encoder-stage admission/cancellation/reaping/reuse are checked.
 Use the pinned Python environment for standalone execution.
+
+
+`adapters/django/login_sun.py` adds 1,453 declared SUN header/pixel/file cases.
+It covers every supported depth/type, raw alignment versus packed RLE rows,
+monochrome/nibble/channel normalization, every literal/run count, palette/core-mode
+and short-read boundaries, 64 KiB operands, malformed files and size policy.
+Accounts invokes the actual Django helper; the shipped image runs the same
+oracle. Exact budgets, overflow, ownership, mid-operation cancellation, 32 mixed
+concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse are
+checked. SUN/GBR registry precedence remains a shared-dispatch requirement, as
+documented in the package README. Use the pinned Python environment.

@@ -725,3 +725,46 @@ overflow, ownership, mid-header/planar/RLE cancellation, 32 concurrent mixed-ima
 pipelines and encoder-stage admission/cancellation/reaping/reuse pass. Production
 native sources are unchanged. Remaining formats, shared dispatch/admission and
 public login composition remain open.
+
+## SUN Raster images
+
+`ReadSUNHeader`, `DecodeSUN` and `SUNFileProcessor` follow Pillow 11.1's
+[SUN plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/SunImagePlugin.py),
+[byte-RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/SunRleDecode.c)
+and sample unpackers. Supported depths are 1, 4, 8, 24 and 32. Monochrome samples
+are inverted and MSB-first; luminance nibbles scale by 17, while palette nibbles
+remain indices. Type 3 stores RGB/RGBX; other types store BGR/BGRX. The fourth
+channel is ignored. Types 0, 1, 3, 4 and 5 use raw rows aligned to 16 bits; the
+last row does not require trailing alignment bytes. Type 2 uses byte RLE with
+packed row lengths, without the raw alignment. An escaped zero denotes literal
+0x80; other escape counts repeat the following byte count+1 times. Runs can cross
+rows and overshoot the image; incomplete operands fail while pixels remain.
+
+The 32-byte header ignores its data-length field. A nonzero palette length must
+be at most 1024 with palette type 1; zero length ignores palette type. Palette
+reads may be short, but pixels still begin at the declared offset. L becomes P;
+palettes attached to other core modes fail at loading. More than 256 complete
+planar palette entries also fail at loading; up to two trailing bytes are
+accepted. Lazy size-policy passthrough occurs before these deferred failures.
+
+Logical decode budgets count input plus output, with one packed row for RLE;
+they do not cap total RSS. Raw pixels are unpacked directly into output. Stage
+budgets, a shared pipeline slot and one deadline cover header/decode/transform/
+encoding. Malformed or unsupported-save cases keep the original; resource,
+cancellation and unavailable-codec failures expose no successful result.
+
+The adapter declares 1,453 header/pixel/file cases, including every literal and
+run count, row packing/orientation, palette/core-mode and partial-read boundaries,
+64 KiB RLE operand boundaries, malformed headers/operands and size policy. It
+compares declared pixels and JPEG bytes with Pillow, the actual Django helper and
+the shipped non-root/read-only/networkless image. Unit/integration checks cover
+exact budgets, overflow, ownership, mid-operation cancellation, 32 mixed concurrent
+pipelines and encoder-stage queue/cancellation/reaping/reuse. Native production
+sources are unchanged.
+
+This is a SUN-specific processor, not a global format dispatcher. Pillow's
+registry can recognize some SUN-signature inputs as GBR first: SUN width 1,
+height 1, depth 8 and declared data length 1 is recognized as GBR with size 1x8.
+The ignored-length SUN vectors use width 3 to isolate SUN behavior. Registry
+precedence, including this collision, must be preserved by the future shared
+dispatcher; remaining formats and public login composition remain open.
