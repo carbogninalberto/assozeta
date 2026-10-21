@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Login response composition | 36 explicit full response cases without image conversion; seven/ten-statement paths, 32 concurrent calls, required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -515,3 +516,25 @@ transaction and narrow update deliberately preserve current unrelated user state
 Those differences, end-to-end revocation and mixed-runtime audit races remain
 explicit gaps. The finalization service is not registered as a public login route;
 see the [component contract](../../../BE_GO/internal/service/login_finalization.md).
+
+
+### Login response composition and registration choices
+
+The response builder composes base/association profiles and the card-configuration
+invariant with role-specific keys, collaborator-owner selection, instructor
+metadata, tables settings and registration choices. Thirty-six explicit actual
+Django-builder cases compare complete JSON/outcomes with Go, including historical
+role 0, empty feature arrays, JSON null/scalars/large integers and duplicate draft
+instructors across owners. That metadata lookup does not authorize instructors.
+
+Existing association responses use seven statements, default configuration ten;
+32 concurrent 512-instructor responses use 224 statements. A real denied instructor
+SELECT is required for collaborators but does not affect owners. Persisted
+settings/instructor transitions are visible and all managed tables match after
+fixture restoration. Twenty-eight boolean values and eight literal dotenv cases
+match Django's reader, using existing registration variables and defaults.
+
+These cases need no image conversion. Unit image doubles establish dispatch only;
+the actual processor, public HTTP workflow and final session delivery remain open.
+The builder refuses to silently pass through images when no processor is supplied.
+See the [response contract](../../../BE_GO/internal/service/login_response.md).

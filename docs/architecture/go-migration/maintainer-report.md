@@ -118,6 +118,16 @@ partial autocommit and stale-save overwrites are characterized; Go preserves
 current unrelated fields. Public login composition, revocation races and mixed
 Django/Go cancellation remain open. See the finalization component contract.
 
+Response composition now has 36 explicitly expected actual-Django-builder cases
+against Go, including full key presence, collaborator settings, registration
+choices, instructor metadata and default-card persistence. Seven/ten-statement
+paths and 32 concurrent compositions (224 statements) pass. A real instructor
+permission failure remains required only for collaborators; every managed table
+matches after restoration. Registration configuration matches 28 boolean and eight
+dotenv cases. Image conversion is not implemented or counted: this fixture covers
+null images and branches Django leaves unchanged. The public login coordinator,
+image processor and final session delivery remain open.
+
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,

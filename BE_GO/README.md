@@ -52,15 +52,15 @@ pages, but still requires OTP, username/audit normalization and login response/s
 effects; see `internal/service/password_login.md`. A separate second-factor gate
 now matches 47 actual-Django-view cases, including fixed clock boundaries and
 Unicode/multipart inputs; see `internal/service/second_factor.md`. Password admission now composes these stages with transactional username/audit
-normalization; see `internal/service/login_preparation.md`. It still needs response
-construction and final-write composition before it can become a complete login route.
+normalization; see `internal/service/login_preparation.md`. It still needs image processing and full response/final-write composition before
+it can become a complete login route.
 The base 37-field profile now matches 46 explicit Django-rendered JSON cases with
 bounded reads, setup/onboarding precedence and exact JSON values; see
 `internal/service/login_profile.md`. Optional onboarding query failures now preserve
 the profile with null onboarding, tested using real PostgreSQL permission denial.
 The 50-field association profile adds 23 explicit cases, exact stored decimal text
 and scoped group reads; see `internal/service/association_profile.md`. Complete
-login augmentation and transaction composition are still required. Membership-card configuration
+image processing and transaction composition are still required. Membership-card configuration
 lookup/default creation now preserves the Django response and audit/index fields
 inside an explicit transaction; see `internal/service/membership_card_configuration.md`.
 Cross-runtime concurrent creation and Django's partial failure effects remain
@@ -69,6 +69,11 @@ Final user writes now have 17 actual-Django-view component cases for last_login,
 UTC deletion cancellation and atomic audit/index; see
 `internal/service/login_finalization.md`. The service preserves concurrent
 unrelated user changes. Public login composition and mixed-runtime races remain open.
+The response composer now matches 36 explicit full JSON/outcome cases that require
+no image conversion. It composes profiles and card configuration with role-specific
+keys, instructor metadata and instance registration choices; see
+`internal/service/login_response.md`. Existing association responses use seven
+statements. The image processor remains unimplemented; no public login is wired.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512
@@ -78,6 +83,9 @@ visibility and remaining request-admission requirements.
 For a disposable manually configured environment, `go run ./cmd/server` reads the
 process environment. `-env-file PATH` optionally reads the **existing** deployment
 `.env`; process values win. Never create a second credentials file for Go.
+The existing family/federation/multiple registration flags are supported with
+Django defaults and boolean/literal-dotenv rules. The environment example documents
+them. These flags affect registration UI choices, not authorization.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
 The server requires valid existing `JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or
