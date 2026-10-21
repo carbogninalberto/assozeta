@@ -198,6 +198,10 @@ func appleClaims(claims jwt.MapClaims, audience any, now time.Time) bool {
 	if claims["iss"] != "https://appleid.apple.com" {
 		return false
 	}
+	return providerJWTClaims(claims, audience, now)
+}
+
+func providerJWTClaims(claims jwt.MapClaims, audience any, now time.Time) bool {
 	for _, name := range []string{"sub", "jti"} {
 		if value, exists := claims[name]; exists {
 			if _, ok := value.(string); !ok {

@@ -735,3 +735,11 @@ methods exercise those 56 scenarios over actual Django/Go HTTP, bringing the sui
 to 30 methods per backend. Assertions cover Bearer precedence, exact errors/cookie
 absence, unchanged refresh claims and exact reserialized refresh credentials.
 Nonstandard JSON numbers and lone surrogate escapes remain outside these vectors.
+
+`python TESTS/adapters/django/google_tokens.py` runs 93 declared Google verification
+cases against the actual Django service and Go over local HTTPS. Certificate and
+JWK paths use real signatures; fallback checks exact tokeninfo/userinfo requests.
+Expected identity, propagated-error behavior and HTTP sequence are declared before
+either backend runs. Invalid fixture requests fail independently of expected auth
+failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
+versions, limits, remaining inputs and the absence of public/live-provider proof.

@@ -817,3 +817,13 @@ Django service, Go manager and both HTTP servers. The 89-case Apple oracle still
 passes after extracting shared checks. Nonstandard JSON numbers, lone surrogate
 escapes, broader base64 cases and aggregate parsing budgets remain open; no ledger
 entry is promoted to verified. Evidence: `quality-reports/go-migration/jwt-document/`.
+
+The concrete Google provider now passes 93 declared Django/Go protocol scenarios
+using local HTTPS and real PEM/JWK signatures. Certificate verification, the
+separately fetched JWK path and access-token fallback retain distinct claims,
+redirect and error rules. A bounded client and real RSA/HTTPS service composition
+check cancellation/reuse, current audience and disable behavior. Complete identity
+values and exact HTTP sequences are compared. Raw container/upload conversion,
+parser/key/transport extremes, environment/root wiring and public/live-provider
+login remain open. See [the Google contract](../../../BE_GO/pkg/social/google.md)
+and `quality-reports/go-migration/google-tokens/`; no ledger row is promoted.

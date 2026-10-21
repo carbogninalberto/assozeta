@@ -5,8 +5,8 @@ in `BE/application/services/social_auth_service.py`. It accepts an explicit HTTP
 client, clock and positive concurrency limit. Current instance settings remain
 outside this package; `service.SocialProviders` reads them for each operation,
 stops disabled providers, dispatches the raw token/audience and returns the email
-result to login admission. Its Google client remains an unimplemented dependency
-for production composition. No public login route is registered by this change.
+result to login admission. The Google client now has separate certificate/JWK/access-token verification;
+see [its protocol and remaining scope](google.md). Production composition remains open. No public login route is registered by this change.
 
 Apple verification requests the fixed HTTPS keys URL before parsing the token,
 selects the first matching `kid`, constructs an RSA public key and verifies only
@@ -62,7 +62,7 @@ provider suppresses HTTP. That test controls configuration input; the separate
 33-case PostgreSQL configuration adapter proves persisted resolution. These
 scoped tests do not prove a complete public login or a live Apple account login.
 
-Remaining work includes Google ID/access-token verification, environment/root
+Remaining work includes the remaining Google input/protocol cases, environment/root
 wiring, complete persisted-account/HTTP/browser composition, provider changes
 during admitted requests, transport policy at the composition root, broader
 nonstandard JSON/base64 edge cases and live-provider/release evidence. Shared document/header/integer checks now also serve REST JWT verification. Its

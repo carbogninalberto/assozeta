@@ -565,3 +565,41 @@ cases, plus existing identity/scope, managed-table readback and image oracles.
 `jwt-document/accounts-results.json` records the complete counts. Schema creation
 still uses current Django models; historical migration and restore evidence remain
 separate, unfinished requirements.
+
+Google verification now has concrete certificate, JWK and access-token clients.
+Ninety-three declared comparisons exercise the actual Django service and installed
+Google/PyJWT libraries against Go using real local HTTPS and signatures. They
+preserve the certificate decoder's required times and inclusive expiry, the JWK
+path's second fetch/optional claims/strict expiry, and the application's narrow
+ValueError fallback. JWK transport refuses redirects; certificate/access transport
+retains its supplied policy. Identity values, success/error boundaries, query and
+header values and exact HTTP sequences are checked, including negative cases.
+
+TDD failures preceded implementation and caught premature algorithm rejection and
+incorrectly followed JWK redirects. Tests separately measure two-slot admission,
+active/queued cancellation, reuse, phase deadlines, bounded response reads and
+closure. A real RSA/HTTPS service test verifies current audience, disable and
+configuration-failure behavior. Its configuration reader is controlled; persisted
+settings have separate PostgreSQL evidence. Existing Apple claim validation now
+shares a helper with the Google JWK path.
+
+The Google client is not registered at the composition root. Raw container/upload
+fallback values, unusual JSON/base64/key shapes, numeric audience equality,
+transport/proxy/charset extremes and live-provider proof remain open, along with
+full session/HTTP/browser integration. Explicit Go resource budgets still need
+supported deployment/provider evidence. See `BE_GO/pkg/social/google.md` and
+`quality-reports/go-migration/google-tokens/` for bounded scope and reproduction.
+
+Google increment validation passes full Go race tests/vet, tagged Google/Apple vet,
+93 Google and 89 Apple HTTPS oracle cases, service crypto/configuration composition,
+formatting and twelve inventory tests/drift validation. The workflow now runs the
+Google oracle alongside Apple and credentials. No database repository or public
+route changed in this increment; the preceding `e93d417` commit's complete private
+PostgreSQL/Redis account rehearsal remains the latest database evidence. The
+whole new-head CI matrix remains required; prior successful full workflows are
+identified above rather than attributed to an untested head.
+
+Actionlint v1.7.7 (the repository workflow version) also passes. Additional red
+cases caught numeric/boolean JWK algorithm metadata being silently defaulted to
+RSA; nonempty invalid metadata is now rejected, while a false value retains the
+inspected defaulting behavior. The final Google oracle contains 93 declarations.
