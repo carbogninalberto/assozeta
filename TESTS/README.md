@@ -508,6 +508,23 @@ use `imageintegration`; cancellation, logical working-byte limits, overflow and
 32 concurrent transformations are also checked. No generated image fixture or
 customer image is committed, and all managed tables remain unchanged.
 
-This is not complete image parity: file decoding, JPEG encoding, codec delivery,
-whole-processor admission and public login integration remain open. See
+`adapters/django/login_jpeg.py` adds 180 exact Pillow JPEG comparisons plus
+native protocol failures, output limits, timeout/cancellation, bounded process
+admission and 32 concurrent encodes. All 54 transformed pixel fixtures now also
+compare their JPEG output. The account suite runs both stages; the JPEG stage can
+also run independently with Pillow, `cc`, `pkg-config` and libjpeg development files.
+
+After building the image, run:
+
+```sh
+python TESTS/adapters/go/login_jpeg_image.py --image assozeta-go-foundation:test
+```
+
+This runs the 180-vector encoder oracle and native failure protocol against the
+shipped static helper as UID 10001, with a read-only filesystem and no network.
+The same command is required in Go CI after image construction. Library versions
+and notices are inspected; there is no pixel/byte tolerance.
+
+This is not complete image parity: file decoding, whole-processor admission and
+public login integration remain open. See
 `BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.

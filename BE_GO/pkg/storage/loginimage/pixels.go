@@ -1,5 +1,5 @@
 // Package loginimage contains the pixel and data-URI stages of Assozeta's login
-// image transform. File decoding/JPEG encoding and runtime wiring are separate.
+// image transform. File decoding and runtime wiring are separate.
 package loginimage
 
 import (

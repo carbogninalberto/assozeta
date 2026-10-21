@@ -1,0 +1,5 @@
+This software is based in part on the work of the Independent JPEG Group.
+
+The bundled image-codec executable uses libjpeg-turbo. Its license notices and
+version are distributed alongside this notice in /app/licenses. The pixel
+resampling code derives from Pillow; its MIT-CMU license is also retained there.

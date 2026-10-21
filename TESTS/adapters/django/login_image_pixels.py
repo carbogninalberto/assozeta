@@ -1,6 +1,6 @@
 """Pillow pixel oracle and actual Django login image decision characterization.
 
-This does not certify Go file decoders, JPEG bytes or the complete image service.
+This also checks transformed JPEG bytes; file decoding and the full service remain open.
 """
 import base64
 import binascii
@@ -9,6 +9,7 @@ import itertools
 import json
 import subprocess
 from .accounts import ROOT
+from .login_jpeg import build_codec
 
 
 def run(work, log, tool_env):
@@ -56,9 +57,10 @@ def run(work, log, tool_env):
             output=prepared.resize((ow,oh),Image.Resampling.LANCZOS)
             if (w,h)==(ow,oh) and mode!='RGBA': assert output.tobytes()==raw, 'identity resize changed source bytes'
             if (w,h)==(1,1): assert output.tobytes()==prepared.tobytes()*(ow*oh), 'constant image not preserved'
+            jpeg=io.BytesIO();output.save(jpeg,format='JPEG')
             vectors.append({'name':f'{mode} {w}x{h} to {ow}x{oh}','width':w,'height':h,'mode':mode,
                 'pixels':base64.b64encode(raw).decode('ascii'),'out_width':ow,'out_height':oh,'out_mode':output.mode,
-                'expected':base64.b64encode(output.tobytes()).decode('ascii')})
+                'expected':base64.b64encode(output.tobytes()).decode('ascii'),'expected_jpeg':base64.b64encode(jpeg.getvalue()).decode('ascii')})
     alpha=Image.frombytes('RGBA',(4,1),bytes([1,2,3,0,10,20,30,128,20,30,40,255,0,0,0,1]))
     flat=Image.new('RGB',alpha.size,(255,255,255));flat.paste(alpha,mask=alpha.split()[3])
     assert flat.tobytes()==bytes([255,255,255,132,137,142,20,30,40,254,254,254]), 'explicit alpha rounding changed'
@@ -81,10 +83,12 @@ def run(work, log, tool_env):
         data_uris.append({'input':'unicode-header😀,'+payload,'bad':True,'expected':''})
     print(f'Django/Pillow: {len(policies)} real image decisions, {len(vectors)} exact pixel vectors and {len(data_uris)} base64 differential vectors established',flush=True)
     path=work/'login-image-pixels.json';path.write_text(json.dumps({'policies':policies,'pixels':vectors,'data_uris':data_uris}));path.chmod(0o600)
+    codec=work/'pixel-image-codec';build_codec(codec,log,tool_env)
     try:
         subprocess.run(['go','test','-race','-tags=imageintegration','./pkg/storage/loginimage','-run','^TestLoginImageAgainstPillow'],cwd=ROOT/'BE_GO',check=True,timeout=180,
-            env={**tool_env,'ASSOZETA_LOGIN_IMAGE_PIXELS_FIXTURE':str(path)})
-    finally:path.unlink(missing_ok=True)
+            env={**tool_env,'ASSOZETA_LOGIN_IMAGE_PIXELS_FIXTURE':str(path),'ASSOZETA_LOGIN_JPEG_CODEC':str(codec)})
+    finally:
+        path.unlink(missing_ok=True);codec.unlink(missing_ok=True)
     after={m._meta.label:list(m._base_manager.order_by('pk').values()) for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     assert after==before,'pixel characterization changed database state'
     return len(vectors)
