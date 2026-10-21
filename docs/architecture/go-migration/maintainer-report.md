@@ -42,6 +42,12 @@ semantics. Parameter, cancellation and unchanged Django readback checks pass.
 It uses current-model schema creation; migration-history and Go-write rollback
 proofs remain open.
 
+The actor authenticator now passes 18 explicit real-token/account cases against
+Django's JWTAuthentication, including persisted status/role and numeric UUID
+claims. A separate private Redis adapter verifies the impersonation cache DTO in
+both directions with TTL and revocation. This does not yet resolve the effective
+identity, current target eligibility, association scope or audit effects.
+
 Still missing: business endpoints, complete authentication/permissions, durable
 workers/scheduler, shared-data/rollback proofs, versioned routing and switching,
 realtime, integration/document/manual delivery, Go backup/restore, the complete

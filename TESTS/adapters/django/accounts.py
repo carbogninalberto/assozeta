@@ -44,12 +44,17 @@ def main():
                      '-o', f"-k {work} -h '' -F", '-w', 'start'])
                 started = True
                 run([binaries / 'createdb', '-h', work, '-U', 'contracts', 'assozeta_contract_accounts'])
+                from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+                from cryptography.hazmat.primitives import serialization
+                signing_key = Ed25519PrivateKey.generate()
+                private_key = signing_key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()).decode()
+                public_key = signing_key.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()
                 import environ
                 os.environ.clear()
                 os.environ.update(tool_env)
                 environ.Env.read_env(str(ROOT / 'selfhost/.env.example'))
                 os.environ.update(DEBUG='False', JWT_SECRET_KEY_B64='', JWT_PUBLIC_KEY_B64='',
-                    JWT_SECRET_KEY='account-test-only', JWT_PUBLIC_KEY='account-test-only',
+                    JWT_SECRET_KEY=private_key, JWT_PUBLIC_KEY=public_key,
                     DJANGO_SETTINGS_MODULE='TESTS.adapters.django.settings', TESTS_DATABASE='assozeta_contract_accounts',
                     TESTS_WORKDIR=str(work), DBTYPE='POSTGRES', DBHOST=str(work), DBPORT='5432',
                     DBNAME='assozeta_contract_accounts', DBUSER='contracts', DBPASSWORD='test-only',
@@ -91,12 +96,15 @@ def main():
                 assert ids(User.objects.filter(Q(pk=uid(4)) | Q(pk='00000000-0000-4000-8000-999999999999'))) == []
                 before = list(User.original_objects.order_by('user_id').values())
                 print('Django account lookup expectations established in private PostgreSQL', flush=True)
-                subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository'], cwd=ROOT / 'BE_GO',
-                    check=True, timeout=120, env={**tool_env, 'ASSOZETA_ACCOUNT_TEST_DSN':
+                from TESTS.adapters.django.actor_authentication import credential_fixture
+                credentials, actor_cases = credential_fixture(work)
+                print(f'Django: {actor_cases} explicit actor authentication cases passed', flush=True)
+                subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository', './internal/service'], cwd=ROOT / 'BE_GO',
+                    check=True, timeout=120, env={**tool_env, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                         f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                 assert list(User.original_objects.order_by('user_id').values()) == before, 'account reads modified persisted state'
                 connections.close_all()
-                report = {'success': True, 'synthetic_accounts': 7, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'synthetic_accounts': 7, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'Django readback unchanged'], 'customer_data': 'none'}

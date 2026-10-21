@@ -117,6 +117,8 @@ TDD evidence from this worktree:
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
 | Portable Go contracts | The same 3 health contracts pass over real HTTP |
+| Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
+| Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Shared PostgreSQL account reads | Go reads seven Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
 | Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
@@ -214,6 +216,32 @@ connection during credential checks. Authentication must still bound aggregate
 KDF work and coordinate writes/transactions; callback writes on that same
 connection are not supported. No query-plan or throughput improvement is claimed.
 
+### Actor admission and impersonation cache boundary
+
+`ActorAuthentication` now connects cryptographic access-token verification to the
+current account row. Bearer header parsing, missing/inactive/deleted accounts and
+stored role/email precedence are checked through Django's actual
+`JWTAuthentication` and Go in the shared private PostgreSQL harness. An observed
+failure for numeric, null and boolean UUID claims drove explicit compatibility
+handling; numeric identities never pass through floating-point conversion.
+Passwords are removed from the returned actor. Account state is read per request.
+
+This is the first stage of `ScopedJWTAuthentication`, not the completed scoped
+resolver. HTTP error-body rendering, malformed unsupported claim shapes, actor /
+effective person / owner scope, nested-resource authorization and public auth
+handlers remain unfinished. Infrastructure errors propagate; they do not produce
+an anonymous or authenticated result.
+
+The real `django-redis` serializer was inspected and exercised to establish an
+explicit `impersonation:v1` record boundary. Go uses a closed, size-bounded parser
+for the existing small string/None dictionaries in pickle protocols 4/5. It does
+not implement general Python object deserialization. The exact database-1 key
+namespace, one-hour writes, non-renewing reads and cross-runtime revocation are
+verified against private Redis. Go-written records are read back by Django.
+See `BE_GO/internal/repository/impersonation.md` for format ownership and limits.
+No claim is made about Celery, Channels, arbitrary Django cache values, session
+eligibility, begin/end audit effects or WebSocket authorization.
+
 ## Required acceptance matrix
 
 Every row below is required before this draft can claim completion.
@@ -223,7 +251,7 @@ Every row below is required before this draft can claim completion.
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
-| 4. Identity/permissions | Django denial contracts, bidirectional credential tests and collaborator route policy | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
+| 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary and collaborator route policy | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
