@@ -88,6 +88,15 @@ def main():
                     pass
                 time.sleep(1)
             raise RuntimeError('Disposable release application failed readiness')
+        def application_containers():
+            containers = {}
+            for service in ('api', 'worker', 'beat'):
+                identifier = subprocess.check_output([str(arg) for arg in
+                    compose('ps', '--status', 'running', '-q', service)], env=env, text=True).strip()
+                if not identifier:
+                    raise RuntimeError('Application service is not running: ' + service)
+                containers[service] = identifier
+            return containers
         def record(check):
             result['checks'].append(check)
             print('Verified: ' + check, flush=True)
@@ -187,7 +196,13 @@ def main():
                                  'TESTS_OUTPUT': str(output / phase / 'browser')})
             contracts('fresh', browser=True)
             record('fresh installation: reader, assets, search and real browser assistance without AI or subscription')
-            command(compose('up', '-d', '--wait', '--force-recreate', 'api', 'worker', 'beat'), env=env)
+            before_restart = application_containers()
+            # The shipped CLI handles workers with disabled healthchecks and
+            # waits for public API readiness, including older Compose versions.
+            command([cli, 'restart'], env=env)
+            after_restart = application_containers()
+            if any(after_restart[service] == identifier for service, identifier in before_restart.items()):
+                raise RuntimeError('CLI restart did not recreate every application container')
             ready(); contracts('recreated')
             record('container recreation retains the image-matched manual')
             # Stop at the real create/start boundary, as if activation had been
