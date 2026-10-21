@@ -3,10 +3,12 @@
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
 transformation, bounded libjpeg JPEG encoding/decoding, PNG header/pixel and
-chunk-stream decoding, BMP/DIB header/raw/RLE decoding and PPM-family decoding. It does
+chunk-stream decoding, BMP/DIB header/raw/RLE decoding, PPM-family decoding and
+PCX/DCX decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
-JPEG, PNG first-frame, BMP/DIB and PPM-family file pipelines are available as separate components.
+JPEG, PNG first-frame, BMP/DIB, PPM-family and PCX/DCX file pipelines are available
+as separate components.
 Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
@@ -527,3 +529,45 @@ Tests also cover exact header/raw/plain budgets, row arithmetic overflow, input
 ownership, cancellation during header/raw/plain/PFM processing, 32 concurrent
 pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse.
 Other formats, shared format dispatch/admission and public login wiring remain open.
+
+## PCX and the first DCX frame
+
+`ReadPCXHeader`, `DecodePCX` and `PCXFileProcessor` follow Pillow 11.1's
+[PCX plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/PcxImagePlugin.py),
+[DCX plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/DcxImagePlugin.py),
+[RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/PcxDecode.c)
+and planar unpackers. The implementation is pure Go and uses the existing JPEG
+encoder. It covers bilevel, two/four bitplanes, 8-bit grayscale/palette and planar
+RGB. Palette mode P retains the original-file JPEG fallback.
+
+Header admission accepts the reference's partial headers down to 68 bytes, keeps
+its stride correction, and ignores the encoding flag. The 8-bit palette lookup
+reads up to 769 bytes from the whole file's end; missing/nonlinear palettes can
+change L/P mode. Negative end-relative positions clamp to zero as in Django's
+BytesIO input. DCX reads at most 1,024 directory entries and opens only its first
+frame; unused later offsets may be invalid. The inherited 8-bit PCX path then
+seeks to absolute offset 128, even inside DCX. Other modes retain the first
+frame's actual post-header offset. No arbitrary animation playback is claimed.
+
+RLE consumes zero-length runs, rejects runs that cross a row and requires the
+complete last row including padding. Planar samples retain the native decoder's
+byte-count/pixel-width compaction heuristic: small padded RGB images and indexed
+bitplanes can differ from an idealized plane-padding removal. Explicit fixtures
+anchor those cases. DPI metadata does not change the default JPEG output.
+
+The logical header budget counts every consumed read, including overlapping
+header/palette reads and the DCX directory. Decoding reserves input, normalized
+output and one row; it does not expand an unbounded intermediate RLE stream.
+One admission/deadline covers the file pipeline through JPEG encoding. Malformed
+image/save failures keep the original-file decision; cancellation, budget errors
+and unavailable encoders propagate without a successful result. These stage
+budgets do not cap aggregate RSS.
+
+`TESTS/adapters/django/login_pcx.py` supplies 831 declared header/pixel/file cases,
+checked against Pillow, the actual Django helper and the shipped non-root,
+read-only/networkless image. Tests include partial/lazy headers, all run lengths,
+palette tails, narrow padded planes, nonzero bounding-box origins, DCX offsets and
+directory bounds, file-size thresholds, exact budgets, overflow, input ownership,
+mid-header/RLE cancellation, 32 concurrent pipelines and encoder-stage queueing,
+cancellation, child reaping and admission reuse. Other image formats and public
+login composition remain open; this component does not authorize activation.

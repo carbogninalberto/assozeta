@@ -660,3 +660,14 @@ overflow, input ownership, mid-header/raw/plain/PFM cancellation, 32 concurrent
 pipelines and encoder cancellation with queueing/reaping/admission reuse pass.
 Other file formats, shared dispatch/admission and public login composition remain
 open. The ledger's status counts and release/activation restrictions are unchanged.
+
+
+The PCX/DCX first-frame pipeline adds 831 declared header/pixel/file cases,
+compared with Pillow, the actual Django helper and the shipped non-root,
+read-only/networkless image. It preserves partial headers, stride correction,
+all RLE counts and row-overrun failures, palette tails, padded planar unpacking,
+DCX directory bounds and the inherited absolute 128-byte pixel seek for 8-bit
+frames. Exact stage budgets, overflow, ownership, mid-header/RLE cancellation,
+32 concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse pass.
+Other formats, shared dispatch/admission and public login wiring remain open;
+ledger statuses and release/activation restrictions are unchanged.
