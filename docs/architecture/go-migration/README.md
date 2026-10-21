@@ -598,8 +598,9 @@ mid-decode cancellation and 32 concurrent decodes pass. Lazy PNG header/metadata
 explicit cases, including CRCs,
 text limits, APNG first-frame declarations and metadata collisions. Actual Django
 checks verify 235 valid 200×100 headers return their original URI with zero pixel
-loads; the shipped image passes the same header oracle. Post-pixel metadata/file
-validation, APNG canvas composition and full PNG file/response wiring remain open.
+loads; the shipped image passes the same header oracle. File-level metadata and
+canvas composition are covered by the PNG pipeline below; public image/response
+wiring remains open.
 Mode-1 nearest-neighbour transforms now preserve Pillow's accumulated-coordinate
 rounding and exact JPEG output across 210 vectors, with 18 actual Django PNG
 size-policy cases. Invalid binary samples, exact logical budgets, cancellation,
@@ -624,6 +625,14 @@ malformed protocol, process failures, timeout, queued/running cancellation,
 mid-unpack cancellation and 32 concurrent decodes are covered. Native ASan/UBSan
 checks require exact successful frames and exact invalid-input exits without
 diagnostics. Static zlib and its version/license ship in the existing helper;
-the server remains CGO-free. Post-pixel metadata/error handling, first-frame
-canvas composition and full PNG/image/login wiring remain open. The ledger's
-status counts are unchanged; no endpoint is newly declared verified.
+the server remains CGO-free. The complete PNG first-frame pipeline now composes
+this reader with header/tail metadata, canvas placement, resizing and JPEG saving.
+Its 1,466 explicit whole-file cases compare with Pillow and the actual Django
+helper, including cumulative header-plus-tail text limits, comment inheritance
+and RGBA comment removal, fdAT sequencing, APNG next-frame stopping and the
+observed Adam7 origin placement across all 15 mode/depth pairs. The shipped image
+passes the same oracle. Per-stage budgets, tail/canvas cancellation, 32 concurrent
+pipelines and whole-pipeline queue/running cancellation with child reaping and
+admission reuse pass. Other image formats, dispatch and public image/login wiring
+remain open. The ledger's status counts are unchanged; no endpoint is newly
+marked verified.

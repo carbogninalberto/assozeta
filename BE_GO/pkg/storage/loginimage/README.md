@@ -6,7 +6,7 @@ transformation, bounded libjpeg JPEG encoding/decoding, and PNG header/pixel
 and chunk-stream decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
-JPEG file pipeline are available as separate components.
+JPEG and PNG first-frame file pipelines are available as separate components.
 Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
@@ -319,9 +319,9 @@ metadata, cancellation during text inflation/conversion, Unicode character
 accounting and 32 concurrent readers. The non-root/read-only/networkless image
 runs the same header oracle alongside the existing JPEG and PNG pixel checks.
 
-Still open for complete PNG files: post-pixel metadata and error behavior,
-first-frame canvas composition, whole-file admission/limits and response wiring.
-The separate stream decoder below now preserves pixel-chunk boundaries.
+The stream decoder below preserves pixel-chunk boundaries. `PNGFileProcessor`
+then composes header admission, pixel decoding, post-pixel validation and
+first-frame canvas handling. Public image-service/response wiring remains open.
 
 
 ## One-bit nearest-neighbour transforms
@@ -400,5 +400,52 @@ output, and diagnostics fail the check. Eighteen additional malformed-protocol
 and budget cases check exact failure exits under both builds. Thus a sanitizer
 abort cannot be hidden
 by Go's generic decoding-error mapping. CI runs this check alongside the full
-account adapter and image oracle. This component is not yet the complete PNG
-file processor or public login image service.
+account adapter and image oracle. File-level behavior is covered separately by
+`PNGFileProcessor`; the stream component alone does not admit an entire file.
+
+
+## PNG first-frame file pipeline
+
+`PNGFileProcessor` composes the header parser, native stream reader, tail parser,
+canvas placement, resize policy and JPEG encoder under one deadline/admission
+limit. It accepts PNG signatures; other formats return `ErrNotPNG`. Malformed
+PNG/metadata, unsupported JPEG modes and JPEG-save failures preserve the original
+URI decision. Working-limit failures, missing helpers and cancellation propagate
+without bytes or a passthrough result. The exact 200-pixel bounding-size fast path
+returns before loading pixels, including header-only files.
+
+Header state now survives through the file pipeline, retaining APNG sequence and
+cumulative text-memory accounting. `readPNGTail` reproduces `load_end`: the active
+chunk remainder may be short, later payloads require exact reads, CRCs are skipped,
+short or invalid next headers terminate successfully, and IEND needs no body.
+The original animated flag controls stopping before the next fcTL; later acTL
+cannot change that decision. Later IHDR updates parser mode/bounds for subsequent
+metadata validation while the decoded image retains its original dimensions and
+mode. Post-pixel text updates the inherited JPEG comment, with Latin-1/UTF-8 and
+existing chunk/cumulative limits. RGBA flattening creates a fresh white RGB image
+in Django and drops its comment; Go preserves that distinction.
+
+First-frame tiles are placed on a zero canvas. Blend/disposal do not combine them
+with a previous frame because none exists. Pillow treats x0=x1=0 as the entire
+image rectangle, while other zero-area extents fail. Its Adam7 decoder also omits
+xoff/yoff while placing pixels: an interlaced partial first frame appears at the
+origin. Go retains that observed behavior, tested across all 15 mode/depth pairs
+with and without acTL, and preserves the original interlace decision if trailing
+text changes the metadata flag. These semantics concern the first frame selected
+by `compress_base64`, not arbitrary animation playback.
+
+`login_png_file.py` specifies 1,466 exact whole-file JPEG/original decisions,
+including the prior pixel/chunk and lazy fixtures, threshold cases, malformed
+metadata, cumulative header-plus-tail text limits, comment-save limits, first and
+later fdAT sequences, canvas placement and APNG stop rules. Declared samples and
+canvas positions anchor the expected JPEG output; both Pillow's complete file
+path and the actual Django helper must agree. The non-root/read-only/networkless
+image runs the same file oracle alongside all existing image tests. Tests also
+cover every stage's logical byte limit, exact tail/canvas budgets, immutable input,
+32 concurrent pipelines, mid-tail/canvas cancellation, and running/queued pipeline
+cancellation during encoding with child reaping and subsequent admission reuse.
+
+These components still do not implement the complete `LoginImageProcessor`:
+other supported file formats, format dispatch, admission across formats and
+public login/response composition remain necessary. No backend parity or release
+activation is inferred from the PNG pipeline evidence.
