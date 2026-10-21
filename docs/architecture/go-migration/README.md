@@ -1074,3 +1074,11 @@ year clamping and the current duration-mode behavior. Actual Django utility/mode
 evidence covers 329 required cases. The automatic archive task has two reproduced
 failures and remains unimplemented in Go; see
 [the component contract](../../../BE_GO/internal/service/subscription_dates.md).
+
+### Payment description defaults
+
+The pure description component passes 81 actual Django-save oracle cases, including
+relationship precedence, stored versus pending metadata and JSON/CharField behavior.
+The default-category lookup's foreign-association defect is separately reproduced;
+category authorization, bounded relationship reads and full atomic save/archive
+remain required. See [the component contract](../../../BE_GO/internal/service/payment_description.md).

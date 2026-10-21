@@ -21,9 +21,9 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['payment-description','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'payment-description':'payment-description','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -129,6 +129,14 @@ def main():
                     if options.only == 'subscription-dates':
                         connections.close_all()
                         report = {'success': True, 'scope': 'calendar/default calculation; save and archive parity remain open', 'cases': subscription_date_cases}
+                        print(json.dumps(report), flush=True)
+                        return
+                if options.only in (None, 'payment-description'):
+                    from TESTS.adapters.django.payment_description import run as payment_description
+                    payment_description_cases = payment_description(work, log, tool_env)
+                    if options.only == 'payment-description':
+                        connections.close_all()
+                        report = {'success': True, 'scope': 'payment description calculation; full save/archive parity remain open', 'cases': payment_description_cases}
                         print(json.dumps(report), flush=True)
                         return
                 from TESTS.adapters.django.social_configuration import run as social_configuration
@@ -313,6 +321,7 @@ def main():
                 report['associate_age_update_cases']=age_update_cases
                 report['audit_retention_cases']=audit_retention_cases
                 report['subscription_date_cases']=subscription_date_cases
+                report['payment_description_cases']=payment_description_cases
                 report['retired_billing_contracts_per_backend']=retired_billing_contracts
                 report['two_factor_info_contracts_per_backend']=two_factor_info_contracts
                 report['identifier_http_contracts_per_backend']=identifier_contracts

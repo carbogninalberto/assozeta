@@ -223,3 +223,8 @@ remain open. See `internal/service/audit_retention.md`.
 Subscription season/date-default calculations now match 293 actual Django range
 cases and 36 persisted model-save cases. This component does not implement the
 complete save/archive workflow. See `internal/service/subscription_dates.md`.
+
+Payment description calculation now matches 81 actual model-save cases, including
+relationship precedence, stored/pending metadata and historical JSON behavior.
+Category scope, batch relationship reads and full atomic save/archive remain open.
+See `internal/service/payment_description.md`.
