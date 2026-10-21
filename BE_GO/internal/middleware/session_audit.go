@@ -170,6 +170,10 @@ func sessionHeader(r *http.Request, name string) string {
 }
 
 func varySessionCookie(header http.Header) {
+	varyHeader(header, "Cookie")
+}
+
+func varyHeader(header http.Header, name string) {
 	var values []string
 	if existing := header.Values("Vary"); len(existing) > 0 {
 		values = strings.Split(strings.Join(existing, ", "), ",")
@@ -184,16 +188,16 @@ func varySessionCookie(header http.Header) {
 			values[i] = value
 		}
 	}
-	hasCookie := false
+	hasName := false
 	for _, value := range values {
 		if value == "*" {
 			header.Set("Vary", "*")
 			return
 		}
-		hasCookie = hasCookie || strings.EqualFold(value, "Cookie")
+		hasName = hasName || strings.EqualFold(value, name)
 	}
-	if !hasCookie {
-		values = append(values, "Cookie")
+	if !hasName {
+		values = append(values, name)
 	}
 	header.Set("Vary", strings.Join(values, ", "))
 }

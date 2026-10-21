@@ -30,6 +30,8 @@ type Config struct {
 	JWTSigningKey                 string `json:"-"`
 	JWTVerifyingKey               string `json:"-"`
 	CSRFTrustedOrigins            []string
+	CORSAllowAll                  bool
+	CORSAllowedOrigins            []string
 	ListenAddress                 string
 	Version                       string
 	databaseURL                   string
@@ -113,6 +115,10 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	corsAll, err := registrationFlag(values, "CORS_ORIGIN_ALLOW_ALL", debug)
+	if err != nil {
+		return Config{}, err
+	}
 	sessionSecret, err := environmentString(values, "SECRET_KEY", "", true)
 	if err != nil {
 		return Config{}, err
@@ -145,23 +151,35 @@ func Parse(values map[string]string) (Config, error) {
 		}
 		providerValues[index] = value
 	}
-	originValue, err := environmentString(values, "CSRF_TRUSTED_ORIGINS", "", false)
+	origins, err := environmentList(values, "CSRF_TRUSTED_ORIGINS")
 	if err != nil {
 		return Config{}, err
 	}
-	origins := strings.FieldsFunc(originValue, func(r rune) bool { return r == ',' })
-	// django-environ casts a nonempty resolved list again, raising AttributeError.
-	// Preserve startup rejection rather than silently accepting different policy.
-	if strings.HasPrefix(values["CSRF_TRUSTED_ORIGINS"], "$") && len(origins) > 0 {
-		return Config{}, errors.New("invalid CSRF_TRUSTED_ORIGINS proxy")
+	corsOrigins, err := environmentList(values, "CORS_ALLOWED_ORIGINS")
+	if err != nil {
+		return Config{}, err
 	}
 	return Config{SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
-		CSRFTrustedOrigins: origins, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
+		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
 		// Existing Django code uses string truthiness, not env.bool, for this flag.
 		RedisTLS: values["REDIS_SSLAUTH"] != "", RedisRootCertificate: values["REDIS_SSLCERT"]}, nil
+}
+
+func environmentList(values map[string]string, name string) ([]string, error) {
+	value, err := environmentString(values, name, "", false)
+	if err != nil {
+		return nil, err
+	}
+	items := strings.FieldsFunc(value, func(r rune) bool { return r == ',' })
+	// django-environ casts a nonempty resolved list again, raising AttributeError.
+	// Preserve startup rejection rather than silently accepting different policy.
+	if strings.HasPrefix(values[name], "$") && len(items) > 0 {
+		return nil, errors.New("invalid " + name + " proxy")
+	}
+	return items, nil
 }
 
 // Match core.settings.env_key: nonempty base64 takes priority; raw values use

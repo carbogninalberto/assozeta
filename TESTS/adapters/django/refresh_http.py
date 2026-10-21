@@ -15,6 +15,10 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def run(work, log, tool_env, cache_address):
+    cors_output=ROOT/'quality-reports/go-migration/cors';cors_output.mkdir(parents=True,exist_ok=True)
+    (cors_output/'public-results.json').write_text(json.dumps({'success':False,'phase':'started'})+'\n')
+    security_output=ROOT/'quality-reports/go-migration/security-headers';security_output.mkdir(parents=True,exist_ok=True)
+    (security_output/'public-results.json').write_text(json.dumps({'success':False,'phase':'started'})+'\n')
     from django.conf import settings
     from django.core.asgi import get_asgi_application
     from django.core.cache import cache
@@ -27,6 +31,7 @@ def run(work, log, tool_env, cache_address):
     from TESTS.adapters.django.scoped_resources import uid
     from TESTS.http_client import Client, poll
     from django.apps import apps
+    from django.test import override_settings
     def token(n, kind):
         value = RefreshToken() if kind == 'refresh' else AccessToken()
         value['user_id'] = uid(n)
@@ -86,6 +91,16 @@ def run(work, log, tool_env, cache_address):
         if not result.wasSuccessful() or result.skipped:
             raise AssertionError('Portable refresh contracts did not all pass')
         return result.testsRun
+    def cors_contracts(base):
+        os.environ['TESTS_BASE_URL']=base
+        result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_cors_public'))
+        assert result.wasSuccessful() and not result.skipped and result.testsRun==4,'public CORS contracts failed'
+        return result.testsRun
+    def security_contracts(base):
+        os.environ['TESTS_BASE_URL']=base
+        result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_security_headers_public'))
+        assert result.wasSuccessful() and not result.skipped and result.testsRun==5,'public security contracts failed'
+        return result.testsRun
     api = None
     try:
         deadline=time.monotonic()+5
@@ -94,6 +109,9 @@ def run(work, log, tool_env, cache_address):
             time.sleep(0.01)
         django_base=f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}'
         count=contracts(django_base)
+        with override_settings(CORS_ORIGIN_ALLOW_ALL=False,CORS_ALLOWED_ORIGINS=['https://allowed.example.test']):
+            cors_count=cors_contracts(django_base)
+            security_count=security_contracts(django_base)
         session_readback();reset_sessions()
         subprocess.run(['go','build','-o',str(work/'refresh-server'),'./cmd/server'],cwd=ROOT/'BE_GO',check=True,timeout=120,env=tool_env,stdout=log,stderr=subprocess.STDOUT)
         with socket.socket() as listener:
@@ -103,7 +121,7 @@ def run(work, log, tool_env, cache_address):
             'DBPASSWORD':'test-only','DBHOST':str(work),'DBPORT':'5432','REDIS_HOST':redis_host,'REDIS_PORT':redis_port,
             'REDIS_USERNAME':'default','REDIS_PASSWORD':'synthetic-identity-only','GO_LISTEN_ADDR':f'127.0.0.1:{port}',
             'SECRET_KEY':settings.SECRET_KEY,'JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY,
-            'DEBUG':'False','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+            'DEBUG':'False','CORS_ALLOWED_ORIGINS':'https://allowed.example.test','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
             'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET}
         api=subprocess.Popen([str(work/'refresh-server')],cwd=work,env=environment,stdout=log,stderr=subprocess.STDOUT)
         base=f'http://127.0.0.1:{port}'
@@ -113,6 +131,8 @@ def run(work, log, tool_env, cache_address):
             except OSError: return False
         poll(ready,bool,timeout=30)
         assert contracts(base)==count
+        assert cors_contracts(base)==cors_count
+        assert security_contracts(base)==security_count
         session_readback()
         # Verify signatures using Django in addition to portable payload checks.
         # No token is written to reports or logs.
@@ -124,6 +144,10 @@ def run(work, log, tool_env, cache_address):
         status, accepted = Client(django_base).request('POST','/oauth2/refresh-token',{'refresh_token':unbound['refresh_token']})
         assert status == 200 and accepted['refresh_token'] == unbound['refresh_token']
         assert snapshot() == before, 'refresh changed persisted business/auth/audit/job state'
+        (cors_output/'public-results.json').write_text(json.dumps({'success':True,'contracts_per_backend':cors_count,
+            'composition':'actual Django ASGI and compiled Go root','models_unchanged':True,'session_readback':True})+'\n')
+        (security_output/'public-results.json').write_text(json.dumps({'success':True,'contracts_per_backend':security_count,
+            'composition':'actual Django ASGI and compiled Go root','models_unchanged':True,'session_readback':True})+'\n')
         return count
     finally:
         server.should_exit=True;thread.join(timeout=10)

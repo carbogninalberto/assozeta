@@ -744,14 +744,33 @@ either backend runs. Invalid fixture requests fail independently of expected aut
 failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
 versions, limits, remaining inputs and the absence of public/live-provider proof.
 
-`python TESTS/adapters/django/environment.py` declares 55 environment cases and
+`python TESTS/adapters/django/environment.py` declares 79 environment cases and
 executes selected unchanged assignments from `BE/core/settings.py` with actual
 django-environ. It compares Go file/process precedence, provider/JWT proxies,
-raw DB/Redis values, multiline/base64 and CSRF-list behavior. Go also checks that
+raw DB/Redis values, multiline/base64, required SECRET_KEY/DEBUG, derived rate/CORS
+flags and CSRF/CORS-list behavior. Go also checks that
 loading leaves process state unchanged and representations/errors omit synthetic
 secrets. No settings import, developer `.env`, database or provider access is used.
 The CI protocol step runs this adapter before credentials. See the scoped contract
 in `BE_GO/internal/config/README.md`; complete environment/release wiring is open.
+
+`python TESTS/adapters/django/cors.py` runs 51 portable HTTP contracts per backend
+across five policies and checks 32 declared Python URL comparison boundaries.
+Actual Django ASGI and Go HTTP servers use controlled terminals for preflight,
+Vary, Latin-1 origin reflection, errors, malformed configuration, streaming and
+concurrent requests. The accounts adapter's refresh rehearsal also runs four
+portable CORS methods against both actual application roots, preserving managed
+model/session readback. The Go health adapter checks preflight with both dependencies
+lost. Evidence goes to `quality-reports/go-migration/cors/`. These checks do not
+claim complete locale/security/restore/proxy middleware or browser switching.
+
+`python TESTS/adapters/django/security_headers.py` adds six portable methods for
+current Django security-header defaults, explicit empty fields, all HTTP methods,
+errors, forwarded protocol, streaming, concurrency and CORS preflight bypass.
+The refresh rehearsal adds five actual-root methods for success, authentication,
+CSRF/method denials, missing routes and preflight. Evidence is under
+`quality-reports/go-migration/security-headers/`; complete trusted-host and
+restore/locale/proxy middleware remains open.
 
 `python TESTS/adapters/django/login_rate.py` checks the existing login rate-counter
 protocol against actual django-ratelimit and a private Redis. Fourteen declared

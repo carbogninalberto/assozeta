@@ -97,6 +97,8 @@ func run() error {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	// Django's CORS middleware admits preflight before URL resolution/session.
+	e.Pre(middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoSecurityHeaders())
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/readyz", healthHandler.Readiness, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))

@@ -105,6 +105,10 @@ jobs:
         run: python TESTS/adapters/django/impersonation_cache.py
       - name: Verify login admission and shared rate counters
         run: python TESTS/adapters/django/login_rate.py
+      - name: Verify CORS HTTP and URL comparison policy
+        run: python TESTS/adapters/django/cors.py
+      - name: Verify current Django security headers
+        run: python TESTS/adapters/django/security_headers.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
       - name: Check native PNG decoder with sanitizers
@@ -126,6 +130,9 @@ jobs:
             quality-reports/go-migration/permissions.json
             quality-reports/go-migration/impersonation-cache/
             quality-reports/go-migration/login-rate/
+            quality-reports/go-migration/cors/
+            quality-reports/go-migration/security-headers/
+            quality-reports/go-migration/environment/
             quality-reports/go-migration/accounts/
 
   quality:
