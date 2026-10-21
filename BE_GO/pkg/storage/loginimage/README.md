@@ -611,3 +611,41 @@ during header/raw/RLE work, 32 concurrent pipelines, and encoder-stage queueing,
 cancellation, child reaping and admission reuse. TGA has no fixed magic signature;
 its candidate predicate is not a complete cross-format dispatcher. Plugin order,
 shared admission, remaining formats and public login composition remain open.
+
+## QOI admission and pixel commands
+
+`ReadQOIHeader`, `DecodeQOI` and `QOIFileProcessor` follow Pillow 11.1's
+[QOI plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/QoiImagePlugin.py).
+Only a channel value of 3 selects RGB; every other byte selects RGBA. The reader
+consumes 13 header bytes and seeks over colorspace to offset 14 without requiring
+that byte to exist. The colorspace value has no effect on output. Pixel limits
+and lazy 200x100 passthrough remain part of admission.
+
+The Go decoder implements RGB/RGBA literals, cache indices, difference/luma
+commands and runs. It seeds cache slot 53 with opaque black, matching the
+reference's initial previous-pixel insertion; missing entries are transparent
+black. Alpha is retained in decoder state and participates in hashing even for
+RGB output. RGB literals preserve previous alpha and deltas wrap modulo 256.
+Runs can cross rows or exceed the final pixel count; excess pixels are ignored.
+The reference does not require or validate a footer. Truncated command operands
+fail loading and retain the original file through the login policy.
+
+The logical decoding budget counts input plus the normalized output. The fixed
+64-entry cache and parser state are outside that buffer accounting. Runs write
+directly into the bounded output without allocating their overshoot. One
+admission/deadline covers header parsing through JPEG encoding. Cancellation,
+working-limit failures and unavailable encoders propagate without a successful
+result; malformed files and ordinary image-save failures keep the original.
+Logical budgets are not an aggregate RSS limit.
+
+`TESTS/adapters/django/login_qoi.py` supplies 2,758 declared header/pixel/file
+outcomes. Pillow, the actual Django helper and the shipped non-root,
+read-only/networkless image run them. Coverage includes every channel/colorspace
+byte, every initial cache index and run count, wrapping deltas, luma boundaries,
+cache collisions/alpha state, truncation, footer handling and file-size policy.
+Exact stage budgets, overflow, ownership, mid-header/opcode/run cancellation,
+32 concurrent mixed-image pipelines and encoder-stage queue/cancellation/reaping/
+admission reuse are checked. The test-only fault executable now accepts RGB
+encoding to exercise that process lifecycle. Production native codec sources are
+unchanged. Shared format dispatch/admission, other formats and public login
+composition remain open; this evidence does not authorize backend activation.

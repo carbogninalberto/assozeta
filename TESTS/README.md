@@ -610,3 +610,14 @@ helper. The shipped image runs the same oracle. Exact stage budgets, overflow,
 ownership, mid-operation cancellation, concurrent pipelines and encoder-stage
 admission/cancellation/reaping/reuse are checked. Use the pinned Python environment
 for standalone execution; full format dispatch and public login remain open.
+
+
+`adapters/django/login_qoi.py` adds 2,758 declared QOI header/pixel/file cases.
+It covers every channel/colorspace byte and initial cache index, seeded cache
+state, alpha-dependent hashing, wrapping difference/luma commands, all run
+lengths, row/end overshoot, truncated operands, ignored footers and size policy.
+Accounts invokes the actual Django helper; the shipped image runs the same
+oracle. Exact stage budgets, overflow, ownership, mid-operation cancellation,
+32 mixed-image concurrent pipelines and encoder-stage admission/cancellation/
+reaping/reuse are checked. The test-only fault encoder now supports RGB requests.
+Use the pinned Python environment for standalone execution.

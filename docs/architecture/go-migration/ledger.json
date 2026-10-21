@@ -7553,7 +7553,10 @@
         "BE_GO/pkg/storage/loginimage/pcx_file.go",
         "BE_GO/pkg/storage/loginimage/tga_header.go",
         "BE_GO/pkg/storage/loginimage/tga_pixels.go",
-        "BE_GO/pkg/storage/loginimage/tga_file.go"
+        "BE_GO/pkg/storage/loginimage/tga_file.go",
+        "BE_GO/pkg/storage/loginimage/qoi_header.go",
+        "BE_GO/pkg/storage/loginimage/qoi_pixels.go",
+        "BE_GO/pkg/storage/loginimage/qoi_file.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7686,7 +7689,11 @@
         "BE_GO/pkg/storage/loginimage/tga_test.go",
         "BE_GO/pkg/storage/loginimage/tga_file_test.go",
         "BE_GO/pkg/storage/loginimage/tga_integration_test.go",
-        "TESTS/adapters/django/login_tga.py"
+        "TESTS/adapters/django/login_tga.py",
+        "BE_GO/pkg/storage/loginimage/qoi_test.go",
+        "BE_GO/pkg/storage/loginimage/qoi_file_test.go",
+        "BE_GO/pkg/storage/loginimage/qoi_integration_test.go",
+        "TESTS/adapters/django/login_qoi.py"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7708,7 +7715,8 @@
         "BMP/DIB pipeline: 512 declared header/pixel/whole-file JPEG-or-original cases compare against Pillow and the actual Django helper, also in the shipped non-root read-only/networkless image. All seven header sizes, raw depths, accepted bitfields, gray palette reduction/wrapping, oversized colored palette load failures, final padding, offsets, RLE4/RLE8 clipping/absolute alignment/odd counts/double-read delta and size thresholds are covered. Exact stage budgets, invalid specifications, input ownership, mid-header/raw/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Other formats, dispatch/shared admission and public image/login composition remain open; no endpoint is newly verified.",
         "PPM-family pipeline: 429 declared header/pixel/whole-file cases cover PBM/PGM/PPM, grayscale PFM and PIL CMYK/RGBA/P extensions; Pillow, the actual Django helper and shipped non-root read-only/networkless image agree. Coverage includes Python numeric syntax, exact header consumption, plain versus binary range/scaling rules, ties-to-even rounding, I/F/P JPEG fallback, PFM byte order/row direction, comment joining, 1 MiB block-boundary validation and file-size policy. Exact stage budgets, overflow, input ownership, mid-header/raw/plain/PFM cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Other formats, dispatch/shared admission and public image/login composition remain open; no endpoint is newly verified.",
         "PCX/DCX first-frame pipeline: 831 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes partial headers, stride correction, all RLE counts, row overrun/final padding, indexed bitplanes and narrow padded RGB, whole-file tail palettes, DCX directory bounds/unused offsets/absolute 128-byte reset, DPI and size thresholds. Exact stage budgets, overflow, ownership, mid-header/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Other formats, shared dispatch/admission and public image/login composition remain open; no endpoint is newly verified.",
-        "TGA pipeline: 1,112 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes raw/RLE sample modes, orientation, inverted 16-bit alpha, short ID/palette reads, palette core-mode changes/load failures, no-tile lazy admission, repeat-row bounds, literal full-payload validation/overshoot and size thresholds. Exact stage budgets, overflow, ownership, mid-header/raw/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified."
+        "TGA pipeline: 1,112 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes raw/RLE sample modes, orientation, inverted 16-bit alpha, short ID/palette reads, palette core-mode changes/load failures, no-tile lazy admission, repeat-row bounds, literal full-payload validation/overshoot and size thresholds. Exact stage budgets, overflow, ownership, mid-header/raw/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified.",
+        "QOI pipeline: 2,758 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes 13-byte lazy header admission, every channel/colorspace value, seeded cache and alpha-dependent hashing, RGB/RGBA literals, wrapping difference/luma commands, all run lengths, row/end overshoot, truncated operands, ignored footer and size policy. Exact stage budgets, overflow, ownership, mid-header/opcode/run cancellation, 32 concurrent mixed-image pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. The test-only fault executable now supports RGB encoding; production native code is unchanged. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
