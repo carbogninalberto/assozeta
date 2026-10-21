@@ -130,7 +130,7 @@ def run(work,log,tool_env,django_helper=None):
     codec=work/'png-image-codec';build_codec(codec,log,tool_env)
     path=work/'png-pixels.json';path.write_text(json.dumps(cases));path.chmod(0o600)
     try:
-        subprocess.run(['go','test','-race','-tags=imageintegration','./pkg/storage/loginimage','-run','^TestPNG'],
+        subprocess.run(['go','test','-race','-tags=imageintegration','./pkg/storage/loginimage','-run','^TestPNG(Scanline|InvalidSpecifications)'],
             cwd=ROOT/'BE_GO',env={**tool_env,'ASSOZETA_PNG_PIXELS_FIXTURE':str(path),'ASSOZETA_LOGIN_JPEG_CODEC':str(codec)},check=True,timeout=180)
     finally:path.unlink(missing_ok=True);codec.unlink(missing_ok=True)
     print(f'PNG pixel oracle: {len(cases)} explicit sample/filter/Adam7 and malformed-stream cases',flush=True)

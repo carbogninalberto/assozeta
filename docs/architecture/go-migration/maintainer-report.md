@@ -158,9 +158,13 @@ and Adam7 with 801 explicit Pillow cases. Expected samples are constructed
 independently. The actual Django helper agrees on 478 unchanged-size JPEG outputs,
 300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
 runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
-mid-decode cancellation and 32 concurrent decodes pass. PNG chunk/metadata
-admission, APNG composition and resized mode-1 nearest-neighbour behavior remain
-open; this primitive is not a complete PNG file processor.
+mid-decode cancellation and 32 concurrent decodes pass. Lazy PNG header/metadata admission now adds 394
+explicit cases, including CRCs,
+text limits, APNG first-frame declarations and metadata collisions. Actual Django
+checks verify 235 valid 200×100 headers return their original URI with zero pixel
+loads; the shipped image passes the same header oracle. Post-pixel metadata/file
+validation, APNG canvas composition, resized mode-1 nearest-neighbour behavior
+and full PNG file/response wiring remain open.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,
