@@ -40,10 +40,14 @@ automatic retries and subsequent pool reuse. A command may execute after the
 client times out; cancellation does not promise rollback of Redis effects.
 A pre-cancelled operation writes nothing. A closed client remains an error.
 
-This is counter protocol evidence, not full login rate-limit parity. Request
-key extraction (`X-Forwarded-For`, raw JSON and Python string/casefold rules),
-DEBUG/RATELIMIT_ENABLE configuration, decorator ordering, the exact HTTP 429
-response and public route composition remain to be connected and verified.
+The accompanying request middleware now has 15 portable HTTP contracts per
+backend, using the actual Django key functions/decorators around a controlled
+terminal view. It checks first-forwarded-IP selection, raw UTF-8 JSON keys,
+Python string/casefold representations, IP-before-account denial, exact HTTP 429,
+method/disable bypass and unchanged body bytes. The environment adapter now has
+55 cases including required DEBUG and the derived RATELIMIT_ENABLE default.
+See `../middleware/login_rate.md` for the boundary and remaining parser/body gaps.
+Public login composition and the application's other middleware remain open.
 Django's fallback for corrupted/pickled or larger-than-int64 counters also remains
 open; normal counters created by these login gates use Redis integer values.
 No public login or backend activation is claimed. Evidence is recorded under

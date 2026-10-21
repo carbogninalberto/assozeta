@@ -7591,7 +7591,9 @@
         "BE_GO/pkg/social/google_jwk.go",
         "BE_GO/internal/domain/login_rate.go",
         "BE_GO/internal/service/login_rate.go",
-        "BE_GO/internal/repository/login_rate.go"
+        "BE_GO/internal/repository/login_rate.go",
+        "BE_GO/internal/middleware/login_rate.go",
+        "BE_GO/internal/dto/login_rate_json.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7784,7 +7786,12 @@
         "TESTS/adapters/django/login_rate.py",
         "BE_GO/internal/service/login_rate_test.go",
         "BE_GO/internal/repository/login_rate_test.go",
-        "BE_GO/internal/repository/login_rate_integration_test.go"
+        "BE_GO/internal/repository/login_rate_integration_test.go",
+        "TESTS/contracts/test_login_rate.py",
+        "TESTS/adapters/django/login_rate_admission.py",
+        "BE_GO/internal/middleware/login_rate_test.go",
+        "BE_GO/internal/middleware/login_rate_integration_test.go",
+        "BE_GO/internal/dto/login_rate_json_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7823,7 +7830,10 @@
         "Google increment: 93 declared Django/Go cases compare real certificate/JWK signatures and access-token fallback over ephemeral HTTPS. Identity values, propagated-error boundaries and HTTP destinations/query/headers/sequences are asserted. Red tests caught premature algorithm rejection and incorrectly followed JWK redirects. Unit checks cover concurrency/cancellation/reuse, phase deadlines, response closure and measured read limits. A real RSA/HTTPS service composition test observes configuration changes/disable; its configuration reader is controlled. Raw container/upload conversion, parser/key/transport extremes, root/environment/public/live-provider composition remain open. See pkg/social/google.md and quality-reports/go-migration/google-tokens/.",
         "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
         "After environment changes, the full private PostgreSQL/Redis accounts adapter passes: 30 refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only; historical migrations and public login remain open. Results: quality-reports/go-migration/environment/accounts-results.json.",
-        "Login rate counters: 14 declared cases use actual django-ratelimit and private Redis to verify Django-to-Go-to-Django count/key/window/TTL interoperability. Sixty-four concurrent Go requests admit five/deny 59 with 127 writes and at most four connections. Actual-key expiry races fail closed; real Redis pause verifies deadline/no retry/pool reuse. Request-key extraction, flags, HTTP ordering/responses, exceptional counter representations and public wiring remain open. See internal/service/login_rate.md and quality-reports/go-migration/login-rate/."
+        "Login rate counters: 14 declared cases use actual django-ratelimit and private Redis to verify Django-to-Go-to-Django count/key/window/TTL interoperability. Sixty-four concurrent Go requests admit five/deny 59 with 127 writes and at most four connections. Actual-key expiry races fail closed; real Redis pause verifies deadline/no retry/pool reuse. Request-key extraction, flags, HTTP ordering/responses, exceptional counter representations and public wiring remain open. See internal/service/login_rate.md and quality-reports/go-migration/login-rate/.",
+        "Rate HTTP admission: 15 portable contracts per backend run actual unchanged Django request-key functions/decorators/handler403 around a controlled terminal view and Go middleware on private Redis. Keys/casefold/containers, raw JSON/media differences, IP/account ordering, exact 429, method/disable bypass, nonfinite/integer rules and unchanged body bytes agree. This does not verify credentials or global/public login composition. Lone-surrogate/recursion/body/aggregate-budget and exceptional-counter gaps remain open; see internal/middleware/login_rate.md.",
+        "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
+        "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
@@ -7964,7 +7974,9 @@
         "2026-10-21: 76 Django-to-Go JWT cases include 56 signed document scenarios. Red comparisons exposed critical-header/JSON/UTF-8/time-conversion and refresh byte-preservation differences. Shared parser checks and refresh reserialization now pass, alongside the 89-case Apple RSA/HTTPS oracle. Nonstandard JSON numbers, lone surrogate escapes and global resource budgets remain open.",
         "2026-10-21: Full private PostgreSQL/Redis account adapter passes, including 30 portable refresh methods per backend and all 56 signed JWT document scenarios. Expected normalized refresh bytes agree in both HTTP servers; rejected credentials issue no cookie, Bearer denial precedes refresh, and all managed tables remain unchanged. Current-model schema creation only; migration history, global middleware, routing/switching and release gates remain open. Results: quality-reports/go-migration/jwt-document/accounts-results.json.",
         "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
-        "After environment changes, the full private PostgreSQL/Redis accounts adapter passes: 30 refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only; historical migrations and public login remain open. Results: quality-reports/go-migration/environment/accounts-results.json."
+        "After environment changes, the full private PostgreSQL/Redis accounts adapter passes: 30 refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only; historical migrations and public login remain open. Results: quality-reports/go-migration/environment/accounts-results.json.",
+        "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
+        "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json."
       ],
       "notes": [
         "Registered upstream route in the Go composition root; remains implementing, not verified. Global maintenance/restore fencing, middleware, all locale/charset variants, malformed multipart/body-limit edge cases, proxy/version routing and release/browser switching gates remain open.",
@@ -13314,7 +13326,8 @@
         "BE_GO/internal/config/environment_integration_test.go"
       ],
       "evidence": [
-        "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/."
+        "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
+        "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open."
       ],
       "notes": [
         "Portable normal-runtime health/status admission and real dependency failure/recovery verified. Not endpoint parity yet: manual_capture fields, version-file precedence, Django CSRF error HTML, global middleware/maintenance and versioned proxy behavior still need implementation/evidence."
@@ -13377,7 +13390,8 @@
         "BE_GO/internal/config/environment_integration_test.go"
       ],
       "evidence": [
-        "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/."
+        "Environment increment: 45 declarations compare actual selected core.settings assignments under django-environ 0.12.0 with Go Load. Provider fields, literal file parsing, process precedence, raw DB/Redis versus Env proxies, required/default/cycle rules, multiline/base64, CSRF-list failure and credential redaction are checked. Actual Go health/dependency-loss/recovery/idle-shutdown rehearsal passes. Remaining environment/VERSION/root/public-login/release scope remains open; see internal/config/README.md and quality-reports/go-migration/environment/.",
+        "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open."
       ],
       "notes": [
         "Portable normal-runtime health/status admission and real dependency failure/recovery verified. Not endpoint parity yet: manual_capture fields, version-file precedence, Django CSRF error HTML, global middleware/maintenance and versioned proxy behavior still need implementation/evidence."

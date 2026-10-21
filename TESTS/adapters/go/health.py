@@ -71,7 +71,7 @@ def main():
                     'DBPORT': '5432', 'REDIS_HOST': '127.0.0.1', 'REDIS_PORT': str(redis_port),
                     'REDIS_PASSWORD': 'go-contract-only', 'GO_LISTEN_ADDR': f'127.0.0.1:{http_port}',
                     'RUNNING_VERSION': 'v0.0.0-contract',
-                    'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'',
+                    'DEBUG':'False','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'',
                     'JWT_SECRET_KEY':(work/'key.pem').read_text(), 'JWT_PUBLIC_KEY':(work/'public.pem').read_text()}
                 api = subprocess.Popen([str(work / 'server')], cwd=work, env=environment, stdout=log, stderr=subprocess.STDOUT)
                 base_url = f'http://127.0.0.1:{http_port}'

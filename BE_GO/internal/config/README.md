@@ -33,6 +33,9 @@ do not receive multiline expansion. Cryptographic key validation remains in the
 JWT constructor at server startup.
 
 Registration flags retain their separately tested Django boolean/default rules.
+`DEBUG` must be present, including an explicitly empty value. `RATELIMIT_ENABLE`
+defaults to `not DEBUG`, including when a reference target is missing. Explicit
+values and reference chains use Django boolean parsing; no new variable is added.
 CSRF origin lists keep whitespace and discard empty comma-separated items. The
 installed django-environ raises when a proxy resolves to a nonempty list because
 it casts that list again; Go also rejects that startup configuration. Empty-list
@@ -44,7 +47,7 @@ omits provider credentials, JWT keys and the Redis password; the database URL is
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Forty-five declared cases execute selected unchanged AST assignments
+environment. Fifty-five declared cases execute selected unchanged AST assignments
 from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,
 precedence, raw/proxy differences, multiline/base64 behavior, unchanged process

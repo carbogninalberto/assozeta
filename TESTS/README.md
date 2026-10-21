@@ -744,7 +744,7 @@ either backend runs. Invalid fixture requests fail independently of expected aut
 failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
 versions, limits, remaining inputs and the absence of public/live-provider proof.
 
-`python TESTS/adapters/django/environment.py` declares 45 environment cases and
+`python TESTS/adapters/django/environment.py` declares 55 environment cases and
 executes selected unchanged assignments from `BE/core/settings.py` with actual
 django-environ. It compares Go file/process precedence, provider/JWT proxies,
 raw DB/Redis values, multiline/base64 and CSRF-list behavior. Go also checks that
@@ -758,5 +758,8 @@ protocol against actual django-ratelimit and a private Redis. Fourteen declared
 threshold/key/window cases verify bidirectional writes and TTL preservation.
 Sixty-four concurrent Go requests verify exactly five admissions, bounded command
 counts and four connections. Both runtimes deny an expiry race; real paused Redis
-I/O verifies deadlines and pool reuse. Request-key extraction, HTTP responses and
-public-login wiring remain outside this counter adapter. No cases are skipped.
+I/O verifies deadlines and pool reuse. The same adapter now runs 15 portable HTTP
+contracts against actual key functions/decorators with a controlled terminal view
+and Go middleware, both using private Redis. These verify request keys, ordering,
+HTTP 429 and original body bytes, not credentials or public-login wiring. Its
+fixture-only reset endpoint is absent from production. No cases are skipped.

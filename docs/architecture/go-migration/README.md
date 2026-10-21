@@ -114,7 +114,7 @@ TDD evidence from this worktree:
 | Check | Result and scope |
 | --- | --- |
 | Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
-| Environment subset | 45 declared cases execute actual settings assignments with django-environ, then Go Load: precedence, provider/JWT proxies, raw DB/Redis, multiline/base64, CSRF lists, process isolation and redaction |
+| Environment subset | 55 declared cases execute actual settings assignments with django-environ, then Go Load: precedence, provider/JWT proxies, raw DB/Redis, multiline/base64, CSRF lists, DEBUG/derived rate-enable defaults, process isolation and redaction |
 | Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
@@ -833,7 +833,7 @@ The environment reader now exposes the existing Google/Apple settings and follow
 Django literal file parsing for the whole current configuration subset. DB/Redis
 values retain raw dollar text; provider/JWT references resolve after file/process
 merge, with original defaults and required rules. Raw multiline handling preserves
-standalone escaped carriage returns. Forty-five declarations pass against selected
+standalone escaped carriage returns. Fifty-five declarations pass against selected
 unchanged `core.settings` assignments and Go `Load`; no application settings import
 or database/provider access is used. Secret representations and error messages are
 checked separately. The disposable actual Go server still passes health, dependency
@@ -850,3 +850,12 @@ Expiration races and real Redis I/O deadlines/reuse are verified. Request parsin
 configuration, middleware/HTTP behavior and public wiring remain open. See
 [`login_rate.md`](../../../BE_GO/internal/service/login_rate.md); no ledger status
 is promoted.
+
+Login rate admission now runs before its supplied handler and passes 15 portable
+HTTP contracts per backend over private Redis. The Django adapter uses unchanged
+request-key functions/decorators/403 handling around a controlled terminal view.
+First-forwarded-IP fallback, raw JSON keys, Python representations/casefold,
+IP/account ordering, exact 429, method/disable bypass and unchanged bytes agree.
+The environment adapter adds required DEBUG and derived RATELIMIT_ENABLE defaults.
+Actual public login/global middleware, remaining parser/body/resource extremes and
+exceptional counter formats remain open; see `BE_GO/internal/middleware/login_rate.md`.

@@ -7,10 +7,13 @@ import (
 	"errors"
 	"hash/crc32"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"golang.org/x/text/cases"
 )
 
 var ErrLoginRateLimited = errors.New("login rate limit exceeded")
@@ -22,6 +25,26 @@ type LoginRate struct {
 
 func NewLoginRate(counter domain.LoginRateCounter, now func() time.Time) *LoginRate {
 	return &LoginRate{counter: counter, now: now}
+}
+
+func (s *LoginRate) CheckAccount(ctx context.Context, body any) error {
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return errors.New("login rate account body is not an object")
+	}
+	value, present := object.Lookup("username")
+	if !present {
+		value = ""
+	}
+	text, err := loginValueText(ctx, value)
+	if err != nil {
+		return err
+	}
+	text = cases.Fold().String(strings.TrimFunc(text, func(r rune) bool { return unicode.IsSpace(r) || r >= 0x1c && r <= 0x1f }))
+	if text == "" {
+		text = "missing-username"
+	}
+	return s.Check(ctx, "login-account", text)
 }
 
 // Check consumes one attempt for an already resolved request key. Transport
