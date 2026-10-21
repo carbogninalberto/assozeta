@@ -600,3 +600,13 @@ directory/absolute-offset behavior, DPI and file-size thresholds. Accounts calls
 the actual Django helper; the image rehearsal runs the same oracle. Exact
 header/pixel budgets, overflow, ownership, mid-operation cancellation, concurrent
 pipelines and encoder-stage admission/cancellation/reuse are also checked.
+
+
+`adapters/django/login_tga.py` adds 1,112 declared TGA header/pixel/file cases.
+Raw/RLE sample modes, orientation, inverted 16-bit alpha, short metadata reads,
+palette-induced P/PA and load failures, no-tile lazy admission, RLE row/payload
+boundaries and size thresholds are compared with Pillow and the actual Django
+helper. The shipped image runs the same oracle. Exact stage budgets, overflow,
+ownership, mid-operation cancellation, concurrent pipelines and encoder-stage
+admission/cancellation/reaping/reuse are checked. Use the pinned Python environment
+for standalone execution; full format dispatch and public login remain open.

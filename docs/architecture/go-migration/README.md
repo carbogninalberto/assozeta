@@ -671,3 +671,14 @@ frames. Exact stage budgets, overflow, ownership, mid-header/RLE cancellation,
 32 concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse pass.
 Other formats, shared dispatch/admission and public login wiring remain open;
 ledger statuses and release/activation restrictions are unchanged.
+
+
+The TGA pipeline adds 1,112 declared header/pixel/file cases, compared with Pillow,
+the actual Django helper and the shipped non-root/read-only/networkless image.
+It preserves raw/RLE modes, row/horizontal orientation, inverted 16-bit alpha,
+short ID/palette reads, palette core-mode changes and load failures, no-tile lazy
+admission, repeat-row bounds and full literal-packet validation. Exact stage
+budgets, overflow, input ownership, mid-operation cancellation, 32 concurrent
+pipelines and encoder-stage queue/cancellation/reaping/reuse pass. Other formats,
+shared dispatch/admission and public login wiring remain open; ledger status
+counts and release/activation restrictions are unchanged.
