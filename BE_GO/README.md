@@ -219,3 +219,7 @@ Audit retention now deletes expired logs and their association indexes atomicall
 with fenced completion. Ten real PostgreSQL groups preserve exact 365-day selection
 and handled concurrent-index commit conflicts. Production scheduling/ownership
 remain open. See `internal/service/audit_retention.md`.
+
+Subscription season/date-default calculations now match 293 actual Django range
+cases and 36 persisted model-save cases. This component does not implement the
+complete save/archive workflow. See `internal/service/subscription_dates.md`.

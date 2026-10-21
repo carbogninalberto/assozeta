@@ -1066,3 +1066,11 @@ a definite deferred-FK rollback becomes the legacy handled NULL result, while ot
 commit errors propagate. Exact duration, replay, cancellation, heartbeat and query
 plans are covered; production scheduling/ownership remain open. See
 [the task contract](../../../BE_GO/internal/service/audit_retention.md).
+
+### Subscription date defaults
+
+The calendar/default component preserves UTC boundaries, source civil dates, leap
+year clamping and the current duration-mode behavior. Actual Django utility/model
+evidence covers 329 required cases. The automatic archive task has two reproduced
+failures and remains unimplemented in Go; see
+[the component contract](../../../BE_GO/internal/service/subscription_dates.md).

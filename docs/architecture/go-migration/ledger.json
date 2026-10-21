@@ -1253,25 +1253,45 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_dates.go",
+        "BE_GO/internal/service/subscription_dates.go"
+      ],
+      "dependencies": [
+        "BE/application/utils/api_utils.py",
+        "BE/application/models/user_models.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
+        "request": "Date-default component: parsed creation timestamp, trusted season/duration configuration and nullable existing DATE values. Creation-date string parsing remains separate.",
+        "response": "Calculated nullable start/end dates; existing values preserved. No Go persistence is enabled.",
+        "errors": "Typed calendar error preserves deterministic Django validation text. Month/day/current/previous/following/custom-year validation occurs even when existing dates need no defaults. Cancelled Go context propagates.",
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "resource_scope": "Pure calculation for an explicitly supplied subscription configuration. Caller authorization and relationship loading remain unimplemented workflow requirements.",
+        "side_effects": "Go calculation has no database/provider effects. Actual Django saves update missing dates and emit date-change audit plus direct association index; Go write/audit coordination remains required.",
+        "transaction": "Calculation does not persist. Future Go subscription services must join date defaults, primary writes, audits and other invariant effects in explicit transactions.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE_GO/internal/service/subscription_dates_test.go",
+        "BE_GO/internal/service/subscription_dates_oracle_test.go",
+        "TESTS/adapters/django/subscription_dates.py",
+        "TESTS/adapters/django/accounts.py"
+      ],
+      "evidence": [
+        "Actual production-Python utility matches 293 authored range expectations, including all months, boundary microseconds, source civil year/offset crossings, date/naive inputs, custom ends and year limits. Initial Go tests fail for missing types/functions; all 329 required oracle cases pass after implementation. Evidence: quality-reports/go-migration/subscription-dates/.",
+        "36 real private-schema Subscription.save calls verify exact fields plus date-change audits/direct indexes for duration modes 0/1/2/3/4/5/99, existing dates, leap-year clamp, custom ends, offset and naive creation timestamps. Invalid calendar validation with existing dates changes no managed rows. Modes 4/5 leave missing dates NULL; custom equality may produce end before creation-based start.",
+        "Go unit tests additionally verify cancellation and no pointer aliasing. The Go component computes dates only; actual write/audit and lifecycle parity are not established by these calculations."
+      ],
+      "notes": [
+        "See BE_GO/internal/service/subscription_dates.md. UTC is the current configured timezone. The source civil year is retained for boundary selection; outputs are midnight, not end-of-day.",
+        "Complete save semantics, input string parsing, caller/resource authorization, mutation/audit/transaction orchestration, historical data rehearsal and production wiring remain open. Do not mark this model hook verified from calendar-only evidence."
+      ]
     },
     {
       "id": "model_hook:BE/instance/models.py:InstanceConfiguration.save",
@@ -17501,9 +17521,16 @@
           "name": "'auto_archive_subscription'"
         }
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/utils/api_utils.py",
+        "BE/application/models/user_models.py",
+        "BE/core/celery.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -17517,11 +17544,16 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/subscription_dates.py"
+      ],
+      "evidence": [
+        "Actual task with an enabled owner and old subscriptions returns None after offset-naive/offset-aware comparison error, leaving every managed row unchanged. Replacing only the injected clock with an aware timestamp exposes nonexistent subscription.id before mutation. Both failures are required oracle assertions; evidence: quality-reports/go-migration/subscription-dates/django-oracle.json."
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "The intended subscription/payment/invoice archive workflow remains supported and required. Do not substitute a successful Go no-op for the broken task. Calendar/date-default calculations now exist as a dependency, but this task is not implemented or registered. Additional Subscription.save defaults, Payment.save category/description effects, audit/index events, nullable relationships and failure/transaction behavior require explicit contracts and tests."
       ]
     },
     {
