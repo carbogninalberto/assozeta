@@ -51,7 +51,12 @@ class CORSContracts(unittest.TestCase):
                ('https://[fe80::1%]',set()),
                ('https://allowed.example.test:bad-port',{'all'}),
                ('https://allowed.example.test/%broken',{'allowlist','all'}),
-               ('https://%broken',{'all'})]
+               ('https://%broken',{'all'}),
+               ('https://]host[::1',set()),
+               ('https://prefix[::1]',set()),
+               ('https://[::1]suffix',set()),
+               ('https://user[::1]@host',set()),
+               ('https://[x]@[::1]',{'all'})]
         for origin,policies in cases:
             with self.subTest(origin=origin):
                 status,body,headers=self.request(origin=origin)

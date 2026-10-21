@@ -211,13 +211,15 @@ class RefreshContracts(unittest.TestCase):
         status, body, _ = self.request(b'', {'Content-Type':'text/plain'})
         self.assertEqual((status, body), (400, {'msg':'refresh_token required'}))
 
-    def test_malformed_json_reports_python312_positions(self):
+    def test_malformed_json_reports_production_runtime_positions(self):
         for raw, message in [
             (b'{', 'Expecting property name enclosed in double quotes: line 1 column 2 (char 1)'),
             (b'invalid', 'Expecting value: line 1 column 1 (char 0)'),
             (b'{"a":}', 'Expecting value: line 1 column 6 (char 5)'),
-            (b'[1,]', 'Expecting value: line 1 column 4 (char 3)'),
-            (b'{"a":1,}', 'Expecting property name enclosed in double quotes: line 1 column 8 (char 7)'),
+            (b'[1,]', 'Illegal trailing comma before end of array: line 1 column 3 (char 2)'),
+            (b'{"a":1,}', 'Illegal trailing comma before end of object: line 1 column 7 (char 6)'),
+            (b'[1, \n ]', 'Illegal trailing comma before end of array: line 1 column 3 (char 2)'),
+            (b'{"x":[1,]}', 'Illegal trailing comma before end of array: line 1 column 8 (char 7)'),
             (b'{"a" 1}', "Expecting ':' delimiter: line 1 column 6 (char 5)"),
             (b'1 2', 'Extra data: line 1 column 3 (char 2)'),
             (b'{} {}', 'Extra data: line 1 column 4 (char 3)'),

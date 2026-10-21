@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-// JSONParseDetail diagnoses invalid input using Python 3.12 JSONDecoder's
+// JSONParseDetail diagnoses invalid input using shipped Python 3.13.2 JSONDecoder's
 // grammar/positions. It is not a second value decoder: successful values use the
 // standard Go decoder. Positions count Unicode code points, not UTF-8 bytes.
 func JSONParseDetail(raw []byte) string {
@@ -158,11 +158,16 @@ func (p *jsonDiagnostic) value(depth int) {
 			if p.take('}') {
 				return
 			}
+			comma := p.pos
 			if !p.take(',') {
 				p.fail("Expecting ',' delimiter", p.pos)
 				return
 			}
 			p.space()
+			if p.pos < len(p.raw) && p.raw[p.pos] == '}' {
+				p.fail("Illegal trailing comma before end of object", comma)
+				return
+			}
 		}
 	case '[':
 		p.pos++
@@ -179,11 +184,16 @@ func (p *jsonDiagnostic) value(depth int) {
 			if p.take(']') {
 				return
 			}
+			comma := p.pos
 			if !p.take(',') {
 				p.fail("Expecting ',' delimiter", p.pos)
 				return
 			}
 			p.space()
+			if p.pos < len(p.raw) && p.raw[p.pos] == ']' {
+				p.fail("Illegal trailing comma before end of array", comma)
+				return
+			}
 		}
 	default:
 		for _, literal := range []string{"true", "false", "null"} {

@@ -18,10 +18,12 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 
 def main():
+    from TESTS.adapters.django.production_runtime import require_production_python
+    require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -138,6 +140,15 @@ def main():
                                 'session_auth_cases':session_auth_cases,'session_http_contracts_per_backend':session_http_contracts,'schema':'current Django models; migration history not exercised','customer_data':'none'}
                         print(json.dumps(report),flush=True)
                         return
+                    from TESTS.adapters.django.restore_admission import run as restore_admission
+                    restore_admission_contracts=restore_admission(work,log,tool_env,identity_cache)
+                    if options.only == 'restore-admission':
+                        connections.close_all()
+                        report={'success':True,'scope':'restore HTTP admission with supporting account/identity/session fixtures only',
+                                'restore_admission_contracts_per_backend':restore_admission_contracts,
+                                'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     from django.core.cache import cache
                     assert cache.get(f'impersonation-upload:{uid(12000)}:{uid(1104)}') is None, 'Go upload-grant revocation not visible in Django'
                     from TESTS.adapters.django.refresh_http import run as refresh_http
@@ -248,6 +259,7 @@ def main():
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
+                report['restore_admission_contracts_per_backend']=restore_admission_contracts
                 report['retired_billing_contracts_per_backend']=retired_billing_contracts
                 report['two_factor_info_contracts_per_backend']=two_factor_info_contracts
                 report['identifier_http_contracts_per_backend']=identifier_contracts

@@ -3,7 +3,7 @@
 The composition root registers `DjangoCORS` with Echo `Pre`, before routing and
 per-route session/authentication. It uses the existing `CORS_ORIGIN_ALLOW_ALL`
 (default `DEBUG`) and `CORS_ALLOWED_ORIGINS` settings. No new environment flag or
-credential file is introduced. Configuration comparisons now cover 79 declared
+credential file is introduced. Configuration comparisons now cover 87 declared
 cases, including list/proxy failures, empty values and process precedence.
 
 An OPTIONS request containing `Access-Control-Request-Method`, even an empty or
@@ -21,7 +21,7 @@ access remain disabled, as in current settings. Existing Vary members and `*`
 are preserved. Headers are applied at the writer boundary before the first
 streamed chunk/flush and when Echo handles returned errors.
 
-Origin comparison preserves Python 3.12 `urlsplit` scheme/netloc behavior rather
+Origin comparison preserves shipped Python 3.13.2 `urlsplit` scheme/netloc behavior rather
 than browser-origin normalization. Schemes are lowercased; host case, explicit
 ports and literal percent escapes remain significant. Paths/query/fragments do
 not participate. IPv6/IPvFuture and NFKC delimiter failures deny an origin even
@@ -38,7 +38,7 @@ or invalid request origins, wildcard policy and an explicitly allowed literal
 
 `TESTS/adapters/django/cors.py` runs 51 portable HTTP methods per backend across
 five policies using actual Django ASGI/Uvicorn and a Go HTTP server with controlled
-terminals. Thirty-two separately declared URL cases verify parser behavior.
+terminals. Forty separately declared URL cases verify parser behavior.
 Coverage includes status failures, malformed lists, terminal effect counts,
 Latin-1 reflection, preserved body bytes, streaming and 32 concurrent requests.
 `refresh_http.py`, within the private accounts adapter, adds four portable methods
@@ -60,3 +60,14 @@ invalid-configuration behavior for those producers still needs evidence. Debug
 traceback rendering is not implemented. Production activation remains disabled.
 The current security response headers are composed after CORS and have separate
 evidence in [security_headers.md](security_headers.md).
+
+
+The initial local oracle used Python 3.12.6, which accepted malformed bracketed
+netlocs that the shipped Dockerfile's Python 3.13.2 rejects. CI run 39664404614
+exposed the mismatch on Python 3.12.15. The corrected 40-case oracle also runs
+inside the actual disposable Django image. Go now mirrors bracket validation
+after the last userinfo separator and rejects prefixes/suffixes around bracketed
+hosts. See CPython's [shipped parser](https://github.com/python/cpython/blob/v3.13.2/Lib/urllib/parse.py).
+Application-wide oracles and CI now require the Dockerfile's exact Python version;
+older local interpreters fail clearly instead of silently defining production
+compatibility. Earlier Python 3.12.6 evidence is superseded for these URL cases.

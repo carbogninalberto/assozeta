@@ -228,10 +228,12 @@ is explicitly Django-specific and lives under `adapters/django/`.
 The backend-specific adapter checks actual Django/SimpleJWT/hashers against Go,
 then verifies Go-issued tokens and hashes in Django. It does not import either
 implementation into portable contracts, and it does not prove HTTP login or
-permission parity. Run from the repository root with Go available:
+permission parity. Use Python 3.13.2 (the exact `BE/Dockerfile` version) and run
+from the repository root with Go available:
 
 ```sh
-python3.12 -m venv quality-reports/go-migration/python
+python3.13 -m venv quality-reports/go-migration/python
+quality-reports/go-migration/python/bin/python TESTS/adapters/django/production_runtime.py
 quality-reports/go-migration/python/bin/python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
 quality-reports/go-migration/python/bin/python TESTS/adapters/django/credentials.py
 ```
@@ -744,7 +746,7 @@ either backend runs. Invalid fixture requests fail independently of expected aut
 failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
 versions, limits, remaining inputs and the absence of public/live-provider proof.
 
-`python TESTS/adapters/django/environment.py` declares 79 environment cases and
+`python TESTS/adapters/django/environment.py` declares 87 environment cases and
 executes selected unchanged assignments from `BE/core/settings.py` with actual
 django-environ. It compares Go file/process precedence, provider/JWT proxies,
 raw DB/Redis values, multiline/base64, required SECRET_KEY/DEBUG, derived rate/CORS
@@ -755,7 +757,7 @@ The CI protocol step runs this adapter before credentials. See the scoped contra
 in `BE_GO/internal/config/README.md`; complete environment/release wiring is open.
 
 `python TESTS/adapters/django/cors.py` runs 51 portable HTTP contracts per backend
-across five policies and checks 32 declared Python URL comparison boundaries.
+across five policies and checks 40 declared Python URL comparison boundaries.
 Actual Django ASGI and Go HTTP servers use controlled terminals for preflight,
 Vary, Latin-1 origin reflection, errors, malformed configuration, streaming and
 concurrent requests. The accounts adapter's refresh rehearsal also runs four
@@ -782,3 +784,18 @@ contracts against actual key functions/decorators with a controlled terminal vie
 and Go middleware, both using private Redis. These verify request keys, ordering,
 HTTP 429 and original body bytes, not credentials or public-login wiring. Its
 fixture-only reset endpoint is absent from production. No cases are skipped.
+
+
+`python TESTS/adapters/django/production_runtime.py` verifies that application-wide Django
+oracles use the exact interpreter pinned in `BE/Dockerfile` (currently 3.13.2).
+The full accounts adapter enforces this too. Python 3.12.6 differs in bracketed
+origin validation and JSON trailing-comma diagnostics and must not define the
+production HTTP contract. CI uses the same pinned version.
+
+`accounts.py --only restore-admission` runs 42 portable HTTP methods per backend
+across six real lock/receipt configurations, with model/cache readback. Real
+PostgreSQL tests verify global active-state lookup, query/pool bounds and failure
+release. Cross-process Django/Go flock tests include SIGKILL recovery. The full
+accounts suite includes this rehearsal. These checks establish HTTP exclusion,
+not historical replacement, upload handling, worker/scheduler ownership or Go
+restore execution. See `BE_GO/internal/service/restore_admission.md`.

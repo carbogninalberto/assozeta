@@ -85,7 +85,7 @@ func (w *corsDiscardWriter) Flush()                      {}
 
 type corsOrigin struct{ scheme, netloc string }
 
-// Only the scheme/netloc and ValueError boundary of Python 3.12 urlsplit are
+// Only the scheme/netloc and ValueError boundary of shipped Python 3.13.2 are
 // needed. net/url.Parse is not equivalent: Django accepts invalid ports and
 // literal percent escapes here, without looking up hostname or port properties.
 func splitCORSOrigin(raw string) (corsOrigin, bool) {
@@ -116,7 +116,27 @@ func splitCORSOrigin(raw string) (corsOrigin, bool) {
 		return corsOrigin{}, false
 	}
 	if left >= 0 {
-		host, _, _ := strings.Cut(result.netloc[left+1:], "]")
+		// CPython's bracketed-netloc check uses the hostname after the last
+		// userinfo separator, and rejects text around bracketed hosts. Older
+		// Python 3.12.6 accepted malformed prefixes/suffixes here.
+		hostAndPort := result.netloc
+		if at := strings.LastIndexByte(hostAndPort, '@'); at >= 0 {
+			hostAndPort = hostAndPort[at+1:]
+		}
+		before, bracketed, open := strings.Cut(hostAndPort, "[")
+		var host string
+		if open {
+			if before != "" {
+				return corsOrigin{}, false
+			}
+			var port string
+			host, port, _ = strings.Cut(bracketed, "]")
+			if port != "" && !strings.HasPrefix(port, ":") {
+				return corsOrigin{}, false
+			}
+		} else {
+			host, _, _ = strings.Cut(hostAndPort, ":")
+		}
 		if strings.HasPrefix(host, "v") {
 			version, address, dot := strings.Cut(host[1:], ".")
 			if !dot || version == "" || address == "" {

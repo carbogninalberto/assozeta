@@ -22,7 +22,7 @@ executable using private PostgreSQL, Redis and ephemeral Ed25519 keys. They cove
   ignored anonymous impersonation headers and REST's ignored BKN_AUTH cookie.
 - GET/HEAD/PUT/DELETE denials, OPTIONS metadata, JSON/form/multipart parsing,
   duplicate form values, file-valued credentials, Latin-1 JSON and malformed JSON
-  with Python 3.12 error positions. Default Italian and English method errors are
+  with shipped Python 3.13.2 error positions, including explicit trailing-comma diagnostics. Default Italian and English method errors are
   checked. Parse errors do not override an earlier scoped operation denial.
 - Session reads retain the cookie and cannot change the identity from a refresh
   token. Missing/stale sessions delete `sessionid` while preserving a successful
