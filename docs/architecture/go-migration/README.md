@@ -573,7 +573,16 @@ transforms, tolerated corruption and inherited comments are covered, along with
 native framing, raster budgets, process failures/cancellation and 32 concurrent
 decodes. The native helper passes sanitizer checks with exact failure exit codes.
 
-This is not wired as a complete image processor. Format recognition/lazy headers,
-other decoders and full metadata/mode/truncation policy, whole-pipeline admission
+A lazy JPEG marker reader now passes 1,352 explicit Pillow recognition cases,
+including all 256 marker codes and prefixes across the SOS boundary. It preserves
+recognizable-but-undecodable headers, consumed byte limits, metadata ownership,
+comment/EXIF ordering, MPF offsets and pixel-limit warnings. Three actual Django
+header-only cases return the original URI before loading pixels. Cancellation and
+32 concurrent readers pass, and the image rehearsal includes the marker oracle.
+EXIF DPI parsing and MPO adoption remain deferred; retaining their raw metadata
+is not proof of completed `Image.open` admission.
+
+This is not wired as a complete image processor. Full format recognition,
+EXIF/MPO admission, other decoders and metadata/mode/truncation policy, whole-pipeline admission
 and full response/HTTP composition remain required. See the
 [pixel-core contract](../../../BE_GO/pkg/storage/loginimage/README.md).

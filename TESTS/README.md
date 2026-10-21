@@ -534,6 +534,15 @@ markers, tolerated corruption and comment ordering/size boundaries. Process
 failure, native framing, cancellation, timeout, raster limits and 32 concurrent
 decodes are checked. The image command above now runs this decoder suite too.
 
-This is not complete image parity: lazy header opening, other file decoders,
+`adapters/django/login_jpeg_header.py` adds 1,352 explicit lazy marker-header
+outcomes, including all marker codes and every prefix of one JPEG across the SOS
+boundary. The account suite verifies three real Django passthrough cases with
+recognizable headers but undecodable pixels. Go tests header byte limits,
+cancellation, metadata ownership/ordering/offsets and concurrent readers. The
+image rehearsal includes these header checks as well. This marker phase retains
+EXIF/MPF/Ultra HDR information for later interpretation; it does not certify EXIF
+DPI parsing or MPO adoption.
+
+This is not complete image parity: EXIF/MPO lazy admission, other file decoders,
 whole-processor admission and public login integration remain open. See
 `BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.
