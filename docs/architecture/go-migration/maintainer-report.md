@@ -55,34 +55,36 @@ immutable manual-package boundary delivered by PR #20.
 | Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
 | Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 30 portable refresh methods per backend. Refresh reserializes/signs unchanged claims/JTI/expiry as Django does; rejected credentials issue no cookie. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
 | Account/permission services | Real PostgreSQL/Redis comparisons cover actor admission, identity transitions/revocation, collaborator policy and resource predicates, including 132 scoped-request and 67 resource-scope cases with measured batch/concurrent query bounds. This is not endpoint-wide authorization parity. |
-| Cache-session identity | 43 declared cases and five same-account transitions compare actual Django session/authentication/audit middleware with Go on PostgreSQL/Redis. Current state, backend-specific inactive/deleted actors, password revocation, unchanged cache bytes/TTL and complete-table readback agree. Thirty-two concurrent resolutions use 32 SELECTs/cache reads and pools of four. Response bounds, Redis deadlines/reuse and failures are checked. Cookie/Vary, writes/rotation, audit metadata, configuration and public wiring remain open. |
+| Cache-session identity | 43 declared cases and five same-account transitions compare actual Django session/authentication/audit middleware with Go on PostgreSQL/Redis. Current state, backend-specific inactive/deleted actors, password revocation, unchanged cache bytes/TTL and managed-model readback agree. Thirty-two concurrent resolutions use 32 SELECTs/cache reads and pools of four. Response bounds, Redis deadlines/reuse and failures are checked. HTTP behavior has separate evidence below; writes/rotation, configuration and public wiring remain open. |
+| Session HTTP audit | 23 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy, configuration and public wiring remain open. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
 | Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. The domain LoginImageProcessor and complete format dispatch remain unimplemented; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
-The complete private PostgreSQL/Redis accounts adapter passed with the initial
-37 cache-session cases, including refresh HTTP, identity/scope, image checks and
-all existing login service cases. The final hash-conversion fix then passed the
-focused 43-case session suite and all Go race/vet checks, including tagged vet.
-The focused run is not counted as another complete accounts run. Both use a
+The complete private PostgreSQL/Redis accounts adapter passed with the audit-port
+DTO/repository changes, 43 cache-session cases and the initial 21 ASGI HTTP
+contracts. Existing refresh, identity/scope, image and login audit-write checks
+remain green. Final response-writer/Vary corrections then passed the focused
+43-case/23-contract suite and all Go race/vet checks, including tagged vet. The
+focused run is not counted as another complete accounts run. Both use a
 current-model `migrate --run-syncdb` schema, not historical migrations. Results:
-`session-auth/full-accounts-results.json` and `session-auth/results.json` under the
-local evidence directory.
+`session-http/full-accounts-results.json` and `session-http/focused-results.json`.
 
-Formatting, inventory/drift and current Go checks pass. Red tests caught absent
-session components, shared-container expansion, invalid/sparse memo handling,
-unsafe cache-client options and erroneous deletion on large-integer hash errors.
-A 15-second session-codec fuzz run completed 525,643 executions. Cache-session
-serialization/resource limits and unsupported data remain explicitly documented
-in `BE_GO/internal/service/session_auth.md`; these are not full compatibility claims.
+Formatting and inventory/drift checks pass. Red tests caught the absent middleware,
+int64-only audit port, wrong WSGI decoding profile, duplicate session cookies,
+headers applied after Flush, implicit Content-Type loss and Vary normalization.
+The HTTP oracle now runs on actual ASGI/Uvicorn, matching the shipped entrypoint.
+The terminal is controlled and does not authenticate credentials. Complete
+exception/global middleware policy, session writes/rotation, configuration and
+public registration remain open; see `BE_GO/internal/middleware/session_audit.md`.
 
-Evidence for this increment is under ignored `quality-reports/go-migration/session-auth/`.
-The published `69829c1` Go CI job passed, including shared-account integration,
-sanitizers, health recovery and non-root image checks. Its complete quality/manual
-workflows were still running at this checkpoint. The last fully successful whole
-quality/manual baseline remains `dbf1beb` (runs 39593769742 and 39593769720).
-New-head complete CI evidence remains required; local subsets do not substitute.
+Evidence for this increment is under ignored `quality-reports/go-migration/session-http/`.
+The published `94ed9af` Go CI job passed; its complete quality/manual workflows
+were still running at this checkpoint. Earlier `69829c1` workflows were cancelled
+and are not full-suite successes. The last fully successful whole quality/manual
+baseline remains `dbf1beb` (runs 39593769742 and 39593769720). New-head complete CI
+remains required; local subsets do not substitute.
 
 ## Remaining completion gates
 

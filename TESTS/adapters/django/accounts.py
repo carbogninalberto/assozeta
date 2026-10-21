@@ -130,10 +130,12 @@ def main():
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
                     from TESTS.adapters.django.session_auth import run as session_auth
                     session_auth_cases=session_auth(work,log,tool_env,identity_cache)
+                    from TESTS.adapters.django.session_http import run as session_http
+                    session_http_contracts=session_http(work,log,tool_env,identity_cache)
                     if options.only:
                         connections.close_all()
                         report={'success':True,'scope':'session-auth component with supporting account/identity fixtures only',
-                                'session_auth_cases':session_auth_cases,'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                                'session_auth_cases':session_auth_cases,'session_http_contracts_per_backend':session_http_contracts,'schema':'current Django models; migration history not exercised','customer_data':'none'}
                         print(json.dumps(report),flush=True)
                         return
                     from django.core.cache import cache
@@ -212,6 +214,7 @@ def main():
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
                 report['session_auth_cases']=session_auth_cases
+                report['session_http_contracts_per_backend']=session_http_contracts
             finally:
                 if started:
                     run([binaries / 'pg_ctl', '-D', work / 'postgres', '-m', 'immediate', '-w', 'stop'])

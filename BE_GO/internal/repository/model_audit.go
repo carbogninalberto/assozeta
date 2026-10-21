@@ -29,12 +29,18 @@ func appendModelAudit(ctx context.Context, tx *sqlx.Tx, event modelAuditEntry) e
 		return err
 	}
 	var id int64
+	// Preserve Python's arbitrary-width integer until the database applies the
+	// existing positive-int4 column constraints at the actual audit write.
+	var remotePort any
+	if event.Context.RemotePort != nil {
+		remotePort = string(*event.Context.RemotePort)
+	}
 	err = tx.GetContext(ctx, &id, `INSERT INTO auditlog_logentry
  (content_type_id,object_pk,object_id,object_repr,serialized_data,action,changes_text,changes,
  actor_id,cid,remote_addr,remote_port,timestamp,additional_data,actor_email)
- SELECT id,$1,NULL,$2,NULL,$10,'',$3::jsonb,$4::uuid,$5,$6::inet,$7,$8,NULL,$9
+ SELECT id,$1,NULL,$2,NULL,$10,'',$3::jsonb,$4::uuid,$5,$6::inet,$7::text::integer,$8,NULL,$9
  FROM django_content_type WHERE app_label='application' AND model=$11 RETURNING id`,
-		event.Key, event.Representation, changes, event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, event.Context.RemotePort, event.At, event.Context.ActorEmail, event.Action, event.Model)
+		event.Key, event.Representation, changes, event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, remotePort, event.At, event.Context.ActorEmail, event.Action, event.Model)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errors.New("audit model content type missing")
 	}
