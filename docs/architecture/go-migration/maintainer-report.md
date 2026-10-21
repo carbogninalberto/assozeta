@@ -338,6 +338,24 @@ wired to the medical task: durable intent, uploads/references and restore fencin
 remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
 `TESTS/adapters/django/s3_objects.py`.
 
+Storage environment parsing now passes 65 authored production-Python comparisons
+against the unchanged storage assignments and actual S3Storage defaults/constructor.
+Go Load preserves required/empty values, proxies, process precedence, Spaces
+classification/defaults, ACL nil semantics, literal token/profile lookup and the
+separate lazy-backend validation boundary. No credential file or provider is opened.
+The shared URL-origin parser retains the CORS contract; 51 HTTP contracts per backend,
+40 URL cases, the 87 existing environment cases and live health/dependency recovery
+pass again. See `BE_GO/internal/config/README.md` and
+`TESTS/adapters/django/storage_configuration.py`. Credential discovery/profile-file
+loading, storage composition and destructive cleanup coordination remain open.
+
+The full accounts suite was rerun after storage configuration became required at
+server startup. All real-server adapters now supply the same synthetic storage
+settings as Django. Password/session, image, HTTP/scope/restore and all five task
+body checks pass on production Python 3.13.2. Evidence:
+`quality-reports/go-migration/storage-configuration/full-accounts-results.json`.
+This is current-model regression evidence, not historical-schema or switch parity.
+
 ## Remaining completion gates
 
 Every requirement in the [acceptance matrix](README.md#required-acceptance-matrix)

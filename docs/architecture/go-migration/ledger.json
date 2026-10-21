@@ -17627,7 +17627,8 @@
         "BE_GO/internal/repository/medical_cleanup_candidates.go",
         "BE_GO/pkg/storage/documentkey/medical.go",
         "BE_GO/internal/domain/object_storage.go",
-        "BE_GO/pkg/storage/s3objects/delete.go"
+        "BE_GO/pkg/storage/s3objects/delete.go",
+        "BE_GO/internal/config/storage.go"
       ],
       "dependencies": [
         "BE/application/models/subscriptions_models.py",
@@ -17664,17 +17665,20 @@
         "BE_GO/pkg/storage/documentkey/medical_integration_test.go",
         "BE_GO/pkg/storage/s3objects/delete_test.go",
         "BE_GO/pkg/storage/s3objects/minio_integration_test.go",
-        "TESTS/adapters/django/s3_objects.py"
+        "TESTS/adapters/django/s3_objects.py",
+        "TESTS/adapters/django/storage_configuration.py",
+        "BE_GO/internal/config/storage_integration_test.go"
       ],
       "evidence": [
         "Production-Python private PostgreSQL/filesystem oracle: fourteen authored cases establish ordinary/historical scope, dangling draft and active upload grant, shared/foreign PDF/attachment/archive loss, NULL document, missing/alternate files, storage error and irreversible file loss before rolled-back SQL. Ordinary deletion creates two medical audits plus one document audit; no new indexes.",
         "Six required Go/PostgreSQL race groups pass with all fifteen actual Document FK/M2M relationships represented and 19 protected document cases. Exact nullable/zero/Unicode metadata, zero UUID cursor, new attachment transaction visibility, one statement for up to 512 results, 32 concurrent reads in four connections and actual blocked-query cancellation/recovery pass. A 4,096-document/2,048-draft executed plan uses indexed document/FK reads and a per-page normalized protection scan. Managed snapshots include M2M and files remain unchanged. Evidence: quality-reports/go-migration/medical-orphan-cleanup/.",
         "5,045 production Python/django-storages S3 key cases pass under Go race detection, including exact timestamp rounding across years 1..9999, path normalization and explicit rejection of legacy cross-document traversal. No provider I/O or destructive task execution. See BE_GO/pkg/storage/documentkey/README.md and quality-reports/go-migration/document-keys/.",
-        "Real digest-pinned self-host MinIO: seven required Go race groups and four actual Django storage cases pass. One signed request per batch of 1/16/128/512/1000, missing/replayed objects, exact versions and delete markers, compliance-retention partial failure, invalid credentials and missing bucket are checked with independent Boto3 byte/version readback. Wire tests cover malformed/oversized/incomplete responses, no retries/redirects, queued/running deadlines/cancellation and fixed errors. See BE_GO/pkg/storage/s3objects/README.md and quality-reports/go-migration/s3-objects/."
+        "Real digest-pinned self-host MinIO: seven required Go race groups and four actual Django storage cases pass. One signed request per batch of 1/16/128/512/1000, missing/replayed objects, exact versions and delete markers, compliance-retention partial failure, invalid credentials and missing bucket are checked with independent Boto3 byte/version readback. Wire tests cover malformed/oversized/incomplete responses, no retries/redirects, queued/running deadlines/cancellation and fixed errors. See BE_GO/pkg/storage/s3objects/README.md and quality-reports/go-migration/s3-objects/.",
+        "65 authored storage configuration cases pass against unchanged core.settings declarations and actual S3Storage defaults/constructor on production Python 3.13.2, then Go Load under race detection. Required/empty values, proxies, precedence, Spaces defaults, literal token/profile options, backend validation and redaction are checked. No profile file or provider is opened. See BE_GO/internal/config/README.md and quality-reports/go-migration/storage-configuration/."
       ],
       "notes": [
         "See BE_GO/internal/repository/medical_cleanup_candidates.md and BE_GO/pkg/storage/s3objects/README.md. Candidate discovery, key resolution and provider batch deletion are implemented dependencies; the destructive cleanup task remains needs_review with no Go body or production registration.",
-        "Protect active uploads and every attachment path before destructive execution, including coexistence. Do not substitute an age cutoff. Implement durable file intent, once-only audit correction, recovery from unknown provider outcomes and versioned delete-marker replay, restore fencing and scheduler ownership. Environment/credential composition and live AWS/DigitalOcean evidence remain open.",
+        "Protect active uploads and every attachment path before destructive execution, including coexistence. Do not substitute an age cutoff. Implement durable file intent, once-only audit correction, recovery from unknown provider outcomes and versioned delete-marker replay, restore fencing and scheduler ownership. Credential/provider composition and live AWS/DigitalOcean evidence remain open.",
         "Static daily 03:00 declaration differs from empty initialized/persisted occurrences in the private fixture. Actual policy: UTC, acks_late false, max_retries 3, delay 180, no rate/time/soft-time limit. This is not production schedule or S3 proof."
       ]
     },
