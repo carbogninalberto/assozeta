@@ -89,11 +89,14 @@ jobs:
         run: |
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python TESTS/adapters/django/credentials.py
+          python TESTS/adapters/django/permissions.py
       - name: Install disposable integration dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Read Django-created accounts from Go
+        run: python TESTS/adapters/django/accounts.py
       - name: Rehearse health and dependency failure recovery
         run: python3 TESTS/adapters/go/health.py
       - name: Build isolated Go image and verify non-root execution
@@ -107,6 +110,8 @@ jobs:
           path: |
             quality-reports/go-migration/go-health/
             quality-reports/go-migration/credentials.json
+            quality-reports/go-migration/permissions.json
+            quality-reports/go-migration/accounts/
 
   quality:
     name: Run affected quality checks
