@@ -66,6 +66,11 @@ accepts a Go refresh credential over HTTP; all managed model tables remain
 unchanged. Global middleware, transport edge cases, proxy/routing and deployment
 evidence are still incomplete, so the ledger row remains implementing.
 
+Password credential selection now passes 21 explicit actual-Django-view versus Go
+service cases. Compatible rehashes are written transactionally and read back by
+Django, including ambiguous and inactive outcomes. This is not an authenticated
+session: OTP, username/audit and subsequent login effects remain open.
+
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,

@@ -122,8 +122,10 @@ def main():
                     assert cache.get(f'impersonation-upload:{uid(12000)}:{uid(1104)}') is None, 'Go upload-grant revocation not visible in Django'
                     from TESTS.adapters.django.refresh_http import run as refresh_http
                     refresh_contracts = refresh_http(work, log, tool_env, identity_cache)
+                    from TESTS.adapters.django.password_login import run as password_login
+                    password_cases = password_login(work, log, tool_env)
                 connections.close_all()
-                report = {'success': True, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'password_selection_cases': password_cases, 'password_batch_sizes': [1,16,128,129,257], 'concurrent_password_requests': 16, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
