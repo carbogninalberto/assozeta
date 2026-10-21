@@ -130,6 +130,8 @@ def main():
                     profile_cases = login_profile(work, log, tool_env)
                     from TESTS.adapters.django.association_profile import run as association_profile
                     association_profile_cases = association_profile(work, log, tool_env)
+                    from TESTS.adapters.django.membership_card_configuration import run as card_configuration
+                    card_configuration_cases = card_configuration(work, log, tool_env)
                     from TESTS.adapters.django.password_login import run as password_login
                     password_cases = password_login(work, log, tool_env)
                     from TESTS.adapters.django.second_factor import run as second_factor
@@ -137,7 +139,7 @@ def main():
                     from TESTS.adapters.django.login_preparation import run as login_preparation
                     admission_cases = login_preparation(work, log, tool_env)
                 connections.close_all()
-                report = {'success': True, 'association_profile_cases': association_profile_cases, 'login_profile_cases': profile_cases, 'password_admission_cases': admission_cases, 'second_factor_cases': second_factor_cases, 'password_selection_cases': password_cases, 'password_batch_sizes': [1,16,128,129,257], 'concurrent_password_requests': 16, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'membership_card_configuration_cases': card_configuration_cases, 'association_profile_cases': association_profile_cases, 'login_profile_cases': profile_cases, 'password_admission_cases': admission_cases, 'second_factor_cases': second_factor_cases, 'password_selection_cases': password_cases, 'password_batch_sizes': [1,16,128,129,257], 'concurrent_password_requests': 16, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',

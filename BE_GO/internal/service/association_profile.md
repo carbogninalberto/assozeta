@@ -47,5 +47,5 @@ the declared deletion/restoration test transition.
 
 These are backend-specific response-component contracts. Full login composition,
 collaborator/instructor augmentation, image processing, registration settings,
-membership-card configuration creation/audit, final user writes and portable HTTP
+membership-card configuration composition, final user writes and portable HTTP
 login contracts remain required. The login ledger row stays implementing.

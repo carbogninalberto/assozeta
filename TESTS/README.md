@@ -434,4 +434,27 @@ association; 32 concurrent 512-group reads use 64 SELECTs. A deletion/restoratio
 transition revokes and restores visibility. Required group-query permission errors
 return no partial profile and release the transaction, as characterized in Django.
 Every managed table must match after restoration. Full login augmentation,
-configuration creation, final writes and portable HTTP contracts remain open.
+configuration-stage composition, final writes and portable HTTP contracts remain open.
+
+
+### Login membership-card configuration
+
+The account adapter also runs `adapters/django/membership_card_configuration.py`:
+20 cases through the actual Django login-response builder/audit middleware and
+Go's `cardconfigurationintegration` service. Checks cover defaults, existing and
+duplicate rows, JSON/SQL nulls and scalar values, collaborator owner selection,
+role exclusions and exact audit/index metadata. Django reads the Go-written rows;
+all managed tables and SQL-NULL distinctions match after declared fixture resets.
+
+Existing rows require two business statements, creation five; 32 concurrent Go
+calls require 67 and create one configuration/audit/index. Real permission and
+foreign-key failures, injected failures, cancellation and a forced PostgreSQL
+deadlock exercise rollback and retry. The test observes the external database
+lock wait before releasing the deferred audit-actor check.
+
+Django's own synchronized missing lookups produce two configurations. Its denied
+audit INSERT retains the configuration; denied index INSERT retains configuration
+and audit and is swallowed. Go's required atomic invariant instead rolls back all
+writes. These are explicit differences, not passing failure-side-effect parity.
+Cross-runtime concurrent creation, full login composition and HTTP contracts
+remain open; see `BE_GO/internal/service/membership_card_configuration.md`.

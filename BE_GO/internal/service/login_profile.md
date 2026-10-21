@@ -58,6 +58,6 @@ after the aborted transaction. Required base-profile reads still propagate error
 The consistent read transaction prevents mixing concurrent snapshots.
 
 Association augmentation, Pillow-compatible image processing, instructor lookup,
-registration features, membership-card configuration creation/audit, top-level
+registration features, composition with the membership-card configuration stage, top-level
 role/tables settings, token issuance composition, final last-login/deletion
 writes, public transport, social providers and rate limiting remain required.
