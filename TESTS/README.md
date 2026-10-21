@@ -839,3 +839,9 @@ required Go/PostgreSQL groups, including exact audit/index readback, confirmed l
 atomicity defects, stale attempts, concurrent updates, cancellation and heartbeat.
 The full accounts adapter includes it. Evidence covers current-schema task behavior;
 production publication/scheduling and historical migration proof remain separate.
+
+`accounts.py --only audit-retention` verifies exact 365-day retention, dependent
+index deletion and concurrent index writers against actual Django and ten required
+Go/PostgreSQL groups. `--only task-bodies` runs all four current task fixtures in
+one private schema (7 reset, 10 token, 8 age and 10 retention groups). These checks
+cover task bodies, not production scheduling/activation or historical migrations.

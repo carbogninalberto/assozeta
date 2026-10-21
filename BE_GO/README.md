@@ -214,3 +214,8 @@ Associate age updates now preserve the existing 6,575-day threshold, soft-deleti
 scope and audit/index behavior through one atomic fenced transaction. Eight real
 PostgreSQL groups pass, including failures and heartbeat. Production scheduling
 and ownership remain open. See `internal/service/associate_age_update.md`.
+
+Audit retention now deletes expired logs and their association indexes atomically
+with fenced completion. Ten real PostgreSQL groups preserve exact 365-day selection
+and handled concurrent-index commit conflicts. Production scheduling/ownership
+remain open. See `internal/service/audit_retention.md`.

@@ -17928,27 +17928,47 @@
           "name": "'delete_old_audit_logs'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/audit_retention.go",
+        "BE_GO/internal/repository/audit_retention.go",
+        "BE_GO/internal/service/audit_retention.go",
+        "BE_GO/internal/service/job_executor.go"
+      ],
+      "dependencies": [
+        "BE/application/models/audit_models.py",
+        "BE/application/signals.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/repository/jobs.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; exact Go kind/version 1, empty object, trusted nil association scope and running fenced job.",
+        "response": "Django None; completed Go job with SQL NULL result.",
+        "errors": "Legacy catches collector/commit errors. Go rolls back delete failures and handles definite PostgreSQL 23503 commit rollback from concurrent index insertion, recording NULL completion in a fresh transaction. Cancellation, rollback/completion failure, unknown or other commit failures propagate; fixed diagnostic codes only.",
+        "authentication": "Internal instance-wide task without an HTTP actor.",
+        "permissions": "No public publisher; invalid association scope or retention arguments reject before SQL.",
+        "resource_scope": "All auditlog LogEntry rows strictly older than execution UTC instant minus exactly 365 days, across content types/actors/deleted associations and including unindexed logs. Equality is retained. Index age does not affect parent-based retention.",
+        "side_effects": "Hard-delete qualifying audit logs and their dependent AuditLogIndex rows; aggregate deleted count includes both. No new audits, provider calls or child jobs. Retained audit/index records and other models are unchanged.",
+        "transaction": "One READ COMMITTED transaction joins a single DELETE RETURNING/dependent-index DELETE command and fenced completion. Existing deferred FK is retained. Concurrent child insertion may reject commit: definite FK rollback is handled as Django None, without orphaning records or reopening a completed occurrence. New occurrence can subsequently finish retention.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/audit_retention.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/audit_retention_integration_test.go"
+      ],
+      "evidence": [
+        "Actual Django oracle covers exact 365-day leap-year cutoff, equality/microseconds, indexed/unindexed logs, deleted association and index-age scope, replay and both collector failure stages. Missing Go scenarios and undefined service initially fail; ten mandatory PostgreSQL groups pass under race detection. Exact complete managed-table readback/cleanup is asserted. Evidence: quality-reports/go-migration/audit-retention/.",
+        "Real concurrent index writers force deferred FK commit failures in both runtimes. Django returns None. A Go expected-None regression fails first, then passes after classifying definite SQLSTATE 23503 rollback and completing NULL in a fresh transaction. No log/index is lost, completed replay rejects and a new occurrence succeeds. A separate SQLSTATE 23514 commit error is propagated with full rollback/pool recovery.",
+        "Stale ownership, replay preserving later records, two observed overlapping SQL commands, blocked cancellation/pool recovery and actual executor heartbeat pass. Django query counts 5/5/6 at 1/16/128 indexed logs; Go four at 0/1/16/128/512 excluding executor overhead. Actual executed plan over 4096 logs/indexes deletes 128 each and scans both tables. No index/latency improvement claim."
+      ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "Concrete task body is not registered/published by production Go processes. Celery policy: acks_late=false, max_retries=3, default_retry_delay=180, no rate or hard/soft timeout; no body retry. Go production timeout/attempt policy and occurrence identity remain open.",
+        "Static midnight schedule is absent from initialized app configuration and persisted Beat rows in the fresh fixture. Historical schedule reconciliation and single scheduling ownership remain required.",
+        "See BE_GO/internal/service/audit_retention.md. Current-model fixtures do not prove historical schema/import/rollback, realistic scale/contention, complete mixed-runtime lifecycle, restore/backend switching or normal release delivery. Django retains ownership."
       ]
     },
     {

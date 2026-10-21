@@ -145,6 +145,8 @@ jobs:
             quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/subscription-token-cleanup/
             quality-reports/go-migration/associate-age-update/
+            quality-reports/go-migration/audit-retention/
+            quality-reports/go-migration/task-bodies/
             quality-reports/go-migration/accounts/
 
   quality:

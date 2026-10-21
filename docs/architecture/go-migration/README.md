@@ -1057,3 +1057,12 @@ behavior, with audit/index creation and fenced completion in one transaction. Ei
 required PostgreSQL groups cover exact readback, deliberate atomicity corrections,
 failures, concurrency and heartbeat. Production registration/scheduling remain open;
 see [the task contract](../../../BE_GO/internal/service/associate_age_update.md).
+
+### Audit retention
+
+The concrete service deletes expired logs and association indexes with atomic fenced
+completion. Ten PostgreSQL groups include an actual Django/Go concurrent-index race:
+a definite deferred-FK rollback becomes the legacy handled NULL result, while other
+commit errors propagate. Exact duration, replay, cancellation, heartbeat and query
+plans are covered; production scheduling/ownership remain open. See
+[the task contract](../../../BE_GO/internal/service/audit_retention.md).
