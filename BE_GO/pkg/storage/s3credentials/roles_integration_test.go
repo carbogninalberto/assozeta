@@ -29,7 +29,7 @@ func TestDjangoAssumeRole(t *testing.T) {
 			Fail    bool
 		}
 	}
-	if json.Unmarshal(raw, &cases) != nil || len(cases) != 62 {
+	if json.Unmarshal(raw, &cases) != nil || len(cases) != 82 {
 		t.Fatal("missing role cases", len(cases))
 	}
 	for _, tc := range cases {

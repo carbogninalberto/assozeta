@@ -14,8 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/endpointcreds"
 	"github.com/aws/aws-sdk-go-v2/credentials/processcreds"
-	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/smithy-go/logging"
+	"github.com/aws/smithy-go/middleware"
 )
 
 var (
@@ -93,6 +93,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	}
 	client = boundedHTTP{client}
 	options := []func(*sdkconfig.LoadOptions) error{
+		sdkconfig.WithAPIOptions([]func(*middleware.Stack) error{preserveMetadataPath}),
 		sdkconfig.WithSharedConfigFiles([]string{configFile}), sdkconfig.WithSharedCredentialsFiles([]string{credentialsFile}),
 		sdkconfig.WithHTTPClient(client), sdkconfig.WithLogger(logging.Nop{}),
 		// Preserve actual expiry in returned credentials; SDK endpoint defaults
@@ -105,13 +106,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 		}),
 		sdkconfig.WithProcessCredentialOptions(func(p *processcreds.Options) { p.Timeout = 10 * time.Second }),
 	}
-	if o.MFAToken != nil {
-		// Defer MFA to the context-aware role client below. Unsupported provider
-		// chains must fail closed if they reach this SDK fallback callback.
-		options = append(options, sdkconfig.WithAssumeRoleCredentialOptions(func(p *stscreds.AssumeRoleOptions) {
-			p.TokenProvider = func() (string, error) { return "", ErrCredentials }
-		}))
-	}
+
 	profile := o.Profile
 	if profile == "" {
 		// Boto3 gives AWS_DEFAULT_PROFILE precedence, including explicit emptiness.
@@ -146,7 +141,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 			options = append(options, sdkconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(access, secret, token)))
 		}
 	}
-	cfg, err := sdkconfig.LoadDefaultConfig(ctx, options...)
+	cfg, roleSource, err := loadProviders(ctx, options)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
@@ -156,7 +151,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	if cfg.Credentials == nil {
 		return nil, ErrConfiguration
 	}
-	cfg, err = adaptProviders(ctx, cfg, options, profiles, o.MFAToken, 0)
+	cfg, err = adaptProviders(ctx, cfg, options, profiles, roleSource, o.MFAToken, 0)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()

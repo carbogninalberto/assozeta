@@ -70,7 +70,7 @@ The initial undefined constructor, lenient INI behavior, expired process output,
 unbounded endpoint HTTP, oversized output and short-lived-expiry failures were
 observed before the corresponding corrections.
 
-`TESTS/adapters/django/storage_roles.py` now adds 62 authored production-Python
+`TESTS/adapters/django/storage_roles.py` now adds 82 authored production-Python
 comparisons against real S3Storage/Boto3 and a private STS HTTP endpoint. The
 endpoint independently verifies the complete SigV4 signature, signing identity,
 security token, exact request fields and request count for both runtimes. Omitted
@@ -96,7 +96,7 @@ context. It is invoked at most once per role/provider, including failed callback
 invalid parameters, provider denial and expired responses. This matches Boto3's
 MFA refresher: a subsequent refresh requires constructing a new provider.
 
-Eighteen of the 62 cases verify MFA codes/device serials, literal and Unicode
+Eighteen of the initial 62 cases verify MFA codes/device serials, literal and Unicode
 values, minimum-length validation after the callback, nested callback order,
 environment sources, failure replay and actual expiration followed by refusal to
 reprompt. The private endpoint checks signed MFA request fields. Go race tests
@@ -109,10 +109,29 @@ Evidence for this extension is under `quality-reports/go-migration/storage-mfa/`
 Production interactive credential acquisition and early-refresh parity remain
 unimplemented; these tests do not establish live AWS policy acceptance.
 
-This role adaptation covers `source_profile` chains and `credential_source =
-Environment`. Other provider chains still need their own differential proof.
-Remaining gates include web identity, SSO, metadata/ECS source roles, legacy
-Boto credential files, provider refresh/error semantics, full INI compatibility
-(including quoted source-profile references and conflicting aliases), live cloud
-evidence and composition with all `.env`-only fallback-chain settings. Production destructive cleanup still needs
+The role adapter now also preserves the SDK-selected ECS/IMDS source provider
+through the public AssumeRole option hook. Each config load captures its own
+outer role's signing source; nested process/profile adaptation still applies.
+Source credentials are checked before STS signing. Twenty additional Boto3 cases
+exercise container authorization and token-file precedence, IMDSv2 token exchange,
+allowed/disabled IMDSv1 fallback, disabled metadata, bad token requests, empty role
+lists, missing access keys, STS denial, MFA and nested roles. Requests and source
+identities are checked at the real local HTTP boundary.
+
+IMDS middleware restores the configured endpoint's path prefix after the SDK's
+serializer replaces it. Plain, escaped and repeated-slash prefixes and profile
+versus environment endpoint precedence are verified. Other provider operations
+retain their SDK serializers. The fixture explicitly distinguishes valid token
+lifetimes: Boto3 requests 21,600 seconds and the SDK requests 300; no equal token
+refresh cadence is claimed. Two race groups verify 64 callers perform one source
+fetch and one STS call: two total HTTP requests for ECS, four for IMDSv2. The
+44-case selection oracle and seven real MinIO groups pass again. Evidence lives
+under `quality-reports/go-migration/storage-metadata/`.
+
+This covers the tested `source_profile`, Environment, EcsContainer and
+Ec2InstanceMetadata role paths. Remaining gates include direct/default-chain
+metadata parity, complete token-file/refresh/error semantics, web identity, SSO,
+legacy Boto credential files, full INI compatibility (including quoted source
+references/conflicting aliases), live cloud evidence and production composition
+with all `.env`-only fallback-chain settings. Production destructive cleanup still needs
 durable intent, reference/upload exclusion, restore fencing and scheduler ownership.
