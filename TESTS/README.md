@@ -833,3 +833,9 @@ audits, a confirmed legacy duplicate-audit race, stale ownership, cancellation,
 actual heartbeat and a 4,096-token query plan. It rejects skipped/missing groups.
 The full accounts rehearsal includes the fixture; this is task-body evidence,
 not production rate/scheduler or historical migration proof.
+
+`accounts.py --only associate-age-update` runs the actual Django age task and eight
+required Go/PostgreSQL groups, including exact audit/index readback, confirmed legacy
+atomicity defects, stale attempts, concurrent updates, cancellation and heartbeat.
+The full accounts adapter includes it. Evidence covers current-schema task behavior;
+production publication/scheduling and historical migration proof remain separate.

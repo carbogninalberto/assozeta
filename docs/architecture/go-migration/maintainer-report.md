@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 10 implementing,
-5 requiring renewed review and 495 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 11 implementing,
+5 requiring renewed review and 494 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -194,12 +194,24 @@ new task fixture included. Later focused runs additionally verify forced collect
 and SQL overlap; the production service/repository is identical across these runs.
 Go race/vet, tagged integration vet, inventory drift and workflow lint pass.
 
-Published `59ecdfa` quality run 39674013825 is still in progress at this checkpoint;
-its Go job passed, including account/job integration, native decoder checks and the
-non-root image build. The backend regression job has not yet finished.
-Manual dispatch 39674019168 targets that exact head in a concurrency group separate
-from PR pushes, with content editing disabled, and is also still running. Neither
-is counted as successful evidence before its terminal result.
+Associate age updates now have a concrete service with eight required PostgreSQL
+scenario groups and exact Django audit/index readback. It preserves the existing
+6,575-day adulthood threshold and ordinary background scope. Actual Django failures
+confirm false pre-save audits after a failed UPDATE and missing indexes after a
+swallowed index INSERT error; the Go transaction deliberately rolls back the entire
+invariant. Failure, replay, overlapping execution, cancellation, heartbeat and a
+4,096-row executed plan pass. The task remains `implementing`; see
+`BE_GO/internal/service/associate_age_update.md` for ownership/policy gaps.
+Go race/vet and tagged vet pass. The full accounts run has passed the new task
+fixture and is still checking unchanged image/auth components at this checkpoint;
+its whole-run result is not yet counted as successful.
+
+Published `59ecdfa` whole quality run 39674013825 passed. Manual dispatch
+39674019168 targets that exact head in a concurrency group separate from PR pushes,
+with content editing disabled, and remains running at this checkpoint. The PR-linked
+manual run 39674013814 was cancelled. Current
+published token-cleanup head `446c184` has quality run 39677139217 and manual run
+39677139163 pending. Prior-head success is not evidence for this new increment.
 
 ## Remaining completion gates
 

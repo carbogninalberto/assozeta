@@ -18714,27 +18714,51 @@
           "name": "'update_age_of_associates'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/associate_age_update.go",
+        "BE_GO/internal/repository/associate_age_update.go",
+        "BE_GO/internal/service/associate_age_update.go",
+        "BE_GO/internal/service/job_executor.go"
+      ],
+      "dependencies": [
+        "BE/application/models/user_models.py",
+        "BE/application/mixin.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE/application/models/audit_models.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE_GO/internal/repository/jobs.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; Go version 1 empty object with trusted nil association scope and a running fenced job.",
+        "response": "Django None; Go completed job with SQL NULL result.",
+        "errors": "Legacy catches save errors and returns None. Go rolls back update/audit/index effects before recording handled NULL completion in a fresh transaction. Cancellation, rollback failure, stale ownership and failed completion propagate; diagnostics use fixed codes.",
+        "authentication": "Internal instance-wide task, no HTTP actor.",
+        "permissions": "No public publisher. Invalid envelope/supplied date/association scope rejects before SQL.",
+        "resource_scope": "Non-deleted Associate rows with is_minor=true and born_date at least 6575 days before execution date UTC. This exactly preserves truncated elapsed days / 365.25 >= 18. NULL/future dates remain; disabled/draft records, all groups, deleted and NULL associations are included.",
+        "side_effects": "Only is_minor changes to false. Each actual update creates exact auditlog UPDATE changes and background metadata; each non-NULL association gets a direct AuditLogIndex, including deleted associations. No notifications, providers or child jobs.",
+        "transaction": "One READ COMMITTED transaction joins a single UPDATE RETURNING/audit/index command and fenced completion. Deliberate atomicity correction: Django pre-save audits can survive failed UPDATE, and its signal swallows index INSERT failure; Go rolls back all effects. Completed attempt replay cannot overwrite a later flag correction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/associate_age_update.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/associate_age_update_integration_test.go"
+      ],
+      "evidence": [
+        "Actual production-Python Django oracle establishes 6574/6575-day threshold, null/future dates, soft deletion, disabled/draft/group/association scope, zero UUID, exact audit/index fields/timestamps, unrelated audit/index preservation and complete managed-row readback. Adapter initially rejects missing Go scenarios, then compilation fails for missing service; eight required PostgreSQL groups pass after implementation. Evidence: quality-reports/go-migration/associate-age-update/.",
+        "Actual Django trigger failures confirm false audit/index after failed UPDATE and missing index after swallowed index INSERT failure. Go independently injects UPDATE, audit INSERT and index INSERT failures; all business effects roll back and handled completion is NULL. Stale completion/replay, observed overlapping commands, blocked SQL cancellation/pool recovery and actual executor heartbeat pass.",
+        "Django uses 9/114/898 statements at 1/16/128 eligible rows; Go uses four at 0/1/16/128/512 excluding executor overhead. Executed actual-SQL plan over 4096 rows updates/audits/indexes 128 and uses the existing birth-date bitmap and content-type unique indexes. No latency or constant database-work claim."
+      ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "Concrete body is not registered/published by production Go processes. Captured Celery policy: acks_late=false, max_retries=3, default_retry_delay=180, no rate limit or hard/soft timeout; no explicit retry in body. Go production attempt/timeout policy remains open.",
+        "Static midnight schedule is absent from both initialized app configuration and persisted Beat rows in the fresh fixture. Historical schedule ownership/reconciliation remains required. No Go scheduler activation.",
+        "See BE_GO/internal/service/associate_age_update.md. Current-model fixtures do not prove historical migrations/imports, mixed-runtime races, realistic contention, restore/switching or ordinary release delivery. Django retains ownership.",
+        "Django reads date.today per candidate; Go fixes the UTC date at invocation for the atomic command. Long-running work crossing midnight needs an explicit lifecycle contract before verification."
       ]
     },
     {
