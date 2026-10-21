@@ -86,10 +86,10 @@ python3 -m TESTS.inventory.catalog --check  # fail on drift
 python TESTS/adapters/django/inventory.py
 ```
 
-Two retired tasks are explicitly classified. Both health routes and the two
-login/refresh routes and the partial audit-index connection are `implementing`, not
-`verified`; 507 other rows still need
-characterization. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
+Two retired tasks are explicitly classified. Both health routes, login/refresh,
+the two identifier checks and the partial audit-index connection are `implementing`,
+not `verified`; 500 other rows remain uncharacterized and five changed manual/export
+rows need review against the new baseline. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
 
@@ -903,3 +903,17 @@ tables remain unchanged. `accounts.py --only refresh` is a focused rehearsal wit
 supporting account/identity/session fixtures, not the complete accounts run.
 Public login, other route composition and global middleware/activation gates stay
 open; see [`refresh.md`](../../../BE_GO/internal/handler/refresh.md).
+
+
+Public email/username availability now has 16 portable contracts per backend on
+actual Django ASGI and the compiled Go executable, after failing against the
+unregistered Go routes. Existing inactive/deleted, duplicate UUID ordering,
+get_user presence/fallback/disclosure, Unicode limits, method/negotiation/error,
+Bearer/scope/session and concurrent behavior are preserved. Managed-table and
+malformed-session readback remains unchanged. PostgreSQL tests measure one or
+two queries across up to 512 duplicate matches, inspect actual plans and run
+32 concurrent calls with four test connections. Plans show sequential scans;
+there is no claimed scan-complexity or latency improvement. The focused
+`accounts.py --only identifiers` rehearsal includes supporting identity/session/
+refresh fixtures and uses current-model run-syncdb only. Both ledger rows remain
+implementing. See [identifier availability](../../../BE_GO/internal/handler/identifier_availability.md).

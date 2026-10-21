@@ -1,7 +1,8 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. It currently exposes monitoring
-and token refresh, with credential, identity and resource-read components. Login
+and token refresh plus public email/username availability, with credential,
+identity and resource-read components. Login
 and business workflows remain incomplete. It cannot serve the frontend or
 replace Django. See the [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
 and the [full requirements](../docs/architecture/go-migration/requirements.md).
@@ -141,3 +142,9 @@ session deletion, malformed-session precedence and 32 concurrent requests.
 Session identity remains distinct from the Bearer actor and refreshed token
 identity. See `internal/handler/refresh.md`; broader middleware, login and backend
 activation remain unfinished.
+
+Public email and username availability are also registered with the same session
+and actor/scope admission. Their 16 portable contracts run on real Django ASGI
+and the Go executable; PostgreSQL tests cover query counts, plans and bounded-pool
+concurrency. See [the endpoint contract](internal/handler/identifier_availability.md)
+for disclosure rules, duplicate ordering, evidence and remaining limits.

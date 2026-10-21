@@ -19,9 +19,9 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['session-auth','refresh'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['session-auth','refresh','identifiers'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -150,6 +150,15 @@ def main():
                                 'schema':'current Django models; migration history not exercised','customer_data':'none'}
                         print(json.dumps(report),flush=True)
                         return
+                    from TESTS.adapters.django.identifier_availability import run as identifier_availability
+                    identifier_contracts=identifier_availability(work,log,tool_env,identity_cache)
+                    if options.only == 'identifiers':
+                        connections.close_all()
+                        report={'success':True,'scope':'public identifiers with supporting account/identity/session/refresh fixtures only',
+                                'identifier_http_contracts_per_backend':identifier_contracts,'refresh_http_contracts_per_backend':refresh_contracts,
+                                'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     from TESTS.adapters.django.login_transport import run as login_transport
                     login_transport_contracts = login_transport(work, log, tool_env)
                     from TESTS.adapters.django.social_login import run as social_login
@@ -221,6 +230,7 @@ def main():
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
+                report['identifier_http_contracts_per_backend']=identifier_contracts
                 report['session_auth_cases']=session_auth_cases
                 report['session_http_contracts_per_backend']=session_http_contracts
             finally:
