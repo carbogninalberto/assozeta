@@ -102,18 +102,22 @@ def main():
                 print(f'Django: {actor_cases} explicit actor authentication cases passed', flush=True)
                 from TESTS.adapters.django.identity import identity_fixture
                 with identity_fixture(work, log) as (identity_cases_file, identity_cache, identity_cases):
+                    from TESTS.adapters.django.scoped_resources import prepare as prepare_scoped_resources
+                    scoped_fixture, scoped_cases, scoped_models = prepare_scoped_resources(work)
                     def snapshot():
-                        return {name: list(manager.order_by('pk').values()) for name, manager in (
+                        result = {name: list(manager.order_by('pk').values()) for name, manager in (
                             ('users', User.original_objects), ('associations', SportAssociation.original_objects),
                             ('members', Associate.objects.all_objects()), ('instance', InstanceConfiguration.objects),
                             ('audit', LogEntry.objects))}
+                        result.update({model._meta.label: list(model._base_manager.order_by('pk').values()) for model in scoped_models})
+                        return result
                     before = snapshot()
                     subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository', './internal/service'], cwd=ROOT / 'BE_GO',
-                        check=True, timeout=120, env={**tool_env, 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
+                        check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                             f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
                 connections.close_all()
-                report = {'success': True, 'synthetic_accounts': len(before['users']), 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'synthetic_accounts': len(before['users']), 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',

@@ -120,6 +120,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
 | Shared PostgreSQL account reads | Go reads from 21 Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
 | Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
@@ -254,7 +255,7 @@ existing schema on every request and checks the cache record's actor, associatio
 and optional target-header binding. Owner and administrator target predicates are
 parameterized SQL with EXISTS checks, not per-member application lookups.
 
-The account adapter now creates 21 accounts plus associations, membership links,
+The account adapter now creates 23 accounts plus associations, membership links,
 instance configuration and real Django-issued cache sessions. Forty-six manually
 specified outcomes pass against Django's actual `resolve_request_identity` and
 Go with that same PostgreSQL/Redis state. Eight state/configuration changes prove
@@ -270,13 +271,39 @@ it does not prove migration history, throughput or business-write rollback.
 
 Identity selection is not authorization of an operation or its records. The
 fixtures intentionally contain no nested resource IDs. The complete
-`enforce_scoped_request` operation gate, group/instructor/family predicates and
+`enforce_scoped_request` operation gate, instructor predicates and
 nested-resource validation must still be implemented before business endpoints
 can use this result. That guard must run after selecting the effective person
 and before mapping the collaborator to its owner/checking grants, preserving
 Django’s denial ordering. `ActorAuthentication` and the selector are not registered as
 public handlers. Begin/end audit writes and live WebSocket revalidation remain
 separate acceptance work. No auth route is marked verified.
+
+### Association/family/group resource predicates
+
+`ScopedResources.Available` now implements the existing `scoped_queryset` record
+boundary for 16 resource kinds, including subscription-linked medical references.
+The service must supply trusted association/effective identity and treat selected
+group only as an additional restriction. The repository accepts the transaction
+owning a future mutation and never constructs identifiers from request input.
+See [the repository contract](../../../BE_GO/internal/repository/scoped_resources.md)
+for the preserved manager/FK behavior, bounded batch API and limitations.
+
+`TESTS/adapters/django/scoped_resources.py` establishes 67 manually expected
+visibility sets against actual Django managers, then the Go integration test
+checks those sets in the same private PostgreSQL database. Foreign tenants and
+families, deleted history, selected/foreign groups and inconsistent parent links
+are included. Two transactional changes prove immediate loss of family/invoice
+visibility in both runtimes and are rolled back. Every seeded resource table is
+compared afterward. Go counts one query per reference batch and tests 1, 16, 128
+and 512 distinct tag rows, plus 32 concurrent reads with four connections.
+
+This is a read component, not a completed endpoint or nested-reference workflow.
+The operation gate must still run at the identity selector's documented insertion
+point before collaborator permissions. Document authorization, medical-upload
+cache grants, certificate isolation, returned-query filtering and business-write
+concurrency remain separate work. No ledger endpoint status is promoted by these
+component tests.
 
 ## Required acceptance matrix
 
@@ -294,7 +321,7 @@ Every row below is required before this draft can claim completion.
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
 | 10. Independent specification | New portable health tests and real Go harness | Full Go fixture adapter, all capability contracts, differential durable effects, browser workflows |
-| 11. Queries/performance | Existing framework inspected | Dataset scaling, query counts/plans, pool/concurrency/load and export bounds |
+| 11. Queries/performance | Resource batch query counts and bounded-pool concurrency; existing framework inspected | Full dataset scaling, critical query plans, representative load and export bounds |
 | 12. Normal delivery | Current manifest/build/update paths inspected; standalone Dockerfile added | Multi-architecture/runtime image verification, release images/bundle/updater integration, verified-artifact gate, installation/upgrade/switch/rollback rehearsals |
 | 13. PR artifacts | Draft implementation, ledger, this report and foundation CI | Complete implementation and operator docs, full checks, reviewable final PR |
 | 14. Completion audit | Explicitly not satisfied | Verify every requirement against authoritative current evidence; no missing behavior |
