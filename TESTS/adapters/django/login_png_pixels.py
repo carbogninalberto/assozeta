@@ -112,7 +112,10 @@ def vectors():
             packed=zlib.compress(raw+bytes(extra),level)
             packed=packed[:-1]+bytes([packed[-1]^1])
             add(f'bad adler extra={extra} level={level}',spec,packed,b'\1\2\3\4\5\6','L',extra==0)
-    assert len(cases)==801
+    # A valid stream end on a complete row leaves the remaining canvas black.
+    add('early stream end after complete row',spec,zlib.compress(raw[:4]),b'\1\2\3\0\0\0','L')
+    add('early stream end after first Adam7 row',{**spec,'interlace':True},zlib.compress(b'\0\x2a'),b'\x2a\0\0\0\0\0','L')
+    assert len(cases)==803
     return cases
 
 

@@ -154,8 +154,8 @@ admission across formats and the complete image processor remain necessary for
 login; no full image or HTTP parity is claimed.
 
 The PNG pixel primitive now covers all 15 depth/color combinations, five filters
-and Adam7 with 801 explicit Pillow cases. Expected samples are constructed
-independently. The actual Django helper agrees on 478 unchanged-size JPEG outputs,
+and Adam7 with 803 explicit Pillow cases. Expected samples are constructed
+independently. The actual Django helper agrees on 480 unchanged-size JPEG outputs,
 300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
 runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
 mid-decode cancellation and 32 concurrent decodes pass. Lazy PNG header/metadata admission now adds 394
@@ -163,8 +163,15 @@ explicit cases, including CRCs,
 text limits, APNG first-frame declarations and metadata collisions. Actual Django
 checks verify 235 valid 200×100 headers return their original URI with zero pixel
 loads; the shipped image passes the same header oracle. Post-pixel metadata/file
-validation, APNG canvas composition, resized mode-1 nearest-neighbour behavior
-and full PNG file/response wiring remain open.
+validation, APNG canvas composition and full PNG file/response wiring remain open.
+Mode-1 nearest-neighbour transforms now preserve Pillow's accumulated-coordinate
+rounding and exact JPEG output across 210 vectors, with 18 actual Django PNG
+size-policy cases. Invalid binary samples, exact logical budgets, cancellation,
+source ownership and 32 concurrent transforms/encodes are covered. The PNG decoder
+also accepts valid early zlib stream ends on complete ordinary/Adam7 rows, leaving
+unvisited pixels zero. Incomplete rows fail, as do missing trailers when more rows
+are required. The shipped non-root/read-only/networkless image runs these oracles. File-level IDAT boundaries
+must remain explicit because concatenation changes reference checksum timing.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,

@@ -42,7 +42,7 @@ func Decide(width, height, encodedBytes int) (Plan, error) {
 }
 func channels(mode string) int {
 	switch mode {
-	case "L":
+	case "1", "L":
 		return 1
 	case "RGB", "YCbCr":
 		return 3
@@ -59,7 +59,8 @@ func rasterBytes(w, h, c int) (int64, error) {
 }
 
 // Transform flattens RGBA on white, then applies Pillow's two-pass 8-bit Lanczos
-// filter. maxWorkingBytes bounds logical input, pixel buffers and coefficients;
+// filter. Mode 1 uses nearest-neighbour sampling and normalized 0/255 bytes.
+// maxWorkingBytes bounds logical input, pixel buffers and coefficients;
 // process RSS/allocator overhead and global concurrent admission are separate.
 // No failure returns pixels, and output never aliases the supplied input.
 func Transform(ctx context.Context, input Raster, width, height int, maxWorkingBytes int64) (Raster, error) {
@@ -98,6 +99,9 @@ func Transform(ctx context.Context, input Raster, width, height int, maxWorkingB
 	}
 	if maxWorkingBytes <= 0 || !reserve(sourceBytes) || !reserve(targetBytes) {
 		return empty, ErrWorkingLimit
+	}
+	if input.Mode == "1" {
+		return nearestBilevel(ctx, input, width, height, maxWorkingBytes-used)
 	}
 	if input.Mode == "RGBA" {
 		n, _ := rasterBytes(input.Width, input.Height, 3)
