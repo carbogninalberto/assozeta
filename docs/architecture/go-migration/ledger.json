@@ -7582,7 +7582,9 @@
         "BE_GO/internal/service/login_session.go",
         "BE_GO/internal/domain/social_configuration.go",
         "BE_GO/internal/repository/social_configuration.go",
-        "BE_GO/internal/service/social_configuration.go"
+        "BE_GO/internal/service/social_configuration.go",
+        "BE_GO/pkg/social/apple.go",
+        "BE_GO/internal/service/social_providers.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7758,7 +7760,12 @@
         "TESTS/adapters/django/social_login.py",
         "BE_GO/internal/service/social_configuration_test.go",
         "BE_GO/internal/service/social_configuration_integration_test.go",
-        "TESTS/adapters/django/social_configuration.py"
+        "TESTS/adapters/django/social_configuration.py",
+        "BE_GO/pkg/social/apple_test.go",
+        "BE_GO/pkg/social/apple_integration_test.go",
+        "BE_GO/internal/service/social_providers_test.go",
+        "BE_GO/internal/service/social_apple_test.go",
+        "TESTS/adapters/django/apple_tokens.py"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7791,7 +7798,8 @@
         "Login HTTP transport: 15 identical portable pre-credential contracts pass over real HTTP against Django and an isolated Go handler server, covering negotiation/method/OPTIONS, format, bearer precedence, malformed/non-object JSON, missing fields, form/multipart input and anonymous scope headers. The Go fixture rejects/counts any later account/identity/audit/session stage; all remain uncalled. All Django managed-table snapshots remain unchanged. Unit tests cover raw field-presence branch selection, trusted audit propagation, scope/body-error ordering and success/failure cookies with a test session service. Rate limits are disabled in this fixture. Successful credential HTTP, complete request coercion, password/social composition, trusted audit middleware, images and public registration remain open; no endpoint is newly verified.",
         "Raw credential increment: 68 declared cases pass through the actual Django login view and Go password-selection service on private PostgreSQL. Cases retain JSON scalar/container and multipart file types, expected exception classes, current PBKDF2 acceptance, rehash/fallback failure, candidate-before-password ordering and inactive/deleted/ambiguous/late-error outcomes. Exact selected IDs, password replacements and all managed-table readback agree after declared resets; each small set uses one SELECT and returns its pool connection. TDD unit failures preceded representation/type APIs and a service guard against non-string upgrades. Unit checks cover cancellation during conversion, 32 concurrent conversions and no partial selection/transaction on error. HTTP/social/middleware/parser extremes remain open. Logs: quality-reports/go-migration/login-values/.",
         "Social increment: 41 explicit Django/Go admission cases use real PostgreSQL and controlled provider results; 26 complete sessions (18 password, 8 social) cover signed tokens, all response fields, audits/card/finalization effects and failure boundaries. Candidate batches 1/16/128/512 retain one SELECT, 32 concurrent reads release the pool, and provider I/O starts after the reader closes. Social unit tests prove a two-slot concurrency limit, cancellation and slot reuse. This does not prove real Google/Apple verification or public login parity. See social_login.md and password_session.md; full adapter results are recorded in the maintainer report.",
-        "Current social configuration: 33 declared Django/Go cases on private PostgreSQL preserve environment/override/visibility precedence, disabled/reset and malformed settings, raw ID types and ignored legacy columns. At 1/16/128/512 rows, reads use one SELECT and choose the lowest ID; 32 concurrent reads per size use a four-connection pool. A real table lock verifies cancellation and subsequent pool reuse. All managed tables match after declared resets and fixture removal. This does not exercise provider HTTP/cryptography or environment-loader wiring. Evidence: quality-reports/go-migration/social-configuration/."
+        "Current social configuration: 33 declared Django/Go cases on private PostgreSQL preserve environment/override/visibility precedence, disabled/reset and malformed settings, raw ID types and ignored legacy columns. At 1/16/128/512 rows, reads use one SELECT and choose the lowest ID; 32 concurrent reads per size use a four-connection pool. A real table lock verifies cancellation and subsequent pool reuse. All managed tables match after declared resets and fixture removal. This does not exercise provider HTTP/cryptography or environment-loader wiring. Evidence: quality-reports/go-migration/social-configuration/.",
+        "Apple provider increment: 89 declared cases pass through the actual Django verifier and Go client using real RSA signatures/JWK parsing and an ephemeral local HTTPS endpoint. Complete identity results and HTTP counts agree across disabled configuration, rotation, malformed/duplicate keys, signatures/algorithms, claims/raw tokens, gzip/redirect/truncated response and strict parser cases. Red tests exposed critical-header/trailing-JSON/large-integer acceptance and Python integer whitespace differences before Go fixes. Unit checks prove admission/deadline/cancellation/reuse and measured response/token/RSA bounds. A real RSA/HTTPS service test observes audience changes and suppresses HTTP on disable. Configuration input is controlled there; persisted resolution has separate PostgreSQL evidence. No public or live-Apple login is claimed. See pkg/social/README.md and quality-reports/go-migration/apple-tokens/."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
@@ -7803,7 +7811,8 @@
         "LoginSessions dispatches password/social admission through shared normalization, OTP, signing, response and finalization boundaries. Earlier committed username/card effects survive a later failure; tokens are not returned until completion. PasswordSessions remains compatible for existing callers. Public registration remains absent.",
         "Social candidate selection is streamed and bounded, with unique casefold-username preference. Connections close before bounded provider I/O; original token values are retained. Provider/stored email comparison uses Unicode lowercase, not casefold. Controlled verification responses establish admission behavior only, not cryptographic or remote provider correctness.",
         "Remaining login work includes concrete Google/Apple clients and current integration configuration, parser extremes, distributed rate limiting, OTP provisioning, complete image dispatch and HTTP/cookie/middleware/audit-context integration, cross-runtime configuration/audit races, and final activation/revocation validation.",
-        "Current social client-ID resolution is implemented as a read-only service/repository with explicit environment inputs. Each operation reads the lowest-ID instance row once; persisted disable/reset is immediately observed and database failures never enable environment fallback. Environment loading/root wiring, concrete provider clients and mid-request configuration changes remain open. See social_configuration.md."
+        "Current social client-ID resolution is implemented as a read-only service/repository with explicit environment inputs. Each operation reads the lowest-ID instance row once; persisted disable/reset is immediately observed and database failures never enable environment fallback. Environment loading/root wiring, concrete provider clients and mid-request configuration changes remain open. See social_configuration.md.",
+        "Apple has a concrete client and SocialProviders binds current client IDs to explicit provider clients. Google, environment/root wiring and full persisted-account/HTTP/browser composition remain unfinished. Apple has explicit 1 MiB response/token and 16,384-bit RSA resource limits; nonstandard parser extremes, deployment budgets and live-provider evidence remain open. The REST JWT parser requires an independent critical-header/trailing-data audit."
       ]
     },
     {

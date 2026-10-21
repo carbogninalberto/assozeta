@@ -719,3 +719,10 @@ read-only repository/service, checks 1/16/128/512-row selection, 32 concurrent r
 per size, cancellation under a real PostgreSQL table lock and full managed-table
 readback. `social_configuration_cases` records the count. No provider HTTP or
 cryptographic verification is substituted by this fixture.
+
+`python TESTS/adapters/django/apple_tokens.py` runs 89 declared Apple provider
+cases with ephemeral RSA keys and local HTTPS. Django and Go perform real JWK,
+signature and claim verification; only Django client-ID input, endpoint URL and
+clock are replaced. Complete results and exact request counts are compared.
+The PR Go job runs this adapter; no Apple account, production credential or
+external Apple request is used. See `BE_GO/pkg/social/README.md` for scope/limits.

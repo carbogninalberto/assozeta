@@ -504,3 +504,33 @@ sessions, 68 credential cases, 47 OTP and 20 normalization/audit admissions, plu
 all existing identity, scope, HTTP and image checks. The final result is retained
 in `quality-reports/go-migration/social-configuration/results.json`. This evidence
 uses current-model schema creation; historical migrations and restore remain open.
+
+The Apple client verifies real RSA signatures against per-operation JWK reads,
+with explicit algorithm/issuer/audience and PyJWT-compatible claim checks.
+`SocialProviders` resolves current client IDs before dispatch and suppresses
+provider calls when disabled. Eighty-nine declared cases pass through the actual
+Django verifier and Go over local HTTPS, comparing complete identity results and
+HTTP counts. Red tests caught critical-header, trailing-payload JSON, integer
+digit-bound and integer-whitespace differences; the corresponding Go checks now
+pass. Unit cases measure response bounds, token/modulus limits, two-slot admission,
+cancellation, closure and reuse. A real RSA/HTTPS service test verifies audience
+changes and disable behavior; its configuration reader is controlled, with
+persisted resolution covered by the prior PostgreSQL adapter. Google, root/env
+wiring and public/live-provider login remain incomplete. Evidence and dependency
+provenance are in `quality-reports/go-migration/apple-tokens/`.
+
+The preceding `dbf1beb` head passes the complete PR quality workflow
+[39593769742](https://github.com/carbogninalberto/assozeta/actions/runs/39593769742)
+and default manual verification workflow
+[39593769720](https://github.com/carbogninalberto/assozeta/actions/runs/39593769720).
+The latter completed source mappings, browser helpers and isolated capture,
+rendering, evidence, MCP and agent checks. Optional editorial mode was not
+requested. These successful Django/manual and foundation gates do not implement
+the Go manual boundary or establish the full migration acceptance matrix.
+
+Apple increment validation: full Go race tests and vet, Apple-tagged integration
+vet, formatting, the 89-case HTTPS oracle, service crypto/dispatch tests, twelve
+inventory tests/drift validation and actionlint all pass. The CI workflow now
+runs the Apple oracle after credential/permission verification. This increment
+does not modify existing database repositories, Django business code or the
+registered public API surface.

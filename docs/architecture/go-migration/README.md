@@ -797,3 +797,9 @@ operation, preserving disable/reset, environment precedence and legacy Google
 visibility. The 33-case PostgreSQL comparison and bounded concurrent/query checks
 are described in `BE_GO/internal/service/social_configuration.md`. Environment
 loader/root wiring and actual provider verification remain unfinished.
+
+The concrete Apple verifier now passes 89 Django/Go RSA/HTTPS protocol cases.
+`SocialProviders` binds current configuration to explicit clients; unit tests with
+real cryptography show audience changes and disable behavior. Google, environment
+and root wiring, complete public login and live-provider evidence remain open.
+See `BE_GO/pkg/social/README.md`.
