@@ -226,5 +226,9 @@ complete save/archive workflow. See `internal/service/subscription_dates.md`.
 
 Payment description calculation now matches 81 actual model-save cases, including
 relationship precedence, stored/pending metadata and historical JSON behavior.
-Category scope, batch relationship reads and full atomic save/archive remain open.
-See `internal/service/payment_description.md`.
+See `internal/service/payment_description.md`. Existing-payment background
+preparation now reads up to 512 owned references in one statement, selects
+global/own categories and rejects foreign selected relationships. Eight PostgreSQL
+groups cover actual-model descriptions, denial, pool/cancellation and executed
+plans over 4,096 course relations. Full atomic save/archive remains open; see
+`internal/service/payment_save_inputs.md`.

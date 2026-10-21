@@ -1223,7 +1223,10 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_description.go",
-        "BE_GO/internal/service/payment_description.go"
+        "BE_GO/internal/service/payment_description.go",
+        "BE_GO/internal/domain/payment_save_inputs.go",
+        "BE_GO/internal/repository/payment_save_inputs.go",
+        "BE_GO/internal/service/payment_save_inputs.go"
       ],
       "dependencies": [
         "BE/application/models/courses_models.py",
@@ -1240,26 +1243,31 @@
         "errors": "Typed Go ErrPaymentDescription for legacy invalid JSON/member/index/lower operations or missing related fields; no HTTP mapping yet.",
         "authentication": null,
         "permissions": null,
-        "resource_scope": "Django course/installment description lookup includes deleted rows; carnet lookup includes disabled rows. Actual default category lookup is unscoped and selects foreign/deleted categories; a scoped Go correction and batch relationship reads remain required.",
-        "side_effects": "Pure Go description calculation only. Actual Django oracle verifies full payment readback, UPDATE audit description changes and direct AuditLogIndex; Go persistence/audits/default categories/accounts remain open.",
-        "transaction": "No Go writes. Full payment save and enclosing archive need an explicit invariant transaction.",
+        "resource_scope": "Background preparation receives trusted payment/association pairs, includes historical archived/deleted rows, selects only global/own categories and rejects foreign selected invoice/account/course/installment/carnet/parent-membership references. Existing descriptions bypass unused reverse references. This explicitly corrects confirmed Django foreign-category/title defects. HTTP actor/group authorization remains required.",
+        "side_effects": "Read-only Go description/default preparation in one statement for up to 512 references; no writes. Actual Django oracle verifies payment readback/audits/indexes. Full save/default-account creation/audits remain open.",
+        "transaction": "Repository accepts DB or explicit caller transaction; preparation does not lock or grant durable write authorization. Mutation concurrency and full archive invariant transaction remain required.",
         "execution_owner": "django"
       },
       "tests": [
         "BE_GO/internal/service/payment_description_test.go",
         "BE_GO/internal/service/payment_description_oracle_test.go",
-        "TESTS/adapters/django/payment_description.py"
+        "TESTS/adapters/django/payment_description.py",
+        "BE_GO/internal/service/payment_save_inputs_test.go",
+        "BE_GO/internal/service/payment_save_inputs_integration_test.go",
+        "TESTS/adapters/django/payment_save_inputs.py"
       ],
       "evidence": [
         "Production Python 3.13.2 actual Payment.save oracle: 81 required cases, including failed calculations with no managed-row changes; matching Go calculation cases pass.",
         "Actual default-category defect: lower-PK foreign deleted/archived category chosen before global category.",
-        "Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass. Full accounts at 30f9c10 passed this component then failed concurrent credential selection. The corrected complete production-Python accounts rerun now passes, including all 81 description cases; see quality-reports/go-migration/credential-concurrency/full-accounts-results.json."
+        "Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass. Full accounts at 30f9c10 passed this component then failed concurrent credential selection. The corrected complete production-Python accounts rerun now passes, including all 81 description cases; see quality-reports/go-migration/credential-concurrency/full-accounts-results.json.",
+        "Payment-save preparation: twelve actual Django model-save descriptions, eleven scope/missing-reference denial inputs and eight required PostgreSQL groups pass. One statement for 1/16/128/512 payments with course relations; 32 concurrent reads in four connections; actual blocked-query cancellation/recovery. Executed plan over 4,096 payments/course subscriptions uses the existing relationship payment FK index after ANALYZE; primary payment scan remains sequential. Whole managed snapshots and cleanup unchanged. Evidence: quality-reports/go-migration/payment-save-inputs/."
       ],
       "notes": [
-        "Only description calculation implemented; not full model-hook parity or automatic archive.",
+        "Description calculation and bounded existing-payment background preparation implemented; not full model-hook parity or automatic archive.",
         "The missing CustomAccounts.destination_account_name raises on NULL giroconto description; Go returns a typed error until transfer workflow is specified.",
-        "JSON values use ordered RequestObject and exact json.Number; actual batch reads, category/resource authorization, decode/size/field validation, custom-account defaults, writes/audits, and archive remain open.",
-        "See BE_GO/internal/service/payment_description.md."
+        "JSON uses ordered RequestObject/exact json.Number. HTTP actor/group admission, mutation locking, decode/size/field validation, custom-account defaults, writes/audits and archive remain open.",
+        "See BE_GO/internal/service/payment_description.md.",
+        "See BE_GO/internal/service/payment_save_inputs.md. The latest complete accounts evidence predates this reader; focused required groups cover the added preparation until a full rerun completes."
       ]
     },
     {

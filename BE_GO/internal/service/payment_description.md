@@ -10,7 +10,8 @@ an existing NULL description from an empty string; a resolved category name;
 pending payment metadata; stored metadata read through a relationship; and the
 first course subscription, installment and carnet by primary key. Each relation
 slot has a separate presence marker, so a NULL title does not fall through to the
-next kind. Database reads, including bounded batch selection, are still required.
+next kind. Existing-payment background reads now have bounded batch selection; see
+`payment_save_inputs.md`. Mutation locking and persistence remain required.
 This pure component has no database/provider calls and does not select categories.
 
 Observable rules preserved:
