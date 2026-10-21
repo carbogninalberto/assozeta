@@ -101,6 +101,49 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 			}
 		})
 	}
+	t.Run("onboarding permission failure preserves base profile", func(t *testing.T) {
+		var target string
+		var expected json.RawMessage
+		for _, tc := range fixture.Cases {
+			if tc.Name == "onboarding count 1" {
+				target = tc.ID
+				expected = tc.Expected
+			}
+		}
+		if target == "" {
+			t.Fatal("missing singleton onboarding fixture")
+		}
+		deniedCfg := cfg.Copy()
+		deniedCfg.RuntimeParams["role"] = "profile_onboarding_denied"
+		deniedDB := sqlx.NewDb(stdlib.OpenDB(*deniedCfg), "pgx")
+		defer deniedDB.Close()
+		deniedDB.SetMaxOpenConns(1)
+		deniedFlow := NewLoginProfiles(repository.NewLoginProfiles(deniedDB), func() time.Time { return fixture.Now })
+		profile, err := deniedFlow.Read(context.Background(), target)
+		if err != nil || profile == nil {
+			t.Fatalf("optional onboarding failure discarded base profile: %v", err)
+		}
+		var want map[string]json.RawMessage
+		if json.Unmarshal(expected, &want) != nil {
+			t.Fatal("invalid expected profile")
+		}
+		want["onboarding"] = json.RawMessage("null")
+		expected, err = json.Marshal(want)
+		if err != nil {
+			t.Fatal(err)
+		}
+		actual, err := json.Marshal(profile)
+		if err != nil || !equalJSON(actual, expected) {
+			t.Fatal("optional failure altered other profile fields")
+		}
+		if deniedDB.Stats().InUse != 0 {
+			t.Fatal("failed read retained aborted transaction")
+		}
+		// Pool reuse must work after PostgreSQL aborts the read transaction.
+		if _, err = deniedFlow.Read(context.Background(), target); err != nil {
+			t.Fatal("aborted transaction poisoned the connection pool")
+		}
+	})
 	t.Run("bounded pool concurrent duplicate onboarding profiles", func(t *testing.T) {
 		var target string
 		for _, tc := range fixture.Cases {

@@ -3,8 +3,13 @@ package domain
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 )
+
+// ErrProfileOnboardingUnavailable marks an optional read failure after the base
+// snapshot was read successfully. The service owns the fallback response policy.
+var ErrProfileOnboardingUnavailable = errors.New("profile onboarding unavailable")
 
 // LoginProfileReader reads preferences for a trusted, already admitted account
 // ID. It does not authorize an arbitrary public user/profile endpoint.

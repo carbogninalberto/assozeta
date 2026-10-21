@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
 | Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
 | Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
@@ -430,11 +431,26 @@ boundaries and missing/duplicate onboarding. One/two SELECTs suffice for up to
 512 onboarding rows; 32 concurrent association reads use 64 SELECTs and release
 the four-connection pool. Managed tables remain unchanged after test restoration.
 
-This is response-component evidence, not a public login route. Infrastructure
-errors propagate instead of being swallowed by Django's broad onboarding catch;
-that difference is documented. Association augmentation, image processing,
+This is response-component evidence, not a public login route. A real PostgreSQL
+permission failure now proves optional onboarding returns null in both runtimes;
+Go rolls back the aborted read transaction and releases the connection.
+Association augmentation, image processing,
 configuration creation and final login writes remain open. See the
 [profile contract](../../../BE_GO/internal/service/login_profile.md).
+
+### Association login profile
+
+Twenty-three explicit contracts now compare all 50 `SportAssociationSerializer`
+fields against Go. Exact decimal strings, PostgreSQL scale rounding, nullable and
+scalar JSON, custom template names and the strict five-day reviewed boundary are
+preserved. One/two SELECTs fetch an association and its scoped groups; 32 concurrent
+reads with 512 groups use 64 SELECTs. A deletion/restoration transition, foreign
+scope denials and a real required-group permission failure return no stale or
+partial profile. Managed tables remain unchanged after fixture restoration.
+
+This remains a response component. Complete login augmentation, image processing,
+configuration creation/audit and final login writes remain open. See the
+[association profile contract](../../../BE_GO/internal/service/association_profile.md).
 
 ## Required acceptance matrix
 

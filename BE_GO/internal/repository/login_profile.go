@@ -81,7 +81,14 @@ func (r *LoginProfiles) LoginProfile(ctx context.Context, id string) (domain.Log
    view_membership,approve_payment,download_invoice,view_collaborators,view_settings
    FROM application_usersonboarding WHERE user_id=$1 LIMIT 2`, id)
 		if err != nil {
-			return domain.LoginProfileSnapshot{}, err
+			// Classify which read failed; the service decides whether the base
+			// snapshot may be returned. Deferred rollback clears the aborted
+			// read-only transaction. Never expose partially scanned rows.
+			row.Onboarding = nil
+			if ctx.Err() != nil {
+				return domain.LoginProfileSnapshot{}, ctx.Err()
+			}
+			return row, errors.Join(domain.ErrProfileOnboardingUnavailable, err)
 		}
 	}
 	if err = tx.Commit(); err != nil {

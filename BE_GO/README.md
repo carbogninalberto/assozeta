@@ -56,8 +56,11 @@ normalization; see `internal/service/login_preparation.md`. It still needs respo
 construction and final login writes before it can become a complete login route.
 The base 37-field profile now matches 46 explicit Django-rendered JSON cases with
 bounded reads, setup/onboarding precedence and exact JSON values; see
-`internal/service/login_profile.md`. Association augmentation, configuration
-creation and final writes are still required.
+`internal/service/login_profile.md`. Optional onboarding query failures now preserve
+the profile with null onboarding, tested using real PostgreSQL permission denial.
+The 50-field association profile adds 23 explicit cases, exact stored decimal text
+and scoped group reads; see `internal/service/association_profile.md`. Complete
+login augmentation, configuration creation and final writes are still required.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

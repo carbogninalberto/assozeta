@@ -48,12 +48,14 @@ is restored. Unit tests reject partial/foreign data and cancellation and cover
 UTC elapsed-time behavior across a local daylight-saving boundary.
 
 This is backend-specific component evidence, not portable login HTTP parity.
-Django catches every exception in `get_onboarding`; Go maps the supported
-missing/duplicate states to null but propagates infrastructure/query failures
-without returning a partial profile. This stricter failure behavior is explicit
-and is not counted as identical exceptional-response parity; closing that gap
-remains required. The consistent
-read transaction also prevents mixing preferences from concurrent snapshots.
+Django catches lookup/serialization exceptions in `get_onboarding`. The Go
+repository classifies this optional-read failure, clears partially scanned rows
+and rolls back the read-only transaction. The service preserves Django’s fallback
+policy and returns the otherwise complete profile with null onboarding. Context cancellation
+still aborts the request. A real PostgreSQL role with denied onboarding SELECT
+proves the same rendered profile in Django and Go and verifies connection reuse
+after the aborted transaction. Required base-profile reads still propagate errors.
+The consistent read transaction prevents mixing concurrent snapshots.
 
 Association augmentation, Pillow-compatible image processing, instructor lookup,
 registration features, membership-card configuration creation/audit, top-level

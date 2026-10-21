@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -25,7 +26,12 @@ func (s *LoginProfiles) Read(ctx context.Context, id string) (*dto.UserAuthProfi
 	}
 	row, err := s.reader.LoginProfile(ctx, id)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, domain.ErrProfileOnboardingUnavailable) {
+			return nil, err
+		}
+		// Preserve UserAuthSerializer.get_onboarding's optional failure boundary.
+		// Required reads and request cancellation still abort the response.
+		row.Onboarding = nil
 	}
 	if row.UserID != id || row.Deleted {
 		return nil, domain.ErrAccountNotFound
