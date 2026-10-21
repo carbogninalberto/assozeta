@@ -2,11 +2,11 @@
 
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
-transformation, bounded libjpeg JPEG encoding/decoding, and PNG header/pixel
-and chunk-stream decoding. It does
+transformation, bounded libjpeg JPEG encoding/decoding, PNG header/pixel and
+chunk-stream decoding, and BMP/DIB header/raw/RLE decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
-JPEG and PNG first-frame file pipelines are available as separate components.
+JPEG, PNG first-frame and BMP/DIB file pipelines are available as separate components.
 Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
@@ -449,3 +449,40 @@ These components still do not implement the complete `LoginImageProcessor`:
 other supported file formats, format dispatch, admission across formats and
 public login/response composition remain necessary. No backend parity or release
 activation is inferred from the PNG pipeline evidence.
+
+## BMP and standalone DIB file pipeline
+
+`ReadBMPHeader`, `DecodeBMP` and `BMPFileProcessor` cover standalone Windows BMP
+and DIB headers (12, 40, 52, 56, 64, 108 and 124 bytes), raw 1/4/8/16/24/32-bit
+samples and the exact bitfield layouts accepted by Pillow 11.1. This follows
+`BmpImagePlugin.py` and its raw unpacking behavior; CUR/ICO containers are separate
+formats. Palette indices retain mode P, which Django cannot save as JPEG. Gray
+palettes instead reduce to mode 1 or L, even when their declared bit depth would
+normally use a different packing. Large gray palettes compare wrapped byte
+indices; colored palettes with more than 256 complete entries fail when loaded,
+while lazy admission can still succeed. The parser retains that distinction.
+
+Raw rows preserve bottom-up/top-down order, optional final padding, 5/6-bit channel
+scaling and ignored alpha in ordinary 32-bit BMP. RLE4/RLE8 preserve clipped runs,
+EOL padding, absolute runs spanning rows, absolute file-position alignment, odd
+RLE4 absolute counts and Pillow's double-read delta quirk. The decoder writes into
+the final bounded raster, without growing an intermediate RLE byte array or
+allocating skipped/overshoot pixels. BMP DPI is not inherited by default JPEG
+encoding. RGBA bitfields flatten against white through the shared transform.
+
+The processor shares one admission slot/deadline through header parsing, pixels,
+transform and encoding. It retains the lazy 200-pixel-bound fast path and original
+file fallback for malformed pixels or unsupported JPEG modes; resource limits,
+unavailable encoders and cancellation propagate without a successful result.
+Positive header/decode/transform limits are mandatory. Header budgets count bytes
+actually consumed; pixel budgets count input plus normalized output. These are
+logical stage limits, not an aggregate process RSS cap.
+
+`TESTS/adapters/django/login_bmp.py` supplies 512 declared header/pixel/file cases.
+Samples determine expected pixels and JPEGs; Pillow's file reader and the actual
+Django helper independently verify those outcomes. The shipped non-root,
+read-only/networkless image runs the same oracle. Tests include exact budgets,
+invalid specifications, input ownership, mid-header/raw/RLE cancellation, 32
+concurrent pipelines, queue timeouts and encoder-stage cancellation with child
+reaping and admission reuse. BMP/DIB does not complete the multi-format image
+service or public login integration; the migration ledger remains implementing.

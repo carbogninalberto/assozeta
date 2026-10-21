@@ -204,3 +204,16 @@ pipelines and whole-pipeline queue/running cancellation with child reaping and
 admission reuse pass. Other image formats, dispatch and public image/login wiring
 remain open. The ledger's status counts are unchanged; no endpoint is newly
 marked verified.
+
+
+The BMP/DIB pipeline now covers all seven supported header sizes, raw depths and
+accepted bitfield layouts, palette mode reduction/load failures and RLE4/RLE8.
+Its 512 cases declare expected header modes, pixels and JPEG/original outcomes;
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image agree. Tests preserve optional final padding, wrapped grayscale palettes,
+absolute RLE alignment, odd RLE4 runs and Pillow's double-read delta behavior.
+Positive stage budgets, exact bounds, mid-header/raw/RLE cancellation, immutable
+input, 32 concurrent pipelines and encoder-stage cancellation with queued requests,
+child reaping and admission reuse pass. Other supported image formats, format
+dispatch/shared admission and public login composition remain open. This adds
+component evidence without marking any endpoint verified or authorizing release.
