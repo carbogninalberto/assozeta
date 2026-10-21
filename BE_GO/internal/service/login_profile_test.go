@@ -71,3 +71,18 @@ func TestLoginProfileThirtyDayBoundaryUsesElapsedTime(t *testing.T) {
 		}
 	}
 }
+
+func TestLoginProfileOptionalOnboardingFailurePreservesBaseFields(t *testing.T) {
+	association := "association"
+	store := &profileReaderStub{row: domain.LoginProfileSnapshot{UserID: "target", Role: domain.RoleAssociation, Active: true,
+		AssociationID: &association, FirstName: "First", GoogleSyncEnabled: true, Onboarding: []domain.ProfileOnboarding{{ID: "partial"}}},
+		err: errors.Join(domain.ErrProfileOnboardingUnavailable, errors.New("query failed"))}
+	result, err := NewLoginProfiles(store, time.Now).Read(context.Background(), "target")
+	if err != nil || result == nil || result.Onboarding != nil || result.FirstName != "First" || !result.GoogleSyncEnabled || !result.CanImpersonate {
+		t.Fatal("optional failure changed base profile or exposed partial onboarding")
+	}
+	store.row.UserID = "foreign"
+	if result, err = NewLoginProfiles(store, time.Now).Read(context.Background(), "target"); result != nil || !errors.Is(err, domain.ErrAccountNotFound) {
+		t.Fatal("optional failure bypassed snapshot identity check")
+	}
+}

@@ -368,9 +368,10 @@ The `loginintegration` Go build tag keeps these mutation checks separate from th
 read-only identity suite; `accounts.py` runs both, without skipped fixtures. Page,
 rollback and concurrency tests use actual PostgreSQL with an inexpensive test KDF
 to isolate database behavior. The compatibility cases use real supported hashes.
-These are backend-specific component checks, not portable Go login HTTP contracts;
-OTP, username/audit normalization, response construction and later writes remain
-to implement and verify. Synthetic credentials are temporary and removed.
+These are backend-specific credential checks, not portable Go login HTTP contracts.
+The composed password admission described below now adds OTP and username/audit
+normalization. Complete response augmentation and final writes remain open.
+Synthetic credentials are temporary and removed.
 
 ### Second-factor login decisions
 
@@ -414,6 +415,23 @@ and 32 concurrent association reads are counted; a persisted preference change
 is observed immediately. Every managed table is checked after restoration.
 
 This is a base response component, not the complete login response or portable
-Go HTTP login. Go fails on infrastructure errors rather than swallowing arbitrary
-onboarding exceptions; see `BE_GO/internal/service/login_profile.md` for this
-explicit difference and remaining response/configuration/final-write work.
+Go HTTP login. A real PostgreSQL permission failure verifies that optional onboarding errors
+preserve the base profile with null onboarding in both runtimes; Go rolls back
+the aborted read transaction before pool reuse. See
+`BE_GO/internal/service/login_profile.md` for the response boundary and remaining
+configuration/final-write work.
+
+
+### Association login profile
+
+`adapters/django/association_profile.py` runs from the account adapter and checks
+23 explicit expected JSON/outcome cases against the actual Django serializer/DRF
+renderer and Go's `associationprofileintegration` service tests. All 50 fields,
+exact numeric strings and PostgreSQL scale rounding, null/scalar JSON, the strict
+five-day reviewed boundary, deleted/inactive owners and missing/deleted associations
+are covered. Group counts 0/1/16/128/512 always use two SELECTs for a found
+association; 32 concurrent 512-group reads use 64 SELECTs. A deletion/restoration
+transition revokes and restores visibility. Required group-query permission errors
+return no partial profile and release the transaction, as characterized in Django.
+Every managed table must match after restoration. Full login augmentation,
+configuration creation, final writes and portable HTTP contracts remain open.

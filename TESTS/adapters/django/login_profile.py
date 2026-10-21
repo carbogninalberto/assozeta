@@ -158,6 +158,24 @@ def run(work, log, tool_env):
             else:
                 assert actual==case['expected'], f"{case['name']}: Django profile mismatch: {sorted(k for k in actual if actual[k]!=case['expected'].get(k))}"
             assert outcome==case['outcome'], f"{case['name']}: Django outcome differs"
+    # A real PostgreSQL permission failure is caught only inside get_onboarding.
+    # Restrict this synthetic role to the relations needed for the base profile.
+    with connection.cursor() as cursor:
+        cursor.execute('CREATE ROLE profile_onboarding_denied NOLOGIN')
+        cursor.execute('GRANT USAGE ON SCHEMA public TO profile_onboarding_denied')
+        cursor.execute('GRANT SELECT ON bakney_user, application_sportassociation, instance_instanceconfiguration TO profile_onboarding_denied')
+    denial_case=next(case for case in cases if case['name']=='onboarding count 1')
+    with patch('application.serializers.auth_serializers.timezone.now', return_value=NOW):
+        with connection.cursor() as cursor:
+            cursor.execute('SET ROLE profile_onboarding_denied')
+        try:
+            user=User.objects.get(pk=denial_case['id'])
+            actual=json.loads(JSONRenderer().render(UserAuthSerializer(user).data))
+            assert actual=={**denial_case['expected'],'onboarding':None}, 'Django onboarding permission failure changed profile behavior'
+        finally:
+            with connection.cursor() as cursor:
+                cursor.execute('RESET ROLE')
+    print('Django: real onboarding permission failure preserves base profile with null onboarding',flush=True)
     assert snapshot()==before, 'Django base profile wrote database state'
     print(f'Django: {len(cases)} explicit base login profile cases passed',flush=True)
     path=work/'login-profile.json'

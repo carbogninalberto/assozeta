@@ -88,9 +88,17 @@ The base login profile now matches 46 explicit Django-rendered JSON cases with
 all 37 fields. Welcome/setup rules, Google JSON presence and duplicate onboarding
 are preserved. One/two SELECTs remain bounded through 512 onboarding rows; 32
 concurrent association reads release the four-connection pool. All managed tables
-remain unchanged after fixture restoration. Go propagates onboarding query errors
-that Django broadly suppresses; this explicit difference is not claimed as exact
-exceptional-response parity. Full response augmentation and final writes are open.
+remain unchanged after fixture restoration. A real onboarding SELECT permission
+failure now preserves the base profile with null onboarding in both runtimes;
+Go rolls back the aborted read transaction before pool reuse.
+
+The association profile adds 23 explicit cases covering all 50 serializer fields,
+exact decimal text, PostgreSQL scale rounding, nullable/scalar JSON, the reviewed
+boundary and scoped groups. One/two SELECTs remain bounded through 512 groups;
+32 concurrent reads use 64 SELECTs. Association deletion immediately revokes
+serialization. Required group-query failures return no partial profile, matching
+Django. All managed tables match after the declared fixture transition. Full
+response augmentation, configuration creation and final writes remain open.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,
