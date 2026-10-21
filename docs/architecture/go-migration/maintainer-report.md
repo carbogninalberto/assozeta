@@ -296,7 +296,7 @@ SUN/GBR recognition precedence is documented as a remaining shared-dispatch
 requirement. Other formats, shared admission and public login remain open;
 ledger status counts and backend activation restrictions are unchanged.
 
-CI is not fully green. On the preceding SGI head, the
+CI was not fully green on the SGI head: the
 [SSO browser job](https://github.com/carbogninalberto/assozeta/actions/runs/39549108830/job/119054304006)
 timed out waiting for “Genera codice di collegamento” at
 `selfhost/tests/browser/bakney-sso.mjs:234`. That failure produced no screenshot
@@ -328,3 +328,22 @@ queue/cancellation/reaping/reuse pass. Native production sources are unchanged.
 A SUN-signature input recognized as GBR is covered; shared registry dispatch,
 remaining formats and public login composition remain open. Ledger statuses and
 backend activation restrictions are unchanged.
+
+
+The MSP pipeline adds 1,704 declared header/pixel/file cases checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. It preserves DanM/LinS header checksums, MSB-first packing, blank and
+concatenated records, clipped literals, zero-count repeats and validation of
+malformed surplus operands. Expansion streams directly into normalized output
+without an expanded intermediate buffer. Exact budgets, overflow, ownership,
+raw/RLE/surplus cancellation, 32 mixed concurrent pipelines and encoder-stage
+queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
+Other formats, shared dispatch/admission and public login remain open; ledger
+status counts and backend activation restrictions are unchanged.
+
+
+All eleven reported checks (including the aggregate PR status) on SUN head `ccfa67f` subsequently passed in
+[run 39550083913](https://github.com/carbogninalberto/assozeta/actions/runs/39550083913),
+including 1,794 backend tests and 16 diagnostic tests. This records the earlier
+head’s regression result; it does not establish Go parity or replace the full
+required acceptance matrix. CI for the GBR/MSP/SSO-diagnostics head is pending.

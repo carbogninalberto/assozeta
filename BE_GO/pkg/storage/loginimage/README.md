@@ -802,3 +802,40 @@ shipped non-root/read-only/networkless image. Checks include exact stage budgets
 overflow, ownership, mid-operation cancellation, 32 mixed concurrent pipelines
 and encoder-stage queue/cancellation/reaping/reuse. Shared registry dispatch and
 public login composition remain open.
+
+## Windows Paint MSP images
+
+`ReadMSPHeader`, `DecodeMSP` and `MSPFileProcessor` follow Pillow 11.1's
+[MSP plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/MspImagePlugin.py).
+Its source credits the Windows Paint format description in O'Reilly's
+*Encyclopedia of Graphics File Formats*. The fixed 32-byte header must have a
+zero XOR across all sixteen little-endian words. `DanM` selects raw packed
+samples and `LinS` selects RLE. Both produce mode 1, with MSB-first white bits
+and byte-aligned rows; unused header words do not affect JPEG output.
+
+LinS begins with one unsigned 16-bit encoded length per declared row. A zero
+length contributes a white packed row. Other records contain literal packets
+or zero-prefixed count/value runs. A literal slice clips at the record boundary;
+a repeat requires both operands even when its count is zero. Expanded record
+lengths do not have to equal a packed row: Pillow concatenates them before raw
+unpacking, so one record can supply pixels for another. Too few total packed
+bytes fail. Surplus expanded bytes are ignored, but every declared record and
+repeat operand is still validated. Data after the declared records is ignored.
+
+Go streams the packed samples directly into normalized output and retains no
+expanded intermediate buffer. Logical decode budgets count input plus output,
+not total RSS. Arithmetic and rowmap bounds are checked before allocation;
+cancellation remains observable while validating surplus records. Header errors,
+malformed pixels and save failures retain the original; resource/cancellation/
+unavailable-codec errors expose no successful result. One admission/deadline
+covers the complete file processor.
+
+The adapter declares 1,704 header/pixel/file cases, compared with Pillow, the
+actual Django helper and the shipped non-root/read-only/networkless image. It
+covers every packed byte and run/literal count, row padding, blank and
+concatenated records, clipped literals, malformed surplus operands, checksum,
+short headers/maps/payloads, ignored metadata/tails and size policy. Exact budgets,
+overflow, ownership, raw/RLE/surplus cancellation, 32 mixed concurrent pipelines
+and encoder-stage queue/cancellation/reaping/reuse pass. Production native code
+is unchanged. Remaining formats, shared dispatch/admission and public login
+composition remain open.
