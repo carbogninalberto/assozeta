@@ -59,9 +59,12 @@ func (e *JPEGEncoder) Encode(ctx context.Context, input Raster) ([]byte, error) 
 	return e.EncodeWithComment(ctx, input, nil)
 }
 
-// EncodeWithComment preserves Pillow's inherited JPEG comment. nil means no
-// comment; a non-nil empty slice emits an empty COM marker.
+// EncodeWithComment preserves Pillow's inherited JPEG comment. Both nil and an
+// empty comment omit the COM marker; only nonempty comments are written.
 func (e *JPEGEncoder) EncodeWithComment(ctx context.Context, input Raster, comment []byte) ([]byte, error) {
+	if len(comment) == 0 {
+		comment = nil
+	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

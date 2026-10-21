@@ -89,6 +89,23 @@ Safe JSON reports and reviewed screenshots are retained locally under
 containers and browser databases were removed. No browser trace or persisted
 browser credentials are retained.
 
+## Initial-page failure evidence
+
+The browser harness now observes only the initial pairing-page navigation and
+button action. If that stage fails, it writes `initial-pairing-failure.json`
+before closing the browser. CI retains the file through its existing JSON
+artifact rule. It records fixed route/message identifiers, button state, the
+last HTTP status for an allowlist of instance endpoints, bounded request-failure
+counts and JavaScript error categories. It never records response bodies,
+credentials, arbitrary URLs, callback queries, exception messages or DOM text.
+The observer is detached before the harness reads a generated pairing secret.
+
+Run `node --test selfhost/tests/browser/sso-initial-diagnostics.test.mjs` for the
+redaction, counter bounds and listener-cleanup checks. The CI SSO job runs these
+checks before preparing its browser fixtures. Original assertions and the
+30-second button timeout remain unchanged; diagnostic output does not turn a
+failure into success.
+
 ## Remaining deployment steps
 
 Deploy the matching receiver migration, UI, Caddy, API, worker and beat together with Bakney's pairing backend

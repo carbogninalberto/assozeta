@@ -768,3 +768,37 @@ height 1, depth 8 and declared data length 1 is recognized as GBR with size 1x8.
 The ignored-length SUN vectors use width 3 to isolate SUN behavior. Registry
 precedence, including this collision, must be preserved by the future shared
 dispatcher; remaining formats and public login composition remain open.
+
+## GIMP brush images
+
+`ReadGBRHeader`, `DecodeGBR` and `GBRFileProcessor` follow Pillow 11.1's
+[GBR plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/GbrImagePlugin.py).
+Version 1 requires 20 fixed header bytes; version 2 requires 28, including `GIMP`
+and an ignored spacing field. Depth 1 produces L and depth 4 produces RGBA.
+Pixels are a top-to-bottom packed block with no row alignment; truncation fails
+and trailing data is ignored. RGBA uses the common white-composition path.
+
+The declared header size must be at least 20, including version 2. A version-two
+size below 28 causes a negative Python read length and therefore consumes the
+remaining input. Other comment reads stop at EOF. The final byte actually read
+is always discarded from the comment, without requiring a NUL terminator.
+Pixels begin at the actual consumed position, not a potentially past-file
+header size. The Go header records spans in the original input and allocates no
+comment buffer. Header budgets charge consumed bytes; decode budgets charge
+input plus independently owned output. These are logical bounds, not total RSS.
+
+Nonempty grayscale comments survive JPEG encoding; RGBA white composition drops
+metadata. Empty comments omit the JPEG COM marker, matching Pillow. The shared
+Go JPEG encoder now applies that rule to both nil and empty byte slices. The GBR
+oracle exposed the previous difference; production native code is unchanged.
+Lazy size-policy passthrough precedes pixel loading and comment-save failures.
+
+The adapter declares 1,341 header/pixel/file cases, including both versions and
+sample modes, every byte value, short/negative comment reads, arbitrary comment
+terminators, JPEG comment limits, truncated pixels, ignored spacing, size policy
+and a SUN-signature input recognized as GBR by Pillow. Cases compare declared
+pixels and JPEG/original decisions with Pillow, the actual Django helper and the
+shipped non-root/read-only/networkless image. Checks include exact stage budgets,
+overflow, ownership, mid-operation cancellation, 32 mixed concurrent pipelines
+and encoder-stage queue/cancellation/reaping/reuse. Shared registry dispatch and
+public login composition remain open.

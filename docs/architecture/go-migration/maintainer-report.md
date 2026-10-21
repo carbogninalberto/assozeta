@@ -302,3 +302,29 @@ timed out waiting for “Genera codice di collegamento” at
 `selfhost/tests/browser/bakney-sso.mjs:234`. That failure produced no screenshot
 or JSON artifact. Its cause remains unverified; it is not counted as a passing
 gate. This increment changes neither that fixture nor the UI/SSO implementation.
+
+
+The subsequent SUN-head [SSO browser job](https://github.com/carbogninalberto/assozeta/actions/runs/39550083913/job/119057239512)
+passed the complete existing HTTPS/production-proxy/simulated-provider harness.
+Ten fresh local browser sessions also reached an enabled pairing button using a
+built UI and disposable PostgreSQL/Redis/backend. The local startup probe used
+an alternate HTTPS port because port 443 was occupied, so it is not additional
+full-protocol proof. The earlier timeout was not reproduced and no application
+fix is claimed. Initial-stage failures now retain bounded, redacted JSON evidence;
+unit tests cover its allowlist, sensitive-data exclusion and listener cleanup.
+A real-UI injected pairing-status HTTP 503 verifies the failure report's status,
+message identifier and missing button. This strengthens Django regression
+verification; Go SSO and the complete migration remain unimplemented/unverified.
+
+
+The GBR pipeline adds 1,341 declared header/pixel/file cases checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. It preserves versions 1/2, packed L/RGBA samples, actual comment-read
+positions, negative/short reads, unconditional last-byte removal, grayscale
+comment inheritance and RGBA metadata removal. The oracle exposed and now guards
+the shared JPEG encoder's omission of empty comments. Exact budgets, overflow,
+ownership, cancellation, 32 mixed concurrent pipelines and encoder-stage
+queue/cancellation/reaping/reuse pass. Native production sources are unchanged.
+A SUN-signature input recognized as GBR is covered; shared registry dispatch,
+remaining formats and public login composition remain open. Ledger statuses and
+backend activation restrictions are unchanged.

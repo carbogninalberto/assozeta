@@ -652,3 +652,13 @@ oracle. Exact budgets, overflow, ownership, mid-operation cancellation, 32 mixed
 concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse are
 checked. SUN/GBR registry precedence remains a shared-dispatch requirement, as
 documented in the package README. Use the pinned Python environment.
+
+
+`adapters/django/login_gbr.py` adds 1,341 declared GBR header/pixel/file cases.
+It covers versions 1/2, L/RGBA raw samples, every sample value, actual versus
+declared header positions, negative/short comment reads, unconditional last-byte
+comment removal, JPEG comment bounds, lazy admission, size policy and SUN/GBR
+recognition overlap. The oracle also guards the shared encoder's omission of
+empty JPEG comments. Accounts invokes the actual Django helper and the shipped
+image runs the same cases. Stage budgets, overflow, ownership, cancellation,
+32 mixed concurrent pipelines and encoder queue/reaping/reuse are checked.

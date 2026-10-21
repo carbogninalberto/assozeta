@@ -727,3 +727,16 @@ queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
 SUN/GBR recognition precedence is documented as a remaining shared-dispatch
 requirement. Other formats, shared admission and public login remain open;
 ledger status counts and backend activation restrictions are unchanged.
+
+
+The GBR pipeline adds 1,341 declared header/pixel/file cases checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. It preserves versions 1/2, packed L/RGBA samples, actual comment-read
+positions, negative/short reads, unconditional last-byte removal, grayscale
+comment inheritance and RGBA metadata removal. The oracle exposed and now guards
+the shared JPEG encoder's omission of empty comments. Exact budgets, overflow,
+ownership, cancellation, 32 mixed concurrent pipelines and encoder-stage
+queue/cancellation/reaping/reuse pass. Native production sources are unchanged.
+A SUN-signature input recognized as GBR is covered; shared registry dispatch,
+remaining formats and public login composition remain open. Ledger statuses and
+backend activation restrictions are unchanged.
