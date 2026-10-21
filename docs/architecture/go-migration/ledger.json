@@ -17864,27 +17864,51 @@
           "name": "'clear_expired_subscription_tokens'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_token_cleanup.go",
+        "BE_GO/internal/repository/subscription_token_cleanup.go",
+        "BE_GO/internal/service/subscription_token_cleanup.go",
+        "BE_GO/internal/service/job_executor.go"
+      ],
+      "dependencies": [
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/views/subscriptions_views.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE_GO/internal/repository/jobs.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python arguments; Go version 1 empty object, trusted nil association scope and a running fenced job.",
+        "response": "Django None; Go completed job with SQL NULL result.",
+        "errors": "Legacy task catches collector/delete/audit errors and returns None. Go rolls back all token/audit changes, logs a fixed code and records the handled outcome in a fresh transaction. Cancellation, rollback failure, stale lease or failed operational completion propagate.",
+        "authentication": "Internal periodic/worker task with no HTTP actor; public membership-card routes remain separate scope.",
+        "permissions": "Instance-wide internal command. Invalid association scope or supplied cutoff/arguments fail before SQL. No public job publication is enabled.",
+        "resource_scope": "All SubscriptionToken rows with expiration_date strictly before execution-date midnight UTC, including deleted associations/subscriptions and valid zero UUID identities. Tokens expiring during today are retained.",
+        "side_effects": "Hard-delete selected tokens and append exact auditlog 3.4.1 DELETE logs for all five model fields. No association audit index is created after background deletion because object lookup and actor/direct-association fallbacks are absent. No child jobs/provider calls. Intentional fix: derive audits from actual DELETE RETURNING rows, avoiding duplicate logs from concurrent legacy collectors.",
+        "transaction": "One READ COMMITTED transaction joins the audited DELETE RETURNING/INSERT command and fenced job completion. No token rowset is materialized in Go. Repeatable-read was rejected by a failing real heartbeat-overlap test; the corrected transaction permits concurrent lease renewal. Audit/completion failure rolls back deletion. Completed occurrence replay cannot delete later tokens.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/subscription_token_cleanup.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/subscription_token_cleanup_integration_test.go"
+      ],
+      "evidence": [
+        "Actual Django oracle establishes UTC midnight/equality/same-day behavior, nil UUID, deleted association/subscription scope, exact audit fields and timestamps, absent AuditLogIndex, replay and audit-trigger rollback. Go initially fails compilation, then ten explicitly required PostgreSQL groups pass under race detection. Full managed-table readback and unrelated-audit preservation are checked. Evidence: quality-reports/go-migration/subscription-token-cleanup/.",
+        "A slow deletion with actual JobExecutor heartbeat exposed repeatable-read completion failure (failed/task_failed). The single-command READ COMMITTED implementation passes the retained regression. Stale completion and replay roll back token/audit changes; blocked SQL cancellation leaves recoverable work and the pool recovers.",
+        "Two actual Django collectors synchronized after collection emit six audits for three deleted tokens. The intended idempotent Go contract emits three; two forced-overlap SQL commands are observed and settle with exactly one log per deleted token. Mixed-runtime races remain open.",
+        "Django service query counts are 7/52/389 at 1/16/128 tokens. Go uses four statements at 0/1/16/128/129/257/512, excluding executor overhead. EXPLAIN ANALYZE of the actual command over 4096 tokens deletes/audits 128, sequentially filters 3968 others and uses the existing content-type unique index. No latency or constant database-work claim."
+      ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The concrete task body is implemented but not registered in a production worker. Celery policy captured from the actual task: acks_late=false, max_retries=3, default_retry_delay=180, rate_limit=60/m, no hard/soft timeout; body never calls retry. Go rate limiting, publication/occurrence deduplication, scheduler ownership and production attempt/timeout policy remain open.",
+        "SubscriptionToken is used by supported membership-card links. Public mint/read permissions, current-instant token expiry and association authorization remain separate endpoint requirements. Static once-per-minute scheduling and persisted Beat state still need full lifecycle reconciliation.",
+        "See BE_GO/internal/service/subscription_token_cleanup.md. Historical migration/import/rollback, mixed-runtime deletion races, realistic scale/contention, restore/switching and normal release delivery are not proven by this fixture."
       ]
     },
     {

@@ -1039,3 +1039,13 @@ a completed reset. Seven PostgreSQL groups follow the actual Django oracle, incl
 legacy handled SQL errors, cancellation, replay and bounded statement counts. No
 production publisher or scheduler is activated. The ledger entry is `implementing`;
 see [the task contract](../../../BE_GO/internal/service/email_balance_reset.md).
+
+### Membership-card token cleanup
+
+The concrete cleanup service preserves UTC-midnight selection and exact Django
+deletion audit data. Its single SQL command derives logs from rows actually deleted,
+fixing a confirmed duplicate-audit race in concurrent Django collectors. Ten required
+PostgreSQL groups include heartbeat overlap, transactional rollback, replay and an
+executed 4,096-token plan. The ledger is `implementing`; production rate limiting,
+scheduling and lifecycle ownership remain open. See
+[the task contract](../../../BE_GO/internal/service/subscription_token_cleanup.md).
