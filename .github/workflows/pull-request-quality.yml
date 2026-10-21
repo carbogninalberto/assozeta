@@ -103,6 +103,8 @@ jobs:
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Verify Django impersonation cache interoperability
         run: python TESTS/adapters/django/impersonation_cache.py
+      - name: Verify shared login rate counters and failure handling
+        run: python TESTS/adapters/django/login_rate.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
       - name: Check native PNG decoder with sanitizers
@@ -123,6 +125,7 @@ jobs:
             quality-reports/go-migration/credentials.json
             quality-reports/go-migration/permissions.json
             quality-reports/go-migration/impersonation-cache/
+            quality-reports/go-migration/login-rate/
             quality-reports/go-migration/accounts/
 
   quality:

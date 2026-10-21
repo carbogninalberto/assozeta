@@ -841,3 +841,12 @@ loss/recovery and idle SIGTERM. Remaining environment settings, VERSION preceden
 provider/root/public-login composition and activation gates are open. See
 [configuration scope](../../../BE_GO/internal/config/README.md) and evidence under
 `quality-reports/go-migration/environment/`.
+
+The login rate-counter service now interoperates with Django on cache database 1.
+Fourteen declared cases preserve keys, thresholds, jittered minute windows and
+nonrenewed TTLs; Django continues Go-written counters. Sixty-four concurrent Go
+requests use four connections and 127 write commands, admitting exactly five.
+Expiration races and real Redis I/O deadlines/reuse are verified. Request parsing,
+configuration, middleware/HTTP behavior and public wiring remain open. See
+[`login_rate.md`](../../../BE_GO/internal/service/login_rate.md); no ledger status
+is promoted.

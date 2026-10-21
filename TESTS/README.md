@@ -752,3 +752,11 @@ loading leaves process state unchanged and representations/errors omit synthetic
 secrets. No settings import, developer `.env`, database or provider access is used.
 The CI protocol step runs this adapter before credentials. See the scoped contract
 in `BE_GO/internal/config/README.md`; complete environment/release wiring is open.
+
+`python TESTS/adapters/django/login_rate.py` checks the existing login rate-counter
+protocol against actual django-ratelimit and a private Redis. Fourteen declared
+threshold/key/window cases verify bidirectional writes and TTL preservation.
+Sixty-four concurrent Go requests verify exactly five admissions, bounded command
+counts and four connections. Both runtimes deny an expiry race; real paused Redis
+I/O verifies deadlines and pool reuse. Request-key extraction, HTTP responses and
+public-login wiring remain outside this counter adapter. No cases are skipped.

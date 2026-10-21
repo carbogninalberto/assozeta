@@ -125,3 +125,9 @@ Business migration ownership remains in Django. The Dockerfile follows the
 reference multi-stage non-root pattern, but is not yet part of release images or
 updater manifests. No operator activation/rollback command exists yet. Do not
 point this incomplete implementation at an installation as its selected backend.
+
+Shared login rate counters now preserve Django Redis keys, windows, thresholds
+and nonrenewed TTLs. Fourteen bidirectional cases and 64 concurrent Go requests
+verify the protocol and resource bounds. Expiration races fail closed, and real
+Redis timeout/recovery is tested. Request-key extraction, configuration and HTTP
+admission remain open; see `internal/service/login_rate.md`.
