@@ -100,7 +100,8 @@ Evidence is in `quality-reports/go-migration/storage-configuration/`.
 This is still a subset of the complete environment contract. Remaining
 email/renderer/integration/security flags, complete
 value/encoding extremes, VERSION-file precedence and release/root wiring need
-their own evidence. Storage credential discovery, profile contents and provider
-composition remain open. Explicit file-read failures and PostgreSQL/listener validation
+their own evidence. A credential-provider dependency now has private-file/process and local HTTP
+coverage; see `../../pkg/storage/s3credentials/README.md`. Complete fallback-chain
+compatibility and production composition remain open. Explicit file-read failures and PostgreSQL/listener validation
 are Go startup checks; these tests do not claim every Django startup failure has
 the same diagnostic or timing. Backend switching remains unimplemented.

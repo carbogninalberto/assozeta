@@ -1151,3 +1151,21 @@ settings as Django. Password/session, image, HTTP/scope/restore and all five tas
 body checks pass on production Python 3.13.2. Evidence:
 `quality-reports/go-migration/storage-configuration/full-accounts-results.json`.
 This is current-model regression evidence, not historical-schema or switch parity.
+
+Storage credential construction now passes 44 authored S3Storage/Boto3 comparisons
+using private profile files and actual credential processes. It preserves tested
+selection/INI/error boundaries, rejects unusable partial credentials and bounds
+process output. HTTP tests verify concurrent caching, short-lived expiry/refresh,
+fixed errors, body limits and caller/transport deadlines. Credential subprocesses
+cannot write to the console and their process groups are terminated on cancellation.
+Two nested roles over a local STS endpoint require one process and two signed requests
+for 32 callers. Seven real MinIO groups pass with this constructor supplying the
+S3 deletion client. See `BE_GO/pkg/storage/s3credentials/README.md` and
+`TESTS/adapters/django/storage_credentials.py`. This is a tested dependency, not
+complete Boto3 credential-chain parity or production worker/storage composition.
+
+The `dd146b7` quality run reported an empty initial frontend-version label in
+`self-instance-reload.spec.js`. Its independent Vite/Node/Caddy fixture does not
+run Go. An unchanged local rerun passed all eleven browser cases; the CI failure
+is recorded as not reproduced, not fixed. Evidence:
+`quality-reports/go-migration/storage-credentials/ui-job.log` and `reload-ui.log`.

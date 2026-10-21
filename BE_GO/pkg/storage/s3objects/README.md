@@ -78,3 +78,7 @@ Primary protocol references:
 - [S3 Object Lock behavior](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
 - [S3 version IDs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html)
 - [AWS Object Lock access-denied cases](https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-403-errors.html)
+
+The MinIO rehearsal now constructs its primary credentials through
+`../s3credentials`, including isolated shared-file selection. See that package
+contract for verified provider behavior and remaining credential-chain gaps.
