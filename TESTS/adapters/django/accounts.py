@@ -19,9 +19,9 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['session-auth','refresh','identifiers','two-factor-info'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -168,6 +168,15 @@ def main():
                                 'schema':'current Django models; migration history not exercised','customer_data':'none'}
                         print(json.dumps(report),flush=True)
                         return
+                    from TESTS.adapters.django.retired_billing import run as retired_billing
+                    retired_billing_contracts=retired_billing(work,log,tool_env,identity_cache)
+                    if options.only == 'retired-billing':
+                        connections.close_all()
+                        report={'success':True,'scope':'retired software billing with supporting account/identity/session/refresh/identifier/2FA fixtures only',
+                                'retired_billing_contracts_per_backend':retired_billing_contracts,
+                                'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     from TESTS.adapters.django.login_transport import run as login_transport
                     login_transport_contracts = login_transport(work, log, tool_env)
                     from TESTS.adapters.django.social_login import run as social_login
@@ -239,6 +248,7 @@ def main():
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
+                report['retired_billing_contracts_per_backend']=retired_billing_contracts
                 report['two_factor_info_contracts_per_backend']=two_factor_info_contracts
                 report['identifier_http_contracts_per_backend']=identifier_contracts
                 report['session_auth_cases']=session_auth_cases

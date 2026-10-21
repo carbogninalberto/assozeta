@@ -156,3 +156,8 @@ and current-state transitions run against both real HTTP servers; status adds
 no query beyond existing account/identity admission. See
 [the status contract](internal/handler/two_factor_info.md). Setup and update remain
 unimplemented.
+
+The legacy software-billing routes retain their authenticated HTTP 410 responses
+without entitlement or provider work. This does not retire association/course
+payments. Ten portable contracts and PostgreSQL query tracing cover the
+compatibility boundary; see [retired billing](internal/handler/retired_billing.md).
