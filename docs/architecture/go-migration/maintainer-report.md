@@ -367,3 +367,20 @@ are updated without changing the UI or promoting pending workflow evidence.
 All 180 manual Python tests and 11 browser-helper tests pass locally without
 skips. The full isolated manual capture/publication workflow remains a CI gate;
 these unit/helper checks do not establish that broader result.
+
+
+Login transport now preserves field presence and raw credential values, response
+negotiation, supplied-Bearer/identity admission and method/body-error ordering.
+Fifteen portable contracts pass against real Django and Go HTTP for requests that
+stop before credential selection; later Go stages are asserted uncalled and all
+Django managed tables remain unchanged. Cookie success/error behavior and trusted
+audit propagation have component tests. Public registration, rate limits, complete
+request coercion, password/social composition and audit middleware remain open.
+
+The next full manual CI run passed its initial source/test checks, then stopped at
+`Recipe changed; review existing content before preparation: docs/manuale/attendance-carnet-recipes.mjs`
+in [run 39553891382](https://github.com/carbogninalberto/assozeta/actions/runs/39553891382).
+The external manual’s reviewed recipe binding differs from this repository. The
+scaffold correctly refuses to refresh that editorial binding without content
+review. Full capture/publication verification remains incomplete; no passing
+manual delivery gate is claimed from the preceding unit/helper results.

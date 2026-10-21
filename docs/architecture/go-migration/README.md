@@ -761,3 +761,11 @@ user effects and bounded query counts (1–18 for these fixtures). A real final-
 failure withholds the response while retaining earlier committed invariants. See
 [the service contract](../../../BE_GO/internal/service/password_session.md).
 Public HTTP login, complete images, social admission and middleware remain open.
+
+
+The login transport component now preserves raw field presence and DRF admission
+ordering. Fifteen portable pre-credential HTTP contracts pass on Django and an
+isolated Go handler server without reaching account/session work or changing
+managed tables. [Transport scope and exclusions](../../../BE_GO/internal/handler/login.md)
+include rate limits, trusted audit middleware, raw credential coercion and full
+password/social composition. `cmd/server` still does not register public login.
