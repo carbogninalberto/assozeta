@@ -70,7 +70,7 @@ The initial undefined constructor, lenient INI behavior, expired process output,
 unbounded endpoint HTTP, oversized output and short-lived-expiry failures were
 observed before the corresponding corrections.
 
-`TESTS/adapters/django/storage_roles.py` now adds 44 authored production-Python
+`TESTS/adapters/django/storage_roles.py` now adds 62 authored production-Python
 comparisons against real S3Storage/Boto3 and a private STS HTTP endpoint. The
 endpoint independently verifies the complete SigV4 signature, signing identity,
 security token, exact request fields and request count for both runtimes. Omitted
@@ -88,9 +88,30 @@ dereferences, preventing a panic and refusing unusable credentials. The existing
 operations. No AWS account was contacted. Evidence, including the initial failing
 protocol comparisons, lives under `quality-reports/go-migration/storage-roles/`.
 
+MFA uses an explicit `Options.MFAToken` callback receiving a context and the
+configured device serial. Without a callback, MFA fails without reading console
+input. No new environment variable or credential file is introduced. The callback
+must honor its context and bound its work; the role client supplies a ten-second
+context. It is invoked at most once per role/provider, including failed callbacks,
+invalid parameters, provider denial and expired responses. This matches Boto3's
+MFA refresher: a subsequent refresh requires constructing a new provider.
+
+Eighteen of the 62 cases verify MFA codes/device serials, literal and Unicode
+values, minimum-length validation after the callback, nested callback order,
+environment sources, failure replay and actual expiration followed by refusal to
+reprompt. The private endpoint checks signed MFA request fields. Go race tests
+verify 32 concurrent waiters share one callback and at most one STS request, after
+a first waiter cancels; callback failure returns fixed errors with no HTTP.
+Pre-cancelled callers do not consume the callback. A cancelled waiter does not
+cancel the shared refresh, consistent with the existing cache boundary. No MFA
+code is logged or retained in provider state after constructing its request.
+Evidence for this extension is under `quality-reports/go-migration/storage-mfa/`.
+Production interactive credential acquisition and early-refresh parity remain
+unimplemented; these tests do not establish live AWS policy acceptance.
+
 This role adaptation covers `source_profile` chains and `credential_source =
 Environment`. Other provider chains still need their own differential proof.
-Remaining gates include MFA, web identity, SSO, metadata/ECS source roles, legacy
+Remaining gates include web identity, SSO, metadata/ECS source roles, legacy
 Boto credential files, provider refresh/error semantics, full INI compatibility
 (including quoted source-profile references and conflicting aliases), live cloud
 evidence and composition with all `.env`-only fallback-chain settings. Production destructive cleanup still needs

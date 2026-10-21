@@ -387,6 +387,19 @@ again. See `TESTS/adapters/django/storage_roles.py` and
 identity, full INI/refresh behavior and production composition remain unverified;
 this does not implement another task or activate a backend.
 
+
+The STS comparison now has 62 authored cases, including 18 MFA cases. A trusted,
+explicit context-aware callback supplies the configured device's code; workers
+never implicitly read console input. Like Boto3, each role consumes one callback
+attempt and refuses to reprompt after an error or credential expiry. Real local
+signed requests verify literal codes, parameter validation order, nested roles and
+environment sources. Race tests verify 32 callers share one callback and at most
+one HTTP request after a waiter cancels, with fixed failure errors. The existing
+44-case selection oracle and Go race/vet pass again. Evidence:
+`TESTS/adapters/django/storage_roles.py`, `BE_GO/pkg/storage/s3credentials/mfa_test.go`
+and `quality-reports/go-migration/storage-mfa/`. Production callback composition,
+MFA early refresh, other provider chains and the full migration remain open.
+
 ## Remaining completion gates
 
 Every requirement in the [acceptance matrix](README.md#required-acceptance-matrix)

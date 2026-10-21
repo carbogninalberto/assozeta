@@ -60,7 +60,7 @@ func (w *outputLimit) Write(p []byte) (int, error) {
 // The SDK exposes a custom process command builder but not through its config
 // loader. Replace selected process providers, including source_profile chains,
 // before any Retrieve. Other provider choices stay with the official loader.
-func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, profiles map[string]map[string]string, depth int) (aws.Config, error) {
+func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, profiles map[string]map[string]string, token MFATokenProvider, depth int) (aws.Config, error) {
 	if depth > 20 {
 		return aws.Config{}, ErrConfiguration
 	}
@@ -89,7 +89,7 @@ func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(
 			if err != nil {
 				return aws.Config{}, ErrConfiguration
 			}
-			source, err = secureProcessProviders(ctx, source, nested, profiles, depth+1)
+			source, err = adaptProviders(ctx, source, nested, profiles, token, depth+1)
 			if err != nil {
 				return aws.Config{}, err
 			}
@@ -105,7 +105,7 @@ func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(
 		}
 		signer := cfg
 		signer.Credentials = source.Credentials
-		role, err := newRoleClient(sts.NewFromConfig(signer), profiles[shared.Profile])
+		role, err := newRoleClient(sts.NewFromConfig(signer), profiles[shared.Profile], token)
 		if err != nil {
 			return aws.Config{}, err
 		}
