@@ -898,3 +898,11 @@ cases, including timestamp rounding and rejection of cross-document paths.
 This does not execute provider operations. See
 `BE_GO/pkg/storage/documentkey/README.md` and run
 `TESTS/adapters/django/document_keys.py`.
+
+The S3 deletion dependency now passes seven real MinIO groups and four Django
+storage cases, including batches through 1,000 objects, version/delete-marker
+readback, real retention partial failure and credential denial. Wire checks cover
+response bounds, cancellation, deadlines, admission and fixed errors. It is not
+wired to the medical task: durable intent, uploads/references and restore fencing
+remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
+`TESTS/adapters/django/s3_objects.py`.

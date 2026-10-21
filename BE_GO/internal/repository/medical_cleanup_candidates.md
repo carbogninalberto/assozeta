@@ -10,7 +10,9 @@ already-cancelled context stop before SQL.
 This snapshot is not deletion authority. It has no row locks, upload-lease check,
 file-provider call, audit mutation or durable completion. A later attachment can
 invalidate it. The destructive task, cross-runtime attachment coordination,
-provider protocol and interruption/restore recovery remain required work. No
+provider integration and interruption/restore recovery remain required work.
+The separate S3 batch-deletion dependency is implemented and tested against real
+MinIO; see `pkg/storage/s3objects/README.md`. It is not invoked by this reader. No
 cleanup handler is registered in the Go worker or production scheduler.
 
 The read corrects the legacy selection's known reference omissions. A document
