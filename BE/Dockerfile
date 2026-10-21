@@ -59,15 +59,17 @@ COPY --chown=assozeta:assozeta . .
 RUN printf '%s\n' "$VERSION" > VERSION \
     && printf '%s\n' "$CODE_REVISION" > CODE_REVISION \
     && printf '%s\n' "$REQUIRE_MANUAL" > MANUAL_REQUIRED \
-    && python -m application.manuale.bundle --root /app/release-manual --revision "$CODE_REVISION" --release "$VERSION" --required "$REQUIRE_MANUAL" \
     && chown -R root:root /app/release-manual \
-    && chmod -R a-w /app/release-manual \
+    && chmod -R a+rX,a-w /app/release-manual \
     && chmod +x entrypoint.sh \
     && mkdir -p /app/manuale \
     && chown assozeta:assozeta /app/manuale \
     && chown assozeta:assozeta VERSION CODE_REVISION
 
 USER assozeta
+
+# Validate as the runtime user: atomic package files can arrive with mode 0600.
+RUN python -m application.manuale.bundle --root /app/release-manual --revision "$CODE_REVISION" --release "$VERSION" --required "$REQUIRE_MANUAL"
 
 EXPOSE 8000
 

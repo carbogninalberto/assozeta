@@ -192,7 +192,7 @@ def main():
             record('container recreation retains the image-matched manual')
             # Stop at the real create/start boundary, as if activation had been
             # interrupted after replacing the container but before starting it.
-            command(compose('create', '--no-deps', '--force-recreate', 'api'), env=env)
+            command(compose('up', '--no-start', '--no-deps', '--force-recreate', 'api'), env=env)
             candidate = subprocess.check_output([str(arg) for arg in compose('ps', '-a', '-q', 'api')],
                                                 env=env, text=True).strip()
             state = subprocess.check_output(['docker', 'inspect', '--format', '{{.State.Status}}', candidate],
@@ -273,6 +273,9 @@ def main():
             result['status'] = 'passed'
         finally:
             if env_file.exists():
+                if result['status'] != 'passed':
+                    subprocess.run(compose('logs', '--no-color', '--tail', '200'),
+                                   stdout=log, stderr=log, env=env)
                 subprocess.run(compose('down', '-v', '--remove-orphans'), stdout=log, stderr=log, env=env)
             subprocess.run(['docker', 'rm', '-f', registry_name], stdout=log, stderr=log)
             for tag in reversed(images):
