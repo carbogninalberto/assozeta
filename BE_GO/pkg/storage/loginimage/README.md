@@ -4,7 +4,8 @@ This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
 transformation, plus bounded libjpeg JPEG encoding and pixel decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
-or complete lazy EXIF/MPO admission. A lazy marker reader is available separately.
+or wire the public service. JPEG marker/EXIF/MPO admission and the complete
+JPEG file pipeline are available as separate components.
 Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
@@ -43,7 +44,7 @@ Inputs remain unchanged and returned pixel storage does not alias them. The call
 supplies a mandatory logical working-byte limit. Input pixels, output/intermediate
 buffers, alpha conversion and coefficient storage are checked before allocations;
 coefficient arithmetic cannot wrap the budget. The limit does not claim to bound
-allocator overhead or process RSS. Whole-pipeline admission, budgets for other file
+allocator overhead or process RSS. JPEG pipeline admission is bounded; budgets for other file
 decoders and supported-data sizing remain part of the full processor work. Cancellation is
 checked during ASCII validation, Base64 decoding, alpha conversion, coefficient
 calculation and pixel passes; no failure returns a partial buffer.
@@ -84,7 +85,7 @@ The helper reads one row at a time, verifies exact input length and buffers outp
 under its own byte ceiling before writing stdout. Go separately bounds stdout and
 cancels an overflowing or stalled process. These are logical payload/process
 limits, not a total RSS cap; libjpeg working memory and Go allocator overhead are
-additional. Whole-pipeline decoder/transform admission remains required.
+additional. `JPEGFileProcessor` supplies admission across the JPEG stages.
 
 `BE_GO/Dockerfile` compiles the helper against Alpine 3.21's static libjpeg-turbo
 in a separate build stage. The server remains `CGO_ENABLED=0`; the final image
@@ -127,10 +128,9 @@ A mandatory consumed-header byte budget and cancellation checks bound parsing;
 errors return no partial header. Returned metadata does not alias input bytes.
 
 EXIF fragments are combined, and the last MPF payload/offset and Ultra HDR marker
-presence are retained for subsequent processing. **This is not completed
-`Image.open` admission:** EXIF DPI parsing and MPO adoption still need to interpret
-these values before a caller can decide full header validity or select an image
-frame. The marker reader is not wired into the public login service.
+presence are retained for `InspectJPEG`, which applies EXIF DPI and MPF
+first-frame admission. The marker reader alone does not perform that admission.
+Neither component is wired into the public login service.
 
 `TESTS/adapters/django/login_jpeg_header.py` specifies 1,352 explicit outcomes:
 all 256 marker codes, empty/incomplete payloads, component/precision/quantization
@@ -143,7 +143,8 @@ A delegating loader observer confirms zero load attempts, distinguishing early
 passthrough from a caught-error fallback with the same URI output. Go verifies exact header budgets, metadata ownership/ordering/offsets, cancellation
 during scanning and 32 concurrent readers. The same header oracle runs in the
 non-root, read-only, networkless image rehearsal alongside the existing codecs.
-These cases do not certify deferred EXIF/MPO processing or other file formats.
+These marker cases do not certify EXIF/MPO processing or other file formats;
+the separate metadata suite covers the former.
 
 ## JPEG decoding and inherited comments
 
@@ -155,8 +156,8 @@ complete binary frame after decoding. Go validates the frame length, mode,
 dimensions and comment length; no failure returns partial pixels. Raster bytes are
 bounded separately from a fixed maximum of 65,533 comment bytes and a 20-byte
 frame header. These payload bounds do not include libjpeg's internal allocations
-or allocator overhead. Global admission across decoding, transformation and
-encoding remains open.
+or allocator overhead. `JPEGFileProcessor` bounds admission across decoding,
+transformation and encoding for its shared instance.
 
 The decoder follows [Pillow's ordinary JPEG settings](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/JpegDecode.c),
 including fancy upsampling, the normal DCT and inverted CMYK packing. It suspends
@@ -193,8 +194,43 @@ checked with AddressSanitizer/UndefinedBehaviorSanitizer using exact exit codes
 and complete frame comparisons, including invalid input; generic error mapping
 cannot hide sanitizer failures.
 
-Still required: full file-format recognition and EXIF/MPO lazy admission, other
-format decoders (including animation/frame, metadata and color-mode rules), full
-invalid/truncated-file fallback policy, global resource admission, supported-data
-sizing and real response/HTTP composition. These checks do not certify complete
-image parity.
+## JPEG metadata and complete file pipeline
+
+`InspectJPEG` interprets EXIF DPI only when a JFIF DPI has not already been set.
+It preserves Pillow's malformed-directory fallback and uncaught scalar-index
+failure. MPF supports the observed TIFF byte orders/types, partial directories,
+first-value count semantics and first-frame MPO adoption. Unreadable MPF normally
+retains the base JPEG; truncated MP records reject it. Unsupported MP formats
+fall back before later records are read. Ultra HDR suppresses MPO adoption but
+does not bypass malformed-record validation. Subsequent MPO frame seeking is not
+needed by `compress_base64` and is not implemented as a general image API.
+
+`NewJPEGFileProcessor` requires positive header, raster, encoded-file/output and
+transform limits, concurrency and timeout. `Process` consumes decoded file bytes;
+other signatures return `ErrNotJPEG` for the future format dispatcher. One shared
+admission slot covers header inspection, policy, native decode, transform and
+native encode; queue time counts toward one overall deadline. Native children
+retain their own bounded process runner. Invalid JPEGs and expected Pillow save
+failures return `KeepOriginal`; cancellation, limits and unavailable executables
+return errors without output. Exact-bound passthrough never invokes the codec.
+The authoritative inherited comment comes from the lazy header, including a
+comment before an EOI/SOI tables-only boundary. No orientation/ICC conversion is
+introduced.
+
+`login_jpeg_metadata.py` establishes 226 explicit EXIF/MPF admission outcomes and
+exact first-frame JPEGs. Tests cover cancellation inside directories/MP records
+and 32 concurrent MPO inspections. `login_jpeg_file.py` adds 73 explicit policy
+cases: three channel modes, exact 1 MiB boundaries, shrink/enlarge, floating-point
+truncation, zero-sized targets, header-only passthrough/failure and tables-only
+comments. The complete file processor also reruns the 226 metadata and 1,868
+decoder cases, returning `ErrNotJPEG` for non-JPEG signatures. Actual Django helper
+calls verify the original URI versus exact encoded output. Tests exercise input,
+header, raster and transform budgets, 32 concurrent resizes, and cancellation of
+an encoder while another whole-pipeline request waits. Cancellation reaps the
+child, releases all stages and permits a subsequent request. The shipped
+non-root, read-only, networkless image runs the same file and metadata oracles.
+
+Still required: other format decoders (including animation/frame, metadata and
+color-mode rules), their invalid/truncated-file fallback policy, global admission
+across formats, supported-data sizing and real response/HTTP composition. These
+checks do not certify complete image parity.

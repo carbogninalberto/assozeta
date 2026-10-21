@@ -83,9 +83,11 @@ codec passes the same 180-vector oracle. JPEG pixel decoding now adds 312 exact
 pixel/comment cases and 1,556 invalid streams, checked against the actual Django
 helper and shipped codec. Inherited comments and Pillow's long-comment save
 failure are preserved. A lazy JPEG marker reader adds 1,352 explicit Pillow cases
-and three real Django header-only passthrough checks. EXIF/MPO postprocessing,
-other file decoders, whole-pipeline resource admission and login wiring remain
-required.
+and three real Django header-only passthrough checks. EXIF/MPF admission adds
+226 explicit cases; a bounded complete JPEG file pipeline adds 73 size/fallback
+cases and reruns the metadata/decoder vectors. Actual Django and the shipped
+image agree. Other file decoders, admission across formats and login wiring
+remain required.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

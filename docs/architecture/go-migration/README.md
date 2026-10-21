@@ -579,10 +579,17 @@ recognizable-but-undecodable headers, consumed byte limits, metadata ownership,
 comment/EXIF ordering, MPF offsets and pixel-limit warnings. Three actual Django
 header-only cases return the original URI before loading pixels. Cancellation and
 32 concurrent readers pass, and the image rehearsal includes the marker oracle.
-EXIF DPI parsing and MPO adoption remain deferred; retaining their raw metadata
-is not proof of completed `Image.open` admission.
+EXIF DPI and first-frame MPO admission now add 226 explicitly expected cases,
+including JFIF bypass, partially readable TIFF directories, scalar-index failures,
+truncated MP entries and Ultra HDR handling. A shared JPEG file processor composes
+lazy admission, the exact disk-size policy, decoding, transformation and encoding.
+Its 73 additional cases cover three modes, exact 1 MiB thresholds, resizing,
+header-only outcomes and inherited tables-only comments. It also reruns the 226
+metadata and 1,868 decoder cases end to end. Actual Django helper output/fallback,
+32 concurrent resizes, per-stage budgets and whole-pipeline queued/running
+cancellation pass. The non-root image runs the same metadata/file oracles.
 
 This is not wired as a complete image processor. Full format recognition,
-EXIF/MPO admission, other decoders and metadata/mode/truncation policy, whole-pipeline admission
+other decoders and metadata/mode/truncation policy, admission across file formats
 and full response/HTTP composition remain required. See the
 [pixel-core contract](../../../BE_GO/pkg/storage/loginimage/README.md).
