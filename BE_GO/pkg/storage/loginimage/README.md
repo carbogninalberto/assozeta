@@ -234,3 +234,43 @@ Still required: other format decoders (including animation/frame, metadata and
 color-mode rules), their invalid/truncated-file fallback policy, global admission
 across formats, supported-data sizing and real response/HTTP composition. These
 checks do not certify complete image parity.
+
+## PNG compressed pixels
+
+`DecodePNGScanlines` accepts the compressed bytes of one PNG tile plus an admitted
+pixel specification. It implements all five PNG row filters, Adam7's seven passes
+and all 15 depth/color combinations accepted by Pillow 11.1. This is a pixel
+primitive: it does not recognize PNG files, parse/check chunk headers or CRCs,
+interpret metadata, select APNG frames or implement the complete PNG file policy.
+
+Grayscale 2/4-bit samples expand to L; one-bit samples retain mode `1` as unpacked
+0/255 bytes. Palette indices retain P, 8-bit gray-alpha retains LA, and grayscale
+16-bit retains I;16 with little-endian samples. RGB/RGBA 16-bit samples use their
+high bytes. Pillow's 16-bit gray-alpha case expands to RGBA, unlike 8-bit LA.
+These distinctions matter: P/LA/I;16 cannot be saved as JPEG, and resizing mode 1
+requires a separate nearest-neighbour path rather than the existing Lanczos
+transform. That resized mode-1 path remains to implement in the full processor.
+
+Input, output and two maximum-width row buffers count toward an explicit logical
+working-byte budget checked before allocation. Zlib internals and allocator/RSS
+overhead are not included. Invalid specifications and overflowing dimensions
+return no raster. Cancellation is checked while reading compressed data, between
+rows and during filter/unpack loops. Inputs are immutable and concurrent calls
+share no decoder state. Missing zlib trailers after all required scanlines are
+tolerated; a checksum failure reached while producing a required row fails.
+Surplus inflated bytes are ignored, so a corrupt checksum beyond those bytes
+must not reject an otherwise accepted image.
+
+`TESTS/adapters/django/login_png_pixels.py` establishes 801 explicit cases:
+750 sample/filter/interlace combinations across five sizes, including buffers
+larger than the deflate window, plus 51 truncation/filter/checksum cases. Expected
+pixels are constructed directly from samples and independently compared with
+Pillow; outputs are not merely copied from the reference decoder. The account
+adapter also calls the actual Django helper for all cases. At unchanged sizes,
+478 produce exact JPEG bytes from decoded pixels/white alpha composition, while
+300 unsupported modes and 23 invalid pixel streams preserve the original URI.
+Mode 1 is normalized to L only for this unchanged-size JPEG test. The Go test
+checks the separate transform/encoder composition without claiming PNG file
+admission. Limits at the exact boundary, integer overflow, mid-decode cancellation
+and 32 concurrent Adam7 decodes are covered. The non-root/read-only/networkless
+image runs the same PNG pixel and JPEG-composition oracle.
