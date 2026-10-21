@@ -686,3 +686,42 @@ operands and size policy. Exact budgets, overflow, ownership, mid-header/pixel/
 long-scan cancellation, 32 concurrent mixed-image pipelines and encoder-stage
 admission/cancellation/reaping/reuse pass. Production native sources are unchanged.
 Other formats, shared format dispatch/admission and public login remain open.
+
+## SGI planar and RLE images
+
+`ReadSGIHeader`, `DecodeSGI` and `SGIFileProcessor` follow Pillow 11.1's
+[SGI plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/SgiImagePlugin.py),
+[RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/SgiRleDecode.c)
+and sample unpackers. The eight supported byte-depth/dimension/channel layouts
+produce L, RGB or RGBA. Both raw planar and RLE rows run from bottom to top;
+16-bit samples retain only their high byte. Raw planes use the absolute 512-byte
+start even when the admitted header is shorter. Headers as short as 12 bytes and
+unknown compression values retain lazy 200x100 passthrough; unknown compression
+fails when pixels are actually requested. Header metadata does not change the
+default JPEG output.
+
+RLE tables may reference shared, overlapping, unordered or unused row data. The
+reference treats declared lengths as signed 32-bit packet-loop counts, not slices
+of encoded bytes. Zero/negative counts leave row storage unchanged; offsets below
+512 still fail, while unconsumed past-file offsets are tolerated. A nonzero opcode
+with one declared packet remaining exits successfully before storing that row,
+leaving subsequent output zero. Partial rows retain the preceding source row's
+unwritten samples and bands. Literal/repeat bounds preserve the reference's
+last-byte end pointer, including 16-bit control-byte and terminator behavior.
+
+The decoder reads tables directly from the input and uses one persistent
+normalized row for RLE. Logical budgets count input plus output, and that row for
+RLE; they do not cap aggregate RSS. Raw decoding needs no separate plane buffer.
+One admission/deadline covers the full file pipeline. Malformed/save failures keep
+the original; cancellation, resource errors and unavailable encoders propagate
+without a successful result.
+
+The adapter supplies 1,294 declared header/pixel/file cases, checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. Coverage includes all supported layouts, partial/lazy headers, all run
+lengths, row/table bounds, shared/overlapping/reordered offsets, row carry, signed
+lengths, early successful exit and size policy. Exact header/raw/RLE/stage budgets,
+overflow, ownership, mid-header/planar/RLE cancellation, 32 concurrent mixed-image
+pipelines and encoder-stage admission/cancellation/reaping/reuse pass. Production
+native sources are unchanged. Remaining formats, shared dispatch/admission and
+public login composition remain open.

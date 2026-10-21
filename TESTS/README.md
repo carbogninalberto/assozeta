@@ -631,3 +631,13 @@ Django helper; the shipped image runs the same oracle. Exact budgets, overflow,
 ownership, mid-operation/long-scan cancellation, 32 concurrent mixed-image
 pipelines and encoder-stage admission/cancellation/reaping/reuse are checked.
 Use the pinned Python environment for standalone execution.
+
+
+`adapters/django/login_sgi.py` adds 1,294 declared SGI header/pixel/file cases.
+It covers all supported byte-depth/dimension/channel layouts, planar/RLE rows,
+partial/lazy headers, row and table bounds, shared/overlapping/reordered offsets,
+signed packet counts, row carry, early successful exit and size policy. Accounts
+invokes the actual Django helper; the shipped image runs the same oracle. Exact
+budgets, overflow, ownership, mid-operation cancellation, 32 concurrent mixed-image
+pipelines and encoder-stage admission/cancellation/reaping/reuse are checked.
+Use the pinned Python environment for standalone execution.
