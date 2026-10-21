@@ -357,7 +357,7 @@ and credential fixtures are temporary. The existing health failure/recovery and
 shutdown rehearsal still passes.
 
 See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact scope.
-The refresh ledger row remains `implementing`: global restore/maintenance fencing,
+The refresh ledger row remains `implementing`: complete restore/maintenance execution and coordination,
 CORS/security/session middleware, all locale/charset and multipart/body-limit edge
 cases, versioned proxy routes and release/browser switching evidence remain open.
 Login now composes credential selection/rehash, username/audit preparation, the
@@ -488,10 +488,10 @@ Every row below is required before this draft can claim completion.
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
-| 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
-| 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
+| 6. Environment | 87 declared DB/Redis/auth/CORS/restore path and precedence cases | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
+| 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected; shared HTTP lease implemented | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
-| 9. Backups | Fixed historical Django contracts pass | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
+| 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
 | 10. Independent specification | New portable health tests and real Go harness | Full Go fixture adapter, all capability contracts, differential durable effects, browser workflows |
 | 11. Queries/performance | Resource batch query counts and bounded-pool concurrency; existing framework inspected | Full dataset scaling, critical query plans, representative load and export bounds |
 | 12. Normal delivery | Current manifest/build/update paths inspected; standalone Dockerfile added | Multi-architecture/runtime image verification, release images/bundle/updater integration, verified-artifact gate, installation/upgrade/switch/rollback rehearsals |
@@ -950,8 +950,8 @@ suite. See [the compatibility contract](../../../BE_GO/internal/handler/retired_
 
 CORS now runs before route/session/authentication admission in the actual Go root.
 The existing allow-all flag derives from DEBUG; lists retain Django environment
-semantics, bringing the configuration oracle to 79 cases. Fifty-one portable HTTP
-methods per backend across five policies and 32 declared URL comparisons verify
+semantics, bringing the configuration oracle to 87 cases. Fifty-one portable HTTP
+methods per backend across five policies and 40 declared URL comparisons verify
 preflight, scheme/netloc policy, Vary, Latin-1 reflection, streaming, concurrency,
 and malformed-list errors after terminal effects. Four further methods run on
 actual Django ASGI and the compiled Go root with model/session readback unchanged.
@@ -969,5 +969,28 @@ streaming, errors and concurrent policy isolation; five further methods verify
 actual application success and denial paths. CORS preflight skips these headers.
 HSTS, forced redirects and X-Frame-Options remain absent under current settings.
 See [the security-header contract](../../../BE_GO/internal/middleware/security_headers.md)
-and `quality-reports/go-migration/security-headers/`. Trusted-host, restore,
+and `quality-reports/go-migration/security-headers/`. Trusted-host, full restore execution,
 locale/compression and versioned/proxy behavior remain separate acceptance gaps.
+
+
+### Shared HTTP restore admission and production interpreter
+
+The Go root now joins the existing Django/CLI `DATA_RESTORE_LOCK_PATH` flock and
+checks global queued/running restore receipts before unsafe ordinary requests.
+Forty-two portable methods per backend cover six modes, CORS/auth/session order,
+operational exemptions and concurrent reads/writes with unchanged model/cache
+state. Real PostgreSQL checks bounded queries across 1/16/128/512 receipts; the
+observed plan uses the existing partial index. Cross-process tests cover mutual
+exclusion and SIGKILL release in both directions. See
+[restore admission](../../../BE_GO/internal/service/restore_admission.md).
+Full replacement/import/recovery, upload limits, worker fencing and coordinated
+backend ownership remain required. No activation or schema change is introduced.
+
+The application oracle now requires Python **3.13.2**, matching `BE/Dockerfile`.
+CI on the prior head exposed that local Python 3.12.6 had different bracketed URL
+validation; production also reports different trailing-comma JSON diagnostics.
+The new guard is `TESTS/adapters/django/production_runtime.py`; the existing Docker
+fixture adapter `runtime.py` remains intact. Forty declared CORS URL comparisons
+pass on both the exact interpreter and the shipped-style image; Go parsing and
+explicit JSON expectations were corrected against production. Earlier scoped
+evidence does not imply all historical runtime-dependent checks were correct.

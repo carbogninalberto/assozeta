@@ -30,7 +30,7 @@ missing dependencies fail the run.
 
 The bidirectional credential adapter uses the actual Django token service and
 hashers. From the repository root, install
-`TESTS/adapters/django/requirements-credentials.txt` into a disposable Python 3.12
+`TESTS/adapters/django/requirements-credentials.txt` into a disposable Python 3.13.2 (matching `BE/Dockerfile`)
 virtualenv and run `python TESTS/adapters/django/credentials.py`. It generates and
 deletes synthetic keys/tokens/hashes, prohibits database access, and invokes Go
 interop tests. See `pkg/jwt/README.md` and `pkg/crypto/README.md` for the protocol
@@ -116,11 +116,11 @@ The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
 proxies/multiline values follow their existing Django settings; DB/Redis values
 remain literal. Google client ID and secret must be present (empty is accepted).
-See `internal/config/README.md` for the 79-case environment comparison, required
+See `internal/config/README.md` for the 87-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 The root also composes CORS before routing/session admission using the existing
 CORS settings. See `internal/middleware/cors.md` for 51 isolated HTTP contracts,
-32 URL comparisons, four actual-root contracts and remaining global middleware gaps.
+40 URL comparisons, four actual-root contracts and remaining global middleware gaps.
 Current Django security headers follow CORS, so preflight retains its bypass.
 Six isolated and five actual-root contracts cover defaults, explicit empty fields,
 denials, errors and streaming; see `internal/middleware/security_headers.md`.
@@ -167,3 +167,16 @@ The legacy software-billing routes retain their authenticated HTTP 410 responses
 without entitlement or provider work. This does not retire association/course
 payments. Ten portable contracts and PostgreSQL query tracing cover the
 compatibility boundary; see [retired billing](internal/handler/retired_billing.md).
+
+
+HTTP restore admission now uses Django's existing file lock and instance-wide
+active restore receipts. Forty-two portable methods per backend, real PostgreSQL
+query/pool checks and cross-process crash tests verify the barrier. Read
+`internal/service/restore_admission.md` for exact exemptions and remaining restore,
+worker, stream and switching scope. Run `accounts.py --only restore-admission` for
+the focused rehearsal; the full accounts adapter also includes it.
+
+Application-wide Django oracles require the Python version in `BE/Dockerfile`
+(currently 3.13.2). Run `TESTS/adapters/django/runtime.py` to verify your interpreter.
+The production parser's bracketed-origin checks and JSON trailing-comma errors
+supersede earlier local Python 3.12.6 expectations.

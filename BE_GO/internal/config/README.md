@@ -52,12 +52,17 @@ it casts that list again; Go also rejects that startup configuration. Empty-list
 and missing-target defaults remain accepted. Changing this behavior requires an
 explicit Django/Go policy change, rather than silently changing trusted origins.
 
+`DATA_RESTORE_LOCK_PATH` retains its empty default, literal string contents and
+leading-dollar reference rules. It is not opened during configuration loading.
+The root uses the same existing Django/CLI lock path for HTTP restore admission.
+No independent Go restore lock is introduced.
+
 Configuration string/Go-syntax representations are redacted. JSON serialization
 omits the session secret, provider credentials, JWT keys and the Redis password; the database URL is
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Seventy-nine declared cases execute selected unchanged AST assignments
+environment. Eighty-seven declared cases execute selected unchanged AST assignments
 from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,
 precedence, raw/proxy differences, multiline/base64 behavior, unchanged process

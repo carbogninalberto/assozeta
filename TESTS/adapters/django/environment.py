@@ -17,7 +17,7 @@ import tempfile
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[3]
-NAMES={'SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
+NAMES={'DATA_RESTORE_LOCK_PATH':'restore_lock_path','SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
        'SOCIAL_AUTH_APPLE_ID_CLIENT':'apple','SOCIAL_AUTH_APPLE_ID_TEAM':'apple_team',
        'SOCIAL_AUTH_APPLE_ID_KEY':'apple_key','SOCIAL_AUTH_APPLE_ID_SECRET':'apple_secret',
        'JWT_SECRET_KEY':'jwt_private','JWT_PUBLIC_KEY':'jwt_public','DBPASSWORD':'database_password',
@@ -38,7 +38,7 @@ def main():
     base={'SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
-    expected={'session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
+    expected={'restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
               'origins':[],'cors_all':False,'cors_origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
@@ -130,7 +130,15 @@ def main():
     add('cors empty origins proxy',lines='CORS_ALLOWED_ORIGINS=$CORS_ALIAS\nCORS_ALIAS=,,\n')
     add('cors missing origins proxy',lines='CORS_ALLOWED_ORIGINS=$MISSING\n')
     add('cors null origin is a literal string',lines='CORS_ALLOWED_ORIGINS=null\n',want={'cors_origins':['null']})
-    assert len(cases)==79
+    add('restore lock path literal',lines='DATA_RESTORE_LOCK_PATH=/tmp/synthetic-lifecycle.lock\n',want={'restore_lock_path':'/tmp/synthetic-lifecycle.lock'})
+    add('restore lock path process wins',lines='DATA_RESTORE_LOCK_PATH=/tmp/file.lock\n',process={'DATA_RESTORE_LOCK_PATH':'/tmp/process.lock'},want={'restore_lock_path':'/tmp/process.lock'})
+    add('restore lock empty process disables',lines='DATA_RESTORE_LOCK_PATH=/tmp/file.lock\n',process={'DATA_RESTORE_LOCK_PATH':''})
+    add('restore lock path proxy',lines='DATA_RESTORE_LOCK_PATH=$LOCK_ALIAS\nLOCK_ALIAS=$LAST_ALIAS\nLAST_ALIAS=/tmp/proxy.lock\n',want={'restore_lock_path':'/tmp/proxy.lock'})
+    add('restore lock missing proxy uses default',lines='DATA_RESTORE_LOCK_PATH=$MISSING\n')
+    add('restore lock proxy cycle',lines='DATA_RESTORE_LOCK_PATH=$LOCK_ALIAS\nLOCK_ALIAS=$DATA_RESTORE_LOCK_PATH\n',error=True)
+    add('restore lock retains spaces and Unicode',lines="DATA_RESTORE_LOCK_PATH=' /tmp/è.lock  '\n",want={'restore_lock_path':' /tmp/è.lock  '})
+    add('restore lock path does not expand escapes',lines=r'DATA_RESTORE_LOCK_PATH="/tmp/literal\nlock"'+'\n',want={'restore_lock_path':r'/tmp/literal\nlock'})
+    assert len(cases)==87
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:

@@ -7,4 +7,7 @@ baseline version, or changing an existing Django table here is prohibited.
 
 Rollback must preserve Go-written business data, pending durable jobs, file keys
 and identities. Reverting routing alone does not prove rollback. Ownership
-fencing, request/task draining and restore coordination remain unimplemented.
+fencing, task draining and full restore execution remain unimplemented. HTTP
+admission now uses the existing Django/CLI file lock and DataRestore active-state
+query; see `internal/service/restore_admission.md`. This does not transfer migration
+or restore ownership to Go.

@@ -55,7 +55,7 @@ No complete login or image parity is claimed and no public route is wired.
 `config.Config` now reads the existing `FAMILY_REGISTRATION_ENABLED` (default true),
 `FEDERATION_REGISTRATION_ENABLED` (false) and `MULTIPLE_REGISTRATION_ENABLED`
 (false). `Env.bool` semantics include signed/nonzero integer strings, underscores,
-Python 3.12 Unicode decimal digits, the 4300-digit default limit and Django's
+Python 3.13.2 Unicode decimal digits, the 4300-digit default limit and Django's
 case-insensitive true words. Unknown strings are false. Proxy references inherit
 that flag's default when missing; cycles fail startup without logging values.
 

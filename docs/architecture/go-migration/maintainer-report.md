@@ -16,8 +16,9 @@ compose existing-session audit middleware with PostgreSQL/Redis and the configur
 SECRET_KEY. Identifier checks preserve the existing public disclosure, inactive/
 deleted filtering and duplicate selection behavior.
 The root now admits CORS preflight before routing/session/authentication using the
-existing environment settings, then applies the current Django security response
-headers. Remaining global middleware is still incomplete.
+existing environment settings, then takes the shared Django/CLI restore lease
+and applies current Django security response headers. Configured unsafe requests
+also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
 remain unfinished. There are 514 ledger declarations: 4 deprecated, 8 implementing,
@@ -58,9 +59,10 @@ immutable manual-package boundary delivered by PR #20.
 
 | Area | Evidence and scope |
 | --- | --- |
-| Environment | 79 declared comparisons execute unchanged selected settings assignments with django-environ 0.12.0, then Go Load. They cover literal files, process precedence, provider/JWT references, required/default/cycle rules, multiline/base64, CSRF/CORS lists, DEBUG, derived rate/CORS flags and required SECRET_KEY. Secret representations and process isolation are checked. Full environment coverage is unfinished. |
-| CORS | 51 portable HTTP methods per backend across five policies, 32 declared URL comparisons and four actual-application-root methods preserve origin policy, preflight bypass, body bytes, Vary, streaming, concurrency and malformed-list error timing. Model/session readback stays unchanged. Five actual Go preflight paths still work with PostgreSQL and Redis unavailable. Complete global middleware and versioned/browser routing remain open. |
-| Security headers | Six portable methods per backend verify current Django defaults, preservation of explicit/empty fields, response errors, streaming, forwarded protocol, concurrency and CORS preflight bypass. Five actual-root methods verify health, missing Bearer, CSRF/method denials, missing route and preflight. Full trusted-host/restore/proxy policy remains open. |
+| Environment | 87 declared comparisons execute unchanged selected settings assignments with django-environ 0.12.0, then Go Load. They cover literal files, process precedence, provider/JWT references, required/default/cycle rules, multiline/base64, CSRF/CORS lists, DEBUG, derived rate/CORS flags and required SECRET_KEY. Secret representations and process isolation are checked. Full environment coverage is unfinished. |
+| CORS | 51 portable HTTP methods per backend across five policies, 40 declared URL comparisons and four actual-application-root methods preserve origin policy, preflight bypass, body bytes, Vary, streaming, concurrency and malformed-list error timing. Model/session readback stays unchanged. Five actual Go preflight paths still work with PostgreSQL and Redis unavailable. Complete global middleware and versioned/browser routing remain open. |
+| Security headers | Six portable methods per backend verify current Django defaults, preservation of explicit/empty fields, response errors, streaming, forwarded protocol, concurrency and CORS preflight bypass. Five actual-root methods verify health, missing Bearer, CSRF/method denials, missing route and preflight. Full trusted-host/restore execution/proxy policy remains open. |
+| Restore HTTP admission | 42 portable methods per backend cover six modes on real Django ASGI and the compiled Go root, with unchanged model/cache state. Shared/exclusive flock interoperability, in-flight HTTP, panic release and SIGKILL recovery pass in both process directions. PostgreSQL checks one SELECT per unsafe admission over 1/16/128/512 receipts, no pending SELECT for reads, and 32 concurrent admissions in four connections; EXPLAIN uses the existing partial index. Full restore execution/upload/recovery, stale tasks, worker/scheduler and stream/WS coordination remain open. |
 | Rate admission | 14 bidirectional Django/Go Redis counter cases check keys, inclusive windows, thresholds and nonrenewed TTLs. Sixty-four concurrent Go calls admit five and deny 59 using 127 writes and at most four connections. Actual-key expiration races, paused Redis deadlines, no retries and pool reuse pass. |
 | Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
 | Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 36 portable refresh methods per backend on actual Django ASGI and the Go executable. Refresh reserializes/signs unchanged claims/JTI/expiry. Denied refresh issues no BKN_AUTH; stale-session deletion may accompany it. Session identity cannot replace Bearer/scope or token identity, and 32 mixed concurrent requests agree. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
@@ -75,21 +77,33 @@ immutable manual-package boundary delivered by PR #20.
 | Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. The domain LoginImageProcessor and complete format dispatch remain unimplemented; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
-The complete private PostgreSQL/Redis accounts rehearsal with CORS composition
-passes: 10 retired-billing, 10 2FA status, 16 identifier and 36 refresh contracts
-per backend, 43 cache-session cases, 27 controlled-terminal session contracts per
-backend and all existing identity/scope, image, login and audit-write checks.
-A subsequent focused refresh rehearsal verifies both final middleware components:
-four CORS and five security-header methods per backend, with the existing refresh,
-session and identity cases retained. These use current-model `migrate --run-syncdb`,
-not historical migrations. The security-header addition changes transport headers;
-its public-root checks are separate from the preceding full accounts run.
+The application oracle now requires Python **3.13.2**, matching the production
+Dockerfile. The earlier local 3.12.6 interpreter accepted malformed bracketed
+origins that CI 3.12.15 rejected; production 3.13.2 also has different array/object
+trailing-comma JSON diagnostics. Explicit expectations and Go parsers were corrected
+after failing comparisons. Forty URL cases also pass in the shipped-style Django
+image. CI pins the production interpreter and checks it against the Dockerfile.
+The preexisting disposable Docker fixture adapter is preserved.
 
-Full Go race/vet, tagged middleware/config vet, formatting, actionlint, 12 inventory
-tests and catalog drift checks pass. The actual-server health rehearsal passes
-startup, PostgreSQL/Redis loss/recovery, five preflights with both dependencies
-unavailable and idle SIGTERM. Earlier provider/rate and query-plan evidence remains
-in the ledger. Complete new-head CI and every broader activation gate remain open.
+The complete production-interpreter accounts rehearsal passes, including 42
+restore-admission, 36 refresh, 16 identifier, 10 2FA and 10 billing methods per
+backend; 43 cache-session cases and 27 controlled-terminal session methods;
+four actual-root CORS and five security-header methods; and all existing image,
+login, scope and audit-write checks. Results are retained under
+`quality-reports/go-migration/restore-admission/full-accounts-results.json`.
+Fixtures use current-model `migrate --run-syncdb`, not historical migrations or
+real frontend switching.
+
+Full Go race/vet, tagged restore/middleware/config vet, formatting, actionlint,
+12 inventory tests and catalog drift checks pass. The actual-server health
+rehearsal passes startup, PostgreSQL/Redis loss/recovery, five preflights with both
+dependencies unavailable and idle SIGTERM. The 87 environment declarations pass
+on production Python. Bidirectional credentials, 38 collaborator policy cases,
+89 Apple and 93 Google signature/HTTPS cases, impersonation cache, rate admission
+and security headers also pass on that interpreter. The Linux image builds, runs
+as UID 10001 and passes its image pipeline rehearsal. All 68 Unicode decimal-zero
+blocks were checked against production Python 3.13.2 / Unicode 15.1.0. These are
+scoped checks, not the full activation matrix.
 
 The billing contracts first passed on actual Django ASGI/Uvicorn and failed
 against unregistered Go routes. They now pass on both real servers. Stored plan
@@ -109,11 +123,12 @@ measurements, not entire middleware query counts or latency improvement claims.
 Local CORS evidence is under ignored `quality-reports/go-migration/cors/`;
 security-header evidence is under `quality-reports/go-migration/security-headers/`.
 Both preserve initial failing Go results after passing Django expectations. The
-preceding published head `3260727` has a successful Go foundation job in quality
-run 39661523420, including full accounts and the non-root image rehearsal. Its
-complete quality and manual workflows (39661523420 and 39661523346) were still
-running at this checkpoint. The preceding `d7a58ba` and `adbb728` workflows were
-cancelled; cancellations are not successes. The last jointly successful whole
+published `530c791` Go foundation job failed at the CORS oracle because CI's
+Python 3.12.15 rejected malformed brackets accepted by local 3.12.6. Its overall
+quality/manual runs (39664404614 and 39664405326) were still running at this
+checkpoint; they are not counted as successful. The `3260727` Go foundation job
+passed, but both complete workflows (39661523420 and 39661523346) were cancelled,
+as were the `d7a58ba` and `adbb728` workflows. The last jointly successful whole
 quality/manual baseline remains `dbf1beb` (39593769742 and 39593769720).
 Full access/import/lifecycle/manual workflows that call these tombstones still
 need Go implementation and verification; see

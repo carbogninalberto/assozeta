@@ -80,13 +80,14 @@ jobs:
           go -C BE_GO test -race ./...
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13.2'
           cache: pip
           cache-dependency-path: |
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
       - name: Verify environment, credentials and provider protocols
         run: |
+          python TESTS/adapters/django/production_runtime.py
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python TESTS/adapters/django/environment.py
           python TESTS/adapters/django/credentials.py
@@ -133,6 +134,8 @@ jobs:
             quality-reports/go-migration/cors/
             quality-reports/go-migration/security-headers/
             quality-reports/go-migration/environment/
+            quality-reports/go-migration/restore-admission/
+            quality-reports/go-migration/runtime.json
             quality-reports/go-migration/accounts/
 
   quality:

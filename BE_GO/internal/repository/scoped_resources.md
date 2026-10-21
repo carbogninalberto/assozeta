@@ -42,7 +42,7 @@ The medical kind covers linked subscriptions only; the guard separately reads
 upload cache grants. Document authorization and shared-certificate cloning remain
 separate work.
 
-Run `python TESTS/adapters/django/accounts.py` with the documented Python 3.12
+Run `python TESTS/adapters/django/accounts.py` with the documented Python 3.13.2
 environment. Its scoped adapter writes synthetic business rows using bulk inserts
 to avoid unrelated creation hooks and compares 67 explicit expected visibility
 sets in actual Django and Go. It covers foreign tenants, other families, legacy

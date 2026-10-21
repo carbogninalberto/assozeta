@@ -63,6 +63,9 @@ def main():
               {'name':'invalid','all':False,'origins':['https://allowed.example.test','https://[invalid','null']}]
     counts=[]
     from TESTS.contracts.cors_origins import CASES
+    try:urlsplit('https://]host[::1')
+    except ValueError:pass
+    else:raise AssertionError('CORS oracle requires the bracketed-netloc validation shipped by BE/Dockerfile Python 3.13.2; this interpreter is too old')
     for case in CASES:
         try:
             parsed=urlsplit(case['raw'])
@@ -94,7 +97,7 @@ def main():
         fixture=Path(directory)/'policies.json';fixture.write_text(json.dumps({'policies':policies,'urls':CASES}));fixture.chmod(0o600)
         subprocess.run(['go','test','-race','-tags=corsintegration','./internal/middleware','-run','^TestCORSPortableHTTP$','-v'],
             cwd=ROOT/'BE_GO',env={**tool_env,'ASSOZETA_CORS_FIXTURE':str(fixture),'ASSOZETA_CONTRACT_PYTHON':sys.executable},check=True,timeout=120)
-    report={'success':True,'contracts_per_backend':sum(counts),'policies':5,'url_cases':len(CASES),'scope':'CORS middleware with controlled terminals; no public-route/global middleware claim','database_access':'none'}
+    report={'success':True,'contracts_per_backend':sum(counts),'policies':5,'url_cases':len(CASES),'python':sys.version.split()[0],'scope':'CORS middleware with controlled terminals; no public-route/global middleware claim','database_access':'none'}
     (out/'http-results.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report),flush=True)
 
 
