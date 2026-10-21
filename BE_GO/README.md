@@ -203,3 +203,9 @@ repository, with atomic fenced completion and preserved legacy handled-error beh
 Seven real PostgreSQL groups and actual Django readback pass. It is not registered
 in a production worker and has no Go schedule. See
 `internal/service/email_balance_reset.md`.
+
+Membership-card token cleanup now uses a single audited-deletion SQL command and
+fenced completion in the same transaction, with exact Django date/audit readback.
+Ten required PostgreSQL groups cover failure, replay, concurrent cleanup and actual
+heartbeat. Rate limiting and scheduler/production ownership remain unimplemented.
+See `internal/service/subscription_token_cleanup.md`.

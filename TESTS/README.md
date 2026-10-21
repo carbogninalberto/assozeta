@@ -826,3 +826,10 @@ and seven required Go/PostgreSQL groups, including replay, stale-lease rollback,
 handled SQL errors, cancellation and managed-table readback. The full accounts
 adapter also includes this rehearsal. This tests current model schema and the task
 body; historical schedules and production worker ownership remain separate.
+
+`accounts.py --only subscription-token-cleanup` establishes the real Django task
+and ten required Go/PostgreSQL groups, including UTC midnight selection, exact
+audits, a confirmed legacy duplicate-audit race, stale ownership, cancellation,
+actual heartbeat and a 4,096-token query plan. It rejects skipped/missing groups.
+The full accounts rehearsal includes the fixture; this is task-body evidence,
+not production rate/scheduler or historical migration proof.

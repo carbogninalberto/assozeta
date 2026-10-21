@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 9 implementing,
-5 requiring renewed review and 496 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 10 implementing,
+5 requiring renewed review and 495 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -159,7 +159,7 @@ accounts/provider evidence above still comes from the earlier restore/runtime
 increment. Published `714031d` quality/manual workflows (39669625934 and
 39669625927) were subsequently cancelled. The `6fce63e` Go job (119471004737 in quality run 39671572241)
 was cancelled by its 15-minute execution limit, as confirmed by its check annotation.
-The complete quality workflow and manual run 39671572116 are still pending here.
+The complete quality workflow and manual run 39671572116 were subsequently cancelled.
 The Go job budget is raised to 30 minutes for the expanded integration suite;
 individual adapter deadlines are unchanged and the new head still needs CI.
 
@@ -179,6 +179,27 @@ vet, formatting, inventory/drift and actionlint. This includes all previously
 declared account, session, login image and restore-admission cases, with no missing
 or skipped task scenarios. It remains current-model component evidence; the live
 application login and full lifecycle are not thereby implemented.
+
+Membership-card token cleanup now has a concrete Go service with exact UTC-day
+selection and deletion audits. Ten required real PostgreSQL groups pass, including
+actual heartbeat during an atomic deletion, stale completion, forced overlapping
+cleanup and a 4,096-row executed plan. The actual Django oracle also confirms a
+concurrency bug: two overlapping collectors emit six logs for three deleted tokens.
+Go deliberately emits one audit per row actually deleted. The task remains
+`implementing`: its observed Celery `60/m` rate policy, production registration and
+scheduler/coexistence/lifecycle gates remain open. See
+`BE_GO/internal/service/subscription_token_cleanup.md`.
+The full local accounts adapter also passes on production Python 3.13.2 with the
+new task fixture included. Later focused runs additionally verify forced collector
+and SQL overlap; the production service/repository is identical across these runs.
+Go race/vet, tagged integration vet, inventory drift and workflow lint pass.
+
+Published `59ecdfa` quality run 39674013825 is still in progress at this checkpoint;
+its Go job passed, including account/job integration, native decoder checks and the
+non-root image build. The backend regression job has not yet finished.
+Manual dispatch 39674019168 targets that exact head in a concurrency group separate
+from PR pushes, with content editing disabled, and is also still running. Neither
+is counted as successful evidence before its terminal result.
 
 ## Remaining completion gates
 

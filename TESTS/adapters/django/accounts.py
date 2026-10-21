@@ -21,9 +21,9 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -90,6 +90,14 @@ def main():
                         connections.close_all()
                         report = {'success': True, 'scope': 'email balance task body; scheduler and activation not exercised',
                                   'scenario_groups': email_balance_cases, 'schema': 'current Django models; migration history not exercised'}
+                        print(json.dumps(report), flush=True)
+                        return
+                if options.only in (None, 'subscription-token-cleanup'):
+                    from TESTS.adapters.django.subscription_token_cleanup import run as subscription_token_cleanup
+                    token_cleanup_cases = subscription_token_cleanup(work, log, tool_env)
+                    if options.only == 'subscription-token-cleanup':
+                        connections.close_all()
+                        report = {'success': True, 'scope': 'subscription token cleanup body; no scheduler activation', 'cases': token_cleanup_cases}
                         print(json.dumps(report), flush=True)
                         return
                 from TESTS.adapters.django.social_configuration import run as social_configuration
@@ -270,6 +278,7 @@ def main():
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
                 report['restore_admission_contracts_per_backend']=restore_admission_contracts
                 report['email_balance_reset_groups']=email_balance_cases
+                report['subscription_token_cleanup_cases']=token_cleanup_cases
                 report['retired_billing_contracts_per_backend']=retired_billing_contracts
                 report['two_factor_info_contracts_per_backend']=two_factor_info_contracts
                 report['identifier_http_contracts_per_backend']=identifier_contracts
