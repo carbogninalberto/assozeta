@@ -5,7 +5,8 @@ FROM node:22-bookworm-slim AS dependencies
 WORKDIR /app
 
 COPY package.json package-lock.json .npmrc ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci \
+    && sha256sum package-lock.json | cut -d' ' -f1 > node_modules/.assozeta-package-lock.sha256
 
 FROM dependencies AS development
 
@@ -13,7 +14,7 @@ COPY . .
 
 EXPOSE 5001
 
-CMD ["npm", "run", "dev:selfhosted", "--", "--host", "0.0.0.0"]
+CMD ["sh", "scripts/dev-container.sh"]
 
 FROM dependencies AS build
 
