@@ -91,7 +91,7 @@ def prepare(work):
     insert(m.AttendanceDay, [dict(attendance_day_id=uid(n), attendance_registry_id=uid(c), date=timezone.now())
                             for n, c in [(9110, 9010), (9111, 9011), (9112, 9012), (9113, 9013)]])
     insert(m.Tags, [dict(tag_id=uid(n), sport_association_id=uid(a), tag_name=f'Tag {n}')
-                    for n, a in [(9210, 80), (9211, 90)] + [(n, 80) for n in range(10000, 10512)]])
+                    for n, a in [(9210, 80), (9211, 90)] + [(n, 80) for n in range(10000, 11025)]])
     insert(Document, [dict(document_id=uid(9300))])
     files = [(9310, 2010), (9311, 2012), (9312, 2013), (9313, 2014), (9314, 2015), (9315, 2017)]
     insert(SubscriptionFile, [dict(subscription_file_id=uid(n), subscription_id=uid(s), document_id=uid(9300)) for n, s in files])

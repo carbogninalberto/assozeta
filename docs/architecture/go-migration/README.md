@@ -120,6 +120,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
 | Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
 | Shared PostgreSQL account reads | Go reads from 21 Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
@@ -230,8 +231,8 @@ handling; numeric identities never pass through floating-point conversion.
 Passwords are removed from the returned actor. Account state is read per request.
 
 This is the first stage of `ScopedJWTAuthentication`. The identity selector below
-follows it; HTTP error-body rendering, malformed unsupported claim shapes, scoped
-operation admission, nested-resource authorization and public auth handlers remain
+follows it with association-bound operation/reference admission; HTTP error-body
+rendering, malformed unsupported claim shapes, endpoint authorization and public auth handlers remain
 unfinished. Infrastructure errors propagate; they do not produce
 an anonymous or authenticated result.
 
@@ -269,15 +270,12 @@ and audit rows; test-only state changes are restored. Infrastructure/cancellatio
 failures return no usable identity. This rehearsal uses the current model schema;
 it does not prove migration history, throughput or business-write rollback.
 
-Identity selection is not authorization of an operation or its records. The
-fixtures intentionally contain no nested resource IDs. The complete
-`enforce_scoped_request` operation gate, instructor predicates and
-nested-resource validation must still be implemented before business endpoints
-can use this result. That guard must run after selecting the effective person
-and before mapping the collaborator to its owner/checking grants, preserving
-Django’s denial ordering. `ActorAuthentication` and the selector are not registered as
-public handlers. Begin/end audit writes and live WebSocket revalidation remain
-separate acceptance work. No auth route is marked verified.
+The original identity fixtures contain no nested resource IDs. `IdentityResolver`
+now invokes `ScopedRequestGuard` after target selection and before collaborator
+mapping/grants. Association-bound requests with no guard or trusted operation
+metadata fail closed. HTTP handlers, endpoint-specific instructor/returned-record
+rules, begin/end audit writes and WebSocket revalidation remain separate work.
+No authentication route is marked verified.
 
 ### Association/family/group resource predicates
 
@@ -298,12 +296,35 @@ visibility in both runtimes and are rolled back. Every seeded resource table is
 compared afterward. Go counts one query per reference batch and tests 1, 16, 128
 and 512 distinct tag rows, plus 32 concurrent reads with four connections.
 
-This is a read component, not a completed endpoint or nested-reference workflow.
-The operation gate must still run at the identity selector's documented insertion
-point before collaborator permissions. Document authorization, medical-upload
-cache grants, certificate isolation, returned-query filtering and business-write
-concurrency remain separate work. No ledger endpoint status is promoted by these
-component tests.
+This is a read component, not a completed endpoint. The guard below now composes
+it into association-bound identity admission. Document authorization, certificate
+isolation, returned-query filtering and business-write concurrency remain separate
+work. No ledger endpoint status is promoted by these component tests.
+
+### Scoped request admission
+
+`ScopedRequestGuard` preserves the operation gate, association username checks,
+path/query/body reference traversal and denial order from `enforce_scoped_request`.
+Ordered parsed objects preserve dictionary order and 128-bit numeric UUIDs. It
+batches up to 512 references per kind, including alternating kinds, while returning
+the first ordered denial. Medical references also use the existing Django upload
+cache namespace and bounded UUID-string pickle reader, without TTL renewal.
+
+The account adapter passes 132 explicit expected guard outcomes in Django and Go,
+including all 44 athlete operation names and six real resolver cases using
+Django-issued sessions. The latter prove a foreign reference is denied before
+collaborator grants and scope errors do not mark a valid session invalid. Real
+PostgreSQL tests for 1, 16, 128, 512 and 1,025 distinct tags interleaved with a
+course use 2, 2, 2, 2 and 4 SQL queries; 32 concurrent calls use four connections.
+Redis revocation/expiry are observed on the same guard, and Django sees Go cache
+revocation. Persisted business/audit readback remains unchanged.
+
+See [the service contract](../../../BE_GO/internal/service/scoped_request.md) for
+trust boundaries and retained manager quirks. These are parsed service requests,
+not public HTTP proofs. Transport size limits, multipart/query conversion, error
+rendering, ordinary/instructor/endpoint permissions, private documents and writes
+remain open. The preceding CI's Go foundation job now passes with the Italian
+locale setup; that is still a subset of the required matrix.
 
 ## Required acceptance matrix
 
@@ -314,7 +335,7 @@ Every row below is required before this draft can claim completion.
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
-| 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity selection and collaborator route policy | HTTP login/refresh/session flows, scoped operation/resource checks, group/instructor/family denials, audit and WebSocket revalidation |
+| 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |

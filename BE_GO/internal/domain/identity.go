@@ -7,7 +7,10 @@ var ErrInvalidPermissionState = errors.New("invalid persisted collaborator permi
 
 // IdentityRequest contains untrusted context headers and an upstream route.
 // Prefix stripping is owned by routing. These fields never grant scope directly.
-type IdentityRequest struct{ Method, Path, SessionID, TargetID string }
+type IdentityRequest struct {
+	Method, Path, SessionID, TargetID, GroupID string
+	References                                 *RequestReferences
+}
 
 // ResolvedIdentity identifies who acts and how data must be constrained. It is
 // not endpoint/resource authorization: services must enforce group, instructor,

@@ -8,7 +8,9 @@ It is **not merge-ready as a backend replacement**. All requirements in the
 The module follows the inspected Kuayle Echo → service → repository construction
 with sqlx/pgx. Public routes currently expose monitoring only. Authentication
 primitives, account reads, collaborator policy and identity selection are implemented
-separately; complete HTTP admission and business resource authorization are not.
+separately; association-bound reference admission is now composed before
+collaborator grants. Complete HTTP admission and business resource authorization
+remain unfinished.
 Django retains business-schema ownership. Deployment selection, release images,
 the separate manual worktree and customer installations have not been changed.
 
@@ -45,11 +47,20 @@ the differing deletion filters of existing managers and constrains both parents
 of course/carnet subscriptions. Family/payment changes revoke visibility inside
 transactions in both runtimes; fixtures are rolled back and every seeded table
 is checked unchanged. Batches of 1–512 distinct tag references use one query;
-32 concurrent reads use four connections. These predicates are not yet connected
-to request admission or business handlers.
+32 concurrent reads use four connections. These predicates now support the
+identity resolver's association-bound request guard; business handlers remain open.
 
-Missing work includes business endpoints, scoped operation/group/instructor/family
-and nested-resource authorization, login writes and impersonation audit workflows,
+The guard passes 132 Django/Go cases, including all 44 athlete operation names and
+six composed resolver cases proving denial ordering before collaborator grants.
+Ordered nested references retain integer UUID precision and dictionary order.
+Medical-upload cache grants retain Django's raw-key spelling, TTL and revocation.
+One thousand twenty-five interleaved tag/course references require four SQL
+queries; 32 concurrent guard calls use four connections. Dependency failure and
+missing trusted route metadata return no usable identity. This is not public HTTP
+authentication or authorization of subsequent business writes.
+
+Missing work includes business endpoints, public HTTP admission, endpoint-level
+group/instructor/family authorization, login writes and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,
 realtime/integrations/documents/manual delivery, Go backup/restore, the complete
 fixture adapter, query/performance evidence and release/updater rehearsals.

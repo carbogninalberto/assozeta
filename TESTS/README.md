@@ -315,8 +315,9 @@ real resolver and Go. It verifies eight persisted eligibility/configuration
 transitions and 32 concurrent resolutions with a four-connection pool. Go
 revocation is visible in Django. Readback compares users, associations, members,
 instance configuration and audit records after restoring test-only changes.
-These cases have no nested resource IDs; scoped operation/resource authorization,
-HTTP admission and audit mutation workflows remain separate incomplete contracts.
+These identity cases have no nested resource IDs; the separate scoped-request
+cases below cover that admission stage. HTTP and audit mutation workflows remain
+incomplete contracts.
 
 `adapters/django/scoped_resources.py` runs within that same private account
 rehearsal. It bulk-inserts isolated synthetic business records, avoiding creation
@@ -329,3 +330,16 @@ per batch of 1, 16, 128 and 512 distinct tag references, 32 concurrent reads wit
 four connections, cancellation, invalid inputs and database failure. Readback
 includes every seeded resource table. This is not nested-request admission,
 private-file authorization, business-hook parity or a full performance benchmark.
+
+`adapters/django/scoped_requests.py` adds 132 explicitly expected guard cases:
+the complete 44-operation athlete policy, credential exclusions, ordered nested
+references, group/username checks and medical upload grants. Six cases invoke
+both real identity resolvers using Django-issued sessions and real route metadata
+to prove the guard runs before collaborator permissions. Go checks SQL batching
+with up to 1,025 distinct tags interleaved with course references, 32 concurrent
+guard calls with four connections, provider failures and missing route metadata.
+The actual Django upload cache record is read without renewing TTL; revocation
+and expiry remove admission, and Django observes the Go cache deletion. The
+bounded upload-record parser also has malformed-input and fuzz tests. None of
+these service cases certifies HTTP route registration, form/multipart parsing,
+private document access, mutation hooks or a complete endpoint.

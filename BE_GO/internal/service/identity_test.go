@@ -58,7 +58,7 @@ func TestIdentityResolutionPropagatesInfrastructureFailures(t *testing.T) {
 				request.SessionID = ""
 				request.Path = "/association/export/all"
 			}
-			identity, err := NewIdentityResolver(accounts, relations, sessions, NewPermissions()).Resolve(context.Background(), &actor, request)
+			identity, err := NewIdentityResolver(accounts, relations, sessions, NewPermissions(), nil).Resolve(context.Background(), &actor, request)
 			if !errors.Is(err, failure) || identity.Actor != nil || identity.Effective != nil || identity.ScopeUser != nil {
 				t.Fatal("infrastructure failure became a usable identity or permission decision")
 			}
@@ -71,7 +71,7 @@ func TestIdentityResolutionCancellationRunsNoLookups(t *testing.T) {
 	cancel()
 	accounts := &actorAccounts{}
 	sessions := &identitySessionFailure{}
-	_, err := NewIdentityResolver(accounts, identityRelationsFailure{}, sessions, NewPermissions()).Resolve(ctx, nil, domain.IdentityRequest{SessionID: "anything"})
+	_, err := NewIdentityResolver(accounts, identityRelationsFailure{}, sessions, NewPermissions(), nil).Resolve(ctx, nil, domain.IdentityRequest{SessionID: "anything"})
 	if !errors.Is(err, context.Canceled) || accounts.calls != 0 || sessions.calls != 0 {
 		t.Fatal("cancelled identity resolution continued")
 	}

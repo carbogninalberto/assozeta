@@ -13,6 +13,15 @@ type IdentityRelations struct{ db *sqlx.DB }
 
 func NewIdentityRelations(db *sqlx.DB) *IdentityRelations { return &IdentityRelations{db: db} }
 
+func (r *IdentityRelations) AssociationUsername(ctx context.Context, association string) (string, error) {
+	var username string
+	err := r.db.GetContext(ctx, &username, `SELECT u.username FROM application_sportassociation a JOIN bakney_user u ON u.user_id=a.user_id WHERE a.sport_association_id=$1`, association)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", domain.ErrAssociationNotFound
+	}
+	return username, err
+}
+
 func (r *IdentityRelations) AssociationOwnedBy(ctx context.Context, owner string) (string, error) {
 	var id string
 	err := r.db.GetContext(ctx, &id, `SELECT sport_association_id FROM application_sportassociation WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, owner)
