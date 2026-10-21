@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 11 implementing,
-5 requiring renewed review and 494 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 12 implementing,
+5 requiring renewed review and 493 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -202,16 +202,28 @@ swallowed index INSERT error; the Go transaction deliberately rolls back the ent
 invariant. Failure, replay, overlapping execution, cancellation, heartbeat and a
 4,096-row executed plan pass. The task remains `implementing`; see
 `BE_GO/internal/service/associate_age_update.md` for ownership/policy gaps.
-Go race/vet and tagged vet pass. The full accounts run has passed the new task
-fixture and is still checking unchanged image/auth components at this checkpoint;
-its whole-run result is not yet counted as successful.
+Go race/vet and tagged vet pass. The full production-Python accounts run with
+age updates included subsequently passed, including all unchanged image/auth
+components. That run predates the new audit-retention fixture.
 
-Published `59ecdfa` whole quality run 39674013825 passed. Manual dispatch
-39674019168 targets that exact head in a concurrency group separate from PR pushes,
-with content editing disabled, and remains running at this checkpoint. The PR-linked
-manual run 39674013814 was cancelled. Current
-published token-cleanup head `446c184` has quality run 39677139217 and manual run
-39677139163 pending. Prior-head success is not evidence for this new increment.
+Audit retention now has ten required PostgreSQL groups and actual Django readback.
+Exact 365-day selection and the dependent-index cascade share fenced completion.
+A forced concurrent index writer exposed a result difference at deferred-FK commit;
+the corrected Go behavior preserves Django's handled NULL outcome after a definite
+rollback, while other commit errors still propagate. Both delete failures, replay,
+concurrency, cancellation, heartbeat and an executed 4,096-row plan pass. The task
+stays `implementing`; see `BE_GO/internal/service/audit_retention.md`.
+The new `accounts.py --only task-bodies` rehearsal passes all 35 required groups
+across reset/token/age/retention in one private schema, including exact managed-row
+cleanup between fixtures. Go race/vet, tagged vet, inventory drift and workflow
+lint pass. Current-head whole CI remains required.
+
+Published `59ecdfa` whole quality run 39674013825 passed. Its independent manual
+dispatch 39674019168 remains running with editing disabled; PR-linked manual
+39674013814 was cancelled. Both `446c184` workflows (39677139217 and 39677139163)
+were subsequently cancelled. Published `1038495` quality 39678254736 and manual
+39678254710 are running at this checkpoint. None of these pending/cancelled runs
+is counted as success for the retention increment.
 
 ## Remaining completion gates
 
