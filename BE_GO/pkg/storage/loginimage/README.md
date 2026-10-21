@@ -2,9 +2,9 @@
 
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
-transformation, plus a bounded libjpeg JPEG encoder. It does **not** implement
-`domain.LoginImageProcessor`, recognize all Pillow file formats or decode file pixels. Public login remains
-unwired; no unsupported image is silently accepted as completed parity.
+transformation, plus bounded libjpeg JPEG encoding and pixel decoding. It does
+**not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
+or reproduce lazy metadata opening. Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
 matches Python's non-strict Base64 handling, including ignored ASCII garbage,
@@ -36,14 +36,14 @@ three-lobe support, float32 box endpoints, normalized 22-bit fixed-point weights
 horizontal then vertical passes and 8-bit clipping after each pass. The original
 [MIT-CMU license](LICENSE.pillow) and copyright notices are retained, including in
 the Go image's supporting license files. These pixel stages are pure Go. The JPEG
-encoder described below uses a native helper, without Python or Django.
+codec described below uses a native helper, without Python or Django.
 
 Inputs remain unchanged and returned pixel storage does not alias them. The caller
 supplies a mandatory logical working-byte limit. Input pixels, output/intermediate
 buffers, alpha conversion and coefficient storage are checked before allocations;
 coefficient arithmetic cannot wrap the budget. The limit does not claim to bound
-allocator overhead or process RSS. Global admission, encoded-file/decoder budgets
-and supported-data sizing remain part of the full processor work. Cancellation is
+allocator overhead or process RSS. Whole-pipeline admission, budgets for other file
+decoders and supported-data sizing remain part of the full processor work. Cancellation is
 checked during ASCII validation, Base64 decoding, alpha conversion, coefficient
 calculation and pixel passes; no failure returns a partial buffer.
 
@@ -107,7 +107,56 @@ image; the inspected Alpine library is 3.0.4 and output also matches exactly.
 CI repeats this check on the image it builds. These are tested vectors and library
 versions, not a blanket claim about every codec version or architecture.
 
-Still required: full file-format recognition and lazy-header behavior, decoding
-(including animation/frame, metadata and color-mode rules), invalid/truncated-file
-fallback behavior, global resource admission, supported-data sizing and real
-response/HTTP composition. These checks do not certify complete image parity.
+## JPEG decoding and inherited comments
+
+`NewJPEGDecoder` uses the same bounded process runner with independent admission
+from the encoder. The encoded file is bounded before spawning. The native helper
+reads exactly the declared input, validates 8-bit precision and L/RGB/CMYK output,
+checks decoded dimensions/byte count before allocating pixels and emits one
+complete binary frame after decoding. Go validates the frame length, mode,
+dimensions and comment length; no failure returns partial pixels. Raster bytes are
+bounded separately from a fixed maximum of 65,533 comment bytes and a 20-byte
+frame header. These payload bounds do not include libjpeg's internal allocations
+or allocator overhead. Global admission across decoding, transformation and
+encoding remains open.
+
+The decoder follows [Pillow's ordinary JPEG settings](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/JpegDecode.c),
+including fancy upsampling, the normal DCT and inverted CMYK packing. It suspends
+on exhausted input instead of synthesizing an EOI marker. Fatal errors and missing
+scanlines fail; finish suspension after all rows is tolerated as in Pillow. EXIF
+orientation and ICC metadata do not transform the pixels. This is pixel decoding,
+not a replacement for Pillow's Python header parser or lazy `Image.open` behavior.
+
+`JPEGImage.Comment` preserves the last COM marker before the first scan, including
+empty/binary comments. Later COM markers do not replace it. The caller carries
+this metadata across transformations and uses `EncodeWithComment`; ordinary
+`Encode` emits no inherited comment. The latter preserves Pillow's initial output
+buffer constraint: for narrow images, comments of 65,512 bytes fail for L/RGB and
+65,514 fail for CMYK, while the preceding byte count succeeds. Wider images enlarge
+the buffer. These save failures must remain original-URI fallbacks in the eventual
+image processor, not silently successful conversions.
+
+`TESTS/adapters/django/login_jpeg_decode.py` establishes 312 exact decoded-pixel and
+comment cases, including sampling/quality, progressive/optimized coding, RGB
+components, CMYK/YCCK, restart markers, metadata, tolerated damaged streams,
+concatenated files and comment boundaries. Of these, 310 also produce identical
+transformed/re-encoded JPEG bytes and two preserve Pillow's save failure. Another
+1,556 explicitly invalid streams include every incomplete prefix of selected
+baseline/progressive files. The full account adapter calls Django's actual
+`compress_base64` for all 1,868 output/fallback cases. Standalone execution tests
+the codec stages without claiming that Django application check.
+
+Tests also cover native input framing, exact raster budgets, malformed output
+frames, comment lengths, process failures, environment isolation, running/queued
+cancellation, timeout and 32 concurrent decodes. The image adapter runs the same
+1,868 decode cases and both native protocol suites alongside the 180 encoder
+vectors using the shipped non-root codec. The native decoder is additionally
+checked with AddressSanitizer/UndefinedBehaviorSanitizer using exact exit codes
+and complete frame comparisons, including invalid input; generic error mapping
+cannot hide sanitizer failures.
+
+Still required: full file-format recognition and lazy-header behavior, other
+format decoders (including animation/frame, metadata and color-mode rules), full
+invalid/truncated-file fallback policy, global resource admission, supported-data
+sizing and real response/HTTP composition. These checks do not certify complete
+image parity.

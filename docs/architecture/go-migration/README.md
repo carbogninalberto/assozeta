@@ -121,7 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
-| Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; decoding remains open |
+| Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
 | Login response composition | 36 explicit full response cases without image conversion; seven/ten-statement paths, 32 concurrent calls, required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
@@ -564,7 +564,16 @@ The actual image passes the same 180-vector encoder oracle and native protocol
 checks with read-only storage and no network. Inspected versions: Pillow 11.1.0
 with libjpeg-turbo 3.1.0, local native 3.2.0, image native 3.0.4. CI repeats the
 image oracle; equivalence for other library/architecture combinations is not
-assumed. This is not wired as a complete image processor. Format recognition/lazy
-headers, decoding and metadata/mode/truncation behavior, whole-pipeline admission
+assumed. JPEG pixel decoding now adds 312 exact pixel/comment cases and 1,556
+explicit invalid streams. The real Django helper agrees on all 1,868 output or
+fallback cases; 310 decoded cases also re-encode exactly, while two preserve
+Pillow's long-comment save failure. The shipped codec runs the same decoder suite.
+Progressive/optimized coding, sampling, CMYK/YCCK, restart markers, ignored EXIF/ICC
+transforms, tolerated corruption and inherited comments are covered, along with
+native framing, raster budgets, process failures/cancellation and 32 concurrent
+decodes. The native helper passes sanitizer checks with exact failure exit codes.
+
+This is not wired as a complete image processor. Format recognition/lazy headers,
+other decoders and full metadata/mode/truncation policy, whole-pipeline admission
 and full response/HTTP composition remain required. See the
 [pixel-core contract](../../../BE_GO/pkg/storage/loginimage/README.md).

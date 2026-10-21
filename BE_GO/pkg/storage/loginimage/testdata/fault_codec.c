@@ -4,8 +4,13 @@
 #include <string.h>
 #include <unistd.h>
 int main(int argc, char **argv) {
-    if (getenv("ASSOZETA_TEST_SECRET") || argc != 6 || strcmp(argv[1], "encode") || strcmp(argv[2], "L")) return 3;
-    switch (atoi(argv[3])) {
+    if (getenv("ASSOZETA_TEST_SECRET")) return 3;
+    int decoding = argc == 4 && !strcmp(argv[1], "decode");
+    int code;
+    if (decoding) code = atoi(argv[2]) - 3;
+    else if (argc == 6 && !strcmp(argv[1], "encode") && !strcmp(argv[2], "L")) code = atoi(argv[3]);
+    else return 3;
+    switch (code) {
     case 1: {
         char path[4096];
         if (snprintf(path, sizeof(path), "%s.started", argv[0]) >= (int)sizeof(path)) return 3;
@@ -19,7 +24,12 @@ int main(int argc, char **argv) {
     case 3: return 4;
     case 4: return 3;
     case 5: fputs("invalid JPEG", stdout); return 0;
-    case 6: { unsigned char bytes[] = {255,216,255,217}; return fwrite(bytes, 1, sizeof(bytes), stdout) == sizeof(bytes) ? 0 : 3; }
+    case 6: {
+        if (decoding) {
+            unsigned char frame[] = {'A','Z','J','P',0,0,0,1,0,0,0,1,1,0,0,0,255,255,255,255,42};
+            return fwrite(frame, 1, sizeof(frame), stdout) == sizeof(frame) ? 0 : 3;
+        }
+        unsigned char bytes[] = {255,216,255,217}; return fwrite(bytes, 1, sizeof(bytes), stdout) == sizeof(bytes) ? 0 : 3; }
     default: return 2;
     }
 }

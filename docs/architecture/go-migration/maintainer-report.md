@@ -138,8 +138,13 @@ JPEG output. Tests exercise byte ceilings, protocol failures, running/queued
 cancellation, timeout, process cleanup and 32 concurrent encodes. The static helper
 is shipped with license/version notices in the non-root Go image, which passes the
 same 180-vector oracle without network or writable storage. The server remains
-CGO-free. File decoding, global pipeline admission and the complete image processor
-remain necessary for login; no full image or HTTP parity is claimed.
+CGO-free. JPEG decoding adds 312 exact pixel/comment cases and 1,556 invalid
+streams, with actual Django helper output/fallback checks across all 1,868 cases.
+The shipped image passes the same decoder suite. Inherited comments, long-comment
+save failure, native framing/budgets, process cancellation and concurrent decoding
+are verified. Lazy metadata opening, other format decoders, global pipeline
+admission and the complete image processor remain necessary for login; no full
+image or HTTP parity is claimed.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,

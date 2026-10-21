@@ -525,6 +525,15 @@ shipped static helper as UID 10001, with a read-only filesystem and no network.
 The same command is required in Go CI after image construction. Library versions
 and notices are inspected; there is no pixel/byte tolerance.
 
-This is not complete image parity: file decoding, whole-processor admission and
-public login integration remain open. See
+`adapters/django/login_jpeg_decode.py` adds 312 exact JPEG pixel/comment cases
+and 1,556 explicitly invalid streams. The account suite calls the actual Django
+helper for all 1,868 cases. Of the decoded cases, 310 also produce exact output
+JPEGs and two retain Pillow's long-comment save failure/original URI. Coverage
+includes progressive/optimized coding, subsampling, CMYK/YCCK, EXIF/ICC, restart
+markers, tolerated corruption and comment ordering/size boundaries. Process
+failure, native framing, cancellation, timeout, raster limits and 32 concurrent
+decodes are checked. The image command above now runs this decoder suite too.
+
+This is not complete image parity: lazy header opening, other file decoders,
+whole-processor admission and public login integration remain open. See
 `BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.
