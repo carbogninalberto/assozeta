@@ -52,5 +52,40 @@ after a write, database constraint failure, 16 concurrent credential requests
 (including rehash), two admission slots and a four-connection pool.
 Query/admission tests substitute the KDF to isolate database behavior; compatibility
 cases use real hash algorithms. This evidence does not certify full login HTTP,
-malformed request-value coercion, social providers, OTP, username/audit changes,
+all malformed transport inputs, social providers, OTP, username/audit changes,
 response-created configuration, last-login/deletion behavior or release switching.
+
+
+## Raw credential values
+
+`Select`, password admission and the session coordinator retain raw input values.
+Identifier conversion reproduces Python `str()` for decoded JSON and multipart
+file names. Nested containers use Python quoting and insertion order; integers
+retain their digits, floats use binary64/Python display thresholds, booleans and
+null use `True`/`False`/`None`. Conversion is context-aware, bounded by the existing
+request-size and nesting ceilings, and has no shared mutable state. It does not
+silently stringify unsupported internal Go types. This is not a replacement JSON
+parser: malformed encoding, lone surrogate handling and transport-wide extreme
+numeric/depth/error-order parity remain separate acceptance work.
+
+Password conversion happens only after the first candidate is found. No-candidate
+requests retain the existing not-found result even when the password is null or
+a collection. `LoginPasswordValue` preserves original string/null type separately
+from text. Django PBKDF2 can verify `force_bytes(value)` for non-string JSON or
+multipart inputs. Only a matching current preferred hash can admit them: a
+required rehash calls Django `make_password` on the original value and raises a
+type error; a mismatch reaches the raw-bcrypt fallback's missing `.encode()` and
+raises an attribute error. Other supported hashers require text. Null and unknown/
+unusable encodings retain a preferred KDF invocation before that fallback error.
+Go reports a typed generic failure, returns no selected account and rolls back
+its credential transaction. It never rehashes a non-string into a newly usable
+password. Admission and session stages pass raw values through unchanged.
+
+The private adapter now includes declared numeric, Boolean, null, list, ordered
+object and multipart file cases through the actual Django login view. It verifies
+exception classes, selected identities, unchanged password/state on value errors,
+Django readback and one SELECT per small candidate set. Existing 128-row batching,
+real rollback, concurrent selection and rehash tests remain in place. Service
+unit tests separately check exact representation, malformed internal values,
+recursion, cancellation during conversion and concurrent conversions. Public
+successful login HTTP and global request/rate/audit middleware remain unfinished.

@@ -384,3 +384,65 @@ The external manual’s reviewed recipe binding differs from this repository. Th
 scaffold correctly refuses to refresh that editorial binding without content
 review. Full capture/publication verification remains incomplete; no passing
 manual delivery gate is claimed from the preceding unit/helper results.
+
+
+Main reconciliation through `06bac65` preserves PR #20's immutable manual package,
+runtime-user asset validation, installed HTTP/browser/MCP contracts and disposable
+installation/upgrade/restart/interruption/rollback rehearsal. Go must implement
+that same package boundary; no manual release gate is certified by merging it.
+The export task's successful result no longer reads the nonexistent
+`service.skipped_records` attribute after archive creation. These five affected
+manual/export ledger rows remain `needs_review`; unchanged task bodies and the
+pairing schedule were compared before restoring their previous classifications.
+Static/runtime discovery counts are unchanged.
+
+Both independently added test-documentation sections are retained. The SSO merge
+retains main's explicit button-visibility assertion and the branch's bounded,
+redacted diagnostic observer through the initial click; it detaches before reading
+the pairing secret. Unit checks cover redaction, closed pages and listener cleanup.
+The preceding password-session head passed the complete PR-quality workflow
+([run 39553891367](https://github.com/carbogninalberto/assozeta/actions/runs/39553891367));
+that is historical evidence, not proof for this merged head. The earlier manual
+recipe-binding failure above must be re-evaluated against the merged sources.
+
+Merged-tree local checks pass: `go test -race ./...`, `go vet ./...`, 12
+inventory tests and drift validation, regenerated production runtime discovery,
+190 manual Python tests, 11 manual browser-helper tests, three SSO diagnostic
+tests, JavaScript syntax and `make selfhost-test`. No required test was skipped
+in these suites. Full installed manual release rehearsal and full merged-head
+backend/browser CI are separate outstanding gates. Logs are retained under
+`quality-reports/go-migration/main-reconciliation/`.
+
+
+Raw credential values now survive password admission/session coordination until
+selection. Identifiers use Python-compatible scalar/container text and multipart
+file names. Passwords preserve original type: a matching current PBKDF2 hash can
+admit non-text values, while rehash requirements, null, other hash families and
+failed legacy fallback produce typed failures. No-candidate rejection precedes
+password evaluation. The service independently refuses any non-string upgrade,
+even if a dependency mistakenly requests one; a failing unit test preceded that
+guard. Transactions return no selected account or replacement on value failures.
+Cancellation and concurrent conversion have explicit tests. Full HTTP parsing,
+social/provider admission, rate limits and public login remain unfinished.
+
+The merged-head manual workflow reached source/helper success, then failed at the
+overview recipe binding in run 39588278206. The configured external manual branch
+`add/manuale-release` binds exactly the current main recipe bytes. The only branch
+difference was two review comments introduced before main merged the same source
+hashes. Those comments are removed; the review evidence remains in this report.
+No recipe behavior, reviewed source hash, external binding or manual content was
+changed. All 190 manual unit tests pass; full capture/release evidence remains
+pending and is not inferred from the byte-binding match.
+
+The expanded credential adapter passes 68 declared actual-Django/Go cases with
+production hashes, four multipart-file cases, exception-class expectations,
+managed-table readback and one SELECT per small candidate set. The Go credential
+suite includes existing paging, concurrent rehash, constraint failure and rollback
+checks. Formatting, Go race tests/vet, tagged integration vet, inventory tests and
+manual unit checks pass. Evidence lives under
+`quality-reports/go-migration/login-values/`; no public endpoint was newly verified.
+
+The complete private PostgreSQL/Redis accounts adapter also finishes successfully,
+including 18 composed session cases, 47 OTP cases, 20 admission/audit cases, the
+portable refresh/pre-credential HTTP contracts and existing image oracles. This
+uses current-model schema creation, not historical migration/restore evidence.

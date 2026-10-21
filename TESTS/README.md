@@ -359,7 +359,7 @@ API execution remain separate acceptance work.
 ### Password selection and rehash adapter
 
 The account rehearsal calls `adapters/django/password_login.py` with the production
-Django hasher list. It checks 21 explicit selection/rehash cases using the actual
+Django hasher list. It checks 68 explicit selection/rehash/input-value cases using the actual
 Django login view and Go credential service on private PostgreSQL, then verifies
 the Go-written hashes with Django. Every managed model table is compared after
 restoring the declared password and Django last-login fixture changes.
@@ -372,6 +372,15 @@ These are backend-specific credential checks, not portable Go login HTTP contrac
 The composed password admission described below now adds OTP and username/audit
 normalization. Complete response augmentation and final writes remain open.
 Synthetic credentials are temporary and removed.
+
+Raw credential cases also cover Python identifier text and JSON/multipart password
+types. Non-string values can match a current PBKDF2 hash, while a required rehash,
+other hash families or a failed legacy fallback retain Django's server-error
+outcome. Unknown accounts are rejected before password evaluation. The adapter
+asserts exception classes, exact selected IDs, managed-table readback, one SELECT
+per small candidate set and released pool connections. Unit checks cover quoting,
+integer/float representation, input cancellation and concurrent conversion. Full
+successful Go HTTP, parser extremes and rate-limit parity remain separate gates.
 
 ### Second-factor login decisions
 

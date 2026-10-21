@@ -34,7 +34,7 @@ func (s *sessionStages) stage(name string) error {
 	}
 	return nil
 }
-func (s *sessionStages) Admit(_ context.Context, identifier, password string, otp any, present bool, audit domain.LoginAuditContext) (*domain.Account, error) {
+func (s *sessionStages) Admit(_ context.Context, identifier, password any, otp any, present bool, audit domain.LoginAuditContext) (*domain.Account, error) {
 	if identifier != "identifier" || password != "password" || otp != "287082" || !present || !reflect.DeepEqual(audit, s.audit) {
 		s.t.Fatal("admission input changed")
 	}

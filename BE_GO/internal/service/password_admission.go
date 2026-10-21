@@ -8,7 +8,7 @@ import (
 )
 
 type PasswordSelector interface {
-	Select(context.Context, string, string) (PasswordSelection, error)
+	Select(context.Context, any, any) (PasswordSelection, error)
 }
 type LoginPreparer interface {
 	Prepare(context.Context, string, domain.LoginAuditContext) (domain.LoginChallenge, error)
@@ -29,7 +29,7 @@ func NewPasswordAdmission(passwords PasswordSelector, preparation LoginPreparer,
 // Admit composes password selection, persisted normalization/audit and OTP. The
 // caller must still build the response and commit final login side effects before
 // issuing a session. Audit metadata identifies the request actor, not this account.
-func (s *PasswordAdmission) Admit(ctx context.Context, identifier, password string, otp any, present bool, audit domain.LoginAuditContext) (*domain.Account, error) {
+func (s *PasswordAdmission) Admit(ctx context.Context, identifier, password any, otp any, present bool, audit domain.LoginAuditContext) (*domain.Account, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

@@ -129,7 +129,7 @@ TDD evidence from this worktree:
 | Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
 | Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
-| Password credential stage | 21 actual Django login versus Go service selection/rehash cases; production hashes, Django readback of Go writes and managed-table comparison |
+| Password credential stage | 68 actual Django login versus Go selection/rehash/raw-input cases; production hashes, multipart files, exact exceptions, managed-table readback, one SELECT per small set and pool release |
 | Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
 | Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
 | Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
@@ -769,3 +769,13 @@ isolated Go handler server without reaching account/session work or changing
 managed tables. [Transport scope and exclusions](../../../BE_GO/internal/handler/login.md)
 include rate limits, trusted audit middleware, raw credential coercion and full
 password/social composition. `cmd/server` still does not register public login.
+
+
+Raw credential-value evidence now extends the password selection adapter to 68
+explicit cases. JSON identifiers retain Python scalar/container representation;
+password values retain their type through admission and session coordination.
+Current PBKDF2 matches, failed non-text fallback/rehash, null, multipart files,
+unknown/inactive/deleted/ambiguous accounts and later-candidate errors agree with
+the real Django view. All managed tables match after the declared resets. See
+[`password_login.md`](../../../BE_GO/internal/service/password_login.md) for
+boundaries; this does not certify public successful login HTTP or parser extremes.

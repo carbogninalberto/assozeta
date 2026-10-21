@@ -4,6 +4,8 @@
 and final login writes. It receives explicit interfaces and trusted audit context;
 there is no SQL or framework request context in the coordinator. The concrete
 components retain their existing bounded queries, admission limits and transactions.
+Identifier and password values remain uncoerced until credential selection; see
+[password_login.md](password_login.md) for the JSON/multipart value semantics.
 
 The sequence is intentional. Credential upgrades and username normalization commit
 before the OTP decision. An OTP denial therefore retains a legitimate username
@@ -34,7 +36,7 @@ association indexes. Eight concurrent repeated logins exercise one shared
 coordinator and check that committed normalization/card effects do not duplicate.
 
 The fixtures have no image that needs conversion. A complete image dispatcher,
-social admission, request coercion, rate limits, audit middleware, public HTTP
+social admission, complete transport parsing, rate limits, audit middleware, public HTTP
 registration and backend switching remain open. The Django cookie assertions
 characterize its transport only; they do not prove Go cookie parity. This service
 is not a production-ready public login endpoint.

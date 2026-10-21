@@ -15,7 +15,7 @@ type admissionSteps struct {
 	otpErr  error
 }
 
-func (s *admissionSteps) Select(context.Context, string, string) (PasswordSelection, error) {
+func (s *admissionSteps) Select(context.Context, any, any) (PasswordSelection, error) {
 	s.events = append(s.events, "credentials")
 	if s.failure != "" {
 		return PasswordSelection{Failure: s.failure}, nil
