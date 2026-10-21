@@ -11,6 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	sdkconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/processcreds"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -59,7 +60,7 @@ func (w *outputLimit) Write(p []byte) (int, error) {
 // The SDK exposes a custom process command builder but not through its config
 // loader. Replace selected process providers, including source_profile chains,
 // before any Retrieve. Other provider choices stay with the official loader.
-func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, depth int) (aws.Config, error) {
+func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, profiles map[string]map[string]string, depth int) (aws.Config, error) {
 	if depth > 20 {
 		return aws.Config{}, ErrConfiguration
 	}
@@ -78,32 +79,38 @@ func secureProcessProviders(ctx context.Context, cfg aws.Config, options []func(
 		cfg.Credentials = aws.NewCredentialsCache(processcreds.NewProviderCommand(builder, func(o *processcreds.Options) { o.Timeout = 10 * time.Second }))
 		return cfg, nil
 	}
-	if aws.IsCredentialsProvider(cfg.Credentials, &stscreds.AssumeRoleProvider{}) && shared.Source != nil {
-		nested := append([]func(*sdkconfig.LoadOptions) error{}, options...)
-		nested = append(nested, sdkconfig.WithSharedConfigProfile(shared.Source.Profile))
-		source, err := sdkconfig.LoadDefaultConfig(ctx, nested...)
-		if err != nil {
-			return aws.Config{}, ErrConfiguration
+	if aws.IsCredentialsProvider(cfg.Credentials, &stscreds.AssumeRoleProvider{}) && (shared.Source != nil || shared.CredentialSource == "Environment") {
+		var source aws.Config
+		var err error
+		if shared.Source != nil {
+			nested := append([]func(*sdkconfig.LoadOptions) error{}, options...)
+			nested = append(nested, sdkconfig.WithSharedConfigProfile(shared.Source.Profile))
+			source, err = sdkconfig.LoadDefaultConfig(ctx, nested...)
+			if err != nil {
+				return aws.Config{}, ErrConfiguration
+			}
+			source, err = secureProcessProviders(ctx, source, nested, profiles, depth+1)
+			if err != nil {
+				return aws.Config{}, err
+			}
+		} else {
+			access, secret, token := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), os.Getenv("AWS_SECURITY_TOKEN")
+			if token == "" {
+				token = os.Getenv("AWS_SESSION_TOKEN")
+			}
+			if access == "" || secret == "" {
+				return aws.Config{}, ErrConfiguration
+			}
+			source.Credentials = credentials.NewStaticCredentialsProvider(access, secret, token)
 		}
-		source, err = secureProcessProviders(ctx, source, nested, depth+1)
+		signer := cfg
+		signer.Credentials = source.Credentials
+		role, err := newRoleClient(sts.NewFromConfig(signer), profiles[shared.Profile])
 		if err != nil {
 			return aws.Config{}, err
 		}
-		// Match the pinned SDK loader's role options; full Boto3 role-policy parity
-		// (including default durations and interactive MFA) needs separate evidence.
-		signer := cfg
-		signer.Credentials = source.Credentials
-		cfg.Credentials = aws.NewCredentialsCache(stscreds.NewAssumeRoleProvider(sts.NewFromConfig(signer), shared.RoleARN, func(o *stscreds.AssumeRoleOptions) {
-			o.RoleSessionName = shared.RoleSessionName
-			if shared.RoleDurationSeconds != nil && *shared.RoleDurationSeconds/time.Minute > 15 {
-				o.Duration = *shared.RoleDurationSeconds
-			}
-			if shared.ExternalID != "" {
-				o.ExternalID = aws.String(shared.ExternalID)
-			}
-			if shared.MFASerial != "" {
-				o.SerialNumber = aws.String(shared.MFASerial)
-			}
+		cfg.Credentials = aws.NewCredentialsCache(stscreds.NewAssumeRoleProvider(role, shared.RoleARN, func(o *stscreds.AssumeRoleOptions) {
+			o.RoleSessionName = role.session
 		}))
 	}
 	return cfg, nil

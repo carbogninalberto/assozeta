@@ -70,9 +70,28 @@ The initial undefined constructor, lenient INI behavior, expired process output,
 unbounded endpoint HTTP, oversized output and short-lived-expiry failures were
 observed before the corresponding corrections.
 
-Remaining gates include complete Boto3 role/default-duration/MFA/web-identity/SSO/
-metadata and legacy Boto credential-file behavior, provider refresh/error semantics,
-full INI compatibility, live cloud evidence and composition with all `.env`-only
-fallback-chain settings. Nested-role wire tests establish the tested SDK protocol
-boundary, not full Django role parity. Production destructive cleanup still needs
+`TESTS/adapters/django/storage_roles.py` now adds 44 authored production-Python
+comparisons against real S3Storage/Boto3 and a private STS HTTP endpoint. The
+endpoint independently verifies the complete SigV4 signature, signing identity,
+security token, exact request fields and request count for both runtimes. Omitted
+or noninteger durations remain absent; explicit durations retain Python integer
+syntax, including tested Unicode digits/underscores. Generated session names use
+Boto3's seconds-based prefix. Explicit empty/short external IDs, short session
+names/ARNs and parsed durations below 900 fail before HTTP. A selected quoted
+profile and colon-delimited options are covered. Environment source credentials
+retain legacy-token precedence; nested roles sign with the preceding identity.
+
+Denied, malformed, missing-credential/field and expired STS responses fail with
+fixed errors. Response validation precedes the SDK provider's unchecked pointer
+dereferences, preventing a panic and refusing unusable credentials. The existing
+32-caller nested process/role cache test still requires exactly three external
+operations. No AWS account was contacted. Evidence, including the initial failing
+protocol comparisons, lives under `quality-reports/go-migration/storage-roles/`.
+
+This role adaptation covers `source_profile` chains and `credential_source =
+Environment`. Other provider chains still need their own differential proof.
+Remaining gates include MFA, web identity, SSO, metadata/ECS source roles, legacy
+Boto credential files, provider refresh/error semantics, full INI compatibility
+(including quoted source-profile references and conflicting aliases), live cloud
+evidence and composition with all `.env`-only fallback-chain settings. Production destructive cleanup still needs
 durable intent, reference/upload exclusion, restore fencing and scheduler ownership.

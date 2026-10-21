@@ -120,6 +120,7 @@ jobs:
         run: |
           python TESTS/adapters/django/storage_configuration.py
           python TESTS/adapters/django/storage_credentials.py
+          python TESTS/adapters/django/storage_roles.py
       - name: Verify S3 deletion against disposable MinIO
         run: python TESTS/adapters/django/s3_objects.py
       - name: Verify transactional durable jobs and lease recovery
@@ -164,6 +165,7 @@ jobs:
             quality-reports/go-migration/s3-objects/
             quality-reports/go-migration/storage-configuration/
             quality-reports/go-migration/storage-credentials/
+            quality-reports/go-migration/storage-roles/
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/accounts/
 

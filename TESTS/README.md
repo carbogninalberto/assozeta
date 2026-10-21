@@ -929,3 +929,16 @@ for 32 callers. Seven real MinIO groups pass with this constructor supplying the
 S3 deletion client. See `BE_GO/pkg/storage/s3credentials/README.md` and
 `TESTS/adapters/django/storage_credentials.py`. This is a tested dependency, not
 complete Boto3 credential-chain parity or production worker/storage composition.
+
+
+AssumeRole compatibility now adds 44 authored S3Storage/Boto3 cases against a
+private HTTP endpoint that independently verifies SigV4 signatures, signing
+identity, tokens, exact fields and request counts. Source-profile/environment
+roles preserve omitted or explicit duration, session naming and local parameter
+rejection. Nested roles use the preceding identity. Malformed/missing/expired STS
+credentials return fixed errors before the SDK can dereference absent fields.
+The previous 44-case credential oracle, Go race/vet and real MinIO checks pass
+again. See `TESTS/adapters/django/storage_roles.py` and
+`quality-reports/go-migration/storage-roles/`. MFA, metadata/ECS roles, SSO, web
+identity, full INI/refresh behavior and production composition remain unverified;
+this does not implement another task or activate a backend.
