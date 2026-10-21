@@ -31,7 +31,7 @@ ENV VERSION=$VERSION \
 COPY . .
 RUN npm run css:vendor-bootstrap && npm run build:vite:production
 
-FROM caddy:2.9.1-alpine AS production
+FROM caddy:2.11.7-alpine AS production
 
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist/public /srv

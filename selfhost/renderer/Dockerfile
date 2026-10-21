@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 
-FROM mcr.microsoft.com/playwright:v1.54.1-noble
+FROM mcr.microsoft.com/playwright:v1.64.1-noble
 
 # Playwright disables Chromium's sandbox by default in containers. Running the
 # renderer as its built-in non-root user still limits the process on every host.
