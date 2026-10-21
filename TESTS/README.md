@@ -552,11 +552,11 @@ image rehearsal tests the shipped codec. Per-stage budgets, a single pipeline
 admission/deadline, 32 concurrent resizes and queued/running cancellation are
 verified. Standalone commands exercise Pillow/Go without the Django application.
 
-`adapters/django/login_png_pixels.py` adds 801 explicit PNG compressed-pixel
+`adapters/django/login_png_pixels.py` adds 803 explicit PNG compressed-pixel
 cases: all 15 depth/color combinations, five filters, Adam7, large buffers and
 truncation/checksum behavior. Expected pixels come from directly constructed
 samples, checked independently against Pillow. The account suite checks actual
-Django output/fallback for every case; Go verifies 478 unchanged-size JPEG
+Django output/fallback for every case; Go verifies 480 unchanged-size JPEG
 compositions, 300 unsupported modes and 23 invalid streams. Exact budgets,
 overflow, cancellation and concurrent decodes are tested, including in the image
 oracle. This does not certify complete PNG file processing.
@@ -567,8 +567,18 @@ memory ceilings, APNG first-frame sequences/rectangles and text-key collisions.
 The account suite verifies zero pixel loads for 235 valid 200×100 passthroughs through
 the actual Django helper. Go tests header budgets, cancellation, metadata
 ownership and 32 concurrent readers; the image rehearsal includes this oracle.
-Post-pixel validation/metadata, APNG canvas composition, resized mode-1 behavior
-and complete PNG file/response wiring remain open.
+The composed PNG pipeline now separately verifies 1,466 whole-file decisions,
+including post-pixel metadata, APNG first-frame placement and resized mode 1.
+Public image/response wiring remains open.
+
+`adapters/django/login_bmp.py` adds 512 BMP/DIB cases with declared header modes,
+pixels and whole-file JPEG/original outcomes. It covers all seven header sizes,
+raw depths, accepted bitfield layouts, palette reduction/load failures, RLE4/RLE8
+quirks, partial rows, offsets and size thresholds. The account suite compares the
+actual Django helper; the image rehearsal runs the same file oracle. Exact stage
+budgets, mid-header/raw/RLE cancellation, 32 concurrent pipelines, whole-pipeline
+queueing and encoder cancellation/reaping/reuse are checked. Run this adapter with
+the same pinned Python environment as the other image oracles.
 
 This is not complete image parity: other file decoders, admission across formats
 and public login integration remain open. See
