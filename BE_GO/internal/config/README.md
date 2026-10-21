@@ -70,9 +70,37 @@ environment and redaction. It does not import settings, load developer `.env`,
 connect to a database or contact providers. The AST selection count is checked so
 missing declarations cannot silently reduce coverage. Temporary values are removed.
 
-This is still the environment subset needed by the current server and login
-components. Remaining storage/email/renderer/integration/security flags, complete
+Storage settings now load through the same `Load`/`Parse` entrypoint. The six
+existing access key, secret, bucket, region, endpoint and location variables must
+be present; explicitly empty values remain valid at this boundary. ACL defaults
+to nil, including explicit empty values. Overwrite defaults to false. Spaces host
+classification supplies object-ACL and public-base defaults; explicit overrides
+and missing proxy targets retain Django's rules. Public bases lose only trailing
+slashes and location strings remain literal. `STORE_ON_DISK` is read but does not
+change the existing unconditional S3 backend; `STORAGE_DIR` is evaluated before
+being replaced by an empty string. No additional environment variables are added.
+
+Session tokens prefer literal `AWS_SESSION_TOKEN`, then `AWS_SECURITY_TOKEN`;
+`AWS_S3_SESSION_PROFILE` is also literal. Empty values become nil. These variables
+do not resolve leading-dollar references. `ValidateBackend` separately rejects
+absolute locations and profile/static-credential conflicts, matching the lazy
+django-storages constructor boundary rather than rejecting settings loading.
+Reading configuration does not open credential profiles or contact storage.
+Storage values are omitted from JSON and string representations.
+
+`python TESTS/adapters/django/storage_configuration.py` verifies 65 authored cases
+against the unchanged contiguous storage settings declarations and the installed
+S3Storage defaults/constructor on production Python 3.13.2, then Go Load under the
+race detector. Missing values, empty values, proxy errors, process precedence,
+literal tokens, backend errors and diagnostic redaction are covered. No case is
+skipped. The shared `pkg/validate` URL-origin parser also retains the separately
+verified CORS behavior (51 HTTP contracts per backend and 40 origin cases).
+Evidence is in `quality-reports/go-migration/storage-configuration/`.
+
+This is still a subset of the complete environment contract. Remaining
+email/renderer/integration/security flags, complete
 value/encoding extremes, VERSION-file precedence and release/root wiring need
-their own evidence. Explicit file-read failures and PostgreSQL/listener validation
+their own evidence. Storage credential discovery, profile contents and provider
+composition remain open. Explicit file-read failures and PostgreSQL/listener validation
 are Go startup checks; these tests do not claim every Django startup failure has
 the same diagnostic or timing. Backend switching remains unimplemented.

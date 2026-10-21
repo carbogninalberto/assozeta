@@ -66,7 +66,7 @@ def main():
                 start_pg(); pg_started = True
                 redis_port, http_port = port(), port()
                 cache = start_cache()
-                environment = {'PATH': os.environ['PATH'], 'DBTYPE': 'POSTGRES', 'DBNAME': 'postgres',
+                environment = {'AWS_ACCESS_KEY_ID':'fixture-access','AWS_SECRET_ACCESS_KEY':'fixture-secret','AWS_STORAGE_BUCKET_NAME':'fixture-bucket','AWS_S3_REGION_NAME':'us-east-1','AWS_S3_ENDPOINT_URL':'http://127.0.0.1:9000','AWS_LOCATION':'private','PATH': os.environ['PATH'], 'DBTYPE': 'POSTGRES', 'DBNAME': 'postgres',
                     'DBUSER': 'contracts', 'DBPASSWORD': 'go-contract-only', 'DBHOST': str(work),
                     'DBPORT': '5432', 'REDIS_HOST': '127.0.0.1', 'REDIS_PORT': str(redis_port),
                     'REDIS_PASSWORD': 'go-contract-only', 'GO_LISTEN_ADDR': f'127.0.0.1:{http_port}',

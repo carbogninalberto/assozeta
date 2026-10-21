@@ -35,7 +35,7 @@ def main():
            isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id in NAMES for target in node.targets)]
     assert len(nodes)==len(NAMES)+1,'settings declaration coverage changed'
     code=compile(ast.Module(body=nodes,type_ignores=[]),'core.settings selected assignments','exec')
-    base={'SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
+    base={'AWS_ACCESS_KEY_ID':'fixture-access','AWS_SECRET_ACCESS_KEY':'fixture-secret','AWS_STORAGE_BUCKET_NAME':'fixture-bucket','AWS_S3_REGION_NAME':'us-east-1','AWS_S3_ENDPOINT_URL':'http://127.0.0.1:9000','AWS_LOCATION':'private','SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
     expected={'restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',

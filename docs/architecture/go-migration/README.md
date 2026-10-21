@@ -115,7 +115,7 @@ TDD evidence from this worktree:
 | Check | Result and scope |
 | --- | --- |
 | Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
-| Environment subset | 55 declared cases execute actual settings assignments with django-environ, then Go Load: precedence, provider/JWT proxies, raw DB/Redis, multiline/base64, CSRF lists, DEBUG/derived rate-enable defaults, process isolation and redaction |
+| Environment subset | 87 existing environment cases plus 65 storage settings/backend-option cases execute actual settings assignments with django-environ, then Go Load; precedence, proxies, literal values, required/default rules, process isolation and redaction are checked |
 | Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
@@ -489,7 +489,7 @@ Every row below is required before this draft can claim completion.
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
-| 6. Environment | 87 declared DB/Redis/auth/CORS/restore path and precedence cases | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
+| 6. Environment | 87 declared DB/Redis/auth/CORS/restore path cases plus 65 storage settings/backend-option cases | Storage credential/provider composition, remaining auth, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository and executor with lease/crash/concurrency and ordinary restore-admission tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
@@ -1133,3 +1133,21 @@ response bounds, cancellation, deadlines, admission and fixed errors. It is not
 wired to the medical task: durable intent, uploads/references and restore fencing
 remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
 `TESTS/adapters/django/s3_objects.py`.
+
+Storage environment parsing now passes 65 authored production-Python comparisons
+against the unchanged storage assignments and actual S3Storage defaults/constructor.
+Go Load preserves required/empty values, proxies, process precedence, Spaces
+classification/defaults, ACL nil semantics, literal token/profile lookup and the
+separate lazy-backend validation boundary. No credential file or provider is opened.
+The shared URL-origin parser retains the CORS contract; 51 HTTP contracts per backend,
+40 URL cases, the 87 existing environment cases and live health/dependency recovery
+pass again. See `BE_GO/internal/config/README.md` and
+`TESTS/adapters/django/storage_configuration.py`. Credential discovery/profile-file
+loading, storage composition and destructive cleanup coordination remain open.
+
+The full accounts suite was rerun after storage configuration became required at
+server startup. All real-server adapters now supply the same synthetic storage
+settings as Django. Password/session, image, HTTP/scope/restore and all five task
+body checks pass on production Python 3.13.2. Evidence:
+`quality-reports/go-migration/storage-configuration/full-accounts-results.json`.
+This is current-model regression evidence, not historical-schema or switch parity.

@@ -10,6 +10,13 @@ import (
 
 func environment() map[string]string {
 	return map[string]string{
+		"AWS_ACCESS_KEY_ID":       "fixture-access",
+		"AWS_SECRET_ACCESS_KEY":   "fixture-secret",
+		"AWS_STORAGE_BUCKET_NAME": "fixture-bucket",
+		"AWS_S3_REGION_NAME":      "us-east-1",
+		"AWS_S3_ENDPOINT_URL":     "http://127.0.0.1:9000",
+		"AWS_LOCATION":            "private",
+
 		"DBTYPE": "POSTGRES", "DBNAME": "assozeta_contract", "DBUSER": "contract",
 		"DBPASSWORD": "special ' \\ @ : ? # password", "DBHOST": "/tmp/contract", "DBPORT": "5432",
 		"REDIS_HOST": "localhost", "REDIS_PASSWORD": "secret", "REDIS_PORT": "6379",
@@ -86,7 +93,7 @@ func TestInvalidSettingsNeverExposeSecrets(t *testing.T) {
 }
 func TestDotenvDoesNotOverrideProcessAndKeepsQuotedValues(t *testing.T) {
 	path := filepath.Join(t.TempDir(), ".env")
-	if err := os.WriteFile(path, []byte("SECRET_KEY=synthetic-session-secret\nDEBUG=False\nDBTYPE=POSTGRES\nDBNAME=file\nDBUSER=contract\nDBPASSWORD='a # quoted password'\nDBHOST=localhost\nDBPORT=5432\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"), 0600); err != nil {
+	if err := os.WriteFile(path, []byte("AWS_ACCESS_KEY_ID=fixture-access\nAWS_SECRET_ACCESS_KEY=fixture-secret\nAWS_STORAGE_BUCKET_NAME=fixture-bucket\nAWS_S3_REGION_NAME=us-east-1\nAWS_S3_ENDPOINT_URL=http://127.0.0.1:9000\nAWS_LOCATION=private\nSECRET_KEY=synthetic-session-secret\nDEBUG=False\nDBTYPE=POSTGRES\nDBNAME=file\nDBUSER=contract\nDBPASSWORD='a # quoted password'\nDBHOST=localhost\nDBPORT=5432\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("DBNAME", "process")
