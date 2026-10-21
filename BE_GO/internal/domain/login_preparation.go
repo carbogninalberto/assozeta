@@ -2,17 +2,18 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
 // LoginAuditContext comes from trusted request/session admission. Its actor is
 // independent of the account being logged into, and must not come from a body ID.
 type LoginAuditContext struct {
-	ActorID       *string `json:"actor_id"`
-	ActorEmail    *string `json:"actor_email"`
-	RemoteAddress *string `json:"remote_address"`
-	RemotePort    *int64  `json:"remote_port"`
-	CorrelationID *string `json:"correlation_id"`
+	ActorID       *string      `json:"actor_id"`
+	ActorEmail    *string      `json:"actor_email"`
+	RemoteAddress *string      `json:"remote_address"`
+	RemotePort    *json.Number `json:"remote_port"`
+	CorrelationID *string      `json:"correlation_id"`
 }
 type LoginChallenge struct {
 	Account

@@ -868,6 +868,17 @@ changes revoke shared cache sessions. Thirty-two concurrent resolutions use exac
 32 SELECTs/cache reads with four-connection pools. Bounded cache reads, deadlines,
 reuse and closed data-only pickle decoding are tested. HTTP cookie/Vary behavior,
 general writes/rotation, audit metadata, configuration and public composition remain
-open; Go resource limits are not claimed as Django-equivalent. See
+open at that service boundary; Go resource limits are not claimed as Django-equivalent. See
 [`session_auth.md`](../../../BE_GO/internal/service/session_auth.md). The focused
 `accounts.py --only session-auth` mode is explicitly not a full accounts run.
+
+The HTTP audit middleware now passes 23 portable contracts per backend on actual
+Django ASGI/Uvicorn and Go with concrete PostgreSQL/Redis repositories. Cookie
+parsing/deletion/Vary, metadata, streaming, methods/body bytes and 32 concurrent
+mixed-actor/CID requests are covered. Seven rolled-back database cases preserve
+the existing audit-port column's limits while keeping arbitrary-width input in
+the DTO. The initial WSGI oracle was replaced after inspecting the shipped ASGI
+entrypoint; WSGI and ASGI cookie decoding differ. No public route is newly wired.
+General session writes/rotation, complete exception/global middleware policy,
+configuration and public-login composition remain open. See
+[`session_audit.md`](../../../BE_GO/internal/middleware/session_audit.md).

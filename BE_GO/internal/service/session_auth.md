@@ -57,10 +57,11 @@ pickle integer operands at 2,048 bytes.
 These are explicit Go limits, **not equivalent Django limits**. Arbitrary pickled
 objects, recursive containers, non-string dictionary keys, other protocols,
 lone-surrogate strings and oversized legacy session data are not proven compatible.
-Their prevalence and required support must be resolved before activation. Wire
-cookie parsing, deletion headers, Vary handling, session saving/rotation,
-middleware ordering, audit request metadata, SECRET_KEY configuration and public
-route wiring remain separate work.
+Their prevalence and required support must be resolved before activation. The
+[HTTP audit boundary](../middleware/session_audit.md) now characterizes cookies,
+Vary and request metadata on the shipped ASGI transport. General session saving
+and rotation, complete exception/middleware policy, SECRET_KEY configuration and
+public route wiring remain separate work.
 
 ## Executed evidence
 
@@ -68,7 +69,7 @@ route wiring remain separate work.
 outcomes before invoking the actual conditional-session/authentication/audit
 middleware on private PostgreSQL and Redis. The same persisted cache bytes are
 then consumed by tagged Go integration tests; Django checks Go's deletion effects.
-All managed tables must remain equal after explicitly restoring fixture changes.
+Managed-model snapshots must remain equal after explicitly restoring fixture changes.
 
 Five additional same-key transitions assert current email, inactive rejection,
 soft-deletion behavior and password-change revocation in both runtimes. Thirty-two
