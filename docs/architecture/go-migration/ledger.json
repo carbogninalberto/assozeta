@@ -7940,7 +7940,11 @@
         "BE_GO/cmd/server/main.go",
         "BE_GO/pkg/jwt/document.go",
         "BE_GO/pkg/jwt/canonical.go",
-        "BE_GO/internal/config/registration.go"
+        "BE_GO/internal/config/registration.go",
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/internal/service/session_auth.go",
+        "BE_GO/internal/repository/session_cache.go",
+        "BE_GO/internal/repository/session_accounts.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7949,7 +7953,8 @@
         "BE/application/impersonation.py",
         "BE/application/permissions_registry.py",
         "BE/application/models/user_models.py",
-        "BE/core/settings.py"
+        "BE/core/settings.py",
+        "BE/core/middleware.py"
       ],
       "contract": {
         "methods": [
@@ -7960,12 +7965,12 @@
           "/api/oauth2/refresh-token"
         ],
         "request": "POST JSON/form/multipart refresh_token; missing field is 400, invalid non-string values are 401 except explicit null constructs an unbound token. Optional Authorization/User-Id/X-Impersonation-Id/X-Group-Id follow existing admission.",
-        "response": "200: access_token, refresh_token, expires_in=14400, token_type=Bearer. Reserialize and sign refresh claims with default header; preserve JTI/expiry and copy iat/custom claims to new access. BKN_AUTH cookie: HttpOnly, Secure, SameSite=Strict, Path=/, Max-Age=14400, Expires. OPTIONS metadata supported.",
-        "errors": "Portable cases cover 400 missing/JSON parse, 401 refresh and Bearer failures with distinct envelopes/WWW-Authenticate behavior, 403 scoped denial, 405 methods, 406 Accept, 415 media, and 500 malformed signed account UUID. Broader middleware, locale/charset and multipart/body-limit edge parity remains open.",
-        "authentication": "AllowAny still authenticates a supplied case-sensitive Bearer credential and resolves current identity before refresh. BKN_AUTH cookies do not authenticate REST. Anonymous context headers are ignored. Body refresh account is not looked up or bound to the Bearer actor.",
+        "response": "200: access_token, refresh_token, expires_in=14400, token_type=Bearer. Reserialize and sign refresh claims with default header; preserve JTI/expiry and copy iat/custom claims to new access. BKN_AUTH cookie: HttpOnly, Secure, SameSite=Strict, Path=/, Max-Age=14400, Expires. OPTIONS metadata supported. Session processing adds Cookie to Vary. Missing/revoked sessionid cookies are deleted without replacing BKN_AUTH.",
+        "errors": "Portable cases cover 400 missing/JSON parse, 401 refresh and Bearer failures with distinct envelopes/WWW-Authenticate behavior, 403 scoped denial, 405 methods, 406 Accept, 415 media, and 500 malformed signed account UUID. Broader middleware, locale/charset and multipart/body-limit edge parity remains open. Malformed session cache/UUID/hash inputs return production HTML 500 before refresh method, negotiation, Bearer or body handling.",
+        "authentication": "AllowAny still authenticates a supplied case-sensitive Bearer credential and resolves current identity before refresh. BKN_AUTH cookies do not authenticate REST. Anonymous context headers are ignored. Body refresh account is not looked up or bound to the Bearer actor. Existing Django cache sessions establish pre-view audit identity only, separately from the Bearer actor and refreshed token identity.",
         "permissions": "Scoped operation/reference guard precedes effective collaborator route permissions. Association-bound athlete refresh is denied; anonymous refresh requires no account permission.",
         "resource_scope": "Bearer actor and effective/association scope resolved separately. Reference parsing failures retain operation/path/query-before-body denial ordering.",
-        "side_effects": "Refresh returns credentials and BKN_AUTH cookie. No persisted business/auth/audit/job changes in the all-managed-table HTTP rehearsal; setup session creation occurs before snapshot.",
+        "side_effects": "Refresh returns credentials and BKN_AUTH cookie. No persisted business/auth/audit/job changes in the all-managed-table HTTP rehearsal; setup session creation occurs before snapshot. A wrong current-password session hash revokes its shared Redis session; other session payloads remain byte-identical.",
         "transaction": "No refresh database writes. Optional Bearer identity reads use existing repositories.",
         "execution_owner": "django"
       },
@@ -7999,7 +8004,9 @@
         "After environment changes, the full private PostgreSQL/Redis accounts adapter passes: 30 refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only; historical migrations and public login remain open. Results: quality-reports/go-migration/environment/accounts-results.json.",
         "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
         "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json.",
-        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log."
+        "The environment oracle now passes 67 declared cases, including required SECRET_KEY, literal escapes, proxy/default/error boundaries, base64 non-support, Unicode/whitespace and process precedence. SessionSecret is omitted from JSON and formatted representations. Synthetic startup fixtures are updated; session middleware is not yet wired by the root. Evidence: quality-reports/go-migration/session-config/green.log.",
+        "The Go composition root now registers DjangoSessionAudit on public refresh, using concrete PostgreSQL/Redis session repositories and configured SECRET_KEY. Thirty-six portable contracts pass on actual Django ASGI/Uvicorn and the Go executable, including six new session methods and 32 mixed concurrent requests. Stale-session deletion preserves BKN_AUTH, malformed sessions preempt Bearer/body/method/negotiation, and session identity cannot supply API scope or change token claims. Managed-model snapshots and shared-session cache readback agree. Full global-header/middleware and activation gates remain open; no status promotion. Evidence: quality-reports/go-migration/refresh-session/.",
+        "Complete accounts and focused --only refresh rehearsals pass after public session composition: 36 public refresh, 43 session identity and 27 controlled session HTTP contracts per backend, with all existing full-account checks retained. Go race/vet, inventory/drift and actual health/dependency-loss/recovery pass. Results: quality-reports/go-migration/refresh-session/full-accounts-results.json and focused-results.json. Current-model schema only; all activation gates remain binding."
       ],
       "notes": [
         "Registered upstream route in the Go composition root; remains implementing, not verified. Global maintenance/restore fencing, middleware, all locale/charset variants, malformed multipart/body-limit edge cases, proxy/version routing and release/browser switching gates remain open.",

@@ -60,8 +60,9 @@ lone-surrogate strings and oversized legacy session data are not proven compatib
 Their prevalence and required support must be resolved before activation. The
 [HTTP audit boundary](../middleware/session_audit.md) now characterizes cookies,
 Vary and request metadata on the shipped ASGI transport. General session saving
-and rotation, complete exception/middleware policy and public route wiring remain
-separate work. `config.SessionSecret` now reads existing `SECRET_KEY`; its 67-case
+and rotation, complete exception/middleware policy and remaining route wiring
+remain separate work. The public refresh route now uses this resolver through
+`DjangoSessionAudit`; public login is not yet registered. `config.SessionSecret` now reads existing `SECRET_KEY`; its 67-case
 settings oracle is documented in [configuration](../config/README.md).
 
 ## Executed evidence

@@ -80,6 +80,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	djangoSessions, err := repository.NewDjangoSessionCache(cache)
+	if err != nil {
+		return err
+	}
+	sessionAuthentication := service.NewSessionAuthentication(djangoSessions, repository.NewSessionAccounts(db), cfg.SessionSecret)
 	relations := repository.NewIdentityRelations(db)
 	scopeGuard := service.NewScopedRequestGuard(repository.NewScopedResources(db), relations, sessions)
 	identities := service.NewIdentityResolver(accounts, relations, sessions, service.NewPermissions(), scopeGuard)
@@ -92,7 +97,7 @@ func run() error {
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/readyz", healthHandler.Readiness, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
-	e.Any("/oauth2/refresh-token", refreshHandler.Refresh)
+	e.Any("/oauth2/refresh-token", refreshHandler.Refresh, middleware.DjangoSessionAudit(sessionAuthentication))
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: e, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

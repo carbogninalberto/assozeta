@@ -114,7 +114,7 @@ The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
 proxies/multiline values follow their existing Django settings; DB/Redis values
 remain literal. Google client ID and secret must be present (empty is accepted).
-See `internal/config/README.md` for the 55-case environment comparison, required
+See `internal/config/README.md` for the 67-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
@@ -133,3 +133,11 @@ verify the protocol and resource bounds. Expiration races fail closed, and real
 Redis timeout/recovery is tested. The request wrapper now passes 15 portable HTTP contracts per backend, and
 DEBUG/RATELIMIT_ENABLE load with Django defaults. Public composition and remaining
 parser/global-middleware gaps remain open; see `internal/middleware/login_rate.md`.
+
+Public refresh now composes the existing Django cache-session reader and audit
+middleware using the configured `SECRET_KEY`. Thirty-six portable contracts per
+backend run on actual Django ASGI/Uvicorn and the Go executable, including stale
+session deletion, malformed-session precedence and 32 concurrent requests.
+Session identity remains distinct from the Bearer actor and refreshed token
+identity. See `internal/handler/refresh.md`; broader middleware, login and backend
+activation remain unfinished.

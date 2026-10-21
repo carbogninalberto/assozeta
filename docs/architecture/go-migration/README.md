@@ -892,3 +892,14 @@ fixture reset. These production error responses are converted inside Django's
 middleware chain before the application's JSON exception handler can catch them.
 Public composition, general session writes and complete middleware coverage
 remain open; see `BE_GO/internal/middleware/session_audit.md`.
+
+The composition root now wires cache-session authentication/audit middleware on
+public refresh using the existing `SECRET_KEY`. The refresh adapter runs all 36
+portable contracts on actual Django ASGI/Uvicorn and the Go executable. Six new
+methods cover Cookie Vary, retained/deleted sessions, BKN_AUTH coexistence,
+malformed-session precedence, independent Bearer/scope identity and 32 concurrent
+requests. Shared cache readback permits only the declared hash revocation; model
+tables remain unchanged. `accounts.py --only refresh` is a focused rehearsal with
+supporting account/identity/session fixtures, not the complete accounts run.
+Public login, other route composition and global middleware/activation gates stay
+open; see [`refresh.md`](../../../BE_GO/internal/handler/refresh.md).
