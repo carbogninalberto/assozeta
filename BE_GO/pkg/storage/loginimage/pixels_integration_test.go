@@ -33,6 +33,7 @@ func TestLoginImageAgainstPillow(t *testing.T) {
 			Name, Mode       string
 			Width, Height    int
 			Pixels, Expected []byte
+			ExpectedJPEG     []byte `json:"expected_jpeg"`
 			OutWidth         int    `json:"out_width"`
 			OutHeight        int    `json:"out_height"`
 			OutMode          string `json:"out_mode"`
@@ -60,6 +61,10 @@ func TestLoginImageAgainstPillow(t *testing.T) {
 			}
 		})
 	}
+	encoder, err := NewJPEGEncoder(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), jpegTestLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, tc := range fixture.Pixels {
 		t.Run(tc.Name, func(t *testing.T) {
 			input := Raster{tc.Width, tc.Height, tc.Mode, tc.Pixels}
@@ -76,6 +81,10 @@ func TestLoginImageAgainstPillow(t *testing.T) {
 					}
 				}
 				t.Fatalf("Pillow pixels differ: %d mismatches, mode %s/%s", mismatch, output.Mode, tc.OutMode)
+			}
+			encoded, err := encoder.Encode(context.Background(), output)
+			if err != nil || !bytes.Equal(encoded, tc.ExpectedJPEG) {
+				t.Fatal("transformed JPEG differs", err)
 			}
 			if !bytes.Equal(tc.Pixels, before) {
 				t.Fatal("source pixels mutated")

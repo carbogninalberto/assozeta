@@ -1,0 +1,53 @@
+"""Verify the shipped static JPEG helper against the pinned Pillow oracle.
+
+Run after building BE_GO/Dockerfile. The test runner and synthetic fixture are
+mounted read-only; the image runs without network access as its default user.
+"""
+import argparse
+import json
+import os
+import re
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+from TESTS.adapters.django.login_jpeg import vectors
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image', required=True)
+    args = parser.parse_args()
+    tool_env = {key: value for key, value in os.environ.items() if key in ('PATH', 'HOME', 'TMPDIR', 'GOCACHE', 'GOMODCACHE', 'GOTOOLCHAIN')}
+    architecture = subprocess.check_output(['docker', 'image', 'inspect', '--format', '{{.Architecture}}', args.image], text=True).strip()
+    if architecture not in ('amd64', 'arm64'):
+        raise RuntimeError(f'unsupported image test architecture: {architecture}')
+    with tempfile.TemporaryDirectory(prefix='az-jpeg-image-', dir='/tmp') as directory:
+        work = Path(directory); work.chmod(0o755)
+        (work / 'jpeg.json').write_text(json.dumps(vectors()))
+        (work / 'jpeg.json').chmod(0o644)
+        subprocess.run(['go', 'test', '-c', '-tags=imageintegration', '-o', str(work / 'jpeg.test'), './pkg/storage/loginimage'],
+            cwd=ROOT / 'BE_GO', env={**tool_env, 'GOOS': 'linux', 'GOARCH': architecture, 'CGO_ENABLED': '0'}, check=True, timeout=180)
+        (work / 'jpeg.test').chmod(0o755)
+        identity = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'id', args.image, '-u'], text=True).strip()
+        assert identity == '10001', 'image no longer runs as expected unprivileged user'
+        for name in ('Pillow-LICENSE', 'libjpeg-turbo-LICENSE.md', 'libjpeg-turbo-README.ijg', 'loginimage-NOTICE', 'libjpeg-turbo-version.txt'):
+            notice = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'cat', args.image, '/app/licenses/' + name], text=True)
+            assert notice.strip(), f'missing image notice: {name}'
+            if name == 'Pillow-LICENSE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/LICENSE.pillow').read_text()
+            if name == 'loginimage-NOTICE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/NOTICE').read_text()
+            if name == 'libjpeg-turbo-version.txt':
+                assert re.fullmatch(r'libjpeg-turbo-static-\d+\.\d+\.\d+-r\d+\n', notice), 'missing exact codec package version'
+                print(notice.strip(), flush=True)
+        subprocess.run(['docker', 'run', '--rm', '--network', 'none', '--read-only',
+            '--mount', f'type=bind,source={work},target=/fixtures,readonly',
+            '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^TestJPEG(AgainstPillow|NativeProtocol)$', '-test.v'],
+            check=True, timeout=180)
+
+
+if __name__ == '__main__':
+    main()

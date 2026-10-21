@@ -7526,7 +7526,9 @@
         "BE_GO/internal/service/login_response.go",
         "BE_GO/internal/repository/login_response.go",
         "BE_GO/pkg/storage/loginimage/data_uri.go",
-        "BE_GO/pkg/storage/loginimage/pixels.go"
+        "BE_GO/pkg/storage/loginimage/pixels.go",
+        "BE_GO/pkg/storage/loginimage/jpeg.go",
+        "BE_GO/pkg/storage/loginimage/native/jpeg_encode.c"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7611,7 +7613,11 @@
         "TESTS/adapters/django/login_image_pixels.py",
         "BE_GO/pkg/storage/loginimage/data_uri_test.go",
         "BE_GO/pkg/storage/loginimage/pixels_test.go",
-        "BE_GO/pkg/storage/loginimage/pixels_integration_test.go"
+        "BE_GO/pkg/storage/loginimage/pixels_integration_test.go",
+        "TESTS/adapters/django/login_jpeg.py",
+        "TESTS/adapters/go/login_jpeg_image.py",
+        "BE_GO/pkg/storage/loginimage/jpeg_test.go",
+        "BE_GO/pkg/storage/loginimage/jpeg_integration_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7623,7 +7629,8 @@
         "20 explicit actual Django login-response-builder/audit middleware versus Go membership-card cases; exact configuration/audit/index fields and Django readback. Existing/duplicate rows use two statements, creation five; 32 concurrent Go calls create one invariant in 67 statements. Real permission/FK failures, injected errors, cancellation and an observed PostgreSQL audit-actor deadlock verify rollback/retry. Every managed table and SQL-NULL distinction matches after resets.",
         "17 explicit actual Django password-login versus Go finalization cases cover UTC deletion-date boundaries, exact last_login and audit/index readback. Two/four/five-statement paths, 32 concurrent Go calls in 67 statements, real permission/FK failures, injected failures and cancellation verify atomicity and pool release. Django partial autocommit and stale-save overwrites are characterized separately; all managed tables match after restoration.",
         "36 explicitly expected actual Django builder versus Go composed-response cases on shared private PostgreSQL, including all key presence, role-0 behavior, feature masks, exact JSON settings, instructor cardinalities 0/1/2/128/512 and default configuration write/readback. Existing association/collaborator responses use seven statements; creation ten; 32 concurrent compositions use 224 statements on four connections. Real required-instructor permission failures and persisted transitions are tested; all managed tables match after restoration. Image conversion is deliberately outside these cases. Twenty-eight boolean values and eight dotenv cases are characterized with Django and checked in Go.",
-        "Image prerequisites: ten explicitly expected actual-Django-helper size decisions, 54 exact Pillow pixel vectors across six modes and 19,535 CPython Base64 differential vectors pass. Go matches every pixel byte without tolerance, preserves immutable inputs and passes cancellation, logical memory/overflow limits and 32 concurrent transformations. All managed tables remain unchanged. These checks do not include Go file decoding, JPEG encoding or the complete image processor."
+        "Image prerequisites: ten explicitly expected actual-Django-helper size decisions, 54 exact Pillow pixel vectors across six modes and 19,535 CPython Base64 differential vectors pass. Go matches every pixel byte without tolerance, preserves immutable inputs and passes cancellation, logical memory/overflow limits and 32 concurrent transformations. All managed tables remain unchanged. The 54 transformed rasters also match their encoded JPEG bytes. These checks do not include Go file decoding or the complete image processor.",
+        "180 exact Pillow JPEG vectors cover five modes, four deterministic patterns and nine sizes. Metadata/quality/sampling expectations anchor the oracle. Input/output limits, exact output ceilings, malformed native protocol, process failure, environment isolation, timeout, queued/running cancellation and 32 concurrent encodes pass. The shipped static codec also passes the same 180 vectors and native protocol in the actual non-root, read-only, networkless Go image. Tested libjpeg-turbo versions: Pillow 3.1.0, local 3.2.0, image 3.0.4; no other codec/architecture equivalence is assumed."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
@@ -7634,7 +7641,7 @@
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
         "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
         "Response construction now composes the profile/association/card services; no image processor implementation or public login handler is wired. A missing processor fails when an image requires work. Unit image doubles test dispatch only, not image parity. Metadata instructor lookup preserves Django behavior and does not grant instructor authorization. Registration flags reuse existing environment names and defaults. See BE_GO/internal/service/login_response.md.",
-        "Pure-Go image decision/Base64/pixel stages now exist in pkg/storage/loginimage, with retained Pillow license/provenance. They are not a complete domain.LoginImageProcessor and remain unwired. File-format/lazy-header decoding, JPEG byte compatibility, codec delivery and global resource admission remain required; no full image or HTTP parity is claimed."
+        "Pure-Go image decision/Base64/pixel stages now exist in pkg/storage/loginimage, with retained Pillow license/provenance. They are not a complete domain.LoginImageProcessor and remain unwired. A bounded native JPEG encoder is shipped and tested in the Go image with license notices. File-format/lazy-header decoding, whole-pipeline admission and full image wiring remain required; no full image or HTTP parity is claimed."
       ]
     },
     {

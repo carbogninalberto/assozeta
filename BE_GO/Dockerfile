@@ -5,11 +5,24 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server
 
+# Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
+# bounded child process. Static linking also avoids cross-stage musl ABI drift.
+FROM alpine:3.21 AS codec-builder
+RUN apk add --no-cache build-base libjpeg-turbo-dev libjpeg-turbo-static libjpeg-turbo-doc
+COPY pkg/storage/loginimage/native/jpeg_encode.c /src/jpeg_encode.c
+RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c -ljpeg -lm -o /image-codec && \
+    apk info -v | grep '^libjpeg-turbo-static-' > /codec-version
+
 FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
 WORKDIR /app
 COPY --from=builder /server /app/server
+COPY --from=codec-builder /image-codec /app/image-codec
+COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
+COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/LICENSE.md /app/licenses/libjpeg-turbo-LICENSE.md
+COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/README.ijg /app/licenses/libjpeg-turbo-README.ijg
+COPY pkg/storage/loginimage/NOTICE /app/licenses/loginimage-NOTICE
 COPY migrations /app/migrations
 COPY pkg/storage/loginimage/LICENSE.pillow /app/licenses/Pillow-LICENSE
 USER 10001:10001

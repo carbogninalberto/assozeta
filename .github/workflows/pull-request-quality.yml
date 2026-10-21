@@ -93,7 +93,7 @@ jobs:
       - name: Install disposable integration dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-16 redis-server locales
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
           sudo locale-gen
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
@@ -108,6 +108,7 @@ jobs:
         run: |
           docker build -t assozeta-go-foundation:test BE_GO
           test "$(docker run --rm --network none --entrypoint id assozeta-go-foundation:test -u)" = "10001"
+          python TESTS/adapters/go/login_jpeg_image.py --image assozeta-go-foundation:test
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -132,8 +132,14 @@ Image prerequisites now include pure-Go permissive Base64 decoding, the actual
 Django size policy and white-alpha/Lanczos pixel processing. Ten real-helper
 policy cases, 54 byte-exact Pillow pixel vectors and 19,535 Base64 vectors pass,
 with cancellation, logical memory limits and concurrency tests. The Pillow license
-and source provenance are retained. No Go file decoder, JPEG encoder or complete
-image processor is claimed by these checks; those remain necessary for login.
+and source provenance are retained. A bounded native libjpeg encoder additionally
+matches 180 exact Pillow JPEG vectors; the 54 transformed rasters also match their
+JPEG output. Tests exercise byte ceilings, protocol failures, running/queued
+cancellation, timeout, process cleanup and 32 concurrent encodes. The static helper
+is shipped with license/version notices in the non-root Go image, which passes the
+same 180-vector oracle without network or writable storage. The server remains
+CGO-free. File decoding, global pipeline admission and the complete image processor
+remain necessary for login; no full image or HTTP parity is claimed.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,

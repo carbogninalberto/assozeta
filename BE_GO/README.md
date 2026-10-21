@@ -76,8 +76,11 @@ keys, instructor metadata and instance registration choices; see
 statements. The complete image processor remains unimplemented; no public login is wired.
 Its pure-Go Base64/size-policy/pixel core now passes 54 exact Pillow vectors,
 ten actual Django decisions and 19,535 Base64 cases; see
-`pkg/storage/loginimage/README.md`. File decoding, JPEG encoding and global
-resource admission are still required. The Go image retains the Pillow license.
+`pkg/storage/loginimage/README.md`. A bounded native libjpeg encoder now matches
+180 exact Pillow JPEG vectors, and all 54 transformed rasters also match as JPEG.
+The non-root Go image delivers the static helper and license notices; its actual
+codec passes the same 180-vector oracle. File decoding, whole-pipeline resource
+admission and login wiring remain required.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512
