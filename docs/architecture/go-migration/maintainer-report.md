@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 13 implementing,
-6 requiring renewed review and 491 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 14 implementing,
+6 requiring renewed review and 490 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -230,13 +230,26 @@ all 329 current oracle cases, inventory checks and workflow lint pass. The last
 complete local accounts run predates retention/calendar; current-head whole CI
 remains required.
 
-Published `59ecdfa` whole quality run 39674013825 passed. Its independent manual
-dispatch 39674019168 remains running with editing disabled; PR-linked manual
-39674013814 was cancelled. Both `446c184` workflows (39677139217 and 39677139163)
-were subsequently cancelled. Published `1038495` quality 39678254736 and manual
-39678254710 were subsequently cancelled. Published retention head `0973e53` has
-quality 39679361859 and manual 39679361517 pending at this checkpoint. None of
-these pending/cancelled runs is counted as success for the calendar increment.
+Published `59ecdfa` whole quality run 39674013825 and independent manual dispatch
+39674019168 both passed. The dispatch used `edit_content=false`; its successful
+result is exact-head evidence for `59ecdfa`, not for later components. The PR-linked
+manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
+`0973e53` were subsequently cancelled. Published calendar head `0003cc6` quality
+39680784844 and manual 39680784761 are still running at this checkpoint. None of
+these running/cancelled runs is counted as success for the payment increment.
+
+Payment description calculation now passes 81 real Django-save cases and matching
+Go cases. The fixture checks exact payment readback, description audit changes and
+direct association indexes; invalid calculations leave all managed rows unchanged.
+The actual default-category lookup selects a deleted foreign-association category,
+which remains a required scope correction before Go persistence. Stored and pending
+metadata are distinguished, including non-string CharField behavior. The model hook
+is `implementing`, not verified; see `BE_GO/internal/service/payment_description.md`.
+Full atomic payment save, batch relationship reads and automatic archive remain open.
+Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass.
+A new full production-Python accounts rehearsal is running with retention, calendar
+and payment-description fixtures included; its component stages have passed, but
+the overall run is not yet counted as successful.
 
 ## Remaining completion gates
 

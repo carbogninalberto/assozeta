@@ -1220,25 +1220,47 @@
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_description.go",
+        "BE_GO/internal/service/payment_description.go"
+      ],
+      "dependencies": [
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "BE/application/models/balance_sheet_models.py",
+        "BE/application/signals.py",
+        "BE/application/audit_resolvers.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
+        "request": "Description component receives resolved payment/category/relationship snapshots; not an HTTP DTO.",
+        "response": "Computed nullable database description, preserving placeholder overrides, relationship priority and CharField string preparation.",
+        "errors": "Typed Go ErrPaymentDescription for legacy invalid JSON/member/index/lower operations or missing related fields; no HTTP mapping yet.",
         "authentication": null,
         "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "resource_scope": "Django course/installment description lookup includes deleted rows; carnet lookup includes disabled rows. Actual default category lookup is unscoped and selects foreign/deleted categories; a scoped Go correction and batch relationship reads remain required.",
+        "side_effects": "Pure Go description calculation only. Actual Django oracle verifies full payment readback, UPDATE audit description changes and direct AuditLogIndex; Go persistence/audits/default categories/accounts remain open.",
+        "transaction": "No Go writes. Full payment save and enclosing archive need an explicit invariant transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE_GO/internal/service/payment_description_test.go",
+        "BE_GO/internal/service/payment_description_oracle_test.go",
+        "TESTS/adapters/django/payment_description.py"
+      ],
+      "evidence": [
+        "Production Python 3.13.2 actual Payment.save oracle: 81 required cases, including failed calculations with no managed-row changes; matching Go calculation cases pass.",
+        "Actual default-category defect: lower-PK foreign deleted/archived category chosen before global category.",
+        "Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass; full accounts rehearsal is running and is not counted as complete."
+      ],
+      "notes": [
+        "Only description calculation implemented; not full model-hook parity or automatic archive.",
+        "The missing CustomAccounts.destination_account_name raises on NULL giroconto description; Go returns a typed error until transfer workflow is specified.",
+        "JSON values use ordered RequestObject and exact json.Number; actual batch reads, category/resource authorization, decode/size/field validation, custom-account defaults, writes/audits, and archive remain open.",
+        "See BE_GO/internal/service/payment_description.md."
+      ]
     },
     {
       "id": "model_hook:BE/application/models/subscriptions_models.py:Subscription.save",

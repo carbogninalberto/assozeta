@@ -850,3 +850,10 @@ cover task bodies, not production scheduling/activation or historical migrations
 36 actual Django model saves, then requires every corresponding Go calculation
 case under race detection. It also records the two existing automatic-archive
 failures. Calendar/default parity does not establish complete save/archive parity.
+
+`accounts.py --only payment-description` executes 81 actual `Payment.save()` cases
+and compares the Go description calculation, including relation priority, deleted
+relationships, pending/stored metadata, non-string JSON, failure/no-write behavior
+and Django audits/indexes. It separately proves the legacy foreign default-category
+selection defect. This component does not persist Go payments or implement archive.
+See `BE_GO/internal/service/payment_description.md`; full accounts includes it.
