@@ -226,17 +226,17 @@ clock exposes a second nonexistent-PK attribute failure. Both leave all managed
 rows unchanged. The task is explicitly `needs_review`, not implemented as a Go
 no-op; its full supported archive workflow remains required. See
 `BE_GO/internal/service/subscription_dates.md`. Go race/vet, tagged oracle vet,
-all 329 current oracle cases, inventory checks and workflow lint pass. The last
-complete local accounts run predates retention/calendar; current-head whole CI
-remains required.
+all 329 current oracle cases, inventory checks and workflow lint pass. The subsequent complete local accounts run described below includes retention,
+calendar and payment description. Current-head whole CI remains required.
 
 Published `59ecdfa` whole quality run 39674013825 and independent manual dispatch
 39674019168 both passed. The dispatch used `edit_content=false`; its successful
 result is exact-head evidence for `59ecdfa`, not for later components. The PR-linked
 manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
 `0973e53` were subsequently cancelled. Published calendar head `0003cc6` quality
-39680784844 and manual 39680784761 are still running at this checkpoint. None of
-these running/cancelled runs is counted as success for the payment increment.
+39680784844 and manual 39680784761 were subsequently cancelled. Payment head
+`30f9c10` quality 39681839219 and manual 39681839372 are running at this checkpoint.
+None of these running/cancelled runs is counted as success for later increments.
 
 Payment description calculation now passes 81 real Django-save cases and matching
 Go cases. The fixture checks exact payment readback, description audit changes and
@@ -247,9 +247,27 @@ metadata are distinguished, including non-string CharField behavior. The model h
 is `implementing`, not verified; see `BE_GO/internal/service/payment_description.md`.
 Full atomic payment save, batch relationship reads and automatic archive remain open.
 Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass.
-A new full production-Python accounts rehearsal is running with retention, calendar
-and payment-description fixtures included; its component stages have passed, but
-the overall run is not yet counted as successful.
+The full production-Python accounts run at `30f9c10` passed retention, calendar and
+payment-description stages, then failed an eight-concurrent-session assertion:
+credential `SELECT FOR UPDATE` exhausted its three retries after concurrent
+`last_login` writes. This is a failed full run, not successful account parity.
+
+The credential correction retains repeatable-read candidate snapshots without
+locking read-only candidates. Actual password writes still lock and reject stale
+snapshots, preserving concurrent reset protection and atomic rehash rollback.
+Six forced PostgreSQL groups pass, including actual Django second-connection
+interleaving, reset, current-account revocation, page 129, cancellation and pool
+recovery. No retry limit or existing concurrent-session assertion was relaxed.
+The complete production-Python accounts rerun now passes: 68 real-hash credential
+cases and 16 concurrent credential requests, 26 composed sessions including all
+eight concurrent repetitions, 47 OTP cases, 20 admission/audit cases, all image and
+existing HTTP/scope/restore checks, and reset/token/age/retention/calendar/payment
+components. No required group was skipped. Latest focused checks additionally
+confirm the actual rehash lock wait before cancellation. Results are preserved in
+`quality-reports/go-migration/credential-concurrency/full-accounts-results.json`.
+Go race/vet, tagged integration vet, inventory/drift, formatting and workflow lint
+pass. See `BE_GO/internal/service/password_login.md`. These are current-model
+component checks; public login and backend activation remain unfinished.
 
 ## Remaining completion gates
 

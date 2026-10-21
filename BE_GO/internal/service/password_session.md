@@ -51,3 +51,10 @@ failure after card creation. Provider alias/token/call counts are checked before
 response comparison. These service cases execute actual JWT signing, profile/
 configuration reads, audit writes and finalization; they do not establish remote
 Google/Apple verification or successful public HTTP middleware behavior.
+
+
+The full accounts rehearsal at `30f9c10` exposed a concurrent-session failure in
+credential selection, before response delivery. The credential regression and
+correction are described in [password_login.md](password_login.md#concurrent-login-finalization-and-credential-resets).
+This does not relax the eight-concurrent-session check or its signed identity,
+normalization/card uniqueness and connection-release requirements.

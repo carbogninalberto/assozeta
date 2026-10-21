@@ -1082,3 +1082,12 @@ relationship precedence, stored versus pending metadata and JSON/CharField behav
 The default-category lookup's foreign-association defect is separately reproduced;
 category authorization, bounded relationship reads and full atomic save/archive
 remain required. See [the component contract](../../../BE_GO/internal/service/payment_description.md).
+
+### Credential concurrency correction
+
+A full accounts run reproduced credential-stage retry exhaustion during concurrent
+login finalization. Candidate pages now share a read-only repeatable-read snapshot;
+actual rehash writes retain conflict detection and atomic rollback. Six forced
+PostgreSQL groups cover unrelated writes, password reset, current-account revocation,
+paging and cancellation. This does not complete public login or account/session
+lifecycle parity. See [the credential contract](../../../BE_GO/internal/service/password_login.md#concurrent-login-finalization-and-credential-resets).

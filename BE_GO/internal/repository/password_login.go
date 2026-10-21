@@ -38,7 +38,12 @@ func (t *passwordLoginTransaction) Candidates(ctx context.Context, byEmail bool,
 		query += ` AND user_id > $2::uuid`
 		args = append(args, after)
 	}
-	query += ` ORDER BY user_id LIMIT 128 FOR UPDATE`
+	// Keep one repeatable-read candidate snapshot across pages without locking
+	// read-only credentials. FOR UPDATE makes an unrelated concurrent last_login
+	// write invalidate that snapshot and can exhaust the service's retry budget.
+	// Actual password UPDATEs still acquire row locks and PostgreSQL rejects any
+	// change since this snapshot, so a stale rehash cannot overwrite a reset.
+	query += ` ORDER BY user_id LIMIT 128`
 	rows := []domain.Account{}
 	err := t.tx.SelectContext(ctx, &rows, query, args...)
 	return rows, credentialTransactionError(err)
@@ -65,7 +70,7 @@ func (t *passwordLoginTransaction) ReplacePasswords(ctx context.Context, rows []
 		return credentialTransactionError(err)
 	}
 	if affected != int64(len(rows)) {
-		return errors.New("password update lost a locked account")
+		return errors.New("password update lost a credential candidate")
 	}
 	return nil
 }
