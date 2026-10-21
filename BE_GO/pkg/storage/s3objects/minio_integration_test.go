@@ -8,11 +8,14 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3credentials"
 )
 
 type countedTransport struct{ calls atomic.Int32 }
@@ -30,9 +33,25 @@ func TestMinIODelete(t *testing.T) {
 	if e != nil || json.Unmarshal(raw, &f) != nil || len(f.Batches) != 5 {
 		t.Fatal("run TESTS/adapters/django/s3_objects.py")
 	}
-	provider := aws.CredentialsProviderFunc(func(context.Context) (aws.Credentials, error) {
-		return aws.Credentials{AccessKeyID: f.AccessKey, SecretAccessKey: f.SecretKey}, nil
-	})
+	// Exercise the real credential constructor while excluding home profiles and
+	// ambient cloud identity configuration from this disposable MinIO rehearsal.
+	for _, entry := range os.Environ() {
+		name, _, _ := strings.Cut(entry, "=")
+		if strings.HasPrefix(name, "AWS_") {
+			t.Setenv(name, "")
+			if err := os.Unsetenv(name); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	profileDirectory := t.TempDir()
+	t.Setenv("AWS_CONFIG_FILE", filepath.Join(profileDirectory, "config"))
+	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join(profileDirectory, "credentials"))
+	t.Setenv("AWS_EC2_METADATA_DISABLED", "true")
+	provider, e := s3credentials.New(context.Background(), s3credentials.Options{AccessKey: f.AccessKey, SecretKey: f.SecretKey}, nil)
+	if e != nil {
+		t.Fatal("credential construction failed", e)
+	}
 	makeClient := func(bucket string, credentials aws.CredentialsProvider) (*Client, *countedTransport) {
 		t.Helper()
 		opts := fixtureOptions(f.Endpoint)

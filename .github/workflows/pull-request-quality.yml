@@ -117,7 +117,9 @@ jobs:
       - name: Verify legacy medical storage keys
         run: python TESTS/adapters/django/document_keys.py
       - name: Verify existing storage environment and backend options
-        run: python TESTS/adapters/django/storage_configuration.py
+        run: |
+          python TESTS/adapters/django/storage_configuration.py
+          python TESTS/adapters/django/storage_credentials.py
       - name: Verify S3 deletion against disposable MinIO
         run: python TESTS/adapters/django/s3_objects.py
       - name: Verify transactional durable jobs and lease recovery
@@ -161,6 +163,7 @@ jobs:
             quality-reports/go-migration/document-keys/
             quality-reports/go-migration/s3-objects/
             quality-reports/go-migration/storage-configuration/
+            quality-reports/go-migration/storage-credentials/
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/accounts/
 
