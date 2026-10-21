@@ -125,8 +125,9 @@ func readReferenceBody(r *http.Request) (any, error) {
 				return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 			}
 			if part.FileName() != "" {
-				_, err = io.Copy(io.Discard, part)
-				put(&files, part.FormName(), domain.RequestUpload{})
+				var size int64
+				size, err = io.Copy(io.Discard, part)
+				put(&files, part.FormName(), domain.RequestUpload{Name: part.FileName(), Size: size})
 			} else {
 				var value []byte
 				value, err = io.ReadAll(part)

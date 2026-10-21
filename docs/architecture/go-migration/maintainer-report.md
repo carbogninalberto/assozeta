@@ -69,7 +69,10 @@ evidence are still incomplete, so the ledger row remains implementing.
 Password credential selection now passes 21 explicit actual-Django-view versus Go
 service cases. Compatible rehashes are written transactionally and read back by
 Django, including ambiguous and inactive outcomes. This is not an authenticated
-session: OTP, username/audit and subsequent login effects remain open.
+session: OTP composition, username/audit and subsequent login effects remain open.
+The independent OTP gate passes 47 actual-Django-view versus Go decisions covering
+clock boundaries, Unicode, malformed inputs/secrets and multipart metadata. Denied
+Django requests leave last-login unchanged; Go performs no writes in this gate.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,

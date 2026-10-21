@@ -49,7 +49,10 @@ cache record boundary on private Redis; see `internal/repository/impersonation.m
 The account adapter now also exercises password selection and rehash writes against
 the actual Django login view. The Go credential stage uses transactions and bounded
 pages, but still requires OTP, username/audit normalization and login response/side
-effects; see `internal/service/password_login.md`. It is not a login route.
+effects; see `internal/service/password_login.md`. A separate second-factor gate
+now matches 47 actual-Django-view cases, including fixed clock boundaries and
+Unicode/multipart inputs; see `internal/service/second_factor.md`. These components
+are not yet a complete login route.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512
