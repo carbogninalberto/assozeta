@@ -857,3 +857,10 @@ relationships, pending/stored metadata, non-string JSON, failure/no-write behavi
 and Django audits/indexes. It separately proves the legacy foreign default-category
 selection defect. This component does not persist Go payments or implement archive.
 See `BE_GO/internal/service/payment_description.md`; full accounts includes it.
+
+`accounts.py --only credential-concurrency` runs actual Django login with a second
+connection updating `last_login`, then six forced Go/PostgreSQL interleavings.
+The fixture checks read-only credential snapshots, stale rehash/reset protection,
+active/deleted revocation, page 129, cancellation and pool recovery. The full
+accounts run also retains the original real-hash and eight-concurrent-session
+checks. See `BE_GO/internal/service/password_login.md`.

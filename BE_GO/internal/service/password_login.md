@@ -18,8 +18,8 @@ rejection. Unknown/unusable hashes burn a preferred-hasher invocation; failed
 low-cost preferred hashes retain Django's runtime hardening. New encodings use
 Django-compatible PBKDF2-SHA256 with one million iterations and random salts.
 
-The service owns one credential-stage transaction. The repository pages and locks
-128 candidates at a time under repeatable read, then applies one parameterized
+The service owns one credential-stage transaction. The repository reads
+128 candidates at a time from one repeatable-read snapshot, then applies one parameterized
 password update per nonempty page. Memory holds one page plus two possible selected
 accounts. All matching hashes are checked; a late preferred match can win. Counts
 saturate at two, because selection distinguishes zero, one and multiple matches.
@@ -89,3 +89,48 @@ real rollback, concurrent selection and rehash tests remain in place. Service
 unit tests separately check exact representation, malformed internal values,
 recursion, cancellation during conversion and concurrent conversions. Public
 successful login HTTP and global request/rate/audit middleware remain unfinished.
+
+
+## Concurrent login finalization and credential resets
+
+A full accounts rehearsal exposed a real failure in eight concurrent composed
+sessions: the former candidate `SELECT ... FOR UPDATE` exhausted all three
+serialization retries when another login updated `last_login`. The deterministic
+regression establishes the credential snapshot, commits a concrete Go finalization
+on another connection, then reads candidates. The former implementation fails
+three times without reaching a password check; read-only snapshot selection now
+succeeds in one attempt. Actual Django login also succeeds when a second connection
+updates `last_login` during its password check.
+
+Candidate reads no longer take row locks. Repeatable read still fixes the complete
+candidate set across pages, preserving duplicate/ambiguity selection. Password
+UPDATEs still acquire PostgreSQL row locks and reject changes made since that
+snapshot with a serialization conflict. The service then rolls back and reevaluates
+all credentials. A forced concurrent password reset survives a stale rehash, and
+the original password is rejected on the new snapshot. The retry bound is unchanged;
+this correction removes unnecessary conflicts, not legitimate mutation conflicts.
+
+A read-only credential decision is based on its snapshot, as Django's candidate
+query is. It is not a token or a promise that credentials cannot change afterwards.
+The following preparation stage rechecks current active/deleted state and obtains
+current OTP configuration; forced disable/delete cases return no admitted identity.
+A later reset after successful credential selection is not made atomic with token
+issuance by this change. Public login/session revocation and complete lifecycle
+composition remain separate obligations.
+
+Six required real PostgreSQL groups also cover a concurrent update to candidate
+129 after page one, blocked-rehash cancellation (confirmed through PostgreSQL lock
+waits before cancellation), unchanged persisted state and
+connection-pool recovery. `accounts.py --only credential-concurrency` runs the
+focused fixture; full accounts includes it before the existing credential/session
+rehearsals. The KDF is substituted only in the deterministic database interleavings;
+actual Django password checking and the existing full Go hash compatibility,
+upgrade, query-count and concurrent-session fixtures remain required.
+
+The corrected complete production-Python accounts rerun passes, including all 68
+credential cases, 16 concurrent credential requests, the 26 composed sessions and
+eight concurrent repetitions, and existing image/HTTP/scope/OTP/audit/task checks.
+The focused cancellation refinement also passes with a confirmed PostgreSQL lock
+wait. Evidence is retained in
+`quality-reports/go-migration/credential-concurrency/full-accounts-results.json`.
+Public login and lifecycle activation remain unverified.
