@@ -90,6 +90,7 @@ jobs:
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python TESTS/adapters/django/credentials.py
           python TESTS/adapters/django/permissions.py
+          python TESTS/adapters/django/apple_tokens.py
       - name: Install disposable integration dependencies
         run: |
           sudo apt-get update
