@@ -715,3 +715,15 @@ cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
 cancellation/reaping/reuse pass. Production native sources are unchanged. Other
 formats, shared dispatch/admission and public login remain open; ledger status
 counts and backend activation restrictions are unchanged.
+
+
+The SUN Raster pipeline adds 1,453 declared header/pixel/file cases checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. It preserves raw alignment versus packed RLE rows, all supported sample
+layouts, every literal/run count, palette/core-mode and short-read boundaries,
+64 KiB operand boundaries and lazy file policy. Exact budgets, overflow,
+ownership, mid-operation cancellation, 32 mixed concurrent pipelines and encoder
+queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
+SUN/GBR recognition precedence is documented as a remaining shared-dispatch
+requirement. Other formats, shared admission and public login remain open;
+ledger status counts and backend activation restrictions are unchanged.
