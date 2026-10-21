@@ -347,3 +347,23 @@ All eleven reported checks (including the aggregate PR status) on SUN head `ccfa
 including 1,794 backend tests and 16 diagnostic tests. This records the earlier
 head’s regression result; it does not establish Go parity or replace the full
 required acceptance matrix. CI for the GBR/MSP/SSO-diagnostics head is pending.
+
+
+Password session coordination now connects the existing admission, JWT, response
+and finalization services. Eighteen declared cases compare the real Django login
+view with concrete Go repositories/services, including signed token claims and
+all managed-table readback. A database-triggered final-write failure retains
+normalization/default-card effects but exposes no response; OTP denial precedes
+card creation. Eight concurrent repetitions preserve unique effects and release
+connections. Explicit fixture query counts range from 1 to 18. Unit tests cover
+all stage failures/cancellations and inconsistent identity/token results. Images,
+public HTTP composition, social admission and middleware remain open.
+
+The MSP-head manual verification exposed stale overview source hashes left by
+main's `f115d1e` reader redesign. The coverage failure was reproduced locally;
+review of the reader's loading/search/navigation and content-card link behavior
+confirmed that the cited introduction text still applies. The two reviewed hashes
+are updated without changing the UI or promoting pending workflow evidence.
+All 180 manual Python tests and 11 browser-helper tests pass locally without
+skips. The full isolated manual capture/publication workflow remains a CI gate;
+these unit/helper checks do not establish that broader result.

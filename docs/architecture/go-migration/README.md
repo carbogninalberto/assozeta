@@ -752,3 +752,12 @@ raw/RLE/surplus cancellation, 32 mixed concurrent pipelines and encoder-stage
 queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
 Other formats, shared dispatch/admission and public login remain open; ledger
 status counts and backend activation restrictions are unchanged.
+
+
+`PasswordSessions` now composes password/OTP admission, JWT issuance, response
+construction and final login writes. Eighteen declared Django/Go cases and eight
+concurrent repetitions verify response fields, signed claims, durable audit/card/
+user effects and bounded query counts (1–18 for these fixtures). A real final-write
+failure withholds the response while retaining earlier committed invariants. See
+[the service contract](../../../BE_GO/internal/service/password_session.md).
+Public HTTP login, complete images, social admission and middleware remain open.

@@ -671,3 +671,13 @@ checksum and truncation boundaries, ignored metadata/tails and size policy.
 Accounts invokes the actual Django helper; the shipped image runs the same
 oracle. Exact budgets, overflow, ownership, raw/RLE/surplus cancellation, 32 mixed
 concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse are checked.
+
+
+The accounts adapter also runs `password_session.py`: 18 explicit complete password
+service scenarios against the actual Django login view and concrete Go services.
+It checks full response fields, both signed token claim sets, normalization/
+deletion audits and indexes, card creation, all managed-table readback and exact
+query counts. A real PostgreSQL trigger rejects finalization to verify that no
+session response escapes while earlier committed effects remain. Eight concurrent
+repetitions check shared coordination and duplicate effects. These fixtures need
+no image transformation; this is not public Go HTTP/cookie or social-login parity.
