@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; codecs remain open |
 | Login response composition | 36 explicit full response cases without image conversion; seven/ten-statement paths, 32 concurrent calls, required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
@@ -538,3 +539,21 @@ These cases need no image conversion. Unit image doubles establish dispatch only
 the actual processor, public HTTP workflow and final session delivery remain open.
 The builder refuses to silently pass through images when no processor is supplied.
 See the [response contract](../../../BE_GO/internal/service/login_response.md).
+
+
+### Login image pixel prerequisites
+
+The pure-Go core preserves Django's strict 1 MiB decoded-file threshold, its
+occasional enlargement/floating-point truncation, white alpha composition and
+Pillow's two-pass fixed-point Lanczos output. Ten explicit actual-helper decisions,
+54 exact pixel vectors across six modes and 19,535 Base64 differential cases pass;
+no pixel tolerance is used. Input immutability, cancellation throughout processing,
+logical allocation limits/overflow and 32 concurrent transforms are checked.
+All managed database tables remain unchanged.
+
+The source provenance and Pillow license are retained, including a supporting
+license in the Go image. This does not provide file decoders or a JPEG encoder and
+is not wired as a complete image processor. Format recognition/lazy headers,
+metadata/mode/truncation behavior, byte-compatible JPEG, global memory admission
+and full response/HTTP composition remain required. See the
+[pixel-core contract](../../../BE_GO/pkg/storage/loginimage/README.md).

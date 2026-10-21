@@ -73,7 +73,11 @@ The response composer now matches 36 explicit full JSON/outcome cases that requi
 no image conversion. It composes profiles and card configuration with role-specific
 keys, instructor metadata and instance registration choices; see
 `internal/service/login_response.md`. Existing association responses use seven
-statements. The image processor remains unimplemented; no public login is wired.
+statements. The complete image processor remains unimplemented; no public login is wired.
+Its pure-Go Base64/size-policy/pixel core now passes 54 exact Pillow vectors,
+ten actual Django decisions and 19,535 Base64 cases; see
+`pkg/storage/loginimage/README.md`. File decoding, JPEG encoding and global
+resource admission are still required. The Go image retains the Pillow license.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

@@ -11,6 +11,7 @@ RUN apk add --no-cache ca-certificates tzdata && \
 WORKDIR /app
 COPY --from=builder /server /app/server
 COPY migrations /app/migrations
+COPY pkg/storage/loginimage/LICENSE.pillow /app/licenses/Pillow-LICENSE
 USER 10001:10001
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
