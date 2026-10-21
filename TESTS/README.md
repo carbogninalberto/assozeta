@@ -400,3 +400,20 @@ retry after a forced PostgreSQL cross-actor deadlock. The Django orphan audit on
 username collision is explicitly characterized; Go's atomic invariant rolls it
 back. This stronger failure boundary is recorded, not counted as identical
 Django failure-side-effect behavior. Full Go login HTTP and final writes remain open.
+
+
+### Base login profile
+
+The account adapter runs `adapters/django/login_profile.py`: 46 explicit expected
+JSON objects/outcomes checked against `UserAuthSerializer` through DRF's renderer
+and the Go profile service. `profileintegration` requires the private fixture;
+missing inputs fail. All 37 fields are checked, including exact JSON integers,
+null/empty/scalar preferences, category UUIDs, Google presence, setup precedence,
+strict 30-day welcome boundary and 0/1/2/128/512 onboarding rows. One/two SELECTs
+and 32 concurrent association reads are counted; a persisted preference change
+is observed immediately. Every managed table is checked after restoration.
+
+This is a base response component, not the complete login response or portable
+Go HTTP login. Go fails on infrastructure errors rather than swallowing arbitrary
+onboarding exceptions; see `BE_GO/internal/service/login_profile.md` for this
+explicit difference and remaining response/configuration/final-write work.

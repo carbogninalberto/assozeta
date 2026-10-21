@@ -84,6 +84,14 @@ from Django's orphan pre-save audit after username collision; this is documented
 not claimed as identical failure-side-effect parity. The fixture audit registry
 is now initialized after schema creation, matching ordinary server startup.
 
+The base login profile now matches 46 explicit Django-rendered JSON cases with
+all 37 fields. Welcome/setup rules, Google JSON presence and duplicate onboarding
+are preserved. One/two SELECTs remain bounded through 512 onboarding rows; 32
+concurrent association reads release the four-connection pool. All managed tables
+remain unchanged after fixture restoration. Go propagates onboarding query errors
+that Django broadly suppresses; this explicit difference is not claimed as exact
+exceptional-response parity. Full response augmentation and final writes are open.
+
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,
