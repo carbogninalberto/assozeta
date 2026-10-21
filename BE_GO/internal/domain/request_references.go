@@ -13,6 +13,10 @@ type RequestField struct {
 }
 type RequestObject []RequestField
 
+// RequestUpload marks an opaque uploaded file in request.data. Authentication
+// never reads its content or mistakes it for a textual credential/reference.
+type RequestUpload struct{}
+
 func (o RequestObject) Lookup(name string) (any, bool) {
 	for _, field := range o {
 		if field.Name == name {
@@ -29,4 +33,7 @@ type RequestReferences struct {
 	Operation   string
 	Path, Query RequestObject
 	Body        any
+	// Deferred transport parse failure: the operation/path/query gates precede
+	// access to request.data in Django. Parsing must not change denial ordering.
+	BodyError error
 }

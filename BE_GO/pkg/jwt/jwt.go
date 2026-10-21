@@ -151,6 +151,21 @@ func (m *Manager) Refresh(encoded string) (Pair, error) {
 	// comment. Preserve the valid original credential and its original expiry/JTI.
 	return m.pair(encoded, libjwt.MapClaims(claims), m.now().Unix())
 }
+
+// IssueUnbound matches constructing SimpleJWT RefreshToken(None). It deliberately
+// supplies no identity/custom claims; actor authentication rejects its access.
+func (m *Manager) IssueUnbound() (Pair, error) {
+	now := m.now().Unix()
+	claims, err := newClaims("refresh", now, int64(RefreshLifetime/time.Second))
+	if err != nil {
+		return Pair{}, err
+	}
+	encoded, err := m.sign(claims)
+	if err != nil {
+		return Pair{}, err
+	}
+	return m.pair(encoded, claims, now)
+}
 func (m *Manager) pair(refresh string, claims libjwt.MapClaims, now int64) (Pair, error) {
 	access, err := newClaims("access", now, int64(AccessLifetime/time.Second))
 	if err != nil {

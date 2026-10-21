@@ -18,6 +18,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -70,6 +71,19 @@ func run() error {
 	}
 	cache := redis.NewClient(redisOptions)
 	defer cache.Close()
+	tokens, err := jwt.New([]byte(cfg.JWTSigningKey), []byte(cfg.JWTVerifyingKey), time.Now)
+	if err != nil {
+		return errors.New("invalid JWT signing or verification configuration")
+	}
+	accounts := repository.NewAccounts(db)
+	sessions, err := repository.NewDjangoImpersonationCache(cache)
+	if err != nil {
+		return err
+	}
+	relations := repository.NewIdentityRelations(db)
+	scopeGuard := service.NewScopedRequestGuard(repository.NewScopedResources(db), relations, sessions)
+	identities := service.NewIdentityResolver(accounts, relations, sessions, service.NewPermissions(), scopeGuard)
+	refreshHandler := handler.NewRefreshHandler(service.NewRefreshService(tokens), service.NewActorAuthentication(accounts, tokens), identities)
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
 	e := echo.New()
@@ -78,6 +92,7 @@ func run() error {
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/readyz", healthHandler.Readiness, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
+	e.Any("/oauth2/refresh-token", refreshHandler.Refresh)
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: e, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

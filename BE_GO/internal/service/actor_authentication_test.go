@@ -82,12 +82,17 @@ func TestActorAuthenticationHeaderAndFailureAdmission(t *testing.T) {
 			t.Fatalf("bad header reached credential lookup: %q", header)
 		}
 	}
-	for _, claims := range []map[string]any{nil, {}, {"user_id": "invalid"}} {
+	for _, claims := range []map[string]any{nil, {}} {
 		accounts := &actorAccounts{}
 		tokens := &actorTokens{claims: claims}
 		if _, err := NewActorAuthentication(accounts, tokens).Authenticate(context.Background(), "Bearer credential"); authCode(err) != "token_not_valid" || accounts.calls != 0 {
 			t.Fatal("invalid identity reached account lookup")
 		}
+	}
+	invalidAccounts := &actorAccounts{}
+	invalidTokens := &actorTokens{claims: map[string]any{"user_id": "invalid"}}
+	if _, err := NewActorAuthentication(invalidAccounts, invalidTokens).Authenticate(context.Background(), "Bearer credential"); !errors.Is(err, domain.ErrMalformedAccountClaim) || invalidAccounts.calls != 0 {
+		t.Fatal("malformed signed identity changed failure category or reached database")
 	}
 	accounts := &actorAccounts{}
 	tokens := &actorTokens{err: errors.New("bad signature")}

@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"math/big"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -57,8 +55,11 @@ func (s *ActorAuthentication) Authenticate(ctx context.Context, authorization st
 		return nil, &domain.AuthenticationFailure{Code: "user_not_found", Detail: "User not found"}
 	}
 	id, ok := claimAccountID(value)
-	if !present || !ok {
+	if !present {
 		return nil, &domain.AuthenticationFailure{Code: "token_not_valid", Detail: "Token contained no recognizable user identification"}
+	}
+	if !ok {
+		return nil, domain.ErrMalformedAccountClaim
 	}
 	// Ignore token role, email and superuser assertions. Current persisted state
 	// must be read on every request so disabling/deleting an account revokes access.
@@ -79,24 +80,10 @@ func (s *ActorAuthentication) Authenticate(ctx context.Context, authorization st
 // UUIDField also accepts integer JSON claims. JSONNumber avoids loss of the
 // 128-bit identity through float64; bool follows Python's integer subtype.
 func claimAccountID(value any) (uuid.UUID, bool) {
-	switch v := value.(type) {
-	case string:
-		id, err := uuid.Parse(v)
-		return id, err == nil
-	case json.Number:
-		number, ok := new(big.Int).SetString(string(v), 10)
-		if !ok || number.Sign() < 0 || number.BitLen() > 128 {
-			return uuid.Nil, false
-		}
-		var id uuid.UUID
-		number.FillBytes(id[:])
-		return id, true
-	case bool:
-		var id uuid.UUID
-		if v {
-			id[15] = 1
-		}
-		return id, true
+	id, _, err := referenceUUID(value)
+	if err != nil {
+		return uuid.Nil, false
 	}
-	return uuid.Nil, false
+	parsed, err := uuid.Parse(id)
+	return parsed, err == nil
 }

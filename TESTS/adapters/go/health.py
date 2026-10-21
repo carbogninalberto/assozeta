@@ -59,6 +59,8 @@ def main():
 
             try:
                 run(['go', 'build', '-o', work / 'server', './cmd/server'], cwd=ROOT / 'BE_GO')
+                run(['openssl','genpkey','-algorithm','ED25519','-out',work/'key.pem'])
+                run(['openssl','pkey','-in',work/'key.pem','-pubout','-out',work/'public.pem'])
                 run([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust', '-U', 'contracts',
                      '--no-sync', '--no-locale', '-E', 'UTF8'])
                 start_pg(); pg_started = True
@@ -68,7 +70,8 @@ def main():
                     'DBUSER': 'contracts', 'DBPASSWORD': 'go-contract-only', 'DBHOST': str(work),
                     'DBPORT': '5432', 'REDIS_HOST': '127.0.0.1', 'REDIS_PORT': str(redis_port),
                     'REDIS_PASSWORD': 'go-contract-only', 'GO_LISTEN_ADDR': f'127.0.0.1:{http_port}',
-                    'RUNNING_VERSION': 'v0.0.0-contract'}
+                    'RUNNING_VERSION': 'v0.0.0-contract',
+                    'JWT_SECRET_KEY':(work/'key.pem').read_text(), 'JWT_PUBLIC_KEY':(work/'public.pem').read_text()}
                 api = subprocess.Popen([str(work / 'server')], cwd=work, env=environment, stdout=log, stderr=subprocess.STDOUT)
                 base_url = f'http://127.0.0.1:{http_port}'
                 client = Client(base_url, timeout=8)

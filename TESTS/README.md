@@ -343,3 +343,15 @@ and expiry remove admission, and Django observes the Go cache deletion. The
 bounded upload-record parser also has malformed-input and fuzz tests. None of
 these service cases certifies HTTP route registration, form/multipart parsing,
 private document access, mutation hooks or a complete endpoint.
+
+The account adapter now also calls `adapters/django/refresh_http.py`. It starts
+actual Django WSGI and Go HTTP processes over the private database/cache/keys and
+runs the same 26 portable `contracts/test_refresh.py` tests against each. The
+suite covers token/cookie responses, optional Bearer and impersonation admission,
+denial ordering, method/OPTIONS behavior and JSON/form/multipart requests. Django
+additionally verifies Go signatures and accepts a Go-created refresh token over
+HTTP. All managed model tables are compared unchanged after these requests.
+Token fixtures and keys are temporary, with no token output in result artifacts.
+The generic `TESTS/run` scenarios do not silently include these tests without
+their dedicated credential fixture. Complete Go fixture scenarios and versioned
+API execution remain separate acceptance work.
