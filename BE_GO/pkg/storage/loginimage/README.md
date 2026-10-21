@@ -2,7 +2,8 @@
 
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
-transformation, plus bounded libjpeg JPEG encoding and pixel decoding. It does
+transformation, bounded libjpeg JPEG encoding/decoding, and PNG header/pixel
+decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
 JPEG file pipeline are available as separate components.
@@ -274,3 +275,47 @@ checks the separate transform/encoder composition without claiming PNG file
 admission. Limits at the exact boundary, integer overflow, mid-decode cancellation
 and 32 concurrent Adam7 decodes are covered. The non-root/read-only/networkless
 image runs the same PNG pixel and JPEG-composition oracle.
+
+## Lazy PNG header and metadata admission
+
+`ReadPNGHeader` reads through the first recognized IDAT/fdAT header, or IEND,
+without requiring compressed pixels. It reports canvas mode/depth, interlacing,
+consumed bytes, data offset/length, first-tile rectangle, declared frame count,
+default-image selection, pixel warnings and the inherited UTF-8 comment. Returned
+metadata does not alias input. A mandatory consumed-byte budget limits parsing;
+trailing compressed data does not count toward that header budget. Errors and
+cancellation return no partial header.
+
+The parser preserves Pillow's chunk-identifier rules, pre-pixel CRC checks,
+repeated IHDR behavior, accepted depth/color combinations, ignored compression
+byte, sticky interlace flag, metadata payload checks and hard pixel limit. Pixel
+CRC and subsequent metadata are deliberately deferred, as in lazy `Image.open`.
+IEND may end an admitted header with no tile. APNG handling validates declarations,
+frame sequences and rectangle bounds, preserves default-image/frame-count rules
+and distinguishes invalid text-provided rectangles from rejected headers. Early
+IDAT/fdAT chunks without a pixel mode preserve the observed unknown-handler
+consumption and default-image state. This reports the first frame's admission; it
+does not decode/composite APNG frames or expose a general metadata dictionary.
+
+Text/ICC handling preserves malformed-stream fallbacks, incomplete zlib streams,
+Latin-1/UTF-8 interpretation, the 1 MiB inflated-chunk ceiling and 64 MiB cumulative
+text-character ceiling. Repeated keys still count toward the cumulative ceiling.
+Only values that influence this image path are retained. Comments become UTF-8;
+an empty text comment is absent in the resulting JPEG, unlike an empty JPEG COM.
+Text keys that affect interlacing, rectangles, disposal or default-image selection
+retain their observable behavior. Inflation limits and consumed input bound
+logical payloads; allocator/zlib overhead and total RSS remain separate.
+
+`login_png_header.py` specifies 394 explicit Pillow outcomes, including malformed
+chunks and CRCs, all supported modes, pixel-limit boundaries, truncated metadata,
+compressed-text limits, duplicate headers, APNG declarations/sequences/rectangles,
+metadata collisions and early data chunks. The actual Django helper verifies all 235
+valid 200×100 fixture headers return the original URI with **zero pixel loads**,
+observed through a delegating loader. Go checks exact header budgets, immutable
+metadata, cancellation during text inflation/conversion, Unicode character
+accounting and 32 concurrent readers. The non-root/read-only/networkless image
+runs the same header oracle alongside the existing JPEG and PNG pixel checks.
+
+Still open for complete PNG files: gathering/validating pixel chunks, post-pixel
+metadata and error behavior, first-frame canvas composition, resized mode-1
+nearest-neighbour transforms, whole-file admission/limits and response wiring.

@@ -559,8 +559,16 @@ samples, checked independently against Pillow. The account suite checks actual
 Django output/fallback for every case; Go verifies 478 unchanged-size JPEG
 compositions, 300 unsupported modes and 23 invalid streams. Exact budgets,
 overflow, cancellation and concurrent decodes are tested, including in the image
-oracle. This does not certify PNG chunk/metadata admission, APNG composition or
-resized mode-1 nearest-neighbour behavior.
+oracle. This does not certify complete PNG file processing.
+
+`adapters/django/login_png_header.py` adds 394 explicit lazy PNG header/metadata
+outcomes: CRCs, malformed/truncated chunks, repeated headers, text inflation and
+memory ceilings, APNG first-frame sequences/rectangles and text-key collisions.
+The account suite verifies zero pixel loads for 235 valid 200×100 passthroughs through
+the actual Django helper. Go tests header budgets, cancellation, metadata
+ownership and 32 concurrent readers; the image rehearsal includes this oracle.
+Post-pixel validation/metadata, APNG canvas composition, resized mode-1 behavior
+and complete PNG file/response wiring remain open.
 
 This is not complete image parity: other file decoders, admission across formats
 and public login integration remain open. See
