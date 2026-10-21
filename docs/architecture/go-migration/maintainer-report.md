@@ -145,9 +145,13 @@ save failure, native framing/budgets, process cancellation and concurrent decodi
 are verified. A lazy JPEG marker reader passes 1,352 explicit Pillow cases and
 three actual Django header-only passthrough checks, plus header budgets,
 cancellation, metadata ownership/ordering and concurrent readers. The same marker
-oracle runs in the image. EXIF DPI parsing/MPO adoption, other format decoders,
-global pipeline admission and the complete image processor remain necessary for login; no full
-image or HTTP parity is claimed.
+oracle runs in the image. EXIF/MPF admission adds 226 explicit cases; the complete
+JPEG file pipeline adds 73 size/lazy/fallback cases and reruns all metadata and
+decoder vectors. Django helper checks and the shipped image agree. Header/raster/
+transform/file budgets, one deadline and admission across JPEG stages, 32
+concurrent resizes and queued/running cancellation are verified. Other formats,
+admission across formats and the complete image processor remain necessary for
+login; no full image or HTTP parity is claimed.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,

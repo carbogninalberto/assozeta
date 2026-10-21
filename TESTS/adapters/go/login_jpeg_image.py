@@ -17,6 +17,8 @@ sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.login_jpeg import vectors
 from TESTS.adapters.django.login_jpeg_decode import vectors as decode_vectors
 from TESTS.adapters.django.login_jpeg_header import vectors as header_vectors
+from TESTS.adapters.django.login_jpeg_metadata import vectors as metadata_vectors
+from TESTS.adapters.django.login_jpeg_file import vectors as file_vectors
 
 
 def main():
@@ -35,6 +37,10 @@ def main():
         (work / 'decode.json').chmod(0o644)
         (work / 'header.json').write_text(json.dumps(header_vectors()))
         (work / 'header.json').chmod(0o644)
+        (work / 'metadata.json').write_text(json.dumps(metadata_vectors()))
+        (work / 'metadata.json').chmod(0o644)
+        (work / 'file.json').write_text(json.dumps(file_vectors()))
+        (work / 'file.json').chmod(0o644)
         subprocess.run(['go', 'test', '-c', '-tags=imageintegration', '-o', str(work / 'jpeg.test'), './pkg/storage/loginimage'],
             cwd=ROOT / 'BE_GO', env={**tool_env, 'GOOS': 'linux', 'GOARCH': architecture, 'CGO_ENABLED': '0'}, check=True, timeout=180)
         (work / 'jpeg.test').chmod(0o755)
@@ -50,10 +56,12 @@ def main():
                 print(notice.strip(), flush=True)
         subprocess.run(['docker', 'run', '--rm', '--network', 'none', '--read-only',
             '--mount', f'type=bind,source={work},target=/fixtures,readonly',
+            '--env', 'ASSOZETA_JPEG_FILE_FIXTURE=/fixtures/file.json',
+            '--env', 'ASSOZETA_JPEG_METADATA_FIXTURE=/fixtures/metadata.json',
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^TestJPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^TestJPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)$', '-test.v'],
             check=True, timeout=180)
 
 

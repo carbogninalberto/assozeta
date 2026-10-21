@@ -543,6 +543,15 @@ image rehearsal includes these header checks as well. This marker phase retains
 EXIF/MPF/Ultra HDR information for later interpretation; it does not certify EXIF
 DPI parsing or MPO adoption.
 
-This is not complete image parity: EXIF/MPO lazy admission, other file decoders,
-whole-processor admission and public login integration remain open. See
+`adapters/django/login_jpeg_metadata.py` adds 226 explicitly expected EXIF/MPF
+outcomes and first-frame bytes, including malformed directories, truncated MP
+entries, JFIF bypass and Ultra HDR. `adapters/django/login_jpeg_file.py` adds 73
+complete JPEG file-policy cases and reruns the metadata/decoder vectors through
+the composed processor. The account suite calls the actual Django helper; the
+image rehearsal tests the shipped codec. Per-stage budgets, a single pipeline
+admission/deadline, 32 concurrent resizes and queued/running cancellation are
+verified. Standalone commands exercise Pillow/Go without the Django application.
+
+This is not complete image parity: other file decoders, admission across formats
+and public login integration remain open. See
 `BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.

@@ -19,6 +19,7 @@ type JPEGMarkerHeader struct {
 	Comment, EXIF, MPF []byte
 	MPFOffset          int
 	UltraHDR           bool
+	HasDPI             bool
 	PixelWarning       bool
 }
 
@@ -122,6 +123,9 @@ func ReadJPEGMarkerHeader(ctx context.Context, data []byte, maxHeaderBytes int) 
 			case marker == 0xe0 && bytes.HasPrefix(body, []byte("JFIF")):
 				if len(body) < 7 {
 					return empty, ErrJPEGHeader
+				}
+				if len(body) >= 12 && (body[7] == 1 || body[7] == 2) {
+					header.HasDPI = true
 				}
 			case marker == 0xee && bytes.HasPrefix(body, []byte("Adobe")):
 				if len(body) < 7 {
