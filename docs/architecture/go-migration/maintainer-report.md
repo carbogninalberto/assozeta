@@ -1,60 +1,49 @@
 # Maintainer report — incomplete Go migration
 
-This draft starts the requested full replacement from `main@f115d1e` in an isolated
-branch. It is **not merge-ready as a functional backend replacement**. The full
+This draft starts the full replacement from `main@f115d1e` in an isolated branch.
+It is **not merge-ready as a backend replacement**. All requirements in the
 [acceptance matrix](README.md#required-acceptance-matrix) and original
-[requirements](requirements.md) remain binding.
+[request](requirements.md) remain binding.
 
-The Go module follows the inspected Kuayle commit's explicit Echo → service →
-repository construction with sqlx/pgx. It exposes monitoring routes and now has
-JWT/password primitives; those primitives are not public authentication routes.
-Database migrations remain Django-owned. Redis is used through an explicit
-client and separate probe keys, with no presumed compatibility with Celery or
-Channels encodings. No active-backend or release image selection was changed.
+The module follows the inspected Kuayle Echo → service → repository construction
+with sqlx/pgx. Public routes currently expose monitoring only. Authentication
+primitives, account reads, collaborator policy and identity selection are implemented
+separately; complete HTTP admission and business resource authorization are not.
+Django retains business-schema ownership. Deployment selection, release images,
+the separate manual worktree and customer installations have not been changed.
 
-Discovery records 408 resolved HTTP patterns, four WebSocket paths, 42 registered
-tasks, 15 MCP tool schemas and 112 model metadata records. Static ledger rows
-remain uncharacterized except two retired tasks and four in-progress health/auth
-routes; the auth entries track primitives, not exposed handlers. The effective static Celery schedule differs from declaration discovery;
-persisted schedules and worker initialization still require investigation.
+Discovery records 514 declarations, 408 resolved HTTP patterns, four WebSocket
+paths, 42 tasks, 15 MCP schemas and 112 model metadata records. Two retired tasks
+and four in-progress health/auth routes are classified; 508 declarations still
+need characterization. Effective versus declared Celery schedules remain unresolved.
 
-Verified locally: 12 inventory tests, Go formatting/vet/race tests, 18 independent
-Django contracts using repository Python requirements, the same three health contracts against Go, actual PostgreSQL/
-Redis failure and recovery, idle SIGTERM shutdown, self-host checks, workflow
-lint and local Linux arm64 image build/execution as UID 10001. A portable test
-caught and drove correction of CSRF 403 versus method 405 admission behavior.
+Local evidence includes Go formatting/vet/race tests, 12 inventory tests, 18
+independent Django HTTP contracts, three shared Go health contracts, real
+PostgreSQL/Redis failure/recovery and idle shutdown. Self-host/workflow checks and
+a foundation non-root image rehearsal also passed. These are scoped checks, not
+the full acceptance matrix.
 
-Credential interoperability now verifies 20 token and 37 password vectors from
-Django in Go, plus two Go token pairs and three password hashes in Django. The
-adapter uses synthetic temporary credentials and prohibits database access.
-Historical Argon2 support retains upstream Go provenance/license. Cost limits are
-explicit; imported-parameter census and aggregate resource limits remain open.
-Runtime inventory now records dependency versions and excludes virtualenv sources.
+Credential tests exercise 20 Django-to-Go token vectors and 37 password vectors,
+plus two Go token pairs and three password hashes read by Django. Historical
+Argon2 retains upstream provenance/license. Cost census and aggregate login
+resource limits remain open. Actor admission adds 18 real-token/account cases.
+The collaborator route gate passes 38 explicit cases and declaration checks for
+269 rules and 28 exemptions. Cache transport tests exchange impersonation records
+in both directions with TTL, expiry and revocation.
 
-The collaborator route gate passes the same 38 explicit expected outcomes in
-Django and Go; 269 permission declarations and 28 exemptions match. It consumes
-trusted effective-user grants. Persisted identity resolution, resource-level
-authorization and HTTP admission remain separate, unfinished work.
+Identity selection now passes 46 explicit Django/Go cases using the same private
+PostgreSQL and Redis. Eight state/configuration changes test loss of eligibility;
+32 concurrent resolutions use a four-connection pool. Actor, effective person,
+data owner and association constraint remain distinct. Django readback confirms
+users, associations, member links, instance configuration and audit rows are
+unchanged after test-only transitions are restored. These cases contain no nested
+resource IDs and use current-model schema creation, not migration history.
 
-A private PostgreSQL rehearsal now proves Go reads seven Django-created account
-rows with the existing deletion, inactive-state, duplicate-identifier and null
-semantics. Parameter, cancellation and unchanged Django readback checks pass.
-It uses current-model schema creation; migration-history and Go-write rollback
-proofs remain open.
-
-The actor authenticator now passes 18 explicit real-token/account cases against
-Django's JWTAuthentication, including persisted status/role and numeric UUID
-claims. A separate private Redis adapter verifies the impersonation cache DTO in
-both directions with TTL and revocation. This does not yet resolve the effective
-identity, current target eligibility, association scope or audit effects.
-
-Still missing: business endpoints, complete authentication/permissions, durable
-workers/scheduler, shared-data/rollback proofs, versioned routing and switching,
-realtime, integration/document/manual delivery, Go backup/restore, the complete
-Go fixture adapter, query/performance evidence and release/updater rehearsals.
-Even health routes remain uncertified because manual capture metadata, version
-file precedence, global middleware and error-body/proxy parity are incomplete.
-The complete Django/frontend/browser/release matrix has not been run for Go.
-
-Recommendation: keep the PR draft and continue implementation. Do not publish or
-activate this backend based on the foundation checks.
+Missing work includes business endpoints, scoped operation/group/instructor/family
+and nested-resource authorization, login writes and impersonation audit workflows,
+durable workers/scheduler, versioned routing and coordinated switching,
+realtime/integrations/documents/manual delivery, Go backup/restore, the complete
+fixture adapter, query/performance evidence and release/updater rehearsals.
+Health routes also remain uncertified for manual metadata, version-file precedence,
+global middleware, error-body and proxy parity. Keep the PR draft; the foundation
+checks do not authorize activation or release.

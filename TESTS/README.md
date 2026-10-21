@@ -281,7 +281,7 @@ not proof of HTTP admission, persisted identity resolution or resource scope.
 
 `TESTS/adapters/django/accounts.py` also requires local PostgreSQL binaries. It
 creates a private Unix-socket cluster and the current Django model schema, writes
-seven synthetic accounts through Django, and runs Go repository tests against
+21 synthetic accounts and identity relationships through Django, and runs Go repository tests against
 that same database. Django checks the expected lookup semantics first and verifies
 unchanged records afterward. The harness removes its cluster and reports to
 `quality-reports/go-migration/accounts/`. It does not reuse the developer database,
@@ -303,3 +303,13 @@ records in Django. TTL/no-renewal, expiry, revocation and concurrent reads are
 checked. Database access is prohibited. Persistent output under
 `quality-reports/go-migration/impersonation-cache/` contains only results/versions.
 This adapter proves the cache record boundary, not target eligibility or audits.
+
+
+The same account command now invokes `adapters/django/identity.py` with private
+Redis and runs 46 explicitly expected identity-selection cases against Django's
+real resolver and Go. It verifies eight persisted eligibility/configuration
+transitions and 32 concurrent resolutions with a four-connection pool. Go
+revocation is visible in Django. Readback compares users, associations, members,
+instance configuration and audit records after restoring test-only changes.
+These cases have no nested resource IDs; scoped operation/resource authorization,
+HTTP admission and audit mutation workflows remain separate incomplete contracts.

@@ -23,6 +23,7 @@ type Account struct {
 	Password         string  `db:"password" json:"-"`
 	Role             int     `db:"role"`
 	Active           bool    `db:"is_active"`
+	Deleted          bool    `db:"deleted"`
 	Superuser        bool    `db:"is_superuser"`
 	ConnectedUserID  *string `db:"connected_user_id"`
 	CollaboratorRole int     `db:"collaborator_role"`

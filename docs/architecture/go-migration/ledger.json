@@ -7489,7 +7489,10 @@
         "BE_GO/pkg/crypto/password.go",
         "BE_GO/internal/repository/accounts.go",
         "BE_GO/internal/service/actor_authentication.go",
-        "BE_GO/internal/repository/impersonation_cache.go"
+        "BE_GO/internal/repository/impersonation_cache.go",
+        "BE_GO/internal/service/identity.go",
+        "BE_GO/internal/repository/identity.go",
+        "BE_GO/internal/domain/identity.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7533,13 +7536,17 @@
         "BE_GO/pkg/crypto/interop_test.go",
         "TESTS/adapters/django/actor_authentication.py",
         "BE_GO/internal/service/actor_authentication_integration_test.go",
-        "TESTS/adapters/django/impersonation_cache.py"
+        "TESTS/adapters/django/impersonation_cache.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE_GO/internal/service/identity_test.go"
       ],
       "evidence": [],
       "notes": [
         "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
         "Django account lookup and Go reads share a private PostgreSQL current-model fixture. Credential selection, rehash writes, social providers, rate limiting, 2FA, username normalization, response-created membership configuration, last-login/deletion changes, audit/transactions and cookies remain to implement and verify.",
-        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity, current target eligibility, scoped resource checks, audit transitions and HTTP handlers remain unimplemented."
+        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity and current target eligibility are implemented as the separate selector below; scoped resource checks, audit transitions and HTTP handlers remain unimplemented.",
+        "Identity selection passes 46 explicit Django/Go cases and 8 state/configuration transitions against shared private PostgreSQL/Redis. A four-connection pool serves 32 concurrent resolutions. This is not the scoped operation/resource guard or public HTTP admission; no auth parity is certified."
       ]
     },
     {
@@ -7598,7 +7605,10 @@
         "BE_GO/internal/config/config.go",
         "BE_GO/internal/service/permissions.go",
         "BE_GO/internal/service/actor_authentication.go",
-        "BE_GO/internal/repository/impersonation_cache.go"
+        "BE_GO/internal/repository/impersonation_cache.go",
+        "BE_GO/internal/service/identity.go",
+        "BE_GO/internal/repository/identity.go",
+        "BE_GO/internal/domain/identity.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7635,13 +7645,17 @@
         "TESTS/fixtures/collaborator-policy.json",
         "TESTS/adapters/django/actor_authentication.py",
         "BE_GO/internal/service/actor_authentication_integration_test.go",
-        "TESTS/adapters/django/impersonation_cache.py"
+        "TESTS/adapters/django/impersonation_cache.py",
+        "TESTS/adapters/django/identity.py",
+        "BE_GO/internal/service/identity_integration_test.go",
+        "BE_GO/internal/service/identity_test.go"
       ],
       "evidence": [],
       "notes": [
         "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
         "Actual SimpleJWT 5.3.1 refresh preserves the original refresh token/JTI/expiry and original iat in the new access token. The primitive is tested in both runtimes; HTTP admission, account/impersonation context, error responses and cookie behavior remain unverified.",
-        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity, current target eligibility, scoped resource checks, audit transitions and HTTP handlers remain unimplemented."
+        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity and current target eligibility are implemented as the separate selector below; scoped resource checks, audit transitions and HTTP handlers remain unimplemented.",
+        "Identity selection passes 46 explicit Django/Go cases and 8 state/configuration transitions against shared private PostgreSQL/Redis. A four-connection pool serves 32 concurrent resolutions. This is not the scoped operation/resource guard or public HTTP admission; no auth parity is certified."
       ]
     },
     {

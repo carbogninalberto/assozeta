@@ -35,8 +35,10 @@ and remaining service-level requirements. Auth endpoints are not registered yet.
 Use that Python environment to run `TESTS/adapters/django/permissions.py` for the
 collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
 Django-created accounts in private PostgreSQL. These prove policy/read primitives;
-actor admission now connects tokens to current account rows; full identity
-resolution, resource authorization and login writes remain open. The additional
+actor admission connects tokens to current account rows, and identity selection
+separates actor/effective person/data owner with current impersonation eligibility.
+Scoped operation/resource authorization, audit workflows and login writes remain
+open. This is not yet public HTTP authentication. The additional
 `TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
 cache record boundary on private Redis; see `internal/repository/impersonation.md`.
 
