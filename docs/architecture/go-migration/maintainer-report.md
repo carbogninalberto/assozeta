@@ -217,3 +217,14 @@ input, 32 concurrent pipelines and encoder-stage cancellation with queued reques
 child reaping and admission reuse pass. Other supported image formats, format
 dispatch/shared admission and public login composition remain open. This adds
 component evidence without marking any endpoint verified or authorizing release.
+
+
+The PPM-family pipeline adds PBM/PGM/PPM, grayscale PFM and Pillow's CMYK/RGBA/P
+extensions. Its 429 declared header/pixel/whole-file cases cover numeric syntax,
+range/scaling rules, PFM endian/row behavior, unsupported JPEG modes, comment
+joining and 1 MiB plain-read boundary semantics. Pillow, the actual Django helper
+and the shipped non-root/read-only/networkless image agree. Exact stage budgets,
+overflow, input ownership, mid-header/raw/plain/PFM cancellation, 32 concurrent
+pipelines and encoder cancellation with queueing/reaping/admission reuse pass.
+Other file formats, shared dispatch/admission and public login composition remain
+open. The ledger's status counts and release/activation restrictions are unchanged.

@@ -583,3 +583,12 @@ the same pinned Python environment as the other image oracles.
 This is not complete image parity: other file decoders, admission across formats
 and public login integration remain open. See
 `BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.
+
+`adapters/django/login_ppm.py` adds 429 declared PBM/PGM/PPM/PFM and PIL-extension
+header/pixel/file outcomes. Coverage includes Python numeric syntax, binary versus
+plain range rules, ties-to-even scaling, mode-I/F/P JPEG fallback, CMYK/RGBA,
+PFM byte order/row direction, comment joining, 1 MiB plain-read boundaries and
+file-size policy. Accounts compares the real Django helper and the image rehearsal
+runs the same oracle. Exact budgets, overflow, mid-operation cancellation,
+ownership, 32 concurrent pipelines and encoder-stage queue/cancellation/reuse are
+checked. Use the pinned image-oracle Python environment for standalone execution.
