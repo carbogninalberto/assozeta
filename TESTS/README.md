@@ -842,8 +842,8 @@ production publication/scheduling and historical migration proof remain separate
 
 `accounts.py --only audit-retention` verifies exact 365-day retention, dependent
 index deletion and concurrent index writers against actual Django and ten required
-Go/PostgreSQL groups. `--only task-bodies` runs all four current task fixtures in
-one private schema (7 reset, 10 token, 8 age and 10 retention groups). These checks
+Go/PostgreSQL groups. `--only task-bodies` runs all five current task fixtures in
+one private schema (7 reset, 10 token, 8 age, 10 retention and 13 archive groups). These checks
 cover task bodies, not production scheduling/activation or historical migrations.
 
 `accounts.py --only subscription-dates` verifies 293 declared calendar cases and
@@ -872,3 +872,13 @@ caller transactions, batch limits, query/pool bounds, cancellation and an execut
 plan over 4,096 course relations. Full accounts includes the fixture. This reads
 existing payments; complete mutations, audits and automatic archive remain open.
 See `BE_GO/internal/service/payment_save_inputs.md`.
+
+`accounts.py --only subscription-auto-archive` runs ten authored Django model
+scenarios after explicitly repairing the task's clock/diagnostic blockers in the
+fixture, then thirteen required Go/PostgreSQL groups. It verifies full fields,
+audits/indexes, truthful historical changes, optional links, ownership, atomic
+failure/replay, bounded pages with distinct financial links, cancellation, two
+overlapping tasks, actual executor heartbeat and rollback of a preceding page.
+Django reads and resaves the Go-written records. Full accounts and task-bodies
+include it; production scheduling/activation and historical migration evidence
+remain open. See `BE_GO/internal/service/subscription_auto_archive.md`.

@@ -1267,7 +1267,8 @@
         "The missing CustomAccounts.destination_account_name raises on NULL giroconto description; Go returns a typed error until transfer workflow is specified.",
         "JSON uses ordered RequestObject/exact json.Number. HTTP actor/group admission, mutation locking, decode/size/field validation, custom-account defaults, writes/audits and archive remain open.",
         "See BE_GO/internal/service/payment_description.md.",
-        "See BE_GO/internal/service/payment_save_inputs.md. The latest complete accounts evidence predates this reader; focused required groups cover the added preparation until a full rerun completes."
+        "See BE_GO/internal/service/payment_save_inputs.md. The complete production-Python accounts rerun passes with all eight reader groups and existing suites; evidence: quality-reports/go-migration/payment-save-inputs/full-accounts-results.json. It started before the automatic-archive fixture was added; that task has separate thirteen-group and combined five-task evidence.",
+        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete."
       ]
     },
     {
@@ -1320,7 +1321,8 @@
       ],
       "notes": [
         "See BE_GO/internal/service/subscription_dates.md. UTC is the current configured timezone. The source civil year is retained for boundary selection; outputs are midnight, not end-of-day.",
-        "Complete save semantics, input string parsing, caller/resource authorization, mutation/audit/transaction orchestration, historical data rehearsal and production wiring remain open. Do not mark this model hook verified from calendar-only evidence."
+        "Complete save semantics, input string parsing, caller/resource authorization, mutation/audit/transaction orchestration, historical data rehearsal and production wiring remain open. Do not mark this model hook verified from calendar-only evidence.",
+        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete."
       ]
     },
     {
@@ -17555,39 +17557,51 @@
           "name": "'auto_archive_subscription'"
         }
       },
-      "status": "needs_review",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/subscription_auto_archive.go",
+        "BE_GO/internal/service/subscription_auto_archive.go",
+        "BE_GO/internal/repository/subscription_auto_archive.go"
+      ],
       "dependencies": [
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/invoices_models.py",
         "BE/application/utils/api_utils.py",
         "BE/application/models/user_models.py",
-        "BE/core/celery.py"
+        "BE/core/celery.py",
+        "BE_GO/internal/service/subscription_dates.go",
+        "BE_GO/internal/service/payment_save_inputs.go",
+        "BE_GO/internal/repository/jobs.go"
       ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Version-1 instance-scoped durable job with exactly an empty JSON object.",
+        "response": "Durable NULL completion after successful archive or a handled business failure with confirmed rollback.",
+        "errors": "Invalid job before SQL; cancellation propagates; stale fencing rolls back; calendar/scope/SQL failures are handled only after full rollback; begin/rollback/commit/completion failures propagate.",
+        "authentication": "Trusted background instance job, not an HTTP actor grant.",
+        "permissions": "Instance-wide all-group scan; association owner must enable auto_archive.",
+        "resource_scope": "Nondeleted/unarchived subscriptions, including deleted associations; primary payment/invoice and selected default/description relationships must belong to the subscription association, with global categories allowed. Historical linked rows are visible. Missing optional links are skipped.",
+        "side_effects": "Subscription date defaults/archive, payment category/description/archive and invoice archive; real field-change audits and direct indexes. No money/file/provider mutation.",
+        "transaction": "One explicit READ COMMITTED transaction for all 100-row keyset pages, business/audit/index effects and fenced completion. Subscription/payment/invoice locks protect writes; owner settings are share locked. Application memory is bounded, total transaction locks are not. Handled failures complete NULL only after rollback in a new fenced transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "TESTS/adapters/django/subscription_dates.py"
+        "TESTS/adapters/django/subscription_dates.py",
+        "TESTS/adapters/django/subscription_auto_archive.py",
+        "BE_GO/internal/service/subscription_auto_archive_integration_test.go"
       ],
       "evidence": [
-        "Actual task with an enabled owner and old subscriptions returns None after offset-naive/offset-aware comparison error, leaving every managed row unchanged. Replacing only the injected clock with an aware timestamp exposes nonexistent subscription.id before mutation. Both failures are required oracle assertions; evidence: quality-reports/go-migration/subscription-dates/django-oracle.json."
+        "Actual task with an enabled owner and old subscriptions returns None after offset-naive/offset-aware comparison error, leaving every managed row unchanged. Replacing only the injected clock with an aware timestamp exposes nonexistent subscription.id before mutation. Both failures are required oracle assertions; evidence: quality-reports/go-migration/subscription-dates/django-oracle.json.",
+        "Ten actual Django archive scenarios after two explicit clock/diagnostic repairs establish whole-row effects and fourteen normal audits/indexes. NULL payment causes a legacy partial write. Unchanged deleted payment/invoice saves produce two false full-field audits with missing indexes; Go corrects these with actual stored deltas/direct indexes.",
+        "Thirteen required PostgreSQL groups cover exact Django readback/resave, optional/foreign references, invalid envelopes/calendars, strict fiscal boundary, every write/audit/index failure, stale completion, cancellation/pool recovery, concurrent archive jobs, real executor heartbeat, failure on page two and truthful historical linked changes. Bounded statement counts through 512 independent and distinct financial chains; executed 4,096-row page plan. Evidence: quality-reports/go-migration/subscription-auto-archive/.",
+        "The five-task combined production-Python rehearsal passes all 48 required groups; the latest focused archive rerun additionally proves inactive/deleted owner handling and actual legacy NULL-invoice partial writes. Go race/vet, tagged vet, inventory/drift, formatting and workflow lint pass. The complete accounts success with payment-save preparation predates inclusion of this archive fixture and is not counted as a full archive-inclusive accounts run."
       ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
-        "The intended subscription/payment/invoice archive workflow remains supported and required. Do not substitute a successful Go no-op for the broken task. Calendar/date-default calculations now exist as a dependency, but this task is not implemented or registered. Additional Subscription.save defaults, Payment.save category/description effects, audit/index events, nullable relationships and failure/transaction behavior require explicit contracts and tests."
+        "See BE_GO/internal/service/subscription_auto_archive.md for explicit supported behavior and confirmed legacy corrections. This is the automatic primary-link archive, not the manual archive/delete workflows.",
+        "Preserves the literal strict UTC-midnight fiscal threshold; execution time is frozen once. Custom subscription ends affect defaults, not fiscal selection. Keyset READ COMMITTED pages may observe later committed rows after the cursor; inserts behind it await a later occurrence.",
+        "Actual Celery policy is captured separately from static/initialized/persisted schedules. No production registration, publisher, retry schedule, worker command or ownership switch has been activated. Django retains ownership. Current-model fixtures are not historical migration or frontend/activation proof."
       ]
     },
     {

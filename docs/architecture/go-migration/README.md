@@ -88,7 +88,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 14 implementing, 6 needing review and 490
+The ledger currently has 4 deprecated, 15 implementing, 5 needing review and 490
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -1095,6 +1095,13 @@ lifecycle parity. See [the credential contract](../../../BE_GO/internal/service/
 Existing-payment background preparation now batches category, invoice/account and
 description relationship reads with explicit association predicates. Eight required
 PostgreSQL groups compare actual Django descriptions, exercise eleven denial inputs
-and inspect a plan over 4,096 course relations. Full payment writes/audits and
-automatic archive remain unfinished; see
+and inspect a plan over 4,096 course relations. General payment writes remain unfinished; automatic archive now has its own
+transactional task body, described in the component contract below. See
 [the component contract](../../../BE_GO/internal/service/payment_save_inputs.md).
+
+Automatic archive now has thirteen PostgreSQL scenario groups and actual Django
+model readback, including explicit legacy repairs and atomic audit/index writes.
+The five-task combined rehearsal passes all 48 required groups (7 reset, 10 token,
+8 age, 10 retention, 13 archive). Production task/scheduler ownership, historical
+restore and activation remain unverified. See
+[automatic archive](../../../BE_GO/internal/service/subscription_auto_archive.md).
