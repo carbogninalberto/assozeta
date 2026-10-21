@@ -740,3 +740,15 @@ queue/cancellation/reaping/reuse pass. Native production sources are unchanged.
 A SUN-signature input recognized as GBR is covered; shared registry dispatch,
 remaining formats and public login composition remain open. Ledger statuses and
 backend activation restrictions are unchanged.
+
+
+The MSP pipeline adds 1,704 declared header/pixel/file cases checked against
+Pillow, the actual Django helper and the shipped non-root/read-only/networkless
+image. It preserves DanM/LinS header checksums, MSB-first packing, blank and
+concatenated records, clipped literals, zero-count repeats and validation of
+malformed surplus operands. Expansion streams directly into normalized output
+without an expanded intermediate buffer. Exact budgets, overflow, ownership,
+raw/RLE/surplus cancellation, 32 mixed concurrent pipelines and encoder-stage
+queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
+Other formats, shared dispatch/admission and public login remain open; ledger
+status counts and backend activation restrictions are unchanged.

@@ -662,3 +662,12 @@ recognition overlap. The oracle also guards the shared encoder's omission of
 empty JPEG comments. Accounts invokes the actual Django helper and the shipped
 image runs the same cases. Stage budgets, overflow, ownership, cancellation,
 32 mixed concurrent pipelines and encoder queue/reaping/reuse are checked.
+
+
+`adapters/django/login_msp.py` adds 1,704 declared MSP header/pixel/file cases.
+It covers DanM raw and LinS RLE, every packed byte and packet count, blank and
+concatenated records, clipped literals, malformed surplus operands, row padding,
+checksum and truncation boundaries, ignored metadata/tails and size policy.
+Accounts invokes the actual Django helper; the shipped image runs the same
+oracle. Exact budgets, overflow, ownership, raw/RLE/surplus cancellation, 32 mixed
+concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse are checked.
