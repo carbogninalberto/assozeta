@@ -681,3 +681,12 @@ query counts. A real PostgreSQL trigger rejects finalization to verify that no
 session response escapes while earlier committed effects remain. Eight concurrent
 repetitions check shared coordination and duplicate effects. These fixtures need
 no image transformation; this is not public Go HTTP/cookie or social-login parity.
+
+
+`login_transport.py` runs 15 identical portable login HTTP contracts against Django
+and an isolated Go handler server. These requests stop before credential selection;
+Go rejects any later-stage call, and Django managed-table snapshots remain unchanged.
+Coverage includes negotiation/method/OPTIONS, bearer errors, body/schema failures,
+form/multipart input and anonymous scope headers. Rate limits are disabled in the
+fixture. Success cookies are unit-tested with a test session service; public login
+registration and successful credential HTTP remain separate, unfinished gates.
