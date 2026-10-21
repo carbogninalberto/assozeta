@@ -13,8 +13,11 @@ provenance retained. Raw bcrypt retains Python bcrypt 4.3's 72-byte truncation.
 
 New hashes use Django 5.2.1's PBKDF2-SHA256, one million iterations and a random
 salt with at least 128 bits of entropy. Verification itself never rewrites data.
-The eventual login service must authorize and coordinate any rehash and other
-login side effects; this package is not a login endpoint.
+`CheckLogin` classifies the existing Django upgrade versus raw bcrypt fallback
+and retains unusable/unknown-hash and low-cost-hash runtime hardening. The password
+selection service coordinates rehash writes in PostgreSQL; later login admission
+and side effects remain required. See `internal/service/password_login.md` from
+the module root. This package is not a login endpoint.
 
 Verification has explicit resource limits. The default permits up to ten million
 PBKDF2 iterations, bcrypt cost 20, 512 MiB scrypt/Argon2 memory, twenty Argon2 passes

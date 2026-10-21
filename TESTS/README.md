@@ -355,3 +355,19 @@ Token fixtures and keys are temporary, with no token output in result artifacts.
 The generic `TESTS/run` scenarios do not silently include these tests without
 their dedicated credential fixture. Complete Go fixture scenarios and versioned
 API execution remain separate acceptance work.
+
+### Password selection and rehash adapter
+
+The account rehearsal calls `adapters/django/password_login.py` with the production
+Django hasher list. It checks 21 explicit selection/rehash cases using the actual
+Django login view and Go credential service on private PostgreSQL, then verifies
+the Go-written hashes with Django. Every managed model table is compared after
+restoring the declared password and Django last-login fixture changes.
+
+The `loginintegration` Go build tag keeps these mutation checks separate from the
+read-only identity suite; `accounts.py` runs both, without skipped fixtures. Page,
+rollback and concurrency tests use actual PostgreSQL with an inexpensive test KDF
+to isolate database behavior. The compatibility cases use real supported hashes.
+These are backend-specific component checks, not portable Go login HTTP contracts;
+OTP, username/audit normalization, response construction and later writes remain
+to implement and verify. Synthetic credentials are temporary and removed.

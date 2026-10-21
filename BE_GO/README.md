@@ -41,10 +41,15 @@ actor admission connects tokens to current account rows, and identity selection
 separates actor/effective person/data owner with current impersonation eligibility.
 Association-bound operation and nested-reference admission now runs before
 collaborator grants; see `internal/service/scoped_request.md`. Endpoint resource
-authorization, audit workflows and login writes remain open. Refresh now uses
+authorization, audit workflows and the remaining login writes remain open. Refresh now uses
 this admission chain; see `internal/handler/refresh.md`. The additional
 `TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
 cache record boundary on private Redis; see `internal/repository/impersonation.md`.
+
+The account adapter now also exercises password selection and rehash writes against
+the actual Django login view. The Go credential stage uses transactions and bounded
+pages, but still requires OTP, username/audit normalization and login response/side
+effects; see `internal/service/password_login.md`. It is not a login route.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

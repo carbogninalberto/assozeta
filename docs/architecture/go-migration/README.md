@@ -120,6 +120,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Password credential stage | 21 actual Django login versus Go service selection/rehash cases; production hashes, Django readback of Go writes and managed-table comparison |
 | Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
 | Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
 | Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
@@ -348,9 +349,32 @@ See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact sc
 The refresh ledger row remains `implementing`: global restore/maintenance fencing,
 CORS/security/session middleware, all locale/charset and multipart/body-limit edge
 cases, versioned proxy routes and release/browser switching evidence remain open.
-Login still requires credential selection/migration, OTP/social authentication,
+Login now has credential selection/rehash components; it still requires OTP/social authentication,
 response serialization and its persisted side effects. These remaining workflows
 are required before replacement; the refresh tests do not shrink that scope.
+
+### Password credential stage
+
+`PasswordLogin` now selects among duplicate identifiers, preserves Unicode casefold
+preference and coordinates the existing eager Django upgrades versus selected-only
+raw bcrypt migration. It checks account status after those credential writes.
+One repeatable-read transaction locks bounded pages and batches password updates;
+expected denials retain documented rehashes, while infrastructure failures roll
+back without a selected account. Admission is bounded before acquiring a database
+connection; serialization conflicts retry at most three times.
+
+The account adapter runs 21 explicit cases through the actual Django login view
+and the Go service using the production hasher list. Django accepts the Go-written
+hashes; all managed model tables are compared after declared fixture changes are
+restored. Real PostgreSQL checks cover 1/16/128/129/257 candidates with reads of
+1/1/2/2/3 queries and upgrade writes of 1/1/1/2/3, rollback/constraint failures
+and 16 concurrent credential requests through two admission slots/four connections. See [the service contract](../../../BE_GO/internal/service/password_login.md)
+for the atomic failure boundary and remaining admission/cost-budget work.
+
+This is not a complete login or an authenticated session. Go HTTP login, distributed
+rate limiting, OTP/social providers, username/audit normalization, response-created
+configuration, last-login/deletion writes and full rollback/release proof remain
+required. The login row remains implementing.
 
 ## Required acceptance matrix
 
