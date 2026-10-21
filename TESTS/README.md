@@ -799,3 +799,14 @@ release. Cross-process Django/Go flock tests include SIGKILL recovery. The full
 accounts suite includes this rehearsal. These checks establish HTTP exclusion,
 not historical replacement, upload handling, worker/scheduler ownership or Go
 restore execution. See `BE_GO/internal/service/restore_admission.md`.
+
+
+`python TESTS/adapters/go/jobs.py` provisions a private PostgreSQL cluster and runs
+ten durable-job scenario groups under Go's race detector. It tests transactional
+intent/effects, scoped deduplication, lease fencing and renewal, concurrent claims,
+retry exhaustion/backoff, cancellation, SIGKILL recovery and bounded query counts.
+The actual claim plan is captured on 4,096 jobs. Separate migration history and
+concurrent migration application use synthetic business/history sentinels; these
+checks do not exercise historical Django migrations or implement Celery tasks.
+Only the Python standard library is required; no application oracle runs here.
+Evidence: `quality-reports/go-migration/jobs/`.
