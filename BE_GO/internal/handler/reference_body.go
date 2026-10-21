@@ -31,6 +31,11 @@ func restLanguage(r *http.Request) string {
 func restText(r *http.Request, kind string) string {
 	english := restLanguage(r) == "en"
 	switch kind {
+	case "credentials":
+		if english {
+			return "Authentication credentials were not provided."
+		}
+		return "Non sono state immesse le credenziali di autenticazione."
 	case "accept":
 		if english {
 			return "Could not satisfy the request Accept header."

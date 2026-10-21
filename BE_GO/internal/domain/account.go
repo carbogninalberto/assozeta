@@ -27,6 +27,9 @@ type Account struct {
 	Superuser        bool    `db:"is_superuser"`
 	ConnectedUserID  *string `db:"connected_user_id"`
 	CollaboratorRole int     `db:"collaborator_role"`
+	// Preserve the status snapshot read during actor/scope admission. The SQL
+	// alias distinguishes it from LoginChallenge's locked credential fields.
+	TwoFactor bool `db:"account_two_fa"`
 	// Preserve the stored JSON value; identity services must validate it before
 	// constructing a PermissionSubject. SQL NULL and JSON null both mean None in Django.
 	Permissions json.RawMessage `db:"collaborator_permissions"`

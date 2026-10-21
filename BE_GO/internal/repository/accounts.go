@@ -23,7 +23,7 @@ func NewAccounts(db *sqlx.DB) *Accounts { return &Accounts{db: db} }
 var _ AccountReader = (*Accounts)(nil)
 
 const accountColumns = `user_id, username, email, password, role, is_active, deleted,
- is_superuser, connected_user_id, collaborator_role,
+ is_superuser, two_fa AS account_two_fa, connected_user_id, collaborator_role,
  COALESCE(collaborator_permissions, 'null'::jsonb) AS collaborator_permissions`
 
 func (r *Accounts) ByID(ctx context.Context, id string) (domain.Account, error) {

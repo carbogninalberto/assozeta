@@ -1,7 +1,8 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. It currently exposes monitoring
-and token refresh plus public email/username availability, with credential,
+and token refresh, public email/username availability and authenticated 2FA status,
+with credential,
 identity and resource-read components. Login
 and business workflows remain incomplete. It cannot serve the frontend or
 replace Django. See the [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
@@ -148,3 +149,10 @@ and actor/scope admission. Their 16 portable contracts run on real Django ASGI
 and the Go executable; PostgreSQL tests cover query counts, plans and bounded-pool
 concurrency. See [the endpoint contract](internal/handler/identifier_availability.md)
 for disclosure rules, duplicate ordering, evidence and remaining limits.
+
+Authenticated `/two-fa/info` preserves the current scoped-account flag and
+collaborator/administrator/impersonation restrictions. Ten portable contracts
+and current-state transitions run against both real HTTP servers; status adds
+no query beyond existing account/identity admission. See
+[the status contract](internal/handler/two_factor_info.md). Setup and update remain
+unimplemented.
