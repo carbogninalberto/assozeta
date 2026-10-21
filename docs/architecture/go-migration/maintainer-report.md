@@ -1,650 +1,94 @@
 # Maintainer report — incomplete Go migration
 
-This draft starts the full replacement from `main@f115d1e` in an isolated branch.
-It is **not merge-ready as a backend replacement**. All requirements in the
-[acceptance matrix](README.md#required-acceptance-matrix) and original
-[request](requirements.md) remain binding.
-
-The module follows the inspected Kuayle Echo → service → repository construction
-with sqlx/pgx. Public routes currently expose monitoring and token refresh. Authentication
-primitives, account reads, collaborator policy and identity selection are implemented
-separately; association-bound reference admission is now composed before
-collaborator grants. Complete HTTP admission and business resource authorization
-remain unfinished.
-Django retains business-schema ownership. Deployment selection, release images,
-the separate manual worktree and customer installations have not been changed.
-
-Discovery records 514 declarations, 408 resolved HTTP patterns, four WebSocket
-paths, 42 tasks, 15 MCP schemas and 112 model metadata records. Two retired tasks
-and four in-progress health/auth routes plus the partial audit-index connection are
-classified; 507 declarations still
-need characterization. Effective versus declared Celery schedules remain unresolved.
-
-Local evidence includes Go formatting/vet/race tests, 12 inventory tests, 18
-independent Django HTTP contracts, three shared Go health contracts, real
-PostgreSQL/Redis failure/recovery and idle shutdown. Self-host/workflow checks and
-a foundation non-root image rehearsal also passed. These are scoped checks, not
-the full acceptance matrix.
-
-Credential tests exercise 76 Django-to-Go token vectors and 37 password vectors,
-plus two Go token pairs and three password hashes read by Django. Historical
-Argon2 retains upstream provenance/license. Cost census and aggregate login
-resource limits remain open. Actor admission adds 18 real-token/account cases.
-The collaborator route gate passes 38 explicit cases and declaration checks for
-269 rules and 28 exemptions. Cache transport tests exchange impersonation records
-in both directions with TTL, expiry and revocation.
-
-Identity selection now passes 46 explicit Django/Go cases using the same private
-PostgreSQL and Redis. Eight state/configuration changes test loss of eligibility;
-32 concurrent resolutions use a four-connection pool. Actor, effective person,
-data owner and association constraint remain distinct. Django readback confirms
-users, associations, member links, instance configuration and audit rows are
-unchanged after test-only transitions are restored. These cases contain no nested
-resource IDs and use current-model schema creation, not migration history.
-
-The resource repository adds 67 explicitly expected Django/Go visibility sets
-for association, family and group predicates across 16 resource kinds. It retains
-the differing deletion filters of existing managers and constrains both parents
-of course/carnet subscriptions. Family/payment changes revoke visibility inside
-transactions in both runtimes; fixtures are rolled back and every seeded table
-is checked unchanged. Batches of 1–512 distinct tag references use one query;
-32 concurrent reads use four connections. These predicates now support the
-identity resolver's association-bound request guard; business handlers remain open.
-
-The guard passes 132 Django/Go cases, including all 44 athlete operation names and
-six composed resolver cases proving denial ordering before collaborator grants.
-Ordered nested references retain integer UUID precision and dictionary order.
-Medical-upload cache grants retain Django's raw-key spelling, TTL and revocation.
-One thousand twenty-five interleaved tag/course references require four SQL
-queries; 32 concurrent guard calls use four connections. Dependency failure and
-missing trusted route metadata return no usable identity. This is not public HTTP
-authentication or authorization of subsequent business writes.
-
-The registered refresh handler passes 30 portable contracts against both actual
-HTTP servers. It retains cookie, optional-Bearer/scoped admission, non-rotation,
-null-constructor and parser/error behavior. Django verifies Go signatures and
-accepts a Go refresh credential over HTTP; all managed model tables remain
-unchanged. Global middleware, transport edge cases, proxy/routing and deployment
-evidence are still incomplete, so the ledger row remains implementing.
-
-Password credential selection now passes 21 explicit actual-Django-view versus Go
-service cases. Compatible rehashes are written transactionally and read back by
-Django, including ambiguous and inactive outcomes. This is not an authenticated
-session: final response construction and subsequent login effects remain open.
-The independent OTP gate passes 47 actual-Django-view versus Go decisions covering
-clock boundaries, Unicode, malformed inputs/secrets and multipart metadata. Denied
-Django requests leave last-login unchanged; Go performs no writes in this gate.
-
-Password admission now composes credentials, transactional username/audit preparation
-and OTP. Twenty actual Django login/audit-middleware cases pass, with exact audit
-readback and unchanged managed tables after fixture restoration. Real PostgreSQL
-checks prove rollback, one/five-query paths, concurrent deduplication and retry
-after a forced cross-actor deadlock. Go's atomic rollback intentionally differs
-from Django's orphan pre-save audit after username collision; this is documented,
-not claimed as identical failure-side-effect parity. The fixture audit registry
-is now initialized after schema creation, matching ordinary server startup.
-
-The base login profile now matches 46 explicit Django-rendered JSON cases with
-all 37 fields. Welcome/setup rules, Google JSON presence and duplicate onboarding
-are preserved. One/two SELECTs remain bounded through 512 onboarding rows; 32
-concurrent association reads release the four-connection pool. All managed tables
-remain unchanged after fixture restoration. A real onboarding SELECT permission
-failure now preserves the base profile with null onboarding in both runtimes;
-Go rolls back the aborted read transaction before pool reuse.
-
-The association profile adds 23 explicit cases covering all 50 serializer fields,
-exact decimal text, PostgreSQL scale rounding, nullable/scalar JSON, the reviewed
-boundary and scoped groups. One/two SELECTs remain bounded through 512 groups;
-32 concurrent reads use 64 SELECTs. Association deletion immediately revokes
-serialization. Required group-query failures return no partial profile, matching
-Django. All managed tables match after the declared fixture transition. Full
-response composition remains open; configuration creation is described below.
-
-Membership-card response configuration now has 20 actual Django-builder/audit
-cases versus Go with exact persisted fields and Django readback. Existing rows
-require two statements; creation writes configuration/audit/index atomically in
-five. Thirty-two concurrent Go calls create one invariant in 67 statements.
-Real permission/FK failures, injected errors, cancellation and a forced audit-actor
-deadlock verify rollback and retry. The shared audit SQL retains username behavior.
-Django's duplicate-creation race and partial autocommit failure effects are
-characterized explicitly. Go-only locking does not close cross-runtime concurrent
-creation; that remains an activation gap, alongside complete login composition.
-
-Final login user writes add 17 actual-view cases for exact last_login and UTC
-scheduled-deletion cancellation, including midnight between clock reads. Audit
-and index are atomic; bounded query counts and 32 concurrent calls are verified.
-Actual permission/FK failures and injected failures roll back cleanly. Django's
-partial autocommit and stale-save overwrites are characterized; Go preserves
-current unrelated fields. Public login composition, revocation races and mixed
-Django/Go cancellation remain open. See the finalization component contract.
-
-Response composition now has 36 explicitly expected actual-Django-builder cases
-against Go, including full key presence, collaborator settings, registration
-choices, instructor metadata and default-card persistence. Seven/ten-statement
-paths and 32 concurrent compositions (224 statements) pass. A real instructor
-permission failure remains required only for collaborators; every managed table
-matches after restoration. Registration configuration matches 28 boolean and eight
-dotenv cases. Image conversion is not implemented or counted: this fixture covers
-null images and branches Django leaves unchanged. The public login coordinator,
-image processor and final session delivery remain open.
-
-Image prerequisites now include pure-Go permissive Base64 decoding, the actual
-Django size policy and white-alpha/Lanczos pixel processing. Ten real-helper
-policy cases, 54 byte-exact Pillow pixel vectors and 19,535 Base64 vectors pass,
-with cancellation, logical memory limits and concurrency tests. The Pillow license
-and source provenance are retained. A bounded native libjpeg encoder additionally
-matches 180 exact Pillow JPEG vectors; the 54 transformed rasters also match their
-JPEG output. Tests exercise byte ceilings, protocol failures, running/queued
-cancellation, timeout, process cleanup and 32 concurrent encodes. The static helper
-is shipped with license/version notices in the non-root Go image, which passes the
-same 180-vector oracle without network or writable storage. The server remains
-CGO-free. JPEG decoding adds 312 exact pixel/comment cases and 1,556 invalid
-streams, with actual Django helper output/fallback checks across all 1,868 cases.
-The shipped image passes the same decoder suite. Inherited comments, long-comment
-save failure, native framing/budgets, process cancellation and concurrent decoding
-are verified. A lazy JPEG marker reader passes 1,352 explicit Pillow cases and
-three actual Django header-only passthrough checks, plus header budgets,
-cancellation, metadata ownership/ordering and concurrent readers. The same marker
-oracle runs in the image. EXIF/MPF admission adds 226 explicit cases; the complete
-JPEG file pipeline adds 73 size/lazy/fallback cases and reruns all metadata and
-decoder vectors. Django helper checks and the shipped image agree. Header/raster/
-transform/file budgets, one deadline and admission across JPEG stages, 32
-concurrent resizes and queued/running cancellation are verified. Other formats,
-admission across formats and the complete image processor remain necessary for
-login; no full image or HTTP parity is claimed.
-
-The PNG pixel primitive now covers all 15 depth/color combinations, five filters
-and Adam7 with 803 explicit Pillow cases. Expected samples are constructed
-independently. The actual Django helper agrees on 480 unchanged-size JPEG outputs,
-300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
-runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
-mid-decode cancellation and 32 concurrent decodes pass. Lazy PNG header/metadata admission now adds 394
-explicit cases, including CRCs,
-text limits, APNG first-frame declarations and metadata collisions. Actual Django
-checks verify 235 valid 200×100 headers return their original URI with zero pixel
-loads; the shipped image passes the same header oracle. File-level metadata and
-canvas composition are covered by the PNG pipeline below; public image/response
-wiring remains open.
-Mode-1 nearest-neighbour transforms now preserve Pillow's accumulated-coordinate
-rounding and exact JPEG output across 210 vectors, with 18 actual Django PNG
-size-policy cases. Invalid binary samples, exact logical budgets, cancellation,
-source ownership and 32 concurrent transforms/encodes are covered. The PNG decoder
-also accepts valid early zlib stream ends on complete ordinary/Adam7 rows, leaving
-unvisited pixels zero. Incomplete rows fail, as do missing trailers when more rows
-are required. The shipped non-root/read-only/networkless image runs these oracles. File-level IDAT boundaries
-must remain explicit because concatenation changes reference checksum timing.
-
-Missing work includes business endpoints, complete HTTP admission, endpoint-level
-group/instructor/family authorization, login composition and impersonation audit workflows,
-durable workers/scheduler, versioned routing and coordinated switching,
-realtime/integrations/documents/manual delivery, Go backup/restore, the complete
-fixture adapter, query/performance evidence and release/updater rehearsals.
-Health routes also remain uncertified for manual metadata, version-file precedence,
-global middleware, error-body and proxy parity. Keep the PR draft; the foundation
-checks do not authorize activation or release.
-
-
-The PNG chunk-stream component now preserves Pillow's per-IDAT/64 KiB reads and
-row-limited zlib calls, including DDAT/fdAT, sequence checks, active-chunk truncation
-and checksum timing. Go reuses its filter/sample unpacker. All 852 explicit
-pixel/chunk cases compare pixels and consumed file state; the built non-root,
-read-only/networkless image runs the same oracle. Positive logical budgets,
-malformed protocol, process failures, timeout, queued/running cancellation,
-mid-unpack cancellation and 32 concurrent decodes are covered. Native ASan/UBSan
-checks require exact successful frames and exact invalid-input exits without
-diagnostics. Static zlib and its version/license ship in the existing helper;
-the server remains CGO-free. The complete PNG first-frame pipeline now composes
-this reader with header/tail metadata, canvas placement, resizing and JPEG saving.
-Its 1,466 explicit whole-file cases compare with Pillow and the actual Django
-helper, including cumulative header-plus-tail text limits, comment inheritance
-and RGBA comment removal, fdAT sequencing, APNG next-frame stopping and the
-observed Adam7 origin placement across all 15 mode/depth pairs. The shipped image
-passes the same oracle. Per-stage budgets, tail/canvas cancellation, 32 concurrent
-pipelines and whole-pipeline queue/running cancellation with child reaping and
-admission reuse pass. Other image formats, dispatch and public image/login wiring
-remain open. The ledger's status counts are unchanged; no endpoint is newly
-marked verified.
-
-
-The BMP/DIB pipeline now covers all seven supported header sizes, raw depths and
-accepted bitfield layouts, palette mode reduction/load failures and RLE4/RLE8.
-Its 512 cases declare expected header modes, pixels and JPEG/original outcomes;
-Pillow, the actual Django helper and the shipped non-root/read-only/networkless
-image agree. Tests preserve optional final padding, wrapped grayscale palettes,
-absolute RLE alignment, odd RLE4 runs and Pillow's double-read delta behavior.
-Positive stage budgets, exact bounds, mid-header/raw/RLE cancellation, immutable
-input, 32 concurrent pipelines and encoder-stage cancellation with queued requests,
-child reaping and admission reuse pass. Other supported image formats, format
-dispatch/shared admission and public login composition remain open. This adds
-component evidence without marking any endpoint verified or authorizing release.
-
-
-The PPM-family pipeline adds PBM/PGM/PPM, grayscale PFM and Pillow's CMYK/RGBA/P
-extensions. Its 429 declared header/pixel/whole-file cases cover numeric syntax,
-range/scaling rules, PFM endian/row behavior, unsupported JPEG modes, comment
-joining and 1 MiB plain-read boundary semantics. Pillow, the actual Django helper
-and the shipped non-root/read-only/networkless image agree. Exact stage budgets,
-overflow, input ownership, mid-header/raw/plain/PFM cancellation, 32 concurrent
-pipelines and encoder cancellation with queueing/reaping/admission reuse pass.
-Other file formats, shared dispatch/admission and public login composition remain
-open. The ledger's status counts and release/activation restrictions are unchanged.
-
-
-The PCX/DCX first-frame pipeline adds 831 declared header/pixel/file cases,
-compared with Pillow, the actual Django helper and the shipped non-root,
-read-only/networkless image. It preserves partial headers, stride correction,
-all RLE counts and row-overrun failures, palette tails, padded planar unpacking,
-DCX directory bounds and the inherited absolute 128-byte pixel seek for 8-bit
-frames. Exact stage budgets, overflow, ownership, mid-header/RLE cancellation,
-32 concurrent pipelines and encoder-stage queue/cancellation/reaping/reuse pass.
-Other formats, shared dispatch/admission and public login wiring remain open;
-ledger statuses and release/activation restrictions are unchanged.
-
-
-The TGA pipeline adds 1,112 declared header/pixel/file cases, compared with Pillow,
-the actual Django helper and the shipped non-root/read-only/networkless image.
-It preserves raw/RLE modes, row/horizontal orientation, inverted 16-bit alpha,
-short ID/palette reads, palette core-mode changes and load failures, no-tile lazy
-admission, repeat-row bounds and full literal-packet validation. Exact stage
-budgets, overflow, input ownership, mid-operation cancellation, 32 concurrent
-pipelines and encoder-stage queue/cancellation/reaping/reuse pass. Other formats,
-shared dispatch/admission and public login wiring remain open; ledger status
-counts and release/activation restrictions are unchanged.
-
-
-The QOI pipeline adds 2,758 declared header/pixel/file cases checked against Pillow,
-the actual Django helper and the shipped non-root/read-only/networkless image.
-It preserves 13-byte lazy header admission, permissive channel values, seeded
-cache/alpha state, wrapping deltas, runs crossing rows or the final pixel, and
-ignored footer bytes. Exact stage budgets, overflow, ownership, mid-operation
-cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
-cancellation/reaping/reuse pass. The test-only fault codec accepts RGB; production
-native sources are unchanged. Other formats, shared dispatch/admission and public
-login wiring remain open. Ledger status counts and activation restrictions remain.
-
-
-The XBM pipeline adds 1,485 declared header/pixel/file cases checked against Pillow,
-the actual Django helper and the shipped non-root/read-only/networkless image.
-It preserves the 16-byte recognition prefix, greedy 512-byte header window,
-permissive lowercase-x scanner, low-bit-first rows, padding and ignored
-hotspot/trailing text. Exact budgets, overflow, ownership, cancellation during
-long scans, 32 concurrent mixed-image pipelines and encoder-stage admission/
-cancellation/reaping/reuse pass. Production native sources are unchanged. Other
-formats, shared dispatch/admission and public login remain open; ledger status
-counts and backend activation restrictions are unchanged.
-
-
-The SGI pipeline adds 1,294 declared header/pixel/file cases checked against Pillow,
-the actual Django helper and the shipped non-root/read-only/networkless image.
-It preserves all eight supported planar/RLE layouts, high-byte 16-bit samples,
-partial/lazy headers, table offset/length semantics, persistent partial rows and
-early successful exit. Exact budgets, overflow, ownership, mid-operation
-cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
-cancellation/reaping/reuse pass. Production native sources are unchanged. Other
-formats, shared dispatch/admission and public login remain open; ledger status
-counts and backend activation restrictions are unchanged.
-
-
-The SUN Raster pipeline adds 1,453 declared header/pixel/file cases checked against
-Pillow, the actual Django helper and the shipped non-root/read-only/networkless
-image. It preserves raw alignment versus packed RLE rows, all supported sample
-layouts, every literal/run count, palette/core-mode and short-read boundaries,
-64 KiB operand boundaries and lazy file policy. Exact budgets, overflow,
-ownership, mid-operation cancellation, 32 mixed concurrent pipelines and encoder
-queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
-SUN/GBR recognition precedence is documented as a remaining shared-dispatch
-requirement. Other formats, shared admission and public login remain open;
-ledger status counts and backend activation restrictions are unchanged.
-
-CI was not fully green on the SGI head: the
-[SSO browser job](https://github.com/carbogninalberto/assozeta/actions/runs/39549108830/job/119054304006)
-timed out waiting for “Genera codice di collegamento” at
-`selfhost/tests/browser/bakney-sso.mjs:234`. That failure produced no screenshot
-or JSON artifact. Its cause remains unverified; it is not counted as a passing
-gate. This increment changes neither that fixture nor the UI/SSO implementation.
-
-
-The subsequent SUN-head [SSO browser job](https://github.com/carbogninalberto/assozeta/actions/runs/39550083913/job/119057239512)
-passed the complete existing HTTPS/production-proxy/simulated-provider harness.
-Ten fresh local browser sessions also reached an enabled pairing button using a
-built UI and disposable PostgreSQL/Redis/backend. The local startup probe used
-an alternate HTTPS port because port 443 was occupied, so it is not additional
-full-protocol proof. The earlier timeout was not reproduced and no application
-fix is claimed. Initial-stage failures now retain bounded, redacted JSON evidence;
-unit tests cover its allowlist, sensitive-data exclusion and listener cleanup.
-A real-UI injected pairing-status HTTP 503 verifies the failure report's status,
-message identifier and missing button. This strengthens Django regression
-verification; Go SSO and the complete migration remain unimplemented/unverified.
-
-
-The GBR pipeline adds 1,341 declared header/pixel/file cases checked against
-Pillow, the actual Django helper and the shipped non-root/read-only/networkless
-image. It preserves versions 1/2, packed L/RGBA samples, actual comment-read
-positions, negative/short reads, unconditional last-byte removal, grayscale
-comment inheritance and RGBA metadata removal. The oracle exposed and now guards
-the shared JPEG encoder's omission of empty comments. Exact budgets, overflow,
-ownership, cancellation, 32 mixed concurrent pipelines and encoder-stage
-queue/cancellation/reaping/reuse pass. Native production sources are unchanged.
-A SUN-signature input recognized as GBR is covered; shared registry dispatch,
-remaining formats and public login composition remain open. Ledger statuses and
-backend activation restrictions are unchanged.
-
-
-The MSP pipeline adds 1,704 declared header/pixel/file cases checked against
-Pillow, the actual Django helper and the shipped non-root/read-only/networkless
-image. It preserves DanM/LinS header checksums, MSB-first packing, blank and
-concatenated records, clipped literals, zero-count repeats and validation of
-malformed surplus operands. Expansion streams directly into normalized output
-without an expanded intermediate buffer. Exact budgets, overflow, ownership,
-raw/RLE/surplus cancellation, 32 mixed concurrent pipelines and encoder-stage
-queue/cancellation/reaping/reuse pass. Production native sources are unchanged.
-Other formats, shared dispatch/admission and public login remain open; ledger
-status counts and backend activation restrictions are unchanged.
-
-
-All eleven reported checks (including the aggregate PR status) on SUN head `ccfa67f` subsequently passed in
-[run 39550083913](https://github.com/carbogninalberto/assozeta/actions/runs/39550083913),
-including 1,794 backend tests and 16 diagnostic tests. This records the earlier
-head’s regression result; it does not establish Go parity or replace the full
-required acceptance matrix. CI for the GBR/MSP/SSO-diagnostics head is pending.
-
-
-Password session coordination now connects the existing admission, JWT, response
-and finalization services. Eighteen declared cases compare the real Django login
-view with concrete Go repositories/services, including signed token claims and
-all managed-table readback. A database-triggered final-write failure retains
-normalization/default-card effects but exposes no response; OTP denial precedes
-card creation. Eight concurrent repetitions preserve unique effects and release
-connections. Explicit fixture query counts range from 1 to 18. Unit tests cover
-all stage failures/cancellations and inconsistent identity/token results. Images,
-public HTTP composition, social admission and middleware remain open.
-
-The MSP-head manual verification exposed stale overview source hashes left by
-main's `f115d1e` reader redesign. The coverage failure was reproduced locally;
-review of the reader's loading/search/navigation and content-card link behavior
-confirmed that the cited introduction text still applies. The two reviewed hashes
-are updated without changing the UI or promoting pending workflow evidence.
-All 180 manual Python tests and 11 browser-helper tests pass locally without
-skips. The full isolated manual capture/publication workflow remains a CI gate;
-these unit/helper checks do not establish that broader result.
-
-
-Login transport now preserves field presence and raw credential values, response
-negotiation, supplied-Bearer/identity admission and method/body-error ordering.
-Fifteen portable contracts pass against real Django and Go HTTP for requests that
-stop before credential selection; later Go stages are asserted uncalled and all
-Django managed tables remain unchanged. Cookie success/error behavior and trusted
-audit propagation have component tests. Public registration, rate limits, complete
-request coercion, password/social composition and audit middleware remain open.
-
-The next full manual CI run passed its initial source/test checks, then stopped at
-`Recipe changed; review existing content before preparation: docs/manuale/attendance-carnet-recipes.mjs`
-in [run 39553891382](https://github.com/carbogninalberto/assozeta/actions/runs/39553891382).
-The external manual’s reviewed recipe binding differs from this repository. The
-scaffold correctly refuses to refresh that editorial binding without content
-review. Full capture/publication verification remains incomplete; no passing
-manual delivery gate is claimed from the preceding unit/helper results.
-
-
-Main reconciliation through `06bac65` preserves PR #20's immutable manual package,
-runtime-user asset validation, installed HTTP/browser/MCP contracts and disposable
-installation/upgrade/restart/interruption/rollback rehearsal. Go must implement
-that same package boundary; no manual release gate is certified by merging it.
-The export task's successful result no longer reads the nonexistent
-`service.skipped_records` attribute after archive creation. These five affected
-manual/export ledger rows remain `needs_review`; unchanged task bodies and the
-pairing schedule were compared before restoring their previous classifications.
-Static/runtime discovery counts are unchanged.
-
-Both independently added test-documentation sections are retained. The SSO merge
-retains main's explicit button-visibility assertion and the branch's bounded,
-redacted diagnostic observer through the initial click; it detaches before reading
-the pairing secret. Unit checks cover redaction, closed pages and listener cleanup.
-The preceding password-session head passed the complete PR-quality workflow
-([run 39553891367](https://github.com/carbogninalberto/assozeta/actions/runs/39553891367));
-that is historical evidence, not proof for this merged head. The earlier manual
-recipe-binding failure above must be re-evaluated against the merged sources.
-
-Merged-tree local checks pass: `go test -race ./...`, `go vet ./...`, 12
-inventory tests and drift validation, regenerated production runtime discovery,
-190 manual Python tests, 11 manual browser-helper tests, three SSO diagnostic
-tests, JavaScript syntax and `make selfhost-test`. No required test was skipped
-in these suites. Full installed manual release rehearsal and full merged-head
-backend/browser CI are separate outstanding gates. Logs are retained under
-`quality-reports/go-migration/main-reconciliation/`.
-
-
-Raw credential values now survive password admission/session coordination until
-selection. Identifiers use Python-compatible scalar/container text and multipart
-file names. Passwords preserve original type: a matching current PBKDF2 hash can
-admit non-text values, while rehash requirements, null, other hash families and
-failed legacy fallback produce typed failures. No-candidate rejection precedes
-password evaluation. The service independently refuses any non-string upgrade,
-even if a dependency mistakenly requests one; a failing unit test preceded that
-guard. Transactions return no selected account or replacement on value failures.
-Cancellation and concurrent conversion have explicit tests. Full HTTP parsing,
-social/provider admission, rate limits and public login remain unfinished.
-
-The merged-head manual workflow reached source/helper success, then failed at the
-overview recipe binding in run 39588278206. The configured external manual branch
-`add/manuale-release` binds exactly the current main recipe bytes. The only branch
-difference was two review comments introduced before main merged the same source
-hashes. Those comments are removed; the review evidence remains in this report.
-No recipe behavior, reviewed source hash, external binding or manual content was
-changed. All 190 manual unit tests pass; full capture/release evidence remains
-pending and is not inferred from the byte-binding match.
-
-The expanded credential adapter passes 68 declared actual-Django/Go cases with
-production hashes, four multipart-file cases, exception-class expectations,
-managed-table readback and one SELECT per small candidate set. The Go credential
-suite includes existing paging, concurrent rehash, constraint failure and rollback
-checks. Formatting, Go race tests/vet, tagged integration vet, inventory tests and
-manual unit checks pass. Evidence lives under
-`quality-reports/go-migration/login-values/`; no public endpoint was newly verified.
-
-The complete private PostgreSQL/Redis accounts adapter also finishes successfully,
-including 18 composed session cases, 47 OTP cases, 20 admission/audit cases, the
-portable refresh/pre-credential HTTP contracts and existing image oracles. This
-uses current-model schema creation, not historical migration/restore evidence.
-
-
-Social selection/admission now uses a streamed candidate query, a bounded provider
-verification port and the shared username/audit/OTP boundary. It preserves the
-five aliases, unique casefold-username preference before provider dispatch, raw
-token values, email lowercase semantics and denial ordering. Database readers
-close before provider I/O. `LoginSessions` now dispatches both credential branches
-to the same signing/response/finalization checks; password-only callers retain
-the existing API. Concrete Google/Apple clients, integration configuration and
-public registration remain unfinished. Controlled-provider tests must not be read
-as remote credential-verification evidence.
-
-A separate SSO CI failure was diagnosed from job 119188587950 and its sanitized
-artifact: Chromium reported `ERR_NETWORK_CHANGED` on the empty fixture page before
-application traffic. A narrowly bounded one-time retry now covers only that GET
-and exact error. Five Node policy tests and a real Chromium navigation/storage
-rehearsal pass; other failures still propagate, and full HTTPS SSO CI remains a gate.
-
-The complete private PostgreSQL/Redis accounts adapter passes with 41 social
-admission cases, 26 composed sessions, 68 password selections, 47 OTP and 20
-admission/audit cases, plus the existing HTTP, identity, scope and image suites.
-All managed-table readback, query bounds, concurrent selection and pool-release
-assertions pass. Go race tests, vet, tagged integration vet, formatting, 12
-inventory tests and drift validation pass. TDD red/green logs and the complete
-result are retained in `quality-reports/go-migration/social-admission/`. This
-remains current-model schema evidence, not historical migration or restore proof.
-The prior head's Go CI job 119188587954 also passed within its existing deadline;
-no timeout increase or test exclusion was needed.
-
-Current social client-ID resolution now has an explicit domain reader, a
-parameterized PostgreSQL repository and a service with constructor-supplied
-environment IDs. It reads the lowest-ID instance once per operation, observes
-current override/disable/reset state, preserves the Google environment visibility
-rule and ignores legacy client-ID columns. Malformed saved settings and database
-failures do not enable fallback. Raw saved ID types are retained for the eventual
-provider verifier. No shared business table is modified by this component.
-
-The 33-case real-Django/Go configuration comparison passes, including every
-managed-table readback after declared fixture resets. At 1/16/128/512 rows, each
-operation uses one SELECT; 32 concurrent reads per size stay within four
-connections. A PostgreSQL table lock verifies deadline cancellation and pool
-reuse. Absent configuration and closed-database behavior are explicit cases.
-Go race tests, vet, tagged integration vet, formatting and inventory checks pass;
-evidence is in `quality-reports/go-migration/social-configuration/`. Environment
-loader/root wiring, provider HTTP and cryptographic validation remain open.
-See `BE_GO/internal/service/social_configuration.md` for the exact boundary.
-
-The full HTTPS SSO job 119196682388 in run 39592376583 passes on `83a58b4`,
-including pairing/login across separate sites with the narrow navigation retry.
-The earlier failed SSO rehearsal is superseded for that head; the complete CI
-and independent manual release matrix remain separate gates.
-
-The full private PostgreSQL/Redis accounts adapter also passes after this
-configuration addition: 33 configuration cases, 41 social admissions, 26 composed
-sessions, 68 credential cases, 47 OTP and 20 normalization/audit admissions, plus
-all existing identity, scope, HTTP and image checks. The final result is retained
-in `quality-reports/go-migration/social-configuration/results.json`. This evidence
-uses current-model schema creation; historical migrations and restore remain open.
-
-The Apple client verifies real RSA signatures against per-operation JWK reads,
-with explicit algorithm/issuer/audience and PyJWT-compatible claim checks.
-`SocialProviders` resolves current client IDs before dispatch and suppresses
-provider calls when disabled. Eighty-nine declared cases pass through the actual
-Django verifier and Go over local HTTPS, comparing complete identity results and
-HTTP counts. Red tests caught critical-header, trailing-payload JSON, integer
-digit-bound and integer-whitespace differences; the corresponding Go checks now
-pass. Unit cases measure response bounds, token/modulus limits, two-slot admission,
-cancellation, closure and reuse. A real RSA/HTTPS service test verifies audience
-changes and disable behavior; its configuration reader is controlled, with
-persisted resolution covered by the prior PostgreSQL adapter. Google, root/env
-wiring and public/live-provider login remain incomplete. Evidence and dependency
-provenance are in `quality-reports/go-migration/apple-tokens/`.
-
-The preceding `dbf1beb` head passes the complete PR quality workflow
-[39593769742](https://github.com/carbogninalberto/assozeta/actions/runs/39593769742)
-and default manual verification workflow
-[39593769720](https://github.com/carbogninalberto/assozeta/actions/runs/39593769720).
-The latter completed source mappings, browser helpers and isolated capture,
-rendering, evidence, MCP and agent checks. Optional editorial mode was not
-requested. These successful Django/manual and foundation gates do not implement
-the Go manual boundary or establish the full migration acceptance matrix.
-
-Apple increment validation: full Go race tests and vet, Apple-tagged integration
-vet, formatting, the 89-case HTTPS oracle, service crypto/dispatch tests, twelve
-inventory tests/drift validation and actionlint all pass. The CI workflow now
-runs the Apple oracle after credential/permission verification. This increment
-does not modify existing database repositories, Django business code or the
-registered public API surface.
-
-The REST JWT parser now shares document/header/integer checks with Apple while
-retaining REST-specific required claims and expiry rules. Fifty-six declared
-signed document cases expose and fix acceptance differences for critical headers,
-key IDs, padding, trailing JSON, invalid UTF-8, unused oversized integers and
-Python time conversion. The credential adapter passes 76 token vectors, 37
-Django password vectors, two Go-issued/refreshed token pairs and three Go hashes.
-
-Refresh testing also disproved universal preservation of input token bytes:
-SimpleJWT keeps claims/JTI/expiry but reserializes and signs the refresh token.
-The Go implementation now matches default headers, dictionary/duplicate-key
-semantics, ASCII escaping and finite float formatting. Exact independently declared
-refresh credentials pass through both token services and HTTP servers. Thirty
-portable methods per backend include all 56 document scenarios, Bearer-before-body
-precedence, exact errors, cookie absence on rejection and valid session cookies.
-The fixture completeness guard was additionally checked with all 56 declarations;
-that guard was added after the full account adapter imported its HTTP tests.
-
-Full Go race tests/vet, credential/Apple tagged vet, the 89-case Apple RSA/HTTPS
-oracle and twelve inventory tests with drift validation pass. Nonstandard JSON
-NaN/Infinity/overflow, lone surrogate escapes, broader base64 and global parsing
-budgets remain open. These checks do not complete authentication, public login,
-backend switching or the full migration. Logs: `quality-reports/go-migration/jwt-document/`.
-
-The full private PostgreSQL/Redis account adapter also passes after this change:
-30 refresh methods per backend, 33 social configuration cases, 41 social admissions,
-26 composed sessions, 68 password selections, 47 OTP and 20 normalization/audit
-cases, plus existing identity/scope, managed-table readback and image oracles.
-`jwt-document/accounts-results.json` records the complete counts. Schema creation
-still uses current Django models; historical migration and restore evidence remain
-separate, unfinished requirements.
-
-Google verification now has concrete certificate, JWK and access-token clients.
-Ninety-three declared comparisons exercise the actual Django service and installed
-Google/PyJWT libraries against Go using real local HTTPS and signatures. They
-preserve the certificate decoder's required times and inclusive expiry, the JWK
-path's second fetch/optional claims/strict expiry, and the application's narrow
-ValueError fallback. JWK transport refuses redirects; certificate/access transport
-retains its supplied policy. Identity values, success/error boundaries, query and
-header values and exact HTTP sequences are checked, including negative cases.
-
-TDD failures preceded implementation and caught premature algorithm rejection and
-incorrectly followed JWK redirects. Tests separately measure two-slot admission,
-active/queued cancellation, reuse, phase deadlines, bounded response reads and
-closure. A real RSA/HTTPS service test verifies current audience, disable and
-configuration-failure behavior. Its configuration reader is controlled; persisted
-settings have separate PostgreSQL evidence. Existing Apple claim validation now
-shares a helper with the Google JWK path.
-
-The Google client is not registered at the composition root. Raw container/upload
-fallback values, unusual JSON/base64/key shapes, numeric audience equality,
-transport/proxy/charset extremes and live-provider proof remain open, along with
-full session/HTTP/browser integration. Explicit Go resource budgets still need
-supported deployment/provider evidence. See `BE_GO/pkg/social/google.md` and
-`quality-reports/go-migration/google-tokens/` for bounded scope and reproduction.
-
-Google increment validation passes full Go race tests/vet, tagged Google/Apple vet,
-93 Google and 89 Apple HTTPS oracle cases, service crypto/configuration composition,
-formatting and twelve inventory tests/drift validation. The workflow now runs the
-Google oracle alongside Apple and credentials. No database repository or public
-route changed in this increment; the preceding `e93d417` commit's complete private
-PostgreSQL/Redis account rehearsal remains the latest database evidence. The
-whole new-head CI matrix remains required; prior successful full workflows are
-identified above rather than attributed to an untested head.
-
-Actionlint v1.7.7 (the repository workflow version) also passes. Additional red
-cases caught numeric/boolean JWK algorithm metadata being silently defaulted to
-RSA; nonempty invalid metadata is now rejected, while a false value retains the
-inspected defaulting behavior. The final Google oracle contains 93 declarations.
-
-The configuration increment ports the existing provider environment fields and
-replaces shell-style dotenv expansion with Django's literal file rules. The 45-case
-oracle executes selected unchanged `core.settings` AST assignments using actual
-django-environ 0.12.0, then compares Go `Load`. It covers process precedence,
-required/empty/default values, raw DB/Redis strings, provider/JWT reference chains,
-cycles/missing targets, quoting/comments/invalid lines, multiline/base64 and CSRF
-lists. A nonempty CSRF-list proxy raises in the installed library; Go preserves
-startup rejection rather than accepting different trusted origins. Config loading
-leaves the process untouched, and value/error representations redact secrets.
-
-Missing provider/JWT configuration APIs failed before implementation. Full Go race
-tests/vet, tagged config vet and the 45-case oracle pass. The actual Go health
-rehearsal also passes private PostgreSQL/Redis loss/recovery and idle SIGTERM.
-Existing fixture startup environments now explicitly supply the already-required
-Google settings. No deployment/customer configuration was read or changed. The
-unused godotenv dependency was removed without adding a replacement framework.
-Remaining environment fields, VERSION-file precedence, complete provider/root
-wiring and public login remain open; this is not full environment or activation
-parity. Evidence: `quality-reports/go-migration/environment/`.
-
-The full private PostgreSQL/Redis accounts adapter passes after this configuration
-change, including 30 refresh methods per backend, 33 social configuration cases,
-41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 composed
-normalization/audit cases, plus identity/scope/image checks. An initial run caught
-three obsolete response-test startup fixtures missing required JWT/provider
-settings; the fixtures were corrected and the complete adapter rerun passed.
-The schema comes from current models, not historical migrations. Results are
-archived at `quality-reports/go-migration/environment/accounts-results.json`.
-
-The login rate-counter increment adds explicit service/repository ports for the
-existing 20/minute IP and 5/minute account limits. Fourteen declared cases use
-actual django-ratelimit and the unchanged cache declaration on private Redis,
-checking Django-to-Go-to-Django counts, cache keys, inclusive window boundaries
-and TTL preservation. Sixty-four concurrent Go calls admit five and deny 59,
-use 127 writes and at most four connections. Both runtimes deny the actual-key
-expiration race. A paused Redis write checks deadlines/no retries and pool reuse;
-pre-cancelled calls write nothing, while timed-out in-flight writes may still run.
-The first Go tests failed on absent components. Request key parsing, environment
-flags, exact HTTP ordering/responses, exceptional counter representations and
-public route wiring remain open. See `BE_GO/internal/service/login_rate.md` and
-`quality-reports/go-migration/login-rate/`; this is counter evidence only.
-Full Go race tests/vet, tagged Redis-integration vet, the private Redis oracle,
-12 inventory tests, catalog drift validation and actionlint pass. No existing
-public route, account workflow or database write path changed in this increment.
+This draft pursues the complete [requested replacement](requirements.md), using an
+isolated worktree and `codex/go-backend-parity`, reconciled through
+`main@06bac65` including PR #20's manual delivery. **It is not ready for production
+activation or merge as a backend replacement.** Django retains business-schema,
+worker and scheduler ownership. No production installation, customer data or
+published release has been changed.
+
+## Current result
+
+The Go composition root exposes `/healthz`, `/readyz` and `/oauth2/refresh-token`.
+Login has tested services, providers, transport and rate-admission components but
+is not registered publicly. Most business workflows and every activation gate
+remain unfinished. There are 514 ledger declarations: 2 deprecated, 5 implementing,
+5 requiring renewed review and 502 uncharacterized; none is verified. Runtime
+discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
+15 MCP schemas. These discovery counts are not counts of implemented capabilities.
+
+The [ledger](ledger.json) and [evidence index](README.md) retain detailed ownership,
+contracts, source references, test evidence and limitations. Source discovery's
+21 schedules still need reconciliation with the single effective initialized Beat
+entry and historical database schedules.
+
+## Architecture and data decisions
+
+The implementation follows the inspected specification at `4d0f68d` and its pinned
+Kuayle revision `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one `BE_GO/` module,
+Echo handlers, DTOs, context-aware services, explicit constructors and sqlx/pgx
+repositories. Infrastructure/provider clients have explicit interfaces. No Go
+migration changes existing business tables. Redis interoperability is implemented
+only for specifically characterized cache protocols, not assumed for Channels or
+Celery payloads.
+
+Actor, effective account and resource scope remain distinct. Service transactions
+cover the implemented username, card-configuration and final-login audit/index
+invariants. Real PostgreSQL tests measure query counts and bounded-pool concurrency.
+Go-only creation locking does not coordinate unmodified Django writers; mixed-runtime
+creation races and differences from Django's partial autocommit failures remain open.
+No monetary business workflow is claimed as complete.
+
+Current-main deprecations remain intact: software subscription gating, platform
+checkout and SaaS nurturing are retired; association/course memberships, payments
+and supported communications remain in scope. Historical backup skips remain
+exactly `BillingPlan` and `PreviewAndCustomFeatures`; no Go implementation gap
+expands that allowlist. Go has not yet implemented historical restore or the
+immutable manual-package boundary delivered by PR #20.
+
+## Verification and its limits
+
+| Area | Evidence and scope |
+| --- | --- |
+| Environment | 55 declared comparisons execute unchanged selected settings assignments with django-environ 0.12.0, then Go Load. They cover literal files, process precedence, provider/JWT references, required/default/cycle rules, multiline/base64, CSRF lists, DEBUG and derived RATELIMIT_ENABLE. Secret representations and process isolation are checked. Full environment coverage is unfinished. |
+| Rate admission | 14 bidirectional Django/Go Redis counter cases check keys, inclusive windows, thresholds and nonrenewed TTLs. Sixty-four concurrent Go calls admit five and deny 59 using 127 writes and at most four connections. Actual-key expiration races, paused Redis deadlines, no retries and pool reuse pass. |
+| Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
+| Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 30 portable refresh methods per backend. Refresh reserializes/signs unchanged claims/JTI/expiry as Django does; rejected credentials issue no cookie. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
+| Account/permission services | Real PostgreSQL/Redis comparisons cover actor admission, identity transitions/revocation, collaborator policy and resource predicates, including 132 scoped-request and 67 resource-scope cases with measured batch/concurrent query bounds. This is not endpoint-wide authorization parity. |
+| Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
+| Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
+| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. The domain LoginImageProcessor and complete format dispatch remain unimplemented; partial codec evidence is not successful public-login evidence. |
+| Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
+
+The complete private PostgreSQL/Redis accounts adapter passes after the current
+admission/configuration changes, including refresh HTTP, identity/scope, all
+existing image checks and the login service cases above. It creates the
+current-model schema with `migrate --run-syncdb`; it does not exercise historical
+migrations. No mocked-away or unexecuted public-login, lifecycle or release
+behavior is counted as passing. Results: `login-rate/admission-accounts-results.json`
+under the local evidence directory.
+
+Current local Go race tests/vet, tagged Redis-admission vet, the environment and
+rate oracles, health recovery, inventory/drift checks and actionlint pass. A bounded
+quoted-string parser fuzz run completed 111,829 executions without rewriting
+ordinary JSON. Red tests caught the absent admission wrapper, incorrect 429
+Content-Type casing and absent DEBUG/rate configuration fields before fixes.
+The WSGI fixture buffers its small request frames to avoid unread-body socket resets
+on early denial; this is documented fixture transport behavior.
+
+Evidence for this increment is under ignored `quality-reports/go-migration/login-rate/`.
+The last fully successful whole quality/manual baseline remains `dbf1beb` (runs
+39593769742 and 39593769720). New-head complete CI evidence is still required;
+passing jobs or local subsets do not substitute for it.
+
+## Remaining completion gates
+
+Every requirement in the [acceptance matrix](README.md#required-acceptance-matrix)
+remains binding. Outstanding work includes complete endpoint/business/hook and
+permission coverage; public authentication and session/audit composition; complete
+images/files/documents/integrations/manual; durable workers and authoritative
+scheduling; realtime; versioned proxy routing and coordinated switching; historical
+backup/restore and rollback; realistic performance/query-plan evidence; automatic
+Go image/updater delivery and disposable lifecycle rehearsals. Ordinary updates
+must retain Django until explicit, verified activation. The PR must remain a draft
+until the full requirement-by-requirement audit passes.

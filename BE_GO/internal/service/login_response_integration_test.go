@@ -49,7 +49,7 @@ type responseFixtureCase struct {
 
 func responseChoices(t *testing.T, flags []bool) domain.RegistrationChoices {
 	t.Helper()
-	values := map[string]string{"DBTYPE": "POSTGRES", "DBHOST": "/tmp/synthetic", "DBNAME": "synthetic", "DBUSER": "synthetic", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public"}
+	values := map[string]string{"DBTYPE": "POSTGRES", "DBHOST": "/tmp/synthetic", "DBNAME": "synthetic", "DBUSER": "synthetic", "DEBUG": "False", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public"}
 	for i, key := range []string{"FAMILY_REGISTRATION_ENABLED", "FEDERATION_REGISTRATION_ENABLED", "MULTIPLE_REGISTRATION_ENABLED"} {
 		values[key] = strconv.FormatBool(flags[i])
 	}
@@ -90,7 +90,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, tc := range fixture.Booleans {
-		values := map[string]string{"DBTYPE": "POSTGRES", "DBHOST": "/tmp/synthetic", "DBNAME": "synthetic", "DBUSER": "synthetic", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public"}
+		values := map[string]string{"DBTYPE": "POSTGRES", "DBHOST": "/tmp/synthetic", "DBNAME": "synthetic", "DBUSER": "synthetic", "DEBUG": "False", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public"}
 		for _, key := range []string{"FAMILY_REGISTRATION_ENABLED", "FEDERATION_REGISTRATION_ENABLED", "MULTIPLE_REGISTRATION_ENABLED"} {
 			values[key] = tc.Value
 		}
@@ -111,7 +111,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 				t.Setenv(key, value)
 			}
 			path := filepath.Join(t.TempDir(), "synthetic.env")
-			if err := os.WriteFile(path, []byte("DBTYPE=POSTGRES\nDBHOST=/tmp/fixture\nDBNAME=fixture\nDBUSER=fixture\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"+tc.Lines), 0600); err != nil {
+			if err := os.WriteFile(path, []byte("DEBUG=False\nDBTYPE=POSTGRES\nDBHOST=/tmp/fixture\nDBNAME=fixture\nDBUSER=fixture\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"+tc.Lines), 0600); err != nil {
 				t.Fatal(err)
 			}
 			cfg, err := config.Load(path)

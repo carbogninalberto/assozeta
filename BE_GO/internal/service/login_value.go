@@ -134,6 +134,18 @@ func loginValueText(ctx context.Context, value any) (string, error) {
 				}
 				out.WriteString(text)
 			}
+		case float64:
+			// Only the pre-DRF login rate parser supplies nonstandard constants.
+			switch {
+			case math.IsNaN(x):
+				out.WriteString("nan")
+			case math.IsInf(x, 1):
+				out.WriteString("inf")
+			case math.IsInf(x, -1):
+				out.WriteString("-inf")
+			default:
+				return ErrLoginValue
+			}
 		case []any:
 			out.WriteByte('[')
 			for i, item := range x {

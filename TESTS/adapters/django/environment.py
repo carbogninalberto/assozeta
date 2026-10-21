@@ -17,7 +17,7 @@ import tempfile
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[3]
-NAMES={'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
+NAMES={'DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
        'SOCIAL_AUTH_APPLE_ID_CLIENT':'apple','SOCIAL_AUTH_APPLE_ID_TEAM':'apple_team',
        'SOCIAL_AUTH_APPLE_ID_KEY':'apple_key','SOCIAL_AUTH_APPLE_ID_SECRET':'apple_secret',
        'JWT_SECRET_KEY':'jwt_private','JWT_PUBLIC_KEY':'jwt_public','DBPASSWORD':'database_password',
@@ -35,10 +35,10 @@ def main():
            isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id in NAMES for target in node.targets)]
     assert len(nodes)==len(NAMES)+1,'settings declaration coverage changed'
     code=compile(ast.Module(body=nodes,type_ignores=[]),'core.settings selected assignments','exec')
-    base={'DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
+    base={'DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
-    expected={'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
+    expected={'debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
               'origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
@@ -94,7 +94,17 @@ def main():
     add('empty origins proxy',lines='CSRF_TRUSTED_ORIGINS=$ORIGINS\nORIGINS=,,\n')
     add('origins missing proxy default',lines='CSRF_TRUSTED_ORIGINS=$MISSING\n')
     add('flags proxy and defaults',lines='FAMILY_REGISTRATION_ENABLED=$MISSING\nFEDERATION_REGISTRATION_ENABLED=$FLAG\nFLAG=-2\n',want={'federation':True})
-    assert len(cases)==45
+    add('missing required DEBUG',remove=('DEBUG',),error=True)
+    add('debug disables default rate limit',lines='DEBUG=True\n',want={'debug':True,'rate_enabled':False})
+    add('empty debug enables default rate limit',lines='DEBUG=\n')
+    add('explicit rate overrides debug',lines='DEBUG=1\nRATELIMIT_ENABLE=-2\n',want={'debug':True,'rate_enabled':True})
+    add('empty rate disables',lines='RATELIMIT_ENABLE=\n',want={'rate_enabled':False})
+    add('debug proxy determines rate default',lines='DEBUG=$DEBUG_ALIAS\nDEBUG_ALIAS=ok\n',want={'debug':True,'rate_enabled':False})
+    add('missing rate proxy inherits false default',lines='DEBUG=True\nRATELIMIT_ENABLE=$MISSING\n',want={'debug':True,'rate_enabled':False})
+    add('missing rate proxy inherits true default',lines='RATELIMIT_ENABLE=$MISSING\n')
+    add('rate proxy cycle fails',lines='RATELIMIT_ENABLE=$RATE_ALIAS\nRATE_ALIAS=$RATELIMIT_ENABLE\n',error=True)
+    add('process debug controls derived rate default',process={'DEBUG':'yes'},want={'debug':True,'rate_enabled':False})
+    assert len(cases)==55
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -15,6 +16,10 @@ var ErrReferenceNesting = errors.New("JSON nesting exceeds parser limit")
 // including Python JSON's last-value/first-position behavior for duplicate keys.
 // The HTTP transport must independently bound request bytes and upload sizes.
 func ParseReferenceJSON(data []byte) (any, error) {
+	return parseReferenceJSON(data, nil, false)
+}
+
+func parseReferenceJSON(data []byte, constants map[int64]any, rateLimit bool) (any, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
 	var read func(int) (any, error)
@@ -28,6 +33,12 @@ func ParseReferenceJSON(data []byte) (any, error) {
 		}
 		delim, container := token.(json.Delim)
 		if !container {
+			if value, ok := constants[decoder.InputOffset()]; ok {
+				return value, nil
+			}
+			if number, ok := token.(json.Number); ok && rateLimit && !strings.ContainsAny(string(number), ".eE") && len(strings.TrimPrefix(string(number), "-")) > 4300 {
+				return nil, ErrLoginRateJSONValue
+			}
 			return token, nil
 		}
 		switch delim {

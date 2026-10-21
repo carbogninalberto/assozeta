@@ -10,11 +10,13 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0,str(ROOT))
 
 
 def main():
@@ -117,8 +119,11 @@ def main():
             concurrent='rl:'+hashlib.sha256(b'login-account5/60sconcurrent-fixture1800000005POST').hexdigest()
             assert cache.get(concurrent)==64,'concurrent increments lost'
             assert client.dbsize()==16,'unexpected cache keys or cancelled write'
+            from TESTS.adapters.django.login_rate_admission import run as admission
+            admission_cases=admission(work,tool_env,f'127.0.0.1:{port}',password)
             report=dict(success=True,cases=len(cases),concurrent_requests=64,admitted=5,denied=59,
                         expiry_race='fail closed without recreating key',bounded_pool=4,deadline_and_reuse=True,
+                        portable_admission_contracts_per_backend=admission_cases,
                         schema='actual Django Redis cache database 1',public_login=False,customer_data='none')
             (output/'results.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report),flush=True)
         finally:

@@ -15,6 +15,8 @@ import (
 )
 
 type Config struct {
+	Debug                         bool
+	RateLimitEnabled              bool
 	GoogleClientID                string `json:"-"`
 	GoogleClientSecret            string `json:"-"`
 	AppleClientID                 string `json:"-"`
@@ -101,6 +103,15 @@ func Parse(values map[string]string) (Config, error) {
 		query.Set("sslrootcert", values["DBSSLROOTCERT"])
 	}
 	dsn := url.URL{Scheme: "postgres", User: url.UserPassword(values["DBUSER"], values["DBPASSWORD"]), RawQuery: query.Encode()}
+	debugValue, err := environmentString(values, "DEBUG", "", true)
+	if err != nil {
+		return Config{}, err
+	}
+	debug := djangoBoolean(debugValue)
+	rateEnabled, err := registrationFlag(values, "RATELIMIT_ENABLE", !debug)
+	if err != nil {
+		return Config{}, err
+	}
 	privateKey, err := environmentKey(values, "JWT_SECRET_KEY")
 	if err != nil {
 		return Config{}, err
@@ -139,7 +150,7 @@ func Parse(values map[string]string) (Config, error) {
 	if strings.HasPrefix(values["CSRF_TRUSTED_ORIGINS"], "$") && len(origins) > 0 {
 		return Config{}, errors.New("invalid CSRF_TRUSTED_ORIGINS proxy")
 	}
-	return Config{GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

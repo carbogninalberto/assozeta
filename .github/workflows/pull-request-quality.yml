@@ -103,7 +103,7 @@ jobs:
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Verify Django impersonation cache interoperability
         run: python TESTS/adapters/django/impersonation_cache.py
-      - name: Verify shared login rate counters and failure handling
+      - name: Verify login admission and shared rate counters
         run: python TESTS/adapters/django/login_rate.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
