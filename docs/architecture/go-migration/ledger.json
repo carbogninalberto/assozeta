@@ -7593,7 +7593,12 @@
         "BE_GO/internal/service/login_rate.go",
         "BE_GO/internal/repository/login_rate.go",
         "BE_GO/internal/middleware/login_rate.go",
-        "BE_GO/internal/dto/login_rate_json.go"
+        "BE_GO/internal/dto/login_rate_json.go",
+        "BE_GO/internal/domain/session_auth.go",
+        "BE_GO/internal/service/session_auth.go",
+        "BE_GO/internal/repository/session_accounts.go",
+        "BE_GO/internal/repository/session_cache.go",
+        "BE_GO/internal/repository/session_codec.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7791,7 +7796,11 @@
         "TESTS/adapters/django/login_rate_admission.py",
         "BE_GO/internal/middleware/login_rate_test.go",
         "BE_GO/internal/middleware/login_rate_integration_test.go",
-        "BE_GO/internal/dto/login_rate_json_test.go"
+        "BE_GO/internal/dto/login_rate_json_test.go",
+        "TESTS/adapters/django/session_auth.py",
+        "BE_GO/internal/service/session_auth_integration_test.go",
+        "BE_GO/internal/repository/session_codec_test.go",
+        "BE_GO/internal/repository/session_cache_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7833,7 +7842,9 @@
         "Login rate counters: 14 declared cases use actual django-ratelimit and private Redis to verify Django-to-Go-to-Django count/key/window/TTL interoperability. Sixty-four concurrent Go requests admit five/deny 59 with 127 writes and at most four connections. Actual-key expiry races fail closed; real Redis pause verifies deadline/no retry/pool reuse. Request-key extraction, flags, HTTP ordering/responses, exceptional counter representations and public wiring remain open. See internal/service/login_rate.md and quality-reports/go-migration/login-rate/.",
         "Rate HTTP admission: 15 portable contracts per backend run actual unchanged Django request-key functions/decorators/handler403 around a controlled terminal view and Go middleware on private Redis. Keys/casefold/containers, raw JSON/media differences, IP/account ordering, exact 429, method/disable bypass, nonfinite/integer rules and unchanged body bytes agree. This does not verify credentials or global/public login composition. Lone-surrogate/recursion/body/aggregate-budget and exceptional-counter gaps remain open; see internal/middleware/login_rate.md.",
         "Environment coverage expanded to 55 declarations: required DEBUG and RATELIMIT_ENABLE default not DEBUG preserve empty values, overrides, proxy/cycle and process rules against unchanged settings assignments. Go startup health/dependency-loss/recovery still passes with explicitly supplied synthetic DEBUG. Remaining full environment/root/activation scope is open.",
-        "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json."
+        "After rate-admission/DEBUG configuration changes, the full private PostgreSQL/Redis accounts adapter passes: 30 portable refresh methods per backend, 33 social configuration cases, 41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 normalization/audit cases, plus identity/scope/image checks. Current-model schema only, not historical migrations or public login. Results: quality-reports/go-migration/login-rate/admission-accounts-results.json.",
+        "Cache-session identity: 43 declared cases and five current-account transitions execute actual Django conditional-session/authentication/audit middleware and Go on shared private PostgreSQL/Redis. Current email/password/active/deleted state, backend differences, invalid-hash revocation, exact cache bytes and nonrenewed TTLs agree. Thirty-two concurrent resolutions use exactly 32 SELECTs/cache reads and pools of at most four connections. Bounded Redis responses, paused I/O deadlines/reuse, failures and codec expansion/memo fixes have separate checks. No API authority is granted by SessionActor. HTTP cookies/Vary, general writes/rotation, audit metadata, configuration/public composition and unsupported serialization/resource limits remain open; see internal/service/session_auth.md. No ledger status is promoted.",
+        "The complete accounts adapter passed with the initial 37 cache-session cases. The final integer-hash conversion fix subsequently passed the focused 43-case session suite, five transitions and all Go race/vet checks. The focused run is not a second complete accounts run. Full and focused results: quality-reports/go-migration/session-auth/full-accounts-results.json and results.json; current-model schema only. No public route or ledger status is promoted."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",

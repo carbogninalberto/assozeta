@@ -3,6 +3,7 @@
 Current-model schema rehearsal only, not migration-history or login endpoint proof.
 No developer environment, shared database, provider or customer account is used.
 """
+import argparse
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,10 @@ sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
 
 
 def main():
-    output = ROOT / 'quality-reports/go-migration/accounts'
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--only',choices=['session-auth'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    options=parser.parse_args()
+    output = ROOT / ('quality-reports/go-migration/session-auth' if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -124,6 +128,14 @@ def main():
                         check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_REQUESTS_FIXTURE': str(scoped_requests_fixture), 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                             f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
+                    from TESTS.adapters.django.session_auth import run as session_auth
+                    session_auth_cases=session_auth(work,log,tool_env,identity_cache)
+                    if options.only:
+                        connections.close_all()
+                        report={'success':True,'scope':'session-auth component with supporting account/identity fixtures only',
+                                'session_auth_cases':session_auth_cases,'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     from django.core.cache import cache
                     assert cache.get(f'impersonation-upload:{uid(12000)}:{uid(1104)}') is None, 'Go upload-grant revocation not visible in Django'
                     from TESTS.adapters.django.refresh_http import run as refresh_http
@@ -199,6 +211,7 @@ def main():
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
                                      'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
+                report['session_auth_cases']=session_auth_cases
             finally:
                 if started:
                     run([binaries / 'pg_ctl', '-D', work / 'postgres', '-m', 'immediate', '-w', 'stop'])
