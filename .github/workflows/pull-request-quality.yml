@@ -147,6 +147,7 @@ jobs:
             quality-reports/go-migration/associate-age-update/
             quality-reports/go-migration/audit-retention/
             quality-reports/go-migration/task-bodies/
+            quality-reports/go-migration/subscription-dates/
             quality-reports/go-migration/accounts/
 
   quality:

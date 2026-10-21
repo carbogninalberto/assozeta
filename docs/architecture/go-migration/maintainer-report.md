@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 12 implementing,
-5 requiring renewed review and 493 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 13 implementing,
+6 requiring renewed review and 491 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -218,12 +218,25 @@ across reset/token/age/retention in one private schema, including exact managed-
 cleanup between fixtures. Go race/vet, tagged vet, inventory drift and workflow
 lint pass. Current-head whole CI remains required.
 
+Subscription calendar/default calculations now pass 293 actual Django range cases
+and 36 real model-save cases, including date-change audits/indexes on the Django
+side. Go computes the defaults but does not yet persist/audit the subscription.
+The actual automatic archive task fails first on naive/aware comparison; an aware
+clock exposes a second nonexistent-PK attribute failure. Both leave all managed
+rows unchanged. The task is explicitly `needs_review`, not implemented as a Go
+no-op; its full supported archive workflow remains required. See
+`BE_GO/internal/service/subscription_dates.md`. Go race/vet, tagged oracle vet,
+all 329 current oracle cases, inventory checks and workflow lint pass. The last
+complete local accounts run predates retention/calendar; current-head whole CI
+remains required.
+
 Published `59ecdfa` whole quality run 39674013825 passed. Its independent manual
 dispatch 39674019168 remains running with editing disabled; PR-linked manual
 39674013814 was cancelled. Both `446c184` workflows (39677139217 and 39677139163)
 were subsequently cancelled. Published `1038495` quality 39678254736 and manual
-39678254710 are running at this checkpoint. None of these pending/cancelled runs
-is counted as success for the retention increment.
+39678254710 were subsequently cancelled. Published retention head `0973e53` has
+quality 39679361859 and manual 39679361517 pending at this checkpoint. None of
+these pending/cancelled runs is counted as success for the calendar increment.
 
 ## Remaining completion gates
 

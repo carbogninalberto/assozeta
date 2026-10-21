@@ -845,3 +845,8 @@ index deletion and concurrent index writers against actual Django and ten requir
 Go/PostgreSQL groups. `--only task-bodies` runs all four current task fixtures in
 one private schema (7 reset, 10 token, 8 age and 10 retention groups). These checks
 cover task bodies, not production scheduling/activation or historical migrations.
+
+`accounts.py --only subscription-dates` verifies 293 declared calendar cases and
+36 actual Django model saves, then requires every corresponding Go calculation
+case under race detection. It also records the two existing automatic-archive
+failures. Calendar/default parity does not establish complete save/archive parity.
