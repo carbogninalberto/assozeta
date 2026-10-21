@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -51,6 +52,10 @@ type roleClient struct {
 	duration *int32
 	external *string
 	session  string
+	serial   *string
+	token    MFATokenProvider
+	used     atomic.Bool
+	invalid  bool
 }
 
 // The SDK treats quotes in section names literally. Resolve a selected quoted
@@ -65,29 +70,34 @@ func sdkProfileName(profiles map[string]map[string]string, aliases map[string]st
 	return name
 }
 
-func newRoleClient(inner stscreds.AssumeRoleAPIClient, values map[string]string) (*roleClient, error) {
-	if utf8.RuneCountInString(values["role_arn"]) < 20 {
-		return nil, ErrConfiguration
-	}
+func newRoleClient(inner stscreds.AssumeRoleAPIClient, values map[string]string, token MFATokenProvider) (*roleClient, error) {
 	p := &roleClient{inner: inner, session: values["role_session_name"]}
+	p.invalid = utf8.RuneCountInString(values["role_arn"]) < 20
+	if serial, present := values["mfa_serial"]; present {
+		if token == nil {
+			return nil, ErrConfiguration
+		}
+		p.serial, p.token = aws.String(serial), token
+	}
 	if p.session == "" {
 		p.session = "botocore-session-" + strconv.FormatInt(time.Now().Unix(), 10)
 	}
 	if utf8.RuneCountInString(p.session) < 2 {
-		return nil, ErrConfiguration
+		p.invalid = true
 	}
 	if value, present := values["external_id"]; present {
 		if utf8.RuneCountInString(value) < 2 {
-			return nil, ErrConfiguration
+			p.invalid = true
 		}
 		p.external = aws.String(value)
 	}
 	if value, ok := pythonRoleInteger(values["duration_seconds"]); ok {
 		// STS's wire type is int32. Oversized integers cannot be valid STS durations.
 		if !value.IsInt64() || value.Int64() < 900 || value.Int64() > 1<<31-1 {
-			return nil, ErrConfiguration
+			p.invalid = true
+		} else {
+			p.duration = aws.Int32(int32(value.Int64()))
 		}
-		p.duration = aws.Int32(int32(value.Int64()))
 	}
 	return p, nil
 }
@@ -138,7 +148,27 @@ func pythonRoleInteger(raw string) (*big.Int, bool) {
 }
 
 func (p *roleClient) AssumeRole(ctx context.Context, in *sts.AssumeRoleInput, options ...func(*sts.Options)) (*sts.AssumeRoleOutput, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 	request := *in
+	if p.serial != nil {
+		if !p.used.CompareAndSwap(false, true) {
+			return nil, ErrCredentials
+		}
+		code, err := p.token(ctx, *p.serial)
+		if err != nil || ctx.Err() != nil {
+			return nil, ErrCredentials
+		}
+		// Botocore validates minimum lengths after prompting, and sends literal
+		// values to STS. Character patterns/maximums remain the service's policy.
+		if utf8.RuneCountInString(*p.serial) < 9 || utf8.RuneCountInString(code) < 6 {
+			return nil, ErrCredentials
+		}
+		request.SerialNumber, request.TokenCode = p.serial, aws.String(code)
+	}
+	if p.invalid {
+		return nil, ErrCredentials
+	}
 	request.DurationSeconds = p.duration
 	request.ExternalId = p.external
 	request.RoleSessionName = aws.String(p.session)

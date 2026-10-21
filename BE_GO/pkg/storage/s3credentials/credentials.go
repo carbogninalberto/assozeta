@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/endpointcreds"
 	"github.com/aws/aws-sdk-go-v2/credentials/processcreds"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/smithy-go/logging"
 )
 
@@ -23,11 +24,18 @@ var (
 )
 
 type Options struct {
-	AccessKey    string `json:"-"`
-	SecretKey    string `json:"-"`
-	SessionToken string `json:"-"`
-	Profile      string `json:"-"`
+	AccessKey    string           `json:"-"`
+	SecretKey    string           `json:"-"`
+	SessionToken string           `json:"-"`
+	Profile      string           `json:"-"`
+	MFAToken     MFATokenProvider `json:"-"`
 }
+
+// MFATokenProvider supplies a code for a trusted configured MFA device. The
+// callback must honor ctx, bound its own work and never log the code. New never
+// reads console input. Each role invokes this callback at most once per provider;
+// expiration or a failed attempt requires constructing a new provider, as in Boto3.
+type MFATokenProvider func(ctx context.Context, serial string) (string, error)
 
 func (o Options) String() string   { return "storage credential options (redacted)" }
 func (o Options) GoString() string { return o.String() }
@@ -97,6 +105,13 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 		}),
 		sdkconfig.WithProcessCredentialOptions(func(p *processcreds.Options) { p.Timeout = 10 * time.Second }),
 	}
+	if o.MFAToken != nil {
+		// Defer MFA to the context-aware role client below. Unsupported provider
+		// chains must fail closed if they reach this SDK fallback callback.
+		options = append(options, sdkconfig.WithAssumeRoleCredentialOptions(func(p *stscreds.AssumeRoleOptions) {
+			p.TokenProvider = func() (string, error) { return "", ErrCredentials }
+		}))
+	}
 	profile := o.Profile
 	if profile == "" {
 		// Boto3 gives AWS_DEFAULT_PROFILE precedence, including explicit emptiness.
@@ -141,7 +156,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	if cfg.Credentials == nil {
 		return nil, ErrConfiguration
 	}
-	cfg, err = secureProcessProviders(ctx, cfg, options, profiles, 0)
+	cfg, err = adaptProviders(ctx, cfg, options, profiles, o.MFAToken, 0)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()

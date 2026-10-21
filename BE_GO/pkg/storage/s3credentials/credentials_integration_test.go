@@ -52,7 +52,7 @@ func TestDjangoCredentialSelection(t *testing.T) {
 				}
 			}
 			before := os.Environ()
-			options := Options(tc.Options)
+			options := Options{AccessKey: tc.Options.AccessKey, SecretKey: tc.Options.SecretKey, SessionToken: tc.Options.SessionToken, Profile: tc.Options.Profile}
 			p, err := New(context.Background(), options, forbiddenHTTP{t})
 			var actual []string
 			if err == nil {
