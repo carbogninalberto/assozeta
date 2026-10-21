@@ -41,8 +41,7 @@ func DjangoSessionAudit(resolver SessionAuditResolver) echo.MiddlewareFunc {
 			// Django AuthenticationMiddleware fails because no session exists.
 			// Public proxy stripping is a separate routing concern.
 			if strings.HasPrefix(r.URL.Path, "/api/") && strings.HasPrefix(sessionHeader(r, "Authorization"), "Bearer ") {
-				c.Response().Header().Set("Content-Type", "text/html; charset=utf-8")
-				return loginRateError(c, domain.ErrInvalidScopedRequest)
+				return djangoServerError(c)
 			}
 			key, supplied := sessionCookie(sessionHeader(r, "Cookie"))
 			identity, err := resolver.Resolve(r.Context(), key)
@@ -62,7 +61,9 @@ func DjangoSessionAudit(resolver SessionAuditResolver) echo.MiddlewareFunc {
 				}
 			}}
 			if err != nil {
-				return err
+				// ASGI's convert_exception_to_response wraps AuditlogMiddleware;
+				// its lazy-user errors never reach ExceptionHandlerMiddleware.
+				return djangoServerError(c)
 			}
 			audit := requestAuditMetadata(r)
 			if identity.Actor != nil {

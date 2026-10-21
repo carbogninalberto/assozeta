@@ -90,5 +90,10 @@ func loginRateError(c echo.Context, err error) error {
 	if errors.Is(err, service.ErrLoginRateLimited) {
 		return c.Blob(429, "text/html; charset=utf-8", []byte("Too many requests, blocked."))
 	}
-	return c.HTML(500, "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n")
+	return djangoServerError(c)
+}
+
+// Django converts middleware exceptions before outer application handlers run.
+func djangoServerError(c echo.Context) error {
+	return c.Blob(500, "text/html; charset=utf-8", []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n"))
 }

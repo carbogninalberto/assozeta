@@ -17,7 +17,7 @@ import tempfile
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[3]
-NAMES={'DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
+NAMES={'SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
        'SOCIAL_AUTH_APPLE_ID_CLIENT':'apple','SOCIAL_AUTH_APPLE_ID_TEAM':'apple_team',
        'SOCIAL_AUTH_APPLE_ID_KEY':'apple_key','SOCIAL_AUTH_APPLE_ID_SECRET':'apple_secret',
        'JWT_SECRET_KEY':'jwt_private','JWT_PUBLIC_KEY':'jwt_public','DBPASSWORD':'database_password',
@@ -35,10 +35,10 @@ def main():
            isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id in NAMES for target in node.targets)]
     assert len(nodes)==len(NAMES)+1,'settings declaration coverage changed'
     code=compile(ast.Module(body=nodes,type_ignores=[]),'core.settings selected assignments','exec')
-    base={'DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
+    base={'SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
-    expected={'debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
+    expected={'session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
               'origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
@@ -104,7 +104,19 @@ def main():
     add('missing rate proxy inherits true default',lines='RATELIMIT_ENABLE=$MISSING\n')
     add('rate proxy cycle fails',lines='RATELIMIT_ENABLE=$RATE_ALIAS\nRATE_ALIAS=$RATELIMIT_ENABLE\n',error=True)
     add('process debug controls derived rate default',process={'DEBUG':'yes'},want={'debug':True,'rate_enabled':False})
-    assert len(cases)==55
+    add('missing required session secret',remove=('SECRET_KEY',),error=True)
+    add('empty session secret assignment',lines='SECRET_KEY=\n',want={'session_secret':''})
+    add('session secret proxy chain',lines='SECRET_KEY=$SESSION_ALIAS\nSESSION_ALIAS=$FINAL_ALIAS\nFINAL_ALIAS=synthetic-proxy-secret\n',want={'session_secret':'synthetic-proxy-secret'})
+    add('missing session secret proxy redacted',lines='SECRET_KEY=$sensitive-fixture-secret\n',error=True)
+    add('session secret proxy cycle',lines='SECRET_KEY=$SESSION_ALIAS\nSESSION_ALIAS=$SECRET_KEY\n',error=True)
+    add('session secret literal escapes',lines=r'SECRET_KEY="synthetic\nsecret\r\t"'+'\n',want={'session_secret':r'synthetic\nsecret\r\t'})
+    add('session secret does not support base64 override',lines='SECRET_KEY_B64=c3ludGhldGljLWlnbm9yZWQ=\n')
+    add('session secret base64 cannot supply missing value',remove=('SECRET_KEY',),lines='SECRET_KEY_B64=c3ludGhldGljLWlnbm9yZWQ=\n',error=True)
+    add('process session secret wins',process={'SECRET_KEY':'synthetic-process-secret'},want={'session_secret':'synthetic-process-secret'})
+    add('empty process session secret wins',process={'SECRET_KEY':''},want={'session_secret':''})
+    add('session secret file proxy reads process',lines='SECRET_KEY=$SESSION_ALIAS\n',process={'SESSION_ALIAS':'synthetic-process-secret'},want={'session_secret':'synthetic-process-secret'})
+    add('session secret quoted Unicode and spaces',lines="SECRET_KEY=' è synthetic # secret  '\n",want={'session_secret':' è synthetic # secret  '})
+    assert len(cases)==67
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:

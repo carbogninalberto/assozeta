@@ -13,7 +13,7 @@ func environment() map[string]string {
 		"DBTYPE": "POSTGRES", "DBNAME": "assozeta_contract", "DBUSER": "contract",
 		"DBPASSWORD": "special ' \\ @ : ? # password", "DBHOST": "/tmp/contract", "DBPORT": "5432",
 		"REDIS_HOST": "localhost", "REDIS_PASSWORD": "secret", "REDIS_PORT": "6379",
-		"DEBUG": "False", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public",
+		"SECRET_KEY": "synthetic-session-secret", "DEBUG": "False", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public",
 	}
 }
 func TestExistingDatabaseConfigurationPreservesValues(t *testing.T) {
@@ -86,7 +86,7 @@ func TestInvalidSettingsNeverExposeSecrets(t *testing.T) {
 }
 func TestDotenvDoesNotOverrideProcessAndKeepsQuotedValues(t *testing.T) {
 	path := filepath.Join(t.TempDir(), ".env")
-	if err := os.WriteFile(path, []byte("DEBUG=False\nDBTYPE=POSTGRES\nDBNAME=file\nDBUSER=contract\nDBPASSWORD='a # quoted password'\nDBHOST=localhost\nDBPORT=5432\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"), 0600); err != nil {
+	if err := os.WriteFile(path, []byte("SECRET_KEY=synthetic-session-secret\nDEBUG=False\nDBTYPE=POSTGRES\nDBNAME=file\nDBUSER=contract\nDBPASSWORD='a # quoted password'\nDBHOST=localhost\nDBPORT=5432\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("DBNAME", "process")

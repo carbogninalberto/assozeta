@@ -70,8 +70,9 @@ class LoginRateContracts(unittest.TestCase):
     def test_integer_limit_applies_even_outside_username(self):
         raw=b'{"other":'+b'1'*4300+b'}'
         self.admitted(self.request(raw),raw)
-        status,body,_=self.request(b'{"other":'+b'1'*4301+b'}')
+        status,body,headers=self.request(b'{"other":'+b'1'*4301+b'}')
         self.assertEqual(status,500);self.assertIn('Server Error (500)',body)
+        self.assertEqual(headers['Content-Type'],'text/html; charset=utf-8')
     def test_nonobjects_fail_before_account_but_consume_ip(self):
         for raw in (b'null',b'[]',b'42',b'true',b'"text"'):
             status,body,_=self.request(raw)

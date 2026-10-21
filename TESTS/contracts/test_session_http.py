@@ -88,6 +88,24 @@ class SessionHTTPContracts(unittest.TestCase):
         self.assertEqual(result[0],500);self.assertIn('Server Error (500)',result[1])
         self.assertIsNone(result[2].get('Set-Cookie'));self.assertIsNone(result[2].get('Vary'))
         self.check(self.request('sessionid=http-session-active',path='/api/fixture',headers={'Authorization':'bearer forged'}),actor=OWNER)
+    def session_error(self,key):
+        result=self.request('sessionid=http-session-'+key)
+        self.assertEqual(result[0],500)
+        self.assertEqual(result[1],'\n<!doctype html>\n<html lang="en">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n')
+        self.assertEqual(result[2]['Content-Type'],'text/html; charset=utf-8')
+        self.assertEqual(result[2]['Vary'],'Cookie')
+        self.assertIsNone(result[2].get('Set-Cookie'))
+    def test_malformed_cache_types_fail_without_cookie_revocation(self):
+        for kind in ('list','tuple','bool','integer','string','bytes','float'):
+            with self.subTest(kind=kind):self.session_error('invalid-'+kind)
+    def test_malformed_user_ids_fail_without_cookie_revocation(self):
+        for kind in ('string','list','float','negative'):
+            with self.subTest(kind=kind):self.session_error('invalid-id-'+kind)
+    def test_malformed_user_id_is_checked_before_backend_selection(self):
+        self.session_error('invalid-id-unknown-backend')
+    def test_oversized_hash_integer_fails_without_cookie_revocation(self):
+        for kind in ('integer','list','dict','tuple'):
+            with self.subTest(kind=kind):self.session_error('invalid-hash-'+kind)
     def test_methods_and_body_are_preserved(self):
         for method in ('GET','POST','PUT','PATCH','DELETE','OPTIONS'):
             self.check(self.request('sessionid=http-session-active',method=method,raw=b'\x00\xffbody'),actor=OWNER,raw=b'\x00\xffbody')

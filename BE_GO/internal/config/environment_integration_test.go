@@ -25,7 +25,7 @@ func TestDjangoEnvironmentInterop(t *testing.T) {
 		Expected   map[string]any
 		Error      bool
 	}
-	if json.Unmarshal(raw, &cases) != nil || len(cases) != 55 {
+	if json.Unmarshal(raw, &cases) != nil || len(cases) != 67 {
 		t.Fatal("invalid environment fixture")
 	}
 	for _, tc := range cases {
@@ -68,14 +68,14 @@ func TestDjangoEnvironmentInterop(t *testing.T) {
 			for _, value := range cfg.CSRFTrustedOrigins {
 				origins = append(origins, value)
 			}
-			actual := map[string]any{"debug": cfg.Debug, "rate_enabled": cfg.RateLimitEnabled, "google": cfg.GoogleClientID, "google_secret": cfg.GoogleClientSecret, "apple": cfg.AppleClientID, "apple_team": cfg.AppleTeamID, "apple_key": cfg.AppleKeyID, "apple_secret": cfg.AppleSecret,
+			actual := map[string]any{"session_secret": cfg.SessionSecret, "debug": cfg.Debug, "rate_enabled": cfg.RateLimitEnabled, "google": cfg.GoogleClientID, "google_secret": cfg.GoogleClientSecret, "apple": cfg.AppleClientID, "apple_team": cfg.AppleTeamID, "apple_key": cfg.AppleKeyID, "apple_secret": cfg.AppleSecret,
 				"jwt_private": cfg.JWTSigningKey, "jwt_public": cfg.JWTVerifyingKey, "database_password": db.Password, "redis_password": cfg.RedisPassword, "origins": origins, "family": cfg.FamilyRegistrationEnabled, "federation": cfg.FederationRegistrationEnabled, "multiple": cfg.MultipleRegistrationEnabled}
 			if !reflect.DeepEqual(actual, tc.Expected) {
 				t.Fatal("declared configuration values differ")
 			}
 			encoded, _ := json.Marshal(cfg)
 			for _, representation := range []string{fmt.Sprint(cfg), fmt.Sprintf("%+v", cfg), fmt.Sprintf("%#v", cfg), string(encoded)} {
-				for _, secret := range []string{cfg.GoogleClientSecret, cfg.AppleSecret, cfg.JWTSigningKey, cfg.JWTVerifyingKey, cfg.RedisPassword, db.Password} {
+				for _, secret := range []string{cfg.SessionSecret, cfg.GoogleClientSecret, cfg.AppleSecret, cfg.JWTSigningKey, cfg.JWTVerifyingKey, cfg.RedisPassword, db.Password} {
 					if len(secret) >= 8 && strings.Contains(representation, secret) {
 						t.Fatal("configuration representation exposes credentials")
 					}

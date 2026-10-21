@@ -882,3 +882,13 @@ entrypoint; WSGI and ASGI cookie decoding differ. No public route is newly wired
 General session writes/rotation, complete exception/global middleware policy,
 configuration and public-login composition remain open. See
 [`session_audit.md`](../../../BE_GO/internal/middleware/session_audit.md).
+
+Session configuration now has 67 declared settings comparisons, including the
+existing required `SECRET_KEY` with literal/proxy/process-precedence rules and
+redaction. The session HTTP suite now has 27 portable contracts: 16 malformed
+cache/UUID/hash inputs verify Django ASGI's generic HTML 500, unchanged cache
+bytes, retained Cookie Vary and no revocation. Cache readback runs before each
+fixture reset. These production error responses are converted inside Django's
+middleware chain before the application's JSON exception handler can catch them.
+Public composition, general session writes and complete middleware coverage
+remain open; see `BE_GO/internal/middleware/session_audit.md`.

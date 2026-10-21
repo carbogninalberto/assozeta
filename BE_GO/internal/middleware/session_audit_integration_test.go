@@ -3,11 +3,13 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http/httptest"
 	"os"
@@ -54,6 +56,12 @@ func TestSessionAuditPortableHTTP(t *testing.T) {
 			decoded, err := base64.StdEncoding.DecodeString(value)
 			if err != nil {
 				return err
+			}
+			// The Django adapter seeds all payloads before launching this server.
+			current, err := client.Get(c.Request().Context(), key).Bytes()
+			deletedWrong := strings.HasSuffix(key, "http-session-wrong") && errors.Is(err, redis.Nil)
+			if !deletedWrong && (err != nil || !bytes.Equal(current, decoded)) {
+				return errors.New("HTTP session changed unexpected cache data")
 			}
 			if err := client.Set(c.Request().Context(), key, decoded, 300*time.Second).Err(); err != nil {
 				return err

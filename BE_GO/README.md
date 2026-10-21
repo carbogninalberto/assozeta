@@ -118,7 +118,8 @@ See `internal/config/README.md` for the 55-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
-The server requires valid existing `JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or
+The server requires the existing `SECRET_KEY` and valid
+`JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or
 their supported base64 variants); invalid keys stop startup without logging them.
 
 Business migration ownership remains in Django. The Dockerfile follows the

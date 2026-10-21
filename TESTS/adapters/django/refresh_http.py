@@ -72,7 +72,7 @@ def run(work, log, tool_env, cache_address):
         environment={**tool_env,'DBTYPE':'POSTGRES','DBNAME':'assozeta_contract_accounts','DBUSER':'contracts',
             'DBPASSWORD':'test-only','DBHOST':str(work),'DBPORT':'5432','REDIS_HOST':redis_host,'REDIS_PORT':redis_port,
             'REDIS_USERNAME':'default','REDIS_PASSWORD':'synthetic-identity-only','GO_LISTEN_ADDR':f'127.0.0.1:{port}',
-            'JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY,
+            'SECRET_KEY':'synthetic-session-secret','JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY,
             'DEBUG':'False','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
             'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET}
         api=subprocess.Popen([str(work/'refresh-server')],cwd=work,env=environment,stdout=log,stderr=subprocess.STDOUT)
