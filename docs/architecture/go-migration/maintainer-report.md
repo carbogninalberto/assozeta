@@ -238,7 +238,8 @@ manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
 `30f9c10` quality 39681839219 and manual 39681839372 were cancelled.
 `6260a8e` quality 39684049859 and manual 39684049515 were cancelled.
 `91723e4` quality 39685388758 and manual 39685388740 were cancelled.
-`a4ca276` quality 39686967161 and manual 39686966726 are running at this checkpoint.
+`a4ca276` quality 39686967161 passed; manual 39686966726 was cancelled.
+`b9a34ee` quality 39689822168 and manual 39689821977 are running at this checkpoint.
 None of these running/cancelled runs is counted as success for later increments.
 
 Payment description calculation now passes 81 real Django-save cases and matching
@@ -327,6 +328,15 @@ checks pass unchanged. Evidence:
 `quality-reports/go-migration/medical-orphan-cleanup/full-accounts-results.json`.
 The separate 5,045-case medical S3 key adapter also passes; provider execution,
 historical schemas and backend switching remain outside these checks.
+
+
+The S3 deletion dependency now passes seven real MinIO groups and four Django
+storage cases, including batches through 1,000 objects, version/delete-marker
+readback, real retention partial failure and credential denial. Wire checks cover
+response bounds, cancellation, deadlines, admission and fixed errors. It is not
+wired to the medical task: durable intent, uploads/references and restore fencing
+remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
+`TESTS/adapters/django/s3_objects.py`.
 
 ## Remaining completion gates
 

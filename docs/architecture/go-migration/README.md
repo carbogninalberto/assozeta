@@ -1125,3 +1125,11 @@ checks pass unchanged. Evidence:
 `quality-reports/go-migration/medical-orphan-cleanup/full-accounts-results.json`.
 The separate 5,045-case medical S3 key adapter also passes; provider execution,
 historical schemas and backend switching remain outside these checks.
+
+The S3 deletion dependency now passes seven real MinIO groups and four Django
+storage cases, including batches through 1,000 objects, version/delete-marker
+readback, real retention partial failure and credential denial. Wire checks cover
+response bounds, cancellation, deadlines, admission and fixed errors. It is not
+wired to the medical task: durable intent, uploads/references and restore fencing
+remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
+`TESTS/adapters/django/s3_objects.py`.
