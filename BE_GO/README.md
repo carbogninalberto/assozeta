@@ -188,3 +188,12 @@ operational migration has separate ownership and runs only in disposable tests.
 Run `python TESTS/adapters/go/jobs.py` from the repository root. See
 `internal/repository/jobs.md` and `migrations/README.md`; executor/task/scheduler
 implementation and release activation remain unfinished.
+
+
+`internal/service/JobExecutor` now executes registered service methods with lease
+renewal, bounded slots, version checks and cooperative shutdown. It acquires the
+existing restore lease before claiming, preserves attempt budgets during maintenance
+and rejects jobs preceding a completed restore. Thirteen PostgreSQL executor groups
+and thirteen actual Django/Go admission comparisons pass; see
+`internal/service/job_executor.md`. Application tasks, a production worker command,
+scheduler and activation ownership are still unfinished.

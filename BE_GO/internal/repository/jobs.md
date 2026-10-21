@@ -3,7 +3,9 @@
 This is the Assozeta extension required by specification §5.5, following the
 inspected `5025d2a` Kuayle `DevMachineRepository` claim/lease pattern. Kuayle does
 not supply a general Celery queue. No Celery message serialization is assumed.
-The repository is not yet connected to the HTTP root, a worker, or a scheduler.
+The repository is used by the explicit `service.JobExecutor` and its ordinary-job
+restore admission. It is not connected to the HTTP root, a production worker
+entrypoint or a scheduler.
 Django retains every existing task and scheduling owner.
 
 `JobIntent` records a UUID, trusted association scope, kind, argument version,
@@ -11,7 +13,8 @@ JSON payload, stable idempotency key, availability and explicit attempt limit.
 The nil association UUID is reserved for instance-wide work, never a fallback for
 missing authentication. These operational references deliberately have no foreign
 keys into Django tables: jobs must remain inspectable after business deletion or
-restore. The executor still needs restore fencing before it can perform effects.
+restore. The executor applies ordinary-job restore fencing before dispatch;
+replacement restore and coordinated backend switching remain separate work.
 
 `Enqueue` requires the caller's sqlx transaction. Business mutations and durable
 intent commit or roll back together. Deduplication is permanent within association,
@@ -73,9 +76,11 @@ the actual SQL plan, is under `quality-reports/go-migration/jobs/`. This fixture
 uses a private cluster and synthetic business/history tables, not historical
 Django migrations. No production database or release was changed.
 
+The executor now supplies version checks, heartbeats, cooperative drain and
+ordinary-job restore/stale-task admission; see `internal/service/job_executor.md`.
 Remaining work includes task services and their complete ledger contracts,
-executor dispatch/version policy, heartbeat loop, shutdown/draining, task-specific
-retry/backoff/timeouts/rates, progress, cooperative cancellation, restore/stale-task
-admission, scheduler occurrences and ownership, backend switching, retention,
+production registration and process supervision, task-specific retry/backoff/
+timeouts/rates, progress and cancellation APIs, scheduler occurrences and ownership,
+backend switching, retention,
 operator controls, and normal migration/image/updater delivery. No task becomes
 implemented or verified solely because this repository exists.

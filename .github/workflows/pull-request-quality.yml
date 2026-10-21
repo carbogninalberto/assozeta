@@ -139,6 +139,7 @@ jobs:
             quality-reports/go-migration/restore-admission/
             quality-reports/go-migration/runtime.json
             quality-reports/go-migration/jobs/
+            quality-reports/go-migration/job-executor/
             quality-reports/go-migration/accounts/
 
   quality:

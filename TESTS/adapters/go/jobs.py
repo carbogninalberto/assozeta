@@ -61,6 +61,36 @@ def main():
                 expected = {'TestDurableJobsPostgres/' + name.replace(' ', '_') for name in expected}
                 passed = {event.get('Test') for event in events if event['Action'] == 'pass' and '/' in event.get('Test', '')}
                 assert passed == expected and not any(event['Action'] == 'skip' for event in events), 'missing or skipped queue scenario'
+                execution = subprocess.run(['go', 'test', '-race', '-tags=jobsintegration', './internal/service', '-run', '^TestJobExecutorPostgres$', '-json'],
+                               cwd=ROOT / 'BE_GO', env={**env, 'ASSOZETA_JOB_TEST_DSN': f'host={work} user=contracts dbname=job_contracts sslmode=disable'},
+                               capture_output=True, text=True, timeout=120)
+                (output / 'executor-test.jsonl').write_text(execution.stdout)
+                execution_events = [json.loads(line) for line in execution.stdout.splitlines()]
+                for event in execution_events:
+                    if event.get('Output'):
+                        print(event['Output'], end='')
+                if execution.stderr:
+                    print(execution.stderr)
+                execution.check_returncode()
+                execution_passed = {event.get('Test') for event in execution_events if event['Action'] == 'pass' and '/' in event.get('Test', '')}
+                expected_execution = {
+                    'service owns atomic effects and completion',
+                    'declared retries retain publication time',
+                    'version panic timeout and missing completion fail explicitly',
+                    'heartbeat retains a long running job',
+                    'lease loss cancels the handler without stale writes',
+                    'shutdown preserves an admitted lease failure',
+                    'blocked heartbeat fails closed and database pool recovers',
+                    'disabled restore coordination and database failure preserve admission',
+                    'maintenance defers before claim without spending attempts',
+                    'completed restore rejects stale jobs before effects',
+                    'shutdown stops intake and drains admitted work',
+                    'drain cancellation keeps restore lock until handler exits',
+                    'worker concurrency is bounded and cancellation joins slots',
+                }
+                expected_execution = {'TestJobExecutorPostgres/' + name.replace(' ', '_') for name in expected_execution}
+                assert execution_passed == expected_execution and not any(event['Action'] == 'skip' for event in execution_events), 'missing or skipped executor scenario'
+                result['executor_scenarios'] = len(execution_passed)
                 result.update(success=True, private_postgres=True, scenario_groups=len(passed),
                               query_sizes=[1, 16, 128, 512], plan_dataset=4096,
                               business_schema='synthetic transaction/ownership sentinels only')
