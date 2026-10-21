@@ -22,7 +22,8 @@ made that the reference implements a general durable queue or distributed hub.
 The current implementation uses one Assozeta-owned module in **`BE_GO/`**.
 The earlier document's `BE-go/` path and final Django-retirement phase do not
 supersede this request's coexistence requirement. Django continues to own all
-existing business tables. No Go migration has been applied or introduced.
+existing business tables. One additive Go operational job migration has been
+introduced and applied only in disposable tests, with its own migration history.
 
 Current `main` has retired software subscription gating, platform checkout and
 SaaS nurturing. `auto_move_users_to_base_plan` and `nurturing_warm_leads` remain
@@ -484,12 +485,12 @@ Every row below is required before this draft can claim completion.
 | Requirement | Current evidence | Remaining acceptance work |
 | --- | --- | --- |
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
-| 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
+| 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths and explicit durable-job extension | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | 87 declared DB/Redis/auth/CORS/restore path and precedence cases | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
-| 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected; shared HTTP lease implemented | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
+| 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository with lease/crash/concurrency tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
 | 10. Independent specification | New portable health tests and real Go harness | Full Go fixture adapter, all capability contracts, differential durable effects, browser workflows |
@@ -994,3 +995,21 @@ fixture adapter `runtime.py` remains intact. Forty declared CORS URL comparisons
 pass on both the exact interpreter and the shipped-style image; Go parsing and
 explicit JSON expectations were corrected against production. Earlier scoped
 evidence does not imply all historical runtime-dependent checks were correct.
+
+
+### Durable operational jobs
+
+The PostgreSQL job repository is an Assozeta extension following the pinned
+Kuayle operation/lease pattern. Transactional enqueue/completion, permanent scoped
+deduplication, lease renewal/expiry/fencing, bounded attempts and delay, pending
+cancellation, concurrent claims and actual SIGKILL recovery pass on private
+PostgreSQL. Ten scenario groups include 16 competing publishers, eight consumers,
+one claim query across 1/16/128/512 jobs and an inspected 4,096-job plan. The plan
+was corrected after a test exposed an unbounded candidate scan.
+
+The separate additive golang-migrate history owns only Go operational tables and
+refuses destructive down migration. No runtime or updater invokes it yet, and
+no Celery task or schedule has moved. Executor loops, per-task services/policies,
+restore fencing and authoritative scheduling remain open. See
+[the repository contract](../../../BE_GO/internal/repository/jobs.md) and
+[migration ownership](../../../BE_GO/migrations/README.md).

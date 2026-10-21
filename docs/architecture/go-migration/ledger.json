@@ -17319,7 +17319,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/printing_tasks.py:print_document_customer_invoice",
@@ -17356,7 +17358,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/printing_tasks.py:print_document_invoice",
@@ -17393,7 +17397,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/printing_tasks.py:print_document_medical_appointment",
@@ -17430,7 +17436,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:association_quote_assign",
@@ -17467,7 +17475,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:auto_archive_subscription",
@@ -17504,7 +17514,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:auto_delete_orphan_medical_certificate",
@@ -17541,7 +17553,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:auto_mark_attendance",
@@ -17578,7 +17592,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:auto_move_users_to_base_plan",
@@ -17618,7 +17634,8 @@
       ],
       "evidence": [],
       "notes": [
-        "Intentional software-plan/lead-nurturing retirement on current main. Existing Django handlers drain historical messages with deprecated=true; migration 0430 disables their database schedules. Go must preserve queue-drain compatibility, not revive SaaS effects."
+        "Intentional software-plan/lead-nurturing retirement on current main. Existing Django handlers drain historical messages with deprecated=true; migration 0430 disables their database schedules. Go must preserve queue-drain compatibility, not revive SaaS effects.",
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
       ]
     },
     {
@@ -17656,7 +17673,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:check_workflows_trigger",
@@ -17693,7 +17712,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:check_workflows_trigger_cron",
@@ -17730,7 +17751,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:cleanup_old_exports_task",
@@ -17767,7 +17790,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:clear_deleted_subscription",
@@ -17804,7 +17829,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:clear_expired_subscription_tokens",
@@ -17841,7 +17868,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:delete_old_audit_logs",
@@ -17878,7 +17907,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:delete_users_with_request",
@@ -17915,7 +17946,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:export_association_data",
@@ -17953,7 +17986,10 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Main reconciliation 06bac65: export_association_data no longer reads nonexistent service.skipped_records after successful archive creation; preserve successful completion and verify the task contract in Go.",
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:export_invoices_to_zip",
@@ -17990,7 +18026,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:generate_coupon_if_not_exists",
@@ -18027,7 +18065,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:import_association_data",
@@ -18064,7 +18104,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:mark_as_paid_payments_checking_stripe",
@@ -18101,7 +18143,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:nurturing_warm_leads",
@@ -18141,7 +18185,8 @@
       ],
       "evidence": [],
       "notes": [
-        "Intentional software-plan/lead-nurturing retirement on current main. Existing Django handlers drain historical messages with deprecated=true; migration 0430 disables their database schedules. Go must preserve queue-drain compatibility, not revive SaaS effects."
+        "Intentional software-plan/lead-nurturing retirement on current main. Existing Django handlers drain historical messages with deprecated=true; migration 0430 disables their database schedules. Go must preserve queue-drain compatibility, not revive SaaS effects.",
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
       ]
     },
     {
@@ -18179,7 +18224,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:renew_memberships_payments",
@@ -18216,7 +18263,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:reset_email_balance",
@@ -18253,7 +18302,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_email_html",
@@ -18290,7 +18341,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_email_template",
@@ -18327,7 +18380,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_email_text",
@@ -18364,7 +18419,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_expired_certificate_email",
@@ -18401,7 +18458,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_expiring_certificate_email",
@@ -18438,7 +18497,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_reminders",
@@ -18475,7 +18536,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_updated_certificate_email",
@@ -18512,7 +18575,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:send_user_partial_registration_email",
@@ -18549,7 +18614,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:update_age_of_associates",
@@ -18586,7 +18653,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/application/tasks.py:workflow_block_execute",
@@ -18623,7 +18692,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/core/tasks.py:send_mail_async",
@@ -18661,7 +18732,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/docmanager/tasks.py:save_binary_to_storage",
@@ -18698,7 +18771,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/docmanager/tasks.py:save_to_storage",
@@ -18735,7 +18810,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/instance/sso/tasks.py:maintain_bakney_pairings",
@@ -18772,7 +18849,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/instance/tasks.py:cleanup_data_restores",
@@ -18809,7 +18888,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "task:BE/instance/tasks.py:restore_instance_data",
@@ -18852,7 +18933,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md."
+      ]
     },
     {
       "id": "websocket:BE/application/chat/routing.py:ws/agent/ -> consumers.AgentConsumer.as_asgi()",

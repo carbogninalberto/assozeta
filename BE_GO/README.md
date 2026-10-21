@@ -180,3 +180,11 @@ Application-wide Django oracles require the Python version in `BE/Dockerfile`
 (currently 3.13.2). Run `TESTS/adapters/django/runtime.py` to verify your interpreter.
 The production parser's bracketed-origin checks and JSON trailing-comma errors
 supersede earlier local Python 3.12.6 expectations.
+
+
+The PostgreSQL job repository now provides transactional intent/completion, scoped
+deduplication, bounded lease claiming/recovery and attempt accounting. Its additive
+operational migration has separate ownership and runs only in disposable tests.
+Run `python TESTS/adapters/go/jobs.py` from the repository root. See
+`internal/repository/jobs.md` and `migrations/README.md`; executor/task/scheduler
+implementation and release activation remain unfinished.

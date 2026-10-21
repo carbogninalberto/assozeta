@@ -36,8 +36,11 @@ entry and historical database schedules.
 The implementation follows the inspected specification at `4d0f68d` and its pinned
 Kuayle revision `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one `BE_GO/` module,
 Echo handlers, DTOs, context-aware services, explicit constructors and sqlx/pgx
-repositories. Infrastructure/provider clients have explicit interfaces. No Go
-migration changes existing business tables. Redis interoperability is implemented
+repositories. Infrastructure/provider clients have explicit interfaces. The durable
+job repository is an explicit Assozeta extension, following the pinned operation
+lease pattern. Its additive migration owns only Go operational tables and a
+separate golang-migrate history; it is not invoked by the application or updater.
+No Go migration changes existing business tables. Redis interoperability is implemented
 only for specifically characterized cache protocols, not assumed for Channels or
 Celery payloads.
 
@@ -63,6 +66,7 @@ immutable manual-package boundary delivered by PR #20.
 | CORS | 51 portable HTTP methods per backend across five policies, 40 declared URL comparisons and four actual-application-root methods preserve origin policy, preflight bypass, body bytes, Vary, streaming, concurrency and malformed-list error timing. Model/session readback stays unchanged. Five actual Go preflight paths still work with PostgreSQL and Redis unavailable. Complete global middleware and versioned/browser routing remain open. |
 | Security headers | Six portable methods per backend verify current Django defaults, preservation of explicit/empty fields, response errors, streaming, forwarded protocol, concurrency and CORS preflight bypass. Five actual-root methods verify health, missing Bearer, CSRF/method denials, missing route and preflight. Full trusted-host/restore execution/proxy policy remains open. |
 | Restore HTTP admission | 42 portable methods per backend cover six modes on real Django ASGI and the compiled Go root, with unchanged model/cache state. Shared/exclusive flock interoperability, in-flight HTTP, panic release and SIGKILL recovery pass in both process directions. PostgreSQL checks one SELECT per unsafe admission over 1/16/128/512 receipts, no pending SELECT for reads, and 32 concurrent admissions in four connections; EXPLAIN uses the existing partial index. Full restore execution/upload/recovery, stale tasks, worker/scheduler and stream/WS coordination remain open. |
+| Durable job repository | Ten private PostgreSQL scenario groups cover atomic intent/completion, permanent scoped deduplication, renewal/expiry/fencing, bounded attempts/backoff, pending cancellation, 16 publishers, eight consumers, SIGKILL recovery and four-connection query bounds. One claim query across 1/16/128/512 rows; the actual 4,096-job plan uses bounded indexed branches after a failing scan test. Four concurrent migrators preserve a separate additive history. This uses synthetic business/history tables, not historical Django migrations. No task, executor or schedule is activated. |
 | Rate admission | 14 bidirectional Django/Go Redis counter cases check keys, inclusive windows, thresholds and nonrenewed TTLs. Sixty-four concurrent Go calls admit five and deny 59 using 127 writes and at most four connections. Actual-key expiration races, paused Redis deadlines, no retries and pool reuse pass. |
 | Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
 | Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 36 portable refresh methods per backend on actual Django ASGI and the Go executable. Refresh reserializes/signs unchanged claims/JTI/expiry. Denied refresh issues no BKN_AUTH; stale-session deletion may accompany it. Session identity cannot replace Bearer/scope or token identity, and 32 mixed concurrent requests agree. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
@@ -133,6 +137,18 @@ quality/manual baseline remains `dbf1beb` (39593769742 and 39593769720).
 Full access/import/lifecycle/manual workflows that call these tombstones still
 need Go implementation and verification; see
 `BE_GO/internal/handler/retired_billing.md`.
+
+The latest durable-job increment passes ten explicitly required PostgreSQL
+scenario groups with no missing/skipped tests. Local Go race/vet, tagged queue
+vet, inventory/drift, actionlint, formatting, health/dependency recovery and the
+non-root Linux image build pass. Embedded SQL files are present in that image;
+no deployment invokes the migration yet. The existing full accounts and provider
+evidence above comes from the preceding restore/runtime increment. The new
+queue is unused by those application paths; its CI step runs independently.
+Published `ba38c00` quality/manual runs (39667678239 and 39667678229) were still
+in progress at this checkpoint, including the Go accounts step. The preceding
+`530c791` quality run 39664404614 ultimately failed. No unfinished workflow is
+counted as passing CI.
 
 ## Remaining completion gates
 
