@@ -197,3 +197,9 @@ and rejects jobs preceding a completed restore. Thirteen PostgreSQL executor gro
 and thirteen actual Django/Go admission comparisons pass; see
 `internal/service/job_executor.md`. Application tasks, a production worker command,
 scheduler and activation ownership are still unfinished.
+
+The daily communication counter reset has an explicit instance-scoped service and
+repository, with atomic fenced completion and preserved legacy handled-error behavior.
+Seven real PostgreSQL groups and actual Django readback pass. It is not registered
+in a production worker and has no Go schedule. See
+`internal/service/email_balance_reset.md`.

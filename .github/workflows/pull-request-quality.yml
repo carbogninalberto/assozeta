@@ -62,7 +62,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.golang == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # The expanded real-Django/Go suite plus setup/image checks exceeds 15 min.
+    # Individual adapters retain their own bounded subprocess deadlines.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -140,6 +142,7 @@ jobs:
             quality-reports/go-migration/runtime.json
             quality-reports/go-migration/jobs/
             quality-reports/go-migration/job-executor/
+            quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/accounts/
 
   quality:

@@ -18309,27 +18309,48 @@
           "name": "'reset_communication_daily_email_balance'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/email_balance_reset.go",
+        "BE_GO/internal/repository/email_balance_reset.go",
+        "BE_GO/internal/service/email_balance_reset.go",
+        "BE_GO/internal/service/job_executor.go",
+        "BE_GO/internal/service/job_restore_admission.go"
+      ],
+      "dependencies": [
+        "BE/communications/models.py",
+        "BE/core/celery.py",
+        "BE/core/settings.py",
+        "BE/instance/restore/task_base.py",
+        "BE/instance/scheduler.py",
+        "BE_GO/internal/repository/jobs.go"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "No Python args/kwargs. Go v1 empty JSON object, trusted instance scope (nil UUID), running fenced job.",
+        "response": "Django None; Go completed operational job with SQL NULL result.",
+        "errors": "Legacy body catches UPDATE exceptions and returns None without retry. Go rolls back the failed UPDATE, emits only a fixed diagnostic code and completes the handled outcome in a fresh transaction. Cancellation/rollback/completion failure or stale lease propagates; broker/operational failure parity is not complete.",
+        "authentication": "Internal task; no HTTP actor. Only explicit future scheduler/service composition may publish instance work.",
+        "permissions": "No association-role gate; never expose the instance-scope envelope as a public request.",
+        "resource_scope": "All CommunicationConfiguration rows with daily_email_balance>0, including NULL association and soft-deleted associations; no manager visibility filter.",
+        "side_effects": "Set positive daily_email_balance to zero with one bulk UPDATE; preserve all other columns. No model save hooks, auditlog, notifications, SMTP/provider calls or child jobs. Go adds operational completion.",
+        "transaction": "Django one autocommit UPDATE; Go transaction joins bulk UPDATE and fenced job completion. Stale/completed attempt replay rolls back business effects. Stable occurrence-key deduplication preserves later usage.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/email_balance_reset.py",
+        "TESTS/adapters/django/accounts.py --only email-balance-reset",
+        "BE_GO/internal/service/email_balance_reset_integration_test.go"
+      ],
+      "evidence": [
+        "Actual Django task body passes empty/mixed association/NULL/deleted/zero/max-int/repeated reset and one-query cases at 1/16/128/512 rows. Real PostgreSQL trigger failure is caught with None result and no partial update. Go initially fails compilation for missing implementation, then all seven declared PostgreSQL integration groups pass under race detection; Django reads Go-written counters and all unrelated managed models unchanged. Evidence: quality-reports/go-migration/email-balance-reset/.",
+        "Go service uses four statements for 0/1/16/128/512 positive counters within 512 configurations. EXPLAIN shows intentional global bulk UPDATE with sequential scan; no constant-work or latency claim. Tests cover invalid envelopes before SQL, later-usage preservation on replay, stale token rollback, redacted handled SQL failures and blocked UPDATE cancellation/pool recovery."
+      ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "Task body implemented but not registered in production. Generic executor/restore admission has separate thirteen-group evidence; no task-level scheduler, backend switching, deployment or historical migration claim. See BE_GO/internal/service/email_balance_reset.md.",
+        "Actual Celery policy captured: acks_late=false, max_retries=3, default_retry_delay=180, no rate/hard/soft limit, result retained, track_started=false, UTC. The task body never retries. Static midnight declaration is absent from initialized beat_schedule and the fresh fixture Beat table; historical persisted schedules/operator overrides remain unresolved. No timer is invented or activated.",
+        "A future publisher must choose and verify durable occurrence keys, attempt/time limits and authoritative ownership. Existing Django early acknowledgement and swallowed errors are distinct from Go durable operational failure/recovery semantics. Concurrent SMTP accounting, realistic scale and lifecycle gates remain open."
       ]
     },
     {
