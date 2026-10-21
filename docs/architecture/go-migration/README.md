@@ -87,10 +87,10 @@ python3 -m TESTS.inventory.catalog --check  # fail on drift
 python TESTS/adapters/django/inventory.py
 ```
 
-Two retired tasks and both legacy software-billing routes are explicitly classified. Both health routes, login/refresh,
-the two identifier checks, 2FA status and the partial audit-index connection are `implementing`,
-not `verified`; 497 other rows remain uncharacterized and five changed manual/export
-rows need review against the new baseline. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
+Two retired tasks and both legacy software-billing routes are explicitly classified.
+The ledger currently has 4 deprecated, 14 implementing, 6 needing review and 490
+uncharacterized declarations; none is verified. Implementing entries include
+partial HTTP, audit, task and model-hook components. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
 
@@ -1091,3 +1091,10 @@ actual rehash writes retain conflict detection and atomic rollback. Six forced
 PostgreSQL groups cover unrelated writes, password reset, current-account revocation,
 paging and cancellation. This does not complete public login or account/session
 lifecycle parity. See [the credential contract](../../../BE_GO/internal/service/password_login.md#concurrent-login-finalization-and-credential-resets).
+
+Existing-payment background preparation now batches category, invoice/account and
+description relationship reads with explicit association predicates. Eight required
+PostgreSQL groups compare actual Django descriptions, exercise eleven denial inputs
+and inspect a plan over 4,096 course relations. Full payment writes/audits and
+automatic archive remain unfinished; see
+[the component contract](../../../BE_GO/internal/service/payment_save_inputs.md).

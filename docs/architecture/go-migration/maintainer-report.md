@@ -235,7 +235,8 @@ result is exact-head evidence for `59ecdfa`, not for later components. The PR-li
 manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
 `0973e53` were subsequently cancelled. Published calendar head `0003cc6` quality
 39680784844 and manual 39680784761 were subsequently cancelled. Payment head
-`30f9c10` quality 39681839219 and manual 39681839372 are running at this checkpoint.
+`30f9c10` quality 39681839219 and manual 39681839372 were cancelled.
+`6260a8e` quality 39684049859 and manual 39684049515 are running at this checkpoint.
 None of these running/cancelled runs is counted as success for later increments.
 
 Payment description calculation now passes 81 real Django-save cases and matching
@@ -245,7 +246,8 @@ The actual default-category lookup selects a deleted foreign-association categor
 which remains a required scope correction before Go persistence. Stored and pending
 metadata are distinguished, including non-string CharField behavior. The model hook
 is `implementing`, not verified; see `BE_GO/internal/service/payment_description.md`.
-Full atomic payment save, batch relationship reads and automatic archive remain open.
+Full atomic payment save and automatic archive remain open; batch reads are now
+implemented as the separate component below.
 Go race/vet, tagged oracle vet, inventory/drift, formatting and workflow lint pass.
 The full production-Python accounts run at `30f9c10` passed retention, calendar and
 payment-description stages, then failed an eight-concurrent-session assertion:
@@ -268,6 +270,18 @@ confirm the actual rehash lock wait before cancellation. Results are preserved i
 Go race/vet, tagged integration vet, inventory/drift, formatting and workflow lint
 pass. See `BE_GO/internal/service/password_login.md`. These are current-model
 component checks; public login and backend activation remain unfinished.
+
+Existing-payment background preparation now passes eight required PostgreSQL
+groups with twelve actual-Django descriptions and eleven denial inputs. It reads
+up to 512 owned payments in one statement, keeps historical relationship visibility
+and explicitly corrects foreign category/title selection. Transaction visibility,
+32 concurrent reads in four connections and actual lock cancellation/recovery pass.
+The executed plan over 4,096 course relations uses the existing payment FK index;
+the primary payment scan remains sequential. No constant-work or latency claim is
+made. Full managed snapshots remain unchanged. See
+`BE_GO/internal/service/payment_save_inputs.md`. The preceding full accounts success
+predates this reader; its eight focused groups are the current new-component
+evidence. Full mutation locking, audits and automatic archive remain open.
 
 ## Remaining completion gates
 

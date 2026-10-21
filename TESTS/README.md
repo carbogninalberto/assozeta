@@ -864,3 +864,11 @@ The fixture checks read-only credential snapshots, stale rehash/reset protection
 active/deleted revocation, page 129, cancellation and pool recovery. The full
 accounts run also retains the original real-hash and eight-concurrent-session
 checks. See `BE_GO/internal/service/password_login.md`.
+
+`accounts.py --only payment-save-inputs` compares twelve actual model-save
+descriptions with bounded Go background preparation. Eight required PostgreSQL
+groups cover eleven denial inputs, category defaults, historical relationships,
+caller transactions, batch limits, query/pool bounds, cancellation and an executed
+plan over 4,096 course relations. Full accounts includes the fixture. This reads
+existing payments; complete mutations, audits and automatic archive remain open.
+See `BE_GO/internal/service/payment_save_inputs.md`.
