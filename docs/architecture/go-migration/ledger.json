@@ -7556,7 +7556,10 @@
         "BE_GO/pkg/storage/loginimage/tga_file.go",
         "BE_GO/pkg/storage/loginimage/qoi_header.go",
         "BE_GO/pkg/storage/loginimage/qoi_pixels.go",
-        "BE_GO/pkg/storage/loginimage/qoi_file.go"
+        "BE_GO/pkg/storage/loginimage/qoi_file.go",
+        "BE_GO/pkg/storage/loginimage/xbm_header.go",
+        "BE_GO/pkg/storage/loginimage/xbm_pixels.go",
+        "BE_GO/pkg/storage/loginimage/xbm_file.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7693,7 +7696,11 @@
         "BE_GO/pkg/storage/loginimage/qoi_test.go",
         "BE_GO/pkg/storage/loginimage/qoi_file_test.go",
         "BE_GO/pkg/storage/loginimage/qoi_integration_test.go",
-        "TESTS/adapters/django/login_qoi.py"
+        "TESTS/adapters/django/login_qoi.py",
+        "BE_GO/pkg/storage/loginimage/xbm_test.go",
+        "BE_GO/pkg/storage/loginimage/xbm_file_test.go",
+        "BE_GO/pkg/storage/loginimage/xbm_integration_test.go",
+        "TESTS/adapters/django/login_xbm.py"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7716,7 +7723,8 @@
         "PPM-family pipeline: 429 declared header/pixel/whole-file cases cover PBM/PGM/PPM, grayscale PFM and PIL CMYK/RGBA/P extensions; Pillow, the actual Django helper and shipped non-root read-only/networkless image agree. Coverage includes Python numeric syntax, exact header consumption, plain versus binary range/scaling rules, ties-to-even rounding, I/F/P JPEG fallback, PFM byte order/row direction, comment joining, 1 MiB block-boundary validation and file-size policy. Exact stage budgets, overflow, input ownership, mid-header/raw/plain/PFM cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Other formats, dispatch/shared admission and public image/login composition remain open; no endpoint is newly verified.",
         "PCX/DCX first-frame pipeline: 831 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes partial headers, stride correction, all RLE counts, row overrun/final padding, indexed bitplanes and narrow padded RGB, whole-file tail palettes, DCX directory bounds/unused offsets/absolute 128-byte reset, DPI and size thresholds. Exact stage budgets, overflow, ownership, mid-header/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Other formats, shared dispatch/admission and public image/login composition remain open; no endpoint is newly verified.",
         "TGA pipeline: 1,112 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes raw/RLE sample modes, orientation, inverted 16-bit alpha, short ID/palette reads, palette core-mode changes/load failures, no-tile lazy admission, repeat-row bounds, literal full-payload validation/overshoot and size thresholds. Exact stage budgets, overflow, ownership, mid-header/raw/RLE cancellation, 32 concurrent pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified.",
-        "QOI pipeline: 2,758 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes 13-byte lazy header admission, every channel/colorspace value, seeded cache and alpha-dependent hashing, RGB/RGBA literals, wrapping difference/luma commands, all run lengths, row/end overshoot, truncated operands, ignored footer and size policy. Exact stage budgets, overflow, ownership, mid-header/opcode/run cancellation, 32 concurrent mixed-image pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. The test-only fault executable now supports RGB encoding; production native code is unchanged. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified."
+        "QOI pipeline: 2,758 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes 13-byte lazy header admission, every channel/colorspace value, seeded cache and alpha-dependent hashing, RGB/RGBA literals, wrapping difference/luma commands, all run lengths, row/end overshoot, truncated operands, ignored footer and size policy. Exact stage budgets, overflow, ownership, mid-header/opcode/run cancellation, 32 concurrent mixed-image pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. The test-only fault executable now supports RGB encoding; production native code is unchanged. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified.",
+        "XBM pipeline: 1,485 declared header/pixel/whole-file cases compare with Pillow, the actual Django helper and shipped non-root read-only/networkless image. Coverage includes the 16-byte prefix/512-byte header windows, greedy width/height/marker grammar, numeric zeros and ignored hotspots, every packed byte and nibble/macro-name byte, lowercase-x scanning, row padding, operand/read boundaries and size policy. Exact budgets, overflow, ownership, mid-header/pixel/long-scan cancellation, 32 concurrent mixed-image pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse pass. Production native code is unchanged. Remaining formats, shared format dispatch/admission and public image/login composition remain open; no endpoint is newly verified."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",

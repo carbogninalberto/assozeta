@@ -693,3 +693,14 @@ cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
 cancellation/reaping/reuse pass. The test-only fault codec accepts RGB; production
 native sources are unchanged. Other formats, shared dispatch/admission and public
 login wiring remain open. Ledger status counts and activation restrictions remain.
+
+
+The XBM pipeline adds 1,485 declared header/pixel/file cases checked against Pillow,
+the actual Django helper and the shipped non-root/read-only/networkless image.
+It preserves the 16-byte recognition prefix, greedy 512-byte header window,
+permissive lowercase-x scanner, low-bit-first rows, padding and ignored
+hotspot/trailing text. Exact budgets, overflow, ownership, cancellation during
+long scans, 32 concurrent mixed-image pipelines and encoder-stage admission/
+cancellation/reaping/reuse pass. Production native sources are unchanged. Other
+formats, shared dispatch/admission and public login remain open; ledger status
+counts and backend activation restrictions are unchanged.

@@ -621,3 +621,13 @@ oracle. Exact stage budgets, overflow, ownership, mid-operation cancellation,
 32 mixed-image concurrent pipelines and encoder-stage admission/cancellation/
 reaping/reuse are checked. The test-only fault encoder now supports RGB requests.
 Use the pinned Python environment for standalone execution.
+
+
+`adapters/django/login_xbm.py` adds 1,485 declared XBM header/pixel/file cases.
+It covers the 16-byte prefix and 512-byte header windows, greedy markers, numeric
+and whitespace grammar, every packed byte and nibble/macro-name byte, row padding,
+scanner operand/read boundaries and size policy. Accounts invokes the actual
+Django helper; the shipped image runs the same oracle. Exact budgets, overflow,
+ownership, mid-operation/long-scan cancellation, 32 concurrent mixed-image
+pipelines and encoder-stage admission/cancellation/reaping/reuse are checked.
+Use the pinned Python environment for standalone execution.

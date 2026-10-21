@@ -649,3 +649,40 @@ admission reuse are checked. The test-only fault executable now accepts RGB
 encoding to exercise that process lifecycle. Production native codec sources are
 unchanged. Shared format dispatch/admission, other formats and public login
 composition remain open; this evidence does not authorize backend activation.
+
+## XBM header and text scanning
+
+`ReadXBMHeader`, `DecodeXBM` and `XBMFileProcessor` follow Pillow 11.1's
+[XBM plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/XbmImagePlugin.py)
+and [text decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/XbmDecode.c).
+Recognition examines the initial 16 bytes after ASCII whitespace stripping; ten
+leading whitespace bytes already prevent a complete `#define` match. The reader
+then consumes at most 512 bytes and selects the last `_bits[]` marker admitted
+by its greedy width/height pattern. Macro names may differ and contain arbitrary
+bytes other than line feed. Carriage-return greediness, numeric leading zeros,
+strict declaration separators and ignored hotspot declarations are preserved.
+The header budget counts all consumed bytes, including pixel text in the window.
+
+Pixel loading is a lowercase-`x` scanner rather than a C parser. Every `x` starts
+a pair of operand bytes; hexadecimal letters are case insensitive and all other
+operand bytes become zero. No leading zero, braces, commas or closing delimiter
+are required. Tokens may span read boundaries; incomplete final operands fail.
+Each packed byte contributes its low bit first, with padding discarded at each
+row boundary. Surplus text after a complete image is ignored. Normalized bilevel
+pixels use the existing nearest-neighbour and JPEG path.
+
+The logical decode budget counts input plus normalized output. Scanning checks
+cancellation at most every 4 KiB of skipped text and at each packed byte; it does
+not allocate a second text stream or row buffer. One file-pipeline deadline and
+admission limit cover parsing through encoding. Malformed/save failures keep the
+original; cancellation, resource limits and unavailable encoders return errors
+without a successful result. These budgets do not cap aggregate RSS.
+
+The adapter defines 1,485 header/pixel/file cases checked against Pillow, the
+actual Django helper and the shipped non-root/read-only/networkless image.
+Coverage includes all packed byte values, every possible nibble/macro-name byte,
+header/prefix boundaries, greedy markers, row padding, truncated/read-boundary
+operands and size policy. Exact budgets, overflow, ownership, mid-header/pixel/
+long-scan cancellation, 32 concurrent mixed-image pipelines and encoder-stage
+admission/cancellation/reaping/reuse pass. Production native sources are unchanged.
+Other formats, shared format dispatch/admission and public login remain open.
