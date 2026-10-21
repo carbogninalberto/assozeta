@@ -26,7 +26,7 @@ PostgreSQL/Redis failure/recovery and idle shutdown. Self-host/workflow checks a
 a foundation non-root image rehearsal also passed. These are scoped checks, not
 the full acceptance matrix.
 
-Credential tests exercise 20 Django-to-Go token vectors and 37 password vectors,
+Credential tests exercise 76 Django-to-Go token vectors and 37 password vectors,
 plus two Go token pairs and three password hashes read by Django. Historical
 Argon2 retains upstream provenance/license. Cost census and aggregate login
 resource limits remain open. Actor admission adds 18 real-token/account cases.
@@ -60,7 +60,7 @@ queries; 32 concurrent guard calls use four connections. Dependency failure and
 missing trusted route metadata return no usable identity. This is not public HTTP
 authentication or authorization of subsequent business writes.
 
-The registered refresh handler passes 26 portable contracts against both actual
+The registered refresh handler passes 30 portable contracts against both actual
 HTTP servers. It retains cookie, optional-Bearer/scoped admission, non-rotation,
 null-constructor and parser/error behavior. Django verifies Go signatures and
 accepts a Go refresh credential over HTTP; all managed model tables remain
@@ -534,3 +534,34 @@ inventory tests/drift validation and actionlint all pass. The CI workflow now
 runs the Apple oracle after credential/permission verification. This increment
 does not modify existing database repositories, Django business code or the
 registered public API surface.
+
+The REST JWT parser now shares document/header/integer checks with Apple while
+retaining REST-specific required claims and expiry rules. Fifty-six declared
+signed document cases expose and fix acceptance differences for critical headers,
+key IDs, padding, trailing JSON, invalid UTF-8, unused oversized integers and
+Python time conversion. The credential adapter passes 76 token vectors, 37
+Django password vectors, two Go-issued/refreshed token pairs and three Go hashes.
+
+Refresh testing also disproved universal preservation of input token bytes:
+SimpleJWT keeps claims/JTI/expiry but reserializes and signs the refresh token.
+The Go implementation now matches default headers, dictionary/duplicate-key
+semantics, ASCII escaping and finite float formatting. Exact independently declared
+refresh credentials pass through both token services and HTTP servers. Thirty
+portable methods per backend include all 56 document scenarios, Bearer-before-body
+precedence, exact errors, cookie absence on rejection and valid session cookies.
+The fixture completeness guard was additionally checked with all 56 declarations;
+that guard was added after the full account adapter imported its HTTP tests.
+
+Full Go race tests/vet, credential/Apple tagged vet, the 89-case Apple RSA/HTTPS
+oracle and twelve inventory tests with drift validation pass. Nonstandard JSON
+NaN/Infinity/overflow, lone surrogate escapes, broader base64 and global parsing
+budgets remain open. These checks do not complete authentication, public login,
+backend switching or the full migration. Logs: `quality-reports/go-migration/jwt-document/`.
+
+The full private PostgreSQL/Redis account adapter also passes after this change:
+30 refresh methods per backend, 33 social configuration cases, 41 social admissions,
+26 composed sessions, 68 password selections, 47 OTP and 20 normalization/audit
+cases, plus existing identity/scope, managed-table readback and image oracles.
+`jwt-document/accounts-results.json` records the complete counts. Schema creation
+still uses current Django models; historical migration and restore evidence remain
+separate, unfinished requirements.
