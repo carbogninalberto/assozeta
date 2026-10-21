@@ -4,7 +4,8 @@ This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
 transformation, plus bounded libjpeg JPEG encoding and pixel decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
-or reproduce lazy metadata opening. Public login remains unwired; no unsupported image is silently accepted as completed parity.
+or complete lazy EXIF/MPO admission. A lazy marker reader is available separately.
+Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
 matches Python's non-strict Base64 handling, including ignored ASCII garbage,
@@ -107,6 +108,43 @@ image; the inspected Alpine library is 3.0.4 and output also matches exactly.
 CI repeats this check on the image it builds. These are tested vectors and library
 versions, not a blanket claim about every codec version or architecture.
 
+## Lazy JPEG marker headers
+
+`ReadJPEGMarkerHeader` reads only through the first SOS segment and reports the
+consumed header bytes, dimensions, mode and last comment. It accepts recognizable
+header-only files even when pixel tables or entropy data are absent. This matters
+because Django returns an original URI at the exact 200-pixel bounding size before
+loading pixels. It does not consume trailing entropy data or apply the 1 MiB file
+policy; callers must still use the complete decoded file length for `Decide`.
+
+The parser follows [Pillow 11.1's marker handlers](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/JpegImagePlugin.py),
+including fill/escaped markers, ignored junk, repeated frames, component-mode
+selection, quantization payload lengths, JFIF/Adobe truncation, pending ICC checks,
+Photoshop resource truncation and non-positive segment payload lengths. Empty
+comments differ from absent comments. It rejects zero final dimensions and the
+pinned Pillow hard pixel limit, and reports the intermediate pixel-count warning.
+A mandatory consumed-header byte budget and cancellation checks bound parsing;
+errors return no partial header. Returned metadata does not alias input bytes.
+
+EXIF fragments are combined, and the last MPF payload/offset and Ultra HDR marker
+presence are retained for subsequent processing. **This is not completed
+`Image.open` admission:** EXIF DPI parsing and MPO adoption still need to interpret
+these values before a caller can decide full header validity or select an image
+frame. The marker reader is not wired into the public login service.
+
+`TESTS/adapters/django/login_jpeg_header.py` specifies 1,352 explicit outcomes:
+all 256 marker codes, empty/incomplete payloads, component/precision/quantization
+cases, metadata truncation, comments, size limits, 180 ordinary JPEG headers and
+every prefix of a selected JPEG across its lazy SOS boundary. Pillow supplies
+actual recognition evidence; expected validity, dimensions, mode, comment,
+warning and stop position are asserted independently. The account adapter also
+checks three real Django header-only passthrough cases whose pixels cannot load.
+A delegating loader observer confirms zero load attempts, distinguishing early
+passthrough from a caught-error fallback with the same URI output. Go verifies exact header budgets, metadata ownership/ordering/offsets, cancellation
+during scanning and 32 concurrent readers. The same header oracle runs in the
+non-root, read-only, networkless image rehearsal alongside the existing codecs.
+These cases do not certify deferred EXIF/MPO processing or other file formats.
+
 ## JPEG decoding and inherited comments
 
 `NewJPEGDecoder` uses the same bounded process runner with independent admission
@@ -155,7 +193,7 @@ checked with AddressSanitizer/UndefinedBehaviorSanitizer using exact exit codes
 and complete frame comparisons, including invalid input; generic error mapping
 cannot hide sanitizer failures.
 
-Still required: full file-format recognition and lazy-header behavior, other
+Still required: full file-format recognition and EXIF/MPO lazy admission, other
 format decoders (including animation/frame, metadata and color-mode rules), full
 invalid/truncated-file fallback policy, global resource admission, supported-data
 sizing and real response/HTTP composition. These checks do not certify complete

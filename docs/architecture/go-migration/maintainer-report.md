@@ -142,8 +142,11 @@ CGO-free. JPEG decoding adds 312 exact pixel/comment cases and 1,556 invalid
 streams, with actual Django helper output/fallback checks across all 1,868 cases.
 The shipped image passes the same decoder suite. Inherited comments, long-comment
 save failure, native framing/budgets, process cancellation and concurrent decoding
-are verified. Lazy metadata opening, other format decoders, global pipeline
-admission and the complete image processor remain necessary for login; no full
+are verified. A lazy JPEG marker reader passes 1,352 explicit Pillow cases and
+three actual Django header-only passthrough checks, plus header budgets,
+cancellation, metadata ownership/ordering and concurrent readers. The same marker
+oracle runs in the image. EXIF DPI parsing/MPO adoption, other format decoders,
+global pipeline admission and the complete image processor remain necessary for login; no full
 image or HTTP parity is claimed.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
