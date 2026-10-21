@@ -10,7 +10,8 @@ int main(int argc, char **argv) {
     int code;
     if (png) code = atoi(argv[3]);
     else if (decoding) code = atoi(argv[2]) - 3;
-    else if (argc == 6 && !strcmp(argv[1], "encode") && !strcmp(argv[2], "L")) code = atoi(argv[3]);
+    else if (argc == 6 && !strcmp(argv[1], "encode") &&
+             (!strcmp(argv[2], "L") || !strcmp(argv[2], "RGB"))) code = atoi(argv[3]);
     else return 3;
     switch (code) {
     case 1: {

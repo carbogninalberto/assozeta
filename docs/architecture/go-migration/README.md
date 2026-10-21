@@ -682,3 +682,14 @@ budgets, overflow, input ownership, mid-operation cancellation, 32 concurrent
 pipelines and encoder-stage queue/cancellation/reaping/reuse pass. Other formats,
 shared dispatch/admission and public login wiring remain open; ledger status
 counts and release/activation restrictions are unchanged.
+
+
+The QOI pipeline adds 2,758 declared header/pixel/file cases checked against Pillow,
+the actual Django helper and the shipped non-root/read-only/networkless image.
+It preserves 13-byte lazy header admission, permissive channel values, seeded
+cache/alpha state, wrapping deltas, runs crossing rows or the final pixel, and
+ignored footer bytes. Exact stage budgets, overflow, ownership, mid-operation
+cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
+cancellation/reaping/reuse pass. The test-only fault codec accepts RGB; production
+native sources are unchanged. Other formats, shared dispatch/admission and public
+login wiring remain open. Ledger status counts and activation restrictions remain.
