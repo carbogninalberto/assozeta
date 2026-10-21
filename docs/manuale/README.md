@@ -1,5 +1,62 @@
 # Manuale e conoscenza verificata
 
+## Manuale incluso nelle release
+
+Il workflow `manuale-release.yml`, richiamato dalla pubblicazione delle immagini,
+esegue catture, rendering, lettore e valutazione MCP/assistente sulla revisione
+applicativa della release e sulla sua versione esatta. Il repository sorgente è
+`Bakney/manuale`; `MANUAL_REF` può selezionare il riferimento mantenuto, con
+`add/manuale-release` come default. Il clone registra il commit risolto. Non
+servono credenziali di scrittura, un provider AI o un deploy Mintlify.
+
+Il nuovo comando `manuale-release.py --bundle` riproduce l'indice dalle prove
+valutate e produce `runtime/index.json`, schermate PNG e `runtime/bundle.json`.
+Le fonti applicative e quelle editoriali devono essere committate e pulite;
+MDX materializzato e schermate sono artefatti generati, dichiarati come
+`generated-from-committed`. Lo stato `release-bundled` attesta la distribuzione
+nell'immagine e **non** una pubblicazione del sito. Il flusso precedente
+`prepared` → verifica sito → `published` resta distinto e invariato.
+
+Le immagini backend delle release includono il pacchetto in
+`/app/release-manual`, con file non scrivibili dall'utente applicativo. Build e
+avvio controllano compatibilità, indice e tutti i PNG. Il lettore, MCP e assistente
+selezionano quel pacchetto prima del volume opzionale dei download. Non occorrono
+variabili d'ambiente, `sync-manual` o copie manuali: installazione, ricreazione e
+rollback selezionano il manuale insieme all'immagine. Non viene modificato il
+volume `manuale_data`. Una release che richiede il manuale ma lo contiene corrotto
+o incompleto non supera l'avvio; non ripiega su istruzioni incompatibili.
+
+Prima di pubblicare immagini installabili, la pipeline esegue la prova reale
+`selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
+--previous-package PREVIOUS_RUNTIME --previous-release PREVIOUS_VERSION`. La prova usa
+immagini di produzione, un registry locale usa e getta per i comandi CLI di
+aggiornamento e rollback, database isolati, contratti HTTP e MCP indipendenti in
+`TESTS/`, browser e chat WebSocket senza AI. La baseline vuota riproduce lo stato
+del manuale osservato nella v1.0.17 usando lo schema corrente; non costituisce
+una prova sul vecchio binario v1.0.17. La prova verifica anche aggiornamento e
+rollback fra due versioni distinte, entrambe valutate sullo stesso commit: una
+seconda esecuzione controlla la compatibilità delle catture riusabili e ripete
+rendering, lettore e MCP/assistente per la versione di prova precedente. Non
+rinomina il corpus della prima versione. Verifica inoltre il normale comando
+`start` dopo un'interruzione fra creazione e avvio del container API, e il
+ripristino automatico dei servizi dopo il download fallito di un candidato.
+Entrambi devono tornare a servire il pacchetto compatibile conservato.
+Non usa dati o servizi di produzione.
+
+Le PR che modificano questa integrazione eseguono la stessa pipeline senza
+pubblicare immagini. Per ripeterla senza pubblicare una release, eseguire manualmente
+**Build and rehearse the release manual** sul branch della PR, specificando una
+versione di prova. L'upload del runtime avviene soltanto dopo il successo della
+prova. Una verifica fallita impedisce la pubblicazione delle immagini di release
+e del manifest di aggiornamento. Le build `edge` da push restano build di sviluppo
+senza il requisito del pacchetto; non sono release installabili tramite manifest.
+
+Le modifiche future al comportamento documentato richiedono l'aggiornamento delle
+fonti editoriali e delle ricette revisionate nella normale PR. La pipeline non
+inventa nuove prove né promuove sezioni non supportate per rendere verde una release.
+Le lacune restano nell'indice e nei resoconti di copertura.
+
+
 Il manuale utente rimane nel repository [Bakney/manuale](https://github.com/Bakney/manuale). Assozeta contiene l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
 
 Se i repository di input hanno metadati Git in sola lettura, aggiungere `--standalone-checkouts`: il runner crea cloni locali indipendenti dentro la directory del run, conserva il commit e l'origine effettivi, applica solo le modifiche dichiarate e registra `checkout_kind: standalone-local-clone`. Senza questa opzione usa i worktree collegati. Non richiede rete o token GitHub.

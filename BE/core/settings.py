@@ -135,6 +135,9 @@ MCP_AGENT_HISTORY_CAP = env.int('MCP_AGENT_HISTORY_CAP', 50)
 # Generation and MCP/agent retrieval share the same atomic corpus artifact.
 MANUAL_URL = env.str('MANUAL_URL', 'https://manuale.bakney.com/docs/introduzione')
 MANUAL_INDEX_PATH = env.str('MANUAL_INDEX_PATH', str(BASE_DIR / 'manuale' / 'index.json'))
+# Release assets are image-owned, separate from the optional download volume.
+MANUAL_BUNDLE_PATH = str(BASE_DIR / 'release-manual')
+MANUAL_BUNDLE_REQUIRED = (BASE_DIR / 'MANUAL_REQUIRED').is_file() and (BASE_DIR / 'MANUAL_REQUIRED').read_text().strip() == 'true'
 MANUAL_ASSET_ROOT = env.str('MANUAL_ASSET_ROOT', '')
 MANUAL_CORPUS_BASE_URL = env.str('MANUAL_CORPUS_BASE_URL', '')
 def _get_manual_application_revision():

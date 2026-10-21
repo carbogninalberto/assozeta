@@ -12,9 +12,12 @@ from .preview import load_preview
 
 
 def manual_available():
-    if settings.MANUAL_CORPUS_BASE_URL.strip():
-        return True
     try:
+        from .bundle import load_installed_bundle
+        if load_installed_bundle() is not None:
+            return True
+        if settings.MANUAL_CORPUS_BASE_URL.strip():
+            return True
         if load_preview() is not None or load_development_index() is not None:
             return True
         index = ManualIndex.load_runtime(settings.MANUAL_INDEX_PATH)

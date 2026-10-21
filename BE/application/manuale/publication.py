@@ -74,7 +74,7 @@ def read_json(root, relative):
     return json.loads(owned(root, relative).read_text())
 
 
-def prepare_release(run_path, application_path, manual_path, output_path, *, release):
+def prepare_release(run_path, application_path, manual_path, output_path, *, release, _bundled=False):
     """Atomically stage a prepared package; never modify input runs or commits."""
     run, application, manual, output = (Path(path).resolve() for path in
         (run_path, application_path, manual_path, output_path))
@@ -88,7 +88,8 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     application_revision = committed_checkout(application)
     manual_revision = committed_checkout(manual)
     application_input = state.get('application_input', {})
-    if (state.get('status') != 'evaluated' or state.get('run_id') != run.name
+    if (state.get('status') != 'evaluated' or (not re.fullmatch(r'[A-Za-z0-9_-]+', state.get('run_id', ''))
+                if _bundled else state.get('run_id') != run.name)
             or application_input.get('state') != 'committed' or application_input.get('uncommitted_files')
             or metadata.get('code_state') != 'committed' or metadata.get('uncommitted_code')
             or application_revision != application_input.get('revision')
@@ -141,8 +142,18 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     for chunk in original.value['chunks']:
         for image in chunk['screenshots']:
             manual_bindings[image['path']] = image['sha256']
-    manual_bytes = {relative: verify_blob(manual, manual_revision, relative, expected)
-                    for relative, expected in manual_bindings.items()}
+    if _bundled:
+        if (state.get('manual_input', {}).get('state') != 'committed'
+                or state['manual_input'].get('uncommitted_files')
+                or manual_revision != metadata['manual_revision']):
+            raise EvidenceError('Bundling requires the exact committed manual authoring input')
+        manual_bytes = {relative: owned(generated_manual, relative).read_bytes()
+                        for relative in manual_bindings}
+        if any(digest(manual_bytes[path]) != expected for path, expected in manual_bindings.items()):
+            raise EvidenceError('Generated manual differs from evaluated evidence')
+    else:
+        manual_bytes = {relative: verify_blob(manual, manual_revision, relative, expected)
+                        for relative, expected in manual_bindings.items()}
     origin = metadata.get('canonical_manual_url') or state.get('manual_url', '')
     parsed = urlsplit(origin)
     if (parsed.scheme != 'https' or not parsed.netloc or parsed.username or parsed.password
@@ -165,6 +176,9 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             'manifest_path': 'evidence/manifest.json', 'index_path': 'evidence/index.json',
             'evidence_kind': state.get('evidence_kind', 'retained-evaluated-run')},
         source_catalog={'format': 1, 'path': 'source-catalog.json', 'sha256': digest(candidate_catalog_bytes)})
+    if _bundled:
+        candidate_metadata.update(publication_status='release-bundled',
+            manual_state='generated-from-committed', manual_url='/#/manuale')
     candidate_manifest['metadata'] = candidate_metadata
     candidate = copy.deepcopy(original.value)
     candidate.update(metadata=candidate_metadata, catalog=candidate_catalog)
@@ -172,6 +186,11 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
         chunk['url'] = origin + '/' + quote(chunk['page']) + '#' + quote(chunk.get('citation_anchor', chunk['section']), safe='')
         for image in chunk['screenshots']:
             image['url'] = origin + '/' + quote(image['path'])
+    if _bundled:
+        for chunk in candidate['chunks']:
+            chunk['url'] = '/#/manuale?section=' + quote(chunk['id'], safe='')
+            for image in chunk['screenshots']:
+                image['url'] = '/api/manuale/assets/' + quote(image['path'])
     candidate = seal_index(candidate)
     # This catches accidental catalog/hash rebinding before any package exists.
     candidate_catalog_binding = digest(candidate_catalog_bytes)
@@ -200,6 +219,9 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             'Only after that verification may a separate authorized publication step mark the corpus published.',
             'Promote the published corpus under APPLICATION_REVISION/RELEASE.json; production synchronization rejects this prepared candidate.'],
         'external_publication_verified': False}
+    if _bundled:
+        plan.update(status='release-bundled', next_steps=[],
+            distribution='immutable-backend-image', manual_state='generated-from-committed')
     # Input contents are read and validated before creating the new output.
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent, prefix='.manual-release-') as temporary:
@@ -214,9 +236,9 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(contents)
         owned(stage, 'source-catalog.json').write_bytes(candidate_catalog_bytes)
-        if build_index(manual, application, manifest, artifact_root=stage / 'evidence')['identity'] != original.value['identity']:
+        if build_index(generated_manual if _bundled else manual, application, manifest, artifact_root=stage / 'evidence')['identity'] != original.value['identity']:
             raise EvidenceError('Retained proof changed while staging the release')
-        load_source_catalog(manual, application, candidate_manifest, stage)
+        load_source_catalog(generated_manual if _bundled else manual, application, candidate_manifest, stage)
         promote(candidate_manifest, stage / 'manifest.json')
         promote(candidate, stage / 'index.json')
         promote(plan, stage / 'publication-plan.json')
@@ -224,9 +246,49 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
         if committed_checkout(application) != application_revision or committed_checkout(manual) != manual_revision:
             raise EvidenceError('Release input checkout changed during preparation')
         for relative, expected in manual_bindings.items():
-            verify_blob(manual, manual_revision, relative, expected)
+            if _bundled:
+                if file_digest(owned(generated_manual, relative)) != expected:
+                    raise EvidenceError('Generated manual changed during bundling')
+            else:
+                verify_blob(manual, manual_revision, relative, expected)
+        if _bundled:
+            runtime = stage / 'runtime'
+            runtime.mkdir()
+            promote(candidate, runtime / 'index.json')
+            images = {image['path']: image['sha256'] for chunk in candidate['chunks']
+                      for image in chunk['screenshots']}
+            from .index import png_dimensions
+            for relative, expected in images.items():
+                contents = manual_bytes[relative]
+                if not relative.endswith('.png') or digest(contents) != expected:
+                    raise EvidenceError('Invalid bundled screenshot')
+                png_dimensions(contents)
+                target = owned(runtime, relative)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(contents)
+            promote({'format': 1, 'distribution': 'immutable-backend-image',
+                'corpus_identity': candidate['identity'],
+                'verified_corpus_identity': original.value['identity'],
+                'application_revision': application_revision, 'release': release,
+                'manual_revision': manual_revision, 'external_publication_verified': False,
+                'index_sha256': file_digest(runtime / 'index.json'),
+                'evidence_hashes': plan['retained_evidence'],
+                'sections': len(candidate['chunks']), 'screenshots': len(images)}, runtime / 'bundle.json')
+            from .bundle import load_bundle
+            load_bundle(runtime, revision=application_revision, release=release,
+                        required=True, verify_assets=True)
         stage.rename(output)
     return plan
+
+
+def build_release_bundle(run_path, application_path, manual_path, output_path, *, release):
+    """Build immutable release assets from evaluated, committed inputs.
+
+    Generated MDX and PNGs remain build artifacts. This does not attest an
+    external website deployment or invent a commit for generated documentation.
+    """
+    return prepare_release(run_path, application_path, manual_path, output_path,
+                           release=release, _bundled=True)
 
 
 def validate_prepared_package(prepared_path, application_path, manual_path, *, release):

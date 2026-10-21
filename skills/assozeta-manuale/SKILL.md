@@ -89,6 +89,19 @@ request code; supply authentication only to its trusted editorial step.
 5. Verify MDX/rendered pages, every new screenshot layout, retrieval results, and actual MCP/agent answers. Also verify the sidebar and header open the embedded `/#/manuale` reader in a new tab with a standalone layout, with matching steps, images, search and section deep links. Crops must contain the controls described by their step. Repeat `capture` on unchanged inputs when establishing screenshot repeatability or investigating a visual regression; ordinary text changes do not require repeating already successful scenarios. Identical inputs must stay within the documented threshold. Unsupported questions must yield missing-evidence feedback, not an invented procedure.
 6. Retain reports and both worktrees for review. Cleanup removes only the recorded run's services/data; preserve manual changes.
 
+## Bundled release delivery
+
+Release images use `manuale-release.py --bundle` after a full evaluated run for
+exact committed application and manual authoring inputs. Generated MDX and PNGs
+are build artifacts, recorded as `generated-from-committed`, never a fabricated
+manual commit. The new `release-bundled` state is accepted only by the image-owned
+bundle loader; remote synchronization still requires `published` evidence.
+
+The bundler reproduces the index from retained proof and checks rendering,
+MCP/agent and embedded-reader results before atomic packaging. Image build and
+startup verify the required package and all screenshots. Website deployment is
+independent of this distribution mode. Do not manually relabel old evidence.
+
 ## Retrieval and publication
 
 The runtime index is selected by trusted application revision/release and server configuration. Callers cannot supply a different identity, evidence root, or elevated role. Public tools return verified manual text and citations; maintainer source evidence requires the actual instance owner.

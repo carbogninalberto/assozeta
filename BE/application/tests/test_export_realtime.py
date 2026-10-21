@@ -274,18 +274,22 @@ class ExportTaskTerminalEventTests(SimpleTestCase):
         user_get.return_value = SimpleNamespace(first_name='Test', email='test@example.com')
         association_get.return_value = SimpleNamespace(denomination='Associazione')
         document = SimpleNamespace(document_id='document-1', filename='export.zip')
-        service_class.return_value.export.return_value = document
-        service_class.return_value.stats = {}
-        service_class.return_value.errors = []
+        # Keep the actual service interface: unrestricted mocks hide accesses
+        # to importer-only attributes after the export has already completed.
+        service = AssociationExportService('11111111-1111-4111-8111-111111111111')
+        service.export = MagicMock(return_value=document)
+        service_class.return_value = service
         publisher = publisher_class.return_value
         publisher.task_id = 'task-terminal'
+        publisher.last_percent = 100
         clear_active.side_effect = RuntimeError('cache unavailable')
 
         association_id = '11111111-1111-4111-8111-111111111111'
         user_id = '22222222-2222-4222-8222-222222222222'
         result = export_association_data.run(association_id, user_id)
 
-        self.assertTrue(result['success'])
+        self.assertEqual(result, {'success': True, 'document_id': 'document-1',
+                                 'filename': 'export.zip', 'stats': {}})
         terminal_call = publisher.publish.call_args_list[-1]
         self.assertEqual(terminal_call.args[0]['percent'], 100)
         self.assertEqual(terminal_call.kwargs['event_type'], 'export_completed')

@@ -18,7 +18,10 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
         await modal.getByRole('button',{name:'Aggiungi Widget',exact:true,includeHidden:true}).click();await expect(modal).not.toBeVisible();
     }
     const saved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/statistic/dashboard/layout'&&r.request().method()==='POST');
-    await page.getByRole('button',{name:'Salva',exact:true}).click();expect((await saved).status()).toBe(200);await page.reload();
+    await page.getByRole('button',{name:'Salva',exact:true}).click();expect((await saved).status()).toBe(200);
+    // Response headers can arrive before the UI updates its persisted layout.
+    await expect(page.getByText('Layout salvato con successo',{exact:true})).toBeVisible();
+    await page.reload();
     await expect(page.locator('.dashboard-widget')).toHaveCount(12);
     await capture(page,13,'dashboard-display-twelve-widgets-after-reload');
     const card=title=>page.locator('.dashboard-widget').filter({has:page.locator('.card-label').filter({hasText:new RegExp('^'+title+'$')})});

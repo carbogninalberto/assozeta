@@ -40,8 +40,7 @@ try {
     const profileData = await profile.json();
     expect(profileData.user_data.user_id).toBe(input.user_id);
     const billing = await context.request.get(input.origin + '/api/billing/active-plan', {headers});
-    expect(billing.ok(), 'Billing endpoint HTTP ' + billing.status() + ': ' + (billing.ok() ? '' : await billing.text())).toBeTruthy();
-    const billingData = (await billing.json()).data;
+    expect(billing.status(), 'Software billing is retired').toBe(410);
     await context.addInitScript(initializeActorSession, {identity: input, input, captureMode: true});
     await page.goto(input.origin + '/#/');
     await expect(page.getByText('Organizzazione', {exact: true})).toBeVisible({timeout: 60000});

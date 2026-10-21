@@ -1,0 +1,145 @@
+name: Build and rehearse the release manual
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/manuale-release.yml'
+      - '.github/workflows/publish-images.yml'
+      - 'BE/application/manuale/bundle.py'
+      - 'BE/application/manuale/publication.py'
+      - 'BE/Dockerfile'
+      - 'BE/entrypoint.sh'
+      - 'selfhost/tests/manual-release-smoke*'
+      - 'TESTS/contracts/test_manual.py'
+      - 'TESTS/browser/manual-release.mjs'
+      - 'TESTS/mcp/manual.py'
+  workflow_call:
+    inputs:
+      release:
+        description: Exact version embedded in the target backend image
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Rehearsal version (does not publish a release)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manuale-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      RELEASE_VERSION: ${{ inputs.release || format('manual-rehearsal-{0}', github.sha) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - uses: ./.github/actions/prepare-storage
+      - name: Fetch and pin the committed manual authoring source
+        env:
+          MANUAL_REF: ${{ vars.MANUAL_REF || 'add/manuale-release' }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, re, subprocess
+          reference = os.environ['MANUAL_REF']
+          if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', reference):
+              raise SystemExit('Invalid manual revision')
+          manual = pathlib.Path(os.environ['RUNNER_TEMP']) / 'manuale'
+          subprocess.run(['git', 'clone', 'https://github.com/Bakney/manuale.git', str(manual)], check=True)
+          subprocess.run(['git', '-C', str(manual), 'fetch', 'origin', reference], check=True)
+          subprocess.run(['git', '-C', str(manual), 'checkout', '--detach', 'FETCH_HEAD'], check=True)
+          PY
+      - name: Install verification dependencies
+        run: |
+          python3 -m pip install -r docs/manuale/requirements-offline.txt
+          npm --prefix selfhost/tests/browser ci
+          cd selfhost/tests/browser
+          npx playwright install --with-deps chromium
+      - name: Check runtime and offline release contracts
+        run: |
+          python3 docs/scripts/manuale.py doctor
+          python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
+          node --test selfhost/tests/browser/manuale/*.test.mjs
+      - name: Generate and verify the exact release manual
+        run: |
+          python3 docs/scripts/manuale.py run \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --release "$RELEASE_VERSION" \
+            --output "$RUNNER_TEMP/manuale-run"
+      - name: Package evaluated evidence and offline runtime assets
+        run: |
+          python3 docs/scripts/manuale-release.py --bundle \
+            --run "$RUNNER_TEMP/manuale-run" \
+            --application-repo "$GITHUB_WORKSPACE" \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --release "$RELEASE_VERSION" \
+            --output "$RUNNER_TEMP/manuale-package"
+      - name: Verify a second version for the upgrade and rollback rehearsal
+        run: |
+          python3 docs/scripts/manuale.py run \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --release "$RELEASE_VERSION-rehearsal-previous" \
+            --reuse-evidence "$RUNNER_TEMP/manuale-run" \
+            --output "$RUNNER_TEMP/manuale-previous-run"
+          python3 docs/scripts/manuale-release.py --bundle \
+            --run "$RUNNER_TEMP/manuale-previous-run" \
+            --application-repo "$GITHUB_WORKSPACE" \
+            --manual-repo "$RUNNER_TEMP/manuale" \
+            --release "$RELEASE_VERSION-rehearsal-previous" \
+            --output "$RUNNER_TEMP/manuale-previous-package"
+      - name: Rehearse installation, upgrade, restart and rollback with the packaged image
+        run: |
+          selfhost/tests/manual-release-smoke.sh "$RUNNER_TEMP/manuale-package/runtime" "$RELEASE_VERSION" \
+            --previous-package "$RUNNER_TEMP/manuale-previous-package/runtime" \
+            --previous-release "$RELEASE_VERSION-rehearsal-previous"
+      - name: Upload verified runtime input for the release image
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-release-runtime
+          path: ${{ runner.temp }}/manuale-package/runtime/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Export sanitized verification diagnostics
+        if: always()
+        run: python3 docs/scripts/manuale-diagnostics.py --run "$RUNNER_TEMP/manuale-run"
+      - name: Retain release evidence and rehearsal results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-release-evidence
+          path: |
+            ${{ runner.temp }}/manuale-run/export/
+            ${{ runner.temp }}/manuale-run/coverage.json
+            ${{ runner.temp }}/manuale-run/render.json
+            ${{ runner.temp }}/manuale-run/evaluation.json
+            ${{ runner.temp }}/manuale-run/embedded-manual.json
+            ${{ runner.temp }}/manuale-run/diagnostics-public/
+            ${{ runner.temp }}/manuale-package/publication-plan.json
+            ${{ runner.temp }}/manuale-previous-package/publication-plan.json
+            ${{ runner.temp }}/manuale-previous-run/evidence-reuse.json
+            ${{ runner.temp }}/manuale-previous-run/evaluation.json
+            ${{ runner.temp }}/manuale-previous-run/embedded-manual.json
+            quality-reports/manual-release/
+            !quality-reports/manual-release/private-execution.log
+          if-no-files-found: warn
+          retention-days: 30
