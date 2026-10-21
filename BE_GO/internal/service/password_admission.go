@@ -43,17 +43,24 @@ func (s *PasswordAdmission) Admit(ctx context.Context, identifier, password any,
 	case "invalid":
 		return nil, ErrLoginCredentials
 	}
-	if selected.Account == nil {
+	return admitLoginAccount(ctx, selected.Account, s.preparation, s.secondFactor, otp, present, audit)
+}
+
+func admitLoginAccount(ctx context.Context, account *domain.Account, preparation LoginPreparer, secondFactor LoginSecondFactor, otp any, present bool, audit domain.LoginAuditContext) (*domain.Account, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if account == nil {
 		return nil, errors.New("credential selection returned no account")
 	}
-	challenge, err := s.preparation.Prepare(ctx, selected.Account.ID, audit)
+	challenge, err := preparation.Prepare(ctx, account.ID, audit)
 	if err != nil {
 		return nil, err
 	}
-	if challenge.ID != selected.Account.ID {
+	if challenge.ID != account.ID {
 		return nil, errors.New("login preparation returned another account")
 	}
-	if err = s.secondFactor.Check(ctx, challenge.TwoFactorEnabled, challenge.TwoFactorSecret, otp, present); err != nil {
+	if err = secondFactor.Check(ctx, challenge.TwoFactorEnabled, challenge.TwoFactorSecret, otp, present); err != nil {
 		return nil, err
 	}
 	if err := ctx.Err(); err != nil {

@@ -446,3 +446,31 @@ The complete private PostgreSQL/Redis accounts adapter also finishes successfull
 including 18 composed session cases, 47 OTP cases, 20 admission/audit cases, the
 portable refresh/pre-credential HTTP contracts and existing image oracles. This
 uses current-model schema creation, not historical migration/restore evidence.
+
+
+Social selection/admission now uses a streamed candidate query, a bounded provider
+verification port and the shared username/audit/OTP boundary. It preserves the
+five aliases, unique casefold-username preference before provider dispatch, raw
+token values, email lowercase semantics and denial ordering. Database readers
+close before provider I/O. `LoginSessions` now dispatches both credential branches
+to the same signing/response/finalization checks; password-only callers retain
+the existing API. Concrete Google/Apple clients, integration configuration and
+public registration remain unfinished. Controlled-provider tests must not be read
+as remote credential-verification evidence.
+
+A separate SSO CI failure was diagnosed from job 119188587950 and its sanitized
+artifact: Chromium reported `ERR_NETWORK_CHANGED` on the empty fixture page before
+application traffic. A narrowly bounded one-time retry now covers only that GET
+and exact error. Five Node policy tests and a real Chromium navigation/storage
+rehearsal pass; other failures still propagate, and full HTTPS SSO CI remains a gate.
+
+The complete private PostgreSQL/Redis accounts adapter passes with 41 social
+admission cases, 26 composed sessions, 68 password selections, 47 OTP and 20
+admission/audit cases, plus the existing HTTP, identity, scope and image suites.
+All managed-table readback, query bounds, concurrent selection and pool-release
+assertions pass. Go race tests, vet, tagged integration vet, formatting, 12
+inventory tests and drift validation pass. TDD red/green logs and the complete
+result are retained in `quality-reports/go-migration/social-admission/`. This
+remains current-model schema evidence, not historical migration or restore proof.
+The prior head's Go CI job 119188587954 also passed within its existing deadline;
+no timeout increase or test exclusion was needed.

@@ -41,8 +41,8 @@ func NewLoginHandler(sessions LoginRequestService, actors LoginActorAuthenticati
 const loginDescription = "API endpoint to login a user.\nSupports password auth and social auth (Google/Apple).\n\nRequest body:\n    Password login: {username, password} or {username, password, otp}\n    Social login: {username, token, backend} or {username, token, backend, otp}\n\nReturns:\n    {access_token, refresh_token, expires_in, token_type, role, user_data, ...}"
 
 // Login is the transport component, not yet registered by cmd/server. Registration
-// requires complete request admission/rate limits, audit middleware and password/
-// social session composition. AllowAny still authenticates supplied credentials.
+// requires complete request admission/rate limits, audit middleware, concrete
+// social verification clients and image processing. AllowAny still authenticates supplied credentials.
 func (h *LoginHandler) Login(c echo.Context) error {
 	r := c.Request()
 	c.Response().Header().Set("Allow", "POST, OPTIONS")
@@ -103,11 +103,18 @@ func (h *LoginHandler) Login(c echo.Context) error {
 		return restError(c, err)
 	}
 	result, err := h.sessions.LoginRequest(r.Context(), request, audit)
+	var backend *service.UnsupportedSocialBackend
 	switch {
 	case errors.Is(err, service.ErrLoginNotFound):
 		return c.JSON(401, map[string]string{"error": "invalid credential (not found)"})
 	case errors.Is(err, service.ErrLoginCredentials):
 		return c.JSON(401, map[string]string{"error": "invalid credentials"})
+	case errors.Is(err, service.ErrSocialToken):
+		return c.JSON(401, map[string]string{"error": "Invalid social token"})
+	case errors.Is(err, service.ErrSocialEmail):
+		return c.JSON(401, map[string]string{"error": "Email mismatch"})
+	case errors.As(err, &backend):
+		return c.JSON(400, map[string]string{"error": "Unsupported backend: " + backend.Value})
 	case errors.Is(err, service.ErrOTPRequired):
 		return c.JSON(401, map[string]string{"msg": "OTP code required."})
 	case errors.Is(err, service.ErrOTPInvalid):

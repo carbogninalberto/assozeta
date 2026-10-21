@@ -49,33 +49,37 @@ func (s *PasswordSessions) Login(ctx context.Context, identifier, password any, 
 	if err != nil {
 		return nil, err
 	}
-	if err = ctx.Err(); err != nil {
+	return completeLoginSession(ctx, account, s.tokens, s.responses, s.finalization, audit)
+}
+
+func completeLoginSession(ctx context.Context, account *domain.Account, tokens LoginTokenIssuer, responses LoginResponseBuilder, finalization LoginFinalizer, audit domain.LoginAuditContext) (*dto.LoginResponse, error) {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	if account == nil || account.ID == "" {
 		return nil, ErrLoginSessionInvariant
 	}
-	pair, err := s.tokens.Issue(account.ID, account.Role, account.Email)
+	pair, err := tokens.Issue(account.ID, account.Role, account.Email)
 	if err != nil {
 		return nil, err
 	}
-	if err = ctx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	result, err := s.responses.Build(ctx, *account, pair, audit)
+	result, err := responses.Build(ctx, *account, pair, audit)
 	if err != nil {
 		return nil, err
 	}
-	if err = ctx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	if result == nil || result.UserData.UserID != account.ID || result.Pair != pair {
 		return nil, ErrLoginSessionInvariant
 	}
-	if err = s.finalization.Finalize(ctx, account.ID, audit); err != nil {
+	if err = finalization.Finalize(ctx, account.ID, audit); err != nil {
 		return nil, err
 	}
-	if err = ctx.Err(); err != nil {
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	return result, nil
