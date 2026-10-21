@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"os"
 	"strings"
 	"sync"
@@ -31,8 +32,11 @@ func TestPasswordLoginAgainstDjango(t *testing.T) {
 	}
 	var fixture struct {
 		Cases []struct {
-			Name, Identifier, Password, Selected, Failure string
-			Rows                                          []struct {
+			Name, Selected, Failure string
+			Identifier, Password    json.RawMessage
+			IdentifierUpload        *domain.RequestUpload `json:"identifier_upload"`
+			PasswordUpload          *domain.RequestUpload `json:"password_upload"`
+			Rows                    []struct {
 				ID, Encoded string
 				Changed     bool
 			}
@@ -47,10 +51,38 @@ func TestPasswordLoginAgainstDjango(t *testing.T) {
 	}
 	defer db.Close()
 	db.SetMaxOpenConns(4)
-	s := NewPasswordLogin(repository.NewPasswordLogins(db), passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), 2)
+	store := &measuredPasswordStore{store: repository.NewPasswordLogins(db)}
+	s := NewPasswordLogin(store, passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), 2)
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
-			result, err := s.Select(context.Background(), tc.Identifier, tc.Password)
+			identifier, parseErr := dto.ParseReferenceJSON(tc.Identifier)
+			if parseErr != nil {
+				t.Fatal("invalid identifier fixture")
+			}
+			password, parseErr := dto.ParseReferenceJSON(tc.Password)
+			if parseErr != nil {
+				t.Fatal("invalid password fixture")
+			}
+			if tc.IdentifierUpload != nil {
+				identifier = *tc.IdentifierUpload
+			}
+			if tc.PasswordUpload != nil {
+				password = *tc.PasswordUpload
+			}
+			store.reads.Store(0)
+			store.writes.Store(0)
+			result, err := s.Select(context.Background(), identifier, password)
+			if store.reads.Load() != 1 {
+				t.Fatal("raw credential lookup exceeded one SELECT for a small candidate set")
+			}
+			if db.Stats().InUse != 0 {
+				t.Fatal("credential transaction leaked a pool connection")
+			}
+			failure := result.Failure
+			if errors.Is(err, passwordcrypto.ErrLoginPasswordValue) {
+				failure = "value"
+				err = nil
+			}
 			if err != nil {
 				t.Fatalf("credential stage failed: %v", err)
 			}
@@ -61,7 +93,7 @@ func TestPasswordLoginAgainstDjango(t *testing.T) {
 					t.Fatal("hash leaked from credential stage")
 				}
 			}
-			if id != tc.Selected || result.Failure != tc.Failure {
+			if id != tc.Selected || failure != tc.Failure {
 				t.Fatal("selected account/denial differs from explicit contract")
 			}
 			for _, row := range tc.Rows {
@@ -119,7 +151,7 @@ type measuredLoginHasher struct {
 	encoded         string
 }
 
-func (h *measuredLoginHasher) CheckLogin(ctx context.Context, _ string, encoded string) (passwordcrypto.LoginPasswordDecision, error) {
+func (h *measuredLoginHasher) CheckLoginValue(ctx context.Context, _ passwordcrypto.LoginPasswordValue, encoded string) (passwordcrypto.LoginPasswordDecision, error) {
 	active := h.active.Add(1)
 	defer h.active.Add(-1)
 	for {

@@ -10,7 +10,7 @@ import (
 )
 
 type PasswordSessionAdmission interface {
-	Admit(context.Context, string, string, any, bool, domain.LoginAuditContext) (*domain.Account, error)
+	Admit(context.Context, any, any, any, bool, domain.LoginAuditContext) (*domain.Account, error)
 }
 type LoginTokenIssuer interface {
 	Issue(string, int, string) (jwt.Pair, error)
@@ -41,7 +41,7 @@ func NewPasswordSessions(admission PasswordSessionAdmission, tokens LoginTokenIs
 // but never returns a response containing tokens. The transport owns cookies and
 // must deliver them only after this method succeeds. Audit identity is trusted
 // request metadata and remains independent of the account being authenticated.
-func (s *PasswordSessions) Login(ctx context.Context, identifier, password string, otp any, present bool, audit domain.LoginAuditContext) (*dto.LoginResponse, error) {
+func (s *PasswordSessions) Login(ctx context.Context, identifier, password any, otp any, present bool, audit domain.LoginAuditContext) (*dto.LoginResponse, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

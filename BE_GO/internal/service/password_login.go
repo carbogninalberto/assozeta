@@ -13,7 +13,7 @@ import (
 )
 
 type LoginPasswordHasher interface {
-	CheckLogin(context.Context, string, string) (passwordcrypto.LoginPasswordDecision, error)
+	CheckLoginValue(context.Context, passwordcrypto.LoginPasswordValue, string) (passwordcrypto.LoginPasswordDecision, error)
 	Encode(context.Context, string) (string, error)
 }
 
@@ -38,7 +38,7 @@ func NewPasswordLogin(store domain.PasswordLoginStore, hashes LoginPasswordHashe
 
 var loginEmailPattern = regexp.MustCompile(`^[^@]+@[^@]+\.[^@]+`)
 
-func (s *PasswordLogin) Select(ctx context.Context, identifier, password string) (PasswordSelection, error) {
+func (s *PasswordLogin) Select(ctx context.Context, identifierValue, passwordValue any) (PasswordSelection, error) {
 	result := PasswordSelection{}
 	if err := ctx.Err(); err != nil {
 		return result, err
@@ -49,15 +49,19 @@ func (s *PasswordLogin) Select(ctx context.Context, identifier, password string)
 		return result, ctx.Err()
 	}
 	defer func() { <-s.slots }()
+	identifier, err := loginValueText(ctx, identifierValue)
+	if err != nil {
+		return result, err
+	}
 	for attempt := 0; attempt < 3; attempt++ {
-		result, err := s.selectAttempt(ctx, identifier, password)
+		result, err := s.selectAttempt(ctx, identifier, passwordValue)
 		if !errors.Is(err, domain.ErrCredentialConflict) {
 			return result, err
 		}
 	}
 	return PasswordSelection{}, domain.ErrCredentialConflict
 }
-func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier, password string) (PasswordSelection, error) {
+func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier string, passwordValue any) (PasswordSelection, error) {
 	result := PasswordSelection{}
 	if err := ctx.Err(); err != nil {
 		return result, err
@@ -73,6 +77,8 @@ func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier, password 
 	var selected, preferred domain.Account
 	var selectedLegacy, preferredLegacy bool
 	candidates, matches, preferences := false, 0, 0
+	var password passwordcrypto.LoginPasswordValue
+	passwordReady := false
 	after := ""
 	for {
 		page, err := tx.Candidates(ctx, byEmail, identifier, after)
@@ -82,9 +88,21 @@ func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier, password 
 		upgrades := make([]domain.PasswordReplacement, 0, len(page))
 		for _, account := range page {
 			candidates = true
-			decision, err := s.hashes.CheckLogin(ctx, password, account.Password)
+			if !passwordReady {
+				text, err := loginValueText(ctx, passwordValue)
+				if err != nil {
+					return result, err
+				}
+				_, isString := passwordValue.(string)
+				password = passwordcrypto.LoginPasswordValue{Text: text, String: isString, Null: passwordValue == nil}
+				passwordReady = true
+			}
+			decision, err := s.hashes.CheckLoginValue(ctx, password, account.Password)
 			if err != nil {
 				return result, err
+			}
+			if !password.String && (decision.Upgrade || decision.Legacy) {
+				return result, passwordcrypto.ErrLoginPasswordValue
 			}
 			if !decision.Match {
 				continue
@@ -105,7 +123,7 @@ func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier, password 
 				}
 			}
 			if decision.Upgrade && !decision.Legacy {
-				encoded, err := s.hashes.Encode(ctx, password)
+				encoded, err := s.hashes.Encode(ctx, password.Text)
 				if err != nil {
 					return result, err
 				}
@@ -129,7 +147,7 @@ func (s *PasswordLogin) selectAttempt(ctx context.Context, identifier, password 
 	}
 	if result.Failure == "" {
 		if selectedLegacy {
-			encoded, err := s.hashes.Encode(ctx, password)
+			encoded, err := s.hashes.Encode(ctx, password.Text)
 			if err != nil {
 				return result, err
 			}

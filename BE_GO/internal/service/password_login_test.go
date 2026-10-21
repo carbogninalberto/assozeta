@@ -36,7 +36,7 @@ func (s *loginTransactionStub) BeginPasswordLogin(context.Context) (domain.Passw
 
 type loginHasherStub struct{}
 
-func (loginHasherStub) CheckLogin(_ context.Context, password, encoded string) (passwordcrypto.LoginPasswordDecision, error) {
+func (loginHasherStub) CheckLoginValue(_ context.Context, password passwordcrypto.LoginPasswordValue, encoded string) (passwordcrypto.LoginPasswordDecision, error) {
 	return passwordcrypto.LoginPasswordDecision{Match: encoded != "wrong", Upgrade: encoded != "current" && encoded != "wrong", Legacy: encoded == "legacy"}, nil
 }
 func (loginHasherStub) Encode(context.Context, string) (string, error) { return "new-hash", nil }

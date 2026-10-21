@@ -17,6 +17,7 @@ def run(work, log, tool_env):
     from django.contrib.auth.hashers import make_password, check_password, PBKDF2PasswordHasher
     from application.models import User
     from application.views.auth_views import oauth2_login
+    from django.core.files.uploadedfile import SimpleUploadedFile
     from rest_framework.test import APIRequestFactory
     from rest_framework_simplejwt.tokens import AccessToken
     import bcrypt
@@ -28,10 +29,11 @@ def run(work, log, tool_env):
         current = make_password(password)
         old = PBKDF2PasswordHasher().encode(password, 'old-salt', iterations=10)
         raw = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=4)).decode()
-        def add(name, accounts, selected=None, changed=(), failure='', identifier=None, supplied=password):
+        missing=object()
+        def add(name, accounts, selected=None, changed=(), failure='', identifier=missing, supplied=password, exception='AttributeError'):
             index = len(cases)
             email = f'PASSWORD-CASE-{index}@EXAMPLE.TEST'
-            identifier = identifier or email
+            identifier = email if identifier is missing else identifier
             rows = []
             with disable_auditlog():
                 for n, values in enumerate(accounts):
@@ -42,7 +44,7 @@ def run(work, log, tool_env):
                         email=email, password=encoded, role=User.ATHLETE, **values)
                     rows.append({'id':str(user.pk), 'encoded':encoded, 'changed':n in changed})
             cases.append({'name':name,'identifier':identifier,'password':supplied,'rows':rows,
-                'selected':rows[selected]['id'] if selected is not None else '', 'failure':failure})
+                'selected':rows[selected]['id'] if selected is not None else '', 'failure':failure,'exception':exception})
         add('current singleton', [{}], 0)
         add('incorrect password', [{}], failure='invalid', supplied='wrong')
         add('unknown identifier', [], failure='not_found')
@@ -64,6 +66,46 @@ def run(work, log, tool_env):
         add('Unicode casefold preferred', [{'username':'STRASSE@EXAMPLE.TEST'},{}], 0, identifier='straße@example.test')
         # Both candidates must be in the email lookup; preference uses Python casefold.
         User.original_objects.filter(pk__in=[row['id'] for row in cases[-1]['rows']]).update(email='straße@example.test')
+        # Explicit raw-input expectations: Python stringification is not JSON
+        # encoding. A current PBKDF2 hash may accept non-string force_bytes input;
+        # rehash and raw-bcrypt fallback reject the original non-string value.
+        raw_values=[
+            ('integer',123,'123'),('large integer',123456789012345678901234567890,'123456789012345678901234567890'),
+            ('true',True,'True'),('false',False,'False'),('float',1.5,'1.5'),('float whole',1.0,'1.0'),
+            ('float negative zero',-0.0,'-0.0'),('float exponent',1e16,'1e+16'),('float fixed',1e15,'1000000000000000.0'),
+            ('float small',1e-5,'1e-05'),('empty list',[],'[]'),('list',[None,True,3.0,'x'],"[None, True, 3.0, 'x']"),
+            ('ordered object',{'z':False,'a':['x']},"{'z': False, 'a': ['x']}"),
+        ]
+        for label,value,text in raw_values:
+            assert str(value)==text, (label,'declared Python representation')
+            add('raw password '+label,[{'password':make_password(text)}],0,supplied=value)
+        add('null password', [{'password':make_password('None')}], failure='value', supplied=None)
+        add('wrong numeric password',[{'password':make_password('123')}],failure='value',supplied=124)
+        add('unusable numeric password',[{'password':'!unused'}],failure='value',supplied=123)
+        add('unknown numeric password',[{'password':'retired$hash'}],failure='value',supplied=123)
+        add('raw bcrypt numeric password',[{'password':bcrypt.hashpw(b'123',bcrypt.gensalt(rounds=4)).decode()}],failure='value',supplied=123)
+        add('old PBKDF2 numeric password',[{'password':PBKDF2PasswordHasher().encode('123','old-salt',iterations=10)}],failure='value',supplied=123,exception='TypeError')
+        for algorithm in ('pbkdf2_sha1','bcrypt_sha256','scrypt','argon2'):
+            add(algorithm+' numeric password',[{'password':make_password('123',hasher=algorithm)}],failure='value',supplied=123,exception='TypeError' if algorithm=='pbkdf2_sha1' else 'AttributeError')
+        add('unknown account before null password',[],failure='not_found',supplied=None)
+        add('unknown account before list password',[],failure='not_found',supplied=[1,2])
+        for label,value,text in [('null',None,'None')]+raw_values:
+            add('raw identifier '+label,[{'username':text.upper()}],0,identifier=value)
+        # Multipart file values stringify to filenames for identifiers/PBKDF2,
+        # but retain non-string type for fallback and make_password rejection.
+        add('multipart password file matches current hash',[{'password':make_password('credential.txt')}],0,supplied=None)
+        cases[-1]['password_upload']={'name':'credential.txt','size':3}
+        add('multipart password file mismatch',[{'password':make_password('other.txt')}],failure='value',supplied=None)
+        cases[-1]['password_upload']={'name':'credential.txt','size':3}
+        add('multipart password file cannot rehash',[{'password':PBKDF2PasswordHasher().encode('credential.txt','old-salt',iterations=10)}],failure='value',supplied=None,exception='TypeError')
+        cases[-1]['password_upload']={'name':'credential.txt','size':3}
+        add('multipart identifier file',[{'username':'IDENTIFIER.TXT'}],0,identifier=None)
+        cases[-1]['identifier_upload']={'name':'identifier.txt','size':3}
+        numeric_hash=make_password('123')
+        add('raw password inactive account',[{'password':numeric_hash,'is_active':False}],failure='invalid',supplied=123)
+        add('raw password deleted account',[{'password':numeric_hash,'deleted':True}],failure='not_found',supplied=123)
+        add('raw password ambiguous accounts',[{'password':numeric_hash},{'password':numeric_hash}],failure='invalid',supplied=123)
+        add('raw password later candidate failure',[{'password':numeric_hash},{'password':make_password('124')}],failure='value',supplied=123)
         batches = []
         with disable_auditlog():
             for index, size in enumerate((1,16,128,129,257)):
@@ -81,8 +123,19 @@ def run(work, log, tool_env):
         before = snapshot()
         factory = APIRequestFactory()
         for case in cases:
-            response = oauth2_login(factory.post('/oauth2/login', {'username':case['identifier'],'password':case['password']}, format='json'))
-            if case['selected']:
+            try:
+                payload={'username':case['identifier'],'password':case['password']}
+                for field in ('identifier','password'):
+                    if upload:=case.get(field+'_upload'):
+                        payload['username' if field=='identifier' else field]=SimpleUploadedFile(upload['name'],b'x'*upload['size'])
+                response = oauth2_login(factory.post('/oauth2/login', payload, format='multipart' if any(k.endswith('_upload') for k in case) else 'json'))
+            except (AttributeError,TypeError) as error:
+                assert type(error).__name__==case['exception'], (case['name'],'unexpected exception class')
+                assert case['failure']=='value', (case['name'],'unexpected Django value failure')
+                response=None
+            if case['failure']=='value':
+                assert response is None, (case['name'],'missing Django value failure')
+            elif case['selected']:
                 assert response.status_code == 200, f"{case['name']}: Django login did not succeed"
                 assert str(AccessToken(response.data['access_token'])['user_id']) == case['selected'], f"{case['name']}: wrong selection"
             else:
