@@ -1029,3 +1029,13 @@ schema, checking stale-publication rules and maintenance without spending retrie
 See [the executor contract](../../../BE_GO/internal/service/job_executor.md).
 Production task registration, process supervision, scheduler ownership and all
 activation/release/restore gates remain required; no task status becomes verified.
+
+### Daily communication counter reset
+
+The first concrete ordinary-task service performs the same global positive-counter
+UPDATE as Django, preserving all configuration fields and producing no audit. Atomic
+fenced completion and permanent occurrence deduplication protect usage recorded after
+a completed reset. Seven PostgreSQL groups follow the actual Django oracle, including
+legacy handled SQL errors, cancellation, replay and bounded statement counts. No
+production publisher or scheduler is activated. The ledger entry is `implementing`;
+see [the task contract](../../../BE_GO/internal/service/email_balance_reset.md).

@@ -820,3 +820,9 @@ and the Go executor on the real Django receipt schema. Eager Retry verifies the
 15-second countdown and unchanged retry/publication metadata without broker
 publication. Both adapters reject missing or skipped Go scenarios. This is not
 application task-body, Celery broker or production worker/scheduler parity.
+
+`accounts.py --only email-balance-reset` runs the actual Django daily counter task
+and seven required Go/PostgreSQL groups, including replay, stale-lease rollback,
+handled SQL errors, cancellation and managed-table readback. The full accounts
+adapter also includes this rehearsal. This tests current model schema and the task
+body; historical schedules and production worker ownership remain separate.

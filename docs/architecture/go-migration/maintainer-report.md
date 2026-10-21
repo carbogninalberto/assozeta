@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 8 implementing,
-5 requiring renewed review and 497 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 9 implementing,
+5 requiring renewed review and 496 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -156,8 +156,29 @@ Django restore rehearsal retains all 42 HTTP methods per backend and adds thirte
 ordinary-task comparisons. The standalone queue rehearsal requires all ten queue
 and thirteen executor groups, with no skipped cases. The complete application
 accounts/provider evidence above still comes from the earlier restore/runtime
-increment. Current published `714031d` quality/manual workflows (39669625934 and
-39669625927) remain in progress at this checkpoint.
+increment. Published `714031d` quality/manual workflows (39669625934 and
+39669625927) were subsequently cancelled. The `6fce63e` Go job (119471004737 in quality run 39671572241)
+was cancelled by its 15-minute execution limit, as confirmed by its check annotation.
+The complete quality workflow and manual run 39671572116 are still pending here.
+The Go job budget is raised to 30 minutes for the expanded integration suite;
+individual adapter deadlines are unchanged and the new head still needs CI.
+
+The daily communication counter reset now has a concrete Go service and repository.
+Seven required PostgreSQL groups pass after the actual Django oracle, covering
+instance-wide bulk updates, nullable results, legacy swallowed SQL errors, fencing,
+replay preserving later usage, cancellation and bounded statement counts. Django
+reads the Go-written counters and unchanged configuration/audit fields. No publisher
+or scheduler is activated; the task ledger is `implementing`. Static midnight
+scheduling is absent from this fresh initialized app/Beat fixture, so historical
+schedule reconciliation remains open. See
+`BE_GO/internal/service/email_balance_reset.md`.
+
+The full local production-Python accounts adapter passes with the new task fixture
+included, as do the focused restore regression, Go race/vet and tagged integration
+vet, formatting, inventory/drift and actionlint. This includes all previously
+declared account, session, login image and restore-admission cases, with no missing
+or skipped task scenarios. It remains current-model component evidence; the live
+application login and full lifecycle are not thereby implemented.
 
 ## Remaining completion gates
 
