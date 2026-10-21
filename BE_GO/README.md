@@ -240,3 +240,16 @@ optional/foreign links, bounded pages, rollback across pages, overlapping jobs,
 cancellation and real executor heartbeat. Explicit corrections to the broken
 legacy task are documented in `internal/service/subscription_auto_archive.md`.
 Production registration, scheduler ownership and activation remain unfinished.
+
+Medical cleanup now has bounded, read-only candidate discovery protecting every
+current Document FK/M2M and draft medical reference. Fourteen actual Django cases
+confirm existing file/reference/duplicate-audit failures; six Go/PostgreSQL groups
+verify discovery, query/pool bounds and cancellation. This does not delete files
+or implement the cleanup task; upload/attachment coordination and durable file
+recovery remain required. See `internal/repository/medical_cleanup_candidates.md`.
+
+Medical S3 key resolution also passes 5,045 production Python/django-storages
+cases, including timestamp rounding and rejection of cross-document paths.
+This does not execute provider operations. See
+`BE_GO/pkg/storage/documentkey/README.md` and run
+`TESTS/adapters/django/document_keys.py`.

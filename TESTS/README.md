@@ -882,3 +882,19 @@ overlapping tasks, actual executor heartbeat and rollback of a preceding page.
 Django reads and resaves the Go-written records. Full accounts and task-bodies
 include it; production scheduling/activation and historical migration evidence
 remain open. See `BE_GO/internal/service/subscription_auto_archive.md`.
+
+`accounts.py --only medical-orphan-cleanup` runs fourteen actual Django cleanup
+scenarios on private files and six Go/PostgreSQL discovery groups. It confirms
+dangling draft/upload grants, shared/foreign document loss, duplicate deletion
+audits and file loss before database rollback. Go discovery protects all fifteen
+actual Document relationships plus canonical draft references, including historical
+rows, without changing files or managed tables. Scale uses 4,096 documents with
+2,048 draft protections. Full accounts includes it; task-bodies does not count this
+as a sixth implemented task. S3, destructive cleanup and recovery remain open;
+see `BE_GO/internal/repository/medical_cleanup_candidates.md`.
+
+Medical S3 key resolution also passes 5,045 production Python/django-storages
+cases, including timestamp rounding and rejection of cross-document paths.
+This does not execute provider operations. See
+`BE_GO/pkg/storage/documentkey/README.md` and run
+`TESTS/adapters/django/document_keys.py`.
