@@ -476,3 +476,23 @@ Django's partial autocommit failures and stale full-save overwrites separately.
 These differences are documented, not certified as equivalent failure behavior.
 Public Go login and mixed-runtime races remain open; see
 `BE_GO/internal/service/login_finalization.md`.
+
+
+### Login response composition and registration flags
+
+The account adapter runs `adapters/django/login_response.py` with the Go
+`responseintegration` tag. Thirty-six explicitly expected full JSON/outcome cases
+compare the actual Django response builder and the composed Go PostgreSQL services.
+Role/key presence, collaborator ownership, instructor counts 0/1/2/128/512, all
+feature masks, JSON scalars/large integers and default-card audit readback are
+checked. Existing association/collaborator responses use seven statements; creation
+ten; 32 concurrent compositions use 224 statements. A real denied instructor
+SELECT and persisted settings/instructor transitions are checked. All managed
+tables match after restoration.
+
+The same fixture proves 28 explicit registration boolean values, eight dotenv
+cases and cyclic-proxy failure with Django's environment reader. Go must preserve
+those results. No image processor is supplied in the database fixture: it covers
+null images and branches Django leaves unchanged. Unit image doubles verify
+routing only. Tokens are synthetic response inputs; public login, image conversion
+and final session delivery remain open. See `BE_GO/internal/service/login_response.md`.

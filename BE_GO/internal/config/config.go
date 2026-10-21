@@ -17,17 +17,20 @@ import (
 )
 
 type Config struct {
-	JWTSigningKey        string `json:"-"`
-	JWTVerifyingKey      string `json:"-"`
-	CSRFTrustedOrigins   []string
-	ListenAddress        string
-	Version              string
-	databaseURL          string
-	RedisAddress         string
-	RedisUsername        string
-	RedisPassword        string
-	RedisTLS             bool
-	RedisRootCertificate string
+	FamilyRegistrationEnabled     bool
+	FederationRegistrationEnabled bool
+	MultipleRegistrationEnabled   bool
+	JWTSigningKey                 string `json:"-"`
+	JWTVerifyingKey               string `json:"-"`
+	CSRFTrustedOrigins            []string
+	ListenAddress                 string
+	Version                       string
+	databaseURL                   string
+	RedisAddress                  string
+	RedisUsername                 string
+	RedisPassword                 string
+	RedisTLS                      bool
+	RedisRootCertificate          string
 }
 
 // String intentionally omits credentials (including database URLs).
@@ -38,18 +41,36 @@ func (c Config) DatabaseURL() string { return c.databaseURL }
 // It does not mutate the process environment or log parser input on failure.
 func Load(path string) (Config, error) {
 	values := map[string]string{}
+	registrationValues := map[string]string{}
 	if path != "" {
-		parsed, err := godotenv.Read(path)
+		content, err := os.ReadFile(path)
+		if err != nil || !utf8.Valid(content) {
+			return Config{}, errors.New("cannot read environment file")
+		}
+		parsed, err := godotenv.Unmarshal(string(content))
 		if err != nil {
 			return Config{}, errors.New("cannot read environment file")
 		}
 		values = parsed
+		registrationValues = registrationEnvironmentFile(string(content))
 	}
 	for _, entry := range os.Environ() {
 		key, value, ok := strings.Cut(entry, "=")
 		if ok {
 			values[key] = value
+			registrationValues[key] = value
 		}
+	}
+	// These flags use Django's literal read_env rules, not shell expansion.
+	for _, flag := range []struct {
+		name     string
+		fallback bool
+	}{{"FAMILY_REGISTRATION_ENABLED", true}, {"FEDERATION_REGISTRATION_ENABLED", false}, {"MULTIPLE_REGISTRATION_ENABLED", false}} {
+		enabled, err := registrationFlag(registrationValues, flag.name, flag.fallback)
+		if err != nil {
+			return Config{}, err
+		}
+		values[flag.name] = strconv.FormatBool(enabled)
 	}
 	return Parse(values)
 }
@@ -101,7 +122,19 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
+	family, err := registrationFlag(values, "FAMILY_REGISTRATION_ENABLED", true)
+	if err != nil {
+		return Config{}, err
+	}
+	federation, err := registrationFlag(values, "FEDERATION_REGISTRATION_ENABLED", false)
+	if err != nil {
+		return Config{}, err
+	}
+	multiple, err := registrationFlag(values, "MULTIPLE_REGISTRATION_ENABLED", false)
+	if err != nil {
+		return Config{}, err
+	}
+	return Config{FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: strings.FieldsFunc(get("CSRF_TRUSTED_ORIGINS", ""), func(r rune) bool { return r == ',' }), ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
