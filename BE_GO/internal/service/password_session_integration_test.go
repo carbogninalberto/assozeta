@@ -47,13 +47,15 @@ func TestPasswordSessionPostgres(t *testing.T) {
 		PublicKey  string `json:"public_key"`
 		Cases      []struct {
 			Name, ID, Identifier, Password, Outcome string
+			Mode, Backend, Token                    string
+			SocialValid                             bool `json:"social_valid"`
 			OTP                                     json.RawMessage
 			Present                                 bool
 			Queries                                 int
 			Expected                                json.RawMessage
 		}
 	}
-	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 18 {
+	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 26 {
 		t.Fatal("invalid session fixture", err)
 	}
 	now, err := time.Parse(time.RFC3339Nano, fixture.Now)
@@ -76,7 +78,18 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	db.SetMaxOpenConns(4)
 	admission := NewPasswordAdmission(NewPasswordLogin(repository.NewPasswordLogins(db), passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), 2), NewLoginPreparation(repository.NewLoginPreparations(db), clock), NewSecondFactor(func() time.Time { return time.Unix(59, 0) }))
 	responses := NewLoginResponses(NewLoginProfiles(repository.NewLoginProfiles(db), clock), NewAssociationProfiles(repository.NewAssociationProfiles(db), clock), repository.NewLoginResponseSettings(db), NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), clock), nil, domain.RegistrationChoices{Family: true})
-	flow := NewPasswordSessions(admission, manager, responses, NewLoginFinalization(repository.NewLoginFinalizations(db), clock))
+	socialTokens := &sessionSocialVerifier{db: db, values: map[string]sessionSocialIdentity{}}
+	for _, tc := range fixture.Cases {
+		if tc.Mode == "social" {
+			provider := "google"
+			if strings.HasPrefix(tc.Backend, "apple") {
+				provider = "apple"
+			}
+			socialTokens.values[tc.Token] = sessionSocialIdentity{email: tc.Identifier, valid: tc.SocialValid, provider: provider}
+		}
+	}
+	social := NewSocialAdmission(NewSocialLogin(repository.NewAccounts(db), socialTokens, 2), NewLoginPreparation(repository.NewLoginPreparations(db), clock), NewSecondFactor(func() time.Time { return time.Unix(59, 0) }))
+	flow := NewLoginSessions(admission, social, manager, responses, NewLoginFinalization(repository.NewLoginFinalizations(db), clock))
 	remote := "127.0.0.1"
 	audit := domain.LoginAuditContext{RemoteAddress: &remote}
 	results := make([]*dto.LoginResponse, len(fixture.Cases))
@@ -87,11 +100,14 @@ func TestPasswordSessionPostgres(t *testing.T) {
 				t.Fatal("invalid OTP fixture")
 			}
 			counter.count.Store(0)
-			result, err := flow.Login(context.Background(), tc.Identifier, tc.Password, otp, tc.Present, audit)
+			socialTokens.calls.Store(0)
+			result, err := flow.LoginRequest(context.Background(), dto.LoginRequest{Mode: tc.Mode, Identifier: tc.Identifier, Password: tc.Password, Token: tc.Token, Backend: tc.Backend, OTP: otp, OTPPresent: tc.Present}, audit)
 			outcome := ""
 			var databaseError *pgconn.PgError
 			switch {
 			case err == nil:
+			case errors.Is(err, ErrSocialToken):
+				outcome = "social_token"
 			case errors.Is(err, ErrOTPRequired):
 				outcome = "required"
 			case errors.Is(err, ErrOTPInvalid):
@@ -108,6 +124,13 @@ func TestPasswordSessionPostgres(t *testing.T) {
 				outcome = "finalization"
 			default:
 				t.Fatal("unexpected session failure", err)
+			}
+			wantCalls := int64(0)
+			if tc.Mode == "social" {
+				wantCalls = 1
+			}
+			if socialTokens.calls.Load() != wantCalls {
+				t.Fatal("wrong social session dispatch")
 			}
 			if outcome != tc.Outcome {
 				t.Fatal("wrong session outcome", outcome, tc.Outcome)
@@ -159,7 +182,7 @@ func TestPasswordSessionPostgres(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			tc := fixture.Cases[i%2]
-			result, err := flow.Login(context.Background(), tc.Identifier, tc.Password, nil, false, audit)
+			result, err := flow.LoginRequest(context.Background(), dto.LoginRequest{Mode: "password", Identifier: tc.Identifier, Password: tc.Password}, audit)
 			if err != nil || result == nil || result.UserData.UserID != tc.ID {
 				t.Error("concurrent session failed", err)
 			}
@@ -176,4 +199,27 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	if err = os.WriteFile(os.Getenv("ASSOZETA_PASSWORD_SESSION_RESULT"), encoded, 0600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+type sessionSocialIdentity struct {
+	email, provider string
+	valid           bool
+}
+type sessionSocialVerifier struct {
+	db     *sqlx.DB
+	values map[string]sessionSocialIdentity
+	calls  atomic.Int64
+}
+
+func (v *sessionSocialVerifier) Verify(ctx context.Context, provider string, token any) (SocialIdentity, bool, error) {
+	v.calls.Add(1)
+	key, ok := token.(string)
+	if !ok {
+		return SocialIdentity{}, false, errors.New("invalid fixture token type")
+	}
+	value, ok := v.values[key]
+	if !ok || provider != value.provider || v.db.Stats().InUse != 0 {
+		return SocialIdentity{}, false, errors.New("social dispatch or database lifetime differs")
+	}
+	return SocialIdentity{Email: value.email}, value.valid, ctx.Err()
 }

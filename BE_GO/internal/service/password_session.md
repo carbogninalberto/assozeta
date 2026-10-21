@@ -1,7 +1,8 @@
 # Password session composition
 
-`PasswordSessions` connects password admission, JWT issuance, response construction
-and final login writes. It receives explicit interfaces and trusted audit context;
+`LoginSessions` dispatches password/social admission, then shares JWT issuance, response construction
+and final login writes with the existing `PasswordSessions` convenience API.
+Both receive explicit interfaces and trusted audit context;
 there is no SQL or framework request context in the coordinator. The concrete
 components retain their existing bounded queries, admission limits and transactions.
 Identifier and password values remain uncoerced until credential selection; see
@@ -36,7 +37,17 @@ association indexes. Eight concurrent repeated logins exercise one shared
 coordinator and check that committed normalization/card effects do not duplicate.
 
 The fixtures have no image that needs conversion. A complete image dispatcher,
-social admission, complete transport parsing, rate limits, audit middleware, public HTTP
+concrete social provider verification, complete transport parsing, rate limits, audit middleware, public HTTP
 registration and backend switching remain open. The Django cookie assertions
 characterize its transport only; they do not prove Go cookie parity. This service
 is not a production-ready public login endpoint.
+
+
+The composed fixture now contains 26 declared cases: 18 password cases and eight
+social cases with controlled provider results. Social scenarios include athlete,
+association/card creation, collaborator and administrator sessions, missing/wrong
+OTP, token rejection despite a supplied valid password, and a real final-write
+failure after card creation. Provider alias/token/call counts are checked before
+response comparison. These service cases execute actual JWT signing, profile/
+configuration reads, audit writes and finalization; they do not establish remote
+Google/Apple verification or successful public HTTP middleware behavior.

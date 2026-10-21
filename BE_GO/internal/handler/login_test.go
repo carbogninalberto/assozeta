@@ -106,6 +106,10 @@ func TestLoginTransportFailuresNeverSetCookie(t *testing.T) {
 	}{
 		{service.ErrLoginNotFound, 401, `{"error":"invalid credential (not found)"}`},
 		{service.ErrLoginCredentials, 401, `{"error":"invalid credentials"}`},
+		{service.ErrSocialToken, 401, `{"error":"Invalid social token"}`},
+		{service.ErrSocialEmail, 401, `{"error":"Email mismatch"}`},
+		{&service.UnsupportedSocialBackend{Value: "None"}, 400, `{"error":"Unsupported backend: None"}`},
+		{service.ErrSocialIdentity, 500, "Server Error (500)"},
 		{service.ErrOTPRequired, 401, `{"msg":"OTP code required."}`},
 		{service.ErrOTPInvalid, 401, `{"msg":"OTP code not valid."}`},
 		{errors.New("private provider diagnostic"), 500, "Server Error (500)"},

@@ -779,3 +779,15 @@ unknown/inactive/deleted/ambiguous accounts and later-candidate errors agree wit
 the real Django view. All managed tables match after the declared resets. See
 [`password_login.md`](../../../BE_GO/internal/service/password_login.md) for
 boundaries; this does not certify public successful login HTTP or parser extremes.
+
+
+Social admission now uses the existing streamed account reader and an explicit
+provider-verification port. It retains duplicate/preferred-account selection,
+provider and email error ordering, full Unicode lowercase comparisons, inactive
+admission, username/audit normalization and OTP. `LoginSessions` dispatches both
+credential branches into shared response/signing/finalization checks. The separate
+social adapter has 41 controlled-provider cases; the session adapter now has 26
+full-response cases (18 password, eight social). Provider network/cryptographic
+validation and dynamic integration configuration remain unimplemented, so the
+public route remains unregistered. See
+[`social_login.md`](../../../BE_GO/internal/service/social_login.md).

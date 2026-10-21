@@ -45,7 +45,7 @@ def run(work, log, tool_env):
             owner_association=SportAssociation.original_objects.create(sport_association_id=uid(620000),user=owner,denomination='Fixture ASD',tax_code='12345678901',additional_sections=[])
             SportAssociationMembershipCardConfiguration.objects.create(sport_association=owner_association)
         def add(name,*,role=2,admin=False,active=True,deleted=False,otp=None,present=False,two_fa=False,
-                outcome='',supplied=password,delete_days=None,missing_association=False,create_card=False,uppercase=False,queries=8):
+                outcome='',supplied=password,delete_days=None,missing_association=False,create_card=False,uppercase=False,queries=8,mode="password",backend="google",social_valid=True):
             n=len(cases);id=uid(611000+n);username=f'Session-{n}';username=username.upper() if uppercase else username
             delete_on=None if delete_days is None else now.date()+datetime.timedelta(days=delete_days)
             with disable_auditlog():
@@ -56,7 +56,7 @@ def run(work, log, tool_env):
                 if role==1 and not admin and not missing_association:
                     association=SportAssociation.original_objects.create(sport_association_id=uid(621000+n),user=user,denomination='Fixture ASD',tax_code='12345678901',additional_sections=[])
                     if not create_card:SportAssociationMembershipCardConfiguration.objects.create(sport_association=association)
-            changed=username!=username.upper() and outcome not in ('invalid_credentials','not_found')
+            changed=username!=username.upper() and outcome not in ('invalid_credentials','not_found','social_token')
             expected=None
             if not outcome:
                 expected={'expires_in':14400,'token_type':'Bearer','role':'administrator' if admin else 'athlete' if role==2 else 'association',
@@ -73,7 +73,7 @@ def run(work, log, tool_env):
                     expected['user_data']['preview_and_custom_features']=[{'name':'Iscrizione per famiglia','description':''}]
                     expected['tables_settings']={}
             cases.append({'name':name,'id':id,'identifier':user.email,'password':supplied,'otp':otp,'present':present,'role':role,
-                'queries':queries,
+                'queries':queries,'mode':mode,'backend':backend,'token':f'synthetic-social-session-{n}','social_valid':social_valid,
                 'outcome':outcome,'before':username,'after':username.upper() if changed else username,'changed':changed,
                 'delete_before':delete_on.isoformat() if delete_on else None,
                 'delete_after':None if not outcome and delete_days is not None and delete_days>=0 else delete_on.isoformat() if delete_on else None,
@@ -96,9 +96,17 @@ def run(work, log, tool_env):
         add('past deletion retained',delete_days=-1)
         add('historical zero role',role=0)
         add('final database write fails after card creation',role=1,create_card=True,outcome='finalization',queries=18)
+        add('social Google athlete session',mode='social')
+        add('social Apple creates default card',mode='social',backend='apple',role=1,create_card=True,queries=18)
+        add('social Google collaborator session',mode='social',backend='google-identity',role=3,queries=14)
+        add('social missing OTP retains normalization',mode='social',two_fa=True,outcome='required',role=1,create_card=True,queries=6)
+        add('social wrong OTP retains normalization',mode='social',backend='apple-id',two_fa=True,otp='287083',present=True,outcome='invalid_otp',queries=5)
+        add('social token denial prevents normalization',mode='social',social_valid=False,outcome='social_token',queries=1)
+        add('social Apple administrator session',mode='social',backend='apple',role=1,admin=True)
+        add('social finalization fails after card creation',mode='social',backend='apple',role=1,create_card=True,outcome='finalization',queries=18)
         with connection.cursor() as cursor:
             cursor.execute("""CREATE FUNCTION session_reject_finalization() RETURNS trigger LANGUAGE plpgsql AS $$
-                BEGIN IF NEW.user_id='00000000-0000-4000-8000-000000611017'::uuid AND NEW.last_login IS NOT NULL THEN
+                BEGIN IF NEW.user_id IN ('00000000-0000-4000-8000-000000611017'::uuid,'00000000-0000-4000-8000-000000611025'::uuid) AND NEW.last_login IS NOT NULL THEN
                   RAISE EXCEPTION 'synthetic finalization failure' USING ERRCODE='23514';
                 END IF; RETURN NEW; END $$""")
             cursor.execute('CREATE TRIGGER session_reject_finalization BEFORE UPDATE OF last_login ON bakney_user FOR EACH ROW EXECUTE FUNCTION session_reject_finalization()')
@@ -147,9 +155,15 @@ def run(work, log, tool_env):
             @classmethod
             def now(cls,tz=None):return cls.fromtimestamp(59,tz)
         factory=APIRequestFactory()
-        with patch('django.utils.timezone.now',return_value=now),patch('rest_framework_simplejwt.tokens.aware_utcnow',return_value=now),patch.object(pyotp.totp,'datetime',SimpleNamespace(datetime=FrozenDateTime)):
+        with patch('django.utils.timezone.now',return_value=now),patch('rest_framework_simplejwt.tokens.aware_utcnow',return_value=now),patch.object(pyotp.totp,'datetime',SimpleNamespace(datetime=FrozenDateTime)),patch('application.views.auth_views.SocialAuthService.verify_google_token') as google,patch('application.views.auth_views.SocialAuthService.verify_apple_token') as apple:
             for case in cases:
+                google.reset_mock();apple.reset_mock()
+                def verify(token):
+                    assert token==case['token'],(case['name'],'social token altered')
+                    return case['social_valid'],{'email':case['identifier'],'email_verified':False}
+                google.side_effect=verify;apple.side_effect=verify
                 payload={'username':case['identifier'],'password':case['password']}
+                if case['mode']=='social':payload.update(token=case['token'],backend=case['backend'])
                 if case['present']:payload['otp']=case['otp']
                 outcome=''
                 try:response=AuditlogMiddleware(oauth2_login)(factory.post('/oauth2/login',payload,format='json'))
@@ -163,12 +177,14 @@ def run(work, log, tool_env):
                         assert cookie.value==response.data['access_token'] and cookie['httponly'] and cookie['secure'] and cookie['samesite']=='Strict' and cookie['path']=='/' and cookie['max-age']==14400
                     else:
                         assert response.status_code==401
-                        outcome={'OTP code required.':'required','OTP code not valid.':'invalid_otp','invalid credentials':'invalid_credentials','invalid credential (not found)':'not_found'}.get(response.data.get('msg',response.data.get('error')),'unexpected')
+                        outcome={'OTP code required.':'required','OTP code not valid.':'invalid_otp','invalid credentials':'invalid_credentials','invalid credential (not found)':'not_found','Invalid social token':'social_token'}.get(response.data.get('msg',response.data.get('error')),'unexpected')
                         assert not response.cookies
                 assert outcome==case['outcome'],(case['name'],'Django outcome',outcome)
+                assert google.call_count==int(case['mode']=='social' and case['backend'].startswith('google'))
+                assert apple.call_count==int(case['mode']=='social' and case['backend'].startswith('apple'))
                 check_and_reset(case)
         assert snapshot()==before,'Django complete login changed undeclared state'
-        print(f'Django: {len(cases)} complete password session cases passed',flush=True)
+        print(f'Django: {len(cases)} complete password/social session cases passed',flush=True)
         fixture=work/'password-session.json';result=work/'password-session-results.json'
         fixture.write_text(json.dumps({'now':now.isoformat(),'private_key':settings.SIMPLE_JWT['SIGNING_KEY'],'public_key':settings.SIMPLE_JWT['VERIFYING_KEY'],'cases':cases}));fixture.chmod(0o600)
         try:
