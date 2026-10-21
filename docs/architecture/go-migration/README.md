@@ -791,3 +791,9 @@ full-response cases (18 password, eight social). Provider network/cryptographic
 validation and dynamic integration configuration remain unimplemented, so the
 public route remains unregistered. See
 [`social_login.md`](../../../BE_GO/internal/service/social_login.md).
+
+Current Google/Apple client-ID resolution now reads instance overrides on each
+operation, preserving disable/reset, environment precedence and legacy Google
+visibility. The 33-case PostgreSQL comparison and bounded concurrent/query checks
+are described in `BE_GO/internal/service/social_configuration.md`. Environment
+loader/root wiring and actual provider verification remain unfinished.

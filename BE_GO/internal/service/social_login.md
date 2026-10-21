@@ -59,7 +59,7 @@ starts after reader closure, two-slot concurrency, canceled waiters and slot reu
 Handler tests cover social error status/body and the absence of session cookies.
 
 Still required: concrete Google ID-token/access-token and Apple verification,
-live instance integration configuration, complete public HTTP composition,
+environment/configuration/provider wiring, complete public HTTP composition,
 mid-request account/provider configuration changes, global rate/audit middleware,
 image dispatch, browser workflows, versioned routing and release/switch evidence.
 
@@ -72,3 +72,7 @@ before returning tokens. The separate session adapter contains 26 full-response
 cases, including eight social cases with controlled provider results and real
 PostgreSQL/JWT/audit/finalization behavior. This preserves the distinction between
 verifying session orchestration and verifying provider credentials remotely.
+
+The separate `SocialClientIDs` component now reads live instance overrides; see
+`social_configuration.md`. It is not yet connected to a concrete verifier or the
+composition root.

@@ -712,3 +712,10 @@ The composed session adapter now uses `LoginSessions.LoginRequest` for 26 cases:
 18 password and eight social cases, with real signed tokens, complete responses,
 card/audit/finalization effects and forced final-write failures in both branches.
 The accounts report calls that combined count `login_session_cases`.
+
+The accounts adapter also runs 33 declared current social-configuration cases
+before account seeding. `social_configuration.py` compares Django with the Go
+read-only repository/service, checks 1/16/128/512-row selection, 32 concurrent reads
+per size, cancellation under a real PostgreSQL table lock and full managed-table
+readback. `social_configuration_cases` records the count. No provider HTTP or
+cryptographic verification is substituted by this fixture.
