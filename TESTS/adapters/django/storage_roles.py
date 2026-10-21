@@ -34,9 +34,9 @@ def main():
     cases=[]
     def request(role='target', signer='source', session='generated', duration=None, external=None, serial=None, code=None):
         return dict(Role=role,Signer=signer,Session=session,Duration=duration,External=external,Serial=serial,Code=code)
-    def add(name,lines='',config=None,credentials=source,env=None,want=None,error=False,mode='ok',mfa=None,attempts=None,delay=0):
+    def add(name,lines='',config=None,credentials=source,env=None,want=None,error=False,mode='ok',mfa=None,attempts=None,delay=0,metadata=None):
         cases.append(dict(Name=name,Config=(target if config is None else config)+lines,Credentials=credentials,
-            Environment=env or {},Expected=[request()] if want is None else want,Error=error,Mode=mode,MFA=mfa,Attempts=attempts or ([True] if error else [False,False]),Delay=delay))
+            Environment=env or {},Expected=[request()] if want is None else want,Error=error,Mode=mode,MFA=mfa,Attempts=attempts or ([True] if error else [False,False]),Delay=delay,Metadata=metadata))
     add('omitted duration and session')
     add('explicit session',lines='role_session_name=fixture-session\n',want=[request(session='fixture-session')])
     add('empty session generates default',lines='role_session_name=\n')
@@ -81,9 +81,67 @@ def main():
     middle='arn:aws:iam::123456789012:mfa/middle'
     add('MFA nested roles',config='[profile target]\nrole_arn='+ARN+'target\nsource_profile=middle\nmfa_serial='+serial+'\n[profile middle]\nrole_arn='+ARN+'middle\nsource_profile=source\nmfa_serial='+middle+'\n',mfa=dict(Code='012345',Serials=[serial,middle]),want=[request('middle',serial=middle,code='012345'),request(signer='middle',serial=serial,code='012345')])
     add('MFA environment source',config='[profile target]\nrole_arn='+ARN+'target\ncredential_source=Environment\nmfa_serial='+serial+'\n',env={'AWS_ACCESS_KEY_ID':'env-access','AWS_SECRET_ACCESS_KEY':'env-secret','AWS_SESSION_TOKEN':'env-token'},mfa=dict(Code='012345',Serials=[serial]),want=[request(signer='env',serial=serial,code='012345')])
-    observed={};problems=[]
+    for kind in ('EcsContainer','Ec2InstanceMetadata'):
+        config='[profile target]\nrole_arn='+ARN+'target\ncredential_source='+kind+'\n'
+        add(kind+' role',config=config,metadata=dict(Kind=kind))
+        add(kind+' role with MFA',config=config+'mfa_serial='+serial+'\n',metadata=dict(Kind=kind),mfa=dict(Code='012345',Serials=[serial]),want=[request(serial=serial,code='012345')])
+        add(kind+' STS denial',config=config,metadata=dict(Kind=kind),mode='denied',error=True)
+    for kind in ('EcsContainer','Ec2InstanceMetadata'):
+        config='[profile target]\nrole_arn='+ARN+'target\nsource_profile=middle\n[profile middle]\nrole_arn='+ARN+'middle\ncredential_source='+kind+'\n'
+        add(kind+' nested roles',config=config,metadata=dict(Kind=kind),want=[request('middle'),request(signer='middle')])
+    for name,extra in [('escaped prefix',dict(Prefix='proxy%20folder/%2Ftenant')),('repeated slash prefix',dict(Prefix='proxy//tenant/')),('profile endpoint',dict(ProfileEndpoint=True)),('environment endpoint wins',dict(ConflictingEndpoint=True))]:
+        add('metadata '+name,config='[profile target]\nrole_arn='+ARN+'target\ncredential_source=Ec2InstanceMetadata\n',metadata=dict(Kind='Ec2InstanceMetadata',**extra))
+    add('container token file precedence',config='[profile target]\nrole_arn='+ARN+'target\ncredential_source=EcsContainer\n',metadata=dict(Kind='EcsContainer',TokenFile=True))
+    add('container endpoint missing',config='[profile target]\nrole_arn='+ARN+'target\ncredential_source=EcsContainer\n',error=True,want=[])
+    for mode in ('disabled','v1-fallback','v1-blocked','token-bad','empty-list','missing-access'):
+        expected=[] if mode!='v1-fallback' else [request()]
+        add('metadata '+mode,config='[profile target]\nrole_arn='+ARN+'target\ncredential_source=Ec2InstanceMetadata\n',metadata=dict(Kind='Ec2InstanceMetadata',Mode=mode),error=mode!='v1-fallback',want=expected)
+    observed={};metadata_observed={};problems=[]
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
+        def metadata_request(self):
+            path=urlsplit(self.path).path.strip('/').split('/')
+            if len(path)<3 or not path[0].isdigit() or path[1] not in ('django','go'):
+                problems.append(('unrouted metadata fixture request',self.command,urlsplit(self.path).path))
+                self.send_error(404);return
+            index=int(path[0]);backend=path[1];case=cases[index];spec=case['Metadata']
+            if spec is None:
+                problems.append((case['Name'],backend,'unexpected metadata request'));self.send_error(404);return
+            route='/'.join(path[2:]);mode=spec.get('Mode','ok');status=200
+            prefix=spec.get('Prefix','')
+            if prefix:
+                prefix=prefix if prefix.endswith('/') else prefix+'/'
+                if not route.startswith(prefix):problems.append((case['Name'],backend,'metadata prefix differs'))
+                else:route=route[len(prefix):]
+            records=metadata_observed.setdefault((index,backend),[])
+            headers={};body=b''
+            if spec['Kind']=='EcsContainer':
+                records.append('container')
+                if route!='container' or self.command!='GET' or self.headers.get('Authorization')!='synthetic-container-token':problems.append((case['Name'],backend,'container request differs'))
+            elif route=='latest/api/token' and self.command=='PUT':
+                records.append('token')
+                # Both are valid IMDSv2 lifetimes. SDK caches its token for five
+                # minutes; Boto3 requests six hours but refetches it each refresh.
+                ttl='21600' if backend=='django' else '300'
+                if self.headers.get('X-aws-ec2-metadata-token-ttl-seconds')!=ttl:problems.append((case['Name'],backend,'metadata TTL differs'))
+                status=403 if mode in ('v1-fallback','v1-blocked') else 400 if mode=='token-bad' else 200
+                body=b'synthetic-metadata-token';headers['X-aws-ec2-metadata-token-ttl-seconds']=ttl
+            else:
+                expected_token=None if mode=='v1-fallback' else 'synthetic-metadata-token'
+                if self.command!='GET' or self.headers.get('X-aws-ec2-metadata-token')!=expected_token:problems.append((case['Name'],backend,'metadata token differs'))
+                if route=='latest/meta-data/iam/security-credentials':
+                    records.append('list');body=b'' if mode=='empty-list' else b'source'
+                elif route=='latest/meta-data/iam/security-credentials/source':records.append('credentials')
+                else:problems.append((case['Name'],backend,'unexpected metadata route'));status=404
+            if records and records[-1] in ('container','credentials'):
+                values=dict(Code='Success',AccessKeyId='source-access',SecretAccessKey='source-secret',Token='source-token',Expiration='2099-01-01T00:00:00Z')
+                if mode=='missing-access':values.pop('AccessKeyId')
+                body=json.dumps(values).encode();headers['Content-Type']='application/json'
+            self.send_response(status)
+            for key,value in headers.items():self.send_header(key,value)
+            self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+        do_GET=metadata_request
+        do_PUT=metadata_request
         def do_POST(self):
             path=urlsplit(self.path).path.strip('/').split('/')
             if len(path)!=2 or not path[0].isdigit() or path[1] not in ('django','go'):
@@ -133,6 +191,19 @@ def main():
             if mode=='malformed':data=b'not XML sensitive-provider-message'
             if status==403:data=b'<ErrorResponse><Error><Code>AccessDenied</Code><Message>sensitive-provider-message</Message></Error></ErrorResponse>'
             self.send_response(status);self.send_header('Content-Type','text/xml');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+    def check_metadata(index,case,backend):
+        spec=case['Metadata'];expected=[]
+        if spec:
+            if spec['Kind']=='EcsContainer':expected=['container']
+            else:
+                mode=spec.get('Mode','ok')
+                if mode!='disabled':
+                    expected=['token']
+                    if mode not in ('v1-blocked','token-bad'):
+                        expected.append('list')
+                        if mode!='empty-list':expected.append('credentials')
+        actual=metadata_observed.get((index,backend),[])
+        assert actual==expected,(case['Name'],backend,'metadata requests differ',actual)
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     try:
@@ -145,6 +216,25 @@ def main():
                 env={'PATH':os.defpath,'AWS_CONFIG_FILE':str(folder/'config'),'AWS_SHARED_CREDENTIALS_FILE':str(folder/'credentials'),'BOTO_CONFIG':str(folder/'boto'),
                     'AWS_EC2_METADATA_DISABLED':'true','AWS_REGION':'us-east-1','AWS_DEFAULT_REGION':'us-east-1','AWS_MAX_ATTEMPTS':'1',**case['Environment']}
                 endpoint=f'http://127.0.0.1:{server.server_port}/{index}/'
+                spec=case['Metadata']
+                if spec:
+                    if spec['Kind']=='EcsContainer':
+                        env['AWS_CONTAINER_CREDENTIALS_FULL_URI']=endpoint+'django/container'
+                        env['AWS_CONTAINER_AUTHORIZATION_TOKEN']='synthetic-container-token'
+                        if spec.get('TokenFile'):
+                            (folder/'token').write_text('synthetic-container-token');(folder/'token').chmod(0o600)
+                            env['AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE']=str(folder/'token')
+                            env['AWS_CONTAINER_AUTHORIZATION_TOKEN']='wrong-container-token'
+                    else:
+                        env['AWS_EC2_METADATA_DISABLED']='true' if spec.get('Mode')=='disabled' else 'false'
+                        metadata_endpoint=endpoint+'django'+('/'+spec['Prefix'] if spec.get('Prefix') else '')
+                        env['AWS_EC2_METADATA_SERVICE_ENDPOINT']=metadata_endpoint
+                        if spec.get('ProfileEndpoint') or spec.get('ConflictingEndpoint'):
+                            profile_endpoint=metadata_endpoint+('/unselected' if spec.get('ConflictingEndpoint') else '')
+                            with (folder/'config').open('a') as config_file:config_file.write('ec2_metadata_service_endpoint='+profile_endpoint+'\n')
+                            if spec.get('ProfileEndpoint'):env.pop('AWS_EC2_METADATA_SERVICE_ENDPOINT')
+                        if spec.get('Mode')=='v1-blocked':env['AWS_EC2_METADATA_V1_DISABLED']='true'
+
                 env['AWS_ENDPOINT_URL_STS']=endpoint+'django'
                 prompts=[]
                 def prompt(message):
@@ -175,7 +265,11 @@ def main():
                 assert len(prompts)==(len(case['MFA']['Serials']) if case['MFA'] else 0),(case['Name'],'Django prompt count')
                 assert len(observed.get((index,'django'),[]))==len(case['Expected']),(case['Name'],'Django request count differs')
                 assert not problems,problems
-                case['Environment']={**env,'AWS_ENDPOINT_URL_STS':endpoint+'go'}
+                case['Environment']={k:v.replace(endpoint+'django',endpoint+'go') for k,v in env.items()}
+                if spec and (spec.get('ProfileEndpoint') or spec.get('ConflictingEndpoint')):
+                    (folder/'go-config').write_text((folder/'config').read_text().replace(endpoint+'django',endpoint+'go'));(folder/'go-config').chmod(0o600)
+                    case['Environment']['AWS_CONFIG_FILE']=str(folder/'go-config')
+                check_metadata(index,case,'django')
             (out/'django-results.json').write_text(json.dumps({'success':True,'cases':len(cases)})+'\n')
             fixture=work/'cases.json';fixture.write_text(json.dumps(cases));fixture.chmod(0o600)
             run=subprocess.run(['go','test','-race','-tags=storagerolesintegration','./pkg/storage/s3credentials','-run','^TestDjangoAssumeRole$','-json'],cwd=ROOT/'BE_GO',
@@ -189,7 +283,9 @@ def main():
             if problems:print('Protocol differences:',problems)
             run.check_returncode()
             assert not problems,problems
-            for index,case in enumerate(cases):assert len(observed.get((index,'go'),[]))==len(case['Expected']),(case['Name'],'Go request count differs')
+            for index,case in enumerate(cases):
+                assert len(observed.get((index,'go'),[]))==len(case['Expected']),(case['Name'],'Go request count differs')
+                check_metadata(index,case,'go')
             assert sum(e['Action']=='pass' and '/' in e.get('Test','') for e in events)==len(cases)
             assert not any(e['Action']=='skip' for e in events)
         result={'success':True,'cases':len(cases),'scope':'real local STS requests and independently verified signatures; no live AWS access'}

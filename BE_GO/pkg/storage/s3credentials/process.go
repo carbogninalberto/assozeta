@@ -60,7 +60,7 @@ func (w *outputLimit) Write(p []byte) (int, error) {
 // The SDK exposes a custom process command builder but not through its config
 // loader. Replace selected process providers, including source_profile chains,
 // before any Retrieve. Other provider choices stay with the official loader.
-func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, profiles map[string]map[string]string, token MFATokenProvider, depth int) (aws.Config, error) {
+func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconfig.LoadOptions) error, profiles map[string]map[string]string, roleSource aws.CredentialsProvider, token MFATokenProvider, depth int) (aws.Config, error) {
 	if depth > 20 {
 		return aws.Config{}, ErrConfiguration
 	}
@@ -79,21 +79,22 @@ func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconf
 		cfg.Credentials = aws.NewCredentialsCache(processcreds.NewProviderCommand(builder, func(o *processcreds.Options) { o.Timeout = 10 * time.Second }))
 		return cfg, nil
 	}
-	if aws.IsCredentialsProvider(cfg.Credentials, &stscreds.AssumeRoleProvider{}) && (shared.Source != nil || shared.CredentialSource == "Environment") {
-		var source aws.Config
+	if aws.IsCredentialsProvider(cfg.Credentials, &stscreds.AssumeRoleProvider{}) {
+		source := aws.Config{Credentials: roleSource}
 		var err error
 		if shared.Source != nil {
 			nested := append([]func(*sdkconfig.LoadOptions) error{}, options...)
 			nested = append(nested, sdkconfig.WithSharedConfigProfile(shared.Source.Profile))
-			source, err = sdkconfig.LoadDefaultConfig(ctx, nested...)
+			var nestedSource aws.CredentialsProvider
+			source, nestedSource, err = loadProviders(ctx, nested)
 			if err != nil {
 				return aws.Config{}, ErrConfiguration
 			}
-			source, err = adaptProviders(ctx, source, nested, profiles, token, depth+1)
+			source, err = adaptProviders(ctx, source, nested, profiles, nestedSource, token, depth+1)
 			if err != nil {
 				return aws.Config{}, err
 			}
-		} else {
+		} else if shared.CredentialSource == "Environment" {
 			access, secret, token := os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), os.Getenv("AWS_SECURITY_TOKEN")
 			if token == "" {
 				token = os.Getenv("AWS_SESSION_TOKEN")
@@ -103,8 +104,11 @@ func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconf
 			}
 			source.Credentials = credentials.NewStaticCredentialsProvider(access, secret, token)
 		}
+		if source.Credentials == nil {
+			return aws.Config{}, ErrConfiguration
+		}
 		signer := cfg
-		signer.Credentials = source.Credentials
+		signer.Credentials = &provider{inner: source.Credentials}
 		role, err := newRoleClient(sts.NewFromConfig(signer), profiles[shared.Profile], token)
 		if err != nil {
 			return aws.Config{}, err
@@ -114,4 +118,26 @@ func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconf
 		}))
 	}
 	return cfg, nil
+}
+
+// The SDK builds ECS/IMDS source providers internally. Capture that provider
+// through its public AssumeRole option hook, so adaptation preserves the SDK's
+// endpoint, token-file and metadata configuration without reading another file
+// or falling back to a different identity. Each load has its own capture.
+func loadProviders(ctx context.Context, options []func(*sdkconfig.LoadOptions) error) (aws.Config, aws.CredentialsProvider, error) {
+	var source aws.CredentialsProvider
+	configured := append([]func(*sdkconfig.LoadOptions) error{}, options...)
+	configured = append(configured, sdkconfig.WithAssumeRoleCredentialOptions(func(o *stscreds.AssumeRoleOptions) {
+		// The loader also invokes this hook once for validation without a client.
+		// Actual nested providers are constructed inner-first, with the selected
+		// outer provider last. We retain that outer provider's source.
+		if client, ok := o.Client.(*sts.Client); ok {
+			source = client.Options().Credentials
+		}
+		// Defer prompting to the context-aware adapter. If a future SDK chain is
+		// not adapted, its fallback must fail rather than acquire an MFA code itself.
+		o.TokenProvider = func() (string, error) { return "", ErrCredentials }
+	}))
+	cfg, err := sdkconfig.LoadDefaultConfig(ctx, configured...)
+	return cfg, source, err
 }

@@ -955,3 +955,17 @@ one HTTP request after a waiter cancels, with fixed failure errors. The existing
 `TESTS/adapters/django/storage_roles.py`, `BE_GO/pkg/storage/s3credentials/mfa_test.go`
 and `quality-reports/go-migration/storage-mfa/`. Production callback composition,
 MFA early refresh, other provider chains and the full migration remain open.
+
+
+STS coverage now has 82 authored Boto3 cases. Twenty new cases verify ECS and IMDS
+signing sources, token-file precedence, IMDSv2, allowed/disabled v1 fallback,
+disabled or incomplete metadata, nested roles and MFA. The Go adapter retains the
+SDK-selected identity and restores endpoint path prefixes that its IMDS serializer
+otherwise drops, including escaped/repeated-slash paths and config precedence.
+Two race groups verify 64 callers share one source fetch plus one STS request
+(two HTTP calls for ECS, four for IMDSv2). The existing 44 credential-selection
+cases, Go race/vet and seven MinIO groups pass again. Evidence:
+`BE_GO/pkg/storage/s3credentials/metadata_test.go`,
+`TESTS/adapters/django/storage_roles.py`, and
+`quality-reports/go-migration/storage-metadata/`. Direct/default metadata chains,
+full renewal/error behavior, cloud policy and production composition remain open.
