@@ -126,3 +126,11 @@ remain outside this helper. Five Node cases cover this policy, and a real local
 Chromium rehearsal injects the first error then checks successful navigation and
 same-origin storage. This is not a passing full SSO protocol rehearsal; the next
 HTTPS CI run remains required.
+
+The following full HTTPS SSO job passed on `83a58b4`:
+[run 39592376583, job 119196682388](https://github.com/carbogninalberto/assozeta/actions/runs/39592376583/job/119196682388).
+It exercises pairing and login across the two isolated HTTPS sites with the
+fixture-navigation fix present. This closes the pending SSO rehearsal above; it
+does not establish the complete Go migration or the independent manual release
+verification. The completed job log is retained locally under
+`quality-reports/go-migration/social-admission/sso-green.log`.

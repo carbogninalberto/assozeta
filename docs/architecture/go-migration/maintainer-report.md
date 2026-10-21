@@ -474,3 +474,33 @@ result are retained in `quality-reports/go-migration/social-admission/`. This
 remains current-model schema evidence, not historical migration or restore proof.
 The prior head's Go CI job 119188587954 also passed within its existing deadline;
 no timeout increase or test exclusion was needed.
+
+Current social client-ID resolution now has an explicit domain reader, a
+parameterized PostgreSQL repository and a service with constructor-supplied
+environment IDs. It reads the lowest-ID instance once per operation, observes
+current override/disable/reset state, preserves the Google environment visibility
+rule and ignores legacy client-ID columns. Malformed saved settings and database
+failures do not enable fallback. Raw saved ID types are retained for the eventual
+provider verifier. No shared business table is modified by this component.
+
+The 33-case real-Django/Go configuration comparison passes, including every
+managed-table readback after declared fixture resets. At 1/16/128/512 rows, each
+operation uses one SELECT; 32 concurrent reads per size stay within four
+connections. A PostgreSQL table lock verifies deadline cancellation and pool
+reuse. Absent configuration and closed-database behavior are explicit cases.
+Go race tests, vet, tagged integration vet, formatting and inventory checks pass;
+evidence is in `quality-reports/go-migration/social-configuration/`. Environment
+loader/root wiring, provider HTTP and cryptographic validation remain open.
+See `BE_GO/internal/service/social_configuration.md` for the exact boundary.
+
+The full HTTPS SSO job 119196682388 in run 39592376583 passes on `83a58b4`,
+including pairing/login across separate sites with the narrow navigation retry.
+The earlier failed SSO rehearsal is superseded for that head; the complete CI
+and independent manual release matrix remain separate gates.
+
+The full private PostgreSQL/Redis accounts adapter also passes after this
+configuration addition: 33 configuration cases, 41 social admissions, 26 composed
+sessions, 68 credential cases, 47 OTP and 20 normalization/audit admissions, plus
+all existing identity, scope, HTTP and image checks. The final result is retained
+in `quality-reports/go-migration/social-configuration/results.json`. This evidence
+uses current-model schema creation; historical migrations and restore remain open.
