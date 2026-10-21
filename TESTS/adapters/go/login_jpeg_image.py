@@ -26,6 +26,7 @@ from TESTS.adapters.django.login_png_stream import vectors as stream_vectors
 from TESTS.adapters.django.login_png_file import vectors as png_file_vectors
 from TESTS.adapters.django.login_bmp import vectors as bmp_vectors
 from TESTS.adapters.django.login_ppm import vectors as ppm_vectors
+from TESTS.adapters.django.login_pcx import vectors as pcx_vectors
 
 
 def main():
@@ -62,6 +63,8 @@ def main():
         (work / 'bmp.json').chmod(0o644)
         (work / 'ppm.json').write_text(json.dumps(ppm_vectors()))
         (work / 'ppm.json').chmod(0o644)
+        (work / 'pcx.json').write_text(json.dumps(pcx_vectors()))
+        (work / 'pcx.json').chmod(0o644)
         subprocess.run(['go', 'test', '-c', '-tags=imageintegration', '-o', str(work / 'jpeg.test'), './pkg/storage/loginimage'],
             cwd=ROOT / 'BE_GO', env={**tool_env, 'GOOS': 'linux', 'GOARCH': architecture, 'CGO_ENABLED': '0'}, check=True, timeout=180)
         (work / 'jpeg.test').chmod(0o755)
@@ -84,6 +87,7 @@ def main():
             '--env', 'ASSOZETA_PNG_FILE_FIXTURE=/fixtures/png-file.json',
             '--env', 'ASSOZETA_BMP_FIXTURE=/fixtures/bmp.json',
             '--env', 'ASSOZETA_PPM_FIXTURE=/fixtures/ppm.json',
+            '--env', 'ASSOZETA_PCX_FIXTURE=/fixtures/pcx.json',
             '--env', 'ASSOZETA_PNG_STREAM_FIXTURE=/fixtures/png-stream.json',
             '--env', 'ASSOZETA_BILEVEL_FIXTURE=/fixtures/bilevel.json',
             '--env', 'ASSOZETA_PNG_HEADER_FIXTURE=/fixtures/png-header.json',
@@ -93,7 +97,7 @@ def main():
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow)$', '-test.v'],
             check=True, timeout=180)
 
 

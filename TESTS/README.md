@@ -592,3 +592,11 @@ file-size policy. Accounts compares the real Django helper and the image rehears
 runs the same oracle. Exact budgets, overflow, mid-operation cancellation,
 ownership, 32 concurrent pipelines and encoder-stage queue/cancellation/reuse are
 checked. Use the pinned image-oracle Python environment for standalone execution.
+
+`adapters/django/login_pcx.py` adds 831 declared PCX/DCX first-frame header,
+pixel and file-policy cases. Coverage includes partial headers, all RLE counts,
+row overrun/padding, indexed bitplanes, padded planar RGB, tail palettes, DCX
+directory/absolute-offset behavior, DPI and file-size thresholds. Accounts calls
+the actual Django helper; the image rehearsal runs the same oracle. Exact
+header/pixel budgets, overflow, ownership, mid-operation cancellation, concurrent
+pipelines and encoder-stage admission/cancellation/reuse are also checked.
