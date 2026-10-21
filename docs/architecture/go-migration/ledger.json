@@ -7487,7 +7487,9 @@
         "BE_GO/internal/config/config.go",
         "BE_GO/internal/service/permissions.go",
         "BE_GO/pkg/crypto/password.go",
-        "BE_GO/internal/repository/accounts.go"
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/internal/repository/impersonation_cache.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7528,12 +7530,16 @@
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/repository/account_integration_test.go",
         "BE_GO/pkg/crypto/password_test.go",
-        "BE_GO/pkg/crypto/interop_test.go"
+        "BE_GO/pkg/crypto/interop_test.go",
+        "TESTS/adapters/django/actor_authentication.py",
+        "BE_GO/internal/service/actor_authentication_integration_test.go",
+        "TESTS/adapters/django/impersonation_cache.py"
       ],
       "evidence": [],
       "notes": [
         "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
-        "Django account lookup and Go reads share a private PostgreSQL current-model fixture. Credential selection, rehash writes, social providers, rate limiting, 2FA, username normalization, response-created membership configuration, last-login/deletion changes, audit/transactions and cookies remain to implement and verify."
+        "Django account lookup and Go reads share a private PostgreSQL current-model fixture. Credential selection, rehash writes, social providers, rate limiting, 2FA, username normalization, response-created membership configuration, last-login/deletion changes, audit/transactions and cookies remain to implement and verify.",
+        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity, current target eligibility, scoped resource checks, audit transitions and HTTP handlers remain unimplemented."
       ]
     },
     {
@@ -7590,7 +7596,9 @@
       "go": [
         "BE_GO/pkg/jwt/jwt.go",
         "BE_GO/internal/config/config.go",
-        "BE_GO/internal/service/permissions.go"
+        "BE_GO/internal/service/permissions.go",
+        "BE_GO/internal/service/actor_authentication.go",
+        "BE_GO/internal/repository/impersonation_cache.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7624,12 +7632,16 @@
         "BE_GO/pkg/jwt/jwt_test.go",
         "BE_GO/pkg/jwt/interop_test.go",
         "TESTS/adapters/django/permissions.py",
-        "TESTS/fixtures/collaborator-policy.json"
+        "TESTS/fixtures/collaborator-policy.json",
+        "TESTS/adapters/django/actor_authentication.py",
+        "BE_GO/internal/service/actor_authentication_integration_test.go",
+        "TESTS/adapters/django/impersonation_cache.py"
       ],
       "evidence": [],
       "notes": [
         "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
-        "Actual SimpleJWT 5.3.1 refresh preserves the original refresh token/JTI/expiry and original iat in the new access token. The primitive is tested in both runtimes; HTTP admission, account/impersonation context, error responses and cookie behavior remain unverified."
+        "Actual SimpleJWT 5.3.1 refresh preserves the original refresh token/JTI/expiry and original iat in the new access token. The primitive is tested in both runtimes; HTTP admission, account/impersonation context, error responses and cookie behavior remain unverified.",
+        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity, current target eligibility, scoped resource checks, audit transitions and HTTP handlers remain unimplemented."
       ]
     },
     {

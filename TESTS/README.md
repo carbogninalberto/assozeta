@@ -288,3 +288,18 @@ unchanged records afterward. The harness removes its cluster and reports to
 exercise historical migrations, authenticate HTTP requests or prove business-write
 rollback. The Go `integration` tag requires this adapter; missing configuration
 fails rather than skipping required database evidence.
+
+
+The account rehearsal now also generates temporary synthetic Ed25519 credentials
+and compares 18 explicit Bearer/account-admission outcomes through Django's actual
+`JWTAuthentication` and Go's actor authenticator. Current account role/status wins
+over token role/email claims, and numeric UUID claims retain all 128 bits. This
+stage precedes scoped identity resolution; it is not full HTTP authentication.
+
+`TESTS/adapters/django/impersonation_cache.py` requires Redis and the same Python
+virtualenv. It creates an isolated Redis process, uses the configured Django cache
+serializer, and verifies ten Django-written records in Go plus two Go-written
+records in Django. TTL/no-renewal, expiry, revocation and concurrent reads are
+checked. Database access is prohibited. Persistent output under
+`quality-reports/go-migration/impersonation-cache/` contains only results/versions.
+This adapter proves the cache record boundary, not target eligibility or audits.

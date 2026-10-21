@@ -95,6 +95,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Verify Django impersonation cache interoperability
+        run: python TESTS/adapters/django/impersonation_cache.py
       - name: Read Django-created accounts from Go
         run: python TESTS/adapters/django/accounts.py
       - name: Rehearse health and dependency failure recovery
@@ -111,6 +113,7 @@ jobs:
             quality-reports/go-migration/go-health/
             quality-reports/go-migration/credentials.json
             quality-reports/go-migration/permissions.json
+            quality-reports/go-migration/impersonation-cache/
             quality-reports/go-migration/accounts/
 
   quality:

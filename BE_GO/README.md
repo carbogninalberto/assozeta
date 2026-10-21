@@ -35,7 +35,10 @@ and remaining service-level requirements. Auth endpoints are not registered yet.
 Use that Python environment to run `TESTS/adapters/django/permissions.py` for the
 collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
 Django-created accounts in private PostgreSQL. These prove policy/read primitives;
-full identity resolution, resource authorization and login writes remain open.
+actor admission now connects tokens to current account rows; full identity
+resolution, resource authorization and login writes remain open. The additional
+`TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
+cache record boundary on private Redis; see `internal/repository/impersonation.md`.
 
 For a disposable manually configured environment, `go run ./cmd/server` reads the
 process environment. `-env-file PATH` optionally reads the **existing** deployment
