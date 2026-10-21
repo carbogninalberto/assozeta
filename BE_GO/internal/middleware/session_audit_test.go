@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -37,6 +38,9 @@ func TestSessionFailureNeverInvokesViewAndStillVaries(t *testing.T) {
 		r.Header.Set("Cookie", "sessionid=fixture-session")
 		w := httptest.NewRecorder()
 		e.ServeHTTP(w, r)
+		if w.Header().Get("Content-Type") != "text/html; charset=utf-8" || strings.Contains(w.Body.String(), failure.Error()) {
+			t.Fatal("session failure response exposes internals or changes media type")
+		}
 		if called || w.Code != 500 || w.Header().Get("Vary") != "Cookie" || w.Header().Get("Set-Cookie") != "" {
 			t.Fatal("session failure crossed view/cookie boundary")
 		}

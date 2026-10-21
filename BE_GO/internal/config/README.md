@@ -14,7 +14,7 @@ because it changed these existing value semantics. This preserves the Kuayle
 configuration-package/constructor boundary while following Assozeta's environment.
 
 Values read with `os.environ` in `core.settings` remain literal, including database,
-Redis and PgBouncer values beginning with `$`. Env-based provider settings and JWT
+Redis and PgBouncer values beginning with `$`. Env-based session/provider settings and JWT
 keys follow leading-dollar references, resolved after the complete file/process
 merge. The original required/default rule follows every reference. Cycles and
 missing required targets produce errors naming only the original setting.
@@ -24,6 +24,13 @@ client/team/key IDs/secret. Google ID and secret must be present, just as in Dja
 empty strings remain valid configuration and disable the relevant fallback ID.
 Apple fields default to empty. These are existing variables, not new credentials
 or a second configuration file. Parsing them does not register public social login.
+
+The existing `SECRET_KEY` is required and exposed internally as `SessionSecret`.
+Its value follows `env.str`, including leading-dollar references, literal escape
+sequences, Unicode, whitespace and an explicitly empty assignment. Unlike JWT
+keys it has no base64 override or multiline expansion. These are settings-assignment
+semantics; Django may reject an empty secret when it initializes runtime settings.
+The value is not yet connected to session middleware in the public server.
 
 JWT raw keys must be present unless a nonempty base64 value supplies the key.
 Base64 takes precedence and is decoded without subsequent multiline expansion.
@@ -43,11 +50,11 @@ and missing-target defaults remain accepted. Changing this behavior requires an
 explicit Django/Go policy change, rather than silently changing trusted origins.
 
 Configuration string/Go-syntax representations are redacted. JSON serialization
-omits provider credentials, JWT keys and the Redis password; the database URL is
+omits the session secret, provider credentials, JWT keys and the Redis password; the database URL is
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Fifty-five declared cases execute selected unchanged AST assignments
+environment. Sixty-seven declared cases execute selected unchanged AST assignments
 from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,
 precedence, raw/proxy differences, multiline/base64 behavior, unchanged process

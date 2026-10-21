@@ -56,14 +56,30 @@ def run(work,log,tool_env,address):
         values={'active':data(),'inactive':data(3),'deleted':data(4),
                 'social-inactive':data(3,'social_core.backends.google.GoogleOAuth2'),
                 'wrong':{**data(),'_auth_user_hash':'wrong'},'empty':{},'oauth':{'state':'fixture'},'none':None,'corrupt':None,'unicode':data()}
+        # Malformed cache data must fail before the terminal without revocation.
+        for name,value in [('list',[]),('tuple',()),('bool',False),('integer',0),('string','scalar'),('bytes',b'scalar'),('float',1.5)]:
+            values['invalid-'+name]=value
+        for name,value in [('string','not-a-uuid'),('list',[]),('float',1.5),('negative',-1)]:
+            values['invalid-id-'+name]={**data(),'_auth_user_id':value}
+        values['invalid-id-unknown-backend']={**data(),'_auth_user_id':'not-a-uuid','_auth_user_backend':'unknown'}
+        for name,value in [('integer',10**4300),('list',[10**4300]),('dict',{'hash':10**4300}),('tuple',(10**4300,))]:
+            values['invalid-hash-'+name]={**data(),'_auth_user_hash':value}
         payloads={}
         for name,value in values.items():
             logical='django.contrib.sessions.cache'+('è'*8 if name=='unicode' else 'http-session-'+name)
             key=cache.make_key(logical)
             cache.set(logical,value,300)
             payloads[key]=raw.get(key) if name!='corrupt' else b'\x80\x05?'
+        def cache_readback():
+            for key,value in payloads.items():
+                current=raw.get(key)
+                assert current==value or (key.endswith('http-session-wrong') and current is None),'HTTP session changed unexpected cache data'
+        initialized=False
         def reset(request=None):
+            nonlocal initialized
+            if initialized:cache_readback()
             for key,value in payloads.items():raw.set(key,value,ex=300)
+            initialized=True
             return JsonResponse({'reset':True})
         def terminal(request,*args,**kwargs):
             if request.path=='/__fixtures/session/reset':return reset()
@@ -100,9 +116,7 @@ def run(work,log,tool_env,address):
             assert not thread.is_alive(),'private ASGI server did not drain'
             del sys.modules[urls.__name__];clear_url_caches()
         def readback():
-            for key,value in payloads.items():
-                current=raw.get(key)
-                assert current==value or (key.endswith('http-session-wrong') and current is None),'HTTP session changed unexpected cache data'
+            cache_readback()
             assert snapshot()==before,'HTTP session middleware changed persisted tables'
         readback();reset()
         path=work/'session-http.json'
