@@ -11,7 +11,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/association/communication/settings/sections/EmailSMTP.svelte": "878c6421a023d8e0135b8c0e871c20cbc7391aee8268478b22327efabd9128bb",
     "UI/src/routes/association/communication/settings/Menu.svelte": "2a152a0eeaf3196dd1b569e4bd656da561f93836a84049fed6cbb41186f9e610",
     "UI/src/routes/association/communication/settings/sections/Stats.svelte": "f595cb94d796d748b44c26c321702fdd387118b039909ad6c6f89a76949d2a65",
-    "BE/application/tasks.py": "e2d1ec425d9436eb90f1cdb1df56aba3ce84e8b3050cdb9357d219c711693530",
+    "BE/application/tasks.py": "ee7d03286be8cc3e6fec84861496020ac40d2dfe56ec02102fb75c0170d35ebc",
     "UI/src/routes/association/communication/automation/Automation.svelte": "8a0b6012241c3a32ab2bc92dc119793579d08efd19934b6afaa7f73885d6e699",
     "UI/src/routes/association/communication/automation/editor/AutomationEditor.svelte": "03a5be42ad985df535861ee1c5dc2df4f97876b7ae5a43fdc313456907a15c6a",
     "BE/application/signals.py": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f",

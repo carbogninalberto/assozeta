@@ -78,6 +78,17 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(ref['sha256'], catalog.sha(blob))
         self.assertEqual(domain['templates'][0]['path'], 'BE/templates/document/receipt.html')
 
+    def test_current_application_mappings_resolve_before_browser_capture(self):
+        code = SCRIPT.parents[2]
+        mapping = json.loads((code / 'docs/manuale/page-map.json').read_text())
+        # Use the real application mappings with a small committed manual. This
+        # catches deleted routes/symbols without needing Docker or a full capture.
+        mapping['pages'] = [{'path': 'docs/members.mdx', 'domains': list(mapping['domains'])}]
+        result = catalog.compile_catalog(code, self.manual,
+            catalog.git(code, 'rev-parse', 'HEAD').decode().strip(), self.revisions[1], mapping)
+        self.assertEqual(result['summary']['verified_sections'], 0)
+        self.assertTrue(result['domains']['billing']['constraints'])
+
     def test_local_contents_never_get_false_commit_pinned_citations(self):
         source = self.code / 'BE/application/views.py'
         source.write_text('def members_list(request):\n    return ["new"]\n')

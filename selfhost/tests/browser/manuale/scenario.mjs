@@ -54,7 +54,7 @@ export async function scenario({id, prefix, sources, actions}) {
         const profileData = await profile.json();
         expect(profileData.user_data.user_id).toBe(identity.user_id);
         const billing = await api('billing/active-plan');
-        expect(billing.ok()).toBeTruthy();
+        expect(billing.status()).toBe(410);
         await context.addInitScript(initializeActorSession, {identity, input});
         const page = await context.newPage();
         actorPages.push({page, name: name || 'owner'});

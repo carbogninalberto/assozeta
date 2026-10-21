@@ -49,6 +49,7 @@ FROM base AS production
 
 ARG VERSION=v0.0.0
 ARG CODE_REVISION=unknown
+ARG REQUIRE_MANUAL=false
 
 RUN groupadd --gid 10001 assozeta \
     && useradd --uid 10001 --gid assozeta --create-home assozeta
@@ -57,12 +58,18 @@ COPY --from=dependencies /opt/venv /opt/venv
 COPY --chown=assozeta:assozeta . .
 RUN printf '%s\n' "$VERSION" > VERSION \
     && printf '%s\n' "$CODE_REVISION" > CODE_REVISION \
+    && printf '%s\n' "$REQUIRE_MANUAL" > MANUAL_REQUIRED \
+    && chown -R root:root /app/release-manual \
+    && chmod -R a+rX,a-w /app/release-manual \
     && chmod +x entrypoint.sh \
     && mkdir -p /app/manuale \
     && chown assozeta:assozeta /app/manuale \
     && chown assozeta:assozeta VERSION CODE_REVISION
 
 USER assozeta
+
+# Validate as the runtime user: atomic package files can arrive with mode 0600.
+RUN python -m application.manuale.bundle --root /app/release-manual --revision "$CODE_REVISION" --release "$VERSION" --required "$REQUIRE_MANUAL"
 
 EXPOSE 8000
 

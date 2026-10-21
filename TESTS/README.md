@@ -204,3 +204,29 @@ from `docker info` and container removal. Its partial runs are not counted as
 passing. The full repository-wide Docker regression suite remains unverified on
 this workstation. Native verification above used the same HTTP contracts and
 application code; CI retains the standard Docker checks.
+
+
+### Installed release manual contracts
+
+`./TESTS/run manual --base-url http://localhost:PORT/api --fixture FIXTURE.json`
+checks a disposable installed release through HTTP only. It requires no Django
+imports and can target a future Go implementation. The fixture contains
+`accounts.missing` (an owner with no software subscription) and `manual` with
+`release`, `application_revision`, `corpus_identity`, `public_sections`, `query`,
+`section_id` and `section_title`. An optional `session.access_token` reuses a real
+login across lifecycle phases without repeatedly consuming the login rate limit.
+The release rehearsal derives these expectations
+from the independently evaluated package, then checks the actual installed API.
+
+The contracts verify exact version/provenance, local authenticated screenshots
+and every screenshot digest, reader authentication, supported search, unsupported
+abstention, availability without AI and continued access without software billing.
+`TESTS/browser/manual-release.mjs` exercises real login, the embedded reader,
+screenshot rendering, deep links and manual-only WebSocket chat with external
+HTTP requests blocked. The full packaging/deployment driver is
+`selfhost/tests/manual-release-smoke.sh`; it creates and removes its own services.
+
+`TESTS/mcp/manual.py` checks the installed manual through real MCP stdio with a
+server command supplied by the adapter. It verifies the matching release/corpus,
+search and section retrieval, public permission boundaries, unsupported questions
+and an existing association data tool. It imports no Django/application code.

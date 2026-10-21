@@ -927,12 +927,7 @@
       ]
     },
     "billing": {
-      "routes": [
-        "/profile",
-        "/subscription",
-        "/subscription/upgrade",
-        "/billing-checkout"
-      ],
+      "routes": [],
       "handlers": [
         {
           "path": "BE/application/views/billing_views.py",
@@ -957,16 +952,12 @@
           ]
         }
       ],
-      "ui_sources": [
-        "UI/src/routes/stripe/BillingCheckout.svelte",
-        "UI/src/routes/Upgrade.svelte",
-        "UI/src/routes/subscription/Subscription.svelte"
-      ],
+      "ui_sources": [],
       "constraints": [
         {
           "status": "unsupported",
           "claim": "Tre piani acquistabili Base, Pro e Teams e checkout mensile o annuale",
-          "reason": "Il checkout della piattaforma restituisce 410; seed_selfhost configura il Piano Pro per l\u2019istanza."
+          "reason": "Le route UI dei piani software sono state rimosse e gli endpoint di fatturazione SaaS restituiscono 410. Non serve un abbonamento attivo; seed_selfhost resta un comando di compatibilit\u00e0 senza creare piani software. I modelli legacy sono riferimenti storici, non funzionalit\u00e0 acquistabili."
         }
       ]
     },

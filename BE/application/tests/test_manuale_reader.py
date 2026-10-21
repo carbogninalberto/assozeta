@@ -27,6 +27,41 @@ class ManualReaderTests(BaseAPITestCase):
         self.settings.enable()
         self.addCleanup(self.settings.disable)
 
+    def bundled_settings(self):
+        from application.manuale.index import ManualIndex, file_digest, seal_index
+        import copy
+        value = copy.deepcopy(ManualIndex.load(self.index_path).value)
+        value['metadata'].update(publication_status='release-bundled', code_state='committed',
+            manual_state='generated-from-committed', manual_revision='c' * 40,
+            verification={'corpus_identity': 'd' * 64})
+        value = seal_index(value)
+        package = self.root / 'release-manual'
+        promote(value, package / 'index.json')
+        promote({'format': 1, 'distribution': 'immutable-backend-image',
+            'corpus_identity': value['identity'], 'verified_corpus_identity': 'd' * 64,
+            'application_revision': 'revision-1', 'release': 'v1', 'manual_revision': 'c' * 40,
+            'index_sha256': file_digest(package / 'index.json')}, package / 'bundle.json')
+        return override_settings(MANUAL_BUNDLE_PATH=str(package), MANUAL_BUNDLE_REQUIRED=True,
+            MANUAL_INDEX_PATH=str(self.root / 'empty-persistent-volume/index.json'))
+
+    def test_bundled_reader_and_navigation_need_no_download_or_persistent_installation(self):
+        with self.bundled_settings(), patch('application.manuale.sync.urlopen') as download:
+            self.assertTrue(self.client.get('/instance/status').json()['manual_enabled'])
+            self.assertTrue(self.client.get('/instance/config').json()['features']['manualEnabled'])
+            response = self.client.get('/manuale/sections').json()
+            self.assertEqual(response['status'], 'verified')
+            self.assertEqual(response['results'][0]['publication_status'], 'release-bundled')
+            self.assertIn(APIClient().get('/manuale/sections').status_code, (401, 403))
+            download.assert_not_called()
+
+    def test_invalid_required_bundle_never_falls_back_to_cached_or_remote_knowledge(self):
+        with self.bundled_settings(), override_settings(RUNNING_VERSION='wrong-release',
+                MANUAL_CORPUS_BASE_URL='https://manual.example/corpus'), \
+                patch('application.manuale.sync.urlopen') as download:
+            self.assertFalse(self.client.get('/instance/status').json()['manual_enabled'])
+            self.assertEqual(self.client.get('/manuale/sections').json()['status'], 'no_evidence')
+            download.assert_not_called()
+
     def test_authentication_internal_navigation_and_structured_steps(self):
         response = APIClient().get('/manuale/sections')
         self.assertIn(response.status_code, (401, 403))

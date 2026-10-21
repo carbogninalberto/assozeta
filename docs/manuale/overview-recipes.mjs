@@ -3,11 +3,11 @@ import {registrationFormsReviewedSources} from './registration-forms-recipes.mjs
 // The original introduction structure and cards, with application-grounded links.
 export const overviewReviewedSources = Object.freeze({
     "UI/src/App.svelte": "aec02257fc69d1ce8cbe6be715c6b47509d77e13a466fde7b87372d9e3a95c7e",
-    "UI/src/components/Header.svelte": "fb36b0bcc994132bb820ad139bc2983739bc25c7ec48f02da57684af894ee43a",
+    "UI/src/components/Header.svelte": "2054a99e494f3404e6f89a95f3d81047fbf3b13a1af9d8d8a9f6a8028a9425c2",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
-    "UI/src/routes/manuale/Manuale.svelte": "1eace920cdddc1d56458d2a004035d323ea547c483bfc9784b7ed3f9ee57b411",
-    "UI/src/routes/manuale/ManualContent.svelte": "37ea373beaa40554b46cc7db3a99db0c64463f79823f53e6fb6e8d18fb0931c6",
+    "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
+    "UI/src/routes/manuale/ManualContent.svelte": "b3d31df4c3d47770c335078e7edd89026b423e2ccdd160b767cb3f8d885e84c8",
     "UI/src/routes/manuale/manualPresentation.js": "c52433eb377246d5e3a05093b78af3b8c1197ab0751b062e7644835c99cf63f4",
     "BE/application/manuale/views.py": "78cbb273fcb121bd9a678dcfe2f5083707f6307971af8d5909e060fb4ed0a0ac"
 });
