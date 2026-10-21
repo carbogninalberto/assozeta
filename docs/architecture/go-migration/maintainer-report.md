@@ -14,8 +14,8 @@ Channels encodings. No active-backend or release image selection was changed.
 
 Discovery records 408 resolved HTTP patterns, four WebSocket paths, 42 registered
 tasks, 15 MCP tool schemas and 112 model metadata records. Static ledger rows
-remain uncharacterized except two retired tasks and two in-progress health
-routes. The effective static Celery schedule differs from declaration discovery;
+remain uncharacterized except two retired tasks and four in-progress health/auth
+routes; the auth entries track primitives, not exposed handlers. The effective static Celery schedule differs from declaration discovery;
 persisted schedules and worker initialization still require investigation.
 
 Verified locally: 12 inventory tests, Go formatting/vet/race tests, 18 independent
@@ -30,6 +30,17 @@ adapter uses synthetic temporary credentials and prohibits database access.
 Historical Argon2 support retains upstream Go provenance/license. Cost limits are
 explicit; imported-parameter census and aggregate resource limits remain open.
 Runtime inventory now records dependency versions and excludes virtualenv sources.
+
+The collaborator route gate passes the same 38 explicit expected outcomes in
+Django and Go; 269 permission declarations and 28 exemptions match. It consumes
+trusted effective-user grants. Persisted identity resolution, resource-level
+authorization and HTTP admission remain separate, unfinished work.
+
+A private PostgreSQL rehearsal now proves Go reads seven Django-created account
+rows with the existing deletion, inactive-state, duplicate-identifier and null
+semantics. Parameter, cancellation and unchanged Django readback checks pass.
+It uses current-model schema creation; migration-history and Go-write rollback
+proofs remain open.
 
 Still missing: business endpoints, complete authentication/permissions, durable
 workers/scheduler, shared-data/rollback proofs, versioned routing and switching,

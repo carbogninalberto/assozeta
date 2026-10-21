@@ -269,3 +269,22 @@ results. Argon2 is installed explicitly to exercise the configured optional hash
 Use this same virtualenv for runtime inventory to avoid newer developer packages
 changing the recorded model metadata. Unpinned transitive Python packages retain
 the repository's resolution policy; actual resolved versions are recorded.
+
+
+The same virtualenv runs `TESTS/adapters/django/permissions.py`. This adapter checks
+38 explicit collaborator route-policy outcomes from
+`fixtures/collaborator-policy.json` in Django and Go, plus declaration drift in the
+complete registry. It prohibits database access and saves only counts/results to
+`quality-reports/go-migration/permissions.json`. These are service-policy tests,
+not proof of HTTP admission, persisted identity resolution or resource scope.
+
+
+`TESTS/adapters/django/accounts.py` also requires local PostgreSQL binaries. It
+creates a private Unix-socket cluster and the current Django model schema, writes
+seven synthetic accounts through Django, and runs Go repository tests against
+that same database. Django checks the expected lookup semantics first and verifies
+unchanged records afterward. The harness removes its cluster and reports to
+`quality-reports/go-migration/accounts/`. It does not reuse the developer database,
+exercise historical migrations, authenticate HTTP requests or prove business-write
+rollback. The Go `integration` tag requires this adapter; missing configuration
+fails rather than skipping required database evidence.

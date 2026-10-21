@@ -7481,25 +7481,60 @@
         "target": "oauth2_login",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/service/permissions.go",
+        "BE_GO/pkg/crypto/password.go",
+        "BE_GO/internal/repository/accounts.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/authentication.py",
+        "BE/application/impersonation.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/models/user_models.py",
+        "BE/core/settings.py",
+        "BE/application/services/social_auth_service.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/utils/api_utils.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/oauth2/login"
+        ],
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
+        "authentication": "AllowAny view; a supplied Bearer credential still runs ScopedJWTAuthentication and current identity resolution. Cookie/session and full admission behavior remain to characterize.",
         "permissions": null,
         "resource_scope": null,
         "side_effects": null,
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/adapters/django/credentials.py",
+        "BE_GO/pkg/jwt/jwt_test.go",
+        "BE_GO/pkg/jwt/interop_test.go",
+        "TESTS/adapters/django/permissions.py",
+        "TESTS/fixtures/collaborator-policy.json",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/repository/account_integration_test.go",
+        "BE_GO/pkg/crypto/password_test.go",
+        "BE_GO/pkg/crypto/interop_test.go"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
+        "Django account lookup and Go reads share a private PostgreSQL current-model fixture. Credential selection, rehash writes, social providers, rate limiting, 2FA, username normalization, response-created membership configuration, last-login/deletion changes, audit/transactions and cookies remain to implement and verify."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/partial-signup -> partial_signup",
@@ -7551,25 +7586,51 @@
         "target": "oauth2_refresh_token",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/pkg/jwt/jwt.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/service/permissions.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/services/jwt_token_service.py",
+        "BE/core/authentication.py",
+        "BE/application/impersonation.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/models/user_models.py",
+        "BE/core/settings.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/oauth2/refresh-token"
+        ],
         "request": null,
         "response": null,
         "errors": null,
-        "authentication": null,
+        "authentication": "AllowAny view; a supplied Bearer credential still runs ScopedJWTAuthentication and current identity resolution. Cookie/session and full admission behavior remain to characterize.",
         "permissions": null,
         "resource_scope": null,
         "side_effects": null,
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/adapters/django/credentials.py",
+        "BE_GO/pkg/jwt/jwt_test.go",
+        "BE_GO/pkg/jwt/interop_test.go",
+        "TESTS/adapters/django/permissions.py",
+        "TESTS/fixtures/collaborator-policy.json"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
+        "Actual SimpleJWT 5.3.1 refresh preserves the original refresh token/JTI/expiry and original iat in the new access token. The primitive is tested in both runtimes; HTTP admission, account/impersonation context, error responses and cookie behavior remain unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/reset -> oauth2_reset_password",

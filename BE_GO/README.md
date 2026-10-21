@@ -32,6 +32,11 @@ deletes synthetic keys/tokens/hashes, prohibits database access, and invokes Go
 interop tests. See `pkg/jwt/README.md` and `pkg/crypto/README.md` for the protocol
 and remaining service-level requirements. Auth endpoints are not registered yet.
 
+Use that Python environment to run `TESTS/adapters/django/permissions.py` for the
+collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
+Django-created accounts in private PostgreSQL. These prove policy/read primitives;
+full identity resolution, resource authorization and login writes remain open.
+
 For a disposable manually configured environment, `go run ./cmd/server` reads the
 process environment. `-env-file PATH` optionally reads the **existing** deployment
 `.env`; process values win. Never create a second credentials file for Go.

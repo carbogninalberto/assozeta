@@ -86,8 +86,9 @@ python3 -m TESTS.inventory.catalog --check  # fail on drift
 python TESTS/adapters/django/inventory.py
 ```
 
-Two retired tasks are explicitly classified. Both health routes are
-`implementing`, not `verified`; all other rows still need characterization.
+Two retired tasks are explicitly classified. Both health routes and the two
+login/refresh routes are `implementing`, not `verified`; 508 other rows still need
+characterization. The auth rows track primitives only, not registered endpoints.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
 
@@ -116,8 +117,10 @@ TDD evidence from this worktree:
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
 | Portable Go contracts | The same 3 health contracts pass over real HTTP |
+| Shared PostgreSQL account reads | Go reads seven Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
 | Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
+| Collaborator route policy | 38 explicit outcomes pass in Django and Go, including deny-by-default, read/write separation, manual GET exceptions and effective-user grants; all 269 rule declarations and 28 exemptions match |
 | Password parser fuzzing | 441,963 executions in a five-second bounded run pass; explicit cost-limit and malformed-input tests also pass |
 | Workflow syntax | `actionlint` passes |
 | Existing self-host validation | `make selfhost-test` passes (configuration/updater/manual-sync checks) |
@@ -164,6 +167,53 @@ The first foundation CI run exposed a missing Echo import after formatting. It
 was fixed in `8110caa`; the next Go CI job passed. Whole-backend and release parity
 must still be evaluated separately from the Go foundation job.
 
+### Collaborator route policy
+
+`internal/service/permissions.go` ports the existing collaborator route gate,
+with unchanged permission keys (including the historical `bookeeping` spelling),
+method-specific precedence, FULL-role behavior and default denial for unmapped
+routes. The 38 explicitly specified fixture cases passed against Django before
+Go implementation; Go initially failed for the missing service. Both now pass.
+An additional declaration comparison detects drift in all 269 rules and 28
+exemptions. These counts are not counts of implemented or authorized endpoints.
+
+The service accepts the trusted **effective collaborator's** grants, not an
+initiating administrator's grants or JWT/header role claims. Identity resolution
+must still establish that subject from current persisted state. Registry
+exemptions delegate to later checks: calendar mutation actions, exports, private
+files, resource ownership, instructor/family/group scope and nested referenced
+IDs are not authorized by this gate. Version-prefix stripping belongs to routing;
+`/api/v2/...` is deliberately not interpreted as an upstream route here.
+
+Run `TESTS/adapters/django/permissions.py` in the same Python environment as the
+credential adapter. It prohibits database access and compares explicit outcomes
+from `TESTS/fixtures/collaborator-policy.json` in both runtimes. Portable HTTP
+contracts and full permission parity remain separate acceptance requirements.
+
+### Shared account reads
+
+`internal/repository/accounts.go` queries the existing `bakney_user` table using
+bound values and the existing soft-deletion rule. It keeps the collaborator's
+own grants/role/connected owner separate. Inactive accounts remain distinguishable
+because Django resolves candidate credentials before rejecting inactive accounts.
+Email/username comparisons use PostgreSQL `UPPER`, as Django's `iexact` does;
+percent and underscore characters remain literal values. Duplicate legacy emails
+and case variants of usernames are retained in UUID order.
+
+`TESTS/adapters/django/accounts.py` creates a private Unix-socket PostgreSQL cluster,
+builds the current Django model schema, creates seven synthetic accounts, verifies
+explicit Django lookup expectations, and runs the Go repository integration tests
+against the same database. Django readback confirms no rows changed. The initial
+run established Django expectations and failed for the absent Go implementation;
+the implemented repository passes with the race detector. The cluster is removed
+on success or failure. This does not exercise historical migrations, writes,
+password rehash, login side effects or rollback of Go-written business data.
+
+The candidate iterator bounds repository memory while retaining one database
+connection during credential checks. Authentication must still bound aggregate
+KDF work and coordinate writes/transactions; callback writes on that same
+connection are not supported. No query-plan or throughput improvement is claimed.
+
 ## Required acceptance matrix
 
 Every row below is required before this draft can claim completion.
@@ -172,8 +222,8 @@ Every row below is required before this draft can claim completion.
 | --- | --- | --- |
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
-| 3. Shared data | Metadata snapshot; no schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
-| 4. Identity/permissions | Django denial contracts and bidirectional credential primitive tests | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
+| 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
+| 4. Identity/permissions | Django denial contracts, bidirectional credential tests and collaborator route policy | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
