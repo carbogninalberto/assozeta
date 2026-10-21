@@ -7496,7 +7496,10 @@
         "BE_GO/internal/domain/password_login.go",
         "BE_GO/internal/service/password_login.go",
         "BE_GO/internal/repository/password_login.go",
-        "BE_GO/pkg/crypto/login_password.go"
+        "BE_GO/pkg/crypto/login_password.go",
+        "BE_GO/internal/service/second_factor.go",
+        "BE_GO/pkg/crypto/totp.go",
+        "BE_GO/internal/handler/reference_body.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7520,7 +7523,7 @@
         ],
         "request": null,
         "response": null,
-        "errors": null,
+        "errors": "Characterized credential/OTP subset: unknown candidate 401 invalid credential (not found); invalid/ambiguous/inactive selection 401 invalid credentials; OTP absent or length other than six 401 msg OTP code required.; six-character mismatch 401 msg OTP code not valid.; non-sized JSON OTP or corrupt/missing secret reached during verification raises a server error. Full HTTP admission/error rendering remains unimplemented for Go login.",
         "authentication": "AllowAny view; a supplied Bearer credential still runs ScopedJWTAuthentication and current identity resolution. Cookie/session and full admission behavior remain to characterize.",
         "permissions": null,
         "resource_scope": null,
@@ -7547,15 +7550,21 @@
         "TESTS/adapters/django/password_login.py",
         "BE_GO/internal/service/password_login_test.go",
         "BE_GO/internal/service/password_login_integration_test.go",
-        "BE_GO/pkg/crypto/login_password_test.go"
+        "BE_GO/pkg/crypto/login_password_test.go",
+        "TESTS/adapters/django/second_factor.py",
+        "BE_GO/internal/service/second_factor_test.go",
+        "BE_GO/internal/service/second_factor_interop_test.go",
+        "BE_GO/pkg/crypto/totp_test.go",
+        "BE_GO/internal/handler/second_factor_upload_test.go"
       ],
       "evidence": [
-        "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity."
+        "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
+        "47 explicit second-factor decisions from the actual Django login view versus Go service at fixed PyOTP times. Includes Unicode, adjacent-window denial, malformed values/secrets, multipart metadata, disabled 2FA and current replay semantics. Django token identity and denial last-login behavior are checked; managed tables are compared after declared fixture resets. This is not a Go login HTTP endpoint."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
-        "Password credential selection and compatible rehash writes now exist in a transactional service; see BE_GO/internal/service/password_login.md. Its selected account is not an authenticated session.",
-        "Remaining login work includes malformed request-value coercion, social providers, distributed rate limiting, 2FA, username normalization/audit, response-created membership configuration, last-login/deletion changes and complete HTTP/cookie/middleware behavior.",
+        "Password credential selection/rehash and the independent second-factor gate now exist; see BE_GO/internal/service/password_login.md and second_factor.md. They are not yet composed into a complete authenticated login workflow.",
+        "Remaining login work includes malformed credential request-value coercion, social providers, distributed rate limiting, OTP workflow composition/provisioning, username normalization/audit, response-created membership configuration, last-login/deletion changes and complete HTTP/cookie/middleware behavior.",
         "Historical hash-cost census, global memory/admission budgets, critical query plans, supported migration history and release/switch/rollback rehearsals remain required."
       ]
     },

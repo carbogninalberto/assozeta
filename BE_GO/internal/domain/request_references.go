@@ -13,9 +13,13 @@ type RequestField struct {
 }
 type RequestObject []RequestField
 
-// RequestUpload marks an opaque uploaded file in request.data. Authentication
-// never reads its content or mistakes it for a textual credential/reference.
-type RequestUpload struct{}
+// RequestUpload retains file metadata while its content stays opaque. The login
+// OTP view uses Python len(file) and str(file), which mean size and filename.
+// Other credential/reference consumers must not treat a file as textual input.
+type RequestUpload struct {
+	Name string
+	Size int64
+}
 
 func (o RequestObject) Lookup(name string) (any, bool) {
 	for _, field := range o {

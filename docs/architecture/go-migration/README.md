@@ -120,6 +120,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
 | Password credential stage | 21 actual Django login versus Go service selection/rehash cases; production hashes, Django readback of Go writes and managed-table comparison |
 | Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
 | Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
@@ -349,7 +350,7 @@ See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact sc
 The refresh ledger row remains `implementing`: global restore/maintenance fencing,
 CORS/security/session middleware, all locale/charset and multipart/body-limit edge
 cases, versioned proxy routes and release/browser switching evidence remain open.
-Login now has credential selection/rehash components; it still requires OTP/social authentication,
+Login now has credential selection/rehash and second-factor components; it still requires their workflow composition and social authentication,
 response serialization and its persisted side effects. These remaining workflows
 are required before replacement; the refresh tests do not shrink that scope.
 
@@ -372,9 +373,25 @@ and 16 concurrent credential requests through two admission slots/four connectio
 for the atomic failure boundary and remaining admission/cost-budget work.
 
 This is not a complete login or an authenticated session. Go HTTP login, distributed
-rate limiting, OTP/social providers, username/audit normalization, response-created
+rate limiting, OTP workflow composition/social providers, username/audit normalization, response-created
 configuration, last-login/deletion writes and full rollback/release proof remain
 required. The login row remains implementing.
+
+### Login second factor
+
+The independent second-factor gate now preserves PyOTP's six digits, 30-second
+current-window check, base32 decoding, Unicode NFKC comparison and the view's
+length/error precedence. Multipart OTP values retain file size and filename while
+contents remain opaque. The gate has no replay counter or durable effects, matching
+current behavior; it does not issue a session.
+
+The account adapter runs 47 explicit actual-Django-view versus Go service cases,
+with only PyOTP's clock controlled. Successful Django tokens identify the expected
+account; failed OTPs never update last-login. All managed model tables are compared
+after declared fixture resets. See [the gate contract](../../../BE_GO/internal/service/second_factor.md).
+Username/audit normalization must still be composed before OTP and the remaining
+login response/writes afterward. Provisioning/reset, social login, distributed
+rate limiting and full HTTP/release evidence remain open.
 
 ## Required acceptance matrix
 

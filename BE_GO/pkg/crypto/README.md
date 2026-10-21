@@ -32,3 +32,9 @@ Run `python TESTS/adapters/django/credentials.py` with its documented dependenci
 for both directions of real Django interoperability, in addition to Go unit/race
 and bounded fuzz tests. Keys, tokens and generated hashes remain temporary; the
 persistent report contains only counts, dependency versions and results.
+
+`TOTPCode` and `VerifyTOTP` preserve the login view's PyOTP defaults and NFKC
+comparison. Known-code tests cover exact 30-second boundaries; the account adapter
+compares the second-factor service with the actual Django login view, including
+invalid inputs and persisted-secret cases. See `internal/service/second_factor.md`
+from the module root for the required workflow ordering and remaining work.

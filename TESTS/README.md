@@ -371,3 +371,15 @@ to isolate database behavior. The compatibility cases use real supported hashes.
 These are backend-specific component checks, not portable Go login HTTP contracts;
 OTP, username/audit normalization, response construction and later writes remain
 to implement and verify. Synthetic credentials are temporary and removed.
+
+### Second-factor login decisions
+
+The account adapter also runs `adapters/django/second_factor.py`: 47 explicit cases
+through the actual Django login view and Go second-factor service. Only PyOTP's
+clock is controlled; the Django password check, JWT signing, response and database
+writes remain real. Cases cover interval boundaries, Unicode, malformed values,
+secret decoding, multipart metadata, disabled 2FA and the existing replay behavior.
+The adapter verifies that denials leave `last_login` unchanged, restores declared
+fixture fields and compares all managed tables. Go cases use `otpintegration`;
+missing fixtures fail rather than skip. This remains component evidence, not the
+portable Go login HTTP contract or provisioning/reset workflow.
