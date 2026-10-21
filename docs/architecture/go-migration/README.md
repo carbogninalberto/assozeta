@@ -87,8 +87,8 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks are explicitly classified. Both health routes, login/refresh,
-the two identifier checks and the partial audit-index connection are `implementing`,
-not `verified`; 500 other rows remain uncharacterized and five changed manual/export
+the two identifier checks, 2FA status and the partial audit-index connection are `implementing`,
+not `verified`; 499 other rows remain uncharacterized and five changed manual/export
 rows need review against the new baseline. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
@@ -917,3 +917,18 @@ there is no claimed scan-complexity or latency improvement. The focused
 `accounts.py --only identifiers` rehearsal includes supporting identity/session/
 refresh fixtures and uses current-model run-syncdb only. Both ledger rows remain
 implementing. See [identifier availability](../../../BE_GO/internal/handler/identifier_availability.md).
+
+
+The authenticated `/two-fa/info` route now has 10 portable contracts on actual
+Django ASGI and the Go executable, following an unregistered-route failure. It
+returns the admitted scope account's flag: permitted collaborators read their
+owner, administrators require impersonation, and association-scoped athletes are
+denied. Cookie-only authentication and forged scopes cannot grant access. Two
+state changes with unchanged owner/collaborator credentials per backend verify
+fresh reads. A PostgreSQL race check measures one/two admission SELECTs and zero
+extra status queries; 32 concurrent mixed reads use 48 SELECTs with four test
+connections. No managed rows or session bytes change through these reads. The
+focused `--only two-factor-info` rehearsal uses supporting identity/session/refresh/
+identifier fixtures and is not the complete account suite. Setup/update, historical
+schemas, global middleware and activation stay open. See
+[2FA status](../../../BE_GO/internal/handler/two_factor_info.md).

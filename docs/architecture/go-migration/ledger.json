@@ -12606,25 +12606,57 @@
         "target": "two_fa_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/handler/two_factor_info.go",
+        "BE_GO/internal/service/two_factor_info.go",
+        "BE_GO/internal/dto/two_factor_info.go",
+        "BE_GO/internal/domain/account.go",
+        "BE_GO/internal/repository/accounts.go",
+        "BE_GO/internal/service/identity.go",
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/two_fa_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/two-fa/info"
+        ],
+        "request": "No business parameters. Supplied Bearer, identity/session/group headers and scoped resource references retain shared admission. Authentication and permission precede method handling.",
+        "response": "200 data.enabled boolean from Django request.user (resolved scope). A permitted collaborator reads the association owner status, not their own. OPTIONS requires the same identity and returns existing metadata.",
+        "errors": "401 missing/invalid credentials, inactive/deleted accounts; missing-credential detail localized in English/Italian. 403 collaborator/admin/impersonation/resource denials; 405 unsupported methods including HEAD; 406 Accept and format 404 precede authentication. Malformed cached session returns production HTML 500 before Bearer/method.",
+        "authentication": "Bearer required; valid Django session and BKN_AUTH cookie do not authenticate REST. IsAuthenticated resolves anonymous forged impersonation headers and retains their explicit 403 before missing-credential 401.",
+        "permissions": "other.settings.read for restricted collaborators; existing FULL role exception. Administrator must impersonate. Association-scoped athlete cannot access account-wide status. Association-scoped collaborator still passes resource reference guards.",
+        "resource_scope": "Use resolved ScopeUser account snapshot; retain separate actor/effective identity. Current-account state is reloaded on each request. Foreign referenced resources are denied in association-bound sessions.",
+        "side_effects": "No business writes. Managed tables and valid/malformed session bytes remain unchanged in the declared HTTP fixtures; adapter flag transitions are restored. Shared session middleware can revoke an invalid password-hash session. No OTP secret is returned or separately read for status.",
+        "transaction": "No writes or extra status SELECT. Existing admission reads the two_fa flag with account columns; direct owner/athlete admission uses one SELECT, collaborator uses two in the measured service scenario.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_two_factor_info.py",
+        "TESTS/adapters/django/two_factor_info.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/two_factor_info_test.go",
+        "BE_GO/internal/service/two_factor_info_integration_test.go"
+      ],
+      "evidence": [
+        "10 portable methods first pass on actual Django ASGI and fail on unregistered Go, then pass against both real servers. Same owner and collaborator credentials observe two current-state changes per backend. Managed-model snapshots and session cache bytes remain unchanged by requests; fixture cleanup restores preexisting rows.",
+        "PostgreSQL race test measures one SELECT for owner/athlete and two for collaborator identity resolution, zero extra status queries. Thirty-two mixed concurrent reads execute 48 SELECTs within four test database connections. Public HTTP evidence separately includes impersonation/foreign-reference denial; no global middleware query count or latency claim."
+      ],
+      "notes": [
+        "Current-model run-syncdb only; setup/update 2FA endpoints, complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:two-fa/setup -> two_fa_setup",
