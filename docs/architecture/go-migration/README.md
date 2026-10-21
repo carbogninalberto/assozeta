@@ -490,7 +490,7 @@ Every row below is required before this draft can claim completion.
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | 87 declared DB/Redis/auth/CORS/restore path and precedence cases | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
-| 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository with lease/crash/concurrency tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
+| 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository and executor with lease/crash/concurrency and ordinary restore-admission tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
 | 10. Independent specification | New portable health tests and real Go harness | Full Go fixture adapter, all capability contracts, differential durable effects, browser workflows |
@@ -1009,7 +1009,23 @@ was corrected after a test exposed an unbounded candidate scan.
 
 The separate additive golang-migrate history owns only Go operational tables and
 refuses destructive down migration. No runtime or updater invokes it yet, and
-no Celery task or schedule has moved. Executor loops, per-task services/policies,
-restore fencing and authoritative scheduling remain open. See
+no Celery task or schedule has moved. Per-task services/policies, production
+process supervision and authoritative scheduling remain open. Ordinary-job
+execution and restore admission are described below. See
 [the repository contract](../../../BE_GO/internal/repository/jobs.md) and
 [migration ownership](../../../BE_GO/migrations/README.md).
+
+
+### Ordinary job executor and restore admission
+
+The explicit service executor now owns a fixed number of slots, one claim per
+slot, version/deadline checks, renewal and scoped durable-outcome verification.
+Services own atomic completion and explicit retry decisions. Shutdown stops intake,
+allows a grace period and joins cancelled work without releasing restore exclusion
+before a service exits. Thirteen PostgreSQL groups cover success/failure, blocked
+renewal, lease loss, concurrent shutdown, maintenance and bounded concurrency.
+Thirteen additional comparisons use the actual Django Celery task base and receipt
+schema, checking stale-publication rules and maintenance without spending retries.
+See [the executor contract](../../../BE_GO/internal/service/job_executor.md).
+Production task registration, process supervision, scheduler ownership and all
+activation/release/restore gates remain required; no task status becomes verified.

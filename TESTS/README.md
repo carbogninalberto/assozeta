@@ -810,3 +810,13 @@ concurrent migration application use synthetic business/history sentinels; these
 checks do not exercise historical Django migrations or implement Celery tasks.
 Only the Python standard library is required; no application oracle runs here.
 Evidence: `quality-reports/go-migration/jobs/`.
+
+
+The jobs adapter also requires thirteen executor groups: heartbeat/lease loss,
+blocked database I/O, version/timeout/panic failures, retries, restore admission,
+joined concurrency and cooperative drain. `accounts.py --only restore-admission`
+compares thirteen ordinary-job admission cases between actual `CoordinatedTask`
+and the Go executor on the real Django receipt schema. Eager Retry verifies the
+15-second countdown and unchanged retry/publication metadata without broker
+publication. Both adapters reject missing or skipped Go scenarios. This is not
+application task-body, Celery broker or production worker/scheduler parity.

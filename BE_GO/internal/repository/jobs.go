@@ -29,6 +29,13 @@ type DurableJobs interface {
 
 type Jobs struct{ db *sqlx.DB }
 
+type JobExecutionStore interface {
+	Claim(context.Context, []string, string, int, time.Duration) ([]domain.Job, error)
+	Renew(context.Context, uuid.UUID, uuid.UUID, time.Duration) error
+	Fail(context.Context, uuid.UUID, uuid.UUID, string, bool, time.Duration) error
+	Get(context.Context, uuid.UUID, uuid.UUID) (domain.Job, error)
+}
+
 func NewJobs(db *sqlx.DB) *Jobs { return &Jobs{db: db} }
 
 var jobKind = regexp.MustCompile(`^[a-z][a-z0-9_.]{0,127}$`)

@@ -97,7 +97,11 @@ def run(work,log,tool_env,address):
                 'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
         assert snapshot()==before,'restore SQL/lock integration changed managed models'
         assert raw_cache.get(key)==payload,'restore SQL/lock integration changed session bytes'
-        report={'success':True,'contracts_per_backend':go_count,'modes':list(modes),'composition':'actual Django ASGI and compiled Go root',
+        from TESTS.adapters.django.job_restore_admission import run as job_restore_admission
+        job_admission_cases=job_restore_admission(work,log,tool_env)
+        assert snapshot()==before,'job admission changed managed models'
+        assert raw_cache.get(key)==payload,'job admission changed session bytes'
+        report={'success':True,'contracts_per_backend':go_count,'job_admission_cases_per_backend':job_admission_cases,'modes':list(modes),'composition':'actual Django ASGI and compiled Go root',
             'models_unchanged':True,'malformed_session_unchanged':True,'shared_lock_released':True,'cross_process_crash_recovery':True,
             'query_dataset_sizes':[1,16,128,512],'concurrent_admissions':32,'scope':'HTTP admission; not full restore execution or worker/scheduler ownership'}
         (out/'http-results.json').write_text(json.dumps(report,indent=2)+'\n')
