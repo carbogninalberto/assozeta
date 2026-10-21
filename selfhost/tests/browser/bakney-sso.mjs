@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium, expect} from '@playwright/test';
+import {observeInitialPairing} from './sso-initial-diagnostics.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const origin = 'https://club.assozeta.test', authority = 'https://login.bakney.test';
 const callback = origin + '/bakney/v1/callback', protocol = 'bakney-pairing-v1';
@@ -229,29 +230,17 @@ try {
     browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP *.test 127.0.0.1']});
     const context=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1360,height:1000},permissions:['clipboard-read','clipboard-write']});
     const admin=await context.newPage();
-    // Preserve startup failures before any pairing secret is generated. Keep
-    // URLs free of queries/fragments and do not export storage or response bodies.
-    const startupErrors=[];
-    const startupPageError=error=>startupErrors.push({kind:'page',name:error.name,message:error.message});
-    const startupRequestFailed=request=>startupErrors.push({kind:'network',path:new URL(request.url()).pathname,error:request.failure()?.errorText});
-    const startupResponse=response=>{if(response.status()>=400)startupErrors.push({kind:'http',path:new URL(response.url()).pathname,status:response.status()});};
-    admin.on('pageerror',startupPageError);
-    admin.on('requestfailed',startupRequestFailed);
-    admin.on('response',startupResponse);
     await admin.route('**/api/instance/admin/releases*',r=>r.fulfill({json:{relation:'current',history:[],pending:[],page:1,next_page:null,total:0,latest:null}}));
+    const initialDiagnostics=observeInitialPairing(admin);
     try {
         await seed(admin,origin,receiver.owner);await admin.goto(origin+'/#/profile?page=self-instance&tab=overview');
         await expect(admin.getByRole('button',{name:'Genera codice di collegamento',exact:true})).toBeVisible({timeout:30000});
+        await admin.getByRole('button',{name:'Genera codice di collegamento',exact:true}).click({timeout:30000});
     } catch(error) {
-        await fs.writeFile(path.join(output,'startup-failure.json'),JSON.stringify({stage:'before-pairing',errors:startupErrors},null,2));
-        await admin.screenshot({path:path.join(output,'startup-failure.png'),fullPage:true});
+        try { await fs.writeFile(path.join(output,'initial-pairing-failure.json'),JSON.stringify(await initialDiagnostics.snapshot(),null,2),{mode:0o600}); }
+        catch { console.error('Initial pairing evidence could not be written.'); }
         throw error;
-    } finally {
-        admin.off('pageerror',startupPageError);
-        admin.off('requestfailed',startupRequestFailed);
-        admin.off('response',startupResponse);
-    }
-    await admin.getByRole('button',{name:'Genera codice di collegamento',exact:true}).click({timeout:30000});
+    } finally { initialDiagnostics.stop(); }
     let secret=await admin.getByLabel('Codice di collegamento',{exact:true}).inputValue();assert.equal(secret.length,43);
     await admin.getByRole('button',{name:'Copia codice',exact:true}).click();assert(await admin.evaluate(()=>navigator.clipboard.readText())===secret,'Copied pairing code differs');
     let setupPage;
