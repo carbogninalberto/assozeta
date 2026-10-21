@@ -496,3 +496,18 @@ those results. No image processor is supplied in the database fixture: it covers
 null images and branches Django leaves unchanged. Unit image doubles verify
 routing only. Tokens are synthetic response inputs; public login, image conversion
 and final session delivery remain open. See `BE_GO/internal/service/login_response.md`.
+
+
+### Login image pixel prerequisites
+
+`adapters/django/login_image_pixels.py` runs ten explicit size/threshold decisions
+through the real Django helper, compares 54 Go pixel transformations byte-for-byte
+with Pillow and checks 19,535 CPython Base64 differential vectors. Explicit
+constant/identity/white-alpha expectations anchor the pixel oracle. The Go tests
+use `imageintegration`; cancellation, logical working-byte limits, overflow and
+32 concurrent transformations are also checked. No generated image fixture or
+customer image is committed, and all managed tables remain unchanged.
+
+This is not complete image parity: file decoding, JPEG encoding, codec delivery,
+whole-processor admission and public login integration remain open. See
+`BE_GO/pkg/storage/loginimage/README.md` for the exact boundary and provenance.

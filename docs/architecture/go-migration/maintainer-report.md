@@ -128,6 +128,13 @@ dotenv cases. Image conversion is not implemented or counted: this fixture cover
 null images and branches Django leaves unchanged. The public login coordinator,
 image processor and final session delivery remain open.
 
+Image prerequisites now include pure-Go permissive Base64 decoding, the actual
+Django size policy and white-alpha/Lanczos pixel processing. Ten real-helper
+policy cases, 54 byte-exact Pillow pixel vectors and 19,535 Base64 vectors pass,
+with cancellation, logical memory limits and concurrency tests. The Pillow license
+and source provenance are retained. No Go file decoder, JPEG encoder or complete
+image processor is claimed by these checks; those remain necessary for login.
+
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login composition and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,

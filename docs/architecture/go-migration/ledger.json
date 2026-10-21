@@ -7524,7 +7524,9 @@
         "BE_GO/internal/domain/login_response.go",
         "BE_GO/internal/dto/login_response.go",
         "BE_GO/internal/service/login_response.go",
-        "BE_GO/internal/repository/login_response.go"
+        "BE_GO/internal/repository/login_response.go",
+        "BE_GO/pkg/storage/loginimage/data_uri.go",
+        "BE_GO/pkg/storage/loginimage/pixels.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7605,7 +7607,11 @@
         "TESTS/adapters/django/login_response.py",
         "BE_GO/internal/config/registration_test.go",
         "BE_GO/internal/service/login_response_test.go",
-        "BE_GO/internal/service/login_response_integration_test.go"
+        "BE_GO/internal/service/login_response_integration_test.go",
+        "TESTS/adapters/django/login_image_pixels.py",
+        "BE_GO/pkg/storage/loginimage/data_uri_test.go",
+        "BE_GO/pkg/storage/loginimage/pixels_test.go",
+        "BE_GO/pkg/storage/loginimage/pixels_integration_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7616,7 +7622,8 @@
         "23 explicitly expected association profile JSON/outcome cases compare Django serializer/DRF rendering with Go on the same private PostgreSQL. All 50 fields, exact decimal text, PostgreSQL scale rounding, null/scalar JSON, reviewed boundary and deleted/inactive owner semantics are checked. Group counts 0/1/16/128/512 use two SELECTs; 32 concurrent 512-group reads use 64 SELECTs. A deletion/restoration transition is immediately visible; all managed tables match after restoration.",
         "20 explicit actual Django login-response-builder/audit middleware versus Go membership-card cases; exact configuration/audit/index fields and Django readback. Existing/duplicate rows use two statements, creation five; 32 concurrent Go calls create one invariant in 67 statements. Real permission/FK failures, injected errors, cancellation and an observed PostgreSQL audit-actor deadlock verify rollback/retry. Every managed table and SQL-NULL distinction matches after resets.",
         "17 explicit actual Django password-login versus Go finalization cases cover UTC deletion-date boundaries, exact last_login and audit/index readback. Two/four/five-statement paths, 32 concurrent Go calls in 67 statements, real permission/FK failures, injected failures and cancellation verify atomicity and pool release. Django partial autocommit and stale-save overwrites are characterized separately; all managed tables match after restoration.",
-        "36 explicitly expected actual Django builder versus Go composed-response cases on shared private PostgreSQL, including all key presence, role-0 behavior, feature masks, exact JSON settings, instructor cardinalities 0/1/2/128/512 and default configuration write/readback. Existing association/collaborator responses use seven statements; creation ten; 32 concurrent compositions use 224 statements on four connections. Real required-instructor permission failures and persisted transitions are tested; all managed tables match after restoration. Image conversion is deliberately outside these cases. Twenty-eight boolean values and eight dotenv cases are characterized with Django and checked in Go."
+        "36 explicitly expected actual Django builder versus Go composed-response cases on shared private PostgreSQL, including all key presence, role-0 behavior, feature masks, exact JSON settings, instructor cardinalities 0/1/2/128/512 and default configuration write/readback. Existing association/collaborator responses use seven statements; creation ten; 32 concurrent compositions use 224 statements on four connections. Real required-instructor permission failures and persisted transitions are tested; all managed tables match after restoration. Image conversion is deliberately outside these cases. Twenty-eight boolean values and eight dotenv cases are characterized with Django and checked in Go.",
+        "Image prerequisites: ten explicitly expected actual-Django-helper size decisions, 54 exact Pillow pixel vectors across six modes and 19,535 CPython Base64 differential vectors pass. Go matches every pixel byte without tolerance, preserves immutable inputs and passes cancellation, logical memory/overflow limits and 32 concurrent transformations. All managed tables remain unchanged. These checks do not include Go file decoding, JPEG encoding or the complete image processor."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
@@ -7626,7 +7633,8 @@
         "Base profile reads use a consistent read-only snapshot. Missing/duplicate onboarding and optional onboarding query failures produce null, matching Django; request cancellation still aborts. Required base-profile and association-group reads propagate errors. Real denied-SELECT roles verify both boundaries and pool reuse. See BE_GO/internal/service/login_profile.md and association_profile.md.",
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
         "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
-        "Response construction now composes the profile/association/card services; no image processor implementation or public login handler is wired. A missing processor fails when an image requires work. Unit image doubles test dispatch only, not image parity. Metadata instructor lookup preserves Django behavior and does not grant instructor authorization. Registration flags reuse existing environment names and defaults. See BE_GO/internal/service/login_response.md."
+        "Response construction now composes the profile/association/card services; no image processor implementation or public login handler is wired. A missing processor fails when an image requires work. Unit image doubles test dispatch only, not image parity. Metadata instructor lookup preserves Django behavior and does not grant instructor authorization. Registration flags reuse existing environment names and defaults. See BE_GO/internal/service/login_response.md.",
+        "Pure-Go image decision/Base64/pixel stages now exist in pkg/storage/loginimage, with retained Pillow license/provenance. They are not a complete domain.LoginImageProcessor and remain unwired. File-format/lazy-header decoding, JPEG byte compatibility, codec delivery and global resource admission remain required; no full image or HTTP parity is claimed."
       ]
     },
     {
