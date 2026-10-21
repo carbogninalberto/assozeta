@@ -98,7 +98,7 @@ boundary and scoped groups. One/two SELECTs remain bounded through 512 groups;
 32 concurrent reads use 64 SELECTs. Association deletion immediately revokes
 serialization. Required group-query failures return no partial profile, matching
 Django. All managed tables match after the declared fixture transition. Full
-response composition and final writes remain open; configuration creation is described below.
+response composition remains open; configuration creation is described below.
 
 Membership-card response configuration now has 20 actual Django-builder/audit
 cases versus Go with exact persisted fields and Django readback. Existing rows
@@ -110,8 +110,16 @@ Django's duplicate-creation race and partial autocommit failure effects are
 characterized explicitly. Go-only locking does not close cross-runtime concurrent
 creation; that remains an activation gap, alongside complete login composition.
 
+Final login user writes add 17 actual-view cases for exact last_login and UTC
+scheduled-deletion cancellation, including midnight between clock reads. Audit
+and index are atomic; bounded query counts and 32 concurrent calls are verified.
+Actual permission/FK failures and injected failures roll back cleanly. Django's
+partial autocommit and stale-save overwrites are characterized; Go preserves
+current unrelated fields. Public login composition, revocation races and mixed
+Django/Go cancellation remain open. See the finalization component contract.
+
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
-group/instructor/family authorization, login writes and impersonation audit workflows,
+group/instructor/family authorization, login composition and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,
 realtime/integrations/documents/manual delivery, Go backup/restore, the complete
 fixture adapter, query/performance evidence and release/updater rehearsals.

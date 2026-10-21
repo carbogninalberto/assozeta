@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
 | Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
@@ -379,7 +380,7 @@ for the atomic failure boundary and remaining admission/cost-budget work.
 
 This is not a complete login or an authenticated session. Go HTTP login, distributed
 rate limiting, social providers, response-created
-configuration, last-login/deletion writes and full rollback/release proof remain
+configuration, final-login write composition and full rollback/release proof remain
 required. The login row remains implementing.
 
 ### Login second factor
@@ -419,7 +420,7 @@ username uniqueness failure leaves a pre-save audit, while Go's requested atomic
 invariant rolls it back. This is documented rather than counted as identical
 failure-side-effect parity. See [the service contract](../../../BE_GO/internal/service/login_preparation.md).
 The login and audit-index rows remain implementing. Final login response/configuration
-creation, last-login/deletion writes, social providers, public HTTP admission,
+creation, final-login write composition, social providers, public HTTP admission,
 audit-context middleware composition and all remaining acceptance work are open.
 
 ### Base login profile
@@ -436,7 +437,7 @@ This is response-component evidence, not a public login route. A real PostgreSQL
 permission failure now proves optional onboarding returns null in both runtimes;
 Go rolls back the aborted read transaction and releases the connection.
 Association augmentation, image processing,
-configuration-stage composition and final login writes remain open. See the
+configuration-stage and final-write composition remain open. See the
 [profile contract](../../../BE_GO/internal/service/login_profile.md).
 
 ### Association login profile
@@ -450,7 +451,7 @@ scope denials and a real required-group permission failure return no stale or
 partial profile. Managed tables remain unchanged after fixture restoration.
 
 This remains a response component. Complete login augmentation, image processing,
-configuration-stage composition and final login writes remain open. See the
+configuration-stage and final-write composition remain open. See the
 [association profile contract](../../../BE_GO/internal/service/association_profile.md).
 
 ### Login membership-card configuration
@@ -469,7 +470,7 @@ INSERTs retain partial effects under autocommit. Go's required atomic boundary i
 explicitly stronger. The Go parent lock does not coordinate an unmodified Django
 writer; cross-runtime creation remains an activation gap. See the
 [configuration contract](../../../BE_GO/internal/service/membership_card_configuration.md).
-Full login composition and final writes remain open.
+Full login composition remains open; the final-write component is described below.
 
 ## Required acceptance matrix
 
@@ -495,3 +496,22 @@ Every row below is required before this draft can claim completion.
 The next implementation work is to close health/config compatibility gaps and
 implement authentication services plus shared-schema integration. Route switching
 and installable Go artifacts must wait for tested API and background ownership.
+
+
+### Final login user writes
+
+The separate finalization service now matches 17 explicitly expected actual
+Django-login cases for last_login and scheduled-deletion cancellation. UTC date
+boundaries include midnight between the view's two clock reads. Cancellation
+writes its User audit and association index in the same transaction. Two/four/five
+statements cover unchanged/unindexed/indexed paths; 32 concurrent Go calls use 67
+statements and cancel once. Real permission/FK failures, injected failures and
+cancellation leave no partial invariant and release the pool. All managed tables
+match after fixture restoration and Django reads Go-written audits.
+
+The fixture separately demonstrates Django's retained pre-save audit on failed
+User UPDATE, swallowed index failures and stale full-model overwrites. Go's atomic
+transaction and narrow update deliberately preserve current unrelated user state.
+Those differences, end-to-end revocation and mixed-runtime audit races remain
+explicit gaps. The finalization service is not registered as a public login route;
+see the [component contract](../../../BE_GO/internal/service/login_finalization.md).

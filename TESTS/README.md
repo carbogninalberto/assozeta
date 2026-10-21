@@ -458,3 +458,21 @@ and audit and is swallowed. Go's required atomic invariant instead rolls back al
 writes. These are explicit differences, not passing failure-side-effect parity.
 Cross-runtime concurrent creation, full login composition and HTTP contracts
 remain open; see `BE_GO/internal/service/membership_card_configuration.md`.
+
+
+### Final login user writes
+
+The account adapter runs `adapters/django/login_finalization.py` and the Go
+`finalizationintegration` tests. Seventeen actual Django password-login cases
+specify last_login, UTC deletion-date cancellation and exact audit/index fields.
+The midnight between two clock reads, actor/owner index precedence and unchanged
+past/null dates are explicit. Django reads back every Go-written event and all
+managed tables are compared after restoring declared changes.
+
+Real PostgreSQL permission/FK failures, injected write/audit/commit failures,
+cancellation and 32 concurrent calls verify atomicity and bounded query counts
+(two/four/five statements; 67 for concurrent cancellation). Tests characterize
+Django's partial autocommit failures and stale full-save overwrites separately.
+These differences are documented, not certified as equivalent failure behavior.
+Public Go login and mixed-runtime races remain open; see
+`BE_GO/internal/service/login_finalization.md`.
