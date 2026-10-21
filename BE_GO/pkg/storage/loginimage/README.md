@@ -3,10 +3,10 @@
 This package implements prerequisites of Django's `compress_base64`:
 permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
 transformation, bounded libjpeg JPEG encoding/decoding, PNG header/pixel and
-chunk-stream decoding, and BMP/DIB header/raw/RLE decoding. It does
+chunk-stream decoding, BMP/DIB header/raw/RLE decoding and PPM-family decoding. It does
 **not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
 or wire the public service. JPEG marker/EXIF/MPO admission and the complete
-JPEG, PNG first-frame and BMP/DIB file pipelines are available as separate components.
+JPEG, PNG first-frame, BMP/DIB and PPM-family file pipelines are available as separate components.
 Public login remains unwired; no unsupported image is silently accepted as completed parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
@@ -486,3 +486,44 @@ invalid specifications, input ownership, mid-header/raw/RLE cancellation, 32
 concurrent pipelines, queue timeouts and encoder-stage cancellation with child
 reaping and admission reuse. BMP/DIB does not complete the multi-format image
 service or public login integration; the migration ledger remains implementing.
+
+## PBM, PGM, PPM, PFM and PIL extensions
+
+`ReadPPMHeader`, `DecodePPM` and `PPMFileProcessor` cover the modes registered by
+Pillow 11.1's `PpmImagePlugin`: P1–P6, Pf, P0CMYK, PyP, PyRGBA and PyCMYK. The
+header parser preserves six-byte magic recognition, ten-byte numeric tokens,
+Python signs/underscore syntax, comment joining, exact whitespace consumption and
+pixel warning/hard limits. Its positive byte budget includes skipped comments.
+PFM scale must be finite and nonzero; its sign selects byte order, while its
+magnitude does not multiply samples. PFM rows are bottom-up.
+
+Binary PBM retains row packing/inversion. Binary PGM/PPM scale and clip samples;
+plain PGM/PPM reject out-of-range values. Scaling uses the reference's floating
+division/multiplication followed by ties-to-even rounding. Mode I and F retain
+32-bit little-endian samples and, like palette mode P, fall back to the original
+file when JPEG saving is unsupported. CMYK and RGBA use the existing JPEG/white
+alpha pipeline. A raw file's bytes immediately after the consumed header are
+pixels, including additional whitespace or a comment marker.
+
+Plain decoding retains Pillow's 1 MiB read boundaries. It removes comments before
+splitting tokens, carries split numbers between blocks and checks the last partial
+token's length before processing complete tokens in that block. Plain PBM validates
+all digits in the block even when the image already has enough pixels; numeric
+PPM can ignore surplus complete tokens. The comment-end helper's index-zero
+CR/LF behavior is retained when a comment continues into another block.
+
+The decoder's logical budget counts input, normalized output and a reusable
+bounded block buffer with ten bytes of split-token headroom. Fixed parser state,
+allocator overhead and aggregate RSS are outside that accounting. All stages
+share the file processor's admission/deadline; cancellation, working-limit errors
+and unavailable encoders propagate without a successful result. Lazy passthrough,
+malformed-file fallback and the strict 1 MiB resize threshold match the shared
+login policy.
+
+`TESTS/adapters/django/login_ppm.py` specifies 429 header/pixel/file cases, anchored
+by declared samples rather than copied decoder output. Pillow, the actual Django
+helper and the shipped non-root/read-only/networkless image run these cases.
+Tests also cover exact header/raw/plain budgets, row arithmetic overflow, input
+ownership, cancellation during header/raw/plain/PFM processing, 32 concurrent
+pipelines, queue timeouts and encoder-stage cancellation/reaping/admission reuse.
+Other formats, shared format dispatch/admission and public login wiring remain open.
