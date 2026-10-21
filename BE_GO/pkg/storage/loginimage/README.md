@@ -571,3 +571,43 @@ directory bounds, file-size thresholds, exact budgets, overflow, input ownership
 mid-header/RLE cancellation, 32 concurrent pipelines and encoder-stage queueing,
 cancellation, child reaping and admission reuse. Other image formats and public
 login composition remain open; this component does not authorize activation.
+
+## TGA raw and RLE images
+
+`ReadTGAHeader`, `DecodeTGA` and `TGAFileProcessor` follow Pillow 11.1's
+[TGA plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/TgaImagePlugin.py),
+[RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/TgaRleDecode.c)
+and [unpackers](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/Unpack.c).
+The pure-Go path supports raw bilevel, gray, gray/alpha, indexed, 16-bit color,
+BGR and BGRA layouts, plus byte-aligned RLE. Both row directions and horizontal
+flips are preserved. The high bit of 16-bit color has inverted alpha; descriptor
+alpha/interleave bits and origin coordinates do not override reference decoding.
+
+Header admission retains short ID/palette reads and unsupported type/depth
+combinations with no pixel tile, including their lazy 200x100 passthrough.
+Palette application is a separate load-stage concern: L/LA acquire P/PA core
+modes, while incompatible image modes, oversized palettes and 32-bit palette
+raw modes fail. P/PA/LA cannot be saved as JPEG and retain the original file.
+The header's `InvalidPalette` records an eventual load failure, not rejection
+by the lazy reader. Empty palettes remain meaningful.
+
+Repeated RLE packets cannot cross a row. Literal packets may cross rows or the
+end of the image, but their complete declared payload must be present before
+any samples are accepted. Finite RLE streams with depth one cannot complete
+Pillow's zero-byte sample decoder and fail. Raw rows use packed bilevel bytes
+without external alignment padding. No extension/footer metadata is consumed.
+
+Header budgets count consumed input; implicit zero palette prefixes are not
+allocated. Pixel budgets count input plus normalized output; RLE writes directly
+to that output without an expanded intermediate stream. The file pipeline has
+one admission/deadline through JPEG encoding. Malformed/save failures retain the
+original, while cancellation, budget errors and unavailable encoders propagate
+without a successful result. These logical budgets do not bound aggregate RSS.
+
+The adapter supplies 1,112 declared header/pixel/file cases, checked with Pillow,
+the actual Django helper and the shipped non-root/read-only/networkless image.
+Tests also cover exact stage budgets, overflow, input ownership, cancellation
+during header/raw/RLE work, 32 concurrent pipelines, and encoder-stage queueing,
+cancellation, child reaping and admission reuse. TGA has no fixed magic signature;
+its candidate predicate is not a complete cross-format dispatcher. Plugin order,
+shared admission, remaining formats and public login composition remain open.
