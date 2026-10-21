@@ -39,6 +39,15 @@ users, associations, member links, instance configuration and audit rows are
 unchanged after test-only transitions are restored. These cases contain no nested
 resource IDs and use current-model schema creation, not migration history.
 
+The resource repository adds 67 explicitly expected Django/Go visibility sets
+for association, family and group predicates across 16 resource kinds. It retains
+the differing deletion filters of existing managers and constrains both parents
+of course/carnet subscriptions. Family/payment changes revoke visibility inside
+transactions in both runtimes; fixtures are rolled back and every seeded table
+is checked unchanged. Batches of 1–512 distinct tag references use one query;
+32 concurrent reads use four connections. These predicates are not yet connected
+to request admission or business handlers.
+
 Missing work includes business endpoints, scoped operation/group/instructor/family
 and nested-resource authorization, login writes and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,

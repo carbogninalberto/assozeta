@@ -281,13 +281,17 @@ not proof of HTTP admission, persisted identity resolution or resource scope.
 
 `TESTS/adapters/django/accounts.py` also requires local PostgreSQL binaries. It
 creates a private Unix-socket cluster and the current Django model schema, writes
-21 synthetic accounts and identity relationships through Django, and runs Go repository tests against
+23 synthetic accounts and identity/resource relationships through Django, and runs Go repository tests against
 that same database. Django checks the expected lookup semantics first and verifies
 unchanged records afterward. The harness removes its cluster and reports to
 `quality-reports/go-migration/accounts/`. It does not reuse the developer database,
 exercise historical migrations, authenticate HTTP requests or prove business-write
 rollback. The Go `integration` tag requires this adapter; missing configuration
 fails rather than skipping required database evidence.
+The real Django URL configuration imports modules which require `it_IT.UTF-8`;
+Linux environments must generate that locale, as the backend Dockerfile does.
+The Go foundation CI job installs/generates it and checks Python can select it
+before invoking the adapter. Locale-dependent application imports are not mocked.
 
 
 The account rehearsal now also generates temporary synthetic Ed25519 credentials
@@ -313,3 +317,15 @@ revocation is visible in Django. Readback compares users, associations, members,
 instance configuration and audit records after restoring test-only changes.
 These cases have no nested resource IDs; scoped operation/resource authorization,
 HTTP admission and audit mutation workflows remain separate incomplete contracts.
+
+`adapters/django/scoped_resources.py` runs within that same private account
+rehearsal. It bulk-inserts isolated synthetic business records, avoiding creation
+hooks, and asserts 67 explicit visibility sets through Django's real
+`scoped_queryset` and the Go repository. These cover association/family/group
+predicates, soft-deletion differences, cross-association relationships and foreign
+group headers. Both runtimes observe lost visibility after transactional changes
+to family seeds/payment links; the changes are rolled back. Go verifies one query
+per batch of 1, 16, 128 and 512 distinct tag references, 32 concurrent reads with
+four connections, cancellation, invalid inputs and database failure. Readback
+includes every seeded resource table. This is not nested-request admission,
+private-file authorization, business-hook parity or a full performance benchmark.
