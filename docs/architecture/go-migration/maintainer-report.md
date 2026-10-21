@@ -632,3 +632,19 @@ three obsolete response-test startup fixtures missing required JWT/provider
 settings; the fixtures were corrected and the complete adapter rerun passed.
 The schema comes from current models, not historical migrations. Results are
 archived at `quality-reports/go-migration/environment/accounts-results.json`.
+
+The login rate-counter increment adds explicit service/repository ports for the
+existing 20/minute IP and 5/minute account limits. Fourteen declared cases use
+actual django-ratelimit and the unchanged cache declaration on private Redis,
+checking Django-to-Go-to-Django counts, cache keys, inclusive window boundaries
+and TTL preservation. Sixty-four concurrent Go calls admit five and deny 59,
+use 127 writes and at most four connections. Both runtimes deny the actual-key
+expiration race. A paused Redis write checks deadlines/no retries and pool reuse;
+pre-cancelled calls write nothing, while timed-out in-flight writes may still run.
+The first Go tests failed on absent components. Request key parsing, environment
+flags, exact HTTP ordering/responses, exceptional counter representations and
+public route wiring remain open. See `BE_GO/internal/service/login_rate.md` and
+`quality-reports/go-migration/login-rate/`; this is counter evidence only.
+Full Go race tests/vet, tagged Redis-integration vet, the private Redis oracle,
+12 inventory tests, catalog drift validation and actionlint pass. No existing
+public route, account workflow or database write path changed in this increment.
