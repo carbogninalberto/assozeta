@@ -7586,7 +7586,9 @@
         "BE_GO/pkg/social/apple.go",
         "BE_GO/internal/service/social_providers.go",
         "BE_GO/pkg/jwt/document.go",
-        "BE_GO/pkg/jwt/canonical.go"
+        "BE_GO/pkg/jwt/canonical.go",
+        "BE_GO/pkg/social/google.go",
+        "BE_GO/pkg/social/google_jwk.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7769,7 +7771,11 @@
         "BE_GO/internal/service/social_apple_test.go",
         "TESTS/adapters/django/apple_tokens.py",
         "TESTS/adapters/django/jwt_document.py",
-        "BE_GO/pkg/jwt/canonical_test.go"
+        "BE_GO/pkg/jwt/canonical_test.go",
+        "TESTS/adapters/django/google_tokens.py",
+        "BE_GO/pkg/social/google_test.go",
+        "BE_GO/pkg/social/google_integration_test.go",
+        "BE_GO/internal/service/social_google_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7804,7 +7810,8 @@
         "Social increment: 41 explicit Django/Go admission cases use real PostgreSQL and controlled provider results; 26 complete sessions (18 password, 8 social) cover signed tokens, all response fields, audits/card/finalization effects and failure boundaries. Candidate batches 1/16/128/512 retain one SELECT, 32 concurrent reads release the pool, and provider I/O starts after the reader closes. Social unit tests prove a two-slot concurrency limit, cancellation and slot reuse. This does not prove real Google/Apple verification or public login parity. See social_login.md and password_session.md; full adapter results are recorded in the maintainer report.",
         "Current social configuration: 33 declared Django/Go cases on private PostgreSQL preserve environment/override/visibility precedence, disabled/reset and malformed settings, raw ID types and ignored legacy columns. At 1/16/128/512 rows, reads use one SELECT and choose the lowest ID; 32 concurrent reads per size use a four-connection pool. A real table lock verifies cancellation and subsequent pool reuse. All managed tables match after declared resets and fixture removal. This does not exercise provider HTTP/cryptography or environment-loader wiring. Evidence: quality-reports/go-migration/social-configuration/.",
         "Apple provider increment: 89 declared cases pass through the actual Django verifier and Go client using real RSA signatures/JWK parsing and an ephemeral local HTTPS endpoint. Complete identity results and HTTP counts agree across disabled configuration, rotation, malformed/duplicate keys, signatures/algorithms, claims/raw tokens, gzip/redirect/truncated response and strict parser cases. Red tests exposed critical-header/trailing-JSON/large-integer acceptance and Python integer whitespace differences before Go fixes. Unit checks prove admission/deadline/cancellation/reuse and measured response/token/RSA bounds. A real RSA/HTTPS service test observes audience changes and suppresses HTTP on disable. Configuration input is controlled there; persisted resolution has separate PostgreSQL evidence. No public or live-Apple login is claimed. See pkg/social/README.md and quality-reports/go-migration/apple-tokens/.",
-        "2026-10-21: 76 Django-to-Go JWT cases include 56 signed document scenarios. Red comparisons exposed critical-header/JSON/UTF-8/time-conversion and refresh byte-preservation differences. Shared parser checks and refresh reserialization now pass, alongside the 89-case Apple RSA/HTTPS oracle. Nonstandard JSON numbers, lone surrogate escapes and global resource budgets remain open."
+        "2026-10-21: 76 Django-to-Go JWT cases include 56 signed document scenarios. Red comparisons exposed critical-header/JSON/UTF-8/time-conversion and refresh byte-preservation differences. Shared parser checks and refresh reserialization now pass, alongside the 89-case Apple RSA/HTTPS oracle. Nonstandard JSON numbers, lone surrogate escapes and global resource budgets remain open.",
+        "Google increment: 93 declared Django/Go cases compare real certificate/JWK signatures and access-token fallback over ephemeral HTTPS. Identity values, propagated-error boundaries and HTTP destinations/query/headers/sequences are asserted. Red tests caught premature algorithm rejection and incorrectly followed JWK redirects. Unit checks cover concurrency/cancellation/reuse, phase deadlines, response closure and measured read limits. A real RSA/HTTPS service composition test observes configuration changes/disable; its configuration reader is controlled. Raw container/upload conversion, parser/key/transport extremes, root/environment/public/live-provider composition remain open. See pkg/social/google.md and quality-reports/go-migration/google-tokens/."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
