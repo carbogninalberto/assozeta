@@ -272,3 +272,14 @@ long scans, 32 concurrent mixed-image pipelines and encoder-stage admission/
 cancellation/reaping/reuse pass. Production native sources are unchanged. Other
 formats, shared dispatch/admission and public login remain open; ledger status
 counts and backend activation restrictions are unchanged.
+
+
+The SGI pipeline adds 1,294 declared header/pixel/file cases checked against Pillow,
+the actual Django helper and the shipped non-root/read-only/networkless image.
+It preserves all eight supported planar/RLE layouts, high-byte 16-bit samples,
+partial/lazy headers, table offset/length semantics, persistent partial rows and
+early successful exit. Exact budgets, overflow, ownership, mid-operation
+cancellation, 32 concurrent mixed-image pipelines and encoder-stage admission/
+cancellation/reaping/reuse pass. Production native sources are unchanged. Other
+formats, shared dispatch/admission and public login remain open; ledger status
+counts and backend activation restrictions are unchanged.
