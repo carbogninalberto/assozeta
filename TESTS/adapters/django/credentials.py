@@ -83,6 +83,8 @@ def main():
                 {'name': 'HS256-confusion', 'token': jwt.encode(base, b'synthetic-hmac-key-at-least-32-bytes', algorithm='HS256'), 'kind': 'access', 'valid': False},
                 {'name': 'malformed', 'token': 'invalid.token', 'kind': 'access', 'valid': False},
             ]
+            from TESTS.adapters.django.jwt_document import append_cases
+            document_cases = append_cases(tokens, base, key, NOW)
             for case in tokens:
                 try:
                     (AccessToken if case['kind'] == 'access' else RefreshToken)(case['token'])
@@ -90,6 +92,9 @@ def main():
                 except Exception:
                     accepted = False
                 assert accepted == case['valid'], 'Django token contract: ' + case['name']
+                if case.get('normalized'):
+                    result=JWTTokenService.refresh_access_token(case['token'])
+                    assert result is not None and result['refresh_token']==case['normalized'],'Django refresh normalization: '+case['name']
             original = RefreshToken(pair['refresh_token'])
             original['iat'] = NOW - 600
             original['custom'] = {'number': 9007199254740993}
@@ -165,7 +170,7 @@ def main():
                     assert check_password(entry['password'], entry['encoded'])
                     assert not check_password('wrong-' + entry['password'], entry['encoded'])
                     assert entry['encoded'].startswith('pbkdf2_sha256$1000000$')
-    report = {'success': True, 'django_to_go_tokens': len(tokens), 'django_to_go_passwords': len(passwords),
+    report = {'success': True, 'jwt_document_cases': document_cases, 'django_to_go_tokens': len(tokens), 'django_to_go_passwords': len(passwords),
               'go_to_django_token_pairs': len(results), 'go_to_django_passwords': 3,
               'dependencies': {name: version(name) for name in ('Django', 'djangorestframework-simplejwt', 'PyJWT', 'bcrypt', 'argon2-cffi')},
               'database_access': 'prohibited', 'customer_credentials': 'none; temporary synthetic credentials removed'}

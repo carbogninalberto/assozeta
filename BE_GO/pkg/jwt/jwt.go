@@ -4,15 +4,14 @@
 package jwt
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/hex"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"math"
-	"strconv"
+	"math/big"
 	"strings"
 	"time"
 
@@ -70,9 +69,24 @@ func (m *Manager) Verify(encoded, kind string) (map[string]any, error) {
 	if kind != "access" && kind != "refresh" {
 		return nil, ErrInvalidToken
 	}
+	parser := libjwt.NewParser(libjwt.WithValidMethods([]string{"EdDSA"}), libjwt.WithJSONNumber(), libjwt.WithPaddingAllowed(), libjwt.WithoutClaimsValidation())
+	segments := strings.Split(encoded, ".")
+	if len(segments) != 3 {
+		return nil, ErrInvalidToken
+	}
+	for _, segment := range segments[:2] {
+		data, err := parser.DecodeSegment(segment)
+		if err != nil || !ValidDocument(context.Background(), data) {
+			return nil, ErrInvalidToken
+		}
+	}
 	claims := libjwt.MapClaims{}
-	token, err := libjwt.ParseWithClaims(encoded, claims, func(token *libjwt.Token) (any, error) { return m.public, nil },
-		libjwt.WithValidMethods([]string{"EdDSA"}), libjwt.WithJSONNumber(), libjwt.WithoutClaimsValidation())
+	token, err := parser.ParseWithClaims(encoded, claims, func(token *libjwt.Token) (any, error) {
+		if !ValidProtectedHeader(token.Header) {
+			return nil, ErrInvalidToken
+		}
+		return m.public, nil
+	})
 	if err != nil || !token.Valid || claims["token_type"] != kind {
 		return nil, ErrInvalidToken
 	}
@@ -84,15 +98,15 @@ func (m *Manager) Verify(encoded, kind string) (map[string]any, error) {
 			return nil, ErrInvalidToken
 		}
 	}
-	expiry, ok := epoch(claims["exp"], false)
+	expiry, ok := epoch(claims["exp"])
 	// SimpleJWT additionally converts exp through Python datetime (year 1..9999).
 	if !ok || expiry < -62135596800 || expiry > 253402300799 || expiry <= m.now().Unix() {
 		return nil, ErrInvalidToken
 	}
 	for _, name := range []string{"iat", "nbf"} {
 		if value, exists := claims[name]; exists {
-			timestamp, ok := epoch(value, true)
-			if !ok || timestamp > m.now().Unix() {
+			timestamp, ok := IntegerClaim(value)
+			if !ok || timestamp.Cmp(big.NewInt(m.now().Unix())) > 0 {
 				return nil, ErrInvalidToken
 			}
 		}
@@ -100,29 +114,16 @@ func (m *Manager) Verify(encoded, kind string) (map[string]any, error) {
 	return map[string]any(claims), nil
 }
 
-func epoch(value any, allowString bool) (int64, bool) {
-	switch number := value.(type) {
-	case json.Number:
-		if integer, err := number.Int64(); err == nil {
-			return integer, true
-		}
-		decimal, err := number.Float64()
-		if err != nil || math.IsNaN(decimal) || math.IsInf(decimal, 0) || decimal >= float64(math.MaxInt64) || decimal < float64(math.MinInt64) {
-			return 0, false
-		}
-		return int64(decimal), true // Python int() truncates fractional NumericDates.
-	case string:
-		if allowString {
-			integer, err := strconv.ParseInt(strings.TrimSpace(number), 10, 64)
-			return integer, err == nil
-		}
-	case bool:
-		if number {
-			return 1, true
-		}
-		return 0, true
+func epoch(value any) (int64, bool) {
+	// SimpleJWT additionally passes exp to datetime; strings cannot reach it.
+	if _, isString := value.(string); isString {
+		return 0, false
 	}
-	return 0, false
+	integer, ok := IntegerClaim(value)
+	if !ok || !integer.IsInt64() {
+		return 0, false
+	}
+	return integer.Int64(), true
 }
 
 func (m *Manager) Issue(userID string, role int, email string) (Pair, error) {
@@ -147,9 +148,12 @@ func (m *Manager) Refresh(encoded string) (Pair, error) {
 	if err != nil {
 		return Pair{}, err
 	}
-	// Current Assozeta does not rotate refresh tokens despite its configuration
-	// comment. Preserve the valid original credential and its original expiry/JTI.
-	return m.pair(encoded, libjwt.MapClaims(claims), m.now().Unix())
+	// Django re-encodes the same refresh claims; expiry and JTI do not rotate.
+	refresh, err := m.resignRefresh(encoded)
+	if err != nil {
+		return Pair{}, err
+	}
+	return m.pair(refresh, libjwt.MapClaims(claims), m.now().Unix())
 }
 
 // IssueUnbound matches constructing SimpleJWT RefreshToken(None). It deliberately

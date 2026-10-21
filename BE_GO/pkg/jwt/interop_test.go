@@ -23,8 +23,8 @@ func TestDjangoTokenInteroperability(t *testing.T) {
 		Private string `json:"private"`
 		Public  string `json:"public"`
 		Tokens  []struct {
-			Name, Token, Kind string
-			Valid             bool
+			Name, Token, Kind, Normalized string
+			Valid                         bool
 		} `json:"tokens"`
 		Refresh string `json:"refresh"`
 	}
@@ -40,6 +40,12 @@ func TestDjangoTokenInteroperability(t *testing.T) {
 			_, err := manager.Verify(vector.Token, vector.Kind)
 			if (err == nil) != vector.Valid {
 				t.Fatalf("token acceptance differs: valid=%t", err == nil)
+			}
+			if vector.Normalized != "" {
+				pair, err := manager.Refresh(vector.Token)
+				if err != nil || pair.RefreshToken != vector.Normalized {
+					t.Fatal("refresh normalization differs", err)
+				}
 			}
 		})
 	}

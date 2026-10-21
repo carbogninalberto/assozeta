@@ -7584,7 +7584,9 @@
         "BE_GO/internal/repository/social_configuration.go",
         "BE_GO/internal/service/social_configuration.go",
         "BE_GO/pkg/social/apple.go",
-        "BE_GO/internal/service/social_providers.go"
+        "BE_GO/internal/service/social_providers.go",
+        "BE_GO/pkg/jwt/document.go",
+        "BE_GO/pkg/jwt/canonical.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7765,7 +7767,9 @@
         "BE_GO/pkg/social/apple_integration_test.go",
         "BE_GO/internal/service/social_providers_test.go",
         "BE_GO/internal/service/social_apple_test.go",
-        "TESTS/adapters/django/apple_tokens.py"
+        "TESTS/adapters/django/apple_tokens.py",
+        "TESTS/adapters/django/jwt_document.py",
+        "BE_GO/pkg/jwt/canonical_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7799,7 +7803,8 @@
         "Raw credential increment: 68 declared cases pass through the actual Django login view and Go password-selection service on private PostgreSQL. Cases retain JSON scalar/container and multipart file types, expected exception classes, current PBKDF2 acceptance, rehash/fallback failure, candidate-before-password ordering and inactive/deleted/ambiguous/late-error outcomes. Exact selected IDs, password replacements and all managed-table readback agree after declared resets; each small set uses one SELECT and returns its pool connection. TDD unit failures preceded representation/type APIs and a service guard against non-string upgrades. Unit checks cover cancellation during conversion, 32 concurrent conversions and no partial selection/transaction on error. HTTP/social/middleware/parser extremes remain open. Logs: quality-reports/go-migration/login-values/.",
         "Social increment: 41 explicit Django/Go admission cases use real PostgreSQL and controlled provider results; 26 complete sessions (18 password, 8 social) cover signed tokens, all response fields, audits/card/finalization effects and failure boundaries. Candidate batches 1/16/128/512 retain one SELECT, 32 concurrent reads release the pool, and provider I/O starts after the reader closes. Social unit tests prove a two-slot concurrency limit, cancellation and slot reuse. This does not prove real Google/Apple verification or public login parity. See social_login.md and password_session.md; full adapter results are recorded in the maintainer report.",
         "Current social configuration: 33 declared Django/Go cases on private PostgreSQL preserve environment/override/visibility precedence, disabled/reset and malformed settings, raw ID types and ignored legacy columns. At 1/16/128/512 rows, reads use one SELECT and choose the lowest ID; 32 concurrent reads per size use a four-connection pool. A real table lock verifies cancellation and subsequent pool reuse. All managed tables match after declared resets and fixture removal. This does not exercise provider HTTP/cryptography or environment-loader wiring. Evidence: quality-reports/go-migration/social-configuration/.",
-        "Apple provider increment: 89 declared cases pass through the actual Django verifier and Go client using real RSA signatures/JWK parsing and an ephemeral local HTTPS endpoint. Complete identity results and HTTP counts agree across disabled configuration, rotation, malformed/duplicate keys, signatures/algorithms, claims/raw tokens, gzip/redirect/truncated response and strict parser cases. Red tests exposed critical-header/trailing-JSON/large-integer acceptance and Python integer whitespace differences before Go fixes. Unit checks prove admission/deadline/cancellation/reuse and measured response/token/RSA bounds. A real RSA/HTTPS service test observes audience changes and suppresses HTTP on disable. Configuration input is controlled there; persisted resolution has separate PostgreSQL evidence. No public or live-Apple login is claimed. See pkg/social/README.md and quality-reports/go-migration/apple-tokens/."
+        "Apple provider increment: 89 declared cases pass through the actual Django verifier and Go client using real RSA signatures/JWK parsing and an ephemeral local HTTPS endpoint. Complete identity results and HTTP counts agree across disabled configuration, rotation, malformed/duplicate keys, signatures/algorithms, claims/raw tokens, gzip/redirect/truncated response and strict parser cases. Red tests exposed critical-header/trailing-JSON/large-integer acceptance and Python integer whitespace differences before Go fixes. Unit checks prove admission/deadline/cancellation/reuse and measured response/token/RSA bounds. A real RSA/HTTPS service test observes audience changes and suppresses HTTP on disable. Configuration input is controlled there; persisted resolution has separate PostgreSQL evidence. No public or live-Apple login is claimed. See pkg/social/README.md and quality-reports/go-migration/apple-tokens/.",
+        "2026-10-21: 76 Django-to-Go JWT cases include 56 signed document scenarios. Red comparisons exposed critical-header/JSON/UTF-8/time-conversion and refresh byte-preservation differences. Shared parser checks and refresh reserialization now pass, alongside the 89-case Apple RSA/HTTPS oracle. Nonstandard JSON numbers, lone surrogate escapes and global resource budgets remain open."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
@@ -7881,7 +7886,9 @@
         "BE_GO/internal/service/scoped_request.go",
         "BE_GO/internal/dto/reference_json.go",
         "BE_GO/internal/dto/json_diagnostic.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/pkg/jwt/document.go",
+        "BE_GO/pkg/jwt/canonical.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7901,7 +7908,7 @@
           "/api/oauth2/refresh-token"
         ],
         "request": "POST JSON/form/multipart refresh_token; missing field is 400, invalid non-string values are 401 except explicit null constructs an unbound token. Optional Authorization/User-Id/X-Impersonation-Id/X-Group-Id follow existing admission.",
-        "response": "200: access_token, refresh_token, expires_in=14400, token_type=Bearer. Preserve original valid refresh/JTI/expiry and copy iat/custom claims to new access. BKN_AUTH cookie: HttpOnly, Secure, SameSite=Strict, Path=/, Max-Age=14400, Expires. OPTIONS metadata supported.",
+        "response": "200: access_token, refresh_token, expires_in=14400, token_type=Bearer. Reserialize and sign refresh claims with default header; preserve JTI/expiry and copy iat/custom claims to new access. BKN_AUTH cookie: HttpOnly, Secure, SameSite=Strict, Path=/, Max-Age=14400, Expires. OPTIONS metadata supported.",
         "errors": "Portable cases cover 400 missing/JSON parse, 401 refresh and Bearer failures with distinct envelopes/WWW-Authenticate behavior, 403 scoped denial, 405 methods, 406 Accept, 415 media, and 500 malformed signed account UUID. Broader middleware, locale/charset and multipart/body-limit edge parity remains open.",
         "authentication": "AllowAny still authenticates a supplied case-sensitive Bearer credential and resolves current identity before refresh. BKN_AUTH cookies do not authenticate REST. Anonymous context headers are ignored. Body refresh account is not looked up or bound to the Bearer actor.",
         "permissions": "Scoped operation/reference guard precedes effective collaborator route permissions. Association-bound athlete refresh is denied; anonymous refresh requires no account permission.",
@@ -7926,14 +7933,18 @@
         "TESTS/adapters/django/refresh_http.py",
         "TESTS/adapters/django/accounts.py",
         "BE_GO/internal/service/refresh_test.go",
-        "BE_GO/internal/dto/json_diagnostic_test.go"
+        "BE_GO/internal/dto/json_diagnostic_test.go",
+        "TESTS/adapters/django/jwt_document.py",
+        "BE_GO/pkg/jwt/canonical_test.go"
       ],
       "evidence": [
-        "2026-10-21: 26 portable refresh contracts pass against actual Django WSGI and Go HTTP using the same private PostgreSQL/Redis/key state. Django validates Go signatures and accepts a Go-generated refresh credential over HTTP. All managed model tables compare unchanged."
+        "2026-10-21: 26 portable refresh contracts pass against actual Django WSGI and Go HTTP using the same private PostgreSQL/Redis/key state. Django validates Go signatures and accepts a Go-generated refresh credential over HTTP. All managed model tables compare unchanged.",
+        "2026-10-21: 76 Django-to-Go JWT cases include 56 signed document scenarios. Red comparisons exposed critical-header/JSON/UTF-8/time-conversion and refresh byte-preservation differences. Shared parser checks and refresh reserialization now pass, alongside the 89-case Apple RSA/HTTPS oracle. Nonstandard JSON numbers, lone surrogate escapes and global resource budgets remain open.",
+        "2026-10-21: Full private PostgreSQL/Redis account adapter passes, including 30 portable refresh methods per backend and all 56 signed JWT document scenarios. Expected normalized refresh bytes agree in both HTTP servers; rejected credentials issue no cookie, Bearer denial precedes refresh, and all managed tables remain unchanged. Current-model schema creation only; migration history, global middleware, routing/switching and release gates remain open. Results: quality-reports/go-migration/jwt-document/accounts-results.json."
       ],
       "notes": [
         "Registered upstream route in the Go composition root; remains implementing, not verified. Global maintenance/restore fencing, middleware, all locale/charset variants, malformed multipart/body-limit edge cases, proxy/version routing and release/browser switching gates remain open.",
-        "Current SimpleJWT 5.3.1 does not rotate refresh credentials. Explicit null creates an unbound token; the HTTP suite proves its access token cannot authenticate an account.",
+        "Current SimpleJWT 5.3.1 does not rotate refresh claims/JTI/expiry, but reserializes and signs the credential. Explicit null creates an unbound token; the HTTP suite proves its access token cannot authenticate an account.",
         "Separate actor/identity/resource component evidence remains documented in README.md; these tests do not certify login, business endpoints or backend replacement."
       ]
     },

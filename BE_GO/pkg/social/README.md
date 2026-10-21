@@ -65,6 +65,7 @@ scoped tests do not prove a complete public login or a live Apple account login.
 Remaining work includes Google ID/access-token verification, environment/root
 wiring, complete persisted-account/HTTP/browser composition, provider changes
 during admitted requests, transport policy at the composition root, broader
-nonstandard JSON/base64 edge cases and live-provider/release evidence. The REST
-JWT parser also needs its own critical-header/trailing-data audit; Apple-specific
-tests do not establish REST token behavior.
+nonstandard JSON/base64 edge cases and live-provider/release evidence. Shared document/header/integer checks now also serve REST JWT verification. Its
+separate 76-token credential adapter and 56 document scenarios over both HTTP
+servers establish the tested REST behavior; the 89 Apple cases still pass after
+extraction. Nonstandard JSON numbers and lone surrogate escapes remain open.

@@ -130,12 +130,12 @@ TDD evidence from this worktree:
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
 | Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
 | Password credential stage | 68 actual Django login versus Go selection/rehash/raw-input cases; production hashes, multipart files, exact exceptions, managed-table readback, one SELECT per small set and pool release |
-| Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
+| Refresh HTTP | 30 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
 | Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
 | Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
 | Shared PostgreSQL account reads | Go reads from 21 Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
-| Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
+| Credential interoperability | Actual Django service/hashers: 76 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
 | Collaborator route policy | 38 explicit outcomes pass in Django and Go, including deny-by-default, read/write separation, manual GET exceptions and effective-user grants; all 269 rule declarations and 28 exemptions match |
 | Password parser fuzzing | 441,963 executions in a five-second bounded run pass; explicit cost-limit and malformed-input tests also pass |
 | Workflow syntax | `actionlint` passes |
@@ -172,10 +172,11 @@ New PBKDF2-SHA256 hashes are readable by Django. Verification never writes accou
 state. Cost limits are explicit errors; deployment parameter census, aggregate
 resource budgets and login admission limits still need evidence.
 
-These packages are not wired to auth routes. Duplicate-login
-selection, legacy rehash, 2FA, cookies and the complete HTTP auth workflow remain
-unimplemented. Actor admission and identity selection are covered separately below;
-resource authorization and impersonation audit workflows remain open. No authentication ledger row is marked
+JWT verification and refresh are wired to the registered refresh route. Login
+selection/rehash, 2FA and session completion now have separate component evidence;
+complete public login remains open. Actor admission and identity selection are
+covered separately below; endpoint resource authorization and complete
+impersonation audit workflows remain open. No authentication ledger row is marked
 verified. Tests use fresh synthetic credentials in private temporary files and
 save only counts/results/version metadata. The dependency adapter is intentionally
 outside portable HTTP contracts. See the reproduction commands in `TESTS/README.md`.
@@ -346,7 +347,7 @@ handler sets the compatible BKN_AUTH cookie and implements method/OPTIONS,
 content negotiation and JSON/form/multipart handling. The server now requires the
 existing valid JWT keys at startup; the health rehearsal generates disposable keys.
 
-`TESTS/contracts/test_refresh.py` contains 26 portable tests run unchanged over
+`TESTS/contracts/test_refresh.py` contains 30 portable tests run unchanged over
 actual Django WSGI and Go HTTP in `TESTS/adapters/django/refresh_http.py`. Both use
 the private account/resource database and cache. Django separately validates Go
 signatures and consumes a Go-created refresh token over HTTP. Every managed model
@@ -358,8 +359,9 @@ See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact sc
 The refresh ledger row remains `implementing`: global restore/maintenance fencing,
 CORS/security/session middleware, all locale/charset and multipart/body-limit edge
 cases, versioned proxy routes and release/browser switching evidence remain open.
-Login now composes credential selection/rehash, username/audit preparation and the second-factor gate; it still requires final response/write composition and social authentication,
-response serialization and its persisted side effects. These remaining workflows
+Login now composes credential selection/rehash, username/audit preparation, the
+second-factor gate and session response/final writes. Complete Google verification,
+image dispatch, environment/root wiring and public HTTP composition remain open. These remaining workflows
 are required before replacement; the refresh tests do not shrink that scope.
 
 ### Password credential stage
@@ -803,3 +805,15 @@ The concrete Apple verifier now passes 89 Django/Go RSA/HTTPS protocol cases.
 real cryptography show audience changes and disable behavior. Google, environment
 and root wiring, complete public login and live-provider evidence remain open.
 See `BE_GO/pkg/social/README.md`.
+
+The REST JWT document audit adds 56 signed access/refresh scenarios, bringing the
+credential adapter to 76 token cases and portable refresh coverage to 30 methods
+per backend. Shared validation rejects malformed critical headers, trailing JSON,
+invalid UTF-8 and oversized integer literals; valid padding and Python time-claim
+conversion are preserved. Refresh reserializes/signs the same claims with the
+default header, preserving JTI/expiry instead of universally retaining input bytes.
+Exact normalized tokens are checked against declared expected bytes in the actual
+Django service, Go manager and both HTTP servers. The 89-case Apple oracle still
+passes after extracting shared checks. Nonstandard JSON numbers, lone surrogate
+escapes, broader base64 cases and aggregate parsing budgets remain open; no ledger
+entry is promoted to verified. Evidence: `quality-reports/go-migration/jwt-document/`.

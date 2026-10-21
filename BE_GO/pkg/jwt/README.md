@@ -3,12 +3,15 @@
 This package implements the configured Ed25519/SimpleJWT credential protocol,
 using `golang-jwt/v5` from the pinned Kuayle library family. It preserves four-hour
 access and thirty-day refresh lifetimes, `token_type`, UUID-hex `jti`, identity
-claims, issuer and audience. Parsing retains JSON number precision.
+claims, issuer and audience. Parsing retains integer precision and applies Python integer conversion to time claims.
 
 Current `JWTTokenService.refresh_access_token` does **not rotate** the refresh
-credential. SimpleJWT 5.3.1 copies its original `iat` and custom claims to the new
+claims, expiry or JTI. It re-encodes and signs the refresh credential with the
+default header; valid input padding, whitespace and custom headers need not survive. SimpleJWT 5.3.1 copies its original `iat` and custom claims to the new
 access token while assigning a new access JTI and expiry. Go preserves those
-semantics instead of following the contradictory rotation comment.
+semantics instead of following the contradictory rotation comment. Refresh
+serialization preserves dictionary order, last duplicate values, ASCII escaping
+and finite binary64 float formatting.
 
 Token validation rejects bad signatures, other algorithms, expired/not-yet-valid
 credentials, wrong types and required-claim errors. REST's configured SimpleJWT
@@ -30,3 +33,17 @@ the resulting access token cannot authenticate an account.
 SimpleJWT from repository dependencies to test both issuance directions and
 refresh exchange. Synthetic keys are generated afresh, stored temporarily with
 restricted permissions and deleted; report artifacts contain no token material.
+
+The credential adapter verifies 76 Django-to-Go token cases, including 56 signed
+access/refresh document cases. The same 56 declarations also exercise Bearer
+admission and refresh over both actual HTTP servers. They cover critical headers,
+key-ID types, padding, trailing/invalid UTF-8 JSON, duplicate claims, Python integer
+bounds/conversion and exact normalized refresh bytes. Invalid Bearer credentials
+precede body refresh; rejected credentials never issue a session cookie.
+
+`document.go` shares document/header/integer checks with Apple verification. The
+89-case Apple RSA/HTTPS oracle is rerun when these shared checks change. This is
+scoped parser evidence: nonstandard JSON NaN/Infinity, overflowing custom floats,
+lone surrogate escapes, broader base64 variants and deployment-wide parsing budgets
+remain open. These fixtures use PyJWT 2.15.1 and SimpleJWT 5.3.1; they do not prove
+behavior for every dependency version or close the full authentication ledger.

@@ -6,11 +6,14 @@ identity resolution before method dispatch and refresh. The service performs
 credential refresh without account writes; repositories continue to own SQL.
 DRF exempts this route from CSRF middleware, including cookie-less POST requests.
 
-The same 26 portable contracts run over actual Django WSGI and the Go executable
+The same 30 portable contracts run over actual Django WSGI and the Go executable
 using private PostgreSQL, Redis and ephemeral Ed25519 keys. They cover:
 
 - The response schema, non-rotating refresh credential, copied claims/original
   `iat`, new access JTI/expiry and the Secure/HttpOnly/Strict `BKN_AUTH` cookie.
+- Fifty-six signed JWT document scenarios cover critical headers, key-ID types,
+  padding, JSON/UTF-8 validation, duplicate claims, integer conversion and exact
+  refresh reserialization. Invalid Bearer admission still precedes body refresh.
 - Missing/invalid values, null construction, inactive/deleted/missing-account
   refresh credentials, and an independently supplied Bearer actor.
 - Bearer/impersonation denial precedence, string `impersonation_invalid` flags,

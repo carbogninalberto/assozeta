@@ -8,6 +8,7 @@ from pathlib import Path
 import socket
 import subprocess
 import threading
+import time
 import unittest
 from wsgiref.simple_server import make_server, WSGIRequestHandler
 
@@ -39,6 +40,11 @@ def run(work, log, tool_env, cache_address):
         'inactive_access':token(3,'access'), 'inactive_refresh':token(3,'refresh'),
         'deleted_refresh':token(4,'refresh'), 'missing_refresh':token(999,'refresh')}
     fixture['malformed_access'] = str(malformed)
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+    from TESTS.adapters.django.jwt_document import append_cases
+    fixture['jwt_documents']=[]
+    append_cases(fixture['jwt_documents'],dict(AccessToken(fixture['owner_access']).payload),
+                 load_pem_private_key(settings.JWT_SECRET_KEY.encode(),password=None),int(time.time()))
     path = work / 'refresh-http.json'; path.write_text(json.dumps(fixture)); path.chmod(0o600)
     def snapshot():
         return {model._meta.label:list(model._base_manager.order_by('pk').values())

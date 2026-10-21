@@ -24,6 +24,10 @@ class RefreshContracts(unittest.TestCase):
     def setUpClass(cls):
         cls.client = Client(os.environ['TESTS_BASE_URL'])
         cls.fixture = json.loads(Path(os.environ['TESTS_REFRESH_FIXTURE']).read_text())
+        documents=cls.fixture['jwt_documents']
+        if len(documents)!=56 or any(sum(c['kind']==kind and c['valid']==valid for c in documents)!=count
+                                    for kind in ('access','refresh') for valid,count in ((True,11),(False,17))):
+            raise AssertionError('JWT document fixture must contain all declared scenarios')
 
     def request(self, data=None, headers=None, method='POST'):
         return self.client.request(method, '/oauth2/refresh-token', data, headers, include_headers=True)
@@ -206,3 +210,47 @@ class RefreshContracts(unittest.TestCase):
             f'Content-Type: text/plain\r\n\r\n{self.fixture["refresh"]}\r\n--{boundary}--\r\n').encode()
         status,body,_=self.request(raw,{'Content-Type':f'multipart/form-data; boundary={boundary}'})
         self.assertEqual((status,body),(401,{'msg':'Invalid or expired refresh token'}))
+
+    def test_signed_invalid_document_bearer_precedes_refresh(self):
+        for case in self.fixture['jwt_documents']:
+            if case['kind']!='access' or case['valid']:continue
+            with self.subTest(case=case['name']):
+                status,body,headers=self.request({'refresh_token':self.fixture['refresh']},{'Authorization':'Bearer '+case['token']})
+                self.assertEqual((status,body),(401,{'detail':'Given token not valid for any token type','code':'token_not_valid',
+                    'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid or expired'}]}))
+                self.assertEqual(headers.get('WWW-Authenticate'),'Bearer realm="api"')
+                self.assertIsNone(headers.get('Set-Cookie'))
+
+    def test_signed_valid_document_bearer_reaches_body_validation(self):
+        for case in self.fixture['jwt_documents']:
+            if case['kind']!='access' or not case['valid']:continue
+            with self.subTest(case=case['name']):
+                status,body,headers=self.request({}, {'Authorization':'Bearer '+case['token']})
+                self.assertEqual((status,body),(400,{'msg':'refresh_token required'}))
+                self.assertIsNone(headers.get('Set-Cookie'))
+
+    def test_signed_invalid_refresh_documents_never_issue_cookie(self):
+        for case in self.fixture['jwt_documents']:
+            if case['kind']!='refresh' or case['valid']:continue
+            with self.subTest(case=case['name']):
+                status,body,headers=self.request({'refresh_token':case['token']})
+                self.assertEqual((status,body),(401,{'msg':'Invalid or expired refresh token'}))
+                self.assertIsNone(headers.get('Set-Cookie'))
+
+    def test_valid_refresh_documents_are_normalized_without_claim_rotation(self):
+        for case in self.fixture['jwt_documents']:
+            if case['kind']!='refresh' or not case['valid']:continue
+            with self.subTest(case=case['name']):
+                status,body,headers=self.request({'refresh_token':case['token']})
+                self.assertEqual(status,200)
+                self.assertTrue(body['refresh_token']==case['normalized'],'refresh document serialization differs')
+                before,after=claims(case['token']),claims(body['refresh_token'])
+                self.assertEqual(after,before)
+                access=claims(body['access_token'])
+                for name,value in before.items():
+                    if name not in ('token_type','exp','jti'):self.assertEqual(access[name],value)
+                self.assertNotEqual(access['jti'],before['jti'])
+                self.assertAlmostEqual(access['exp'],time.time()+14400,delta=5)
+                cookie=SimpleCookie();cookie.load(headers.get('Set-Cookie',''))
+                self.assertEqual(set(cookie),{'BKN_AUTH'})
+                self.assertTrue(cookie['BKN_AUTH'].value==body['access_token'],'cookie does not contain issued access token')

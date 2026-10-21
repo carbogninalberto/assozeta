@@ -321,7 +321,7 @@ private document access, mutation hooks or a complete endpoint.
 
 The account adapter now also calls `adapters/django/refresh_http.py`. It starts
 actual Django WSGI and Go HTTP processes over the private database/cache/keys and
-runs the same 26 portable `contracts/test_refresh.py` tests against each. The
+runs the same 30 portable `contracts/test_refresh.py` tests against each. The
 suite covers token/cookie responses, optional Bearer and impersonation admission,
 denial ordering, method/OPTIONS behavior and JSON/form/multipart requests. Django
 additionally verifies Go signatures and accepts a Go-created refresh token over
@@ -726,3 +726,12 @@ signature and claim verification; only Django client-ID input, endpoint URL and
 clock are replaced. Complete results and exact request counts are compared.
 The PR Go job runs this adapter; no Apple account, production credential or
 external Apple request is used. See `BE_GO/pkg/social/README.md` for scope/limits.
+
+The credential adapter now checks 76 Django-to-Go tokens, including 56 declared
+signed document cases in `adapters/django/jwt_document.py`. Expected acceptance and
+refresh normalization are specified independently, then checked against actual
+SimpleJWT and the application token service. Four additional portable refresh
+methods exercise those 56 scenarios over actual Django/Go HTTP, bringing the suite
+to 30 methods per backend. Assertions cover Bearer precedence, exact errors/cookie
+absence, unchanged refresh claims and exact reserialized refresh credentials.
+Nonstandard JSON numbers and lone surrogate escapes remain outside these vectors.
