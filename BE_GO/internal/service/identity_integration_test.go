@@ -30,6 +30,7 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 	}
 	var cases []struct {
 		Name          string `json:"name"`
+		Operation     string `json:"operation"`
 		ActorID       string `json:"actor"`
 		Path          string `json:"path"`
 		Method        string `json:"method"`
@@ -61,7 +62,8 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 		t.Fatal(err)
 	}
 	accounts := repository.NewAccounts(db)
-	resolver := NewIdentityResolver(accounts, repository.NewIdentityRelations(db), sessions, NewPermissions())
+	relations := repository.NewIdentityRelations(db)
+	resolver := NewIdentityResolver(accounts, relations, sessions, NewPermissions(), NewScopedRequestGuard(repository.NewScopedResources(db), relations, sessions))
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			var actor *domain.Account
@@ -72,7 +74,7 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 				}
 				actor = &account
 			}
-			identity, err := resolver.Resolve(context.Background(), actor, domain.IdentityRequest{Path: tc.Path, Method: tc.Method, SessionID: tc.SessionID, TargetID: tc.TargetID})
+			identity, err := resolver.Resolve(context.Background(), actor, domain.IdentityRequest{Path: tc.Path, Method: tc.Method, SessionID: tc.SessionID, TargetID: tc.TargetID, References: &domain.RequestReferences{Operation: tc.Operation}})
 			if tc.Detail != "" {
 				var denied *domain.PermissionDenied
 				if !errors.As(err, &denied) || denied.Detail != tc.Detail || denied.ImpersonationInvalid != tc.Invalid {
@@ -115,7 +117,7 @@ func TestIdentityResolutionWithDjangoDatabaseAndSessions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	request := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: memberSession}
+	request := domain.IdentityRequest{Path: "/profile/info", Method: "GET", SessionID: memberSession, References: &domain.RequestReferences{Operation: "profile_info"}}
 	transitions := []struct {
 		name, table, column, key, id, detail string
 		changed, original                    bool

@@ -153,7 +153,13 @@ def prepare(work):
     case('owner-without-association', 16, session=owner_member, detail='Associazione non disponibile.', invalid=True)
     case('anonymous-cannot-impersonate', None, session=owner_member, detail='Accesso non consentito.', invalid=True)
     factory = RequestFactory()
+    from django.urls import resolve, Resolver404
     for entry in cases:
+        try:
+            match = resolve(entry['path'])
+            entry['operation'] = getattr(getattr(match.func, 'cls', None), '__name__', match.func.__name__)
+        except Resolver404:
+            entry['operation'] = ''  # unbound identity/control tests only
         actor = User.objects.get(pk=entry['actor']) if entry['actor'] else AnonymousUser()
         request = Request(factory.generic(entry['method'], entry['path'], HTTP_X_IMPERSONATION_ID=entry['session'], HTTP_USER_ID=entry['target']))
         request.user = actor

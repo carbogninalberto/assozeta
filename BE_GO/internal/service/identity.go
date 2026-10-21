@@ -19,15 +19,19 @@ type IdentityRelations interface {
 type IdentitySessions interface {
 	Get(context.Context, string) (domain.ImpersonationSession, error)
 }
+type ScopedRequestChecker interface {
+	Check(context.Context, domain.ResolvedIdentity, domain.IdentityRequest) error
+}
 type IdentityResolver struct {
 	accounts    ActorAccounts
 	relations   IdentityRelations
 	sessions    IdentitySessions
 	permissions *Permissions
+	scoped      ScopedRequestChecker
 }
 
-func NewIdentityResolver(accounts ActorAccounts, relations IdentityRelations, sessions IdentitySessions, permissions *Permissions) *IdentityResolver {
-	return &IdentityResolver{accounts: accounts, relations: relations, sessions: sessions, permissions: permissions}
+func NewIdentityResolver(accounts ActorAccounts, relations IdentityRelations, sessions IdentitySessions, permissions *Permissions, scoped ScopedRequestChecker) *IdentityResolver {
+	return &IdentityResolver{accounts: accounts, relations: relations, sessions: sessions, permissions: permissions, scoped: scoped}
 }
 
 var adminUpdatePath = regexp.MustCompile(`^sport-associations/[0-9a-fA-F-]{36}/admin-update$`)
@@ -45,10 +49,9 @@ func cleanIdentityAccount(account *domain.Account) *domain.Account {
 }
 func denial(detail string) error { return &domain.PermissionDenied{Detail: detail} }
 
-// Resolve selects identities and enforces the collaborator route gate. It does
-// not replace endpoint/resource authorization or Django enforce_scoped_request.
-// In particular, an association-bound result MUST constrain all referenced and
-// returned resources and undergo the scoped operation gate before side effects.
+// Resolve selects identities, validates association-bound operation/references,
+// then enforces the collaborator gate. Endpoint services must still constrain
+// returned resources and authorize/coordinate their business mutations.
 func (s *IdentityResolver) Resolve(ctx context.Context, actor *domain.Account, request domain.IdentityRequest) (domain.ResolvedIdentity, error) {
 	var empty domain.ResolvedIdentity
 	if err := ctx.Err(); err != nil {
@@ -76,10 +79,16 @@ func (s *IdentityResolver) Resolve(ctx context.Context, actor *domain.Account, r
 		result.SessionID = request.SessionID
 		result.ImpersonationAssociationID = association
 	}
-	// Full request admission must insert enforce_scoped_request's operation and
-	// nested-resource checks here, before collaborator-owner mapping and grants,
-	// to preserve Django's denial ordering. This identity-only selector has no
-	// public handler until that stage is implemented and verified.
+	// Scope failures are not invalid-session errors. Keep this after session
+	// eligibility and before collaborator-owner mapping/grants, as in Django.
+	if result.ImpersonationAssociationID != "" {
+		if s.scoped == nil {
+			return empty, domain.ErrInvalidScopedRequest
+		}
+		if err := s.scoped.Check(ctx, result, request); err != nil {
+			return empty, err
+		}
+	}
 	target := result.Effective
 	if target != nil && target.Role == domain.RoleCollaborator && !administration && !control {
 		if target.ConnectedUserID == nil {

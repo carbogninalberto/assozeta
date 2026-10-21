@@ -104,6 +104,8 @@ def main():
                 with identity_fixture(work, log) as (identity_cases_file, identity_cache, identity_cases):
                     from TESTS.adapters.django.scoped_resources import prepare as prepare_scoped_resources
                     scoped_fixture, scoped_cases, scoped_models = prepare_scoped_resources(work)
+                    from TESTS.adapters.django.scoped_requests import prepare as prepare_scoped_requests
+                    scoped_requests_fixture, scoped_request_cases = prepare_scoped_requests(work)
                     def snapshot():
                         result = {name: list(manager.order_by('pk').values()) for name, manager in (
                             ('users', User.original_objects), ('associations', SportAssociation.original_objects),
@@ -113,11 +115,13 @@ def main():
                         return result
                     before = snapshot()
                     subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository', './internal/service'], cwd=ROOT / 'BE_GO',
-                        check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
+                        check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_REQUESTS_FIXTURE': str(scoped_requests_fixture), 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                             f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
+                    from django.core.cache import cache
+                    assert cache.get(f'impersonation-upload:{uid(12000)}:{uid(1104)}') is None, 'Go upload-grant revocation not visible in Django'
                 connections.close_all()
-                report = {'success': True, 'synthetic_accounts': len(before['users']), 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',

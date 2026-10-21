@@ -37,8 +37,10 @@ collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
 Django-created accounts in private PostgreSQL. These prove policy/read primitives;
 actor admission connects tokens to current account rows, and identity selection
 separates actor/effective person/data owner with current impersonation eligibility.
-Scoped operation/resource authorization, audit workflows and login writes remain
-open. This is not yet public HTTP authentication. The additional
+Association-bound operation and nested-reference admission now runs before
+collaborator grants; see `internal/service/scoped_request.md`. Endpoint resource
+authorization, audit workflows and login writes remain open. This is not yet
+public HTTP authentication. The additional
 `TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
 cache record boundary on private Redis; see `internal/repository/impersonation.md`.
 

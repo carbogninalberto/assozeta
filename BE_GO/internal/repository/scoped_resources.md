@@ -34,10 +34,13 @@ The SQL keeps the current manager differences:
 These are compatibility semantics, not evidence that every business endpoint
 should expose all returned records. Endpoint operation restrictions, instructor
 rules, nested-reference traversal and returned-query filtering remain service
-responsibilities. A successful lookup does not lock a record against concurrent
+responsibilities. The composed `ScopedRequestGuard` now performs the association
+operation/nested-reference stage; it does not replace those endpoint rules.
+A successful lookup does not lock a record against concurrent
 changes. Writes must coordinate authorization and invariants in a transaction.
-The medical kind covers linked subscriptions only; upload cache grants, document
-authorization and shared-certificate cloning remain separate work.
+The medical kind covers linked subscriptions only; the guard separately reads
+upload cache grants. Document authorization and shared-certificate cloning remain
+separate work.
 
 Run `python TESTS/adapters/django/accounts.py` with the documented Python 3.12
 environment. Its scoped adapter writes synthetic business rows using bulk inserts
