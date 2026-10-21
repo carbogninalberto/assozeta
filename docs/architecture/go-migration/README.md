@@ -87,7 +87,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks are explicitly classified. Both health routes and the two
-login/refresh routes and the user-audit index connection are `implementing`, not
+login/refresh routes and the partial audit-index connection are `implementing`, not
 `verified`; 507 other rows still need
 characterization. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
 | Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
@@ -435,7 +436,7 @@ This is response-component evidence, not a public login route. A real PostgreSQL
 permission failure now proves optional onboarding returns null in both runtimes;
 Go rolls back the aborted read transaction and releases the connection.
 Association augmentation, image processing,
-configuration creation and final login writes remain open. See the
+configuration-stage composition and final login writes remain open. See the
 [profile contract](../../../BE_GO/internal/service/login_profile.md).
 
 ### Association login profile
@@ -449,8 +450,26 @@ scope denials and a real required-group permission failure return no stale or
 partial profile. Managed tables remain unchanged after fixture restoration.
 
 This remains a response component. Complete login augmentation, image processing,
-configuration creation/audit and final login writes remain open. See the
+configuration-stage composition and final login writes remain open. See the
 [association profile contract](../../../BE_GO/internal/service/association_profile.md).
+
+### Login membership-card configuration
+
+The response stage now selects the existing lowest-UUID configuration or creates
+its default, audit event and direct association index transactionally. Twenty
+explicit cases compare the actual Django response builder/audit middleware with
+Go; Django validates every written field and all managed tables after resets.
+Existing rows require two statements, creation five. Thirty-two concurrent Go
+calls use 67 statements and create one configuration/audit/index. Permission/FK
+failures, injected failures and cancellation roll back; a forced PostgreSQL audit
+actor deadlock verifies whole-transaction retry.
+
+Django's synchronized missing lookups can create two rows, and denied audit/index
+INSERTs retain partial effects under autocommit. Go's required atomic boundary is
+explicitly stronger. The Go parent lock does not coordinate an unmodified Django
+writer; cross-runtime creation remains an activation gap. See the
+[configuration contract](../../../BE_GO/internal/service/membership_card_configuration.md).
+Full login composition and final writes remain open.
 
 ## Required acceptance matrix
 

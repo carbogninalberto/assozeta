@@ -60,7 +60,11 @@ bounded reads, setup/onboarding precedence and exact JSON values; see
 the profile with null onboarding, tested using real PostgreSQL permission denial.
 The 50-field association profile adds 23 explicit cases, exact stored decimal text
 and scoped group reads; see `internal/service/association_profile.md`. Complete
-login augmentation, configuration creation and final writes are still required.
+login augmentation and final writes are still required. Membership-card configuration
+lookup/default creation now preserves the Django response and audit/index fields
+inside an explicit transaction; see `internal/service/membership_card_configuration.md`.
+Cross-runtime concurrent creation and Django's partial failure effects remain
+explicit compatibility gaps.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

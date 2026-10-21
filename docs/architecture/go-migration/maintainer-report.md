@@ -16,7 +16,7 @@ the separate manual worktree and customer installations have not been changed.
 
 Discovery records 514 declarations, 408 resolved HTTP patterns, four WebSocket
 paths, 42 tasks, 15 MCP schemas and 112 model metadata records. Two retired tasks
-and four in-progress health/auth routes plus the user-audit index connection are
+and four in-progress health/auth routes plus the partial audit-index connection are
 classified; 507 declarations still
 need characterization. Effective versus declared Celery schedules remain unresolved.
 
@@ -98,7 +98,17 @@ boundary and scoped groups. One/two SELECTs remain bounded through 512 groups;
 32 concurrent reads use 64 SELECTs. Association deletion immediately revokes
 serialization. Required group-query failures return no partial profile, matching
 Django. All managed tables match after the declared fixture transition. Full
-response augmentation, configuration creation and final writes remain open.
+response composition and final writes remain open; configuration creation is described below.
+
+Membership-card response configuration now has 20 actual Django-builder/audit
+cases versus Go with exact persisted fields and Django readback. Existing rows
+require two statements; creation writes configuration/audit/index atomically in
+five. Thirty-two concurrent Go calls create one invariant in 67 statements.
+Real permission/FK failures, injected errors, cancellation and a forced audit-actor
+deadlock verify rollback and retry. The shared audit SQL retains username behavior.
+Django's duplicate-creation race and partial autocommit failure effects are
+characterized explicitly. Go-only locking does not close cross-runtime concurrent
+creation; that remains an activation gap, alongside complete login composition.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,

@@ -7511,7 +7511,12 @@
         "BE_GO/internal/domain/association_profile.go",
         "BE_GO/internal/dto/association_profile.go",
         "BE_GO/internal/service/association_profile.go",
-        "BE_GO/internal/repository/association_profile.go"
+        "BE_GO/internal/repository/association_profile.go",
+        "BE_GO/internal/domain/membership_card_configuration.go",
+        "BE_GO/internal/dto/membership_card_configuration.go",
+        "BE_GO/internal/service/membership_card_configuration.go",
+        "BE_GO/internal/repository/membership_card_configuration.go",
+        "BE_GO/internal/repository/model_audit.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7543,8 +7548,8 @@
         "authentication": "AllowAny view; a supplied Bearer credential still runs ScopedJWTAuthentication and current identity resolution. Cookie/session and full admission behavior remain to characterize.",
         "permissions": null,
         "resource_scope": null,
-        "side_effects": "Password stage: all matching obsolete Django hashes are upgraded, including ambiguous/inactive outcomes; raw bcrypt only migrates the selected candidate before active-status rejection. Other login side effects remain incomplete. Username normalization now creates the existing user update audit and optional association index before OTP; OTP denial retains those writes. Actor and logging-in account remain separate.",
-        "transaction": "Go credential stage uses bounded keyset pages and batched writes inside repeatable-read row locks; expected denials commit documented upgrades, infrastructure failures roll back. Serialization/deadlock conflicts retry at most three times. Django partial writes on exceptional failures are deliberately replaced by this atomic boundary. Remaining login transactions are not yet implemented. Username/audit/index writes use a separate row-locked atomic transaction with at most three deadlock/serialization retries. This deliberately rolls back orphan pre-save audits that Django can leave after a username uniqueness failure; exact failure-side-effect parity is not claimed.",
+        "side_effects": "Password stage: all matching obsolete Django hashes are upgraded, including ambiguous/inactive outcomes; raw bcrypt only migrates the selected candidate before active-status rejection. Other login side effects remain incomplete. Username normalization now creates the existing user update audit and optional association index before OTP; OTP denial retains those writes. Actor and logging-in account remain separate. Membership-card response construction now reads the lowest-UUID existing configuration or creates a default plus create audit and direct association index. Superusers/athletes do not create configurations; collaborators use their connected owner.",
+        "transaction": "Go credential stage uses bounded keyset pages and batched writes inside repeatable-read row locks; expected denials commit documented upgrades, infrastructure failures roll back. Serialization/deadlock conflicts retry at most three times. Django partial writes on exceptional failures are deliberately replaced by this atomic boundary. Remaining login transactions are not yet implemented. Username/audit/index writes use a separate row-locked atomic transaction with at most three deadlock/serialization retries. This deliberately rolls back orphan pre-save audits that Django can leave after a username uniqueness failure; exact failure-side-effect parity is not claimed. Configuration/audit/index creation is an explicit read-committed transaction with a scoped parent lock and at most three conflict retries; final login writes and cross-runtime creation coordination remain open.",
         "execution_owner": "django"
       },
       "tests": [
@@ -7581,7 +7586,10 @@
         "BE_GO/internal/service/login_profile_integration_test.go",
         "TESTS/adapters/django/association_profile.py",
         "BE_GO/internal/service/association_profile_test.go",
-        "BE_GO/internal/service/association_profile_integration_test.go"
+        "BE_GO/internal/service/association_profile_integration_test.go",
+        "TESTS/adapters/django/membership_card_configuration.py",
+        "BE_GO/internal/service/membership_card_configuration_test.go",
+        "BE_GO/internal/service/membership_card_configuration_integration_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -7589,14 +7597,16 @@
         "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock.",
         "46 explicitly expected Django-rendered base profile versus Go cases on the same private PostgreSQL; all managed tables unchanged after declared fixture restoration. One/two SELECTs regardless of 0/1/2/128/512 onboarding rows; 32 concurrent association reads use 64 SELECTs and release the four-connection pool. Current preference transitions, cancellation and no-partial-profile behavior are tested. This is component evidence, not portable login HTTP parity.",
         "Real PostgreSQL denied-SELECT roles prove optional onboarding failure returns the complete base profile with null onboarding, while required association group failure returns no profile. Both boundaries are characterized through Django; Go releases the aborted transaction and reuses the pool.",
-        "23 explicitly expected association profile JSON/outcome cases compare Django serializer/DRF rendering with Go on the same private PostgreSQL. All 50 fields, exact decimal text, PostgreSQL scale rounding, null/scalar JSON, reviewed boundary and deleted/inactive owner semantics are checked. Group counts 0/1/16/128/512 use two SELECTs; 32 concurrent 512-group reads use 64 SELECTs. A deletion/restoration transition is immediately visible; all managed tables match after restoration."
+        "23 explicitly expected association profile JSON/outcome cases compare Django serializer/DRF rendering with Go on the same private PostgreSQL. All 50 fields, exact decimal text, PostgreSQL scale rounding, null/scalar JSON, reviewed boundary and deleted/inactive owner semantics are checked. Group counts 0/1/16/128/512 use two SELECTs; 32 concurrent 512-group reads use 64 SELECTs. A deletion/restoration transition is immediately visible; all managed tables match after restoration.",
+        "20 explicit actual Django login-response-builder/audit middleware versus Go membership-card cases; exact configuration/audit/index fields and Django readback. Existing/duplicate rows use two statements, creation five; 32 concurrent Go calls create one invariant in 67 statements. Real permission/FK failures, injected errors, cancellation and an observed PostgreSQL audit-actor deadlock verify rollback/retry. Every managed table and SQL-NULL distinction matches after resets."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",
         "Password admission now composes credential selection/rehash, current-account preparation with username/audit normalization, and the second-factor gate. It does not yet finalize login or expose a public handler. See BE_GO/internal/service/login_preparation.md.",
-        "Remaining login work includes malformed request coercion, social providers, distributed rate limiting, OTP provisioning, full response/configuration creation, last-login/deletion writes and complete HTTP/cookie/middleware/audit-context composition.",
+        "Remaining login work includes malformed request coercion, social providers, distributed rate limiting, OTP provisioning, complete response composition, cross-runtime configuration creation, last-login/deletion writes and complete HTTP/cookie/middleware/audit-context composition.",
         "Historical hash-cost census, global memory/admission budgets, critical query plans, supported migration history and release/switch/rollback rehearsals remain required.",
-        "Base profile reads use a consistent read-only snapshot. Missing/duplicate onboarding and optional onboarding query failures produce null, matching Django; request cancellation still aborts. Required base-profile and association-group reads propagate errors. Real denied-SELECT roles verify both boundaries and pool reuse. See BE_GO/internal/service/login_profile.md and association_profile.md."
+        "Base profile reads use a consistent read-only snapshot. Missing/duplicate onboarding and optional onboarding query failures produce null, matching Django; request cancellation still aborts. Required base-profile and association-group reads propagate errors. Real denied-SELECT roles verify both boundaries and pool reuse. See BE_GO/internal/service/login_profile.md and association_profile.md.",
+        "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation."
       ]
     },
     {
@@ -16442,7 +16452,12 @@
       "status": "implementing",
       "go": [
         "BE_GO/internal/service/login_preparation.go",
-        "BE_GO/internal/repository/login_preparation.go"
+        "BE_GO/internal/repository/login_preparation.go",
+        "BE_GO/internal/domain/membership_card_configuration.go",
+        "BE_GO/internal/dto/membership_card_configuration.go",
+        "BE_GO/internal/service/membership_card_configuration.go",
+        "BE_GO/internal/repository/membership_card_configuration.go",
+        "BE_GO/internal/repository/model_audit.go"
       ],
       "dependencies": [
         "BE/application/signals.py",
@@ -16458,20 +16473,25 @@
         "authentication": null,
         "permissions": null,
         "resource_scope": null,
-        "side_effects": "For username user-update audits, create one existing AuditLogIndex for the target directly owned non-deleted association, otherwise the actor directly owned association; no collaborator-owner traversal.",
-        "transaction": "Go username/event/index invariant is atomic and retries deadlocks/serialization conflicts at most three times. Remaining audit workflows are unimplemented.",
+        "side_effects": "For username user-update audits, create one existing AuditLogIndex for the target directly owned non-deleted association, otherwise the actor directly owned association; no collaborator-owner traversal. Membership-card create audits now create one index for the configuration association with resolution_path direct.",
+        "transaction": "Username and membership-card configuration event/index invariants are atomic in Go with at most three deadlock/serialization retries. Other audit workflows remain open; Django autocommit failure differences are recorded.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/adapters/django/login_preparation.py",
-        "BE_GO/internal/service/password_admission_integration_test.go"
+        "BE_GO/internal/service/password_admission_integration_test.go",
+        "TESTS/adapters/django/membership_card_configuration.py",
+        "BE_GO/internal/service/membership_card_configuration_test.go",
+        "BE_GO/internal/service/membership_card_configuration_integration_test.go"
       ],
       "evidence": [
-        "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock."
+        "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock.",
+        "20 explicit actual Django login-response-builder/audit middleware versus Go membership-card cases; exact configuration/audit/index fields and Django readback. Existing/duplicate rows use two statements, creation five; 32 concurrent Go calls create one invariant in 67 statements. Real permission/FK failures, injected errors, cancellation and an observed PostgreSQL audit-actor deadlock verify rollback/retry. Every managed table and SQL-NULL distinction matches after resets."
       ],
       "notes": [
-        "Only username-normalization user audits are currently implemented in Go. Other registered models, changes-JSON fallbacks, deletion and audit lifecycle operations remain open.",
-        "The explicit Go invariant transaction propagates index failures and rolls back username/event/index; Django can suppress index failures or leave pre-save collision events. These failure-side-effect differences remain explicit, not certified as identical parity."
+        "Username-normalization and membership-card default-creation audits are currently implemented in Go. Other registered models, changes-JSON fallbacks, deletion and audit lifecycle operations remain open.",
+        "The explicit Go invariant transaction propagates index failures and rolls back username/event/index; Django can suppress index failures or leave pre-save collision events. These failure-side-effect differences remain explicit, not certified as identical parity.",
+        "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation."
       ]
     },
     {
