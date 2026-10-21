@@ -6,7 +6,7 @@ It is **not merge-ready as a backend replacement**. All requirements in the
 [request](requirements.md) remain binding.
 
 The module follows the inspected Kuayle Echo → service → repository construction
-with sqlx/pgx. Public routes currently expose monitoring only. Authentication
+with sqlx/pgx. Public routes currently expose monitoring and token refresh. Authentication
 primitives, account reads, collaborator policy and identity selection are implemented
 separately; association-bound reference admission is now composed before
 collaborator grants. Complete HTTP admission and business resource authorization
@@ -59,7 +59,14 @@ queries; 32 concurrent guard calls use four connections. Dependency failure and
 missing trusted route metadata return no usable identity. This is not public HTTP
 authentication or authorization of subsequent business writes.
 
-Missing work includes business endpoints, public HTTP admission, endpoint-level
+The registered refresh handler passes 26 portable contracts against both actual
+HTTP servers. It retains cookie, optional-Bearer/scoped admission, non-rotation,
+null-constructor and parser/error behavior. Django verifies Go signatures and
+accepts a Go refresh credential over HTTP; all managed model tables remain
+unchanged. Global middleware, transport edge cases, proxy/routing and deployment
+evidence are still incomplete, so the ledger row remains implementing.
+
+Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,
 durable workers/scheduler, versioned routing and coordinated switching,
 realtime/integrations/documents/manual delivery, Go backup/restore, the complete

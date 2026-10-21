@@ -88,7 +88,7 @@ python TESTS/adapters/django/inventory.py
 
 Two retired tasks are explicitly classified. Both health routes and the two
 login/refresh routes are `implementing`, not `verified`; 508 other rows still need
-characterization. The auth rows track primitives only, not registered endpoints.
+characterization. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
 
@@ -120,6 +120,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
 | Scoped request guard | 132 Django/Go cases, including all 44 athlete operations and six composed resolver cases; batches through 1,025 references, 32 concurrent calls and Redis upload-grant expiry/revocation |
 | Resource predicates | 67 explicit Django/Go visibility sets, transactional family/payment revocation, one query per batch of 1–512 tag IDs and 32 concurrent reads; all seeded resource tables unchanged |
 | Shared PostgreSQL account reads | Go reads from 21 Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
@@ -232,7 +233,7 @@ Passwords are removed from the returned actor. Account state is read per request
 
 This is the first stage of `ScopedJWTAuthentication`. The identity selector below
 follows it with association-bound operation/reference admission; HTTP error-body
-rendering, malformed unsupported claim shapes, endpoint authorization and public auth handlers remain
+rendering beyond the tested refresh cases, remaining malformed claim shapes, endpoint authorization and login handlers remain
 unfinished. Infrastructure errors propagate; they do not produce
 an anonymous or authenticated result.
 
@@ -325,6 +326,31 @@ not public HTTP proofs. Transport size limits, multipart/query conversion, error
 rendering, ordinary/instructor/endpoint permissions, private documents and writes
 remain open. The preceding CI's Go foundation job now passes with the Italian
 locale setup; that is still a subset of the required matrix.
+
+### Refresh HTTP composition
+
+The Go composition root now registers `/oauth2/refresh-token` with optional Bearer
+and current identity/scoped admission. `RefreshService` preserves non-rotation,
+original refresh claims and the existing null-token constructor behavior. The
+handler sets the compatible BKN_AUTH cookie and implements method/OPTIONS,
+content negotiation and JSON/form/multipart handling. The server now requires the
+existing valid JWT keys at startup; the health rehearsal generates disposable keys.
+
+`TESTS/contracts/test_refresh.py` contains 26 portable tests run unchanged over
+actual Django WSGI and Go HTTP in `TESTS/adapters/django/refresh_http.py`. Both use
+the private account/resource database and cache. Django separately validates Go
+signatures and consumes a Go-created refresh token over HTTP. Every managed model
+table is compared before/after, including business/auth/audit/jobs. All test keys
+and credential fixtures are temporary. The existing health failure/recovery and
+shutdown rehearsal still passes.
+
+See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact scope.
+The refresh ledger row remains `implementing`: global restore/maintenance fencing,
+CORS/security/session middleware, all locale/charset and multipart/body-limit edge
+cases, versioned proxy routes and release/browser switching evidence remain open.
+Login still requires credential selection/migration, OTP/social authentication,
+response serialization and its persisted side effects. These remaining workflows
+are required before replacement; the refresh tests do not shrink that scope.
 
 ## Required acceptance matrix
 

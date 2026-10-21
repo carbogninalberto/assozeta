@@ -113,6 +113,9 @@ func (s *ScopedRequestGuard) Check(ctx context.Context, identity domain.Resolved
 		}
 	}
 	if name == "subscription_add" {
+		if input.BodyError != nil {
+			return input.BodyError
+		}
 		owner, err := ownerUsername()
 		if err != nil {
 			return err
@@ -230,7 +233,7 @@ func (s *ScopedRequestGuard) Check(ctx context.Context, identity domain.Resolved
 					return false
 				}
 			}
-		case nil, string, bool, json.Number:
+		case nil, string, bool, json.Number, domain.RequestUpload:
 		default:
 			return stop(domain.ErrInvalidScopedRequest)
 		}
@@ -253,7 +256,11 @@ func (s *ScopedRequestGuard) Check(ctx context.Context, identity domain.Resolved
 		proceed = walk(input.Query, 0)
 	}
 	if proceed && request.Method != "GET" && request.Method != "HEAD" && request.Method != "OPTIONS" {
-		walk(input.Body, 0)
+		if input.BodyError != nil {
+			stop(input.BodyError)
+		} else {
+			walk(input.Body, 0)
+		}
 	}
 	return s.checkPlan(ctx, scope, identity.SessionID, plan)
 }

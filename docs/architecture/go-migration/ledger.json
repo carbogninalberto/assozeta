@@ -7608,7 +7608,14 @@
         "BE_GO/internal/repository/impersonation_cache.go",
         "BE_GO/internal/service/identity.go",
         "BE_GO/internal/repository/identity.go",
-        "BE_GO/internal/domain/identity.go"
+        "BE_GO/internal/domain/identity.go",
+        "BE_GO/internal/handler/refresh.go",
+        "BE_GO/internal/handler/reference_body.go",
+        "BE_GO/internal/service/refresh.go",
+        "BE_GO/internal/service/scoped_request.go",
+        "BE_GO/internal/dto/reference_json.go",
+        "BE_GO/internal/dto/json_diagnostic.go",
+        "BE_GO/cmd/server/main.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -7627,14 +7634,14 @@
         "external_paths": [
           "/api/oauth2/refresh-token"
         ],
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": "AllowAny view; a supplied Bearer credential still runs ScopedJWTAuthentication and current identity resolution. Cookie/session and full admission behavior remain to characterize.",
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "POST JSON/form/multipart refresh_token; missing field is 400, invalid non-string values are 401 except explicit null constructs an unbound token. Optional Authorization/User-Id/X-Impersonation-Id/X-Group-Id follow existing admission.",
+        "response": "200: access_token, refresh_token, expires_in=14400, token_type=Bearer. Preserve original valid refresh/JTI/expiry and copy iat/custom claims to new access. BKN_AUTH cookie: HttpOnly, Secure, SameSite=Strict, Path=/, Max-Age=14400, Expires. OPTIONS metadata supported.",
+        "errors": "Portable cases cover 400 missing/JSON parse, 401 refresh and Bearer failures with distinct envelopes/WWW-Authenticate behavior, 403 scoped denial, 405 methods, 406 Accept, 415 media, and 500 malformed signed account UUID. Broader middleware, locale/charset and multipart/body-limit edge parity remains open.",
+        "authentication": "AllowAny still authenticates a supplied case-sensitive Bearer credential and resolves current identity before refresh. BKN_AUTH cookies do not authenticate REST. Anonymous context headers are ignored. Body refresh account is not looked up or bound to the Bearer actor.",
+        "permissions": "Scoped operation/reference guard precedes effective collaborator route permissions. Association-bound athlete refresh is denied; anonymous refresh requires no account permission.",
+        "resource_scope": "Bearer actor and effective/association scope resolved separately. Reference parsing failures retain operation/path/query-before-body denial ordering.",
+        "side_effects": "Refresh returns credentials and BKN_AUTH cookie. No persisted business/auth/audit/job changes in the all-managed-table HTTP rehearsal; setup session creation occurs before snapshot.",
+        "transaction": "No refresh database writes. Optional Bearer identity reads use existing repositories.",
         "execution_owner": "django"
       },
       "tests": [
@@ -7648,14 +7655,20 @@
         "TESTS/adapters/django/impersonation_cache.py",
         "TESTS/adapters/django/identity.py",
         "BE_GO/internal/service/identity_integration_test.go",
-        "BE_GO/internal/service/identity_test.go"
+        "BE_GO/internal/service/identity_test.go",
+        "TESTS/contracts/test_refresh.py",
+        "TESTS/adapters/django/refresh_http.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/refresh_test.go",
+        "BE_GO/internal/dto/json_diagnostic_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "2026-10-21: 26 portable refresh contracts pass against actual Django WSGI and Go HTTP using the same private PostgreSQL/Redis/key state. Django validates Go signatures and accepts a Go-generated refresh credential over HTTP. All managed model tables compare unchanged."
+      ],
       "notes": [
-        "Only credential/config/policy primitives exist in Go; no public auth handler is registered. No HTTP parity or full identity/resource authorization is claimed. Evidence and remaining acceptance work are documented in README.md.",
-        "Actual SimpleJWT 5.3.1 refresh preserves the original refresh token/JTI/expiry and original iat in the new access token. The primitive is tested in both runtimes; HTTP admission, account/impersonation context, error responses and cookie behavior remain unverified.",
-        "Actor admission now has 18 explicit Django/Go token+PostgreSQL cases. The actual impersonation cache record is tested in both directions on private Redis. Effective identity and current target eligibility are implemented as the separate selector below; scoped resource checks, audit transitions and HTTP handlers remain unimplemented.",
-        "Identity selection passes 46 explicit Django/Go cases and 8 state/configuration transitions against shared private PostgreSQL/Redis. A four-connection pool serves 32 concurrent resolutions. This is not the scoped operation/resource guard or public HTTP admission; no auth parity is certified."
+        "Registered upstream route in the Go composition root; remains implementing, not verified. Global maintenance/restore fencing, middleware, all locale/charset variants, malformed multipart/body-limit edge cases, proxy/version routing and release/browser switching gates remain open.",
+        "Current SimpleJWT 5.3.1 does not rotate refresh credentials. Explicit null creates an unbound token; the HTTP suite proves its access token cannot authenticate an account.",
+        "Separate actor/identity/resource component evidence remains documented in README.md; these tests do not certify login, business endpoints or backend replacement."
       ]
     },
     {

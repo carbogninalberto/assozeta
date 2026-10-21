@@ -3,10 +3,13 @@ package dto
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
+
+var ErrReferenceNesting = errors.New("JSON nesting exceeds parser limit")
 
 // ParseReferenceJSON keeps integer precision and dictionary insertion order,
 // including Python JSON's last-value/first-position behavior for duplicate keys.
@@ -17,7 +20,7 @@ func ParseReferenceJSON(data []byte) (any, error) {
 	var read func(int) (any, error)
 	read = func(depth int) (any, error) {
 		if depth > 1000 {
-			return nil, domain.ErrInvalidScopedRequest
+			return nil, ErrReferenceNesting
 		}
 		token, err := decoder.Token()
 		if err != nil {

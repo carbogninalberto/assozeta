@@ -1,0 +1,95 @@
+"""Run the same portable refresh contracts over actual Django and Go HTTP.
+
+Called only inside accounts.py's private PostgreSQL/Redis/key fixture context.
+"""
+import json
+import os
+from pathlib import Path
+import socket
+import subprocess
+import threading
+import unittest
+from wsgiref.simple_server import make_server, WSGIRequestHandler
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def run(work, log, tool_env, cache_address):
+    from django.conf import settings
+    from django.core.wsgi import get_wsgi_application
+    from application.models import User
+    from application.impersonation import begin
+    from application.services.jwt_token_service import JWTTokenService
+    from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+    from TESTS.adapters.django.scoped_resources import uid
+    from TESTS.http_client import Client, poll
+    from django.apps import apps
+    def token(n, kind):
+        value = RefreshToken() if kind == 'refresh' else AccessToken()
+        value['user_id'] = uid(n)
+        return str(value)
+    target = User.objects.get(pk=uid(30))
+    pair = JWTTokenService.generate_tokens_for_user(target)
+    refresh = RefreshToken(pair['refresh_token']); refresh['custom'] = {'contract':'preserved'}
+    expired = RefreshToken(); expired['exp'] = 1
+    malformed = AccessToken(); malformed['user_id'] = 'invalid'
+    session, _ = begin(User.objects.get(pk=uid(8)), target.pk)
+    fixture = {'refresh':str(refresh), 'access':pair['access_token'], 'expired':str(expired),
+        'target':uid(30), 'owner_access':token(8,'access'), 'owner_session':session,
+        'inactive_access':token(3,'access'), 'inactive_refresh':token(3,'refresh'),
+        'deleted_refresh':token(4,'refresh'), 'missing_refresh':token(999,'refresh')}
+    fixture['malformed_access'] = str(malformed)
+    path = work / 'refresh-http.json'; path.write_text(json.dumps(fixture)); path.chmod(0o600)
+    def snapshot():
+        return {model._meta.label:list(model._base_manager.order_by('pk').values())
+                for model in apps.get_models() if model._meta.managed and not model._meta.proxy}
+    before = snapshot()
+    class QuietHandler(WSGIRequestHandler):
+        def log_message(self, *args):
+            pass
+    server = make_server('127.0.0.1', 0, get_wsgi_application(), handler_class=QuietHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    def contracts(base):
+        os.environ.update(TESTS_BASE_URL=base, TESTS_REFRESH_FIXTURE=str(path))
+        suite=unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_refresh')
+        result=unittest.TextTestRunner(verbosity=2).run(suite)
+        if not result.wasSuccessful() or result.skipped:
+            raise AssertionError('Portable refresh contracts did not all pass')
+        return result.testsRun
+    api = None
+    try:
+        count = contracts(f'http://127.0.0.1:{server.server_port}')
+        subprocess.run(['go','build','-o',str(work/'refresh-server'),'./cmd/server'],cwd=ROOT/'BE_GO',check=True,timeout=120,env=tool_env,stdout=log,stderr=subprocess.STDOUT)
+        with socket.socket() as listener:
+            listener.bind(('127.0.0.1',0)); port=listener.getsockname()[1]
+        redis_host,redis_port=cache_address.rsplit(':',1)
+        environment={**tool_env,'DBTYPE':'POSTGRES','DBNAME':'assozeta_contract_accounts','DBUSER':'contracts',
+            'DBPASSWORD':'test-only','DBHOST':str(work),'DBPORT':'5432','REDIS_HOST':redis_host,'REDIS_PORT':redis_port,
+            'REDIS_USERNAME':'default','REDIS_PASSWORD':'synthetic-identity-only','GO_LISTEN_ADDR':f'127.0.0.1:{port}',
+            'JWT_SECRET_KEY':settings.JWT_SECRET_KEY,'JWT_PUBLIC_KEY':settings.JWT_PUBLIC_KEY}
+        api=subprocess.Popen([str(work/'refresh-server')],cwd=work,env=environment,stdout=log,stderr=subprocess.STDOUT)
+        base=f'http://127.0.0.1:{port}'
+        def ready():
+            if api.poll() is not None: raise AssertionError('Go HTTP process stopped')
+            try: return Client(base).request('GET','/readyz')[0] == 200
+            except OSError: return False
+        poll(ready,bool,timeout=30)
+        assert contracts(base)==count
+        # Verify signatures using Django in addition to portable payload checks.
+        # No token is written to reports or logs.
+        status, refreshed = Client(base).request('POST','/oauth2/refresh-token',{'refresh_token':fixture['refresh']})
+        assert status == 200
+        assert AccessToken(refreshed['access_token'])['user_id'] == uid(30)
+        status, unbound = Client(base).request('POST','/oauth2/refresh-token',{'refresh_token':None})
+        assert status == 200 and 'user_id' not in RefreshToken(unbound['refresh_token'])
+        status, accepted = Client(f'http://127.0.0.1:{server.server_port}').request('POST','/oauth2/refresh-token',{'refresh_token':unbound['refresh_token']})
+        assert status == 200 and accepted['refresh_token'] == unbound['refresh_token']
+        assert snapshot() == before, 'refresh changed persisted business/auth/audit/job state'
+        return count
+    finally:
+        server.shutdown(); server.server_close(); thread.join(timeout=5)
+        if api is not None and api.poll() is None:
+            api.terminate()
+            try: api.wait(timeout=30)
+            except subprocess.TimeoutExpired: api.kill(); api.wait(timeout=5)
+        path.unlink(missing_ok=True)

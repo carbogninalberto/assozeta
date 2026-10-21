@@ -18,8 +18,13 @@ does not enforce issuer/audience; WebSocket authentication must add its explicit
 A successfully verified token is **not an authorized user**. Disabled/deleted
 accounts, actor/effective-user separation, collaborator ownership and grants,
 family/instructor scope and impersonation revocation must be checked by services
-against persisted state. These primitives are not yet registered as public auth
-routes and do not claim login, refresh HTTP or WebSocket parity.
+against persisted state. The refresh HTTP route now composes these checks; login
+and WebSocket admission remain incomplete. See `internal/handler/refresh.md` and
+the migration ledger for HTTP evidence and remaining gates.
+
+`IssueUnbound` preserves SimpleJWT's `RefreshToken(None)` constructor behavior:
+tokens have no identity/custom claims. The refresh HTTP contract explicitly proves
+the resulting access token cannot authenticate an account.
 
 `TESTS/adapters/django/credentials.py` uses the real Assozeta token service and
 SimpleJWT from repository dependencies to test both issuance directions and

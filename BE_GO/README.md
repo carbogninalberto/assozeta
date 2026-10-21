@@ -1,7 +1,8 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. It currently exposes monitoring
-and implements separate credential, identity and resource-read components. It cannot serve the frontend, authenticate HTTP users or
+and token refresh, with credential, identity and resource-read components. Login
+and business workflows remain incomplete. It cannot serve the frontend or
 replace Django. See the [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
 and the [full requirements](../docs/architecture/go-migration/requirements.md).
 
@@ -22,7 +23,8 @@ python3 TESTS/adapters/go/health.py
 It builds the Go executable in a temporary directory, creates a private Unix-socket
 PostgreSQL cluster and loopback Redis/API processes, runs portable HTTP contracts,
 forces dependency failures/recovery and removes only its own resources. It requires
-Go, PostgreSQL binaries and `redis-server`; missing dependencies fail the run.
+Go, PostgreSQL binaries, `redis-server` and OpenSSL for ephemeral test keys;
+missing dependencies fail the run.
 
 The bidirectional credential adapter uses the actual Django token service and
 hashers. From the repository root, install
@@ -30,7 +32,7 @@ hashers. From the repository root, install
 virtualenv and run `python TESTS/adapters/django/credentials.py`. It generates and
 deletes synthetic keys/tokens/hashes, prohibits database access, and invokes Go
 interop tests. See `pkg/jwt/README.md` and `pkg/crypto/README.md` for the protocol
-and remaining service-level requirements. Auth endpoints are not registered yet.
+and remaining service-level requirements. Refresh is registered; login is not.
 
 Use that Python environment to run `TESTS/adapters/django/permissions.py` for the
 collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
@@ -39,8 +41,8 @@ actor admission connects tokens to current account rows, and identity selection
 separates actor/effective person/data owner with current impersonation eligibility.
 Association-bound operation and nested-reference admission now runs before
 collaborator grants; see `internal/service/scoped_request.md`. Endpoint resource
-authorization, audit workflows and login writes remain open. This is not yet
-public HTTP authentication. The additional
+authorization, audit workflows and login writes remain open. Refresh now uses
+this admission chain; see `internal/handler/refresh.md`. The additional
 `TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
 cache record boundary on private Redis; see `internal/repository/impersonation.md`.
 
@@ -54,6 +56,8 @@ process environment. `-env-file PATH` optionally reads the **existing** deployme
 `.env`; process values win. Never create a second credentials file for Go.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
+The server requires valid existing `JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or
+their supported base64 variants); invalid keys stop startup without logging them.
 
 Business migration ownership remains in Django. The Dockerfile follows the
 reference multi-stage non-root pattern, but is not yet part of release images or
