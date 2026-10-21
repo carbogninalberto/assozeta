@@ -90,7 +90,7 @@ func TestRegistrationFileUsesDjangoLiteralParsing(t *testing.T) {
 				}
 			}
 			path := filepath.Join(t.TempDir(), "fixture.env")
-			if err := os.WriteFile(path, []byte("DBTYPE=POSTGRES\nDBNAME=fixture\nDBHOST=/tmp/fixture\nDBUSER=fixture\n"+tc.lines), 0600); err != nil {
+			if err := os.WriteFile(path, []byte("DBTYPE=POSTGRES\nDBNAME=fixture\nDBHOST=/tmp/fixture\nDBUSER=fixture\nSOCIAL_AUTH_GOOGLE_OAUTH2_KEY=\nSOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=\nJWT_SECRET_KEY=synthetic-private\nJWT_PUBLIC_KEY=synthetic-public\n"+tc.lines), 0600); err != nil {
 				t.Fatal(err)
 			}
 			cfg, err := Load(path)

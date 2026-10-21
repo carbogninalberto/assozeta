@@ -111,8 +111,11 @@ For a disposable manually configured environment, `go run ./cmd/server` reads th
 process environment. `-env-file PATH` optionally reads the **existing** deployment
 `.env`; process values win. Never create a second credentials file for Go.
 The existing family/federation/multiple registration flags are supported with
-Django defaults and boolean/literal-dotenv rules. The environment example documents
-them. These flags affect registration UI choices, not authorization.
+Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
+proxies/multiline values follow their existing Django settings; DB/Redis values
+remain literal. Google client ID and secret must be present (empty is accepted).
+See `internal/config/README.md` for the 45-case environment comparison, required
+settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 `GO_LISTEN_ADDR` is a new listener-only option, default `:8000`. It does not select
 the active backend. `RUNNING_VERSION` defaults to `v0.0.0`.
 The server requires valid existing `JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or

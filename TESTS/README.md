@@ -743,3 +743,12 @@ Expected identity, propagated-error behavior and HTTP sequence are declared befo
 either backend runs. Invalid fixture requests fail independently of expected auth
 failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
 versions, limits, remaining inputs and the absence of public/live-provider proof.
+
+`python TESTS/adapters/django/environment.py` declares 45 environment cases and
+executes selected unchanged assignments from `BE/core/settings.py` with actual
+django-environ. It compares Go file/process precedence, provider/JWT proxies,
+raw DB/Redis values, multiline/base64 and CSRF-list behavior. Go also checks that
+loading leaves process state unchanged and representations/errors omit synthetic
+secrets. No settings import, developer `.env`, database or provider access is used.
+The CI protocol step runs this adapter before credentials. See the scoped contract
+in `BE_GO/internal/config/README.md`; complete environment/release wiring is open.

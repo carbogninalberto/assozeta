@@ -603,3 +603,32 @@ Actionlint v1.7.7 (the repository workflow version) also passes. Additional red
 cases caught numeric/boolean JWK algorithm metadata being silently defaulted to
 RSA; nonempty invalid metadata is now rejected, while a false value retains the
 inspected defaulting behavior. The final Google oracle contains 93 declarations.
+
+The configuration increment ports the existing provider environment fields and
+replaces shell-style dotenv expansion with Django's literal file rules. The 45-case
+oracle executes selected unchanged `core.settings` AST assignments using actual
+django-environ 0.12.0, then compares Go `Load`. It covers process precedence,
+required/empty/default values, raw DB/Redis strings, provider/JWT reference chains,
+cycles/missing targets, quoting/comments/invalid lines, multiline/base64 and CSRF
+lists. A nonempty CSRF-list proxy raises in the installed library; Go preserves
+startup rejection rather than accepting different trusted origins. Config loading
+leaves the process untouched, and value/error representations redact secrets.
+
+Missing provider/JWT configuration APIs failed before implementation. Full Go race
+tests/vet, tagged config vet and the 45-case oracle pass. The actual Go health
+rehearsal also passes private PostgreSQL/Redis loss/recovery and idle SIGTERM.
+Existing fixture startup environments now explicitly supply the already-required
+Google settings. No deployment/customer configuration was read or changed. The
+unused godotenv dependency was removed without adding a replacement framework.
+Remaining environment fields, VERSION-file precedence, complete provider/root
+wiring and public login remain open; this is not full environment or activation
+parity. Evidence: `quality-reports/go-migration/environment/`.
+
+The full private PostgreSQL/Redis accounts adapter passes after this configuration
+change, including 30 refresh methods per backend, 33 social configuration cases,
+41 social admissions, 26 sessions, 68 password cases, 47 OTP cases and 20 composed
+normalization/audit cases, plus identity/scope/image checks. An initial run caught
+three obsolete response-test startup fixtures missing required JWT/provider
+settings; the fixtures were corrected and the complete adapter rerun passed.
+The schema comes from current models, not historical migrations. Results are
+archived at `quality-reports/go-migration/environment/accounts-results.json`.

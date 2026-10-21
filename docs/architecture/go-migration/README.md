@@ -104,8 +104,8 @@ no business writes or schema migration.
 Configuration reuses the existing DB/Redis variables and optional deployment
 `.env`, with process environment taking precedence. PgBouncer's exact `True`
 comparison and Django's nonempty-string `REDIS_SSLAUTH` behavior are preserved.
-`godotenv` and `go-redis/v9` are named compatibility/infrastructure extensions;
-the latter uses a separate short-lived probe key, never Django cache pickle or
+The configuration reader now follows django-environ literal file rules;
+`go-redis/v9` is an infrastructure extension using a separate short-lived probe key, never Django cache pickle or
 Channels/Celery payload encoding. JWT key parsing now supports the existing raw/multiline and base64 precedence.
 Other environment settings remain unported.
 
@@ -114,6 +114,7 @@ TDD evidence from this worktree:
 | Check | Result and scope |
 | --- | --- |
 | Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
+| Environment subset | 45 declared cases execute actual settings assignments with django-environ, then Go Load: precedence, provider/JWT proxies, raw DB/Redis, multiline/base64, CSRF lists, process isolation and redaction |
 | Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
@@ -827,3 +828,16 @@ values and exact HTTP sequences are compared. Raw container/upload conversion,
 parser/key/transport extremes, environment/root wiring and public/live-provider
 login remain open. See [the Google contract](../../../BE_GO/pkg/social/google.md)
 and `quality-reports/go-migration/google-tokens/`; no ledger row is promoted.
+
+The environment reader now exposes the existing Google/Apple settings and follows
+Django literal file parsing for the whole current configuration subset. DB/Redis
+values retain raw dollar text; provider/JWT references resolve after file/process
+merge, with original defaults and required rules. Raw multiline handling preserves
+standalone escaped carriage returns. Forty-five declarations pass against selected
+unchanged `core.settings` assignments and Go `Load`; no application settings import
+or database/provider access is used. Secret representations and error messages are
+checked separately. The disposable actual Go server still passes health, dependency
+loss/recovery and idle SIGTERM. Remaining environment settings, VERSION precedence,
+provider/root/public-login composition and activation gates are open. See
+[configuration scope](../../../BE_GO/internal/config/README.md) and evidence under
+`quality-reports/go-migration/environment/`.
