@@ -39,7 +39,12 @@ type pngHeaderState struct {
 }
 
 func ReadPNGHeader(ctx context.Context, data []byte, maxHeaderBytes int) (PNGHeader, error) {
-	empty := PNGHeader{}
+	state, err := readPNGHeaderState(ctx, data, maxHeaderBytes)
+	return state.header, err
+}
+
+func readPNGHeaderState(ctx context.Context, data []byte, maxHeaderBytes int) (pngHeaderState, error) {
+	empty := pngHeaderState{}
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
@@ -121,7 +126,8 @@ func ReadPNGHeader(ctx context.Context, data []byte, maxHeaderBytes int) (PNGHea
 			if err := ctx.Err(); err != nil {
 				return empty, err
 			}
-			return h, nil
+			state.header = h
+			return state, nil
 		}
 		body, err := cursor.take(length)
 		if err != nil {
