@@ -22,6 +22,7 @@ from TESTS.adapters.django.login_jpeg_file import vectors as file_vectors
 from TESTS.adapters.django.login_png_pixels import vectors as png_vectors
 from TESTS.adapters.django.login_png_header import vectors as png_header_vectors
 from TESTS.adapters.django.login_bilevel import vectors as bilevel_vectors
+from TESTS.adapters.django.login_png_stream import vectors as stream_vectors
 
 
 def main():
@@ -50,14 +51,20 @@ def main():
         (work / 'png-header.json').chmod(0o644)
         (work / 'bilevel.json').write_text(json.dumps(bilevel_vectors()))
         (work / 'bilevel.json').chmod(0o644)
+        (work / 'png-stream.json').write_text(json.dumps(stream_vectors()))
+        (work / 'png-stream.json').chmod(0o644)
         subprocess.run(['go', 'test', '-c', '-tags=imageintegration', '-o', str(work / 'jpeg.test'), './pkg/storage/loginimage'],
             cwd=ROOT / 'BE_GO', env={**tool_env, 'GOOS': 'linux', 'GOARCH': architecture, 'CGO_ENABLED': '0'}, check=True, timeout=180)
         (work / 'jpeg.test').chmod(0o755)
         identity = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'id', args.image, '-u'], text=True).strip()
         assert identity == '10001', 'image no longer runs as expected unprivileged user'
-        for name in ('Pillow-LICENSE', 'libjpeg-turbo-LICENSE.md', 'libjpeg-turbo-README.ijg', 'loginimage-NOTICE', 'libjpeg-turbo-version.txt'):
+        for name in ('Pillow-LICENSE', 'libjpeg-turbo-LICENSE.md', 'libjpeg-turbo-README.ijg', 'loginimage-NOTICE', 'libjpeg-turbo-version.txt', 'zlib-version.txt', 'zlib-LICENSE'):
             notice = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'cat', args.image, '/app/licenses/' + name], text=True)
             assert notice.strip(), f'missing image notice: {name}'
+            if name == 'zlib-version.txt':
+                assert re.fullmatch(r'zlib-static-\d+\.\d+\.\d+-r\d+\n', notice), 'missing zlib package version'
+                print(notice.strip(), flush=True)
+            if name == 'zlib-LICENSE': assert 'Copyright' in notice and 'This notice may not be removed' in notice
             if name == 'Pillow-LICENSE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/LICENSE.pillow').read_text()
             if name == 'loginimage-NOTICE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/NOTICE').read_text()
             if name == 'libjpeg-turbo-version.txt':
@@ -65,6 +72,7 @@ def main():
                 print(notice.strip(), flush=True)
         subprocess.run(['docker', 'run', '--rm', '--network', 'none', '--read-only',
             '--mount', f'type=bind,source={work},target=/fixtures,readonly',
+            '--env', 'ASSOZETA_PNG_STREAM_FIXTURE=/fixtures/png-stream.json',
             '--env', 'ASSOZETA_BILEVEL_FIXTURE=/fixtures/bilevel.json',
             '--env', 'ASSOZETA_PNG_HEADER_FIXTURE=/fixtures/png-header.json',
             '--env', 'ASSOZETA_PNG_PIXELS_FIXTURE=/fixtures/png.json',
@@ -73,7 +81,7 @@ def main():
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol)$', '-test.v'],
             check=True, timeout=180)
 
 

@@ -93,7 +93,7 @@ jobs:
       - name: Install disposable integration dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
           sudo locale-gen
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
@@ -102,6 +102,8 @@ jobs:
         run: python TESTS/adapters/django/impersonation_cache.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
+      - name: Check native PNG decoder with sanitizers
+        run: python TESTS/adapters/go/login_png_sanitizer.py
       - name: Rehearse health and dependency failure recovery
         run: python3 TESTS/adapters/go/health.py
       - name: Build isolated Go image and verify non-root execution

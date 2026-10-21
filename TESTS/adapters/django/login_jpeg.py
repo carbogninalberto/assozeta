@@ -55,7 +55,7 @@ def vectors():
 
 def build_codec(output, log, tool_env):
     flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg'], text=True, env=tool_env))
-    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), *flags, '-o', str(output)],
+    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), str(NATIVE.with_name("png_stream.c")), *flags, "-lz", '-o', str(output)],
         check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
 
 

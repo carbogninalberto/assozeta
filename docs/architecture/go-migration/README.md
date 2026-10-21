@@ -613,3 +613,17 @@ This is not wired as a complete image processor. Full format recognition,
 other decoders and metadata/mode/truncation policy, admission across file formats
 and full response/HTTP composition remain required. See the
 [pixel-core contract](../../../BE_GO/pkg/storage/loginimage/README.md).
+
+
+The PNG chunk-stream component now preserves Pillow's per-IDAT/64 KiB reads and
+row-limited zlib calls, including DDAT/fdAT, sequence checks, active-chunk truncation
+and checksum timing. Go reuses its filter/sample unpacker. All 852 explicit
+pixel/chunk cases compare pixels and consumed file state; the built non-root,
+read-only/networkless image runs the same oracle. Positive logical budgets,
+malformed protocol, process failures, timeout, queued/running cancellation,
+mid-unpack cancellation and 32 concurrent decodes are covered. Native ASan/UBSan
+checks require exact successful frames and exact invalid-input exits without
+diagnostics. Static zlib and its version/license ship in the existing helper;
+the server remains CGO-free. Post-pixel metadata/error handling, first-frame
+canvas composition and full PNG/image/login wiring remain open. The ledger's
+status counts are unchanged; no endpoint is newly declared verified.
