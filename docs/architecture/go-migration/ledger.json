@@ -7376,25 +7376,56 @@
         "target": "oauth2_check_email",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/identifier_availability.go",
+        "BE_GO/internal/dto/identifier_availability.go",
+        "BE_GO/internal/handler/identifier_availability.go",
+        "BE_GO/internal/service/identifier_availability.go",
+        "BE_GO/internal/repository/identifier_availability.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/models/user_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/impersonation.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/oauth2/check/email"
+        ],
+        "request": "Required email query parameter; last duplicate wins; no trimming or syntax validation. Unicode character limit 255; get_user presence enables details and username fallback.",
+        "response": "200 valid=true with data.msg; 409 valid=false with exception. get_user returns first_name,last_name,email,user_id of smallest UUID email match; only if absent, smallest UUID username match.",
+        "errors": "400 invalid payload for excessive length; missing query retains production HTML 500 without Allow. Supplied Bearer and scoped identity are checked before method/query. 401/403/405/406 and format 404 retain existing REST behavior. Malformed session fails before method/Bearer with generic HTML 500.",
+        "authentication": "AllowAny with supplied Bearer authentication. Cache session supplies audit identity only. Anonymous forged scope headers are ignored.",
+        "permissions": "Current identity/scoped-operation admission; association-bound athlete denied; excluded from collaborator permission registry.",
+        "resource_scope": "Intentionally global public identifier lookup. Case-insensitive PostgreSQL comparison; excludes soft-deleted accounts, includes inactive accounts. Not a business-resource authorization repository.",
+        "side_effects": "Read-only checks; managed-table and malformed-session-byte readback unchanged after both real HTTP servers. General shared session middleware may revoke invalid password-hash sessions.",
+        "transaction": "No business writes. Email performs one SELECT and at most one fallback SELECT; username SELECT EXISTS. Context cancellation and repository failures propagate, never become availability.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_identifier_availability.py",
+        "TESTS/adapters/django/identifier_availability.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/identifier_availability_test.go",
+        "BE_GO/internal/service/identifier_availability_integration_test.go"
+      ],
+      "evidence": [
+        "16 portable HTTP methods first passed on actual Django ASGI and failed against the unregistered Go routes, then pass on both real servers. Controlled inactive/deleted/duplicate/literal fixtures, Unicode bounds, options/errors, actor/scope/session precedence and 32 concurrent requests have explicit expected results. All managed models remain unchanged.",
+        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed."
+      ],
+      "notes": [
+        "Current-model run-syncdb fixtures only; historical schemas, versioned routing, complete global middleware and activation gates remain open. See BE_GO/internal/handler/identifier_availability.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/check/username -> oauth2_check_username",
@@ -7411,25 +7442,56 @@
         "target": "oauth2_check_username",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/identifier_availability.go",
+        "BE_GO/internal/dto/identifier_availability.go",
+        "BE_GO/internal/handler/identifier_availability.go",
+        "BE_GO/internal/service/identifier_availability.go",
+        "BE_GO/internal/repository/identifier_availability.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/middleware/session_audit.go"
+      ],
+      "dependencies": [
+        "BE/application/views/auth_views.py",
+        "BE/application/models/user_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/impersonation.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/oauth2/check/username"
+        ],
+        "request": "Required username query parameter; last duplicate wins; no trimming or syntax validation. Unicode character limit 150; get_user does not disclose a user.",
+        "response": "200 valid=true with data.msg; 409 valid=false with exception. Existence only, no user details.",
+        "errors": "400 invalid payload for excessive length; missing query retains production HTML 500 without Allow. Supplied Bearer and scoped identity are checked before method/query. 401/403/405/406 and format 404 retain existing REST behavior. Malformed session fails before method/Bearer with generic HTML 500.",
+        "authentication": "AllowAny with supplied Bearer authentication. Cache session supplies audit identity only. Anonymous forged scope headers are ignored.",
+        "permissions": "Current identity/scoped-operation admission; association-bound athlete denied; excluded from collaborator permission registry.",
+        "resource_scope": "Intentionally global public identifier lookup. Case-insensitive PostgreSQL comparison; excludes soft-deleted accounts, includes inactive accounts. Not a business-resource authorization repository.",
+        "side_effects": "Read-only checks; managed-table and malformed-session-byte readback unchanged after both real HTTP servers. General shared session middleware may revoke invalid password-hash sessions.",
+        "transaction": "No business writes. Email performs one SELECT and at most one fallback SELECT; username SELECT EXISTS. Context cancellation and repository failures propagate, never become availability.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_identifier_availability.py",
+        "TESTS/adapters/django/identifier_availability.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/identifier_availability_test.go",
+        "BE_GO/internal/service/identifier_availability_integration_test.go"
+      ],
+      "evidence": [
+        "16 portable HTTP methods first passed on actual Django ASGI and failed against the unregistered Go routes, then pass on both real servers. Controlled inactive/deleted/duplicate/literal fixtures, Unicode bounds, options/errors, actor/scope/session precedence and 32 concurrent requests have explicit expected results. All managed models remain unchanged.",
+        "Real PostgreSQL integration passes under the race detector: 1/16/128/512 duplicates preserve one-query smallest-UUID selection, fallback uses two queries, username uses one EXISTS. Thirty-two concurrent calls stay within four test connections; cancellation and closed database fail correctly. EXPLAIN ANALYZE captures actual query text: email sequential scan/top-N sort, username sequential scan within EXISTS. No latency or scan-complexity improvement claimed."
+      ],
+      "notes": [
+        "Current-model run-syncdb fixtures only; historical schemas, versioned routing, complete global middleware and activation gates remain open. See BE_GO/internal/handler/identifier_availability.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:oauth2/delete-account -> oauth2_delete_account",

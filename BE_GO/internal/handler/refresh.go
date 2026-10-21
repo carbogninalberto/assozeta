@@ -124,6 +124,7 @@ func restError(c echo.Context, err error) error {
 		return c.JSON(401, map[string]string{"msg": "Invalid or expired refresh token"})
 	default:
 		// Never serialize provider errors or credentials into responses/logs.
-		return c.HTML(500, "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n")
+		c.Response().Header().Del("Allow")
+		return c.Blob(500, "text/html; charset=utf-8", []byte("\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n"))
 	}
 }
