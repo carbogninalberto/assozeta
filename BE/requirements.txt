@@ -11,12 +11,12 @@ celery==5.6.2
 channels==4.2.0
 # coverage moved to dev-requirements.txt
 cron-descriptor==1.4.5
-cryptography==44.0.2
+cryptography==50.0.2
 cssselect2==0.8.0
-daphne==4.1.2
-Django==5.2.1
-djangorestframework-simplejwt==5.3.1
-oauthlib==3.2.2
+# daphne removed - not used (gunicorn + uvicorn serve ASGI); pulled in unpatched twisted
+Django==5.2.18
+djangorestframework-simplejwt==5.5.1
+oauthlib==4.0.0
 django-auditlog==3.4.1
 django-braces==1.16.0
 django-celery-beat==2.8.1
@@ -36,7 +36,7 @@ django-storages==1.14.5
 django-timezone-field==7.1
 # django-weasyprint removed - not used
 # django-wkhtmltopdf removed - not used
-djangorestframework==3.16.1
+djangorestframework==3.17.2
 drf-api-logger==1.1.20
 # drf-social-oauth2 removed - migrated to JWT auth
 editdistance==0.8.1
@@ -48,31 +48,31 @@ pandas==2.2.3
 phonenumbers==9.0.0
 # pip-upgrader moved to dev-requirements.txt
 prompt-toolkit==3.0.50
-Pillow==11.1.0
+Pillow==13.0.0
 psycopg2-binary==2.9.10
 # pychromepdf removed - not used
 pycparser==2.22
 # pylint moved to dev-requirements.txt
 pyotp==2.9.0
 pyparsing==3.2.1
-PyPDF2==3.0.1
+pypdf==6.21.2
 reportlab==4.2.5  # PDF generation for printing.py
 python-bidi==0.6.6
 python-codicefiscale==0.10.3
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
-python-jose==3.4.0
+# python-jose removed - not used (unpatched CVE-2026-85394)
 python3-openid==3.2.0
 pytz==2025.1
 PyYAML==6.0.2
 qrcode==8.0
 redis==5.2.1
 channels-redis==4.2.1
-requests==2.32.3
+requests==2.34.2
 requests-oauthlib==2.0.0
-social-auth-app-django==5.4.3
-social-auth-core==4.5.6
+social-auth-app-django==6.1.0
+social-auth-core==5.2.0
 sortedcontainers==2.4.0
 segno==1.6.6
 stripe==11.6.0

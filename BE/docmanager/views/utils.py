@@ -6,9 +6,9 @@ from rest_framework.permissions import BasePermission
 from docmanager.models import Document
 
 from typing import Any, Dict, List
-from PyPDF2 import PageObject, PdfReader, PdfWriter
-from PyPDF2.constants import FieldFlag, PageAttributes as PG, FieldDictionaryAttributes, AnnotationDictionaryAttributes
-from PyPDF2.generic import NameObject, TextStringObject, NumberObject, ArrayObject, DictionaryObject
+from pypdf import PageObject, PdfReader, PdfWriter
+from pypdf.constants import FieldFlag, PageAttributes as PG, FieldDictionaryAttributes, AnnotationDictionaryAttributes
+from pypdf.generic import NameObject, TextStringObject, NumberObject, ArrayObject, DictionaryObject
 
 import base64
 from io import BytesIO
