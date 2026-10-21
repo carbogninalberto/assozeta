@@ -383,3 +383,20 @@ The adapter verifies that denials leave `last_login` unchanged, restores declare
 fixture fields and compares all managed tables. Go cases use `otpintegration`;
 missing fixtures fail rather than skip. This remains component evidence, not the
 portable Go login HTTP contract or provisioning/reset workflow.
+
+### Composed password admission and audit
+
+`adapters/django/login_preparation.py` adds twenty explicit cases through the actual
+Django login view and audit middleware, followed by the composed Go password,
+normalization/audit and OTP services. It compares admission decisions, username
+writes and all audit/index fields, then uses Django to read/process Go records.
+Only generated IDs/timestamps and the declared final Django last-login effects
+are treated separately; all managed tables must match after fixture restoration.
+
+The account adapter rebuilds audit resolvers after creating its private schema,
+as a normal server would at startup after migrations. `admissionintegration` tests
+exercise real transaction failures, query counts, concurrent normalization and
+retry after a forced PostgreSQL cross-actor deadlock. The Django orphan audit on a
+username collision is explicitly characterized; Go's atomic invariant rolls it
+back. This stronger failure boundary is recorded, not counted as identical
+Django failure-side-effect behavior. Full Go login HTTP and final writes remain open.

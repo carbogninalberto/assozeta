@@ -16,7 +16,8 @@ the separate manual worktree and customer installations have not been changed.
 
 Discovery records 514 declarations, 408 resolved HTTP patterns, four WebSocket
 paths, 42 tasks, 15 MCP schemas and 112 model metadata records. Two retired tasks
-and four in-progress health/auth routes are classified; 508 declarations still
+and four in-progress health/auth routes plus the user-audit index connection are
+classified; 507 declarations still
 need characterization. Effective versus declared Celery schedules remain unresolved.
 
 Local evidence includes Go formatting/vet/race tests, 12 inventory tests, 18
@@ -69,10 +70,19 @@ evidence are still incomplete, so the ledger row remains implementing.
 Password credential selection now passes 21 explicit actual-Django-view versus Go
 service cases. Compatible rehashes are written transactionally and read back by
 Django, including ambiguous and inactive outcomes. This is not an authenticated
-session: OTP composition, username/audit and subsequent login effects remain open.
+session: final response construction and subsequent login effects remain open.
 The independent OTP gate passes 47 actual-Django-view versus Go decisions covering
 clock boundaries, Unicode, malformed inputs/secrets and multipart metadata. Denied
 Django requests leave last-login unchanged; Go performs no writes in this gate.
+
+Password admission now composes credentials, transactional username/audit preparation
+and OTP. Twenty actual Django login/audit-middleware cases pass, with exact audit
+readback and unchanged managed tables after fixture restoration. Real PostgreSQL
+checks prove rollback, one/five-query paths, concurrent deduplication and retry
+after a forced cross-actor deadlock. Go's atomic rollback intentionally differs
+from Django's orphan pre-save audit after username collision; this is documented,
+not claimed as identical failure-side-effect parity. The fixture audit registry
+is now initialized after schema creation, matching ordinary server startup.
 
 Missing work includes business endpoints, complete HTTP admission, endpoint-level
 group/instructor/family authorization, login writes and impersonation audit workflows,

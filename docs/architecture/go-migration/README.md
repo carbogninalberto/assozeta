@@ -87,7 +87,8 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks are explicitly classified. Both health routes and the two
-login/refresh routes are `implementing`, not `verified`; 508 other rows still need
+login/refresh routes and the user-audit index connection are `implementing`, not
+`verified`; 507 other rows still need
 characterization. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
@@ -120,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
 | Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
 | Password credential stage | 21 actual Django login versus Go service selection/rehash cases; production hashes, Django readback of Go writes and managed-table comparison |
 | Refresh HTTP | 26 identical portable contracts over actual Django WSGI and Go HTTP; cookie/admission/parsing behavior, Django signature/readback checks and unchanged managed tables |
@@ -350,7 +352,7 @@ See [the HTTP contract](../../../BE_GO/internal/handler/refresh.md) for exact sc
 The refresh ledger row remains `implementing`: global restore/maintenance fencing,
 CORS/security/session middleware, all locale/charset and multipart/body-limit edge
 cases, versioned proxy routes and release/browser switching evidence remain open.
-Login now has credential selection/rehash and second-factor components; it still requires their workflow composition and social authentication,
+Login now composes credential selection/rehash, username/audit preparation and the second-factor gate; it still requires final response/write composition and social authentication,
 response serialization and its persisted side effects. These remaining workflows
 are required before replacement; the refresh tests do not shrink that scope.
 
@@ -373,7 +375,7 @@ and 16 concurrent credential requests through two admission slots/four connectio
 for the atomic failure boundary and remaining admission/cost-budget work.
 
 This is not a complete login or an authenticated session. Go HTTP login, distributed
-rate limiting, OTP workflow composition/social providers, username/audit normalization, response-created
+rate limiting, social providers, response-created
 configuration, last-login/deletion writes and full rollback/release proof remain
 required. The login row remains implementing.
 
@@ -389,9 +391,33 @@ The account adapter runs 47 explicit actual-Django-view versus Go service cases,
 with only PyOTP's clock controlled. Successful Django tokens identify the expected
 account; failed OTPs never update last-login. All managed model tables are compared
 after declared fixture resets. See [the gate contract](../../../BE_GO/internal/service/second_factor.md).
-Username/audit normalization must still be composed before OTP and the remaining
-login response/writes afterward. Provisioning/reset, social login, distributed
+Password admission now composes username/audit normalization before OTP; the
+remaining login response/writes still follow. Provisioning/reset, social login, distributed
 rate limiting and full HTTP/release evidence remain open.
+
+### Composed password admission and audit
+
+`PasswordAdmission` now runs credential selection, current-account preparation
+and OTP in order. Preparation normalizes the username and writes the existing
+audit event/association index inside one explicit transaction, committed before
+OTP. Thus missing/invalid OTP retains the same normalization/audit effects while
+returning no admitted account. Target and request audit actor remain separate.
+
+Twenty actual Django login/audit-middleware cases now pass against this composed
+Go service; Django reads the Go-written event/index fields and relationships. The
+fixture checks every managed table after restoring declared changes. Real PostgreSQL
+checks cover rollback, constraint/cancellation/commit failures, five queries for
+indexed normalization and one for unchanged names, 32 concurrent calls with one
+event, and retry after a forced cross-actor deadlock.
+
+The adapter now rebuilds audit resolvers after its schema creation, matching normal
+post-migration server startup. It also characterizes a Django failure difference:
+username uniqueness failure leaves a pre-save audit, while Go's requested atomic
+invariant rolls it back. This is documented rather than counted as identical
+failure-side-effect parity. See [the service contract](../../../BE_GO/internal/service/login_preparation.md).
+The login and audit-index rows remain implementing. Final login response/configuration
+creation, last-login/deletion writes, social providers, public HTTP admission,
+audit-context middleware composition and all remaining acceptance work are open.
 
 ## Required acceptance matrix
 
