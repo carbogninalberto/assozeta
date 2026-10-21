@@ -73,6 +73,10 @@ def main():
                 from auditlog.models import LogEntry
                 settings.MIGRATION_MODULES = {app.label: None for app in apps.get_app_configs()}
                 call_command('migrate', interactive=False, verbosity=0, run_syncdb=True, stdout=log, stderr=log)
+                # Model-schema creation follows django.setup in this adapter. Rebuild
+                # the resolver registry as a normal server does after migration.
+                from application.audit_resolvers import setup_audit_resolvers
+                setup_audit_resolvers()
                 def uid(number):
                     return f'00000000-0000-4000-8000-{number:012d}'
                 with disable_auditlog():
@@ -126,8 +130,10 @@ def main():
                     password_cases = password_login(work, log, tool_env)
                     from TESTS.adapters.django.second_factor import run as second_factor
                     second_factor_cases = second_factor(work, log, tool_env)
+                    from TESTS.adapters.django.login_preparation import run as login_preparation
+                    admission_cases = login_preparation(work, log, tool_env)
                 connections.close_all()
-                report = {'success': True, 'second_factor_cases': second_factor_cases, 'password_selection_cases': password_cases, 'password_batch_sizes': [1,16,128,129,257], 'concurrent_password_requests': 16, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'password_admission_cases': admission_cases, 'second_factor_cases': second_factor_cases, 'password_selection_cases': password_cases, 'password_batch_sizes': [1,16,128,129,257], 'concurrent_password_requests': 16, 'refresh_http_contracts_per_backend': refresh_contracts, 'synthetic_accounts': len(before['users']), 'scoped_request_cases': scoped_request_cases, 'scoped_request_batch_sizes': [1,16,128,512,1025], 'concurrent_guard_requests':32, 'scoped_resource_cases': scoped_cases, 'scoped_batch_sizes': [1, 16, 128, 512], 'concurrent_scoped_reads': 32, 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
                                      'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',

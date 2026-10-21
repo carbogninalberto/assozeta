@@ -3,9 +3,9 @@
 `SecondFactor.Check` implements the OTP decision inside the existing login view.
 It accepts **trusted persisted** two-factor settings and a parsed request value;
 clients must never supply the enabled flag or secret used by this service. The
-composition still needs to run credentials, active-status checks and username/audit
-normalization before this gate, then response generation and the remaining login
-writes after it. No public Go login route is registered yet.
+`PasswordAdmission` composition now runs credentials, active-status checks and
+username/audit normalization before this gate. Response generation and the
+remaining login writes still need to follow it. No public Go login route is registered yet.
 
 The crypto helper uses the existing PyOTP defaults: HMAC-SHA1, six decimal digits,
 30-second counters, and only the current counter. Base32 secrets accept ASCII lower
@@ -44,8 +44,7 @@ model table. The same decisions run through Go under the `otpintegration` tag;
 unit tests also cover known codes, exact boundaries, malformed secrets, cancellation
 and the actual multipart parser. All keys and accounts are synthetic.
 
-This is component evidence, not Go login HTTP parity. Username/audit normalization,
-full response construction, social login, distributed rate limiting, remaining
+This is component evidence, not Go login HTTP parity. Final response construction, social login, distributed rate limiting, remaining
 login writes, OTP provisioning/reset, session middleware and backend switching
 remain required. Multipart filename sanitization and other parser edge behavior
 also remain subject to the broader transport compatibility work.
