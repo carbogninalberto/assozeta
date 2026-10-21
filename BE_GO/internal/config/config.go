@@ -12,11 +12,15 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	GoogleClientID                string `json:"-"`
+	GoogleClientSecret            string `json:"-"`
+	AppleClientID                 string `json:"-"`
+	AppleTeamID                   string `json:"-"`
+	AppleKeyID                    string `json:"-"`
+	AppleSecret                   string `json:"-"`
 	FamilyRegistrationEnabled     bool
 	FederationRegistrationEnabled bool
 	MultipleRegistrationEnabled   bool
@@ -28,49 +32,32 @@ type Config struct {
 	databaseURL                   string
 	RedisAddress                  string
 	RedisUsername                 string
-	RedisPassword                 string
+	RedisPassword                 string `json:"-"`
 	RedisTLS                      bool
 	RedisRootCertificate          string
 }
 
 // String intentionally omits credentials (including database URLs).
 func (c Config) String() string      { return "Assozeta Go configuration (credentials redacted)" }
+func (c Config) GoString() string    { return c.String() }
 func (c Config) DatabaseURL() string { return c.databaseURL }
 
 // Load gives process environment priority over the optional existing .env file.
 // It does not mutate the process environment or log parser input on failure.
 func Load(path string) (Config, error) {
 	values := map[string]string{}
-	registrationValues := map[string]string{}
 	if path != "" {
 		content, err := os.ReadFile(path)
 		if err != nil || !utf8.Valid(content) {
 			return Config{}, errors.New("cannot read environment file")
 		}
-		parsed, err := godotenv.Unmarshal(string(content))
-		if err != nil {
-			return Config{}, errors.New("cannot read environment file")
-		}
-		values = parsed
-		registrationValues = registrationEnvironmentFile(string(content))
+		values = djangoEnvironmentFile(string(content))
 	}
 	for _, entry := range os.Environ() {
 		key, value, ok := strings.Cut(entry, "=")
 		if ok {
 			values[key] = value
-			registrationValues[key] = value
 		}
-	}
-	// These flags use Django's literal read_env rules, not shell expansion.
-	for _, flag := range []struct {
-		name     string
-		fallback bool
-	}{{"FAMILY_REGISTRATION_ENABLED", true}, {"FEDERATION_REGISTRATION_ENABLED", false}, {"MULTIPLE_REGISTRATION_ENABLED", false}} {
-		enabled, err := registrationFlag(registrationValues, flag.name, flag.fallback)
-		if err != nil {
-			return Config{}, err
-		}
-		values[flag.name] = strconv.FormatBool(enabled)
 	}
 	return Parse(values)
 }
@@ -134,8 +121,27 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
-		CSRFTrustedOrigins: strings.FieldsFunc(get("CSRF_TRUSTED_ORIGINS", ""), func(r rune) bool { return r == ',' }), ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
+	providerValues := make([]string, 6)
+	for index, name := range []string{"SOCIAL_AUTH_GOOGLE_OAUTH2_KEY", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET", "SOCIAL_AUTH_APPLE_ID_CLIENT", "SOCIAL_AUTH_APPLE_ID_TEAM", "SOCIAL_AUTH_APPLE_ID_KEY", "SOCIAL_AUTH_APPLE_ID_SECRET"} {
+		value, err := environmentString(values, name, "", index < 2)
+		if err != nil {
+			return Config{}, err
+		}
+		providerValues[index] = value
+	}
+	originValue, err := environmentString(values, "CSRF_TRUSTED_ORIGINS", "", false)
+	if err != nil {
+		return Config{}, err
+	}
+	origins := strings.FieldsFunc(originValue, func(r rune) bool { return r == ',' })
+	// django-environ casts a nonempty resolved list again, raising AttributeError.
+	// Preserve startup rejection rather than silently accepting different policy.
+	if strings.HasPrefix(values["CSRF_TRUSTED_ORIGINS"], "$") && len(origins) > 0 {
+		return Config{}, errors.New("invalid CSRF_TRUSTED_ORIGINS proxy")
+	}
+	return Config{GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
+		CSRFTrustedOrigins: origins, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
 		// Existing Django code uses string truthiness, not env.bool, for this flag.
@@ -145,7 +151,16 @@ func Parse(values map[string]string) (Config, error) {
 // Match core.settings.env_key: nonempty base64 takes priority; raw values use
 // django-environ's multiline expansion. Errors identify only the variable name.
 func environmentKey(values map[string]string, name string) (string, error) {
-	if encoded := values[name+"_B64"]; encoded != "" {
+	encoded, err := environmentString(values, name+"_B64", "", false)
+	if err != nil {
+		return "", err
+	}
+	if encoded != "" {
+		for _, r := range encoded {
+			if r > 127 {
+				return "", fmt.Errorf("invalid %s_B64", name)
+			}
+		}
 		// Python b64decode(validate=False) ignores non-alphabet characters.
 		filtered := strings.Map(func(r rune) rune {
 			if strings.ContainsRune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", r) {
@@ -159,7 +174,40 @@ func environmentKey(values map[string]string, name string) (string, error) {
 		}
 		return string(decoded), nil
 	}
-	return strings.NewReplacer(`\n`, "\n", `\r`, "\r").Replace(values[name]), nil
+	value, err := environmentString(values, name, "", true)
+	if err != nil {
+		return "", err
+	}
+	return environmentMultiline(value), nil
+}
+
+func environmentMultiline(value string) string {
+	return strings.NewReplacer(`\r\n`, "\n", `\n`, "\n").Replace(value)
+}
+
+// Only Env-based settings follow proxies. os.environ-based DB/Redis/PgBouncer
+// values stay literal. The originating default/required rule follows every hop.
+func environmentString(values map[string]string, name, fallback string, required bool) (string, error) {
+	origin := name
+	seen := map[string]bool{}
+	for {
+		if seen[name] {
+			return "", fmt.Errorf("cyclic %s environment proxy", origin)
+		}
+		seen[name] = true
+		value, present := values[name]
+		if !present {
+			if required {
+				return "", fmt.Errorf("%s is required", origin)
+			}
+			return fallback, nil
+		}
+		if strings.HasPrefix(value, "$") {
+			name = strings.TrimLeft(value, "$")
+			continue
+		}
+		return value, nil
+	}
 }
 
 func validPort(value string) bool {

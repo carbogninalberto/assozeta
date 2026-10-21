@@ -1,0 +1,60 @@
+# Existing deployment configuration
+
+`Load` reads the process environment and optionally the existing deployment file
+selected by `-env-file`. Process entries, including empty values, win. Reading
+configuration never changes the process environment and never logs file contents.
+The explicit file path must be readable UTF-8; the default remains process-only.
+
+File assignments follow the installed django-environ `read_env` defaults: exact
+`KEY=value` or `export KEY=value`, literal inline comments, last duplicate value,
+line-based quote removal and retained escaped newline/tab sequences. Invalid
+assignment lines are ignored without reproducing Django's value-bearing warning.
+Shell expansion is not applied. The previous godotenv dependency was removed
+because it changed these existing value semantics. This preserves the Kuayle
+configuration-package/constructor boundary while following Assozeta's environment.
+
+Values read with `os.environ` in `core.settings` remain literal, including database,
+Redis and PgBouncer values beginning with `$`. Env-based provider settings and JWT
+keys follow leading-dollar references, resolved after the complete file/process
+merge. The original required/default rule follows every reference. Cycles and
+missing required targets produce errors naming only the original setting.
+
+The typed configuration includes the existing Google client ID/secret and Apple
+client/team/key IDs/secret. Google ID and secret must be present, just as in Django;
+empty strings remain valid configuration and disable the relevant fallback ID.
+Apple fields default to empty. These are existing variables, not new credentials
+or a second configuration file. Parsing them does not register public social login.
+
+JWT raw keys must be present unless a nonempty base64 value supplies the key.
+Base64 takes precedence and is decoded without subsequent multiline expansion.
+Non-ASCII base64 input is rejected. Raw JWT keys and the Apple secret translate
+literal `\n` and `\r\n` to LF; standalone `\r` and `\t` stay literal. Provider IDs
+do not receive multiline expansion. Cryptographic key validation remains in the
+JWT constructor at server startup.
+
+Registration flags retain their separately tested Django boolean/default rules.
+CSRF origin lists keep whitespace and discard empty comma-separated items. The
+installed django-environ raises when a proxy resolves to a nonempty list because
+it casts that list again; Go also rejects that startup configuration. Empty-list
+and missing-target defaults remain accepted. Changing this behavior requires an
+explicit Django/Go policy change, rather than silently changing trusted origins.
+
+Configuration string/Go-syntax representations are redacted. JSON serialization
+omits provider credentials, JWT keys and the Redis password; the database URL is
+unexported. Error text does not include proxy targets or supplied values.
+
+Run `python TESTS/adapters/django/environment.py` in the repository's dependency
+environment. Forty-five declared cases execute selected unchanged AST assignments
+from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
+same synthetic files/process values. The adapter checks value/error boundaries,
+precedence, raw/proxy differences, multiline/base64 behavior, unchanged process
+environment and redaction. It does not import settings, load developer `.env`,
+connect to a database or contact providers. The AST selection count is checked so
+missing declarations cannot silently reduce coverage. Temporary values are removed.
+
+This is still the environment subset needed by the current server and login
+components. Remaining storage/email/renderer/integration/security flags, complete
+value/encoding extremes, VERSION-file precedence and release/root wiring need
+their own evidence. Explicit file-read failures and PostgreSQL/listener validation
+are Go startup checks; these tests do not claim every Django startup failure has
+the same diagnostic or timing. Backend switching remains unimplemented.

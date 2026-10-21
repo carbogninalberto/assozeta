@@ -85,9 +85,10 @@ jobs:
           cache-dependency-path: |
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
-      - name: Verify Django and Go credentials in both directions
+      - name: Verify environment, credentials and provider protocols
         run: |
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/environment.py
           python TESTS/adapters/django/credentials.py
           python TESTS/adapters/django/permissions.py
           python TESTS/adapters/django/apple_tokens.py
