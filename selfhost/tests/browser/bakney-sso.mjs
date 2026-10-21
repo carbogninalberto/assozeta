@@ -12,6 +12,7 @@ import {spawn, spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium, expect} from '@playwright/test';
 import {observeInitialPairing} from './sso-initial-diagnostics.mjs';
+import {openSSOFixture} from './sso-fixture-navigation.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const origin = 'https://club.assozeta.test', authority = 'https://login.bakney.test';
 const callback = origin + '/bakney/v1/callback', protocol = 'bakney-pairing-v1';
@@ -160,7 +161,7 @@ async function peer(req,res) {
     return json(res,404,{error:'not_found'});
 }
 async function seed(page,base,session,extras={}) {
-    await page.goto(base+'/fixture-blank.html');
+    await openSSOFixture(page,base);
     await page.evaluate(({session,extras})=>{localStorage.clear();sessionStorage.clear();for(const [key,value]of Object.entries({sessionToken:session.access_token,refreshToken:session.refresh_token,expires:Date.now()+session.expires_in*1000,userData:{...session.user_data,requires_welcome:false},role:session.role,currentPage:'dashboard',...extras}))localStorage.setItem(key,JSON.stringify(value));},{session,extras});
 }
 async function enterApp(page,action) {const loaded=page.waitForEvent('domcontentloaded',{predicate:()=>page.url()===origin+'/',timeout:30000});await action();await loaded;await expect(page.locator('.bakney-login')).toHaveCount(0);}

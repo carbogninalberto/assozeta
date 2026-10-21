@@ -113,3 +113,16 @@ and frontend including `handoff.html`. Configure the canonical public HTTPS
 origin and deployment-controlled Bakney API/UI addresses. Regenerate any pairing
 created using PR #15's earlier draft protocol. This verification does not claim a
 production rollout or full Bakney dashboard regression coverage.
+
+
+The raw-credential head's SSO job failed before application requests at
+`page.goto: net::ERR_NETWORK_CHANGED` for `/fixture-blank.html`
+(run 39589950373, job 119188587950). The retained bounded diagnostic contained no
+API responses, messages or page errors. `openSSOFixture` now retries that empty,
+idempotent fixture navigation once after 250 ms only for this exact Chromium
+network error. The second failure propagates; timeout, DNS, refused connection
+and closed-page errors are not retried. Pairing operations and callback navigation
+remain outside this helper. Five Node cases cover this policy, and a real local
+Chromium rehearsal injects the first error then checks successful navigation and
+same-origin storage. This is not a passing full SSO protocol rehearsal; the next
+HTTPS CI run remains required.
