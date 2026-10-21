@@ -22,7 +22,7 @@ also reject globally queued/running restore receipts before session/authenticati
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
 remain unfinished. There are 514 ledger declarations: 4 deprecated, 15 implementing,
-5 requiring renewed review and 490 uncharacterized; none is verified. Runtime
+6 requiring renewed review and 489 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -237,7 +237,8 @@ manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
 39680784844 and manual 39680784761 were subsequently cancelled. Payment head
 `30f9c10` quality 39681839219 and manual 39681839372 were cancelled.
 `6260a8e` quality 39684049859 and manual 39684049515 were cancelled.
-`91723e4` quality 39685388758 and manual 39685388740 are running at this checkpoint.
+`91723e4` quality 39685388758 and manual 39685388740 were cancelled.
+`a4ca276` quality 39686967161 and manual 39686966726 are running at this checkpoint.
 None of these running/cancelled runs is counted as success for later increments.
 
 Payment description calculation now passes 81 real Django-save cases and matching
@@ -299,6 +300,33 @@ inventory/drift, formatting and workflow lint pass. The executed 4,096-row page
 plan uses existing indexes. See
 `BE_GO/internal/service/subscription_auto_archive.md`. Task registration, scheduling
 and production ownership remain unfinished; this is not complete model-hook parity.
+
+Medical cleanup characterization now confirms fourteen actual Django cases: draft
+and active-upload references are ignored, shared/foreign documents can cascade or
+clear live references, medical deletion audits duplicate, and SQL rollback does
+not restore an already deleted file. The Go discovery dependency protects all
+fifteen current Document FK/M2M relationships plus canonical draft medical IDs.
+Six required PostgreSQL groups verify exact metadata, historical scope, new-reference
+transaction visibility, bounded query/pool use, cancellation and the 4,096-document
+plan. It is read-only and does not implement destructive cleanup or S3. The task
+remains `needs_review` pending upload/attachment coordination and durable provider
+recovery. See `BE_GO/internal/repository/medical_cleanup_candidates.md`.
+
+
+Medical S3 key resolution also passes 5,045 production Python/django-storages
+cases, including timestamp rounding and rejection of cross-document paths.
+This does not execute provider operations. See
+`BE_GO/pkg/storage/documentkey/README.md` and run
+`TESTS/adapters/django/document_keys.py`.
+
+
+The full local accounts suite now passes on production Python 3.13.2 with
+all five task bodies, thirteen archive groups and the fourteen Django plus six
+Go medical cases included. Existing password/session/image/HTTP/scope/restore
+checks pass unchanged. Evidence:
+`quality-reports/go-migration/medical-orphan-cleanup/full-accounts-results.json`.
+The separate 5,045-case medical S3 key adapter also passes; provider execution,
+historical schemas and backend switching remain outside these checks.
 
 ## Remaining completion gates
 

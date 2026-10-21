@@ -17621,27 +17621,55 @@
           "name": "'auto_delete_orphan_medical_certificate'"
         }
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "needs_review",
+      "go": [
+        "BE_GO/internal/domain/medical_cleanup.go",
+        "BE_GO/internal/repository/medical_cleanup_candidates.go",
+        "BE_GO/pkg/storage/documentkey/medical.go"
+      ],
+      "dependencies": [
+        "BE/application/models/subscriptions_models.py",
+        "BE/docmanager/models.py",
+        "BE/application/models/invoices_models.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/modules_models.py",
+        "BE/application/services/subscription_service.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/signals.py",
+        "BE/core/settings.py",
+        "BE/core/celery.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Legacy task has no arguments; Go has only a read-only UUID-cursor page of 1..512 logical document candidates.",
+        "response": "Legacy task returns None after success or handled error. Go discovery returns document metadata/certificate counts and does not execute or complete a task.",
+        "errors": "Legacy NULL document/storage/SQL errors are caught; file deletion can precede SQL rollback. Go page/context/SQL errors return without partial results.",
+        "authentication": "Trusted instance-wide background discovery; not an HTTP actor/resource grant.",
+        "permissions": "No group/association visibility restriction may hide a protecting reference.",
+        "resource_scope": "Legacy excludes only Subscription.medical references, including archived/deleted subscriptions. Go discovery additionally protects every current Document FK/M2M and canonical draft medical IDs, across associations/historical flags. Pending upload and concurrent attachment coordination remain unresolved.",
+        "side_effects": "Legacy deletes file first, then Document cascade, then MedicalCertificate again, producing duplicate medical DELETE audits and potentially clearing unrelated references. Go discovery writes no rows/files/audits and does not authorize deletion.",
+        "transaction": "One SQL snapshot per Go discovery page; explicit DB or caller transaction, no locks. Durable provider/DB intent, fencing, rollback/recovery and upload/attachment leases remain required.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/medical_orphan_cleanup.py",
+        "TESTS/adapters/django/medical_cleanup_candidates.py",
+        "BE_GO/internal/repository/medical_cleanup_candidates_integration_test.go",
+        "TESTS/adapters/django/document_keys.py",
+        "BE_GO/pkg/storage/documentkey/medical_test.go",
+        "BE_GO/pkg/storage/documentkey/medical_integration_test.go"
+      ],
+      "evidence": [
+        "Production-Python private PostgreSQL/filesystem oracle: fourteen authored cases establish ordinary/historical scope, dangling draft and active upload grant, shared/foreign PDF/attachment/archive loss, NULL document, missing/alternate files, storage error and irreversible file loss before rolled-back SQL. Ordinary deletion creates two medical audits plus one document audit; no new indexes.",
+        "Six required Go/PostgreSQL race groups pass with all fifteen actual Document FK/M2M relationships represented and 19 protected document cases. Exact nullable/zero/Unicode metadata, zero UUID cursor, new attachment transaction visibility, one statement for up to 512 results, 32 concurrent reads in four connections and actual blocked-query cancellation/recovery pass. A 4,096-document/2,048-draft executed plan uses indexed document/FK reads and a per-page normalized protection scan. Managed snapshots include M2M and files remain unchanged. Evidence: quality-reports/go-migration/medical-orphan-cleanup/.",
+        "5,045 production Python/django-storages S3 key cases pass under Go race detection, including exact timestamp rounding across years 1..9999, path normalization and explicit rejection of legacy cross-document traversal. No provider I/O or destructive task execution. See BE_GO/pkg/storage/documentkey/README.md and quality-reports/go-migration/document-keys/."
+      ],
       "notes": [
-        "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "See BE_GO/internal/repository/medical_cleanup_candidates.md. The task remains needs_review: a candidate snapshot is not deletion authority, and no Go cleanup body or provider deletion is implemented.",
+        "Protect active upload grants and every attachment path before destructive execution, including Django/Go coexistence. Do not replace that requirement with an unproven age cutoff. The legacy derived S3 key is characterized (filepath ignored); resolve duplicate audit correction, durable file intent, provider errors, crash/restore recovery and single scheduler ownership.",
+        "Static daily 03:00 declaration differs from empty initialized/persisted occurrences in the private fixture. Actual policy: UTC, acks_late false, max_retries 3, delay 180, no rate/time/soft-time limit. This is not production schedule or S3 proof."
       ]
     },
     {

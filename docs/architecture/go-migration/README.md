@@ -88,7 +88,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 15 implementing, 5 needing review and 490
+The ledger currently has 4 deprecated, 15 implementing, 6 needing review and 489
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -1105,3 +1105,23 @@ The five-task combined rehearsal passes all 48 required groups (7 reset, 10 toke
 8 age, 10 retention, 13 archive). Production task/scheduler ownership, historical
 restore and activation remain unverified. See
 [automatic archive](../../../BE_GO/internal/service/subscription_auto_archive.md).
+
+Medical orphan cleanup has fourteen actual Django characterization scenarios and
+six PostgreSQL discovery groups, including every current Document relationship and
+draft protection. The task remains `needs_review`: active uploads, concurrent
+attachments, provider deletion and durable recovery are not implemented. See
+[medical cleanup discovery](../../../BE_GO/internal/repository/medical_cleanup_candidates.md).
+
+Medical S3 key resolution also passes 5,045 production Python/django-storages
+cases, including timestamp rounding and rejection of cross-document paths.
+This does not execute provider operations. See
+`BE_GO/pkg/storage/documentkey/README.md` and run
+`TESTS/adapters/django/document_keys.py`.
+
+The full local accounts suite now passes on production Python 3.13.2 with
+all five task bodies, thirteen archive groups and the fourteen Django plus six
+Go medical cases included. Existing password/session/image/HTTP/scope/restore
+checks pass unchanged. Evidence:
+`quality-reports/go-migration/medical-orphan-cleanup/full-accounts-results.json`.
+The separate 5,045-case medical S3 key adapter also passes; provider execution,
+historical schemas and backend switching remain outside these checks.
