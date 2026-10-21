@@ -2651,25 +2651,57 @@
         "target": "billing_active_plan",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "deprecated",
+      "go": [
+        "BE_GO/internal/handler/retired_billing.go",
+        "BE_GO/internal/handler/authenticated_rest.go",
+        "BE_GO/internal/service/retired_billing.go",
+        "BE_GO/internal/dto/retired_billing.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/billing_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py",
+        "BE/application/tests/test_subscription_independence.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/billing/active-plan"
+        ],
+        "request": "No business parameters needed. Protected REST negotiation, Bearer, identity, collaborator-owner mapping and scoped reference checks precede method and role handling. Ordinary checkout does not parse unused payload; scoped impersonation still validates it.",
+        "response": "Association scope returns 410 with existing msg: Software subscriptions are no longer required. OPTIONS retains authenticated metadata.",
+        "errors": "Non-association scope returns 403 msg=Info not available. Missing/invalid/inactive/deleted Bearer remains 401. Admin/impersonation/resource denials retain 403. Method 405, Accept 406, format 404 and malformed-session HTML 500 retain precedence. Scoped checkout invalid JSON returns 400 before tombstone.",
+        "authentication": "Bearer required; session and BKN_AUTH cookies do not authenticate REST. Existing session/audit reader runs before transport.",
+        "permissions": "Both routes are excluded from collaborator permission registry, but owner availability/mapping still applies. Administrator must impersonate. Association-scoped athlete cannot access these operations; scoped collaborator references remain guarded.",
+        "resource_scope": "Legacy role check uses resolved ScopeUser, not initiating actor. Plan state cannot grant access or change response.",
+        "side_effects": "No entitlement/payment/provider work. All managed model snapshots, including prepared legacy plans/subscriptions, remain unchanged after both servers. Valid/malformed session bytes remain unchanged in fixtures; shared invalid-hash session revocation remains possible.",
+        "transaction": "No business writes or billing SELECTs. Pure service chooses role-dependent tombstone from admitted scope. Query tracing forbids legacy billing-table reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_retired_billing.py",
+        "TESTS/adapters/django/retired_billing.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/retired_billing_test.go",
+        "BE_GO/internal/service/retired_billing_integration_test.go"
+      ],
+      "evidence": [
+        "10 portable methods first pass on Django ASGI and fail against unregistered Go routes, then pass on both real servers. Missing/expired/cancelled/paid/no-expiration plan fixtures retain 410. Role/scope, method/metadata, session, scoped-vs-unused body handling and 32 concurrent requests are covered. Managed-table and session-byte readback is unchanged; cleanup restores preexisting state.",
+        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim."
+      ],
+      "notes": [
+        "Intentional current-main retirement: software subscription gating and platform checkout stay disabled. Existing HTTP tombstones remain required for old clients; association/course memberships, payments and communications are not deprecated.",
+        "Existing TESTS access, initial-import, lifecycle and manual contracts require the active-plan 410, but those complete browser/lifecycle workflows are not proved against Go by this isolated endpoint rehearsal.",
+        "Current-model run-syncdb only. Global middleware, versioned routing, historical schema/restore and activation gates remain open. See BE_GO/internal/handler/retired_billing.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:billing/checkout -> billing_checkout",
@@ -2686,25 +2718,57 @@
         "target": "billing_checkout",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "deprecated",
+      "go": [
+        "BE_GO/internal/handler/retired_billing.go",
+        "BE_GO/internal/handler/authenticated_rest.go",
+        "BE_GO/internal/service/retired_billing.go",
+        "BE_GO/internal/dto/retired_billing.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/billing_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/permissions_registry.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py",
+        "BE/application/tests/test_subscription_independence.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/billing/checkout"
+        ],
+        "request": "No business parameters needed. Protected REST negotiation, Bearer, identity, collaborator-owner mapping and scoped reference checks precede method and role handling. Ordinary checkout does not parse unused payload; scoped impersonation still validates it.",
+        "response": "Association scope returns 410 with existing msg: Platform billing checkout is disabled for self-hosted instances. OPTIONS retains authenticated metadata.",
+        "errors": "Non-association scope returns 403 msg=Info not available. Missing/invalid/inactive/deleted Bearer remains 401. Admin/impersonation/resource denials retain 403. Method 405, Accept 406, format 404 and malformed-session HTML 500 retain precedence. Scoped checkout invalid JSON returns 400 before tombstone.",
+        "authentication": "Bearer required; session and BKN_AUTH cookies do not authenticate REST. Existing session/audit reader runs before transport.",
+        "permissions": "Both routes are excluded from collaborator permission registry, but owner availability/mapping still applies. Administrator must impersonate. Association-scoped athlete cannot access these operations; scoped collaborator references remain guarded.",
+        "resource_scope": "Legacy role check uses resolved ScopeUser, not initiating actor. Plan state cannot grant access or change response.",
+        "side_effects": "No entitlement/payment/provider work. All managed model snapshots, including prepared legacy plans/subscriptions, remain unchanged after both servers. Valid/malformed session bytes remain unchanged in fixtures; shared invalid-hash session revocation remains possible.",
+        "transaction": "No business writes or billing SELECTs. Pure service chooses role-dependent tombstone from admitted scope. Query tracing forbids legacy billing-table reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_retired_billing.py",
+        "TESTS/adapters/django/retired_billing.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/retired_billing_test.go",
+        "BE_GO/internal/service/retired_billing_integration_test.go"
+      ],
+      "evidence": [
+        "10 portable methods first pass on Django ASGI and fail against unregistered Go routes, then pass on both real servers. Missing/expired/cancelled/paid/no-expiration plan fixtures retain 410. Role/scope, method/metadata, session, scoped-vs-unused body handling and 32 concurrent requests are covered. Managed-table and session-byte readback is unchanged; cleanup restores preexisting state.",
+        "PostgreSQL race integration passes: one/two SELECTs for current-account admission, zero additional service queries and no legacy billing-table queries. Thirty-two mixed calls use 40 SELECTs within four test database connections. This is not full middleware query accounting or a performance improvement claim."
+      ],
+      "notes": [
+        "Intentional current-main retirement: software subscription gating and platform checkout stay disabled. Existing HTTP tombstones remain required for old clients; association/course memberships, payments and communications are not deprecated.",
+        "Existing TESTS access, initial-import, lifecycle and manual contracts require the active-plan 410, but those complete browser/lifecycle workflows are not proved against Go by this isolated endpoint rehearsal.",
+        "Current-model run-syncdb only. Global middleware, versioned routing, historical schema/restore and activation gates remain open. See BE_GO/internal/handler/retired_billing.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:calendar/events -> full_events_calendar",
@@ -12615,7 +12679,8 @@
         "BE_GO/internal/repository/accounts.go",
         "BE_GO/internal/service/identity.go",
         "BE_GO/internal/middleware/session_audit.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/authenticated_rest.go"
       ],
       "dependencies": [
         "BE/application/views/two_fa_views.py",

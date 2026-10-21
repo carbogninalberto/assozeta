@@ -86,9 +86,9 @@ python3 -m TESTS.inventory.catalog --check  # fail on drift
 python TESTS/adapters/django/inventory.py
 ```
 
-Two retired tasks are explicitly classified. Both health routes, login/refresh,
+Two retired tasks and both legacy software-billing routes are explicitly classified. Both health routes, login/refresh,
 the two identifier checks, 2FA status and the partial audit-index connection are `implementing`,
-not `verified`; 499 other rows remain uncharacterized and five changed manual/export
+not `verified`; 497 other rows remain uncharacterized and five changed manual/export
 rows need review against the new baseline. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
@@ -932,3 +932,17 @@ focused `--only two-factor-info` rehearsal uses supporting identity/session/refr
 identifier fixtures and is not the complete account suite. Setup/update, historical
 schemas, global middleware and activation stay open. See
 [2FA status](../../../BE_GO/internal/handler/two_factor_info.md).
+
+
+Legacy `/billing/active-plan` and `/billing/checkout` now retain their current-main
+410 tombstones in Go. Ten portable methods pass on Django ASGI and the Go
+executable after unregistered-route failures, covering stored plan states, scoped
+roles, permissions, methods/OPTIONS, malformed sessions, unused versus scoped
+request bodies and concurrent calls. No managed rows or prepared legacy
+entitlements change. PostgreSQL tracing forbids legacy billing-table queries;
+32 mixed admissions use 40 SELECTs within four test connections, with zero extra
+tombstone-service queries. These two ledger entries are deprecated features with
+retained compatibility responses, not reactivated software subscriptions or
+platform checkout. Association/course payments remain in scope. The focused
+`--only retired-billing` mode includes supporting fixtures, not the entire accounts
+suite. See [the compatibility contract](../../../BE_GO/internal/handler/retired_billing.md).

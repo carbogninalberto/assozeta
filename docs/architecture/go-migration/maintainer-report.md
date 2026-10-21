@@ -10,14 +10,15 @@ published release has been changed.
 ## Current result
 
 The Go composition root exposes `/healthz`, `/readyz`, `/oauth2/refresh-token`,
-`/oauth2/check/email`, `/oauth2/check/username` and `/two-fa/info`. Refresh,
-identifier checks and 2FA status compose existing-session audit middleware with
-PostgreSQL/Redis and the configured SECRET_KEY. Identifier checks preserve the existing public disclosure, inactive/
+`/oauth2/check/email`, `/oauth2/check/username`, `/two-fa/info`, and the two legacy
+software-billing tombstones. Refresh, identifier, 2FA and retired-billing routes
+compose existing-session audit middleware with PostgreSQL/Redis and the configured
+SECRET_KEY. Identifier checks preserve the existing public disclosure, inactive/
 deleted filtering and duplicate selection behavior.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 2 deprecated, 8 implementing,
-5 requiring renewed review and 499 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 8 implementing,
+5 requiring renewed review and 497 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -58,6 +59,7 @@ immutable manual-package boundary delivered by PR #20.
 | Rate admission | 14 bidirectional Django/Go Redis counter cases check keys, inclusive windows, thresholds and nonrenewed TTLs. Sixty-four concurrent Go calls admit five and deny 59 using 127 writes and at most four connections. Actual-key expiration races, paused Redis deadlines, no retries and pool reuse pass. |
 | Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
 | Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 36 portable refresh methods per backend on actual Django ASGI and the Go executable. Refresh reserializes/signs unchanged claims/JTI/expiry. Denied refresh issues no BKN_AUTH; stale-session deletion may accompany it. Session identity cannot replace Bearer/scope or token identity, and 32 mixed concurrent requests agree. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
+| Retired software billing | Ten portable methods per backend retain 410 for association scope across legacy plan states, 403 for other roles and all current authentication/impersonation/resource restrictions. Unused checkout bodies remain unparsed; scoped references retain validation. Model/cache readback stays unchanged. PostgreSQL tracing excludes legacy billing queries; 32 mixed calls use 40 admission SELECTs and four test connections. These are compatibility tombstones; association/course payments remain supported scope. |
 | 2FA status | Ten portable HTTP methods per backend verify current scoped-account status, required Bearer, collaborator permissions, administrator/association impersonation, foreign references, methods/negotiation, malformed sessions and 32 concurrent requests. Same credentials observe two flag changes per backend. PostgreSQL checks one/two admission SELECTs and zero extra status queries; 32 mixed reads use 48 SELECTs with four database connections. Setup/update remain open. |
 | Public identifiers | 16 portable contracts per backend on actual Django ASGI and the Go executable cover email/username availability, duplicate UUID ordering, get_user presence/fallback, Unicode limits, REST/session/identity precedence and 32 concurrent requests. Managed tables and malformed-session bytes remain unchanged. PostgreSQL tests preserve one/two SELECT bounds across up to 512 duplicates and 32 concurrent calls in a four-connection test pool. Actual plans show sequential scans; no latency improvement is claimed. |
 | Account/permission services | Real PostgreSQL/Redis comparisons cover actor admission, identity transitions/revocation, collaborator policy and resource predicates, including 132 scoped-request and 67 resource-scope cases with measured batch/concurrent query bounds. This is not endpoint-wide authorization parity. |
@@ -68,43 +70,44 @@ immutable manual-package boundary delivered by PR #20.
 | Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. The domain LoginImageProcessor and complete format dispatch remain unimplemented; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
-The complete private PostgreSQL/Redis accounts adapter passes with 2FA status:
-10 status, 16 identifier and 36 refresh contracts per backend, 43 cache-session
-cases, 27 controlled-terminal session contracts per backend and all existing
-identity/scope, image, login and audit-write checks. The focused
-`--only two-factor-info` mode also passes, explicitly labelled as a component
-rehearsal with supporting fixtures. Both use current-model `migrate --run-syncdb`,
-not historical migrations.
+The complete private PostgreSQL/Redis accounts adapter passes with the retired
+billing routes: 10 billing, 10 2FA status, 16 identifier and 36 refresh contracts
+per backend, 43 cache-session cases, 27 controlled-terminal session contracts per
+backend and all existing identity/scope, image, login and audit-write checks. The
+focused `--only retired-billing` mode also passes, explicitly labelled as a
+component rehearsal with supporting fixtures. Both use current-model
+`migrate --run-syncdb`, not historical migrations.
 
 Full Go race/vet, tagged integration vet, formatting, 12 inventory tests and
 catalog drift checks pass. The actual-server health rehearsal still passes
 startup, PostgreSQL/Redis loss/recovery and idle SIGTERM. Earlier environment,
 rate-admission, provider and identifier query-plan evidence remains in the ledger.
 
-The 2FA status contracts first passed on actual Django ASGI/Uvicorn and failed
-against the unregistered Go executable. They now pass on both real servers.
-Same owner/collaborator credentials observe two flag changes per backend, with
-no request-driven managed-model or valid/malformed session-byte changes. Fixture
-cleanup restores preexisting state. Shared session middleware retains its
-invalid-password-hash revocation behavior.
+The billing contracts first passed on actual Django ASGI/Uvicorn and failed
+against unregistered Go routes. They now pass on both real servers. Stored plan
+states do not change the 410 response; roles, impersonation and foreign references
+remain enforced. Ordinary checkout leaves unused bodies unparsed, while scoped
+requests retain parser/reference denials. Managed models, prepared legacy
+entitlements and valid/malformed session bytes remain unchanged. Fixture cleanup
+restores preexisting state; general session hash revocation remains supported.
 
-The account SELECT hydrates the flag together with the admitted identity. The
-status service reads that scope snapshot without another SELECT or OTP-secret
-read. PostgreSQL checks one SELECT for direct owner/athlete admission, two for a
-collaborator, and 48 SELECTs for 32 mixed concurrent calls in a four-connection
-test pool. These are scoped service measurements, not whole-middleware query
-counts or a latency improvement claim.
+A shared protected REST transport helper retains 2FA admission behavior. The
+billing service has no entitlement/payment/provider dependencies and reads only
+resolved scope. PostgreSQL tracing forbids legacy billing-table queries: one/two
+SELECTs establish current account/scope, the service adds none, and 32 mixed calls
+use 40 SELECTs within four test database connections. These are scoped service
+measurements, not entire middleware query counts or latency improvement claims.
 
-Local evidence is under ignored `quality-reports/go-migration/two-factor-info/`,
+Local evidence is under ignored `quality-reports/go-migration/retired-billing/`,
 including full/focused reports, race/vet, integration, health and inventory logs.
-The preceding `adbb728` quality/manual workflows (39658205724 and 39658205647)
-were still running at this checkpoint. Both `e17fe4f` workflows were subsequently
-cancelled; its Go job passed, but the whole workflows are not successful evidence.
-The complete quality workflow for `14ddbb8` passed (39651032242). The last jointly
-successful quality/manual baseline remains `dbf1beb` (39593769742 and 39593769720).
-New-head complete CI remains required. The 2FA setup/update endpoints, global
-middleware, versioned routing and activation remain open; see
-`BE_GO/internal/handler/two_factor_info.md`.
+The preceding `d7a58ba` quality/manual workflows (39659854421 and 39659854347)
+were still running at this checkpoint. Both `adbb728` workflows were cancelled
+and are not successful evidence. The complete quality workflow for `14ddbb8`
+passed (39651032242). The last jointly successful quality/manual baseline remains
+`dbf1beb` (39593769742 and 39593769720). New-head complete CI remains required.
+Full access/import/lifecycle/manual workflows that call these tombstones still
+need Go implementation and verification; see
+`BE_GO/internal/handler/retired_billing.md`.
 
 ## Remaining completion gates
 
