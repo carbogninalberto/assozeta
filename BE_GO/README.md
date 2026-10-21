@@ -54,6 +54,10 @@ now matches 47 actual-Django-view cases, including fixed clock boundaries and
 Unicode/multipart inputs; see `internal/service/second_factor.md`. Password admission now composes these stages with transactional username/audit
 normalization; see `internal/service/login_preparation.md`. It still needs response
 construction and final login writes before it can become a complete login route.
+The base 37-field profile now matches 46 explicit Django-rendered JSON cases with
+bounded reads, setup/onboarding precedence and exact JSON values; see
+`internal/service/login_profile.md`. Association augmentation, configuration
+creation and final writes are still required.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512

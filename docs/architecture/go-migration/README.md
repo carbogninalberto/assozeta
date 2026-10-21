@@ -121,6 +121,7 @@ TDD evidence from this worktree:
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
 | Login second factor | 47 actual Django login versus Go service decisions; fixed PyOTP clock, malformed/Unicode/multipart inputs, JWT identity and denial last-login checks |
 | Password credential stage | 21 actual Django login versus Go service selection/rehash cases; production hashes, Django readback of Go writes and managed-table comparison |
@@ -418,6 +419,22 @@ failure-side-effect parity. See [the service contract](../../../BE_GO/internal/s
 The login and audit-index rows remain implementing. Final login response/configuration
 creation, last-login/deletion writes, social providers, public HTTP admission,
 audit-context middleware composition and all remaining acceptance work are open.
+
+### Base login profile
+
+The internal profile service now preserves all 37 `UserAuthSerializer` fields.
+Forty-six explicit JSON cases run against Django's real serializer/renderer and
+Go on the same PostgreSQL. They cover null/scalar JSON, integer precision, category
+UUIDs, Google-credential presence, welcome/setup precedence, strict elapsed-time
+boundaries and missing/duplicate onboarding. One/two SELECTs suffice for up to
+512 onboarding rows; 32 concurrent association reads use 64 SELECTs and release
+the four-connection pool. Managed tables remain unchanged after test restoration.
+
+This is response-component evidence, not a public login route. Infrastructure
+errors propagate instead of being swallowed by Django's broad onboarding catch;
+that difference is documented. Association augmentation, image processing,
+configuration creation and final login writes remain open. See the
+[profile contract](../../../BE_GO/internal/service/login_profile.md).
 
 ## Required acceptance matrix
 
