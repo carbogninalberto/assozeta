@@ -1,3 +1,5 @@
+// Reviewed after f115d1e: reader navigation/search and content-card link semantics
+// still support these text references. Workflow/browser evidence remains separate.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
