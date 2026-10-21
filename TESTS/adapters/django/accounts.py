@@ -68,7 +68,9 @@ def main():
                 from django.db import connections
                 from django.db.models import Q
                 from auditlog.context import disable_auditlog
-                from application.models import User
+                from application.models import User, SportAssociation, Associate
+                from instance.models import InstanceConfiguration
+                from auditlog.models import LogEntry
                 settings.MIGRATION_MODULES = {app.label: None for app in apps.get_app_configs()}
                 call_command('migrate', interactive=False, verbosity=0, run_syncdb=True, stdout=log, stderr=log)
                 def uid(number):
@@ -94,20 +96,28 @@ def main():
                 assert ids(User.objects.filter(email__iexact='literal%_@example.test')) == [uid(5)]
                 assert ids(User.objects.filter(email__iexact="' OR 1=1 --")) == []
                 assert ids(User.objects.filter(Q(pk=uid(4)) | Q(pk='00000000-0000-4000-8000-999999999999'))) == []
-                before = list(User.original_objects.order_by('user_id').values())
                 print('Django account lookup expectations established in private PostgreSQL', flush=True)
                 from TESTS.adapters.django.actor_authentication import credential_fixture
                 credentials, actor_cases = credential_fixture(work)
                 print(f'Django: {actor_cases} explicit actor authentication cases passed', flush=True)
-                subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository', './internal/service'], cwd=ROOT / 'BE_GO',
-                    check=True, timeout=120, env={**tool_env, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
-                        f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
-                assert list(User.original_objects.order_by('user_id').values()) == before, 'account reads modified persisted state'
+                from TESTS.adapters.django.identity import identity_fixture
+                with identity_fixture(work, log) as (identity_cases_file, identity_cache, identity_cases):
+                    def snapshot():
+                        return {name: list(manager.order_by('pk').values()) for name, manager in (
+                            ('users', User.original_objects), ('associations', SportAssociation.original_objects),
+                            ('members', Associate.objects.all_objects()), ('instance', InstanceConfiguration.objects),
+                            ('audit', LogEntry.objects))}
+                    before = snapshot()
+                    subprocess.run(['go', 'test', '-race', '-tags=integration', './internal/repository', './internal/service'], cwd=ROOT / 'BE_GO',
+                        check=True, timeout=120, env={**tool_env, 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
+                            f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
+                    assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
                 connections.close_all()
-                report = {'success': True, 'synthetic_accounts': 7, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
+                report = {'success': True, 'synthetic_accounts': len(before['users']), 'identity_state_transitions': 8, 'concurrent_identity_requests': 32, 'identity_selection_cases': identity_cases, 'actor_authentication_cases': actor_cases, 'schema': 'current Django models; migration history not exercised',
                           'checks': ['Django to Go account fields/nulls', 'soft deletion', 'disabled account distinction',
                                      'legacy duplicate identifiers', 'literal parameter matching', 'context cancellation',
-                                     'visitor failure', 'Django readback unchanged'], 'customer_data': 'none'}
+                                     'visitor failure', 'actor/effective/scope separation', 'current impersonation eligibility',
+                                     'bounded-pool concurrent reads', 'cross-runtime revocation', 'Django readback unchanged'], 'customer_data': 'none'}
             finally:
                 if started:
                     run([binaries / 'pg_ctl', '-D', work / 'postgres', '-m', 'immediate', '-w', 'stop'])

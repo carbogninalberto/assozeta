@@ -12,6 +12,9 @@ type PermissionSubject struct {
 
 const CollaboratorFull = 1
 
-type PermissionDenied struct{ Detail string }
+type PermissionDenied struct {
+	Detail               string
+	ImpersonationInvalid bool
+}
 
 func (e *PermissionDenied) Error() string { return e.Detail }

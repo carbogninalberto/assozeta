@@ -30,5 +30,7 @@ record and fuzz the bounded parser.
 This is not a session authorization decision. Services must recheck the actor,
 target eligibility, association binding and optional target header on every
 request/event, preserve actor attribution, and perform begin/end audit writes.
-Those workflows and their transaction/failure behavior are still unfinished.
+The identity resolver now verifies current eligibility and these bindings against
+PostgreSQL. Scoped operation/resource authorization, begin/end audit writes and
+their transaction/failure behavior are still unfinished.
 No generic Django session, Celery or Channels wire compatibility is inferred.

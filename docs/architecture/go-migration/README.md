@@ -119,7 +119,8 @@ TDD evidence from this worktree:
 | Portable Go contracts | The same 3 health contracts pass over real HTTP |
 | Actor admission | 18 explicit outcomes pass through Django JWTAuthentication and Go with real JWTs/accounts; includes current state, ignored role/email claims and exact numeric UUIDs |
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
-| Shared PostgreSQL account reads | Go reads seven Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
+| Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
+| Shared PostgreSQL account reads | Go reads from 21 Django-created account rows; soft deletion, inactive state, nullable owner/grants, duplicate identifiers, parameter safety, cancellation and unchanged Django readback pass |
 | Go infrastructure rehearsal | Real PostgreSQL loss, simultaneous DB/Redis loss, dependency restart/recovery and clean SIGTERM exit pass |
 | Credential interoperability | Actual Django service/hashers: 20 Django-to-Go token vectors and 37 password vectors; 2 Go-issued/refreshed pairs and 3 Go password hashes accepted by Django; database access prohibited |
 | Collaborator route policy | 38 explicit outcomes pass in Django and Go, including deny-by-default, read/write separation, manual GET exceptions and effective-user grants; all 269 rule declarations and 28 exemptions match |
@@ -158,9 +159,10 @@ New PBKDF2-SHA256 hashes are readable by Django. Verification never writes accou
 state. Cost limits are explicit errors; deployment parameter census, aggregate
 resource budgets and login admission limits still need evidence.
 
-These packages are not wired to auth routes. Account status, duplicate-login
-selection, legacy rehash, 2FA, cookies, trusted actor/effective identity, scope and
-impersonation remain unimplemented in Go. No authentication ledger row is marked
+These packages are not wired to auth routes. Duplicate-login
+selection, legacy rehash, 2FA, cookies and the complete HTTP auth workflow remain
+unimplemented. Actor admission and identity selection are covered separately below;
+resource authorization and impersonation audit workflows remain open. No authentication ledger row is marked
 verified. Tests use fresh synthetic credentials in private temporary files and
 save only counts/results/version metadata. The dependency adapter is intentionally
 outside portable HTTP contracts. See the reproduction commands in `TESTS/README.md`.
@@ -203,7 +205,7 @@ percent and underscore characters remain literal values. Duplicate legacy emails
 and case variants of usernames are retained in UUID order.
 
 `TESTS/adapters/django/accounts.py` creates a private Unix-socket PostgreSQL cluster,
-builds the current Django model schema, creates seven synthetic accounts, verifies
+builds the current Django model schema, creates 21 synthetic accounts, verifies
 explicit Django lookup expectations, and runs the Go repository integration tests
 against the same database. Django readback confirms no rows changed. The initial
 run established Django expectations and failed for the absent Go implementation;
@@ -226,10 +228,10 @@ failure for numeric, null and boolean UUID claims drove explicit compatibility
 handling; numeric identities never pass through floating-point conversion.
 Passwords are removed from the returned actor. Account state is read per request.
 
-This is the first stage of `ScopedJWTAuthentication`, not the completed scoped
-resolver. HTTP error-body rendering, malformed unsupported claim shapes, actor /
-effective person / owner scope, nested-resource authorization and public auth
-handlers remain unfinished. Infrastructure errors propagate; they do not produce
+This is the first stage of `ScopedJWTAuthentication`. The identity selector below
+follows it; HTTP error-body rendering, malformed unsupported claim shapes, scoped
+operation admission, nested-resource authorization and public auth handlers remain
+unfinished. Infrastructure errors propagate; they do not produce
 an anonymous or authenticated result.
 
 The real `django-redis` serializer was inspected and exercised to establish an
@@ -242,6 +244,40 @@ See `BE_GO/internal/repository/impersonation.md` for format ownership and limits
 No claim is made about Celery, Channels, arbitrary Django cache values, session
 eligibility, begin/end audit effects or WebSocket authorization.
 
+### Persisted identity selection
+
+`IdentityResolver` separates the initiating actor, effective person, data-scope
+user and optional association constraint. It preserves administration/control
+exceptions, primary-association export scope and the effective collaborator's
+current grants. Impersonation resolves the actor and eligible target from the
+existing schema on every request and checks the cache record's actor, association
+and optional target-header binding. Owner and administrator target predicates are
+parameterized SQL with EXISTS checks, not per-member application lookups.
+
+The account adapter now creates 21 accounts plus associations, membership links,
+instance configuration and real Django-issued cache sessions. Forty-six manually
+specified outcomes pass against Django's actual `resolve_request_identity` and
+Go with that same PostgreSQL/Redis state. Eight state/configuration changes prove
+revocation after actor/target disabling or deletion, association deletion,
+membership removal and unavailable primary export configuration. Thirty-two
+concurrent resolutions succeed with four database connections and no retained
+connections. A Go session deletion is subsequently observed by Django.
+
+Django readback compares users, associations, member links, instance configuration
+and audit rows; test-only state changes are restored. Infrastructure/cancellation
+failures return no usable identity. This rehearsal uses the current model schema;
+it does not prove migration history, throughput or business-write rollback.
+
+Identity selection is not authorization of an operation or its records. The
+fixtures intentionally contain no nested resource IDs. The complete
+`enforce_scoped_request` operation gate, group/instructor/family predicates and
+nested-resource validation must still be implemented before business endpoints
+can use this result. That guard must run after selecting the effective person
+and before mapping the collaborator to its owner/checking grants, preserving
+Django’s denial ordering. `ActorAuthentication` and the selector are not registered as
+public handlers. Begin/end audit writes and live WebSocket revalidation remain
+separate acceptance work. No auth route is marked verified.
+
 ## Required acceptance matrix
 
 Every row below is required before this draft can claim completion.
@@ -251,7 +287,7 @@ Every row below is required before this draft can claim completion.
 | 1. Authoritative scope | Pinned sources, static/runtime inventories, baseline contracts | Characterize every schema, method, side effect, permission, caller and operation; reconcile schedules |
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
-| 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary and collaborator route policy | HTTP login/refresh/session flows, account state, trusted identities, full role/scope denials in Go |
+| 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity selection and collaborator route policy | HTTP login/refresh/session flows, scoped operation/resource checks, group/instructor/family denials, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
 | 6. Environment | DB/Redis and JWT key subset/precedence tests | Remaining auth, storage, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; restore task fencing inspected | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
