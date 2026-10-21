@@ -4,7 +4,9 @@
 work, initially the supported automatic subscription archive. It composes the
 existing description calculator with one repository statement for up to 512
 payment/association references. It does not persist a payment or implement the
-archive task. HTTP actor/group admission remains the caller's responsibility.
+archive task. The separate `subscription_auto_archive.md` service now uses it
+inside its mutation transaction. HTTP actor/group admission remains the caller's
+responsibility.
 
 The raw batch limit is checked before duplicate collapse. Identical references
 retain first occurrence order; conflicting associations for the same payment fail
@@ -62,5 +64,5 @@ includes the fixture. Evidence is under
 implementation failure and the executed JSON plan. These are current-model schema
 fixtures, not historical migration, backend-switch or complete save/archive proof.
 Money fields are not changed. Full mutation locking, default-account creation,
-financial invariants, writes/audits/indexes and fenced archive completion remain
-separate required work.
+financial invariants and general writes remain separate required work. The archive
+service now supplies its specific locking, writes/audits/indexes and fenced completion.

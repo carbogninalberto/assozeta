@@ -150,6 +150,7 @@ jobs:
             quality-reports/go-migration/subscription-dates/
             quality-reports/go-migration/payment-description/
             quality-reports/go-migration/payment-save-inputs/
+            quality-reports/go-migration/subscription-auto-archive/
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/accounts/
 

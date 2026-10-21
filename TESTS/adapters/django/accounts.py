@@ -21,9 +21,9 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['payment-save-inputs','credential-concurrency','payment-description','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['subscription-auto-archive','payment-save-inputs','credential-concurrency','payment-description','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'subscription-auto-archive':'subscription-auto-archive','payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -124,13 +124,6 @@ def main():
                         report = {'success': True, 'scope': 'audit retention task body; no scheduler activation', 'cases': audit_retention_cases}
                         print(json.dumps(report), flush=True)
                         return
-                if options.only == 'task-bodies':
-                    connections.close_all()
-                    report = {'success': True, 'scope': 'four current-schema task bodies; production ownership and schedules not activated',
-                              'email_balance_reset_groups': email_balance_cases, 'subscription_token_cleanup_groups': token_cleanup_cases,
-                              'associate_age_update_groups': age_update_cases, 'audit_retention_groups': audit_retention_cases}
-                    print(json.dumps(report), flush=True)
-                    return
                 if options.only in (None, 'subscription-dates'):
                     from TESTS.adapters.django.subscription_dates import run as subscription_dates
                     subscription_date_cases = subscription_dates(work, log, tool_env)
@@ -155,6 +148,21 @@ def main():
                         report = {'success': True, 'scope': 'background payment-save inputs; full save/archive remains open', 'cases': payment_save_input_cases}
                         print(json.dumps(report), flush=True)
                         return
+                if options.only in (None, 'task-bodies', 'subscription-auto-archive'):
+                    from TESTS.adapters.django.subscription_auto_archive import run as subscription_auto_archive
+                    subscription_auto_archive_cases = subscription_auto_archive(work, log, tool_env)
+                    if options.only == 'subscription-auto-archive':
+                        connections.close_all()
+                        report = {'success': True, 'scope': 'automatic archive task body; production scheduling remains open', 'cases': subscription_auto_archive_cases}
+                        print(json.dumps(report), flush=True)
+                        return
+                if options.only == 'task-bodies':
+                    connections.close_all()
+                    report = {'success': True, 'scope': 'five current-schema task bodies; production ownership and schedules not activated',
+                              'email_balance_reset_groups': email_balance_cases, 'subscription_token_cleanup_groups': token_cleanup_cases,
+                              'associate_age_update_groups': age_update_cases, 'audit_retention_groups': audit_retention_cases, 'subscription_auto_archive_groups': subscription_auto_archive_cases}
+                    print(json.dumps(report), flush=True)
+                    return
                 from TESTS.adapters.django.social_configuration import run as social_configuration
                 social_configuration_cases = social_configuration(work, log, tool_env)
                 def uid(number):
@@ -339,6 +347,7 @@ def main():
                 report['subscription_date_cases']=subscription_date_cases
                 report['payment_description_cases']=payment_description_cases
                 report['payment_save_input_cases']=payment_save_input_cases
+                report['subscription_auto_archive_cases']=subscription_auto_archive_cases
                 report['credential_concurrency_cases']=credential_concurrency_cases
                 report['retired_billing_contracts_per_backend']=retired_billing_contracts
                 report['two_factor_info_contracts_per_backend']=two_factor_info_contracts

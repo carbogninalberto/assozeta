@@ -56,13 +56,14 @@ With its normal naive clock, it catches the offset-naive/offset-aware comparison
 error and changes no rows. Changing only the injected clock to an aware value
 exposes the next failure: the diagnostic accesses nonexistent `subscription.id`.
 Again no rows change. These failures are recorded for review; no Go no-op task has
-been substituted for the required archiving workflow. Subscription/payment/invoice
-archiving, their additional save defaults/audits, nullable links, transaction and
-failure policy, scheduling and ownership still require implementation and evidence.
+been substituted for the required archiving workflow. The separate
+`subscription_auto_archive.md` contract now implements the task body,
+including additional save defaults/audits, optional links and explicit atomicity
+corrections. Scheduling and production ownership remain unfinished.
 
 Run production Python with `TESTS/adapters/django/accounts.py --only
 subscription-dates`. The full accounts adapter includes it, while `--only
-task-bodies` continues to cover the four implemented task bodies. Evidence is in
+task-bodies` covers five implemented task bodies. Evidence is in
 ignored `quality-reports/go-migration/subscription-dates/`. Historical migrations,
 complete writes/permissions/audits, parsing, release delivery and backend switching
 remain separate requirements. Django retains production ownership.

@@ -230,5 +230,13 @@ See `internal/service/payment_description.md`. Existing-payment background
 preparation now reads up to 512 owned references in one statement, selects
 global/own categories and rejects foreign selected relationships. Eight PostgreSQL
 groups cover actual-model descriptions, denial, pool/cancellation and executed
-plans over 4,096 course relations. Full atomic save/archive remains open; see
+plans over 4,096 course relations. General payment saves remain open; see
 `internal/service/payment_save_inputs.md`.
+
+Automatic subscription archive now composes date/payment defaults and updates
+subscriptions, payments and invoices with exact audits/indexes and fenced job
+completion in one transaction. Thirteen PostgreSQL groups cover model readback,
+optional/foreign links, bounded pages, rollback across pages, overlapping jobs,
+cancellation and real executor heartbeat. Explicit corrections to the broken
+legacy task are documented in `internal/service/subscription_auto_archive.md`.
+Production registration, scheduler ownership and activation remain unfinished.

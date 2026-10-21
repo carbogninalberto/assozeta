@@ -21,8 +21,8 @@ and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
 Login has tested services, providers, transport and rate-admission components but
 is not registered publicly. Most business workflows and every activation gate
-remain unfinished. There are 514 ledger declarations: 4 deprecated, 14 implementing,
-6 requiring renewed review and 490 uncharacterized; none is verified. Runtime
+remain unfinished. There are 514 ledger declarations: 4 deprecated, 15 implementing,
+5 requiring renewed review and 490 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and
 15 MCP schemas. These discovery counts are not counts of implemented capabilities.
 
@@ -236,7 +236,8 @@ manual 39674013814 was cancelled. Both workflows for `446c184`, `1038495` and
 `0973e53` were subsequently cancelled. Published calendar head `0003cc6` quality
 39680784844 and manual 39680784761 were subsequently cancelled. Payment head
 `30f9c10` quality 39681839219 and manual 39681839372 were cancelled.
-`6260a8e` quality 39684049859 and manual 39684049515 are running at this checkpoint.
+`6260a8e` quality 39684049859 and manual 39684049515 were cancelled.
+`91723e4` quality 39685388758 and manual 39685388740 are running at this checkpoint.
 None of these running/cancelled runs is counted as success for later increments.
 
 Payment description calculation now passes 81 real Django-save cases and matching
@@ -279,9 +280,25 @@ and explicitly corrects foreign category/title selection. Transaction visibility
 The executed plan over 4,096 course relations uses the existing payment FK index;
 the primary payment scan remains sequential. No constant-work or latency claim is
 made. Full managed snapshots remain unchanged. See
-`BE_GO/internal/service/payment_save_inputs.md`. The preceding full accounts success
-predates this reader; its eight focused groups are the current new-component
-evidence. Full mutation locking, audits and automatic archive remain open.
+`BE_GO/internal/service/payment_save_inputs.md`. The complete production-Python accounts rerun now passes with all eight reader
+groups and the existing credentials/session/image/HTTP/scope/task suites; evidence:
+`quality-reports/go-migration/payment-save-inputs/full-accounts-results.json`.
+That process started before the archive fixture was added; its success is not
+an archive-inclusive full run. Full mutation locking, audits and automatic archive remain open.
+
+Automatic subscription archive now composes date/payment defaults with scoped
+subscription/payment/invoice updates, audits/indexes and fenced completion in one
+transaction. The actual legacy task body is exercised after two explicit clock/PK
+repairs; fixtures also establish optional-link partial failures and false historical
+audits with missing indexes. Go corrects those documented defects. Thirteen required
+PostgreSQL groups verify exact Django readback/resave, bounded pages with distinct
+financial links, rollback across pages, concurrency, cancellation and actual executor
+heartbeat. The five-task combined rehearsal passes all 48 required groups, with
+unchanged preexisting managed rows after each fixture. Go race/vet, tagged vet,
+inventory/drift, formatting and workflow lint pass. The executed 4,096-row page
+plan uses existing indexes. See
+`BE_GO/internal/service/subscription_auto_archive.md`. Task registration, scheduling
+and production ownership remain unfinished; this is not complete model-hook parity.
 
 ## Remaining completion gates
 
