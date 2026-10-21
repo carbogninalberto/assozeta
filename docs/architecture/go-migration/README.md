@@ -859,3 +859,15 @@ IP/account ordering, exact 429, method/disable bypass and unchanged bytes agree.
 The environment adapter adds required DEBUG and derived RATELIMIT_ENABLE defaults.
 Actual public login/global middleware, remaining parser/body/resource extremes and
 exceptional counter formats remain open; see `BE_GO/internal/middleware/login_rate.md`.
+
+Cache-session audit identity now has 43 declared Django/Go cases and five
+current-account transitions on private PostgreSQL/Redis. SessionActor is distinct
+from API authentication: Django's unfiltered session manager can retain a deleted
+actor, and its social session backends can retain an inactive actor. Password
+changes revoke shared cache sessions. Thirty-two concurrent resolutions use exactly
+32 SELECTs/cache reads with four-connection pools. Bounded cache reads, deadlines,
+reuse and closed data-only pickle decoding are tested. HTTP cookie/Vary behavior,
+general writes/rotation, audit metadata, configuration and public composition remain
+open; Go resource limits are not claimed as Django-equivalent. See
+[`session_auth.md`](../../../BE_GO/internal/service/session_auth.md). The focused
+`accounts.py --only session-auth` mode is explicitly not a full accounts run.
