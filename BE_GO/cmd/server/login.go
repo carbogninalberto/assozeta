@@ -34,7 +34,8 @@ func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *j
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxConnsPerHost = 8
-	client := &http.Client{Transport: transport}
+	requestsTransport := social.NewRequestsTransport(transport, cfg.ProviderCABundle)
+	client := &http.Client{Transport: requestsTransport}
 	providers := service.NewSocialProviders(
 		service.NewSocialClientIDs(repository.NewSocialConfiguration(db), cfg.GoogleClientID, cfg.AppleClientID),
 		social.NewGoogle(client, transport, time.Now, 4), social.NewApple(client, time.Now, 4))
@@ -48,5 +49,8 @@ func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *j
 		domain.RegistrationChoices{Family: cfg.FamilyRegistrationEnabled, Federation: cfg.FederationRegistrationEnabled, Multiple: cfg.MultipleRegistrationEnabled})
 	sessions := service.NewLoginSessions(passwords, socialAdmission, tokens, responses, service.NewLoginFinalization(repository.NewLoginFinalizations(db), time.Now))
 	return handler.NewLoginHandler(sessions, service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext),
-		service.NewLoginRate(counter, time.Now), transport.CloseIdleConnections, nil
+		service.NewLoginRate(counter, time.Now), func() {
+			requestsTransport.CloseIdleConnections()
+			transport.CloseIdleConnections()
+		}, nil
 }

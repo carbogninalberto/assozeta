@@ -16,6 +16,7 @@ import (
 
 type Config struct {
 	Storage                       StorageSettings `json:"-"`
+	ProviderCABundle              string          `json:"-"`
 	SessionSecret                 string          `json:"-"`
 	Debug                         bool
 	RateLimitEnabled              bool
@@ -169,7 +170,11 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	providerCABundle := values["REQUESTS_CA_BUNDLE"]
+	if providerCABundle == "" {
+		providerCABundle = values["CURL_CA_BUNDLE"]
+	}
+	return Config{ProviderCABundle: providerCABundle, Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

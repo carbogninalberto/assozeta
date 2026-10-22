@@ -58,19 +58,27 @@ random token IDs and generated card IDs are checked through explicit constraints
 
 The current fixture passes:
 
-- Eighteen ordinary portable methods, including the existing fifteen transport
-  methods and three public composition methods.
+- Nineteen ordinary portable methods, including the existing fifteen transport
+  methods and four public composition methods.
 - Fifteen credential/effect scenarios: athlete, association, collaborator,
   administrator, historical role zero, disabled/deleted accounts, password and
   OTP denials, valid OTP, unsupported role, missing association, final-write
   rejection and a real PNG-avatar conversion through the bundled codec.
-- Sixteen concurrent successful requests per backend, with distinct access and
+- Sixteen concurrent password and sixteen concurrent social requests per backend, with distinct access and
   refresh credentials, exact response fields and request-local cookies.
+- Twenty-six additional social scenarios cover all five aliases, Google and
+  Apple signature/expiry/audience/email/disabled/deleted/OTP boundaries, Google
+  access-token fallback and wrong-client rejection, and an unsupported backend.
+  A private CONNECT proxy serves the unchanged production provider URLs over
+  verified TLS with ephemeral keys; it never forwards requests. Exact provider
+  call sequences and counts are asserted, including 45 requests per backend.
 - Five rate-ordering methods: IP denial before Bearer/body parsing, account
   denial before selection, session failure before rate admission, GET bypass
   and CORS preflight bypass.
 
-Django verifies both runtimes' returned signatures. Database readback checks
+Django verifies both runtimes' returned signatures. Concurrent social requests
+use two different identities and providers, checking both JWT identity/email
+claims, unique IDs, response bodies and request-local cookies. Database readback checks
 username normalization, unchanged password hashes, last-login times, deletion
 cancellation, exact audit changes/actor/CID/address, scoped audit indexes and
 card creation. A PostgreSQL trigger rejects finalization after card creation:
@@ -91,11 +99,41 @@ health/recovery and the rebuilt image codec oracle pass. The terminal report is
 `quality-reports/go-migration/login-http/full-accounts-results.json`; it covers
 current-model fixtures and does not establish historical/lifecycle parity.
 
+## Provider trust configuration
+
+The public provider fixture passed forty declared Django scenarios and exposed
+18 Go failures before the root honored `REQUESTS_CA_BUNDLE`. `RequestsTransport`
+now clones the explicit base transport and installs the configured PEM bundle as
+its complete root pool. `CURL_CA_BUNDLE` is the fallback only when the requests
+variable is empty. An unreadable/empty/invalid bundle fails on provider HTTPS use;
+it never silently restores default trust or disables hostname verification.
+The Google urllib-style JWK client retains a separate transport; the requests CA
+setting must not alter its trust policy. Eight added environment comparisons use
+the actual requests settings merger, bringing the environment oracle to 95 cases.
+Unit TLS checks cover private trust, hostname rejection and no fallback on errors.
+
+Bundles are read at process construction. OpenSSL hashed certificate directories,
+live trust-file rotation, default certifi/system-root equivalence, JWK trust on all
+platforms, complete `.env` proxy policy and provider/browser/release evidence remain
+open. The complete accounts adapter also passes after this transport change,
+including all prior task/scope/session/image/hash/audit groups. The final adapter
+isolation/backlog correction separately passes all focused contracts and a
+256-request TLS load check at concurrency eight. Race/vet, formatting, twelve
+inventory tests, catalog drift and rebuilt image startup/HTTP checks pass. Evidence:
+`provider-full-accounts-results.json`, `provider-full-accounts.log`,
+`provider-isolation-backlog-current.log`, `provider-proxy-concurrency.log`,
+`provider-go-race.log`, `provider-go-vet.log` and `provider-image-http.log`.
+The full shipped codec oracle above belongs to the preceding `1fe83c7` checkpoint;
+codec implementation/build inputs did not change in this provider increment.
+Current focused evidence: `provider-red.log`, `provider-ca-current.log`,
+`provider-concurrency-current.log`, `provider-environment-current.log` and
+`ca-unit-current.log` under the same evidence directory.
+
 ## Remaining gates
 
 This is a registered partial login implementation. Missing image formats and
-unresolved opening exceptions still fail explicitly. Public social-provider
-HTTP, broader raw-input/resource limits, full global middleware, mixed-runtime
+unresolved opening exceptions still fail explicitly. Full social-provider
+transport/input coverage, broader raw-input/resource limits, full global middleware, mixed-runtime
 write races, historical hash/data sizing, active-request shutdown, versioned
 routing and backend/worker switching remain required. Existing provider/service
 unit and protocol tests do not replace those gates. No ledger entry is verified,

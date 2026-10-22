@@ -7,21 +7,33 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
-The public-login composition now has focused evidence on both real HTTP servers:
-eighteen ordinary portable methods, five rate/session ordering methods, fifteen
-credential/effect scenarios and sixteen concurrent successful logins per backend.
-The first composed run exposed JSON audit writes interpreted as bytea under the
-server's transaction-pooler-safe pgx mode; explicit JSON text fixes those writes.
-Five pre-credential HTTP checks also pass in the actual non-root, read-only,
-networkless Go image. The complete accounts adapter also passes after this change, including the
-existing session/scope/task/image checks. Go race, ordinary/tagged vet, formatting,
-inventory/drift, workflow lint, health/recovery and the rebuilt image codec oracle
-pass. Evidence: `quality-reports/go-migration/login-http/full-accounts-results.json`,
-`full-accounts.log`, `image-http-current.log` and `image-codecs-current.log`.
-The preceding security-baseline reconciliation was committed in `6c2ccb5`.
-Public social-provider HTTP, full image coverage, resource sizing, global
-middleware and activation remain incomplete. See
-[the public-login contract](../../../BE_GO/internal/handler/login.md).
+The public login now passes nineteen ordinary portable methods, five rate/session
+ordering methods and forty-one credential/effect scenarios on actual Django ASGI
+and the compiled Go root. Sixteen password and sixteen social requests per backend
+also pass concurrently; social requests use distinct identities/providers. A private
+CONNECT/TLS fixture serves the unchanged Google/Apple URLs without public traffic.
+It verifies signatures, audience/expiry/email denials, aliases, OTP and Google's
+access-token fallback, with exactly 45 provider requests per backend and persisted
+audit/index/card/last-login readback. The fixture first passed Django and exposed
+18 Go failures because the root ignored `REQUESTS_CA_BUNDLE`; an explicit cloned
+transport now honors that file and `CURL_CA_BUNDLE` fallback without weakening TLS.
+The environment oracle now has 95 cases, including actual requests precedence.
+
+Focused evidence: `quality-reports/go-migration/login-http/provider-red.log`,
+`provider-concurrency-current.log`, `provider-environment-current.log` and
+`ca-unit-current.log`. The complete accounts adapter now also passes after the
+transport change (`provider-full-accounts-results.json` and `provider-full-accounts.log`).
+The final fixture isolation/backlog correction separately passes the full focused
+contracts and 256 TLS requests at concurrency eight. Race/vet, formatting, twelve
+inventory tests, catalog drift and rebuilt image startup/HTTP checks pass. The
+preceding root checkpoint `1fe83c7` additionally passed health and the full shipped
+codec oracle; codec implementation/build inputs are unchanged in this increment. Its predecessor `6c2ccb5` passed
+remote Go/backend/UI/SSO/smoke checks, but legacy and manual runs were cancelled
+when the next commit arrived; that is not a green complete CI matrix.
+
+Full image coverage, supported-data/resource sizing, global middleware, provider
+trust directories/rotation/proxy policy, versioned routing and activation remain
+incomplete. See [the public-login contract](../../../BE_GO/internal/handler/login.md).
 
 Upstream `main@fddcee3` (PR #22) changed the production reference to Python
 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. The existing Go compatibility
@@ -169,7 +181,7 @@ TDD evidence from this worktree:
 | Check | Result and scope |
 | --- | --- |
 | Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
-| Environment subset | 87 existing environment cases plus 65 storage settings/backend-option cases execute actual settings assignments with django-environ, then Go Load; precedence, proxies, literal values, required/default rules, process isolation and redaction are checked |
+| Environment subset | 95 existing environment cases plus 65 storage settings/backend-option cases execute actual settings assignments with django-environ, then Go Load; precedence, proxies, literal values, required/default rules, process isolation and redaction are checked |
 | Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
@@ -543,7 +555,7 @@ Every row below is required before this draft can claim completion.
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
 | 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
-| 6. Environment | 87 declared DB/Redis/auth/CORS/restore path cases plus 65 storage settings/backend-option cases | Storage credential/provider composition, remaining auth, providers, logging, manual, instance flags and complete value compatibility |
+| 6. Environment | 95 declared DB/Redis/auth/CORS/restore path/provider CA cases plus 65 storage settings/backend-option cases | Storage credential/provider composition, remaining auth, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository and executor with lease/crash/concurrency and ordinary restore-admission tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |

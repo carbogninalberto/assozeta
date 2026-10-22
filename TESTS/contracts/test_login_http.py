@@ -90,6 +90,28 @@ class LoginHTTPContracts(unittest.TestCase):
             self.issued.append((case['id'],access,refresh))
         self.assertEqual(len(access_tokens),16);self.assertEqual(len(refresh_tokens),16)
 
+    def test_social_concurrent_sessions_keep_identities_separate(self):
+        cases=self.fixture['social_concurrent']
+        def request(index):
+            case=cases[index%len(cases)]
+            return case,self.client.request('POST','/oauth2/login',case['payload'],include_headers=True)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:results=list(pool.map(request,range(16)))
+        identifiers=set()
+        for case,(status,body,headers) in results:
+            self.assertEqual(status,200)
+            access,refresh=body.pop('access_token'),body.pop('refresh_token')
+            self.assertEqual(body,case['expected'])
+            cookie=SimpleCookie();cookie.load(headers.get('Set-Cookie',''))
+            self.assertTrue(cookie['BKN_AUTH'].value==access,'social response cookie belongs to another request')
+            for token in (access,refresh):
+                value=claims(token)
+                self.assertEqual(value['user_id'],case['id'])
+                self.assertEqual(value['email'],case['payload']['username'])
+                self.assertNotIn(value['jti'],identifiers)
+                identifiers.add(value['jti'])
+            self.issued.append((case['id'],access,refresh))
+        self.assertEqual(len(identifiers),32)
+
     def test_preflight_bypasses_invalid_credentials_and_session(self):
         status,body,headers=self.client.request('OPTIONS','/oauth2/login',b'{',{
             'Origin':'https://allowed.example.test','Access-Control-Request-Method':'POST',

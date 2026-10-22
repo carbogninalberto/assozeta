@@ -6,7 +6,7 @@ client, clock and positive concurrency limit. Current instance settings remain
 outside this package; `service.SocialProviders` reads them for each operation,
 stops disabled providers, dispatches the raw token/audience and returns the email
 result to login admission. The Google client now has separate certificate/JWK/access-token verification;
-see [its protocol and remaining scope](google.md). Production composition remains open. No public login route is registered by this change.
+see [its protocol and remaining scope](google.md). The public login root now explicitly composes both clients; full parity remains open.
 
 Apple verification requests the fixed HTTPS keys URL before parsing the token,
 selects the first matching `kid`, constructs an RSA public key and verifies only
@@ -62,10 +62,28 @@ provider suppresses HTTP. That test controls configuration input; the separate
 33-case PostgreSQL configuration adapter proves persisted resolution. These
 scoped tests do not prove a complete public login or a live Apple account login.
 
-Remaining work includes the remaining Google input/protocol cases, environment/root
-wiring, complete persisted-account/HTTP/browser composition, provider changes
+Remaining work includes the remaining Google input/protocol cases, complete
+persisted-account/HTTP/browser coverage, provider changes
 during admitted requests, transport policy at the composition root, broader
 nonstandard JSON/base64 edge cases and live-provider/release evidence. Shared document/header/integer checks now also serve REST JWT verification. Its
 separate 76-token credential adapter and 56 document scenarios over both HTTP
 servers establish the tested REST behavior; the 89 Apple cases still pass after
 extraction. Nonstandard JSON numbers and lone surrogate escapes remain open.
+
+The public HTTP adapter now covers both actual root clients through a private
+CONNECT proxy with a temporary CA and signed provider tokens. It asserts 45 provider
+requests per backend across serial cases and sixteen concurrent requests spanning
+two identities/providers. It checks existing aliases, invalid signatures, expiry,
+audience/email mismatch, disabled/deleted users, OTP, Google access fallback and
+wrong-client rejection, then validates session signatures and durable effects.
+This fixture supplements the 89 Apple and 93 Google component protocol cases.
+
+`RequestsTransport` owns a clone of the root's base transport. Explicit
+`REQUESTS_CA_BUNDLE` (or nonempty `CURL_CA_BUNDLE` fallback) PEM files replace its
+root pool; loading failures remain deferred HTTPS failures and never disable TLS.
+The Google JWK transport remains separate. The public fixture first exposed 18
+failures before this configuration reached the root. TLS unit tests independently
+check hostname rejection, unrelated/malformed/empty/missing trust and no fallback
+to the base transport's valid trust. Configured files load at construction;
+OpenSSL hashed directories, live trust rotation, certifi/system-default equivalence,
+full environment proxy policy and cross-platform JWK trust remain open.
