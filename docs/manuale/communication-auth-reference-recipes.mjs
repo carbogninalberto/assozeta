@@ -4,6 +4,7 @@
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const communicationAuthReviewedSources = Object.freeze({
+    "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
     "UI/src/routes/association/communication/messages/modals/Send.svelte": "20aab21730a6af1f44cea41c3b6e2134b7f0d386897c7e81a1686d41c4c0b56b",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
@@ -29,7 +30,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/components/inputs/email-builder/emailbuilder.js": "1e96505ab77517ff72f491223a91992d80d33ad8b79a42d13868c844ab331f07"
 });
 
-const sourceKeys = Object.freeze(["message_types", "message_form", "message_validation", "message_permissions", "message_save", "post_form", "post_validation", "send_form", "import_emails", "message_model", "post_api", "post_dashboard", "staff_model", "email_api", "email_validation", "email_config", "email_service", "smtp_verify", "smtp_fields", "smtp_controls", "settings_menu", "email_stats", "email_logs", "email_reset", "workflow_list", "workflow_buttons", "workflow_new", "workflow_init", "workflow_add", "workflow_save", "workflow_trigger", "workflow_trigger_close", "workflow_email", "workflow_wait", "workflow_steps", "workflow_disabled", "workflow_footer", "workflow_model", "workflow_validation", "workflow_update", "workflow_signals", "workflow_execution", "email_builder", "profile_menu", "twofa_page", "twofa_update", "twofa_setup", "twofa_fields", "twofa_apps", "twofa_backend", "twofa_secret", "login_otp", "login_dialog", "communication_routes", "communication_settings_route", "communication_navigation", "email_builder_save_button", "messages_write_api", "message_input", "message_read"]);
+const sourceKeys = Object.freeze(["message_types", "message_form", "message_validation", "message_permissions", "message_save", "post_form", "post_validation", "send_form", "import_emails", "message_model", "post_api", "post_dashboard", "staff_model", "email_api", "email_validation", "email_config", "email_service", "smtp_verify", "smtp_fields", "smtp_controls", "settings_menu", "email_stats", "email_logs", "email_reset", "workflow_list", "workflow_buttons", "workflow_new", "workflow_init", "workflow_add", "workflow_save", "workflow_trigger", "workflow_trigger_close", "workflow_email", "workflow_wait", "workflow_steps", "workflow_disabled", "workflow_footer", "workflow_model", "workflow_validation", "workflow_update", "workflow_signals", "workflow_execution", "email_builder", "profile_menu", "twofa_page", "twofa_update", "twofa_setup", "twofa_fields", "twofa_apps", "twofa_backend", "twofa_secret", "login_otp", "login_dialog", "communication_routes", "communication_settings_route", "communication_navigation", "email_builder_save_button", "messages_write_api", "message_input", "message_read", "atomic_audit_context", "audit_index_write"]);
 export const communicationAuthSourceContracts = Object.freeze([
     [
         "UI/src/routes/association/communication/messages/Messages.svelte",
@@ -330,7 +331,9 @@ export const communicationAuthSourceContracts = Object.freeze([
         "BE/communications/serializers.py",
         "class MessageSerializer(serializers.ModelSerializer):",
         16
-    ]
+    ],
+    ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
+    ["BE/application/signals.py", "def create_audit_log_index(", 37]
 ].map(contract => Object.freeze(contract)));
 
 const sections = [
@@ -923,7 +926,9 @@ const sections = [
         "contracts": [
             "twofa_page",
             "twofa_backend",
-            "login_otp"
+            "login_otp",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -936,7 +941,9 @@ const sections = [
         "contracts": [
             "twofa_secret",
             "twofa_backend",
-            "login_otp"
+            "login_otp",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -949,7 +956,9 @@ const sections = [
         "contracts": [
             "twofa_apps",
             "twofa_secret",
-            "twofa_backend"
+            "twofa_backend",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -966,7 +975,9 @@ const sections = [
             "twofa_fields",
             "twofa_update",
             "twofa_backend",
-            "twofa_secret"
+            "twofa_secret",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -992,7 +1003,9 @@ const sections = [
             "profile_menu",
             "twofa_page",
             "twofa_update",
-            "twofa_backend"
+            "twofa_backend",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -1004,7 +1017,9 @@ const sections = [
         "intent": "account.twofa.recovery",
         "contracts": [
             "twofa_backend",
-            "login_otp"
+            "login_otp",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     }
 ];

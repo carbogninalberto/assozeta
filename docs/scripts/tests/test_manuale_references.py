@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 FILES = ['BE/application/management/commands/seed_selfhost.py', 'BE/application/views/billing_views.py',
          'BE/core/authentication.py', 'BE/application/views/two_fa_views.py', 'BE/application/views/auth_views.py',
-         'BE/instance/restore/views.py', 'BE/instance/permissions.py', 'BE/application/views/payment_views.py']
+         'BE/instance/restore/views.py', 'BE/instance/permissions.py', 'BE/application/views/payment_views.py',
+         'BE/application/audit_context.py', 'BE/application/signals.py']
 SCRIPT = r'''
 import fs from 'node:fs';
 import path from 'node:path';
@@ -69,6 +70,8 @@ class ReferenceRecipeTests(unittest.TestCase):
     def test_changed_behavior_or_import_invalidates_the_recipe_even_if_symbols_remain(self):
         for relative, old, new in [
             ('BE/application/views/billing_views.py', 'status.HTTP_410_GONE', 'status.HTTP_200_OK'),
+            ('BE/application/audit_context.py', '_strict_audit_indexes.set(True)', '_strict_audit_indexes.set(False)'),
+            ('BE/application/signals.py', 'if audit_index_errors_are_fatal():', 'if False:'),
             ('BE/core/authentication.py', 'from rest_framework_simplejwt.authentication', 'from unsupported.authentication')]:
             with self.subTest(relative=relative):
                 source = self.root / relative

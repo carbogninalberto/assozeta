@@ -11,7 +11,9 @@ const reviewed = {
   "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
   "BE/instance/restore/views.py": "90de3a76030be2dc67d06e5a369c2c9faf17214a25927a308ea333d3f5e64b5a",
-  "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c"
+  "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
+  "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
+  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
 };
 const contracts = [
   ["BE/application/management/commands/seed_selfhost.py","class Command(BaseCommand):",6],
@@ -23,7 +25,9 @@ const contracts = [
   ["BE/instance/permissions.py","class IsInstanceOwner(BasePermission):",5],
   ["BE/instance/restore/views.py","class DataRestoreView(APIView):",72],
   ["BE/instance/permissions.py","def is_instance_administrator(",12],
-  ["BE/application/views/auth_views.py","def oauth2_login(request):",182]
+  ["BE/application/views/auth_views.py","def oauth2_login(request):",182],
+  ["BE/application/audit_context.py","_strict_audit_indexes = ContextVar(",20],
+  ["BE/application/signals.py","def create_audit_log_index(",37]
 ];
 const sections = [
   {
@@ -32,7 +36,11 @@ const sections = [
     "title": "Piani di abbonamento",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [0,1,2]
+    "contracts": [
+      0,
+      1,
+      2
+    ]
   },
   {
     "path": "faq/quali-sono-piani-abbonamento.mdx",
@@ -40,7 +48,10 @@ const sections = [
     "title": "Confronto tra i piani",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [0,3]
+    "contracts": [
+      0,
+      3
+    ]
   },
   {
     "path": "faq/quali-sono-piani-abbonamento.mdx",
@@ -48,7 +59,10 @@ const sections = [
     "title": "Piano Base",
     "status": "unsupported",
     "reason": "Public Base purchase/table does not describe the self-hosted configuration.",
-    "contracts": [0,3]
+    "contracts": [
+      0,
+      3
+    ]
   },
   {
     "path": "faq/quali-sono-piani-abbonamento.mdx",
@@ -56,7 +70,10 @@ const sections = [
     "title": "Piano Pro",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [0,1]
+    "contracts": [
+      0,
+      1
+    ]
   },
   {
     "path": "faq/quali-sono-piani-abbonamento.mdx",
@@ -64,7 +81,9 @@ const sections = [
     "title": "Piano Teams",
     "status": "unsupported",
     "reason": "Public Teams purchase is disabled for the documented self-hosted installation.",
-    "contracts": [3]
+    "contracts": [
+      3
+    ]
   },
   {
     "path": "faq/quali-sono-piani-abbonamento.mdx",
@@ -72,7 +91,10 @@ const sections = [
     "title": "Come cambiare piano",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [3,2]
+    "contracts": [
+      3,
+      2
+    ]
   },
   {
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
@@ -80,7 +102,13 @@ const sections = [
     "title": "La sicurezza dei tuoi dati è la nostra priorità",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [4,5,6]
+    "contracts": [
+      4,
+      5,
+      6,
+      10,
+      11
+    ]
   },
   {
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
@@ -96,7 +124,11 @@ const sections = [
     "title": "Robusta politica di backup",
     "status": "needs_external_verification",
     "reason": "Deployment, hosting, backup retention, encryption and legal/privacy practices require operational evidence outside application source.",
-    "contracts": [7,6,8]
+    "contracts": [
+      7,
+      6,
+      8
+    ]
   },
   {
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
@@ -104,7 +136,16 @@ const sections = [
     "title": "Misure di sicurezza avanzate",
     "status": "pending",
     "reason": "Editorial draft metadata only; implementation and workflow proof remain required.",
-    "contracts": [4,5,9,7,6,8]
+    "contracts": [
+      4,
+      5,
+      9,
+      7,
+      6,
+      8,
+      10,
+      11
+    ]
   },
   {
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
@@ -122,56 +163,86 @@ const references = [
   {
     "id": "piani-di-abbonamento",
     "status": "verified",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Piani di abbonamento",
-    "contracts": [0,1,2]
+    "contracts": [
+      0,
+      1,
+      2
+    ]
   },
   {
     "id": "confronto-tra-i-piani",
     "status": "verified",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Confronto tra i piani",
-    "contracts": [0,3]
+    "contracts": [
+      0,
+      3
+    ]
   },
   {
     "id": "piano-base",
     "status": "unsupported",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "Public Base purchase/table does not describe the self-hosted configuration.",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Piano Base",
-    "contracts": [0,3]
+    "contracts": [
+      0,
+      3
+    ]
   },
   {
     "id": "piano-pro",
     "status": "verified",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Piano Pro",
-    "contracts": [0,1]
+    "contracts": [
+      0,
+      1
+    ]
   },
   {
     "id": "piano-teams",
     "status": "unsupported",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "Public Teams purchase is disabled for the documented self-hosted installation.",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Piano Teams",
-    "contracts": [3]
+    "contracts": [
+      3
+    ]
   },
   {
     "id": "come-cambiare-piano",
     "status": "verified",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "",
     "path": "faq/quali-sono-piani-abbonamento.mdx",
     "title": "Come cambiare piano",
-    "contracts": [3,2]
+    "contracts": [
+      3,
+      2
+    ]
   },
   {
     "id": "la-sicurezza-dei-tuoi-dati-e-la-nostra-priorita",
@@ -180,7 +251,13 @@ const references = [
     "reason": "",
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
     "title": "La sicurezza dei tuoi dati è la nostra priorità",
-    "contracts": [4,5,6]
+    "contracts": [
+      4,
+      5,
+      6,
+      10,
+      11
+    ]
   },
   {
     "id": "conformita-gdpr-e-gestione-responsabile-dei-dati",
@@ -194,20 +271,37 @@ const references = [
   {
     "id": "robusta-politica-di-backup",
     "status": "needs_external_verification",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "Deployment, hosting, backup retention, encryption and legal/privacy practices require operational evidence outside application source.",
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
     "title": "Robusta politica di backup",
-    "contracts": [7,6,8]
+    "contracts": [
+      7,
+      6,
+      8
+    ]
   },
   {
     "id": "misure-di-sicurezza-avanzate",
     "status": "verified",
-    "features": ["self_hosted"],
+    "features": [
+      "self_hosted"
+    ],
     "reason": "",
     "path": "faq/i-miei-dati-sono-al-sicuro.mdx",
     "title": "Misure di sicurezza avanzate",
-    "contracts": [4,5,9,7,6,8]
+    "contracts": [
+      4,
+      5,
+      9,
+      7,
+      6,
+      8,
+      10,
+      11
+    ]
   },
   {
     "id": "infrastruttura-di-archiviazione-affidabile",
