@@ -32,7 +32,7 @@ func (s *AssociateAgeUpdate) Run(ctx context.Context, job domain.Job) error {
 	now := s.now().UTC()
 	cutoff := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, -6575)
 
-	tx, err := s.store.BeginAssociateAgeUpdate(ctx)
+	tx, err := s.store.BeginAssociateAgeUpdate(ctx, job)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *AssociateAgeUpdate) Run(ctx context.Context, job domain.Job) error {
 		// The legacy task catches save/audit errors and returns None.
 		// Preserve that handled outcome only after all business work is rolled back.
 		s.logger.WarnContext(ctx, "associate age update failed", "code", "associate_age_update_failed")
-		completion, beginErr := s.store.BeginAssociateAgeUpdate(ctx)
+		completion, beginErr := s.store.BeginAssociateAgeUpdate(ctx, job)
 		if beginErr != nil {
 			return beginErr
 		}

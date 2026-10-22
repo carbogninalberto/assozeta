@@ -2,9 +2,12 @@
 
 The Assozeta-owned module has explicit `cmd/worker` and `cmd/migrate`
 composition roots alongside `cmd/server`. These are extensions of the specified
-Kuayle layout. The single image contains `/app/server`, `/app/worker` and
-`/app/migrate`; its default entrypoint and HTTP readiness check remain the server.
-The worker registers only daily email balance reset. It does not publish work,
+Kuayle layout. The single image contains `/app/server`, `/app/worker`,
+`/app/migrate` and the separately documented [scheduler](../../docs/architecture/go-migration/scheduler-process.md);
+its default entrypoint and HTTP readiness check remain the server.
+The worker registers daily email balance reset and version-1 associate age update.
+The latter has separate [native and packaged evidence](../../docs/architecture/go-migration/age-worker-process.md).
+It does not publish work,
 schedule occurrences or change ownership. There is no installed worker service
 or operator activation command yet; Django remains the execution owner.
 

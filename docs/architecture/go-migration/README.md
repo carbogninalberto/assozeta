@@ -55,17 +55,17 @@ bindings against the same manual base, with authored MDX unchanged.
 Claims, renewal and outcomes require the current Go generation; daily email reset
 locks ownership before business writes and commits its effect with completion.
 Thirty-eight required PostgreSQL/race groups pass, alongside the five task bodies'
-48 groups and restore-admission regression. There is no production handoff setter
-or scheduler, and restoring data can rewind generations: coordinated process
+48 groups at that checkpoint and restore-admission regression. There is no production handoff setter
+or installed Go scheduler service, and restoring data can rewind generations: coordinated process
 shutdown and the existing lifecycle lease remain necessary. See
 [ownership evidence and limits](../../../BE_GO/internal/repository/job_ownership.md).
 
 The same image now contains explicit worker and operational migration commands.
 Fourteen native-process scenarios and seven packaged-image scenarios pass, including
 default Django inactivity, direct migration connections, maintenance, competing
-workers and graceful/forced-stop recovery. Both are required CI checks. Only daily
-email reset is registered; producer, scheduler and installed activation remain
-unfinished. See [process evidence and limits](../../../BE_GO/internal/worker_process.md).
+workers and graceful/forced-stop recovery. Both are required CI checks. Daily
+email reset and version-1 associate age update are now registered; producer and
+installed activation remain unfinished. See [process evidence and limits](../../../BE_GO/internal/worker_process.md).
 
 Normal lifecycle commands now apply additive Go operational migrations after
 Django under the exclusive operations lease. Fresh install/repeat migration and
@@ -104,7 +104,15 @@ sources, ownership loss and measured query plans at 100/1,000/10,000 rows.
 Discovery uses at most two statements for a new rotation and one thereafter;
 each recognized source still has its own publication transaction. Context budgets
 stop admission but required cleanup can extend elapsed return time. No installed
-scheduler loop or activation is added. See [page behavior and evidence](../../../BE_GO/internal/service/schedule_page.md).
+scheduler service or activation is added. See [page behavior and evidence](../../../BE_GO/internal/service/schedule_page.md).
+
+The image now packages an explicit bounded scheduler command. Ten loop groups,
+twelve native-process cases and four packaged cases pass, including inactive
+ownership, competing schedulers, markerless edits, maintenance and interrupted
+publication. The command supports the existing daily-reset subset and never
+seeds schedules or changes ownership. Its HTTP server health check does not
+monitor a standalone scheduler; installed process supervision and full Beat
+replacement remain open. See [scheduler process scope](scheduler-process.md).
 
 
 Explicit repository transactions now retain their private connection through
@@ -1457,10 +1465,15 @@ scheduling and lifecycle ownership remain open. See
 ### Associate age update
 
 The concrete service preserves the existing 6,575-day threshold and scoped model
-behavior, with audit/index creation and fenced completion in one transaction. Eight
+behavior, with audit/index creation and fenced completion in one transaction. Eleven
 required PostgreSQL groups cover exact readback, deliberate atomicity corrections,
-failures, concurrency and heartbeat. Production registration/scheduling remain open;
-see [the task contract](../../../BE_GO/internal/service/associate_age_update.md).
+failures, concurrency, heartbeat and early ownership/lease fencing. Both effect and
+handled-failure completion transactions reject stale admission before business SQL;
+the successful body budget is now six statements, independent of affected rows.
+Native registration additionally passes nine actual-Django-schema process cases
+and five packaged-image cases. Scheduling and installed ownership remain open;
+see [the task contract](../../../BE_GO/internal/service/associate_age_update.md) and
+[process evidence](age-worker-process.md).
 
 ### Audit retention
 

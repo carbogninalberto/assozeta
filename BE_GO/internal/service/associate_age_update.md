@@ -28,7 +28,13 @@ timestamps and every unrelated associate field. Unrelated audit/index sentinels
 and valid zero-UUID associate identities are covered.
 
 READ COMMITTED transaction coordination joins the update, audit, index and fenced
-job completion. One SQL command fixes the candidate snapshot; aggregate counts
+job completion. Both the effect transaction and the handled-failure completion-only
+transaction acquire the shared server restore fence first, then verify the live
+job token, lease and generation while retaining a shared ownership-row lock.
+A stale token, expired lease, changed generation or Django owner therefore sends
+no business statement. Ownership cannot change while admitted effects are in
+progress. No job-row lock is held during effects, so heartbeat renewal can continue;
+completion still rechecks the live lease and rolls back effects after late lease loss. One SQL command fixes the candidate snapshot; aggregate counts
 verify that every update has an audit and every required association has an index.
 No candidate rowset is loaded into Go. Heartbeat renewal remains visible at
 completion. A stale attempt or replay rolls back all business effects, so it cannot
@@ -50,14 +56,20 @@ and lost ownership remain errors. The adapter verifies the two legacy defects;
 the Go integration test injects failures independently into UPDATE, audit INSERT
 and index INSERT. A successful task never leaves a partial audit/index invariant.
 
-The adapter first runs the actual Django task, then requires eight Go/PostgreSQL
+The adapter first runs the actual Django task, then requires eleven Go/PostgreSQL
 scenario groups under race detection. Missing/skipped groups are rejected. They
 cover exact selection and readback, invalid envelopes without SQL, failures,
 stale ownership/replay, two observed overlapping commands, blocked SQL cancellation
-and pool recovery, scaling/plan inspection, and real executor heartbeat.
+and pool recovery, scaling/plan inspection, and real executor heartbeat. Three additional required groups prove stale
+admission sends no business SQL, ownership is held both before and after actual
+effects with late token loss rolling everything back, and the completion-only
+transaction rejects ownership or token loss after the business rollback. The
+control failure still completes once with NULL result and unchanged business data.
 Django uses 9/114/898 statements for 1/16/128 eligible associates in this fixture.
-Go uses five at 0/1/16/128/512: BEGIN, shared transaction fence, the update/audit/index command, completion and
-COMMIT. These counts exclude claim/admission/heartbeat and test setup/readback.
+Go uses six at 0/1/16/128/512: BEGIN, shared server restore fence, early job
+ownership/lease fence, the update/audit/index command, completion and COMMIT.
+The previous five-statement count lacked early job admission; the additional
+statement is explicit protocol cost, including the no-op business case. These counts exclude claim/admission/heartbeat and test setup/readback.
 EXPLAIN ANALYZE of the actual command over 4,096 rows updates, logs and indexes 128.
 The observed plan uses the existing birth-date bitmap index and content-type unique
 index. PostgreSQL can materialize intermediate rows; statement count does not prove
@@ -71,7 +83,7 @@ Celery task has early acknowledgement, max_retries 3, default delay 180 seconds,
 no rate limit and no explicit hard/soft timeout. The body never invokes retry.
 The static midnight declaration is absent from both initialized app configuration
 and persisted Beat rows in this fresh fixture. Historical schedule reconciliation,
-production publication/registration, timeout/attempt policy, restore/backend
+production publication and coordinated registration/ownership, timeout/attempt policy, restore/backend
 switching, mixed-runtime mutation races and release delivery remain open. Django
 reads the date separately for each candidate, whereas Go fixes it at invocation;
 long-running work across midnight still needs an explicit lifecycle contract.

@@ -166,7 +166,9 @@ def run(work, log, tool_env):
         completed.check_returncode()
         names = {'exact age and scope with audit index', 'invalid envelope before SQL', 'business failures roll back audit and index',
                  'stale completion and replay cannot change later data', 'concurrent jobs update and audit once',
-                 'blocked SQL cancellation and pool recovery', 'constant statement count and actual query plan', 'heartbeat during update'}
+                 'blocked SQL cancellation and pool recovery', 'constant statement count and actual query plan', 'heartbeat during update',
+                 'stale admission sends no business SQL', 'ownership precedes effects and late lease loss rolls back',
+                 'handled failure fences completion-only transaction'}
         expected = {'TestAssociateAgeUpdatePostgres/' + n.replace(' ', '_') for n in names}
         passed = {e.get('Test') for e in events if e['Action'] == 'pass' and '/' in e.get('Test', '')}
         assert passed == expected and not any(e['Action'] == 'skip' for e in events), 'missing or skipped age scenario'
