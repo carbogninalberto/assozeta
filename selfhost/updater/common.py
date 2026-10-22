@@ -14,6 +14,9 @@ def update_eligibility_reason(values):
         key = f'ASSOZETA_{service}_IMAGE'
         if values.get(key) != f'ghcr.io/carbogninalberto/assozeta-{service.lower()}':
             return f'Aggiornamenti automatici non disponibili: {key} deve indicare il repository ufficiale.'
+    # Historical installations omit Go; Compose defaults absent/blank values to the official image.
+    if values.get('ASSOZETA_BACKEND_GO_IMAGE') not in (None, '', 'ghcr.io/carbogninalberto/assozeta-backend-go'):
+        return 'Aggiornamenti automatici non disponibili: ASSOZETA_BACKEND_GO_IMAGE deve indicare il repository ufficiale.'
     if version_tuple(values.get('ASSOZETA_VERSION')) is None:
         return 'Aggiornamenti automatici non disponibili: ASSOZETA_VERSION deve indicare una release stabile.'
     return None

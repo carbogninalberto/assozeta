@@ -2,9 +2,14 @@
 
 Release and manually dispatched image publication depend on the reusable
 **Self-host release quality** workflow. It runs the complete backend regression
-suite, UI/SSO checks, and the legacy upgrade and failure/recovery scenarios with
+suite, UI/SSO checks, and the legacy application, frozen legacy controller, and failure/recovery scenarios with
 browser checks enabled. Failed, cancelled or skipped required checks block
 release publication.
+
+Image publication also requires the reusable Go quality workflow. On a release
+event it rejects an empty, stale or incomplete compatibility ledger before
+installable images can be published. This is a necessary inventory gate; it does
+not replace the full migration acceptance evidence.
 
 Pushes to `main` run static validation and development/production smoke checks
 before publishing edge images; they skip the full quality workflow. Pull requests
@@ -17,25 +22,29 @@ installations and Docker projects. Linux CI runs inspection with root privileges
 because the updater writes private host state as root; this does not establish
 compatibility of every maintenance command with an unprivileged host account.
 
-Run either scenario on a suitable test machine:
+Run each scenario on a suitable test machine:
 
 ```sh
 make selfhost-quality SCENARIO=legacy
+make selfhost-quality SCENARIO=legacy-controller
 make selfhost-quality SCENARIO=recovery
 ```
 
-These commands build the current backend, web, renderer and updater sequentially,
+These commands build the current Django backend, Go backend, web, renderer and updater sequentially,
 install the locked browser-test dependencies, and run the checks. They require
-Docker, Node 22, Python, and the `v1.0.2` Git tag. Linux execution uses `sudo` for
+Docker, Node 22, Python, and the `v1.0.2` Git tag for the legacy application case.
+The controller case requires commit `14a23c36d2f03ee453f903c07b503460717a79f1`
+and uses its unmodified controller/lifecycle with a current synthetic application.
+Linux execution uses `sudo` for
 private-state inspection. The GitHub jobs provide an isolated runner and a shared
 browser installation path automatically.
 
 The upgrade matrix builds images with persistent GitHub Actions BuildKit caches,
 with a separate cache scope per image. It then calls `quality.sh` with
-`--prepared-images`, which checks that all four local images carry the current
+`--prepared-images`, which checks that all five local images carry the current
 commit's revision label before running tests. Local commands still build images
 by default. Browser setup downloads only the Chromium headless shell used by the
-suite. Both upgrade scenarios and all browser checks still run on every selected
+suite. All three upgrade scenarios and all browser checks run on every selected
 commit; cache hits only reduce setup work. The first run populates the caches,
 so timing improvements must be measured on subsequent runs.
 
@@ -91,7 +100,7 @@ full expected release commit SHA.
 This workflow uses a new Ubuntu runner and the actual canonical GitHub release
 bundles, update manifest, anonymous GHCR downloads, and production bootstrap.
 There are no release/registry fixtures or patched verification functions. It
-checks bundle/file hashes, all four immutable image references and their OCI
+checks bundle/file hashes, all five immutable image references and their OCI
 commit labels, running service images, data/configuration preservation, updater
 readiness, and desktop/mobile access to the resulting Self Instance page.
 It records both the verification-tool commit and the expected release commit.

@@ -29,9 +29,20 @@ on GitHub still being reachable. Reusing that request ID with another release
 or actor is rejected.
 The update distribution consists of `assozeta-selfhost-TAG.tar.gz` and
 `assozeta-update.json`. The publishing workflow uploads the manifest after
-verifying the backend, web, renderer, and updater images. Execution validates
+verifying the Django backend, Go backend, web, renderer, and updater images. Execution validates
 the canonical manifest, archive checksum, managed file hashes, and immutable
 image references again before changing installation files.
+
+Go delivery preserves the four original entries in `images` and adds
+`extensions.go_backend` with its schema version and official immutable image
+reference. Older controllers accept this extension and reach the target updater,
+which requires and validates it before downloading or mutating the installation.
+All five images are pulled before the distribution transaction starts. Historical
+source manifests may omit Go; recovery removes target Go containers before
+restoring their Compose files and data. Existing installations continue using
+Django for `/api`, workers and scheduling. The current incomplete Go migration
+cannot pass the installable-release inventory gate; see
+[delivery evidence and limits](../docs/architecture/go-migration/delivery-transition.md).
 
 ## Runner and new installations
 
@@ -417,6 +428,7 @@ To reproduce the legacy migration scenario with disposable local releases:
 
 ```sh
 docker build -t assozeta-backend:goal-test BE
+docker build -t assozeta-backend-go:goal-test BE_GO
 docker build -t assozeta-web:goal-test UI
 docker build -t assozeta-renderer:test selfhost/renderer
 docker build -t assozeta-updater:goal-test -f selfhost/updater/Dockerfile .
@@ -434,6 +446,14 @@ bootstrap, checks automatic provisioning and preservation, and requests the
 next fixture release through the authenticated owner API. This tests the
 server path used by the tab; it does not substitute for browser interaction.
 Omit `--legacy` to run the new-install and controlled-failure scenarios.
+
+`--legacy-controller` separately exercises the frozen v1.0.17 controller and
+lifecycle sources at `14a23c36d2f03ee453f903c07b503460717a79f1`. Keep that commit
+available locally. It starts with a four-image distribution without Go, recovers
+from a failing first Go target, then performs the ordinary owner-authorized
+upgrade and recovery matrix. Its application image is a current synthetic
+fixture, so this proves the historical controller transition rather than full
+historical published-application compatibility.
 
 The application scenario checks the independent HTTP status connection with
 real signed owner, collaborator, unrelated-user, and non-owner-superuser tokens.

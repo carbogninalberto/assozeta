@@ -15,9 +15,16 @@ pass the 62 table-preference contracts, three races and three health contracts p
 version through Caddy, with PostgreSQL/audit checks. Existing self-host validation
 (87 tests) and eleven reload/browser checks pass. See [versioned routing](versioned-routing.md).
 
-This does not deliver `api-go` through the normal Compose/updater path or implement
-coordinated selection and worker/scheduler ownership. Those requirements remain
-open; ordinary installations retain Django. Quality workflow `39733767156` at
+The next delivery increment adds `api-go` to ordinary Compose and the fifth image
+to builds and updater manifests, using an extension accepted by the frozen
+v1.0.17 bootstrap. Fresh installation, backup and restore pass with both APIs,
+including Go writes read by Django and exact audit restoration. Current and frozen
+controller update/recovery rehearsals pass, including thirteen browser checks
+on the historical-controller/current-application fixture. See
+[delivery evidence and limits](delivery-transition.md).
+An installable-release gate rejects the current incomplete ledger. Coordinated
+selection and Go worker/scheduler ownership remain open; installations retain
+Django. Quality workflow `39733767156` at
 preceding commit `6e6d6f9` passes; manual workflow `39733767137` still fails on the
 external dashboard recipe binding. Current-head CI remains separate evidence.
 
@@ -38,6 +45,20 @@ through both versioned roots. Twenty manual recipe modules were reviewed and
 refreshed; 190 manual Python tests, eleven Node tests, 163 frontend tests and
 three SSO diagnostics tests pass. The new private companion patch refreshes 507
 bindings while preserving all 44 authored MDX files; it remains unpublished.
+The follow-up `bc03bb7` fixes full-capture reuse when only the strict audit helper
+or index signal changes. All 29 existing profile/2FA consumers now record those
+dependencies, while unrelated recipes retain reuse. The expanded 197 Python and
+eleven Node manual tests pass; the refreshed private patch still changes 507
+bindings against the same manual base, with authored MDX unchanged.
+
+`4f30dcd` adds a durable job owner/generation fence, initialized to Django.
+Claims, renewal and outcomes require the current Go generation; daily email reset
+locks ownership before business writes and commits its effect with completion.
+Thirty-eight required PostgreSQL/race groups pass, alongside the five task bodies'
+48 groups and restore-admission regression. There is no production handoff setter
+or scheduler, and restoring data can rewind generations: coordinated process
+shutdown and the existing lifecycle lease remain necessary. See
+[ownership evidence and limits](../../../BE_GO/internal/repository/job_ownership.md).
 
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django
@@ -786,20 +807,21 @@ Every row below is required before this draft can claim completion.
 | 2. Kuayle architecture | Module, explicit composition, Echo/service/repository paths and explicit durable-job extension | Remaining packages, DTO validation, domain implementations, queue/realtime extensions |
 | 3. Shared data | Metadata snapshot and Django-created account read tests; no business schema mutation | Migrated PostgreSQL baseline, precise SQL/decimals/defaults, transactions, Django reads of Go writes |
 | 4. Identity/permissions | Django denial contracts, bidirectional credentials, actor admission, cache boundary, persisted identity, scoped operation/reference admission and collaborator route policy | Public HTTP login/refresh/session flows, endpoint group/instructor/family authorization, audit and WebSocket revalidation |
-| 5. Routing/selection | Current Caddy stripping inspected | `/api/v1`, `/api/v2`, active alias, SSO/download/WS routing, coordinated drain/switch |
+| 5. Routing/selection | Fixed versioned paths, real Caddy transport and table-preference contracts; ordinary Compose includes both APIs | Active alias selection, full SSO/download/WS behavior, coordinated drain/switch |
 | 6. Environment | 95 declared DB/Redis/auth/CORS/restore path/provider CA cases plus 65 storage settings/backend-option cases | Storage credential/provider composition, remaining auth, providers, logging, manual, instance flags and complete value compatibility |
 | 7. Workers/scheduler | Task/schedule inventory; shared HTTP lease; transactional job repository and executor with lease/crash/concurrency and ordinary restore-admission tests | Durable intent, all task implementations, leases/retries/recovery, one scheduler owner, coexistence protocol |
 | 8. Realtime/integrations/documents | Channels/MCP/manual inventoried | Protocol clients, replica fanout, permission/revocation/race tests, document visual evidence |
 | 9. Backups | Fixed historical Django contracts pass; shared Django/Go HTTP restore admission passes | Go import/export, replacement/interrupted restore, identities/files, full lifecycle fencing |
 | 10. Independent specification | New portable health tests and real Go harness | Full Go fixture adapter, all capability contracts, differential durable effects, browser workflows |
 | 11. Queries/performance | Resource batch query counts and bounded-pool concurrency; existing framework inspected | Full dataset scaling, critical query plans, representative load and export bounds |
-| 12. Normal delivery | Current manifest/build/update paths inspected; standalone Dockerfile added | Multi-architecture/runtime image verification, release images/bundle/updater integration, verified-artifact gate, installation/upgrade/switch/rollback rehearsals |
+| 12. Normal delivery | Five-image build and compatible manifest extension; both APIs in Compose; fresh install/backup/restore; incomplete-ledger release denial | Complete update/recovery matrix, worker/scheduler artifacts, multi-architecture verification and coordinated activation/rollback |
 | 13. PR artifacts | Draft implementation, ledger, this report and foundation CI | Complete implementation and operator docs, full checks, reviewable final PR |
 | 14. Completion audit | Explicitly not satisfied | Verify every requirement against authoritative current evidence; no missing behavior |
 
-The next implementation work is to close health/config compatibility gaps and
-implement authentication services plus shared-schema integration. Route switching
-and installable Go artifacts must wait for tested API and background ownership.
+Current work includes dual-API delivery and recovery rehearsals, followed by
+coordinated execution ownership and the remaining business contracts. Activation
+and installable releases require tested API and background ownership and the full
+acceptance matrix above.
 
 
 ### Final login user writes

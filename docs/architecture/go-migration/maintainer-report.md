@@ -7,7 +7,25 @@ Work is isolated on `codex/go-backend-parity`, reconciled through
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
-## Latest increment: fixed versioned proxy routes
+## Latest increment: delivery alongside Django
+
+Ordinary Compose now includes the Go API. Builds and publication include its
+image; updater manifests carry an independently validated immutable Go reference
+in an extension compatible with the frozen v1.0.17 bootstrap. Target verification
+requires Go readiness, the expected image and its embedded version. Backup,
+restore and recovery include both APIs, including removal of Go when recovering
+an older Compose distribution. Explicit custom Go images prevent managed updates.
+
+Fresh installation, backup and restore pass with both APIs, including a Go-written
+preference read by Django and exact restored PostgreSQL audit state. Current and
+frozen v1.0.17 controller update/recovery rehearsals pass; the combined historical
+controller run also passes thirteen browser checks. The historical controller
+uses a current application fixture. Exact scopes and limits are tracked in
+[delivery evidence](delivery-transition.md). Installable releases require the
+shared Go quality job and a current, completely verified/deprecated inventory;
+the inventory gate intentionally rejects this incomplete implementation.
+
+## Fixed versioned proxy routes
 
 Caddy now sends `/api/v1` to Django and `/api/v2` to Go before matching the legacy
 Django alias. Exact version roots preserve methods, bodies and queries. Root
@@ -24,8 +42,7 @@ PostgreSQL/audit readback and retained query/cancellation checks. Eighty-seven
 existing self-host tests and eleven reload/browser tests pass. The browser tests
 still use their existing synthetic API fixture. See [routing evidence and limits](versioned-routing.md).
 
-**Ordinary Compose/release delivery does not yet provide `api-go`.** Runtime
-selection, coordinated worker/scheduler ownership, interrupted switching and
+Runtime selection, coordinated worker/scheduler ownership, interrupted switching and
 WebSocket draining remain required. No production activation or complete browser,
 SSO/callback, private-file or realtime parity is established by these checks.
 
@@ -47,6 +64,10 @@ and query checks. Twenty manual recipe modules now bind reviewed current sources
 190 manual Python, eleven manual Node, 163 frontend and three SSO diagnostic tests
 pass. The private companion patch changes 507 bindings with all 44 authored MDX
 files unchanged; separate-repository publication remains pending.
+The follow-up `bc03bb7` also binds the strict helper and index signal to all 29
+existing profile/2FA recipe consumers, so helper-only changes invalidate stale
+full captures. The expanded 197 Python and eleven Node manual tests pass. Its
+updated private patch preserves the same 507-binding/44-unchanged-MDX boundary.
 
 ## Implementation and architecture
 
@@ -89,9 +110,9 @@ those differences remain explicit activation gaps.
 | 2FA provisioning | 31 HTTP scenarios, 62 concurrent requests per backend, 512 decoded symbols, four cross-runtime update flows and four fresh-login flows. No setup persistence; entropy/encoder failures and cancellation covered. Full browser/phone interaction remains unverified. |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 103 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |
 | Query and concurrency bounds | Real PostgreSQL/Redis tests measure batched lookups, fixed connection pools, concurrent identities and query counts across growing datasets. Critical job claiming uses measured indexed plans. No representative whole-application performance improvement is claimed. |
-| Jobs | Transactional intent, deduplication, fencing, leases, retries, crash recovery and executor drain are tested in private PostgreSQL. Five task bodies have 48 scenario groups. Production worker/scheduler entrypoints, remaining task bodies and coordinated ownership are unfinished. |
+| Jobs | Transactional intent, deduplication, leases, crash recovery and executor drain have private PostgreSQL evidence. The durable runtime owner defaults to Django and fences Go claims/outcomes by generation; daily reset locks ownership before writes. Thirty-eight queue/executor/ownership/migration groups and the five task bodies' 48 groups pass. Production worker/scheduler delivery, remaining tasks and coordinated handoff/restore remain unfinished. |
 | Images and storage | Eighteen image pipelines have current Pillow 13 oracles, including shipped codec/pixel/Base64 checks. TIFF/AVIF gaps are explicit and non-exhaustive. Storage configuration/credential-provider and disposable MinIO checks are scoped evidence; destructive medical cleanup remains unwired. |
-| Operations | Restore HTTP admission, shared lifecycle locks, dependency loss/recovery, idle SIGTERM and non-root image checks have evidence. Historical restore, active-request/task/WebSocket draining, normal release delivery and backend switching remain unverified. |
+| Operations | Restore HTTP admission, shared lifecycle locks, dependency loss/recovery, idle SIGTERM and non-root image checks have evidence. Dual-API fresh install, backup and restore pass. Complete historical restore, active-request/task/WebSocket draining, release/activation acceptance and backend switching remain open. |
 
 Current reference: Python 3.13.16, Pillow 13.0.0, Django 5.2.18, DRF 3.17.2 and
 SimpleJWT 5.5.1, reconciled with `main@941321e`. Tests use disposable PostgreSQL,
@@ -109,14 +130,14 @@ contracts, historical checkpoints and local evidence paths are maintained in the
 | 2. Kuayle architecture | Apply the established boundaries to all remaining business, realtime and operational implementations. |
 | 3. Existing database | Complete model hooks, financial invariants, historical-data and rollback readback; resolve mixed-runtime write races. |
 | 4. Authentication/permissions | Finish remaining auth routes, global middleware, endpoint/resource denials and credential/resource sizing. |
-| 5. Versioned routing | Deliver the Go upstream; implement validated compatibility selection, real callbacks/links, worker ownership and safe drain. Fixed proxy paths have scoped evidence. |
+| 5. Versioned routing | Implement validated compatibility selection, real callbacks/links, worker ownership and safe drain. Fixed proxy paths and the Compose Go upstream have scoped evidence. |
 | 6. Existing environment | Finish provider/proxy, logging, manual/instance and remaining configuration compatibility. |
 | 7. Background processing | Finish every supported task/schedule, production commands, interoperability and ownership transitions. |
 | 8. Realtime/integrations/documents | Implement all supported WS and provider flows, private files, documents and immutable manual/MCP delivery. |
 | 9. Historical backups | Fixed historical fixtures, imports/exports, interrupted restore/recovery and coordinated rollback. |
 | 10. Independent tests | Run shared contracts across both versioned APIs and the full unchanged-frontend/lifecycle matrix. |
 | 11. Performance | Representative query plans, datasets, concurrent read/write/export workloads and comparable benchmarks. |
-| 12. Release/update delivery | Include Go in ordinary releases/updater manifests; verify delivery, activation gates and interrupted rollback. |
+| 12. Release/update delivery | Finish update/recovery acceptance, Go worker/scheduler delivery, multi-architecture verification and coordinated activation/rollback. API delivery and the incomplete-ledger release gate are implemented. |
 | 13. PR deliverables | Keep this PR draft until implementation, operator procedures, ledger evidence and applicable checks are complete. |
 | 14. Completion audit | Every requirement above remains an acceptance gate; passing a component does not close the migration. |
 

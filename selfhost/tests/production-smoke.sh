@@ -11,6 +11,7 @@ export HTTP_PORT=59999
 export HTTPS_PORT=59998
 export DBPASSWORD=conflicting-db-password
 export ASSOZETA_BACKEND_IMAGE=invalid.example.invalid/conflicting-backend
+export ASSOZETA_BACKEND_GO_IMAGE=invalid.example.invalid/conflicting-go-backend
 export ASSOZETA_WEB_IMAGE=invalid.example.invalid/conflicting-web
 export ASSOZETA_RENDERER_IMAGE=invalid.example.invalid/conflicting-renderer
 export POSTGRES_IMAGE=invalid.example.invalid/conflicting-postgres
@@ -35,7 +36,7 @@ cleanup() {
     if [ "$status" -ne 0 ] && [ -f "$ENV_FILE" ]; then
         printf '\n=== production smoke failure diagnostics ===\n' >&2
         compose ps >&2 || true
-        compose logs --no-color api web worker beat postgres redis minio renderer >&2 || true
+        compose logs --no-color api api-go web worker beat postgres redis minio renderer >&2 || true
     fi
     if [ -f "$ENV_FILE" ]; then
         ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" uninstall --volumes --yes >/dev/null 2>&1 || true
@@ -76,8 +77,15 @@ compose() {
 }
 
 curl_ready() {
-    curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \
-        http://localhost:58080/api/readyz >/dev/null
+    for api_prefix in /api /api/v1 /api/v2; do
+        curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-delay 1 \
+            "http://localhost:58080$api_prefix/readyz" >/dev/null
+    done
+}
+
+go_probe() {
+    python3 "$ROOT/selfhost/tests/go-production-probe.py" "$@" \
+        --env-file "$ENV_FILE" --login-json "$TEMPORARY/owner-login.json"
 }
 
 db_sql() {
@@ -178,6 +186,7 @@ phase "configure production environment"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" configure --domain localhost:58080 --version test
 set_value COMPOSE_PROJECT_NAME assozeta-production-smoke
 set_value ASSOZETA_BACKEND_IMAGE assozeta-backend
+set_value ASSOZETA_BACKEND_GO_IMAGE assozeta-backend-go
 set_value ASSOZETA_WEB_IMAGE assozeta-web
 set_value ASSOZETA_RENDERER_IMAGE assozeta-renderer
 set_value HTTPS_PORT 58443
@@ -326,6 +335,8 @@ done
 
 write_db_sentinel before-backup
 write_object_sentinel before-backup
+phase "verify shipped Go mutation and Django readback before backup"
+go_probe write --checkpoint before-backup --receipt "$TEMPORARY/go-before-backup.json"
 
 phase "create and validate backup"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" backup "$TEMPORARY/backups"
@@ -343,6 +354,8 @@ done
 
 write_db_sentinel after-backup
 write_object_sentinel after-backup
+phase "write a later Go preference and indexed audit"
+go_probe write --checkpoint after-backup --receipt "$TEMPORARY/go-after-backup.json"
 assert_db_sentinel after-backup
 assert_object_sentinel after-backup
 
@@ -356,6 +369,7 @@ fi
 curl_ready
 assert_db_sentinel after-backup
 assert_object_sentinel after-backup
+go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 
 corrupt_object_archive="$TEMPORARY/backups/assozeta-corrupt-objects.tar.gz"
 create_corrupt_object_archive "$archive" "$corrupt_object_archive"
@@ -367,6 +381,7 @@ fi
 curl_ready
 assert_db_sentinel after-backup
 assert_object_sentinel after-backup
+go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$archive" --yes
 
@@ -374,5 +389,6 @@ phase "verify valid restore"
 curl_ready
 assert_db_sentinel before-backup
 assert_object_sentinel before-backup
+go_probe verify --receipt "$TEMPORARY/go-before-backup.json"
 
 printf 'Production self-host smoke test passed.\n'

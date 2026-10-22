@@ -618,6 +618,7 @@ write_configuration() {
 COMPOSE_PROJECT_NAME=$project_name
 ASSOZETA_VERSION=$version
 ASSOZETA_BACKEND_IMAGE=ghcr.io/carbogninalberto/assozeta-backend
+ASSOZETA_BACKEND_GO_IMAGE=ghcr.io/carbogninalberto/assozeta-backend-go
 ASSOZETA_WEB_IMAGE=ghcr.io/carbogninalberto/assozeta-web
 ASSOZETA_RENDERER_IMAGE=ghcr.io/carbogninalberto/assozeta-renderer
 POSTGRES_IMAGE=postgres:16-alpine
@@ -850,13 +851,27 @@ wait_url_ready() {
     return 1
 }
 
+prod_optional_go_api() {
+    # The target CLI also operates on historical source distributions during
+    # backup and recovery. Never pass a service absent from their Compose file.
+    configured_services=$(prod_compose config --services) || return $?
+    if printf '%s\n' "$configured_services" | awk '$0 == "api-go" { found = 1 } END { exit !found }'; then
+        printf 'api-go\n'
+    fi
+}
+
 wait_public_readiness() {
     [ -f "$PROD_ENV" ] || die "run configure first"
     app_url=$(env_value APP_URL "$PROD_ENV")
     [ -n "$app_url" ] || die "missing APP_URL in $PROD_ENV"
+    go_api_service=$(prod_optional_go_api) || return $?
 
     wait_url_ready "web" "$app_url/healthz" || return 1
     wait_url_ready "API" "$app_url/api/readyz" || return 1
+    if [ -n "$go_api_service" ]; then
+        wait_url_ready "Django API" "$app_url/api/v1/readyz" || return 1
+        wait_url_ready "Go API" "$app_url/api/v2/readyz" || return 1
+    fi
 }
 
 require_public_readiness() {
@@ -885,11 +900,16 @@ stop_prod_data_services() {
         chmod 644 "$MAINTENANCE_FLAG"
     fi
     # Keep Caddy serving the maintenance page while the data services stop.
-    prod_compose stop api worker beat
+    go_api_service=$(prod_optional_go_api) || return $?
+    set -- api worker beat
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    prod_compose stop "$@"
 }
 
 start_prod_app_services() {
     force_recreate=${1:-false}
+    report_health_stage=${2:-false}
+    go_api_service=$(prod_optional_go_api) || return $?
 
     # Populate the persistent manual before serving requests. A temporarily
     # unavailable publisher must not prevent the application from starting.
@@ -899,16 +919,18 @@ start_prod_app_services() {
         fi
     fi
 
+    set -- api web
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     if [ "$force_recreate" = true ]; then
         prod_compose up -d --force-recreate worker beat || return $?
-        prod_compose up -d --wait --force-recreate api web || return $?
+        prod_compose up -d --wait --force-recreate "$@" || return $?
     else
         prod_compose up -d worker beat || return $?
-        prod_compose up -d --wait api web || return $?
+        prod_compose up -d --wait "$@" || return $?
     fi
 
     require_background_services_running || return $?
-    if [ "${2:-false}" = true ]; then
+    if [ "$report_health_stage" = true ]; then
         printf '%s\n' '@@ASSOZETA_STAGE health_check'
     fi
     # Container health alone does not prove that public routing reaches the API.
@@ -1021,7 +1043,10 @@ status_prod() {
 }
 
 prod_app_services_running() {
-    running=$(prod_compose ps --status running --services web api worker beat 2>/dev/null) || return 2
+    go_api_service=$(prod_optional_go_api) || return 2
+    set -- web api worker beat
+    [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
     [ -n "$running" ]
 }
 
@@ -1496,6 +1521,10 @@ supports_self_update() {
     [ "$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-backend ] || return 1
     [ "$(env_value ASSOZETA_WEB_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-web ] || return 1
     [ "$(env_value ASSOZETA_RENDERER_IMAGE "$PROD_ENV")" = ghcr.io/carbogninalberto/assozeta-renderer ] || return 1
+    case "$(env_value ASSOZETA_BACKEND_GO_IMAGE "$PROD_ENV")" in
+        ''|ghcr.io/carbogninalberto/assozeta-backend-go) ;;
+        *) return 1 ;;
+    esac
     env_value ASSOZETA_VERSION "$PROD_ENV" | grep -Eq '^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
 }
 
@@ -1561,9 +1590,9 @@ upgrade_prod() {
         managed_update=true
     else
         if [ "${ASSOZETA_RUNNER_ACTIVE:-false}" = 1 ] || [ -n "${ASSOZETA_OPERATION_ID:-}" ] || [ -n "${ASSOZETA_VERIFIED_UPDATER_REF:-}" ]; then
-            die "managed update unavailable: ASSOZETA_BACKEND_IMAGE, ASSOZETA_WEB_IMAGE and ASSOZETA_RENDERER_IMAGE must use official repositories and ASSOZETA_VERSION must be a stable release"
+            die "managed update unavailable: ASSOZETA_BACKEND_IMAGE, ASSOZETA_WEB_IMAGE, ASSOZETA_RENDERER_IMAGE and any configured ASSOZETA_BACKEND_GO_IMAGE must use official repositories and ASSOZETA_VERSION must be a stable release"
         fi
-        for pinned_key in ASSOZETA_BACKEND_REF ASSOZETA_WEB_REF ASSOZETA_RENDERER_REF; do
+        for pinned_key in ASSOZETA_BACKEND_REF ASSOZETA_WEB_REF ASSOZETA_RENDERER_REF ASSOZETA_BACKEND_GO_REF; do
             [ -z "$(env_value "$pinned_key" "$PROD_ENV")" ] || die "cannot perform legacy upgrade: $pinned_key pins an image independently of ASSOZETA_VERSION; verify the installation configuration first"
         done
     fi

@@ -186,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [legacy, recovery]
+        scenario: [legacy, legacy-controller, recovery]
     env:
       # `runner` is unavailable in a job-level `env` expression. Keep the
       # browser cache inside the checked-out workspace instead.
@@ -216,6 +216,15 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha,scope=quality-backend
           cache-to: type=gha,mode=max,scope=quality-backend
+      - name: Build Go backend test image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./BE_GO
+          load: true
+          tags: assozeta-backend-go:goal-test
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=quality-backend-go
+          cache-to: type=gha,mode=max,scope=quality-backend-go
       - name: Build web test image
         uses: docker/build-push-action@v6
         with:

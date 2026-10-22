@@ -49,12 +49,31 @@ except ModuleNotFoundError:
 else:
     original_validate_manifest = distribution.validate_manifest
 
-    def validate_fixture_manifest(manifest, tag):
+    from contextvars import ContextVar
+    from manifest_transport import validate_local_manifest, local_go_reference
+
+    canonical_validation = ContextVar("fixture_canonical_validation", default=False)
+
+    def validate_fixture_manifest(manifest, tag, **kwargs):
         allowed = set(json.loads((fixture_root() / 'images.json').read_text()).values())
-        if any(reference not in allowed for reference in manifest['images'].values()):
-            raise ValueError('Fixture manifest references an image outside this test')
-        canonical = {name: f'ghcr.io/carbogninalberto/assozeta-{name}@sha256:{"a" * 64}' for name in manifest['images']}
-        original_validate_manifest({**manifest, 'images': canonical}, tag)
-        return manifest
+        token = canonical_validation.set(True)
+        try:
+            return validate_local_manifest(manifest, tag, allowed, original_validate_manifest, **kwargs)
+        finally:
+            canonical_validation.reset(token)
 
     distribution.validate_manifest = validate_fixture_manifest
+
+    # Engine verification reads the persisted actual fixture image ID directly.
+    # Canonical validation inside the full validator must still call the original
+    # reference validator, avoiding reinterpretation as a second fixture input.
+    if hasattr(distribution, 'go_backend_reference'):
+        original_go_reference = distribution.go_backend_reference
+
+        def fixture_go_reference(manifest, **kwargs):
+            if canonical_validation.get():
+                return original_go_reference(manifest, **kwargs)
+            allowed = set(json.loads((fixture_root() / 'images.json').read_text()).values())
+            return local_go_reference(manifest, allowed, original_go_reference, **kwargs)
+
+        distribution.go_backend_reference = fixture_go_reference

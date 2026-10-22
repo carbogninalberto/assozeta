@@ -111,6 +111,7 @@ selfhost-smoke:
 
 selfhost-production-smoke:
 	@docker build --target production --build-arg VERSION=test -t assozeta-backend:test ./BE
+	@docker build --build-arg VERSION=test -t assozeta-backend-go:test ./BE_GO
 	@docker build --target production -t assozeta-web:test ./UI
 	@docker build -t assozeta-renderer:test ./selfhost/renderer
 	@./selfhost/tests/production-smoke.sh
