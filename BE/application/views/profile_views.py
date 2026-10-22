@@ -203,6 +203,19 @@ def profile_update(request):
                 content['user_data']['sport_association']['logo'])
 
         content['user_data']['preview_and_custom_features'] = user.get_preveiw_and_custom_features()
+    elif user.role == User.COLLABORATOR:
+        # The frontend replaces its cached profile with this response. Retain
+        # the admitted tenant without ever replacing the selected person.
+        # The locked User may be newer than the admission snapshot: fail closed
+        # after the existing commit boundary if its connected owner changed.
+        if user.connected_user_id != request.user.pk:
+            raise SportAssociation.DoesNotExist
+        sport_association = scoped_queryset(request, SportAssociation.objects).select_related('user').get(
+            user_id=user.connected_user_id)
+        content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
+        if content['user_data']['sport_association']['logo'] is not None:
+            content['user_data']['sport_association']['logo'] = compress_base64(
+                content['user_data']['sport_association']['logo'])
 
     return Response(content, status=status.HTTP_200_OK)
 

@@ -73,11 +73,18 @@ func (s *ProfileUpdateResponses) read(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	if user.Role == domain.RoleAssociation {
-		if identity.ScopeUser.ID != user.ID {
+	if user.Role == domain.RoleAssociation || user.Role == domain.RoleCollaborator {
+		owner := user.ID
+		if user.Role == domain.RoleCollaborator {
+			if user.ConnectedUserID == nil || *user.ConnectedUserID == "" {
+				return nil, domain.ErrInvalidScopedRequest
+			}
+			owner = *user.ConnectedUserID
+		}
+		if identity.ScopeUser.ID != owner {
 			return nil, domain.ErrInvalidScopedRequest
 		}
-		association, err := s.associations.Read(ctx, user.ID)
+		association, err := s.associations.Read(ctx, owner)
 		if err != nil {
 			return nil, err
 		}
@@ -90,6 +97,10 @@ func (s *ProfileUpdateResponses) read(ctx context.Context, identity domain.Resol
 			return nil, err
 		}
 		result.UserData.SportAssociation = &copy
+	}
+	// Keep owner-only feature metadata unchanged; collaborators need the existing
+	// association projection to replace the frontend's cached personal profile.
+	if user.Role == domain.RoleAssociation {
 		features := make([]dto.RegistrationFeature, 0, 3)
 		for _, choice := range []struct {
 			enabled bool
@@ -124,6 +135,7 @@ func (s *ProfileUpdates) Update(ctx context.Context, identity domain.ResolvedIde
 	// Use the role re-read under the mutation lock, not a stale admission snapshot.
 	person := *identity.Effective
 	person.Role = state.Role
+	person.ConnectedUserID = state.ConnectedUserID
 	identity.Effective = &person
 	return s.responses.read(ctx, identity, &state)
 }

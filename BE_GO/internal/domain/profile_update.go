@@ -6,12 +6,13 @@ import (
 )
 
 type ProfileUpdatePerson struct {
-	ID          string  `db:"user_id"`
-	Role        int     `db:"role"`
-	FirstName   string  `db:"first_name"`
-	LastName    string  `db:"last_name"`
-	Username    string  `db:"username"`
-	AvatarImage *string `db:"avatar_image"`
+	ID              string  `db:"user_id"`
+	ConnectedUserID *string `db:"connected_user_id"`
+	Role            int     `db:"role"`
+	FirstName       string  `db:"first_name"`
+	LastName        string  `db:"last_name"`
+	Username        string  `db:"username"`
+	AvatarImage     *string `db:"avatar_image"`
 }
 
 type ProfileUpdateAssociation struct {

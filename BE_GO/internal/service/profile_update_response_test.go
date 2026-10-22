@@ -15,11 +15,17 @@ func TestProfileUpdateResponseRolesAndFlags(t *testing.T) {
 	for _, role := range []int{0, 1, 2, 3} {
 		for flags := 0; flags < 8; flags++ {
 			u := &domain.Account{ID: "owner", Role: role}
+			scope := u
+			if role == domain.RoleCollaborator {
+				owner := "connected-owner"
+				u.ConnectedUserID = &owner
+				scope = &domain.Account{ID: owner, Role: domain.RoleAssociation}
+			}
 			image := "raw"
 			profiles := &responseProfiles{profile: &dto.UserAuthProfile{UserID: "owner", AvatarImage: &image}}
 			associations := &responseAssociations{profile: &dto.AssociationProfile{ID: "association", Logo: &image}}
 			flow := NewProfileUpdateResponses(profiles, associations, &responseImages{}, domain.RegistrationChoices{Family: flags&1 != 0, Federation: flags&2 != 0, Multiple: flags&4 != 0})
-			result, err := flow.Read(context.Background(), domain.ResolvedIdentity{Actor: u, Effective: u, ScopeUser: u})
+			result, err := flow.Read(context.Background(), domain.ResolvedIdentity{Actor: u, Effective: u, ScopeUser: scope})
 			if err != nil || result.UserData.AvatarImage == nil || *result.UserData.AvatarImage != "converted:raw" {
 				t.Fatal(role, flags, result, err)
 			}
@@ -45,7 +51,7 @@ func TestProfileUpdateResponseRolesAndFlags(t *testing.T) {
 			if _, ok := data["preview_and_custom_features"]; ok != (role == 1) {
 				t.Fatal("feature field ownership", data)
 			}
-			if (result.UserData.SportAssociation != nil) != (role == 1) || associations.calls != map[bool]int{true: 1, false: 0}[role == 1] {
+			if (result.UserData.SportAssociation != nil) != (role == 1 || role == 3) || associations.calls != map[bool]int{true: 1, false: 0}[role == 1 || role == 3] {
 				t.Fatal("association ownership", result)
 			}
 			if role == 1 {
@@ -90,5 +96,64 @@ func TestProfileUpdateResponsePreservesCommittedPersonalFields(t *testing.T) {
 	}
 	if profiles.profile.FirstName != "Later" || *profiles.profile.AvatarImage != "later-avatar" {
 		t.Fatal("reader-owned profile mutated")
+	}
+}
+
+func TestProfileUpdateCollaboratorResponseRejectsForeignScope(t *testing.T) {
+	for _, tc := range []struct {
+		name                    string
+		connected               *string
+		scope, associationScope string
+		calls                   int
+	}{
+		{"missing owner", nil, "owner", "", 0},
+		{"different owner", func() *string { v := "foreign"; return &v }(), "owner", "", 0},
+		{"different impersonation tenant", func() *string { v := "owner"; return &v }(), "owner", "foreign-association", 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			u := &domain.Account{ID: "collaborator", Role: domain.RoleCollaborator, ConnectedUserID: tc.connected}
+			associations := &responseAssociations{profile: &dto.AssociationProfile{ID: "association"}}
+			flow := NewProfileUpdateResponses(&responseProfiles{profile: &dto.UserAuthProfile{UserID: u.ID}}, associations, nil, domain.RegistrationChoices{})
+			result, err := flow.Read(context.Background(), domain.ResolvedIdentity{Actor: u, Effective: u, ScopeUser: &domain.Account{ID: tc.scope}, ImpersonationAssociationID: tc.associationScope})
+			if err == nil || result != nil || associations.calls != tc.calls {
+				t.Fatalf("tenant guard: result=%v err=%v reads=%d", result, err, associations.calls)
+			}
+		})
+	}
+}
+
+func TestProfileUpdateResponseUsesLockedConnectedOwner(t *testing.T) {
+	for _, changed := range []bool{false, true} {
+		t.Run(map[bool]string{false: "same tenant", true: "changed tenant"}[changed], func(t *testing.T) {
+			store, id, input := profileMutationFixture()
+			admitted, foreign := "admitted-owner", "foreign-owner"
+			id.Effective.Role = domain.RoleCollaborator
+			id.Effective.ConnectedUserID = &admitted
+			id.ScopeUser = &domain.Account{ID: admitted, Role: domain.RoleAssociation}
+			store.tx.person.Role = domain.RoleCollaborator
+			store.tx.person.ConnectedUserID = &admitted
+			if changed {
+				store.tx.person.ConnectedUserID = &foreign
+			}
+			associations := &responseAssociations{profile: &dto.AssociationProfile{ID: "admitted-association"}}
+			profiles := &responseProfiles{profile: &dto.UserAuthProfile{UserID: id.Effective.ID}}
+			flow := NewProfileUpdates(NewProfileMutations(store, &profileImageTest{}, time.Now), NewProfileUpdateResponses(profiles, associations, &responseImages{}, domain.RegistrationChoices{}))
+			result, err := flow.Update(context.Background(), id, input, domain.LoginAuditContext{})
+			if !store.tx.committed || len(store.tx.associationWrites) != 0 || len(store.tx.audits) != 1 || store.tx.audits[0].Model != "user" {
+				t.Fatal("changed mutation or audit scope", store.tx)
+			}
+			if changed {
+				if !errors.Is(err, domain.ErrInvalidScopedRequest) || result != nil || associations.calls != 0 {
+					t.Fatal("changed tenant disclosed", result, err, associations.calls)
+				}
+			} else {
+				if err != nil || result.UserData.SportAssociation == nil || result.UserData.FirstName != "Next" || associations.calls != 1 {
+					t.Fatal("same-tenant result", result, err)
+				}
+			}
+			if *id.Effective.ConnectedUserID != admitted {
+				t.Fatal("mutated admission snapshot")
+			}
+		})
 	}
 }
