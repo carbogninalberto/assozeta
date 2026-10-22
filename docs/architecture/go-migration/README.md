@@ -7,6 +7,15 @@ foundation checks below does not establish backend parity.
 Baseline: `main` at `f115d1e`. Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+Upstream `main@fddcee3` (PR #22) has now changed the production reference to
+Python 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. It is not yet merged
+at this checkpoint. Existing full-suite results below are historical evidence for
+the earlier dependency baseline, not proof against the new production reference.
+The first new-reference probe already fails thirteen image expectation groups;
+reconciliation is required. PIXAR alone additionally passes its 81 cases locally
+and in the shipped image under Python 3.13.16/Pillow 13.0.0. Detailed probe results
+are retained in `quality-reports/go-migration/security-baseline/`.
+
 ## Architecture and current-main reconciliation
 
 The original specification is
@@ -124,7 +133,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 47 explicit full response cases including eleven concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 48 explicit full response cases including twelve concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1264,3 +1273,25 @@ read-only, networkless Docker image passes the full codec oracle. Go race/vet,
 image/response-tagged vet, all twelve inventory tests, catalog drift, workflow
 lint, formatting and diff checks pass. Current-model fixtures do not establish
 historical-schema, backend-switching or complete lifecycle parity.
+
+
+PIXAR adds 81 authored raw-RGB header/pixel/file cases with explicit mode and
+pixel-ceiling errors, short headers, refill boundaries, ignored fields, lazy
+passthrough, size thresholds and JPEG dimension limits. Shared dispatch now
+composes eighteen pipelines and has 88 URI comparisons plus one demonstrated,
+non-exhaustive TIFF gap. The PostgreSQL fixture has 48 response cases and twelve
+image scenarios. Exact logical budgets, ownership, cancellation, native queue/
+deadline/reaping/reuse and concurrent calls are checked. Evidence is under
+`quality-reports/go-migration/pixar/`. Remaining formats, registry exceptions,
+public login and the wider migration acceptance gates remain open.
+
+The complete accounts suite on the previous Python 3.13.2/Pillow 11.1 baseline
+passes with 81 PIXAR cases, 48 responses and 88 URI comparisons, retaining the TIFF
+gap separately. Its terminal report is `quality-reports/go-migration/pixar/full-accounts-results.json`.
+The full codec oracle in the non-root read-only/networkless image, Go race/vet,
+image/response-tagged vet, twelve inventory tests, catalog drift, workflow lint,
+formatting and diff checks also pass on that baseline. Separately, all 81 PIXAR
+cases pass both locally and in the shipped image with Python 3.13.16/Pillow 13.0.0.
+The other codec families and application-wide checks require reconciliation with
+upstream `fddcee3`; no current-production full-suite or complete migration success
+is claimed.

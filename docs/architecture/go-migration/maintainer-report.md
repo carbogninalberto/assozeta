@@ -7,6 +7,15 @@ activation or merge as a backend replacement.** Django retains business-schema,
 worker and scheduler ownership. No production installation, customer data or
 published release has been changed.
 
+Upstream `main@fddcee3` (PR #22) has now changed the production reference to
+Python 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. It is not yet merged
+at this checkpoint. Existing full-suite results below are historical evidence for
+the earlier dependency baseline, not proof against the new production reference.
+The first new-reference probe already fails thirteen image expectation groups;
+reconciliation is required. PIXAR alone additionally passes its 81 cases locally
+and in the shipped image under Python 3.13.16/Pillow 13.0.0. Detailed probe results
+are retained in `quality-reports/go-migration/security-baseline/`.
+
 ## Current result
 
 The Go composition root exposes `/healthz`, `/readyz`, `/oauth2/refresh-token`,
@@ -79,7 +88,7 @@ immutable manual-package boundary delivered by PR #20.
 | Session HTTP audit | 27 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Sixteen malformed cache/UUID/hash inputs retain exact production HTML 500, Cookie Vary and unchanged cache bytes. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy and remaining route wiring stay open; public refresh has separate evidence. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
-| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes seventeen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
+| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes eighteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
 The application oracle now requires Python **3.13.2**, matching the production
@@ -517,3 +526,24 @@ read-only, networkless Docker image passes the full codec oracle. Go race/vet,
 image/response-tagged vet, all twelve inventory tests, catalog drift, workflow
 lint, formatting and diff checks pass. Current-model fixtures do not establish
 historical-schema, backend-switching or complete lifecycle parity.
+
+
+PIXAR adds 81 authored Django/Pillow header/pixel/file cases. Raw RGB layout,
+short headers, mode/pixel-ceiling classification, ignored bytes, refill boundaries,
+lazy passthrough and file-size/JPEG-dimension limits are checked. Shared dispatch
+has 88 URI comparisons and one non-exhaustive TIFF gap; PCD/PIXAR precedence is
+explicit. Forty-eight response cases include twelve image scenarios. Exact logical
+budgets, ownership, cancellation, native admission/deadline/reaping/reuse and
+mixed concurrency are covered. Evidence: `quality-reports/go-migration/pixar/`.
+Full registry, public login and all broader migration requirements remain open.
+
+The complete accounts suite on the previous Python 3.13.2/Pillow 11.1 baseline
+passes with 81 PIXAR cases, 48 responses and 88 URI comparisons, retaining the TIFF
+gap separately. Its terminal report is `quality-reports/go-migration/pixar/full-accounts-results.json`.
+The full codec oracle in the non-root read-only/networkless image, Go race/vet,
+image/response-tagged vet, twelve inventory tests, catalog drift, workflow lint,
+formatting and diff checks also pass on that baseline. Separately, all 81 PIXAR
+cases pass both locally and in the shipped image with Python 3.13.16/Pillow 13.0.0.
+The other codec families and application-wide checks require reconciliation with
+upstream `fddcee3`; no current-production full-suite or complete migration success
+is claimed.

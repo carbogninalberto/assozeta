@@ -83,7 +83,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 			Expected bool
 		}
 	}
-	if json.Unmarshal(data, &fixture) != nil || len(fixture.Cases) != 47 {
+	if json.Unmarshal(data, &fixture) != nil || len(fixture.Cases) != 48 {
 		t.Fatal("invalid response fixture")
 	}
 	now, err := time.Parse(time.RFC3339Nano, fixture.Now)
@@ -189,7 +189,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 		counter.count.Store(0)
 		want := int64(0)
 		for i := 0; i < 32; i++ {
-			tc := fixture.Cases[36+i%11]
+			tc := fixture.Cases[36+i%12]
 			queries := tc.Queries
 			if tc.Created {
 				queries = 7

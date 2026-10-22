@@ -2,7 +2,7 @@
 
 This package implements bounded Pillow-compatible file pipelines and the shared
 `Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
-seventeen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+eighteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
@@ -904,8 +904,8 @@ ambiguous data that Django preserves may currently fail in Go. TIFF and other mi
 TIFF fixture gap is **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 84 whole-URI expectations against
-the actual Django helper and the composed Go processor. Seventeen pipelines,
+`TESTS/adapters/django/login_images.py` asserts 88 whole-URI expectations against
+the actual Django helper and the composed Go processor. Eighteen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
 files, the 1 MiB size boundary and registry collisions are exercised. A separate
 missing-codec case deliberately reports `complete_image_parity=false`; it is
@@ -914,7 +914,7 @@ never counted as passing parity. The shipped-image test includes both sets.
 Race/integration tests mix formats through one processor, enforce a two-child
 bound across different codecs, cancel running/queued work, check deadline and exact
 URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
-now injects this concrete processor: 47 response cases include eleven image cases,
+now injects this concrete processor: 48 response cases include twelve image cases,
 32 mixed concurrent responses, unchanged database snapshots after declared card/
 audit resets, and a missing-decoder failure with no response tokens or card query.
 No public HTTP login, full registry coverage or backend activation is established.
@@ -1106,3 +1106,33 @@ reaping while the 1.18 MiB raster writer is blocked. The shared dispatcher has
 84 URI parity cases and one separately reported non-exhaustive TIFF gap. The
 PostgreSQL response fixture adds PCD avatar conversion and failed-rotation logo
 fallback. Public login and complete image coverage remain unfinished.
+
+
+## PIXAR raw RGB pipeline
+
+`PIXARFileProcessor` follows Pillow 11.1.0's `PixarImagePlugin`: a four-byte magic,
+a read of at most 512 header bytes, little-endian height/width at offsets 416/418,
+and the only supported channel/depth pair `(14, 2)` at offsets 424/426. A short
+header is valid from byte 428 onward. Unsupported modes and zero dimensions reject
+the candidate before the hard pixel ceiling; that ceiling terminates registry
+lookup. Other header bytes and padding do not change the raster interpretation.
+
+Pixels are packed RGB rows at offset 1024, copied into owned output in cancellable
+4 KiB chunks. Decode budgets cover input plus output before allocation. Header,
+input, transform, native encoder and outer URI limits remain independent logical
+bounds, not a process RSS guarantee. The file processor keeps one admission slot
+and deadline through transformation and JPEG output. Lazy size-policy passthrough
+can preserve a file with no pixels; malformed pixels and unsupported JPEG dimensions
+also retain the original. Large files with a zero-sized resize target fall back.
+No native decoder or new runtime dependency is needed.
+
+`TESTS/adapters/django/login_pixar.py` declares 81 header/pixel/file cases against
+Pillow and the actual Django helper. RGB samples are authored independently.
+Cases include raw refill boundaries, ignored padding/trailing bytes, short reads,
+mode/dimension rejection, JPEG dimension limits, lazy missing pixels and exact
+1 MiB thresholds. Unit/integration tests check exact budgets, ownership, forged
+headers, cancellation, native queue/deadline/reaping/reuse and 32 mixed calls.
+Shared dispatch has 88 URI comparisons and one demonstrated non-exhaustive TIFF
+gap. PCD header rejection can expose PIXAR; an accepted PCD with bad pixels must
+retain the original instead. The PostgreSQL response fixture adds PIXAR avatar
+conversion and lazy logo passthrough. Full image and public-login parity remain open.

@@ -956,12 +956,12 @@ adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
 
-`adapters/django/login_images.py` checks shared data-URI/file composition: 84
+`adapters/django/login_images.py` checks shared data-URI/file composition: 88
 Django-matching cases and one explicitly reported missing-codec gap. The latter
 is not counted as passing parity; `complete_image_parity` remains false and the
 gap list is not exhaustive. Mixed-format admission, cancellation, output limits
 and the shipped-image test are included. `accounts.py --only login-response`
-checks all 47 response cases, including eleven concrete image cases and concurrent
+checks all 48 response cases, including twelve concrete image cases and concurrent
 composition against PostgreSQL; the full accounts adapter includes both checks.
 
 
@@ -1009,3 +1009,14 @@ and 32 mixed calls are checked. The shared dispatcher has 84 passing URI cases
 plus one demonstrated, non-exhaustive TIFF gap. The 47 PostgreSQL response cases
 include eleven image scenarios. The accounts suite and shipped-image oracle run
 the new PCD cases; public HTTP login and complete image parity remain open.
+
+
+`adapters/django/login_pixar.py` adds 81 independently authored PIXAR cases for
+raw RGB pixels, header/mode/dimension errors, ignored fields, raw refill boundaries,
+lazy missing-pixel passthrough and file-size/JPEG-dimension limits. Actual Pillow
+and Django check every declared expectation. Go checks logical budgets, ownership,
+cancellation, native admission/deadline/reaping/reuse and mixed concurrency.
+The shared dispatcher has 88 URI comparisons, including PCD/PIXAR precedence,
+plus one demonstrated non-exhaustive TIFF gap. The response fixture has 48 cases
+with twelve concrete image scenarios. Accounts and shipped-image checks include
+PIXAR; complete image-registry and public-login parity remain unfinished.
