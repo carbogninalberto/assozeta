@@ -25,9 +25,15 @@ through the explicit migrator. Bounded candidate pages also pass eleven service
 groups and nine actual-Beat PostgreSQL/race groups, with finite rotations under
 continuous inserts and measured plans at 100/1,000/10,000 rows. Each page retains
 its cursor on errors and independently locks each publication. An installed
-scheduler, cardinality/backlog policy and Celery handoff remain open; see
+scheduler service, cardinality/backlog policy and Celery handoff remain open; see
 [publication limits](../../../BE_GO/internal/service/occurrence.md) and
 [page bounds](../../../BE_GO/internal/service/schedule_page.md).
+
+The image packages a native scheduler with serial bounded pages, cursor retention
+after ambiguous errors, positive pacing and joined shutdown. Ten loop groups,
+twelve native-process cases and four packaged cases pass. It publishes only the
+supported persisted daily-reset definitions and does not select ownership or start
+an installed service. See [scheduler delivery scope](scheduler-process.md).
 
 Explicit repository transactions now retain their private connection through
 automatic rollback and driver/socket cleanup. Eight real PostgreSQL/race groups
@@ -59,9 +65,14 @@ The Go image also packages explicit native worker and forward-only operational
 migration commands. Fourteen race-instrumented process scenarios and seven actual
 image scenarios pass. Startup fails on missing/dirty/unknown operational schema;
 migrations connect directly to PostgreSQL while the worker retains runtime
-pooler routing. The worker registers daily email reset only, honors maintenance
-and drains or recovers unfinished work. No scheduler, installed worker service
-or ownership handoff is implied. See [process evidence](../../../BE_GO/internal/worker_process.md).
+pooler routing. The worker registers daily email reset and associate age update,
+honors maintenance and drains or recovers unfinished work. The age body now checks
+owner/generation/live lease before business SQL in both transaction paths; eleven
+body groups, nine native cases and five image cases pass. The existing seven-case
+image regression passes on the same immutable image after repairing a transient
+SQL observation race in its fixture. Installed worker/scheduler services and
+ownership handoff remain open. See [worker evidence](../../../BE_GO/internal/worker_process.md)
+and [age process scope](age-worker-process.md).
 
 Install/start/restart/migrate/update and post-swap restore now run the explicit
 Go migrator after Django, before resuming application processes, under the
@@ -183,7 +194,7 @@ those differences remain explicit activation gaps.
 | 2FA provisioning | 31 HTTP scenarios, 62 concurrent requests per backend, 512 decoded symbols, four cross-runtime update flows and four fresh-login flows. No setup persistence; entropy/encoder failures and cancellation covered. Full browser/phone interaction remains unverified. |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 103 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |
 | Query and concurrency bounds | Real PostgreSQL/Redis tests measure batched lookups, fixed connection pools, concurrent identities and query counts across growing datasets. Critical job claiming uses measured indexed plans. No representative whole-application performance improvement is claimed. |
-| Jobs | Transactional intent, deduplication, leases, crash recovery and executor drain have private PostgreSQL evidence. The durable runtime owner defaults to Django and fences Go claims/outcomes by generation; daily reset locks ownership before writes. Thirty-eight queue/executor/ownership/migration groups and the five task bodies' 48 groups pass. Production worker/scheduler delivery, remaining tasks and coordinated handoff/restore remain unfinished. |
+| Jobs | Transactional intent, deduplication, leases, crash recovery and executor drain have private PostgreSQL evidence. The durable runtime owner defaults to Django and fences Go claims/outcomes by generation; daily reset and age update lock ownership before writes. Thirty-eight queue/executor/ownership/migration groups and the five task bodies' 51 groups pass. Worker/scheduler commands are packaged with scoped process/image evidence; installed activation, remaining tasks and coordinated handoff/restore remain unfinished. |
 | Images and storage | Eighteen image pipelines have current Pillow 13 oracles, including shipped codec/pixel/Base64 checks. TIFF/AVIF gaps are explicit and non-exhaustive. Storage configuration/credential-provider and disposable MinIO checks are scoped evidence; destructive medical cleanup remains unwired. |
 | Operations | Restore HTTP admission, shared lifecycle locks, dependency loss/recovery, idle SIGTERM and non-root image checks have evidence. Dual-API fresh install, backup and restore pass. Complete historical restore, active-request/task/WebSocket draining, release/activation acceptance and backend switching remain open. |
 

@@ -14,9 +14,15 @@ import (
 type AssociateAgeUpdates struct{ db *sqlx.DB }
 
 func NewAssociateAgeUpdates(db *sqlx.DB) *AssociateAgeUpdates { return &AssociateAgeUpdates{db: db} }
-func (r *AssociateAgeUpdates) BeginAssociateAgeUpdate(ctx context.Context) (domain.AssociateAgeUpdateTransaction, error) {
+func (r *AssociateAgeUpdates) BeginAssociateAgeUpdate(ctx context.Context, job domain.Job) (domain.AssociateAgeUpdateTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
+		return nil, err
+	}
+	// Keep ownership stable before any business row is touched. Completion
+	// checks the live lease again without preventing independent heartbeats.
+	if err = fenceJobEffects(ctx, tx.tx, job.ID, job.LeaseToken); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 	return &associateAgeTransaction{ownedTransaction: tx}, nil

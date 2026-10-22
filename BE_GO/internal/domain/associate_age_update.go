@@ -10,7 +10,7 @@ import (
 const JobUpdateAssociateAge = "update_age_of_associates"
 
 type AssociateAgeUpdateStore interface {
-	BeginAssociateAgeUpdate(context.Context) (AssociateAgeUpdateTransaction, error)
+	BeginAssociateAgeUpdate(context.Context, Job) (AssociateAgeUpdateTransaction, error)
 }
 
 type AssociateAgeUpdateTransaction interface {

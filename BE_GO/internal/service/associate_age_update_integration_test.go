@@ -21,21 +21,34 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
 type ageQueries struct {
-	count, active, peak atomic.Int64
-	mu                  sync.Mutex
-	command             string
-	args                []any
+	count, active, peak           atomic.Int64
+	business, fences, completions atomic.Int64
+	mu                            sync.Mutex
+	command                       string
+	args                          []any
+	afterBusiness                 func()
+	afterRollback                 func()
 }
 type ageTraceKey struct{}
+type ageSQLTraceKey struct{}
 
 func (q *ageQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
 	q.count.Add(1)
+	ctx = context.WithValue(ctx, ageSQLTraceKey{}, d.SQL)
+	if strings.Contains(d.SQL, "SELECT o.generation FROM ownership o JOIN") {
+		q.fences.Add(1)
+	}
+	if strings.Contains(d.SQL, "UPDATE public.assozeta_go_jobs j SET state='completed'") {
+		q.completions.Add(1)
+	}
 	if strings.HasPrefix(d.SQL, "WITH changed AS") {
+		q.business.Add(1)
 		q.mu.Lock()
 		q.command = d.SQL
 		q.args = append([]any(nil), d.Args...)
@@ -50,9 +63,18 @@ func (q *ageQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.Tra
 	}
 	return ctx
 }
-func (q *ageQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryEndData) {
+func (q *ageQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
+	q.mu.Lock()
+	afterBusiness, afterRollback := q.afterBusiness, q.afterRollback
+	q.mu.Unlock()
 	if ctx.Value(ageTraceKey{}) != nil {
 		q.active.Add(-1)
+		if data.Err == nil && afterBusiness != nil {
+			afterBusiness()
+		}
+	}
+	if sql, _ := ctx.Value(ageSQLTraceKey{}).(string); strings.EqualFold(sql, "rollback") && data.Err == nil && afterRollback != nil {
+		afterRollback()
 	}
 }
 
@@ -201,6 +223,157 @@ func TestAssociateAgeUpdatePostgres(t *testing.T) {
 		}
 		counts(t, 1, 0, 0)
 	})
+	t.Run("stale admission sends no business SQL", func(t *testing.T) {
+		for _, defect := range []string{"token", "expired", "generation", "django"} {
+			reset(t, baseline)
+			job := claim(t)
+			switch defect {
+			case "token":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+			case "expired":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, job.ID)
+			case "generation":
+				exec(t, `UPDATE assozeta_go_job_ownership SET generation=generation+1 WHERE singleton=1`)
+			case "django":
+				exec(t, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+			}
+			trace.business.Store(0)
+			err := service.Run(ctx, job)
+			// Fixture-only restoration; no production transition API is involved.
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if !errors.Is(err, domain.ErrJobLeaseLost) || trace.business.Load() != 0 {
+				t.Errorf("%s: stale admission sent %d business commands, error %v", defect, trace.business.Load(), err)
+			}
+			counts(t, 1, 0, 0)
+			if state(t, job).State != "running" {
+				t.Fatal("rejected attempt changed job state")
+			}
+		}
+	})
+	t.Run("ownership precedes effects and late lease loss rolls back", func(t *testing.T) {
+		reset(t, baseline)
+		job := claim(t)
+		lock, err := db.BeginTxx(ctx, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer lock.Rollback()
+		if _, err = lock.ExecContext(ctx, `LOCK TABLE application_associate IN ACCESS EXCLUSIVE MODE`); err != nil {
+			t.Fatal(err)
+		}
+		// The test observes the real command before execution and after successful
+		// execution. It never changes the transaction or production SQL.
+		effects, release := make(chan struct{}), make(chan struct{})
+		var releaseOnce sync.Once
+		trace.mu.Lock()
+		trace.afterBusiness = func() { close(effects); <-release }
+		trace.mu.Unlock()
+		trace.business.Store(0)
+		done := make(chan error, 1)
+		joined := make(chan struct{})
+		runContext, stopRun := context.WithCancel(ctx)
+		go func() { defer close(joined); done <- service.Run(runContext, job) }()
+		defer func() {
+			stopRun()
+			_ = lock.Rollback()
+			releaseOnce.Do(func() { close(release) })
+			<-joined
+			trace.mu.Lock()
+			trace.afterBusiness = nil
+			trace.mu.Unlock()
+		}()
+		deadline := time.NewTimer(3 * time.Second)
+		defer deadline.Stop()
+		for trace.business.Load() == 0 {
+			select {
+			case err := <-done:
+				t.Fatalf("service ended before business statement: %v", err)
+			case <-deadline.C:
+				t.Fatal("business statement did not start")
+			case <-time.After(time.Millisecond):
+			}
+		}
+		ownerBlocked := func(stage string) {
+			t.Helper()
+			tx, err := db.BeginTxx(ctx, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = tx.ExecContext(ctx, `SELECT generation FROM assozeta_go_job_ownership WHERE singleton=1 FOR UPDATE NOWAIT`)
+			_ = tx.Rollback()
+			var pgerr *pgconn.PgError
+			if !errors.As(err, &pgerr) || pgerr.Code != "55P03" {
+				t.Errorf("%s: ownership was not retained: %v", stage, err)
+			}
+		}
+		ownerBlocked("before effects")
+		if err = lock.Rollback(); err != nil {
+			t.Fatal(err)
+		}
+		select {
+		case <-effects:
+		case <-time.After(3 * time.Second):
+			t.Fatal("business effects did not finish")
+		}
+		ownerBlocked("after effects")
+		// No job row lock is retained: heartbeat/token changes can proceed while
+		// business effects await their fenced completion.
+		exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+		releaseOnce.Do(func() { close(release) })
+		select {
+		case err = <-done:
+			if !errors.Is(err, domain.ErrJobLeaseLost) {
+				t.Fatal("late lease loss did not reject completion", err)
+			}
+		case <-time.After(3 * time.Second):
+			t.Fatal("late lease loss did not settle")
+		}
+		counts(t, 1, 0, 0)
+		if state(t, job).State != "running" {
+			t.Fatal("stale attempt completed")
+		}
+	})
+	t.Run("handled failure fences completion-only transaction", func(t *testing.T) {
+		for _, loss := range []string{"none", "owner", "token"} {
+			reset(t, baseline)
+			job := claim(t)
+			exec(t, `CREATE FUNCTION contract_age_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'private age failure'; END $$`)
+			exec(t, `CREATE TRIGGER contract_age_failure BEFORE UPDATE ON application_associate FOR EACH STATEMENT EXECUTE FUNCTION contract_age_failure()`)
+			trace.fences.Store(0)
+			trace.completions.Store(0)
+			var changed atomic.Bool
+			var transitionErr error
+			trace.mu.Lock()
+			trace.afterRollback = func() {
+				if loss != "none" && changed.CompareAndSwap(false, true) {
+					if loss == "owner" {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+					} else {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+					}
+				}
+			}
+			trace.mu.Unlock()
+			err := service.Run(ctx, job)
+			trace.mu.Lock()
+			trace.afterRollback = nil
+			trace.mu.Unlock()
+			exec(t, `DROP TRIGGER contract_age_failure ON application_associate`)
+			exec(t, `DROP FUNCTION contract_age_failure()`)
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if transitionErr != nil || trace.fences.Load() != 2 {
+				t.Errorf("both transactions require effect admission: fences=%d transition=%v", trace.fences.Load(), transitionErr)
+			}
+			if loss != "none" {
+				if !changed.Load() || !errors.Is(err, domain.ErrJobLeaseLost) || trace.completions.Load() != 0 || state(t, job).State != "running" {
+					t.Errorf("completion-only transaction ignored ownership loss: %v, completions=%d", err, trace.completions.Load())
+				}
+			} else if err != nil || trace.completions.Load() != 1 || state(t, job).State != "completed" {
+				t.Errorf("handled failure did not complete once: %v", err)
+			}
+			counts(t, 1, 0, 0)
+		}
+	})
 	t.Run("business failures roll back audit and index", func(t *testing.T) {
 		for _, table := range []string{"application_associate", "auditlog_logentry", "application_auditlogindex"} {
 			reset(t, baseline)
@@ -340,7 +513,7 @@ func TestAssociateAgeUpdatePostgres(t *testing.T) {
 			if e := service.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if trace.count.Load() != 5 {
+			if trace.count.Load() != 6 {
 				t.Fatalf("%d rows: %d statements", n, trace.count.Load())
 			}
 			counts(t, n, n, n)

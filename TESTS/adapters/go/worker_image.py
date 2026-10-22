@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import time
@@ -111,6 +112,15 @@ class Proof:
         return self.docker('exec', '-i', self.database, 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
                            '-U', 'contracts', '-d', 'worker_contracts', input=statement).stdout.strip()
 
+    def observed_claim(self):
+        # Claim now ends with COMMIT, so idle pg_stat_activity no longer retains
+        # its candidates query. Observe the actual worker statement durably in
+        # this private PostgreSQL fixture instead of sampling a brief execution.
+        records = re.split(r'(?m)^(?=\d{4}-\d{2}-\d{2} .* app=)', self.logs(self.database))
+        return any('app=assozeta-go-worker LOG:  execute ' in record.split('\n', 1)[0]
+                   and '), candidates AS (' in record and 'UPDATE public.assozeta_go_jobs' in record
+                   for record in records)
+
     def value(self, query):
         return json.loads(self.sql(query))
 
@@ -204,7 +214,8 @@ class Proof:
         self.docker('run', '--detach', '--name', self.database, '--label', LABEL + '=' + self.identifier,
                     '--network', self.network, '--network-alias', 'postgres', '--tmpfs', '/var/lib/postgresql/data',
                     '--env', 'POSTGRES_USER=contracts', '--env', 'POSTGRES_DB=worker_contracts',
-                    '--env', 'POSTGRES_HOST_AUTH_METHOD=trust', self.postgres)
+                    '--env', 'POSTGRES_HOST_AUTH_METHOD=trust', self.postgres,
+                    '-c', 'log_statement=all', '-c', 'log_line_prefix=%m [%p] app=%a ')
         wait(lambda: self.docker('exec', self.database, 'pg_isready', '-h', '127.0.0.1', '-U', 'contracts', '-d', 'worker_contracts', success=False).returncode == 0, 'private PostgreSQL startup')
         self.sql("""CREATE TABLE django_migrations(id integer PRIMARY KEY,app text,name text); INSERT INTO django_migrations VALUES(7,'fixture','unchanged');
  CREATE TABLE communications_communicationconfiguration(id integer PRIMARY KEY,daily_email_balance integer);
@@ -223,7 +234,7 @@ class Proof:
 
         identifier = self.seed()
         worker = self.worker('django-owner')
-        wait(lambda: self.sql("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name='assozeta-go-worker' AND query LIKE '%candidates%');") == 't', 'actual inactive claim SQL')
+        wait(self.observed_claim, 'actual inactive claim SQL')
         assert self.job(identifier)[:2] == ['pending', 0] and not self.effects()
         self.stop(worker)
         self.case('packaged worker observes default Django without claims or effects')

@@ -82,6 +82,8 @@ jobs:
         run: python TESTS/adapters/go/occurrence.py
       - name: Verify bounded schedule discovery and publication pages
         run: python TESTS/adapters/go/schedule_page.py
+      - name: Verify native bounded scheduler and interruption recovery
+        run: python TESTS/adapters/go/scheduler_process.py
       - name: Verify transaction cleanup retains lifecycle admission
         run: python TESTS/adapters/go/transaction_lifetime.py
       - name: Verify queue mutations retain a server transaction fence
@@ -104,6 +106,8 @@ jobs:
         run: python TESTS/adapters/go/jobs.py
       - name: Verify native worker and explicit migration processes
         run: python TESTS/adapters/go/worker_process.py
+      - name: Verify native age worker against current Django models
+        run: python TESTS/adapters/go/age_worker_process.py
       - name: Check native JPEG comments with sanitizers
         run: python TESTS/adapters/go/login_jpeg_comment_sanitizer.py
       - name: Check native PNG decoder with sanitizers
@@ -120,6 +124,8 @@ jobs:
           python TESTS/adapters/go/login_http_image.py --image assozeta-go-foundation:test
           docker pull postgres:16-alpine
           python TESTS/adapters/go/worker_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/scheduler_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/age_worker_image.py --image assozeta-go-foundation:test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -139,6 +145,10 @@ jobs:
             quality-reports/go-migration/job-executor/
             quality-reports/go-migration/worker-process/
             quality-reports/go-migration/worker-image/
+            quality-reports/go-migration/age-worker-process/
+            quality-reports/go-migration/age-worker-image/
+            quality-reports/go-migration/scheduler-process/
+            quality-reports/go-migration/scheduler-image/
             quality-reports/go-migration/scheduler-authority/
             quality-reports/go-migration/schedule-due/
             quality-reports/go-migration/occurrence/

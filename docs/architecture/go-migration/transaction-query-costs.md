@@ -7,6 +7,12 @@ metric column distinguishes total statements from counters excluding transaction
 control; business-method call counters are not total SQL. See the
 [drain protocol](transaction-drain.md) for the snapshot and lifecycle boundaries.
 
+This table isolates the server-fence increment. The later associate-age worker
+adds one early ownership/lease admission statement in each body transaction:
+its current successful/no-op budget is **six**, after the five shown below.
+The separate [age task contract](../../../BE_GO/internal/service/associate_age_update.md)
+records that additional fixed cost and its rejection/rollback cases.
+
 | Component | Case | Before | With server fence | Metric |
 |---|---|---|---|---|
 | Jobs.Claim | valid mutation | 1 | 4 | all SQL statements: BEGIN, shared fence, effect, COMMIT |

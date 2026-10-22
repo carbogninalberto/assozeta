@@ -5,6 +5,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
     CGO_ENABLED=0 go build -trimpath -o /worker ./cmd/worker && \
+    CGO_ENABLED=0 go build -trimpath -o /scheduler ./cmd/scheduler && \
     CGO_ENABLED=0 go build -trimpath -o /migrate ./cmd/migrate
 
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
@@ -28,6 +29,7 @@ RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION
 COPY --from=builder /server /app/server
 COPY --from=builder /worker /app/worker
+COPY --from=builder /scheduler /app/scheduler
 COPY --from=builder /migrate /app/migrate
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
