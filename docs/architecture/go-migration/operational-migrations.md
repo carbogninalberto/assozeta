@@ -37,7 +37,8 @@ The new production smoke assertions first failed because ordinary startup had
 not created Go operational history. After implementation, the full fresh-install,
 migrate, backup and restore rehearsal passes with actual shipped APIs. It checks:
 
-- Clean operational version 2 and Django generation 1 after startup and repeats.
+- Clean operational history and Django generation 1 after startup and repeats
+  (version 2 in the original rehearsal; version 3 in the receipt follow-up).
 - Unchanged Django migration history and exact pending-job records, including a
   JSON integer larger than JavaScript's exact-integer range.
 - Dirty-history refusal, all four application/background services stopped and
@@ -86,6 +87,21 @@ one-offs. Local evidence is under ignored `quality-reports/go-migration/`:
 `worker-lifecycle-validation.log` and `operational-migration/source-manifest.json`.
 Fixture cleanup removes its containers, volumes and networks; the final file
 cleanup uses a bare container so it cannot recreate a Compose project afterward.
+
+The schema-3 follow-up repeats the full fresh-install/migrate/backup/restore
+rehearsal with the packaged current migrator. A synthetic retained occurrence
+receipt linked to the pending job survives repeat migration, corrupt-backup
+rejection, dirty-history post-swap rollback and valid backup restoration exactly.
+This is a storage sentinel, not a scheduler activation. The immutable Go image is
+`sha256:b0de6f266ccee8b5b7b686f98ad33a2f7fb63b3378fd177a59872ffa4cbf91c8`;
+it also passes all seven packaged-worker cases. Evidence is under ignored
+`quality-reports/go-migration/occurrence-lifecycle/`, including `production.log`
+and `worker-image.log`. Containers, volumes and networks are absent after cleanup.
+The current-controller update/recovery matrix also passes with schema 3, including
+the surviving packaged migrator and exact restored occurrence receipt. Its
+`occurrence-lifecycle/update-recovery.json` records the immutable fixture image
+IDs and dirty source state; `update.log` retains the executed failure matrix.
+The earlier frozen-controller/browser run remains version-2 evidence.
 
 Installed backend selection, a Go worker/scheduler service, coordinated queue
 transfer, historical application-schema coverage and a complete restore window

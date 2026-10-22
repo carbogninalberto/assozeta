@@ -13,11 +13,11 @@ type TwoFactorUpdates struct{ db *sqlx.DB }
 
 func NewTwoFactorUpdates(db *sqlx.DB) *TwoFactorUpdates { return &TwoFactorUpdates{db} }
 func (r *TwoFactorUpdates) BeginTwoFactorUpdate(ctx context.Context) (domain.TwoFactorUpdateTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &twoFactorUpdateTransaction{loginPreparationTransaction{tx: tx}}, nil
+	return &twoFactorUpdateTransaction{loginPreparationTransaction{ownedTransaction: tx}}, nil
 }
 
 type twoFactorUpdateTransaction struct{ loginPreparationTransaction }

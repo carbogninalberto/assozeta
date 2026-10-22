@@ -15,14 +15,14 @@ type AssociateAgeUpdates struct{ db *sqlx.DB }
 
 func NewAssociateAgeUpdates(db *sqlx.DB) *AssociateAgeUpdates { return &AssociateAgeUpdates{db: db} }
 func (r *AssociateAgeUpdates) BeginAssociateAgeUpdate(ctx context.Context) (domain.AssociateAgeUpdateTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &associateAgeTransaction{tx: tx}, nil
+	return &associateAgeTransaction{ownedTransaction: tx}, nil
 }
 
-type associateAgeTransaction struct{ tx *sqlx.Tx }
+type associateAgeTransaction struct{ *ownedTransaction }
 
 func (t *associateAgeTransaction) PromoteAdultsWithAudit(ctx context.Context, bornOnOrBefore, at time.Time) (int64, error) {
 	var counts struct{ Changed, Logged, Indexed, ExpectedIndexes int64 }
@@ -68,5 +68,5 @@ SELECT (SELECT count(*) FROM changed) AS changed,(SELECT count(*) FROM logged) A
 func (t *associateAgeTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
 	return completeJob(ctx, t.tx, id, token, nil)
 }
-func (t *associateAgeTransaction) Commit() error   { return t.tx.Commit() }
-func (t *associateAgeTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *associateAgeTransaction) Commit() error   { return t.ownedTransaction.Commit() }
+func (t *associateAgeTransaction) Rollback() error { return t.ownedTransaction.Rollback() }

@@ -14,18 +14,18 @@ type EmailBalanceResets struct{ db *sqlx.DB }
 func NewEmailBalanceResets(db *sqlx.DB) *EmailBalanceResets { return &EmailBalanceResets{db: db} }
 
 func (r *EmailBalanceResets) BeginEmailBalanceReset(ctx context.Context, job domain.Job) (domain.EmailBalanceResetTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	if err = fenceJobEffects(ctx, tx, job.ID, job.LeaseToken); err != nil {
+	if err = fenceJobEffects(ctx, tx.tx, job.ID, job.LeaseToken); err != nil {
 		_ = tx.Rollback()
 		return nil, err
 	}
-	return &emailBalanceResetTransaction{tx: tx}, nil
+	return &emailBalanceResetTransaction{ownedTransaction: tx}, nil
 }
 
-type emailBalanceResetTransaction struct{ tx *sqlx.Tx }
+type emailBalanceResetTransaction struct{ *ownedTransaction }
 
 func (t *emailBalanceResetTransaction) ResetPositiveCounters(ctx context.Context) (int64, error) {
 	// Django uses the unfiltered manager, including deleted associations and NULL
@@ -39,5 +39,5 @@ func (t *emailBalanceResetTransaction) ResetPositiveCounters(ctx context.Context
 func (t *emailBalanceResetTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
 	return completeJob(ctx, t.tx, id, token, nil)
 }
-func (t *emailBalanceResetTransaction) Commit() error   { return t.tx.Commit() }
-func (t *emailBalanceResetTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *emailBalanceResetTransaction) Commit() error   { return t.ownedTransaction.Commit() }
+func (t *emailBalanceResetTransaction) Rollback() error { return t.ownedTransaction.Rollback() }

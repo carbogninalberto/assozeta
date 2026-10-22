@@ -58,6 +58,7 @@ def run(legacy=False, browser=False, operations_only=False, legacy_controller=Fa
     go_blocker = None
     go_waiter = None
     go_intent_snapshot = None
+    go_occurrence_snapshot = None
     go_migration_interruption = False
 
     def command(args, **kwargs):
@@ -521,11 +522,13 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
             settings = read_env(env_file)
             sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
-            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '2|f'
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '3|f'
             assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
             if go_intent_snapshot is not None:
                 actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
                 assert actual == go_intent_snapshot, 'Recovery changed or lost durable Go intent'
+                actual = capture(compose(*sql, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
+                assert actual == go_occurrence_snapshot, 'Recovery changed or lost retained occurrence receipt'
 
         assert api('access')['is_owner']
         assert api('admin/updates')['available']
@@ -655,6 +658,9 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         command(compose(*database, "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'update-smoke','{\"checkpoint\":\"source\",\"integer\":9007199254740993}',3,clock_timestamp())"), env=environment)
         go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
         go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
+        # Storage sentinel, without enabling a scheduler or changing the owner.
+        command(compose(*database, "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64))"), env=environment)
+        go_occurrence_snapshot = capture(compose(*database, "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222'"), env=environment)
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'

@@ -52,7 +52,7 @@ func TestJobExecutorPostgres(t *testing.T) {
 	options := JobExecutorOptions{Owner: "contract-worker", Concurrency: 1, Lease: time.Second, RenewInterval: 100 * time.Millisecond, StoreTimeout: 300 * time.Millisecond, PollInterval: 10 * time.Millisecond, MaintenanceInterval: 20 * time.Millisecond, DrainTimeout: 150 * time.Millisecond}
 	reset := func(t *testing.T) {
 		t.Helper()
-		if _, e := db.ExecContext(ctx, `TRUNCATE assozeta_go_jobs,instance_datarestore,executor_effects`); e != nil {
+		if _, e := db.ExecContext(ctx, `TRUNCATE assozeta_go_periodic_occurrences,assozeta_go_jobs,instance_datarestore,executor_effects`); e != nil {
 			t.Error(e)
 		}
 	}

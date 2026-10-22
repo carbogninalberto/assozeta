@@ -18,14 +18,14 @@ type PasswordLogins struct{ db *sqlx.DB }
 
 func NewPasswordLogins(db *sqlx.DB) *PasswordLogins { return &PasswordLogins{db: db} }
 func (s *PasswordLogins) BeginPasswordLogin(ctx context.Context) (domain.PasswordLoginTransaction, error) {
-	tx, err := s.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
+	tx, err := beginOwnedTransaction(ctx, s.db, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return nil, err
 	}
-	return &passwordLoginTransaction{tx: tx}, nil
+	return &passwordLoginTransaction{ownedTransaction: tx}, nil
 }
 
-type passwordLoginTransaction struct{ tx *sqlx.Tx }
+type passwordLoginTransaction struct{ *ownedTransaction }
 
 func (t *passwordLoginTransaction) Candidates(ctx context.Context, byEmail bool, identifier, after string) ([]domain.Account, error) {
 	column := "username"
@@ -74,8 +74,10 @@ func (t *passwordLoginTransaction) ReplacePasswords(ctx context.Context, rows []
 	}
 	return nil
 }
-func (t *passwordLoginTransaction) Commit() error   { return credentialTransactionError(t.tx.Commit()) }
-func (t *passwordLoginTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *passwordLoginTransaction) Commit() error {
+	return credentialTransactionError(t.ownedTransaction.Commit())
+}
+func (t *passwordLoginTransaction) Rollback() error { return t.ownedTransaction.Rollback() }
 
 func credentialTransactionError(err error) error {
 	var pg *pgconn.PgError

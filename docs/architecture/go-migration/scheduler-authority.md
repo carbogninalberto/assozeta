@@ -84,10 +84,11 @@ DatabaseScheduler normally caps its tick interval at five seconds. Any future
 Go loop must retain bounded rechecks and definition reloads; this pure evaluator
 does not implement a loop, ownership selection, static seeding or activation.
 
-The planned Go boundary is a transaction joining owner admission, a locked source
+The inert Go publication boundary now uses a transaction joining owner admission, a locked source
 definition/cursor, a stable occurrence identity and durable enqueue. Ownership
 generation must not be part of occurrence identity, or returning ownership to Go
-could duplicate work. Atomic publication would intentionally strengthen the
+could duplicate work. See [transactional publication](../../../BE_GO/internal/service/occurrence.md).
+Atomic publication intentionally strengthens the
 failed-send boundary; it cannot retroactively establish whether historical Celery
 work was delivered. Installed switching still needs producer quiescence, pending
 queue transfer/refusal, compatible cursor synchronization and interrupted-handoff

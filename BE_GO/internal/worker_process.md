@@ -31,7 +31,9 @@ unchanged. A configured path alone does not prove correct deployment wiring.
 Worker startup validates execution bounds before opening connections, then checks
 the database and exact clean operational migration version through a read-only
 repository method. Missing, dirty or unknown schema fails before readiness,
-including when maintenance would defer all claims. A missing ownership row is
+including when maintenance would defer all claims. Schema 3 also requires the
+retained occurrence table and its columns; a falsely clean version alone cannot
+admit a missing table. A missing ownership row is
 inert; Django ownership spends no attempts. Diagnostics omit SQL, payloads and
 credential values.
 
@@ -43,7 +45,10 @@ task. The connection pool allows two connections per slot plus two, so effect
 transactions do not consume heartbeat capacity. SIGTERM stops intake and drains
 admitted work; an expired drain cancels and rolls back unfinished effects.
 SIGKILL leaves a recoverable lease. The existing shared lifecycle file lease is
-retained throughout admitted execution. See [ownership](repository/job_ownership.md)
+retained throughout admitted execution and required transaction cleanup. Cancellation
+and drain deadlines stop admission/work; cleanup may extend elapsed process exit
+time. See [transaction lifetime](repository/transaction.md) for the tested driver
+cleanup boundary. See [ownership](repository/job_ownership.md)
 for generation fencing and its limits across database restore.
 
 Required checks from the repository root:
@@ -56,7 +61,7 @@ python TESTS/adapters/go/worker_image.py --image assozeta-go-foundation:test
 ```
 
 The native adapter requires the integration Python environment with psycopg2,
-Go and PostgreSQL binaries. Thirteen scenarios execute race-instrumented commands
+Go and PostgreSQL binaries. Fourteen scenarios execute race-instrumented commands
 against private PostgreSQL: missing/dirty/unknown schema, direct migration versus
 pooler routing, default/missing owner, redacted errors, maintenance, two workers,
 graceful/expired drain, crash recovery and ownership loss. Missing, empty and
@@ -79,8 +84,8 @@ success. Both adapters are required in the reusable Go quality workflow.
 
 Evidence is under ignored `quality-reports/go-migration/worker-process/` and
 `worker-image/`. The image proof used immutable image
-`sha256:bdf8fcff48ee14d59850a8a3bf897a9d30061505452d642bb84f8906446c063b`,
-built from the working tree with version `worker-proof`; its embedded parent
+`sha256:bcf220b3872775d61d23542f48f37c71886779904c0d8ea82e6edb82c88f6e12`,
+built from the schema-3 working tree with joined transaction cleanup with version `test`; its embedded parent
 revision is not a claim of a clean source commit. The tables/triggers in these
 fixtures are synthetic transaction sentinels. Actual task behavior remains
 covered separately by Django/task adapters. These checks do not prove scheduler

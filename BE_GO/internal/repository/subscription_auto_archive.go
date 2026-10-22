@@ -19,14 +19,14 @@ func NewSubscriptionAutoArchives(db *sqlx.DB) *SubscriptionAutoArchives {
 	return &SubscriptionAutoArchives{db: db}
 }
 func (r *SubscriptionAutoArchives) BeginSubscriptionArchive(ctx context.Context) (domain.SubscriptionArchiveTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &subscriptionArchiveTransaction{tx: tx}, nil
+	return &subscriptionArchiveTransaction{ownedTransaction: tx}, nil
 }
 
-type subscriptionArchiveTransaction struct{ tx *sqlx.Tx }
+type subscriptionArchiveTransaction struct{ *ownedTransaction }
 
 func (t *subscriptionArchiveTransaction) ReadArchivePage(ctx context.Context, after *uuid.UUID) ([]domain.SubscriptionArchiveCandidate, error) {
 	var rows []struct {
@@ -230,5 +230,5 @@ SELECT (SELECT count(*) FROM originals) AS matched,(SELECT count(*) FROM changed
 func (t *subscriptionArchiveTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
 	return completeJob(ctx, t.tx, id, token, nil)
 }
-func (t *subscriptionArchiveTransaction) Commit() error   { return t.tx.Commit() }
-func (t *subscriptionArchiveTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *subscriptionArchiveTransaction) Commit() error   { return t.ownedTransaction.Commit() }
+func (t *subscriptionArchiveTransaction) Rollback() error { return t.ownedTransaction.Rollback() }

@@ -18,14 +18,14 @@ func NewSubscriptionTokenCleanups(db *sqlx.DB) *SubscriptionTokenCleanups {
 }
 func (r *SubscriptionTokenCleanups) BeginSubscriptionTokenCleanup(ctx context.Context) (domain.SubscriptionTokenCleanupTransaction, error) {
 	// Completion must see the current lease after concurrent heartbeat updates.
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &subscriptionTokenCleanupTransaction{tx: tx}, nil
+	return &subscriptionTokenCleanupTransaction{ownedTransaction: tx}, nil
 }
 
-type subscriptionTokenCleanupTransaction struct{ tx *sqlx.Tx }
+type subscriptionTokenCleanupTransaction struct{ *ownedTransaction }
 
 // DeleteExpiredWithAudit performs the service's explicit audited deletion command.
 // One statement fixes the qualifying set and derives audits from rows actually
@@ -70,5 +70,5 @@ SELECT (SELECT count(*) FROM removed) AS removed,(SELECT count(*) FROM logged) A
 func (t *subscriptionTokenCleanupTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
 	return completeJob(ctx, t.tx, id, token, nil)
 }
-func (t *subscriptionTokenCleanupTransaction) Commit() error   { return t.tx.Commit() }
-func (t *subscriptionTokenCleanupTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *subscriptionTokenCleanupTransaction) Commit() error   { return t.ownedTransaction.Commit() }
+func (t *subscriptionTokenCleanupTransaction) Rollback() error { return t.ownedTransaction.Rollback() }
