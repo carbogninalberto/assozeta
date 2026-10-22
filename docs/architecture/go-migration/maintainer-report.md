@@ -24,6 +24,14 @@ pooler routing. The worker registers daily email reset only, honors maintenance
 and drains or recovers unfinished work. No scheduler, installed worker service
 or ownership handoff is implied. See [process evidence](../../../BE_GO/internal/worker_process.md).
 
+Install/start/restart/migrate/update and post-swap restore now run the explicit
+Go migrator after Django, before resuming application processes, under the
+exclusive operations lease. Current-distribution recovery refuses surviving
+one-offs. Fresh-install and current-controller failure rehearsals preserve exact
+pending intent and Django history, including rollback after dirty-history
+rejection during restore and recovery after a killed controller leaves a real
+Go migrator running. See [operational migrations](operational-migrations.md).
+
 Ordinary Compose now includes the Go API. Builds and publication include its
 image; updater manifests carry an independently validated immutable Go reference
 in an extension compatible with the frozen v1.0.17 bootstrap. Target verification
@@ -99,7 +107,8 @@ The architecture follows specification `4d0f68d` and inspected Kuayle revision
 context-aware services, explicit constructors and sqlx/pgx repositories. Actor,
 effective user and resource scope are distinct. The durable job repository is an
 explicit Assozeta extension with its own additive operational migration history;
-it is not automatically applied. **Django owns existing business migrations and
+the normal lifecycle now applies it through a separate command under its lease.
+**Django owns existing business migrations and
 production workers/scheduling.** No schema rename, customer identity regeneration,
 production deployment or release publication has occurred.
 

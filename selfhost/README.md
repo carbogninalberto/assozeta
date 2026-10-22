@@ -9,7 +9,7 @@ images, creates its local configuration, and starts them.
 - Linux server with Docker Engine and Docker Compose v2.20.0 or newer
 - A public DNS record pointing to the server for automatic HTTPS
 - Ports 80 and 443 reachable from the internet
-- `openssl`, `curl`, and `tar`
+- `openssl`, `curl`, `tar`, and `flock` (from util-linux)
 - At least 4 GB RAM; 8 GB is recommended when rendering PDFs
 
 The default stack contains PostgreSQL, Redis, MinIO, the Django and Go APIs, Celery
@@ -24,10 +24,13 @@ application support remain unfinished, and the installable-release gate rejects
 this incomplete migration. See the [delivery status](../docs/architecture/go-migration/delivery-transition.md)
 and [routing status](../docs/architecture/go-migration/versioned-routing.md)
 before migration testing.
-The Go image includes `/app/worker` and `/app/migrate` for the verified development
-process contracts. Compose does not start a Go worker or scheduler, and the CLI
-does not yet invoke operational migrations. These commands are not an operator
-backend-switch procedure; see [their scope and prerequisites](../BE_GO/internal/worker_process.md).
+The Go image includes `/app/worker` and `/app/migrate`. The CLI runs the tools
+service `migrate-go` after Django migrations under the existing exclusive
+operations lock. Missing lock support fails before schema migration; migration
+failure keeps maintenance active and services stopped. Historical distributions
+without the service remain recoverable. Compose does not start a Go worker or
+scheduler. These commands are not a backend-switch procedure; see
+[migration lifecycle and recovery](../docs/architecture/go-migration/operational-migrations.md).
 
 ## Install
 

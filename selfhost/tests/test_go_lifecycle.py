@@ -1,5 +1,6 @@
 """Dual API delivery and historical recovery, without touching an installation."""
 import json
+import fcntl
 import os
 from pathlib import Path
 import subprocess
@@ -46,22 +47,45 @@ class GoComposeTests(unittest.TestCase):
             self.assertNotIn('worker-go', services)
             self.assertNotIn('beat-go', services)
 
+    def test_operational_migrator_reuses_go_image_configuration_without_http_health(self):
+        with TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            env_file.write_text((ROOT / 'selfhost/.env.example').read_text())
+            result = subprocess.run(['docker', 'compose', '--env-file', str(env_file), '-f',
+                                     str(ROOT / 'selfhost/compose.yml'), '--profile', 'tools',
+                                     'config', '--format', 'json'],
+                                    env={**os.environ, 'ASSOZETA_ENV_FILE': str(env_file),
+                                         'ASSOZETA_SELFHOST_DIR': directory},
+                                    capture_output=True, text=True, check=True)
+            services = json.loads(result.stdout)['services']
+            self.assertIn('migrate-go', services)
+            migration, api = services['migrate-go'], services['api-go']
+            for field in ('image', 'environment', 'user', 'read_only', 'volumes', 'security_opt'):
+                self.assertEqual(migration[field], api[field], field)
+            self.assertEqual(migration['entrypoint'], ['/app/migrate'])
+            self.assertEqual(migration['profiles'], ['tools'])
+            self.assertEqual(migration['restart'], 'no')
+            self.assertTrue(migration['healthcheck']['disable'])
+            self.assertEqual(set(migration['depends_on']), {'postgres'})
+
 
 class GoLifecycleTests(unittest.TestCase):
-    def run_shell(self, body, *, golang=True, config_failure=False, failure=''):
+    def run_shell(self, body, *, golang=True, migrator=True, config_failure=False, failure='', inherited_lease=False):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             (root / '.env').write_text('APP_URL=http://fixture.invalid\n')
             harness = r'''
 prod_compose() {
-    if [ "$*" = 'config --services' ]; then
+    if [ "$*" = 'config --services' ] || [ "$*" = '--profile tools config --services' ]; then
         [ "$TEST_CONFIG_FAILURE" = false ] || return 8
         printf 'api\nworker\nbeat\nweb\n'
         [ "$TEST_GO" = false ] || printf 'api-go\n'
+        [ "$TEST_MIGRATOR" = false ] || printf 'migrate-go\n'
         return 0
     fi
     printf 'compose %s\n' "$*"
     case "$TEST_FAILURE:$*" in start:*up*api-go*) return 9 ;; esac
+    case "$TEST_FAILURE:$*" in django:*run*' migrate') return 11 ;; go:*run*' migrate-go') return 12 ;; esac
 }
 require_background_services_running() { printf 'django-background\n'; }
 wait_url_ready() { printf 'ready %s\n' "$2"; }
@@ -69,6 +93,8 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
             result = subprocess.run(['sh', '-c', DEFINITIONS + harness + body], capture_output=True, text=True,
                                     env={**os.environ, 'ASSOZETA_INSTALL_ROOT': directory,
                                          'TEST_GO': str(golang).lower(), 'TEST_CONFIG_FAILURE': str(config_failure).lower(),
+                                         'TEST_MIGRATOR': str(migrator and golang).lower(),
+                                         'prod_operations_lock_held': str(inherited_lease).lower(),
                                          'TEST_FAILURE': failure})
             return result, (root / '.operations/maintenance.flag').exists()
 
@@ -102,6 +128,165 @@ wait_url_ready() { printf 'ready %s\n' "$2"; }
         self.assertNotEqual(result.returncode, 0)
         self.assertTrue(marker)
         self.assertNotIn('compose up ', result.stdout)
+
+    def test_initialisation_orders_both_migrations_before_any_application_resumes(self):
+        result, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\nstart_prod_app_services\n')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        lines = result.stdout.splitlines()
+        django = lines.index('compose --profile tools run --rm --no-deps migrate')
+        golang = lines.index('compose --profile tools run --rm --no-deps migrate-go')
+        self.assertLess(lines.index('compose stop api worker beat api-go'), django)
+        self.assertLess(django, golang)
+        self.assertLess(golang, lines.index('compose up -d worker beat'))
+        self.assertFalse(marker)
+
+    def test_migration_failure_retains_maintenance_and_stopped_applications(self):
+        for failure, status in (('django', 11), ('go', 12)):
+            with self.subTest(failure=failure):
+                result, marker = self.run_shell('\nprod_operations_lock_held=true\ninitialise_prod\nstart_prod_app_services\n', failure=failure)
+                self.assertEqual(result.returncode, status, result.stderr)
+                self.assertTrue(marker)
+                self.assertNotIn('compose up -d worker beat', result.stdout)
+                self.assertNotIn('ready ', result.stdout)
+                if failure == 'django':
+                    self.assertNotIn('run --rm --no-deps migrate-go', result.stdout)
+
+    def test_historical_source_without_operational_command_only_migrates_django(self):
+        for golang in (False, True):
+            with self.subTest(golang=golang):
+                result, marker = self.run_shell('\ninitialise_prod\nstart_prod_app_services\n',
+                                                golang=golang, migrator=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn('run --rm --no-deps migrate\n', result.stdout)
+                self.assertNotIn('migrate-go', result.stdout)
+                self.assertFalse(marker)
+
+    def test_go_migration_refuses_missing_caller_operations_lease(self):
+        result, marker = self.run_shell('\ninitialise_prod\nstart_prod_app_services\n')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(marker)
+        self.assertNotIn('run --rm --no-deps migrate', result.stdout)
+        self.assertNotIn('compose stop', result.stdout)
+        self.assertNotIn('compose up ', result.stdout)
+
+    def test_migrate_cannot_accept_inherited_lease_assertion_or_stop_apps_without_lease(self):
+        result, marker = self.run_shell(r'''
+validate_prod() { :; }
+prod_app_services_running() { return 0; }
+migrate_prod
+''', inherited_lease=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(marker)
+        self.assertNotIn('compose ', result.stdout)
+
+    def test_restore_refuses_missing_operations_lease_before_staging_or_replacement(self):
+        result, marker = self.run_shell(r'''
+preflight() { :; }
+ensure_configuration_values() { :; }
+: > "$SELFHOST_DIR/archive"
+restore_prod "$SELFHOST_DIR/archive" --yes
+''')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('exclusive operations lease', result.stderr)
+        self.assertNotIn('compose ', result.stdout)
+        self.assertFalse(marker)
+
+    def test_schema_helper_rejects_failed_service_discovery_before_django_migration(self):
+        result, _ = self.run_shell('\nprod_operations_lock_held=true\nmigrate_prod_schemas\n', config_failure=True)
+        self.assertEqual(result.returncode, 8, result.stderr)
+        self.assertNotIn('run ', result.stdout)
+
+    def test_unmanaged_go_migrations_require_surviving_one_off_inspection(self):
+        body = r'''
+docker() {
+    printf 'docker-inspection\n' >&2
+    case "$TEST_FAILURE" in
+        surviving)
+            case "$*" in *com.docker.compose.oneoff=True*) printf 'migration-container\n' ;; esac ;;
+        inspection)
+            case "$*" in *com.docker.compose.oneoff=True*) return 7 ;; esac ;;
+    esac
+}
+require_no_surviving_lifecycle_helpers
+printf 'admitted\n'
+'''
+        for failure in ('', 'surviving', 'inspection'):
+            with self.subTest(failure=failure):
+                result, _ = self.run_shell(body, failure=failure)
+                self.assertEqual(result.returncode == 0, not failure, result.stderr)
+                self.assertIn('docker-inspection', result.stderr)
+                self.assertEqual('admitted' in result.stdout, not failure)
+        for golang in (False, True):
+            with self.subTest(historical_go=golang):
+                result, _ = self.run_shell(body, golang=golang, migrator=False, failure='inspection')
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn('docker-inspection', result.stderr)
+
+    def test_first_configuration_has_no_migration_container_to_inspect(self):
+        result, _ = self.run_shell(r'''
+rm "$PROD_ENV"
+docker() { printf 'unexpected Docker inspection\n' >&2; return 7; }
+require_no_surviving_lifecycle_helpers
+''')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn('unexpected', result.stderr)
+
+    def test_migration_caller_waits_for_real_operations_lease_and_retains_it_through_both_schemas(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / '.operations').mkdir()
+            (root / '.env').write_text('APP_URL=http://fixture.invalid\n')
+            lock = root / '.operations/lifecycle.lock'
+            flock = root / 'flock'
+            flock.write_text(f'#!{sys.executable}\nimport fcntl,sys\nfcntl.flock(int(sys.argv[-1]), fcntl.LOCK_EX)\n')
+            flock.chmod(0o755)
+            checker = root / 'check.py'
+            checker.write_text('''import fcntl,os,sys
+with open(os.environ['TEST_OPERATION_LOCK'], 'a') as handle:
+    try:
+        fcntl.flock(handle, fcntl.LOCK_SH | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print('exclusive-lease:' + sys.argv[1], flush=True)
+    else:
+        raise SystemExit('migration caller did not retain exclusive operations lease')
+''')
+            script = DEFINITIONS + r'''
+require_no_surviving_lifecycle_helpers() { :; }
+validate_prod() { :; }
+prod_app_services_running() { return 1; }
+prod_compose() {
+    case "$*" in
+        'config --services'|'--profile tools config --services')
+            printf 'api\napi-go\nworker\nbeat\nweb\nmigrate\nmigrate-go\n' ;;
+        *'run --rm --no-deps migrate') "$TEST_PYTHON" "$TEST_CHECK" django ;;
+        *'run --rm --no-deps migrate-go') "$TEST_PYTHON" "$TEST_CHECK" go ;;
+        *) printf 'compose %s\n' "$*" ;;
+    esac
+}
+run_locked_prod_command migrate
+'''
+            environment = {**os.environ, 'PATH': str(root) + ':' + os.environ['PATH'],
+                           'ASSOZETA_INSTALL_ROOT': str(root), 'TEST_PYTHON': sys.executable,
+                           'TEST_CHECK': str(checker), 'TEST_OPERATION_LOCK': str(lock)}
+            with lock.open('a') as held:
+                fcntl.flock(held, fcntl.LOCK_SH)
+                process = subprocess.Popen(['sh', '-c', script], env=environment,
+                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                try:
+                    with self.assertRaises(subprocess.TimeoutExpired):
+                        process.communicate(timeout=0.2)
+                    self.assertFalse((root / '.operations/maintenance.flag').exists())
+                    fcntl.flock(held, fcntl.LOCK_UN)
+                    stdout, stderr = process.communicate(timeout=15)
+                    self.assertEqual(process.returncode, 0, stderr)
+                    self.assertIn('exclusive-lease:django', stdout)
+                    self.assertIn('exclusive-lease:go', stdout)
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                        process.communicate()
+            with lock.open('a') as released:
+                fcntl.flock(released, fcntl.LOCK_EX | fcntl.LOCK_NB)
 
 
 class GoRunningVersionTests(unittest.TestCase):

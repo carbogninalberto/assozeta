@@ -15,9 +15,12 @@ the original `DBHOST`/`DBPORT` directly because the migration driver's session
 advisory lock is incompatible with transaction pooling. It applies only additive
 Go operational migrations, never Django business migrations or destructive down
 migrations. The deployment caller must hold the existing exclusive operations
-lock after backup and before admitting workers; automatic lifecycle invocation
-is still required future work. Running the command alone does not acquire that
-deployment lock or make activation safe.
+lock throughout migrations and before resuming application/background services;
+managed updates take their backup first. The tools-profile `migrate-go`
+service is now invoked after Django migration by the ordinary lifecycle; see
+[the lifecycle boundary](../../docs/architecture/go-migration/operational-migrations.md).
+Running the command alone does not acquire that deployment lock or make
+activation safe.
 
 The worker requires a nonblank `DATA_RESTORE_LOCK_PATH` so a standalone invocation
 cannot silently disable shared-lock and pending-restore admission. Use the same

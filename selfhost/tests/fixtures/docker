@@ -32,6 +32,12 @@ if 'pg_dump' in args and (fixtures / 'hold-backup').exists():
     (fixtures / 'backup-blocked').write_text('backup reached PostgreSQL snapshot\n')
     while (fixtures / 'hold-backup').exists():
         time.sleep(0.1)
+if args[0] == 'compose' and 'run' in args and args[-1] == 'migrate-go' and (fixtures / 'hold-go-launch').exists():
+    # Timing only: the real CLI and packaged migration execute after this gate.
+    # The test can acquire a PostgreSQL lock after backup, before migration starts.
+    (fixtures / 'go-launch-ready').write_text('Go migration launch reached\n')
+    while (fixtures / 'hold-go-launch').exists():
+        time.sleep(0.1)
 
 
 def pull(reference):

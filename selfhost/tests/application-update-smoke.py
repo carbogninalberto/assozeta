@@ -11,6 +11,7 @@ import argparse
 import io
 import json
 import os
+import select
 from pathlib import Path
 import shutil
 import socket
@@ -54,6 +55,10 @@ def run(legacy=False, browser=False, operations_only=False, legacy_controller=Fa
     success = False
     historical_controller = None
     competing_backup = None
+    go_blocker = None
+    go_waiter = None
+    go_intent_snapshot = None
+    go_migration_interruption = False
 
     def command(args, **kwargs):
         with log.open('a') as output:
@@ -514,6 +519,13 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             # Delivery retains existing authoritative Celery ownership.
             for service in ('worker', 'beat'):
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
+            settings = read_env(env_file)
+            sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '2|f'
+            assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
+            if go_intent_snapshot is not None:
+                actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
+                assert actual == go_intent_snapshot, 'Recovery changed or lost durable Go intent'
 
         assert api('access')['is_owner']
         assert api('admin/updates')['available']
@@ -595,6 +607,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert not capture(['docker', 'ps', '-aq', '--filter',
                 f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=api-go'])
             assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
+            assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == 't'
             assert_logo()
             await_runner_version('1.0.17')
             if browser:
@@ -639,6 +652,9 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert retried['id'] == operation['id'] and retried['status'] == 'succeeded'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
+        command(compose(*database, "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'update-smoke','{\"checkpoint\":\"source\",\"integer\":9007199254740993}',3,clock_timestamp())"), env=environment)
+        go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
+        go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
@@ -776,6 +792,70 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert_logo()
 
+        print('Testing abrupt runner interruption while the packaged Go migration waits in PostgreSQL.', flush=True)
+        (fixtures / 'go-launch-ready').unlink(missing_ok=True)
+        (fixtures / 'hold-go-launch').touch()
+        interrupted_go = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
+        wait_marker('go-launch-ready')
+        # Backup is complete. This synthetic mutation must survive the rejected
+        # overlapping recovery, then disappear when the source backup is restored.
+        command(compose(*database, "UPDATE public.assozeta_go_jobs SET payload='{\"checkpoint\":\"after-snapshot\"}' WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
+        changed_intent = capture(compose(*database, go_intent_query), env=environment)
+        assert changed_intent != go_intent_snapshot
+        with log.open('a') as output:
+            go_blocker = subprocess.Popen(compose('exec', '-T', 'postgres', 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1',
+                '-U', original_env['DBUSER'], '-d', original_env['DBNAME']), env=environment,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=output, text=True)
+        go_blocker.stdin.write("BEGIN; LOCK TABLE public.assozeta_go_schema_migrations IN ACCESS EXCLUSIVE MODE; SELECT 'go-schema-locked';\n")
+        go_blocker.stdin.flush()
+        assert select.select([go_blocker.stdout], [], [], 10)[0], 'Fixture PostgreSQL lock not acquired'
+        assert go_blocker.stdout.readline().strip() == 'go-schema-locked'
+        (fixtures / 'hold-go-launch').unlink()
+        running_go = ['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}',
+                      '--filter', 'label=com.docker.compose.service=migrate-go', '--filter', 'label=com.docker.compose.oneoff=True']
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            go_container = capture(running_go)
+            waiting = capture(compose(*database, "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE wait_event_type='Lock' AND query ILIKE '%assozeta_go_schema_migrations%')"), env=environment)
+            if go_container and waiting == 't':
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError('Packaged Go migration never blocked on actual PostgreSQL history')
+        details = json.loads(capture(['docker', 'inspect', go_container]))[0]
+        assert details['Config']['Image'] == backend_go[4] and details['Config']['Entrypoint'] == ['/app/migrate']
+        assert details['Config']['User'] == '10001:10001' and details['HostConfig']['ReadonlyRootfs']
+        go_waiter = subprocess.Popen(['docker', 'wait', go_container], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        runner_container = capture(['docker', 'ps', '-q', '--filter', f'label=com.docker.compose.project={project}-updater'])
+        command(['docker', 'kill', '--signal', 'KILL', runner_container])
+        transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
+        assert capture(running_go) == go_container, 'Go one-off did not survive updater termination'
+        with log.open('a') as output:
+            rejected = subprocess.run(recover + [transaction['backup']['path']], stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, text=True, timeout=10)
+            output.write(rejected.stdout)
+        assert rejected.returncode != 0, 'Recovery overlapped an active Go migration'
+        assert 'a lifecycle helper is still running after an interruption' in rejected.stdout
+        assert capture(running_go) == go_container, 'Go migration exited before overlap refusal was proved'
+        assert read_env(env_file)['ASSOZETA_VERSION'] == '2.0.4'
+        assert capture(compose(*database, go_intent_query), env=environment) == changed_intent
+        go_blocker.stdin.write('ROLLBACK;\n\\q\n')
+        go_blocker.stdin.flush()
+        assert go_blocker.wait(timeout=10) == 0
+        go_blocker = None
+        exited, diagnostic = go_waiter.communicate(timeout=20)
+        assert go_waiter.returncode == 0 and exited.strip() == '0', 'Packaged migration did not finish successfully after lock release'
+        go_waiter = None
+        assert not capture(running_go)
+        command(['docker', 'start', runner_container])
+        await_runner_version('2.0.2')
+        assert assert_interrupted_gate(interrupted_go)['failed_stage'] == 'migrating'
+        command(recover + [transaction['backup']['path']])
+        assert_dual_apis('2.0.2')
+        assert next(item for item in runner_status()['history'] if item['id'] == interrupted_go['id'])['status'] == 'recovered'
+        assert_logo()
+        go_migration_interruption = True
+
         print('Testing abrupt runner interruption before the recovery snapshot exists.', flush=True)
         (fixtures / 'backup-blocked').unlink(missing_ok=True)
         (fixtures / 'hold-backup').touch()
@@ -820,6 +900,19 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 print('Private service diagnostics incomplete; continuing fixture cleanup.', flush=True)
         (fixtures / 'hold-backup').unlink(missing_ok=True)
         (fixtures / 'hold-migration').unlink(missing_ok=True)
+        (fixtures / 'hold-go-launch').unlink(missing_ok=True)
+        if go_blocker is not None:
+            try:
+                go_blocker.communicate('ROLLBACK;\n\\q\n', timeout=10)
+            except (OSError, subprocess.SubprocessError):
+                go_blocker.kill()
+                go_blocker.wait(timeout=10)
+        if go_waiter is not None:
+            try:
+                go_waiter.communicate(timeout=40)
+            except subprocess.TimeoutExpired:
+                go_waiter.kill()
+                go_waiter.wait(timeout=10)
         if competing_backup is not None:
             try:
                 competing_backup.wait(timeout=180)
@@ -837,7 +930,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         remove_disposable_project(project)
         if success:
-            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'execution_owner': 'django-celery', 'historical_controller': historical_controller})
+            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller})
             shutil.rmtree(directory)
         else:
             print(f'Failure artifacts retained privately at {directory}', flush=True)
