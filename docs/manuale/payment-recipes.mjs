@@ -1,5 +1,6 @@
-// Profile source re-reviewed: credential and profile writes protect unrelated columns;
-// existing user-facing settings/registration workflows remain unchanged.
+// Profile source re-reviewed: profile, association and audit writes now commit atomically;
+// locked reads and selected columns preserve concurrent changes. Successful settings
+// and registration workflows remain unchanged; failed saves leave no partial profile.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
@@ -29,7 +30,7 @@ const reviewed = {
   "UI/src/components/filters/FilterSelect.svelte": "556100c1c9aecd36f7aad7a3de0ad389ecd908517a8e8934586474ff111c35e5",
   "UI/src/routes/accounting/receipts/modals/EditModal.svelte": "33f23e11f3b2d8e8abc3ec748c8190915d6114f5128cadc7664d8824304f5873",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
-  "BE/application/views/profile_views.py": "a8d85d6ea8aed975e85e814beb6a28e0b473a110ead32a45c9e30c5af1bfe295"
+  "BE/application/views/profile_views.py": "66719e85b6e918943fd7246f7ec15c39e98b77f1ab32b8b443f9a3de60b94697"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Pagamenti</span>",53],

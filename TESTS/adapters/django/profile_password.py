@@ -181,7 +181,7 @@ def run(work,log,tool_env,address):
             assert state.first_name=='Concurrent HTTP','profile update did not persist'
             entries=list(LogEntry.objects.exclude(pk__in=events))
             assert len(entries)==1 and entries[0].changes_dict=={'first_name':['First','Concurrent HTTP']} and entries[0].object_pk==identifier and str(entries[0].actor_id)==identifier,'profile audit changed unrelated fields'
-            assert check_password(new,state.password),'Legacy Django profile HTTP save overwrote the password change'
+            assert check_password(new,state.password),'Profile HTTP save overwrote the password change'
         finally:
             User.original_objects.filter(pk=identifier).update(password=initial[identifier],first_name='First')
             LogEntry.objects.exclude(pk__in=events).delete()
@@ -216,8 +216,9 @@ def run(work,log,tool_env,address):
             try:return Client(base).request('GET','/readyz')[0]==200
             except OSError:return False
         poll(ready,bool,timeout=30);contracts(base);concurrent_updates(base)
-        for producer in (django_base,base):real_profile_interleaving(producer,django_base)
-        print("Two real legacy-profile/password HTTP races passed",flush=True)
+        for producer in (django_base,base):
+            for profile_writer in (django_base,base):real_profile_interleaving(producer,profile_writer)
+        print("Four real profile/password HTTP races passed",flush=True)
         for producer,consumer in [(django_base,base),(base,django_base),(django_base,django_base),(base,base)]:
             target=cases[0]['target'];before=User.original_objects.filter(pk=target).values().get()
             try:
@@ -231,7 +232,7 @@ def run(work,log,tool_env,address):
             assert snapshot()==seeded and cache_snapshot()==cache_before,'password/login switching changed unrelated state'
         subprocess.run(['go','test','-race','-tags=profilepasswordintegration','./internal/service','-run','^TestProfilePasswordPostgres$','-count=1'],cwd=ROOT/'BE_GO',check=True,timeout=240,env={**tool_env,'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
         assert snapshot()==seeded and cache_snapshot()==cache_before,'Go mutation integration changed fixture state'
-        return {'http_effect_cases_per_backend':len(cases),'locked_concurrency_scenarios_per_backend':3,'cross_runtime_login_flows':4,'legacy_profile_writer_races':2,'complete_profile_password_parity':False}
+        return {'http_effect_cases_per_backend':len(cases),'locked_concurrency_scenarios_per_backend':3,'cross_runtime_login_flows':4,'legacy_profile_writer_races':2,'go_profile_writer_races':2,'complete_profile_password_parity':False}
     finally:
         server.should_exit=True;thread.join(timeout=10)
         if api is not None and api.poll() is None:

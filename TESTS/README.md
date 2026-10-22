@@ -1086,3 +1086,17 @@ and previously issued JWTs. `profilepasswordintegration` measures the real
 credential transaction's query/pool bounds, cancellation and write rollback.
 The full accounts runner includes this adapter. This is current-model evidence,
 not complete frontend, historical-data or deployment-switching parity.
+
+### Profile mutation adapter
+
+`python TESTS/adapters/django/accounts.py --only profile-update` runs 52 portable
+HTTP/status/body/effect/audit cases against both actual roots, four deterministic
+locked-row scenarios per backend and the required `profileupdateintegration`
+PostgreSQL suite. It checks atomic person/association/audit writes, impersonation,
+foreign-reference denials, legacy conversions/nulls, native avatars and response
+errors after commit. The PostgreSQL suite measures mutation-only statement counts,
+24 competing writers, cancellation before/during writes, pool release/recovery and
+repository owner/scope predicates. Full `accounts.py` includes this adapter and all
+four Django/Go profile-versus-password writer combinations. Only disposable
+current-model fixtures are used; historical migration and frontend parity remain
+separate requirements.

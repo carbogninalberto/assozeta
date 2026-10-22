@@ -21,9 +21,9 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['profile-password','profile-info','login-http','login-response','medical-orphan-cleanup','subscription-auto-archive','payment-save-inputs','credential-concurrency','payment-description','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','two-factor-update','two-factor-setup','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['profile-update','profile-password','profile-info','login-http','login-response','medical-orphan-cleanup','subscription-auto-archive','payment-save-inputs','credential-concurrency','payment-description','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','two-factor-update','two-factor-setup','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'profile-password':'profile-password','profile-info':'profile-info','login-http':'login-http','login-response':'image-dispatch-response','medical-orphan-cleanup':'medical-orphan-cleanup','subscription-auto-archive':'subscription-auto-archive','payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','two-factor-update':'two-factor-update','two-factor-setup':'two-factor-setup','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'profile-update':'profile-update','profile-password':'profile-password','profile-info':'profile-info','login-http':'login-http','login-response':'image-dispatch-response','medical-orphan-cleanup':'medical-orphan-cleanup','subscription-auto-archive':'subscription-auto-archive','payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','two-factor-update':'two-factor-update','two-factor-setup':'two-factor-setup','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -234,6 +234,13 @@ def main():
                         check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_REQUESTS_FIXTURE': str(scoped_requests_fixture), 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                             f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
+                    if options.only == 'profile-update':
+                        from TESTS.adapters.django.profile_update import run as profile_update
+                        result=profile_update(work,log,tool_env,identity_cache)
+                        connections.close_all()
+                        report={'success':True,**result,'schema':'current Django models; migration history not exercised','customer_data':'none'}
+                        print(json.dumps(report),flush=True)
+                        return
                     if options.only == 'profile-password':
                         from TESTS.adapters.django.profile_password import run as profile_password
                         result=profile_password(work,log,tool_env,identity_cache)
@@ -319,6 +326,8 @@ def main():
                     profile_info_result=profile_info(work,log,tool_env,identity_cache)
                     from TESTS.adapters.django.profile_password import run as profile_password
                     profile_password_result=profile_password(work,log,tool_env,identity_cache)
+                    from TESTS.adapters.django.profile_update import run as profile_update
+                    profile_update_result=profile_update(work,log,tool_env,identity_cache)
                     from TESTS.adapters.django.retired_billing import run as retired_billing
                     retired_billing_contracts=retired_billing(work,log,tool_env,identity_cache)
                     if options.only == 'retired-billing':
@@ -433,6 +442,7 @@ def main():
                 report['two_factor_setup']=two_factor_setup_result
                 report['profile_info']=profile_info_result
                 report['profile_password']=profile_password_result
+                report['profile_update']=profile_update_result
                 report['profile_images']=profile_image_result
                 report['identifier_http_contracts_per_backend']=identifier_contracts
                 report['session_auth_cases']=session_auth_cases
