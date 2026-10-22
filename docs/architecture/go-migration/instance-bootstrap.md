@@ -86,3 +86,19 @@ implicit `errexit` handling inside the function. Three actual image-helper cases
 verify optional success, wrong-release rejection and required-package absence;
 the derived invalid fixture image is removed. The full update/recovery matrix
 must still be rerun with this additional Go gate after main alignment.
+
+
+The installed-bundle reader library additionally checks public applicability and
+returns independently verified asset bytes. Thirty-six explicit fixtures run
+against the production Django asset function body and the Go library, including
+stale sources, feature selection, private sections, duplicate paths, symlinks and
+tampered assets. Five Go groups cover copies, cache behavior, concurrent readers
+and cancellation checks. Run
+`python TESTS/adapters/django/manual_reader_library.py` for this offline proof.
+It executes the actual undecorated Django body with a supplied installed-bundle
+context; it does not exercise HTTP authentication or routing. No reader routes,
+search, preview, development source, remote refresh or assistant integration are
+activated by this library. Cancellation checks surround filesystem operations;
+they do not promise interruptible filesystem I/O. Runtime asset compatibility
+checks the resolved PNG suffix and captured hash, while the installation gate
+also validates the PNG header.

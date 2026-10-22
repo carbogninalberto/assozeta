@@ -78,6 +78,7 @@ jobs:
         run: |
           python TESTS/adapters/django/manual_availability.py
           python TESTS/adapters/django/manual_bundle.py
+          python TESTS/adapters/django/manual_reader_library.py
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go
       - name: Verify shared accounts, identities and scoped resources
@@ -149,6 +150,7 @@ jobs:
             quality-reports/go-migration/instance-bootstrap-go/
             quality-reports/go-migration/manual-availability/
             quality-reports/go-migration/manual-bundle/
+            quality-reports/go-migration/manual-reader/
             quality-reports/go-migration/manual-image/
             quality-reports/go-migration/environment/
             quality-reports/go-migration/restore-admission/
