@@ -6,6 +6,8 @@
 // locked reads and selected columns preserve concurrent profile changes.
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 export const settingsAdditionalReviewedSources = Object.freeze({
+  "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
+  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e",
   "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
@@ -28,6 +30,8 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3"
 });
 const contracts = {
+  "atomic_audit_context": ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
+  "audit_index_write": ["BE/application/signals.py", "def create_audit_log_index(", 37],
   "menu": [
     "UI/src/routes/profile/ProfileMenu.svelte",
     "const pages = profilePages;",
@@ -249,7 +253,9 @@ const sections = [
         "intent": "settings.firma.del.presidente.e.timbro",
         "contracts": [
             "signature",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -262,7 +268,9 @@ const sections = [
         "contracts": [
             "print_text",
             "profile_update",
-            "printed_invoice"
+            "printed_invoice",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -340,7 +348,9 @@ const sections = [
         "intent": "settings.modelli.documenti",
         "contracts": [
             "models",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -353,7 +363,9 @@ const sections = [
         "contracts": [
             "print_text",
             "extra",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -379,7 +391,9 @@ const sections = [
             "mandatory",
             "public_fields",
             "public_signature",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -417,7 +431,9 @@ const sections = [
         "intent": "settings.checkout",
         "contracts": [
             "checkout",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -535,7 +551,9 @@ const sections = [
         "contracts": [
             "stripe",
             "stripe_methods",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -548,7 +566,9 @@ const sections = [
         "contracts": [
             "2fa",
             "2fa_backend",
-            "menu"
+            "menu",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     }
 ];
