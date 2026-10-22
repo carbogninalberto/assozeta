@@ -71,6 +71,16 @@ func adaptProviders(ctx context.Context, cfg aws.Config, options []func(*sdkconf
 			break
 		}
 	}
+	if depth > 0 {
+		web, err := selectWebIdentity(profiles[shared.Profile], false)
+		if err != nil {
+			return aws.Config{}, err
+		}
+		if web != nil {
+			cfg.Credentials = web.provider(cfg)
+			return cfg, nil
+		}
+	}
 	if aws.IsCredentialsProvider(cfg.Credentials, &processcreds.Provider{}) {
 		if shared.CredentialProcess == "" {
 			return aws.Config{}, ErrConfiguration

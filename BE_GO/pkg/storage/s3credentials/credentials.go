@@ -125,6 +125,7 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 		profile = sdkProfileName(profiles, aliases, profile)
 		options = append(options, sdkconfig.WithSharedConfigProfile(profile))
 	}
+	hasStatic := false
 	if o.Profile == "" {
 		access, secret, token := o.AccessKey, o.SecretKey, o.SessionToken
 		if access == "" && secret == "" && token == "" {
@@ -138,7 +139,32 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 			}
 		}
 		if access != "" && secret != "" {
+			hasStatic = true
 			options = append(options, sdkconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(access, secret, token)))
+		}
+	}
+	var web *webIdentityConfig
+	if !hasStatic {
+		selected := profile
+		if selected == "" {
+			selected = "default"
+		}
+		web, err = selectWebIdentity(profiles[selected], o.Profile == "")
+		if err != nil {
+			return nil, err
+		}
+		if web != nil {
+			// Preserve Boto3 precedence even when the SDK would select shared
+			// static keys or treat an environment-selected profile as explicit.
+			options = append(options, sdkconfig.WithCredentialsProvider(aws.AnonymousCredentials{}))
+		} else if profile == "" {
+			_, role := profiles[selected]["role_arn"]
+			_, webFile := profiles[selected]["web_identity_token_file"]
+			if role && !webFile {
+				// Boto3 resolves the default ordinary role before considering
+				// web-identity environment variables. The SDK reverses this.
+				options = append(options, sdkconfig.WithSharedConfigProfile(selected))
+			}
 		}
 	}
 	cfg, roleSource, err := loadProviders(ctx, options)
@@ -151,7 +177,11 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 	if cfg.Credentials == nil {
 		return nil, ErrConfiguration
 	}
-	cfg, err = adaptProviders(ctx, cfg, options, profiles, roleSource, o.MFAToken, 0)
+	if web != nil {
+		cfg.Credentials = web.provider(cfg)
+	} else {
+		cfg, err = adaptProviders(ctx, cfg, options, profiles, roleSource, o.MFAToken, 0)
+	}
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
