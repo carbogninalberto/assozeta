@@ -947,3 +947,11 @@ See `BE_GO/pkg/storage/s3credentials/README.md` for precise limits. Direct/defau
 metadata chains, SSO/legacy files, full INI and provider precedence, early renewal,
 live cloud/IdP policy, `.env` fallback-chain and production composition remain open.
 No additional cleanup task or backend activation is claimed.
+
+`adapters/django/login_gif.py` adds 644 declared first-frame GIF cases against
+Pillow and the actual Django helper: palettes, transparency/canvas offsets,
+interlacing, LZW widths/dictionaries, subblocks/truncation, 64 KiB refill boundaries,
+comments, animation isolation and exact JPEG/original decisions. The full accounts
+adapter and shipped-image codec check include them. Unit/race checks cover stage
+budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
+Shared image dispatch and public login are still incomplete.
