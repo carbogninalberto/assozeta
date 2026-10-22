@@ -26,6 +26,15 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(verification['env']['BASE_REVISION'], '${{ github.event.pull_request.base.sha }}')
         self.assertIn('--changed-since "$BASE_REVISION"', verification['run'])
         self.assertNotIn('--allow-dirty', verification['run'])
+    def test_installable_images_require_complete_current_go_inventory(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
+        self.assertEqual(jobs['go-quality']['uses'], './.github/workflows/go-quality.yml')
+        self.assertIn('go-quality', jobs['publish']['needs'])
+        quality = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']['golang']
+        inventory_gate = next(step for step in quality['steps']
+                              if step.get('run') == 'python3 -m TESTS.inventory.release_gate')
+        self.assertEqual(inventory_gate['if'], "github.event_name == 'release'")
+        self.assertFalse(inventory_gate.get('continue-on-error', False))
 
     def test_installable_images_require_manual_verification(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
@@ -59,13 +68,14 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_failed_manual_gate_cannot_allow_release_publication(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         expression = jobs['publish']['if'].strip().removeprefix('${{').removesuffix('}}').strip()
-        for event, manual, quality, cancelled in itertools.product(
+        for event, manual, quality, go_quality, cancelled in itertools.product(
                 ('release', 'workflow_dispatch', 'push'),
                 ('success', 'failure', 'cancelled', 'skipped'),
+                ('success', 'failure', 'cancelled', 'skipped'),
                 ('success', 'failure', 'cancelled', 'skipped'), (True, False)):
-            with self.subTest(event=event, manual=manual, quality=quality, cancelled=cancelled):
+            with self.subTest(event=event, manual=manual, quality=quality, go_quality=go_quality, cancelled=cancelled):
                 values = {'validate': 'success', 'production-smoke': 'success',
-                          'manual-release': manual, 'selfhost-quality': quality}
+                          'manual-release': manual, 'selfhost-quality': quality, 'go-quality': go_quality}
                 source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
                 source = source.replace('github.event_name', repr(event))
                 source = source.replace('!cancelled()', repr(not cancelled)).replace('&&', ' and ').replace('||', ' or ')
@@ -73,7 +83,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
                 allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.Eq, ast.Constant)
                 self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
                 permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
-                expected = not cancelled and (
+                expected = not cancelled and go_quality == 'success' and (
                     manual == 'success' or event == 'push' and manual == 'skipped') and (
                     quality == 'success' or event == 'push' and quality == 'skipped')
                 self.assertEqual(permitted, expected)

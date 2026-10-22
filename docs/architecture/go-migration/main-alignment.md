@@ -40,9 +40,10 @@ do not substitute for executing the installed-manual appliance rehearsal.
 
 ## Findings that affect implementation
 
-The fixed `/api/v1` and `/api/v2` proxy routes preserve tested transport behavior,
-but ordinary Compose delivery still lacks `api-go`. The existing lifecycle
-commands stop/start/verify only Django API, worker and Beat. Adding a service
+At the initial reassessment, the fixed `/api/v1` and `/api/v2` proxy routes
+preserved tested transport behavior, but ordinary Compose delivery lacked
+`api-go`. The lifecycle commands stopped/started/verified only Django API,
+worker and Beat. Adding a service
 alone would leave restore, recovery and activation incomplete. Both APIs must
 share the existing operations lock and maintenance admission mechanism.
 
@@ -53,6 +54,14 @@ the schema version would make old controllers reject the release. Delivery
 tests must exercise the historical controller, not only the target updater or
 standalone update command. New artifacts also need immutable references,
 ordinary publishing gates, pre-activation validation and rollback cleanup.
+
+The following [delivery increment](delivery-transition.md) adds both APIs to
+ordinary Compose and lifecycle handling, while retaining the four-image manifest
+protocol and validating Go through an additive extension. Actual fresh-install,
+backup/restore and current-controller update/recovery proofs pass. Historical
+controller and browser verification remain separate evidence; coordinated backend
+and execution ownership is still unfinished. Subsequent periodic fetches during
+these checks confirm `main@941321e` remains the current baseline.
 
 Synthetic proxy callbacks and WebSocket frames do not prove real application
 links or protocol authorization. Django SSO still generates its root callback;
@@ -79,6 +88,19 @@ pass. A new private companion patch refreshes 507 bindings without changing any
 of the 44 authored MDX files. It does not prove publication or installed-package
 acceptance. See ignored `quality-reports/go-migration/main-alignment/` for the
 source review, test logs and companion patch.
+
+A later reuse review found that helper-only changes could retain old full-capture
+evidence: affected profile/2FA recipes omitted `audit_context.py` from their
+explicit dependency closure. The correction binds that helper and the audit
+index signal to all 29 existing consumers, preserving reuse for unrelated recipes.
+Reviewed atomicity contracts and four authored capture workflows also record the
+actual helper/index hashes. The new private companion patch refreshes 105 further
+bindings while remaining 507 changed bindings against its unchanged manual base;
+all 44 authored MDX files remain byte-identical. The earlier patch is retained.
+All 197 Python manual tests and eleven Node tests pass after this correction;
+six new tests cover reuse invalidation, retained unrelated captures, dependency
+hashes and changed-source rejection. The source/test correction is committed as
+`bc03bb7`; the separate manual patch remains private and unpublished.
 
 ## Publication boundary
 

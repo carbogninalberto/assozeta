@@ -71,7 +71,27 @@ def unpack(content):
     return files
 
 
-def validate_manifest(manifest, tag):
+def go_backend_reference(manifest, *, required=False):
+    """Validate the additive Go image without changing the legacy core protocol."""
+    extensions = manifest.get('extensions', {})
+    if not isinstance(extensions, dict):
+        raise ReleaseError('Release extensions must be an object.')
+    if 'go_backend' not in extensions:
+        if required:
+            raise ReleaseError('The target release must include the Go backend image extension.')
+        return None
+    extension = extensions['go_backend']
+    if (not isinstance(extension, dict) or set(extension) != {'schema_version', 'image'}
+            or type(extension.get('schema_version')) is not int or extension['schema_version'] != 1):
+        raise ReleaseError('This release requires a different Go backend image protocol.')
+    reference = extension['image']
+    expected = rf'ghcr\.io/{re.escape(REPOSITORY.split("/")[0])}/assozeta-backend-go@sha256:[a-f0-9]{{64}}'
+    if not isinstance(reference, str) or not re.fullmatch(expected, reference):
+        raise ReleaseError('Release contains an invalid Go backend image reference.')
+    return reference
+
+
+def validate_manifest(manifest, tag, *, require_go_backend=False):
     if not isinstance(manifest, dict) or manifest.get('schema_version') != 1 or manifest.get('version') != image_version(tag):
         raise ReleaseError('This release requires a different updater protocol.')
     if not isinstance(manifest.get('bundle_sha256'), str) or not re.fullmatch(r'[a-f0-9]{64}', manifest['bundle_sha256']):
@@ -83,6 +103,10 @@ def validate_manifest(manifest, tag):
         expected = rf'ghcr\.io/{re.escape(REPOSITORY.split("/")[0])}/assozeta-{name}@sha256:[a-f0-9]{{64}}'
         if not isinstance(images[name], str) or not re.fullmatch(expected, images[name]):
             raise ReleaseError('Release contains an invalid image reference.')
+    # Historical source metadata remains readable; every new target must supply
+    # the separately versioned extension. Old bootstrap loaders still see four
+    # core images and can start this target's updater, which enforces the fifth.
+    go_backend_reference(manifest, required=require_go_backend)
     if not isinstance(manifest.get('files'), dict) or not manifest['files']:
         raise ReleaseError('Release file manifest is missing.')
     for name, sha in manifest['files'].items():
@@ -127,7 +151,9 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
     if pending.exists():
         raise ReleaseError('A previous release transaction needs recovery before another update.')
     tag = resolve_tag(version)
-    manifest = validate_manifest(read_json(f'{RELEASES_URL}/download/{tag}/assozeta-update.json'), tag)
+    manifest = validate_manifest(read_json(f'{RELEASES_URL}/download/{tag}/assozeta-update.json'), tag,
+                                 require_go_backend=True)
+    go_reference = manifest['extensions']['go_backend']['image']
     content = download(f'{RELEASES_URL}/download/{tag}/assozeta-selfhost-{tag}.tar.gz')
     if digest(content) != manifest['bundle_sha256']:
         raise ReleaseError('Release bundle checksum verification failed.')
@@ -149,7 +175,7 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
             if local != baseline.get(name) and local != desired:
                 raise ReleaseError(f'Local changes conflict with the release: {name}. Keep custom settings in the environment or an override file.')
     # Verify and download all immutable application/controller images before changing files.
-    for reference in manifest['images'].values():
+    for reference in (*manifest['images'].values(), go_reference):
         subprocess.run(['docker', 'pull', reference], check=True)
     # The immutable candidate must be usable before changing configuration or
     # managed files. No database, environment file or persistent volume is used.
@@ -183,6 +209,7 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
             'previous_metadata': previous_metadata,
             'phase': 'prepared', 'source_version': image_version(read_env(env_file)['ASSOZETA_VERSION']),
             'target_version': image_version(tag),
+            'target_go_backend_ref': go_reference,
             'operation_id': operation_id,
             'recovery_image': manifest['images']['updater'],
             'backup': {'path': str(Path(backup_archive).resolve()), 'sha256': file_digest(backup_archive)} if backup_archive else None,
@@ -201,6 +228,7 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
         update_env(env_file, {
             'ASSOZETA_VERSION': image_version(tag),
             **{f'ASSOZETA_{name.upper()}_REF': reference for name, reference in manifest['images'].items()},
+            'ASSOZETA_BACKEND_GO_REF': go_reference,
         })
         write_json(baseline_path, manifest['files'])
         write_json(state / 'target-manifest.json', manifest)

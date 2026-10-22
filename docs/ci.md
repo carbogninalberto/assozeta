@@ -7,12 +7,13 @@ repository contents. New commits cancel obsolete runs for the same PR.
 | Changed files | Selected checks |
 | --- | --- |
 | Ordinary `BE/**` code, dependencies or tests | Full backend pytest suite; no Node, UI build or browser setup |
+| `BE_GO/**`, Go contracts/adapters or inventory changes | Reusable Go quality job with portable, PostgreSQL, image and race checks |
 | `BE/instance/**`, backend Dockerfile or entrypoint | Backend suite plus static self-host validation |
 | `UI/**` | All Node tests and the isolated operations browser fixture; no backend build/services |
 | UI Dockerfile or Caddyfile | UI checks plus static self-host validation |
 | `selfhost/tests/browser/**` | UI checks |
 | Browser dependencies/config or `self-instance.spec.js` | Also smoke and upgrade matrix, which executes the full-stack browser spec |
-| `selfhost/**` runtime or integration harness | Static self-host validation, development/production smoke, and legacy/recovery upgrade matrix |
+| `selfhost/**` runtime or integration harness | Static self-host validation, development/production smoke, and legacy application/controller/recovery upgrade matrix |
 | `selfhost/tests/test_*.py` | Static self-host validation including the Python regression suites |
 | Development Compose, CLI, required environment config/examples | Also backend tests because these configure the backend test environment |
 | `Makefile` | Static self-host validation, smoke and upgrade matrix |
@@ -35,6 +36,10 @@ Publishing remains a separate workflow triggered by matching main pushes,
 published releases or manual dispatch. Its complete quality gates remain enabled
 by default. PRs cannot trigger image publishing, release assets, contributor
 updates or the published-release rehearsal.
+The reusable `go-quality.yml` runs for PRs and publication. Release events also
+require its compatibility inventory gate; the current incomplete Go ledger is
+deliberately denied. Passing inventory alone does not prove complete migration
+acceptance.
 
 Local workflow validation:
 

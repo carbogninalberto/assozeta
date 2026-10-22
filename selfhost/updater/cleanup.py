@@ -8,7 +8,7 @@ from common import read_env
 
 
 REPOSITORIES = {f'ghcr.io/carbogninalberto/assozeta-{name}'
-                for name in ('backend', 'web', 'renderer', 'updater')}
+                for name in ('backend', 'backend-go', 'web', 'renderer', 'updater')}
 
 
 def docker(*args):
@@ -16,11 +16,16 @@ def docker(*args):
 
 
 def references(values):
-    for name in ('BACKEND', 'WEB', 'RENDERER', 'UPDATER'):
+    names = ('BACKEND', 'WEB', 'RENDERER', 'UPDATER')
+    # Historical snapshots predate Go. Do not invent a missing image and block
+    # retention checks, but protect any delivered Go digest or configured tag.
+    if values.get('ASSOZETA_BACKEND_GO_REF') or values.get('ASSOZETA_BACKEND_GO_IMAGE'):
+        names += ('BACKEND_GO',)
+    for name in names:
         reference = values.get(f'ASSOZETA_{name}_REF')
         if not reference:
             repository = values.get(f'ASSOZETA_{name}_IMAGE',
-                                    f'ghcr.io/carbogninalberto/assozeta-{name.lower()}')
+                                    f'ghcr.io/carbogninalberto/assozeta-{name.lower().replace("_", "-")}')
             reference = f'{repository}:{values["ASSOZETA_VERSION"].removeprefix("v")}'
         yield reference
 

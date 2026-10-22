@@ -35,6 +35,9 @@ if 'pg_dump' in args and (fixtures / 'hold-backup').exists():
 
 
 def pull(reference):
+    if reference == references.get('fixture-backend-go-3') and (fixtures / 'fail-go-download').exists():
+        (fixtures / 'fail-go-download').unlink()
+        raise SystemExit(26)
     if reference == references['fixture-backend-3'] and (fixtures / 'fail-download').exists():
         (fixtures / 'fail-download').unlink()
         raise SystemExit(25)

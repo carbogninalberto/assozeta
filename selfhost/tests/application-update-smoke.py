@@ -1,8 +1,11 @@
 """Real disposable application upgrade using test-only release/registry transport.
 
-Prerequisites: assozeta-{backend,web,updater}:goal-test and assozeta-renderer:test.
+Prerequisites: assozeta-{backend,backend-go,web,updater}:goal-test and assozeta-renderer:test.
 Pass --legacy to install the immutable v1.0.2 source first, bootstrap the feature,
-then exercise a subsequent owner-authorized update. No production install is used.
+then exercise a subsequent owner-authorized update. --legacy-controller freezes
+v1.0.17 controller/lifecycle code with the current application fixture and verifies
+first Go delivery failure/recovery before a successful owner update. No production
+installation is used.
 """
 import argparse
 import io
@@ -35,7 +38,7 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def run(legacy=False, browser=False, operations_only=False):
+def run(legacy=False, browser=False, operations_only=False, legacy_controller=False):
     host = docker_host()
     directory = Path(tempfile.mkdtemp(prefix='assozeta-application-update-')).resolve()
     installation = directory / 'selfhost'
@@ -49,6 +52,7 @@ def run(legacy=False, browser=False, operations_only=False):
                    'ASSOZETA_SELFHOST_DIR': str(installation), 'ASSOZETA_ENV_FILE': str(env_file),
                    'ASSOZETA_UPDATER_API_VOLUME': f'{project}_updater_api', 'ASSOZETA_UPDATER_STATUS_VOLUME': f'{project}_updater_status'}
     success = False
+    historical_controller = None
     competing_backup = None
 
     def command(args, **kwargs):
@@ -89,7 +93,7 @@ ENTRYPOINT ["python3", "/test-transport/entrypoint.py"]
                     for number in (1, 2, 3, 4)}
         updater = updaters[1]
         images = {f'ghcr.io/carbogninalberto/assozeta-updater:2.0.{number}': updaters[number] for number in (1, 2, 3, 4)}
-        backend = {}
+        backend, backend_go = {}, {}
         for number in (1, 2, 3, 4):
             backend[number] = build(f'''FROM assozeta-backend:goal-test
 USER root
@@ -99,6 +103,12 @@ ENV PYTHONPATH=/test-transport:/app ASSOZETA_TEST_FIXTURES=/fixtures
 USER assozeta
 ''', f'{project}-backend:2.0.{number}')
             images[f'fixture-backend-{number}'] = backend[number]
+            backend_go[number] = build(f'''FROM assozeta-backend-go:goal-test
+USER root
+RUN printf '2.0.{number}\\n' > /app/VERSION
+USER 10001:10001
+''', f'{project}-backend-go:2.0.{number}')
+            images[f'fixture-backend-go-{number}'] = backend_go[number]
         web = capture(['docker', 'image', 'inspect', '--format', '{{.Id}}', 'assozeta-web:goal-test'])
         renderer = capture(['docker', 'image', 'inspect', '--format', '{{.Id}}', 'assozeta-renderer:test'])
         images.update({'fixture-web': web, 'fixture-renderer': renderer})
@@ -133,7 +143,7 @@ sys.exit(42)
         command([cli, 'configure', '--domain', f'http://{host}:{port}', '--email', 'owner@example.invalid', '--version', '2.0.1'], env=environment)
         update_env(env_file, {'COMPOSE_PROJECT_NAME': project, 'HTTPS_PORT': str(free_port()),
             'ASSOZETA_BACKEND_REF': backend[1], 'ASSOZETA_WEB_REF': web, 'ASSOZETA_RENDERER_REF': renderer,
-            'ASSOZETA_UPDATER_REF': updater, 'CUSTOM_SETTING': 'preserved-through-upgrade'})
+            'ASSOZETA_UPDATER_REF': updater, 'ASSOZETA_BACKEND_GO_REF': backend_go[1], 'CUSTOM_SETTING': 'preserved-through-upgrade'})
 
         # Publish two local release archives, one healthy and one failing migration.
         managed = snapshot_managed(installation)
@@ -159,6 +169,7 @@ sys.exit(42)
             (destination / bundle_name).write_bytes(bundle)
             metadata = {'schema_version': 1, 'version': f'2.0.{number}', 'bundle_sha256': digest(bundle),
                 'images': {'backend': backend[number], 'web': web, 'renderer': renderer, 'updater': updaters[number]},
+                'extensions': {'go_backend': {'schema_version': 1, 'image': backend_go[number]}},
                 'files': {name: digest(content) for name, content in files.items()}}
             (destination / 'assozeta-update.json').write_text(json.dumps(metadata))
             catalog.append({'id': number, 'tag_name': tag, 'name': tag, 'published_at': '2026-09-01T00:00:00Z',
@@ -166,8 +177,84 @@ sys.exit(42)
                 'assets': [{'name': name, 'state': 'uploaded', 'size': (destination / name).stat().st_size}
                            for name in (bundle_name, 'assozeta-update.json')]})
         (fixtures / 'releases.json').write_text(json.dumps(catalog))
+        if legacy_controller:
+            # Actual released controller/lifecycle source, with only fixture
+            # transport and runtime dependencies supplied by the test image.
+            revision = '14a23c36d2f03ee453f903c07b503460717a79f1'  # v1.0.17
+            source = directory / 'historical'
+            source.mkdir()
+            content = subprocess.check_output(['git', 'archive', revision,
+                'selfhost', 'BE/instance/release_catalog.py'], cwd=ROOT)
+            with tarfile.open(fileobj=io.BytesIO(content)) as release:
+                release.extractall(source, filter='data')
+            historical_controller = {'release': 'v1.0.17', 'commit': revision,
+                'controller_files': {str(path.relative_to(source)): digest(path.read_bytes())
+                    for path in sorted((source / 'selfhost/updater').glob('*.py'))}}
+            historical_controller['controller_files']['BE/instance/release_catalog.py'] = digest(
+                (source / 'BE/instance/release_catalog.py').read_bytes())
+            updater = build(f'''FROM assozeta-updater:goal-test
+RUN rm /runner/*.py
+COPY historical/selfhost/updater/*.py /runner/
+COPY historical/BE/instance/release_catalog.py /runner/
+COPY transport /test-transport
+RUN mv /usr/local/bin/docker /usr/local/bin/docker-real && cp /test-transport/docker /usr/local/bin/docker && chmod +x /usr/local/bin/docker
+ENV PYTHONPATH=/test-transport:/runner ASSOZETA_TEST_FIXTURES={fixtures} RUNNER_VERSION=1.0.17 ASSOZETA_READINESS_ATTEMPTS=5 ASSOZETA_READINESS_DELAY=1
+ENTRYPOINT ["python3", "/test-transport/entrypoint.py"]
+''', f'{project}-updater:released-1.0.17')
+            source_backend = build('''FROM assozeta-backend:goal-test
+USER root
+COPY transport /test-transport
+RUN printf '1.0.17\\n' > /app/VERSION
+ENV PYTHONPATH=/test-transport:/app ASSOZETA_TEST_FIXTURES=/fixtures
+USER assozeta
+''', f'{project}-backend:source-1.0.17')
+            images.update({'fixture-old-controller': updater, 'fixture-old-backend': source_backend,
+                'ghcr.io/carbogninalberto/assozeta-updater:1.0.17': updater})
+            (fixtures / 'images.json').write_text(json.dumps(images))
+            for name in managed:
+                (installation / name).unlink(missing_ok=True)
+            shutil.copytree(source / 'selfhost', installation, dirs_exist_ok=True)
+            composition = (installation / 'compose.yml').read_text().replace(
+                '    - django_static:/app/staticfiles\n',
+                f'    - django_static:/app/staticfiles\n    - {fixtures}:/fixtures:rw\n', 1)
+            composition = composition.replace('      - updater_api:/run/assozeta-updater:ro\n',
+                f'      - updater_api:/run/assozeta-updater:ro\n      - {fixtures}:/fixtures:ro\n')
+            (installation / 'compose.yml').write_text(composition)
+            env_file.unlink()
+            command([cli, 'configure', '--domain', f'http://{host}:{port}', '--email',
+                     'owner@example.invalid', '--version', '1.0.17'], env=environment)
+            update_env(env_file, {'COMPOSE_PROJECT_NAME': project, 'HTTPS_PORT': str(free_port()),
+                'ASSOZETA_BACKEND_REF': source_backend, 'ASSOZETA_WEB_REF': web,
+                'ASSOZETA_RENDERER_REF': renderer, 'ASSOZETA_UPDATER_REF': updater,
+                'CUSTOM_SETTING': 'preserved-through-upgrade'})
+            assert 'ASSOZETA_BACKEND_GO_REF' not in read_env(env_file)
+            assert 'api-go:' not in composition
+            old_files = snapshot_managed(installation)
+            destination = fixtures / 'v1.0.17'
+            destination.mkdir()
+            bundle_path = destination / 'assozeta-selfhost-v1.0.17.tar.gz'
+            with tarfile.open(bundle_path, 'w:gz') as release:
+                for name in old_files:
+                    release.add(installation / name, arcname='selfhost/' + name)
+            source_metadata = {'schema_version': 1, 'version': '1.0.17',
+                'bundle_sha256': digest(bundle_path.read_bytes()), 'files': old_files,
+                'images': {'backend': source_backend, 'web': web, 'renderer': renderer, 'updater': updater}}
+            (destination / 'assozeta-update.json').write_text(json.dumps(source_metadata))
+            catalog.append({'id': 117, 'tag_name': 'v1.0.17', 'name': 'Frozen controller source',
+                'published_at': '2026-09-01T00:00:00Z', 'body': 'Historical four-image protocol',
+                'draft': False, 'prerelease': False, 'assets': []})
+            (fixtures / 'releases.json').write_text(json.dumps(catalog))
+            print('Installing frozen v1.0.17 controller and lifecycle files; application schema uses the current fixture backend.', flush=True)
+
         helper = ['docker', 'run', '--rm', '-v', f'{installation}:{installation}',
                   '-v', '/var/run/docker.sock:/var/run/docker.sock', updater]
+        if legacy_controller:
+            expected = {Path(name).name: sha for name, sha in historical_controller['controller_files'].items()}
+            observed = json.loads(capture(helper + ['-c',
+                "import hashlib,json,pathlib; print(json.dumps({p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('/runner').glob('*.py')}))"]))
+            assert observed == expected, 'Running historical controller source differs from pinned release'
+            historical_controller['image'] = updater
+            historical_controller['application_fixture'] = 'current backend with source version 1.0.17; not a historical application migration proof'
         legacy_files = None
         if legacy:
             # Registry availability is external to the old release. Preload the
@@ -400,8 +487,40 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 time.sleep(1)
             raise AssertionError('Replacement runner did not become ready')
 
+        def assert_data_services_stopped():
+            # Labels also find an orphan target api-go after restoring an older
+            # source Compose file that does not know this service.
+            for service in ('api', 'api-go', 'worker', 'beat'):
+                running = capture(['docker', 'ps', '-q',
+                    '--filter', f'label=com.docker.compose.project={project}',
+                    '--filter', f'label=com.docker.compose.service={service}'])
+                assert not running, 'Data service still running: ' + service
+
+        def assert_dual_apis(version):
+            for prefix in ('/api', '/api/v1', '/api/v2'):
+                for probe in ('healthz', 'readyz'):
+                    request = Request(f'http://127.0.0.1:{port}{prefix}/{probe}',
+                                      headers={'Host': f'{host}:{port}'})
+                    with urlopen(request, timeout=15) as response:
+                        value = json.load(response)
+                    assert value['status'] == ('ok' if probe == 'healthz' else 'ready'), (prefix, probe)
+                    if probe == 'healthz':
+                        assert value['version'].removeprefix('v') == version, (prefix, value)
+            container = capture(compose('ps', '-q', 'api-go'), env=environment)
+            details = json.loads(capture(['docker', 'inspect', container]))[0]
+            assert details['Config']['Image'] == backend_go[int(version.rsplit('.', 1)[1])]
+            assert details['Config']['User'] == '10001:10001'
+            assert details['HostConfig']['ReadonlyRootfs']
+            # Delivery retains existing authoritative Celery ownership.
+            for service in ('worker', 'beat'):
+                assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
+
         assert api('access')['is_owner']
         assert api('admin/updates')['available']
+        if not legacy_controller:
+            assert_dual_apis('2.0.1')
+        else:
+            assert runner_status()['runner_version'] == '1.0.17'
         if legacy:
             releases = api('admin/releases')
             assert releases['latest']['tag'] == 'v2.0.2' and releases['latest']['artifacts_ready']
@@ -436,7 +555,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         def browser_check(phase):
             if not browser:
                 return
-            output = Path(os.environ.get('ASSOZETA_QUALITY_REPORT_DIR', str(directory / 'reports'))) / ('legacy-browser' if legacy else 'browser') / phase
+            output = Path(os.environ.get('ASSOZETA_QUALITY_REPORT_DIR', str(directory / 'reports'))) / ('legacy-browser' if legacy else 'old-controller-browser' if legacy_controller else 'browser') / phase
             output.mkdir(parents=True, exist_ok=True)
             command(['npm', 'test', '--prefix', str(ROOT / 'selfhost/tests/browser')], env={**os.environ,
                 'ASSOZETA_BROWSER_INPUT': str(browser_input), 'ASSOZETA_BROWSER_PHASE': phase,
@@ -455,6 +574,32 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         original_env = read_env(env_file)
         database = ['exec', '-T', 'postgres', 'psql', '-U', original_env['DBUSER'], '-d', original_env['DBNAME'], '-At', '-c']
         command(compose(*database, "CREATE TABLE upgrade_sentinel (value text); INSERT INTO upgrade_sentinel VALUES ('preserved');"), env=environment)
+        if legacy_controller:
+            (fixtures / 'releases.json').write_text(json.dumps(catalog))
+            print('Testing failed first Go delivery through frozen owner-request controller and rollback to four-image source.', flush=True)
+            failed_transition = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4',
+                                                    'request_id': str(uuid4())})['operation']
+            failed_transition = await_operation(failed_transition['id'])
+            assert failed_transition['status'] == 'recovery_required' and failed_transition['failed_stage'] == 'health_check', failed_transition
+            target_go = capture(compose('ps', '-q', 'api-go'), env=environment)
+            assert target_go, 'First Go delivery never started its target API'
+            target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
+            assert target_go_state['Config']['Image'] == backend_go[4]
+            assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
+            pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
+            assert pending['source_version'] == '1.0.17'
+            command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)',
+                              cli, 'recover-upgrade', pending['backup']['path'], '--yes'])
+            assert read_env(env_file) == original_env
+            assert api('admin')['running_version'].removeprefix('v') == '1.0.17'
+            assert not capture(['docker', 'ps', '-aq', '--filter',
+                f'label=com.docker.compose.project={project}', '--filter', 'label=com.docker.compose.service=api-go'])
+            assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
+            assert_logo()
+            await_runner_version('1.0.17')
+            if browser:
+                (fixtures / 'releases.json').write_text(json.dumps([release for release in catalog if release['id'] in (1, 2, 117)]))
+
         print('Starting owner-authorized update to fixture 2.0.2.', flush=True)
         existing_archives = set((installation / 'backups').glob('*.tar.gz'))
         (fixtures / 'hold-backup').touch()
@@ -469,7 +614,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         while not (fixtures / 'backup-blocked').exists() and time.monotonic() < deadline:
             time.sleep(0.2)
         assert (fixtures / 'backup-blocked').exists(), 'Update did not reach its database backup'
-        assert not capture(compose('ps', '--status', 'running', '--services', 'api'), env=environment)
+        assert_data_services_stopped()
         assert_maintenance_web()
         assert_independent_access()
         assert independent_status()['active']['id'] == operation['id']
@@ -493,6 +638,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         retried = api('admin/updates', payload)['operation']
         assert retried['id'] == operation['id'] and retried['status'] == 'succeeded'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
@@ -515,21 +661,24 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         browser_check('completed')
         (fixtures / 'releases.json').write_text(json.dumps(catalog))
         prior_failures = {}
-        for failure, stage in (('fail-backup', 'backup'), ('fail-download', 'downloading')):
-            print(f'Testing controlled {stage} failure.', flush=True)
+        for failure, stage in (('fail-backup', 'backup'), ('fail-download', 'downloading'), ('fail-go-download', 'downloading')):
+            print(f'Testing controlled {failure} at {stage}.', flush=True)
             (fixtures / failure).touch()
             failed = api('admin/updates', {'release_id': 3, 'tag': 'v2.0.3', 'request_id': str(uuid4())})['operation']
             failed = await_operation(failed['id'])
             assert failed['status'] == 'failed' and failed['failed_stage'] == stage, failed
+            assert not (fixtures / failure).exists(), 'The intended failure injector was not reached: ' + failure
             prior_failures[failed['id']] = stage
             assert read_env(env_file) == upgraded_env
             assert not (installation / '.updater/pending-distribution').exists()
             assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+            assert_dual_apis('2.0.2')
             assert_logo()
         print('Starting controlled migration failure to fixture 2.0.3.', flush=True)
         operation = api('admin/updates', {'release_id': 3, 'tag': 'v2.0.3', 'request_id': str(uuid4())})['operation']
         result = await_operation(operation['id'])
         assert result['status'] == 'recovery_required', result
+        assert_data_services_stopped()
         assert result['recovery']
         assert (installation / '.updater/pending-distribution/transaction.json').exists()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'changed-by-failed-migration'
@@ -565,7 +714,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         with log.open('a') as output:
             failed_restore = subprocess.run(recover + [recovery_archive], stdout=output, stderr=output)
         assert failed_restore.returncode != 0
-        assert not capture(compose('ps', '--status', 'running', '--services', 'api', 'worker', 'beat'), env=environment)
+        assert_data_services_stopped()
         assert not runner_status()['can_update']
         assert_maintenance_web()
         assert independent_status()['is_owner']
@@ -574,6 +723,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert resume.exists()
         command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)', str(resume), recovery_archive, '--yes'])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
@@ -593,6 +743,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
         command(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
 
@@ -620,6 +771,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert not capture(running_migrations)
         command(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert runner_status()['can_update']
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert_logo()
@@ -643,11 +795,29 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert runner_status()['can_update']
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
+        assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
         success = True
         print('PASS: automatic provisioning, owner API update, competing CLI backup serialization, verified 2.0.2, runner replacement, preserved data/branding/secrets, backup/download/partial-migration/health failures, rejected mismatched backup, safely failed data restore, resumed recovery, abrupt runner interruption during migration and backup, overlap prevention, idempotent retries, and verified source reconciliation.', flush=True)
     finally:
+        if not success:
+            # Collect before container removal; synthetic credentials and stack
+            # output stay in the private fixture directory, never CI evidence.
+            try:
+                diagnostics = directory / 'failure-services.log'
+                with os.fdopen(os.open(diagnostics, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w') as output:
+                    for compose_project in (project, project + '-updater'):
+                        listed = subprocess.run(['docker', 'ps', '-aq', '--filter',
+                            f'label=com.docker.compose.project={compose_project}'],
+                            stdout=subprocess.PIPE, stderr=output, text=True, timeout=30)
+                        for container in listed.stdout.split():
+                            subprocess.run(['docker', 'inspect', '--format',
+                                '{{.Name}} {{json .State}}', container], stdout=output, stderr=output, timeout=30)
+                            subprocess.run(['docker', 'logs', '--tail', '300', container],
+                                stdout=output, stderr=output, timeout=30)
+            except (OSError, subprocess.SubprocessError):
+                print('Private service diagnostics incomplete; continuing fixture cleanup.', flush=True)
         (fixtures / 'hold-backup').unlink(missing_ok=True)
         (fixtures / 'hold-migration').unlink(missing_ok=True)
         if competing_backup is not None:
@@ -667,7 +837,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         remove_disposable_project(project)
         if success:
-            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'update-recovery', {'images': {'backend': backend, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser})
+            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'execution_owner': 'django-celery', 'historical_controller': historical_controller})
             shutil.rmtree(directory)
         else:
             print(f'Failure artifacts retained privately at {directory}', flush=True)
@@ -675,8 +845,12 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--legacy', action='store_true', help='Verify v1.0.2 bootstrap and subsequent owner update')
+    versions = parser.add_mutually_exclusive_group()
+    versions.add_argument('--legacy', action='store_true', help='Verify v1.0.2 bootstrap and subsequent owner update')
+    versions.add_argument('--legacy-controller', action='store_true', help='Use frozen v1.0.17 controller/lifecycle source with current application fixture; test first Go delivery failure, old-source recovery and owner update')
     parser.add_argument('--browser', action='store_true', help='Run CI browser checks against the disposable instance')
     parser.add_argument('--operations-only', action='store_true', help='Verify real owner settings/diagnostics in a disposable app, then clean up without running upgrades')
     arguments = parser.parse_args()
-    run(legacy=arguments.legacy, browser=arguments.browser or arguments.operations_only, operations_only=arguments.operations_only)
+    if arguments.legacy_controller and arguments.operations_only:
+        parser.error('--legacy-controller requires its update/recovery sequence; cannot combine with --operations-only')
+    run(legacy=arguments.legacy, browser=arguments.browser or arguments.operations_only, operations_only=arguments.operations_only, legacy_controller=arguments.legacy_controller)
