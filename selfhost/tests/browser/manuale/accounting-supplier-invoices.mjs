@@ -1,8 +1,7 @@
 import {scenario, expect} from './scenario.mjs';
 import {accountingDocumentsAuthoredWorkflows} from '../../../../docs/manuale/accounting-documents-authored-workflows.mjs';
 const id='accounting-supplier-invoices-manage', spec=accountingDocumentsAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
-    actions:async ({page,api,actor,input,capture,report}) => {
+await scenario({id,actions:async ({page,api,actor,input,capture,report}) => {
         expect(input.fixture_version).toBe(8);
         const read=async route=>{const response=await api(route);expect(response.status()).toBe(200);return response.json();};
         const list=async()=>Object.values((await read('invoice-suppliers/list?pagination[perpage]=100')).data);
@@ -13,7 +12,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
         const accounts=(await read('balance-sheet/accounts/list')).data;
         const categories=(await read('payment/category/list')).data;
         const take=async(checkpoint,focus)=>{await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-            await capture(page,spec.checkpoints.findIndex(p=>p.id===checkpoint)+1,checkpoint,focus);};
+            await capture(page,checkpoint,focus);};
         const choose=async(modal,placeholder,label)=>{await (placeholder==='Seleziona stato' ? modal.locator('input[name="paid"]').locator('..').locator('input:not([type="hidden"])') : modal.getByPlaceholder(placeholder,{exact:true})).click();
             const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
             const option=modal.locator('.list-item:visible').filter({hasText:new RegExp('^\\s*'+escaped+'\\s*$','i')});

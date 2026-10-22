@@ -5,8 +5,7 @@ import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/orga
 const spec = organizationBasicsAuthoredWorkflows['collaborator-permissions'];
 import {collaboratorPermissionsSources, reloadOrganizationProfile} from './organization-access-sources.mjs';
 
-await scenario({id: 'collaborator-permissions', prefix: 'images/collaboratori/permessi',
-    sources: spec.sources, actions: async ({page, api, open, actor, capture, report, input}) => {
+await scenario({id: 'collaborator-permissions', actions: async ({page, api, open, actor, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const readerId = input.identities.reader.user_id;
@@ -32,7 +31,7 @@ await scenario({id: 'collaborator-permissions', prefix: 'images/collaboratori/pe
         });
         const take = async (number, checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(target, number, checkpoint, locator);
+            await capture(target, checkpoint, locator);
         };
         try {
         await open('Collaboratori', '/#/connected-collaborators');

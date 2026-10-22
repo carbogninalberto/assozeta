@@ -17,8 +17,7 @@ const headerText = 'Associazione Aurora - intestazione dimostrativa';
 const footerText = 'Documento dimostrativo - segreteria Aurora';
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, context, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, context, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {
@@ -33,7 +32,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const index = spec.checkpoints.findIndex(item => item.id === checkpoint);
             expect(index).toBeGreaterThanOrEqual(0);
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(page, index + 1, checkpoint, focus, options);
+            await capture(page, checkpoint, focus, options);
         };
         const original = await profile();
         const baselinePayments = await payments();

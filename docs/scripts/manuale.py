@@ -12,8 +12,10 @@ import signal
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,6 +109,112 @@ def recipe_seed_options(recipe):
     if profile not in ('baseline', 'receipts-edit-delete', 'collaborator-removal', 'member-transfer'):
         raise ValueError('Unknown manual fixture profile: ' + str(profile))
     return ['--scenario', profile]
+
+
+def cached_runs(manual_repository):
+    """Local discovery only. Every reused input still passes its compatibility gate."""
+    path = ROOT / 'quality-reports/manuale/cache.json'
+    try:
+        cache = json.loads(path.read_text())
+        if not isinstance(cache, dict) or cache.get('format') != 1:
+            return []
+        repository = str(Path(manual_repository).resolve())
+        return [entry for entry in cache['runs'] if isinstance(entry, dict) and entry.get('manual_repository') == repository
+                and (Path(entry['run']) / 'run.json').is_file()]
+    except (OSError, ValueError, KeyError, TypeError):
+        return []
+
+
+def remember_run(state):
+    if not state.get('manual_repository'):
+        return
+    run = Path(state['run']).resolve()
+    manifest = run / 'manifest.json'
+    expected = {recipe['id'] for recipe in recipe_registry(Path(state['application']))['recipes']}
+    captured = {item['id'] for item in json.loads(manifest.read_text()).get('scenarios', [])
+                if item.get('status') == 'passed'} if manifest.is_file() else set()
+    frontend = (run / 'frontend-build.json').is_file()
+    if not captured and not frontend:
+        return
+    entries = cached_runs(state['manual_repository'])
+    entry = {'run': str(run), 'manual_repository': str(Path(state['manual_repository']).resolve()),
+             'evidence': bool(captured), 'complete': captured == expected, 'frontend': frontend}
+    path = ROOT / 'quality-reports/manuale/cache.json'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix('.tmp')
+    write_json(temporary, {'format': 1, 'runs': [entry, *[item for item in entries if item['run'] != str(run)][:7]]})
+    temporary.replace(path)
+
+
+def capture_input_hashes(application):
+    """Compare actual source snapshots, including dirty, added and deleted inputs."""
+    application = Path(application)
+    names = git(application, 'ls-files', '--cached', '--others', '--exclude-standard', '-z').split('\0')
+    return {relative: sha(application / relative) if (application / relative).is_file() else None
+            for relative in sorted(set(filter(None, names)))}
+
+
+def reuse_inputs(state, args):
+    """Reuse by default, with explicit cold runs and recorded rejection reasons."""
+    cold = getattr(args, 'no_cache', False)
+    state.setdefault('selection', {})
+    explicit = getattr(args, 'reuse_evidence', None)
+    candidates = ([{'run': explicit, 'evidence': True}] if explicit else
+                  [] if cold else cached_runs(state['manual_repository']))
+    state['cache'] = {'mode': 'disabled' if cold else 'explicit' if explicit else 'automatic', 'decisions': []}
+    helper = None
+    chosen = None
+    target_hashes = None
+    force_selected = bool(args.changed_since or args.manual_changed_since or getattr(args, 'workflow', None))
+    maximum_retained = len(recipe_registry(Path(state['application']))['recipes']) - (
+        len(state['selected_recipes']) if force_selected else 0)
+    for candidate in candidates:
+        if not candidate.get('evidence'):
+            continue
+        try:
+            helper = helper or retained_evidence_helper(state)
+            baseline = str(Path(candidate['run']).resolve())
+            previous = json.loads((Path(baseline) / 'run.json').read_text())
+            target_hashes = target_hashes or capture_input_hashes(state['application'])
+            previous_hashes = capture_input_hashes(previous['application'])
+            changed = sorted(relative for relative in previous_hashes.keys() | target_hashes.keys()
+                             if previous_hashes.get(relative) != target_hashes.get(relative))
+            affected = affected_recipes(recipe_registry(Path(state['application'])), changed,
+                                        root=Path(state['application']))
+            fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
+            probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
+                                           baseline, stage=False)
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+            if explicit:
+                raise
+            state['cache']['decisions'].append({'run': candidate['run'], 'result': 'unavailable', 'reason': str(exc)})
+            continue
+        if chosen is None or len(probe['reused_recipes']) > len(chosen[1]['reused_recipes']):
+            chosen = baseline, probe
+        state['cache']['decisions'].append({'run': baseline, 'result': 'checked',
+                                           'retained': len(probe['reused_recipes']), 'rejected': probe.get('rejected', []),
+                                           'changed_inputs': changed, 'affected_recipes': affected})
+        if explicit or len(probe['reused_recipes']) == maximum_retained:
+            break
+    complete = getattr(args, 'command', '') in ('run', 'build', 'verify-release')
+    if complete or (chosen and not force_selected):
+        retained = set(chosen[1]['reused_recipes'] if chosen else [])
+        state['selected_recipes'] = [recipe['id'] for recipe in recipe_registry(Path(state['application']))['recipes']
+                                     if recipe['id'] not in retained]
+    if chosen:
+        baseline, probe = chosen
+        # Stage only after the read-only compatibility probe; a staging integrity
+        # failure must stop this run, never silently fall through to another cache.
+        plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'])
+        file = Path(state['run']) / 'evidence-reuse.json'
+        state['reuse_evidence'] = baseline
+        state['evidence_reuse'] = {'path': file.name, 'sha256': sha(file), 'reused_recipes': plan['reused_recipes']}
+        state['selection'].update(retained_recipes=plan['reused_recipes'], reuse_rejections=probe.get('rejected', []))
+        if not force_selected:
+            state['selection']['mode'] = 'full-compatible-reuse'
+        validate_retained_evidence(state)
+    if not cold and not getattr(args, 'reuse_frontend', None):
+        state['frontend_candidates'] = [entry['run'] for entry in candidates if entry.get('frontend')]
 
 
 TOOL_MODULE_ROOTS = ('docs/manuale/', 'selfhost/tests/browser/manuale/')
@@ -259,8 +367,8 @@ def reuse_frontend(state):
     old_service = json.loads(Path(previous['override']).read_text())['services']['ui']
     new_service = json.loads(Path(state['override']).read_text())['services']['ui']
     if (old_service.get('command') != new_service['command'] or old_service.get('environment') != new_service['environment']
-            or previous['application_input']['revision'] != state['application_input']['revision']):
-        raise RuntimeError('Frontend reuse requires the same compiled server, build environment and base revision')
+            or sha(old / 'selfhost/compose.dev.yml') != sha(current / 'selfhost/compose.dev.yml')):
+        raise RuntimeError('Frontend reuse requires the same compiled server and build environment')
     sources = ui_sources(old)
     if sources != ui_sources(current):
         raise RuntimeError('Frontend reuse refused: UI implementation/build inputs changed')
@@ -291,22 +399,47 @@ def reuse_frontend(state):
     recorded = previous_run / 'frontend-build.json'
     if not recorded.exists():
         raise RuntimeError('Reuse requires the recorded compiled artifact hashes')
-    if recorded.exists() and json.loads(recorded.read_text())['artifacts'] != artifacts:
+    recorded_build = json.loads(recorded.read_text())
+    if recorded_build['artifacts'] != artifacts or recorded_build['sources'] != sources:
         raise RuntimeError('Retained frontend bundle changed after its recorded build')
     target = current / 'UI/dist/public'
     target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source, target)
+    staged = target.with_name('public-reuse')
+    if staged.exists():
+        shutil.rmtree(staged)
+    shutil.copytree(source, staged)
+    if target.exists():
+        shutil.rmtree(target)
+    staged.replace(target)
     return {'source_run': previous['run_id'], 'sources': sources, 'artifacts': artifacts}
+
+
+@contextmanager
+def timed(run, name, *, kind='phase'):
+    """Record elapsed work without command arguments, environment or private logs."""
+    started = time.monotonic()
+    status = 'failed'
+    try:
+        yield
+        status = 'passed'
+    finally:
+        path = Path(run) / 'timings.json'
+        report = json.loads(path.read_text()) if path.exists() else {'format': 1, 'events': []}
+        report['events'].append({'kind': kind, 'name': name, 'status': status,
+                                 'elapsed_seconds': round(time.monotonic() - started, 3)})
+        temporary = path.with_suffix('.tmp')
+        write_json(temporary, report)
+        temporary.replace(path)
 
 
 def execute(command, run, label, *, cwd=None, env=None, input=None):
     print(label, flush=True)
     log = run / 'execution.log'
-    with log.open('ab') as stream:
+    with timed(run, label, kind='command'), log.open('ab') as stream:
         log.chmod(0o600)
         result = subprocess.run(command, cwd=cwd, env=env, stdout=stream, stderr=stream, input=input)
-    if result.returncode:
-        raise RuntimeError(f'{label} failed ({result.returncode}); inspect {log}')
+        if result.returncode:
+            raise RuntimeError(f'{label} failed ({result.returncode}); inspect {log}')
 
 
 def snapshot(repo, target, run, *, allow_dirty=False, ref='HEAD', branch=None, standalone=False, kind='application'):
@@ -405,7 +538,13 @@ def retained_evidence_helper(state):
     relative = 'BE/application/manuale/reuse.py'
     if relative not in state['tooling_hashes']:
         raise RuntimeError('Retained evidence requires the snapshotted reuse verifier')
-    spec = importlib.util.spec_from_file_location('run_owned_manual_reuse', Path(state['application']) / relative)
+    path = Path(state['application']) / relative
+    cached = sys.modules.get('run_owned_manual_reuse')
+    # Tool bytes were just checked. Keep immutable Git-object memoization
+    # across phases; the verifier still rereads mutable source/report/image bytes.
+    if cached is not None and getattr(cached, '__file__', None) == str(path):
+        return cached
+    spec = importlib.util.spec_from_file_location('run_owned_manual_reuse', path)
     helper = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = helper
     spec.loader.exec_module(helper)
@@ -461,7 +600,7 @@ def manual_content_hashes(manual):
 
 
 def prepare_manual_authoring(state):
-    """Bootstrap only a clean source; preserve already reviewed/authored input."""
+    """Preserve the reviewed MDX source; preparation never authors replacement prose."""
     validate_tooling(state)
     application, manual = Path(state['application']), Path(state['manual'])
     spec = importlib.util.spec_from_file_location('run_owned_manual_scaffold', application / 'docs/scripts/manuale-scaffold.py')
@@ -470,18 +609,17 @@ def prepare_manual_authoring(state):
     original = manual_content_hashes(manual)
     reviewed = scaffold.validate_authoring_input(manual)
     if not reviewed:
-        scaffold.initialize(manual, reference_repository=state['manual_repository'],
-                            reference_revision=state['manual_input']['revision'])
-        scaffold.apply_drafts(manual)
+        raise ValueError('Select the reviewed MDX manual revision. For new sections, inspect the implementation '
+                         'and use manuale-scaffold.py review-content before building or capturing.')
     generated = manual_content_hashes(manual)
-    return {'mode': 'preserved-reviewed-input' if reviewed else 'initialized-run-owned-snapshot',
+    return {'mode': 'preserved-reviewed-input',
             'input_revision': state['manual_input']['revision'],
             'input_files': original,
             'generated_files': {relative: value for relative, value in generated.items() if original.get(relative) != value},
             'deleted_input_files': sorted(set(original) - set(generated)),
             'scaffold_sha256': state['tooling_hashes']['docs/scripts/manuale-scaffold.py'],
             'evidence_sha256': generated['.manuale-evidence.json'],
-            'content_state': 'reviewed-input' if reviewed else 'generated-draft',
+            'content_state': 'reviewed-input',
             'verified': False, 'publication_ready': False}
 
 
@@ -538,6 +676,9 @@ def prepare(args):
     state['preparation_stage'] = 'configuration'
     write_json(run / 'run.json', state)
     registry = recipe_registry(application)
+    registry_generator = application / 'docs/scripts/manuale-registry.mjs'
+    if registry_generator.is_file():
+        execute(['node', str(registry_generator), '--check'], run, 'Check generated workflow inventory')
     changed = []
     manual_changed = []
     if args.changed_since:
@@ -550,6 +691,13 @@ def prepare(args):
     state['selection'] = {'mode': 'incremental' if args.changed_since or args.manual_changed_since else 'full',
                           'algorithm': 'registered-recipe-imports-v1', 'decisions': decisions,
                           'changed_sources': sorted(set(changed)), 'changed_manual': sorted(set(manual_changed))}
+    if getattr(args, 'workflow', None):
+        known = {recipe['id'] for recipe in registry['recipes']}
+        unknown = set(args.workflow) - known
+        if unknown:
+            raise ValueError('Unknown workflows: ' + ', '.join(sorted(unknown)))
+        state['selected_recipes'] = sorted(set(args.workflow))
+        state['selection']['mode'] = 'explicit'
     tooling = ['docs/manuale/recipes.json', 'docs/manuale/page-map.json', 'docs/scripts/manuale.py',
                'docs/scripts/manuale-scaffold.py', 'BE/application/manuale/index.py',
                'docs/scripts/manuale-catalog.py', 'docs/scripts/manuale-generate.mjs',
@@ -564,12 +712,14 @@ def prepare(args):
         tooling.append('docs/scripts/manuale-edit.py')
     if (application / 'docs/scripts/manuale-coverage.py').is_file():
         tooling.append('docs/scripts/manuale-coverage.py')
-    if (application / 'docs/manuale/screenshot-plan.json').is_file():
-        tooling.append('docs/manuale/screenshot-plan.json')
     if (application / 'BE/application/manuale/reuse.py').is_file():
         tooling.append('BE/application/manuale/reuse.py')
     if (application / 'docs/scripts/manuale-repeatability.py').is_file():
         tooling.append('docs/scripts/manuale-repeatability.py')
+    if registry_generator.is_file():
+        tooling.append('docs/scripts/manuale-registry.mjs')
+    if (application / 'docs/scripts/manuale-project.mjs').is_file():
+        tooling.append('docs/scripts/manuale-project.mjs')
     state['tooling_hashes'] = {relative: sha(application / relative) for relative in sorted(set(tooling))}
     # Selection above describes actual input changes. Generated authoring files
     # must not expand an incremental run or alter manual_input provenance.
@@ -584,34 +734,28 @@ def prepare(args):
         state['preparation_stage'] = 'authoring-preflight'
         write_json(run / 'run.json', state)
         authoring_preflight(state)
-        if getattr(args, 'reuse_evidence', None):
-            state['preparation_stage'] = 'evidence-reuse'
-            state['reuse_evidence'] = str(Path(args.reuse_evidence).resolve())
-            write_json(run / 'run.json', state)
-            helper = retained_evidence_helper(state)
-            if not args.changed_since and not args.manual_changed_since:
-                plan = helper.reuse_compatible_captures(state, state['reuse_evidence'], stage=True)
-                state['selection']['mode'] = 'full-compatible-reuse'
-            else:
-                plan = helper.build_reuse_plan(state, state['reuse_evidence'], stage=True)
-            file = run / 'evidence-reuse.json'
-            state['evidence_reuse'] = {'path': file.name, 'sha256': sha(file),
-                                       'reused_recipes': plan['reused_recipes']}
-            state['selection']['retained_recipes'] = plan['reused_recipes']
-            state['selection']['reuse_rejections'] = plan.get('rejected', [])
-            write_json(run / 'run.json', state)
-            validate_retained_evidence(state)
+        state['preparation_stage'] = 'evidence-reuse'
+        reuse_inputs(state, args)
     except Exception as exc:
         state.update(status='preparation_failed', failure={'stage': state.get('preparation_stage', 'manual-authoring'),
                      'type': type(exc).__name__, 'message': str(exc)})
         write_json(run / 'run.json', state)
         raise
-    state['preparation_stage'] = 'configuration'
+    state['status'] = 'prepared'
+    state.pop('preparation_stage', None)
+    if args.reuse_frontend:
+        state['reuse_frontend'] = str(Path(args.reuse_frontend).resolve())
     write_json(run / 'run.json', state)
-    browser_modules = ROOT / 'selfhost/tests/browser/node_modules'
-    if not browser_modules.exists():
-        raise RuntimeError('Install browser dependencies with npm --prefix selfhost/tests/browser ci')
-    (application / 'selfhost/tests/browser/node_modules').symlink_to(browser_modules, target_is_directory=True)
+    return state
+
+
+def configure_runtime(state):
+    """Allocate private services only when a capture or live verification needs them."""
+    if state.get('env_file'):
+        return
+    run, application, manual = (Path(state[key]) for key in ('run', 'application', 'manual'))
+    token = state['run_id']
+    node_dependencies(state)
     execute([str(application / 'selfhost/bin/assozeta'), 'dev-config'], run, 'Generate private development configuration')
     env_file = application / 'selfhost/.env.dev'
     try:
@@ -626,10 +770,10 @@ def prepare(args):
     settings = {'COMPOSE_PROJECT_NAME': state['project'], 'DBNAME': 'manuale_' + token,
                 'ASSOZETA_MANUAL_RUN_ID': token, 'APP_URL': origin, 'APP_HOST': '127.0.0.1:' + str(ports['DEV_UI_PORT']),
                 'SITE_ADDRESS': origin, 'CSRF_TRUSTED_ORIGINS': origin,
-                'RUNNING_VERSION': args.release, 'MANUAL_APPLICATION_REVISION': state['application_input']['revision'],
+                'RUNNING_VERSION': state['release'], 'MANUAL_APPLICATION_REVISION': state['application_input']['revision'],
                 'MANUAL_SOURCE_ROOT': '/manual-code', 'MANUAL_INDEX_PATH': '/manual-run/index.json',
                 'MANUAL_ASSET_ROOT': '/manual-source',
-                'MANUAL_URL': args.manual_url.rstrip('/') + '/docs/introduzione', **ports}
+                'MANUAL_URL': state['manual_url'] + '/docs/introduzione', **ports}
     existing = dict(line.split('=', 1) for line in env_file.read_text().splitlines() if line and not line.startswith('#') and '=' in line)
     existing.update({key: str(value) for key, value in settings.items()})
     env_file.write_text('\n'.join(key + '=' + value for key, value in existing.items()) + '\n')
@@ -638,7 +782,7 @@ def prepare(args):
     mounts = [f'{run}:/manual-run', f'{manual}:/manual-source', f'{application}:/manual-code:ro']
     for service in ('api', 'migrate', 'worker', 'beat'):
         override['services'][service] = {'image': 'assozeta-manuale-backend:' + token, 'volumes': mounts}
-    override['services']['api']['command'] = ['python', 'manage.py', 'run_manuale_instance', '--reference-date', args.reference_date]
+    override['services']['api']['command'] = ['python', 'manage.py', 'run_manuale_instance', '--reference-date', state['reference_date']]
     override['services']['ui'] = {'image': 'assozeta-manuale-ui:' + token,
         'environment': {'DEPLOY_ENV': 'development', 'OEM_ENV': 'assozeta',
                         'ASSOZETA_MANUAL_BUILD': '1', 'NODE_OPTIONS': '--max-old-space-size=3072'},
@@ -646,17 +790,27 @@ def prepare(args):
     override['services']['renderer'] = {'image': 'assozeta-manuale-renderer:' + token}
     write_json(run / 'compose.override.json', override)
     state.update({'env_file': str(env_file), 'override': str(run / 'compose.override.json'), 'origin': origin,
-                  'release': args.release, 'manual_url': args.manual_url.rstrip('/'),
                   'manual_preview_url': 'http://127.0.0.1:' + str(preview_port),
-                  'ports': ports, 'reference_date': args.reference_date, 'status': 'prepared'})
+                  'ports': ports})
     state.pop('preparation_stage', None)
-    if args.reuse_frontend:
-        state['reuse_frontend'] = str(Path(args.reuse_frontend).resolve())
     write_json(run / 'run.json', state)
-    return state
+
+
+def node_dependencies(state):
+    """Share installed Node dependencies without requiring a browser or services."""
+    browser_modules = ROOT / 'selfhost/tests/browser/node_modules'
+    if not browser_modules.exists():
+        raise RuntimeError('Install browser dependencies with npm --prefix selfhost/tests/browser ci')
+    destination = Path(state['application']) / 'selfhost/tests/browser/node_modules'
+    if destination.is_symlink() and destination.resolve() == browser_modules.resolve():
+        return
+    if destination.exists() or destination.is_symlink():
+        raise RuntimeError('Run has unexpected Node dependencies: ' + str(destination))
+    destination.symlink_to(browser_modules, target_is_directory=True)
 
 
 def start(state):
+    configure_runtime(state)
     run = Path(state['run'])
     execute(compose(state, 'config', '--quiet'), run, 'Validate isolated service configuration')
     execute(compose(state, 'build', 'api', 'ui', 'renderer'), run, 'Build run-specific application images')
@@ -669,10 +823,20 @@ def start(state):
     if 'docs/scripts/manuale-repeatability.py' in state['tooling_hashes']:
         execute([sys.executable, str(Path(state['application']) / 'docs/scripts/manuale-repeatability.py'),
                  'fixture', '--run', str(run)], run, 'Retain the public fixture fingerprint before credential cleanup')
+    frontend = None
     if state.get('reuse_frontend'):
         print('Reuse the verified compiled frontend after validating every UI/build input', flush=True)
         frontend = reuse_frontend(state)
     else:
+        for candidate in state.get('frontend_candidates', []):
+            try:
+                frontend = reuse_frontend({**state, 'reuse_frontend': candidate})
+            except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+                state['cache']['decisions'].append({'run': candidate, 'kind': 'frontend', 'result': 'rejected', 'reason': str(exc)})
+            else:
+                state['cache']['decisions'].append({'run': candidate, 'kind': 'frontend', 'result': 'reused'})
+                break
+    if frontend is None:
         execute(compose(state, 'run', '--rm', '--no-deps', 'ui', 'npm', 'exec', 'vite', 'build'),
                 run, 'Compile the real frontend before browser verification')
         source = Path(state['application']) / 'UI/dist/public'
@@ -770,6 +934,7 @@ def capture(state):
             '--output', '/manual-run/variance.json'), run, 'Measure repeated screenshot variance and enforce identical-input stability')
     state['status'] = 'captured'
     write_json(run / 'run.json', state)
+    remember_run(state)
 
 
 def generate(state):
@@ -785,6 +950,50 @@ def generate(state):
             'Bind section evidence to actual Git blobs and inventory every unverified section', cwd=state['application'])
     state['status'] = 'generated'
     write_json(Path(state['run']) / 'run.json', state)
+    remember_run(state)
+
+
+def compile_content(state):
+    validate_tooling(state)
+    node_dependencies(state)
+    execute(['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/compile.mjs'), state['run']],
+            Path(state['run']), 'Compile MDX and validate local navigation, anchors and images')
+
+
+def build(state):
+    """Build a complete candidate corpus from existing evidence, without services."""
+    validate_tooling(state)
+    retained = validate_retained_evidence(state)
+    run = Path(state['run'])
+    available = set(retained['reused_recipes'] if retained else [])
+    for identifier in state['selected_recipes']:
+        report = run / (identifier + '.json')
+        if report.is_file():
+            value = json.loads(report.read_text())
+            if value.get('id') == identifier and value.get('status') == 'passed':
+                available.add(identifier)
+    missing = [recipe['id'] for recipe in recipe_registry(Path(state['application']))['recipes']
+               if recipe['id'] not in available]
+    if missing:
+        write_json(run / 'build.json', {'format': 1, 'status': 'needs-capture', 'workflows': missing})
+        raise RuntimeError('Build needs compatible captures for: ' + ', '.join(missing)
+                           + '. Run capture for these workflows or supply a compatible --reuse-evidence baseline.')
+    state['status'] = 'captured'
+    write_json(run / 'run.json', state)
+    report = {'format': 1, 'status': 'running', 'workflows': sorted(available),
+              'scope': 'offline-candidate', 'release_verified': False}
+    write_json(run / 'build.json', report)
+    try:
+        for phase in (generate, compile_content, index):
+            report['phase'] = phase.__name__
+            with timed(run, phase.__name__):
+                phase(state)
+    except Exception:
+        report['status'] = 'failed'
+        write_json(run / 'build.json', report)
+        raise
+    report.update(status='passed', phase='complete')
+    write_json(run / 'build.json', report)
 
 
 def index(state):
@@ -912,7 +1121,8 @@ def export(state):
     for relative in ('run.json', 'manifest.json', 'coverage.json', 'source-catalog.json', 'index.json', 'evaluation.json', 'render.json',
                      'evidence-reuse.json', 'authoring-preflight.json', 'workflow-coverage.json',
                      'tags-create-assign.json', 'manual-preview.png', 'variance.json', 'frontend-build.json',
-                     'embedded-manual.json', 'embedded-manual.png', 'runtime-preflight.json'):
+                     'embedded-manual.json', 'embedded-manual.png', 'runtime-preflight.json',
+                     'compile.json', 'build.json', 'timings.json'):
         source = run / relative
         if source.exists():
             shutil.copy2(source, destination / relative)
@@ -949,9 +1159,36 @@ def export(state):
     print('Reviewable public-fixture artifacts: ' + str(destination), flush=True)
 
 
+def verify_release(state, args):
+    """Package the completed target once, then exercise its appliance boundary."""
+    run = Path(state['run'])
+    package = (Path(args.package_output).resolve() if args.package_output else
+               Path(tempfile.mkdtemp(prefix='assozeta-manual-release-')) / 'package')
+    report = {'status': 'running', 'release': state['release'], 'package': str(package),
+              'previous_release': args.previous_release, 'publication': False}
+    write_json(run / 'release-verification.json', report)
+    try:
+        with timed(run, 'package'):
+            execute([sys.executable, str(ROOT / 'docs/scripts/manuale-release.py'), '--bundle',
+                     '--run', str(run), '--application-repo', str(ROOT),
+                     '--manual-repo', state['manual_repository'], '--release', state['release'],
+                     '--output', str(package)], run, 'Package the evaluated target manual')
+        with timed(run, 'appliance-rehearsal'):
+            execute([sys.executable, str(ROOT / 'selfhost/tests/manual-release-smoke.py'),
+                     str(package / 'runtime'), state['release'], '--previous-release', args.previous_release],
+                    run, 'Verify fresh install and historical appliance upgrade/rollback')
+        report['status'] = 'passed'
+        print('Verified release package: ' + str(package), flush=True)
+    except Exception:
+        report['status'] = 'failed'
+        raise
+    finally:
+        write_json(run / 'release-verification.json', report)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['doctor', 'prepare', 'start', 'capture', 'generate', 'verify', 'index', 'evaluate', 'export', 'cleanup', 'install-dev', 'run'])
+    parser.add_argument('command', choices=['doctor', 'prepare', 'build', 'start', 'capture', 'generate', 'verify', 'index', 'evaluate', 'export', 'cleanup', 'install-dev', 'run', 'verify-release'])
     parser.add_argument('--run', help='Resume the recorded run directory')
     parser.add_argument('--manual-repo', default=str(ROOT.parent / 'manuale'))
     parser.add_argument('--application-ref', default='HEAD')
@@ -959,12 +1196,17 @@ def main():
     parser.add_argument('--manual-url', default='https://manuale.bakney.com')
     parser.add_argument('--reference-date', default='2026-09-30')
     parser.add_argument('--release', default='manuale-development', help='Exact running version for this corpus; production indexes must match their target image version')
+    parser.add_argument('--previous-release', default='1.0.17', help='Published historical version for verify-release appliance rehearsal')
+    parser.add_argument('--package-output', help='New release package directory outside both input repositories and the run; default: an owned temporary directory')
     parser.add_argument('--output')
     parser.add_argument('--allow-dirty', action='store_true')
     parser.add_argument('--standalone-checkouts', action='store_true',
                         help='Use owned local clones when the input repositories have read-only Git metadata')
     parser.add_argument('--changed-since', help='Incremental verification using application changes since this Git ref')
     parser.add_argument('--manual-changed-since', help='Incremental verification using manual changes since this Git ref')
+    parser.add_argument('--workflow', action='append', metavar='ID',
+                        help='Capture a named workflow; repeat for several workflows')
+    parser.add_argument('--no-cache', action='store_true', help='Use a cold build/capture without automatic evidence or frontend reuse')
     parser.add_argument('--reuse-frontend', help='Reuse a rendered run’s compiled bundle after verifying identical UI inputs')
     parser.add_argument('--reuse-evidence', metavar='BASELINE_RUN',
                         help='Retain individually compatible unselected workflows from a previously verified run')
@@ -976,8 +1218,16 @@ def main():
     parser.add_argument('--keep-services', action='store_true')
     parser.add_argument('--install-dev', action='store_true', help='Install the completed verification in the existing development API without seeding its data')
     args = parser.parse_args()
+    if args.command == 'verify-release' and (args.allow_dirty or args.edit_content or args.install_dev):
+        parser.error('verify-release requires committed inputs without editorial generation or development installation')
+    if args.no_cache and (args.reuse_evidence or args.reuse_frontend):
+        parser.error('--no-cache cannot be combined with explicit reuse')
+    if args.run and args.workflow:
+        parser.error('--workflow selects a new capture; a retained --run keeps its recorded selection')
+    if args.workflow and (args.changed_since or args.manual_changed_since):
+        parser.error('Use --workflow or affected-workflow selection, not both')
     runtime_report = None
-    if args.command in ('doctor', 'run'):
+    if args.command in ('doctor', 'run', 'capture', 'verify-release'):
         runtime_report = runtime_check()
         print_runtime_check(runtime_report)
         if args.command == 'doctor' and args.output:
@@ -990,7 +1240,8 @@ def main():
             return
     state = json.loads((Path(args.run) / 'run.json').read_text()) if args.run else None
     try:
-        if args.command in ('prepare', 'run') and state is None:
+        new_capture = args.command == 'capture' and state is None
+        if args.command in ('prepare', 'build', 'capture', 'run', 'verify-release') and state is None:
             state = prepare(args)
             print('Evidence/worktrees: ' + state['run'], flush=True)
         if args.command == 'prepare':
@@ -999,7 +1250,23 @@ def main():
             parser.error('--run is required for this command')
         if runtime_report:
             write_json(Path(state['run']) / 'runtime-preflight.json', runtime_report)
-        if args.command == 'run':
+        if args.command == 'verify-release' and args.run:
+            # Packaging revalidates every required acceptance artifact. A
+            # completed run can cross this boundary without another generation.
+            verify_release(state, args)
+            return
+        if new_capture:
+            try:
+                # Seal the captured section bindings so a subsequent build
+                # discovers this result automatically, including partial runs.
+                for phase in (start, capture, generate):
+                    with timed(state['run'], phase.__name__):
+                        phase(state)
+            finally:
+                if not args.keep_services and state.get('env_file'):
+                    cleanup(state)
+            return
+        if args.command in ('run', 'verify-release'):
             retained = validate_retained_evidence(state)
             if not state['selected_recipes'] and not (retained and retained['reused_recipes']):
                 if retained:
@@ -1011,15 +1278,15 @@ def main():
                 return
             original_failure = None
             try:
-                start(state)
-                capture(state)
-                generate(state)
+                for phase in (start, capture, generate, compile_content):
+                    with timed(state['run'], phase.__name__):
+                        phase(state)
                 # Keep verified citation pages available while exercising the
                 # real MCP/agent; stop only this invocation's preview afterward.
                 def complete_verification():
-                    index(state)
-                    evaluate(state)
-                    export(state)
+                    for phase in (index, evaluate, export):
+                        with timed(state['run'], phase.__name__):
+                            phase(state)
                     if args.install_dev:
                         install_dev(state)
                 verify(state, after_render=complete_verification)
@@ -1031,17 +1298,21 @@ def main():
                     print('Service diagnostics unavailable: ' + str(diagnostic_error), file=sys.stderr)
                 raise
             finally:
-                if not args.keep_services:
+                if not args.keep_services and state.get('env_file'):
                     try:
                         cleanup(state)
                     except Exception as exc:
                         if original_failure:
                             raise RuntimeError(f'{original_failure}; cleanup also failed: {exc}') from original_failure
                         raise
+            if args.command == 'verify-release':
+                verify_release(state, args)
         else:
-            globals()[args.command.replace('-', '_')](state)
+            with timed(state['run'], args.command):
+                globals()[args.command.replace('-', '_')](state)
     except (RuntimeError, OSError, subprocess.CalledProcessError, ValueError) as exc:
-        if state and args.command != 'install-dev':
+        if state and args.command != 'install-dev' and not (
+                args.command == 'verify-release' and state.get('status') == 'evaluated'):
             state.update({'status': 'failed', 'error': str(exc)})
             write_json(Path(state['run']) / 'run.json', state)
         print(str(exc), file=sys.stderr)

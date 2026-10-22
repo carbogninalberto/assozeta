@@ -20,6 +20,89 @@ scaffold_spec.loader.exec_module(scaffold_fixture)
 
 
 class ManualRunnerTests(unittest.TestCase):
+    def test_reuse_verifier_keeps_immutable_caches_but_rechecks_tool_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = 'BE/application/manuale/reuse.py'
+            module = root / relative
+            module.parent.mkdir(parents=True)
+            module.write_text('fixture_value = 1\n')
+            state = {'application': str(root), 'tooling_hashes': {relative: runner.sha(module)}}
+            first = runner.retained_evidence_helper(state)
+            self.assertIs(runner.retained_evidence_helper(state), first)
+            module.write_text('fixture_value = 2\n')
+            with self.assertRaisesRegex(RuntimeError, 'tooling changed'):
+                runner.retained_evidence_helper(state)
+
+    def test_capture_seals_evidence_for_the_next_build_before_cleaning_services(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state = {'run': temporary, 'env_file': 'owned-environment'}
+            calls = []
+            with patch.object(sys, 'argv', ['manuale.py', 'capture', '--workflow', 'one']), \
+                 patch.object(runner, 'runtime_check', return_value={'status': 'passed'}), \
+                 patch.object(runner, 'print_runtime_check'), patch.object(runner, 'prepare', return_value=state), \
+                 patch.object(runner, 'start', lambda state: calls.append('start')), \
+                 patch.object(runner, 'capture', lambda state: calls.append('capture')), \
+                 patch.object(runner, 'generate', lambda state: calls.append('seal-evidence')), \
+                 patch.object(runner, 'cleanup', lambda state: calls.append('cleanup')):
+                runner.main()
+            self.assertEqual(calls, ['start', 'capture', 'seal-evidence', 'cleanup'])
+
+    def test_release_rehearsal_consumes_packaged_target_and_stops_on_invalid_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            state = {'run': str(run), 'release': '1.0.18', 'manual_repository': str(run / 'source')}
+            args = SimpleNamespace(previous_release='1.0.17', package_output=str(run / 'package'))
+            with patch.object(runner, 'execute', side_effect=RuntimeError('invalid evidence')) as execute:
+                with self.assertRaisesRegex(RuntimeError, 'invalid evidence'):
+                    runner.verify_release(state, args)
+                self.assertEqual(execute.call_count, 1)
+            self.assertEqual(json.loads((run / 'release-verification.json').read_text())['status'], 'failed')
+            with patch.object(runner, 'execute') as execute:
+                runner.verify_release(state, args)
+                packaging, rehearsal = [call.args[0] for call in execute.call_args_list]
+                self.assertIn('--bundle', packaging)
+                self.assertEqual(packaging[packaging.index('--output') + 1] + '/runtime', rehearsal[2])
+                self.assertEqual(rehearsal[-2:], ['--previous-release', '1.0.17'])
+            self.assertEqual(json.loads((run / 'release-verification.json').read_text())['status'], 'passed')
+
+    def test_malformed_cache_is_a_cold_miss(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(runner, 'ROOT', Path(temporary)):
+            cache = Path(temporary) / 'quality-reports/manuale/cache.json'
+            cache.parent.mkdir(parents=True)
+            for value in ([], None, {'format': 1, 'runs': [None, 'invalid']}, {'format': 1, 'runs': None}):
+                cache.write_text(json.dumps(value))
+                self.assertEqual(runner.cached_runs(temporary), [])
+
+    def test_offline_build_reports_uncaptured_workflows_and_preserves_previous_index(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            registry = run / 'application/docs/manuale/recipes.json'
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps({'format': 1, 'recipes': [{'id': 'first'}, {'id': 'second'}]}))
+            (run / 'first.json').write_text(json.dumps({'id': 'first', 'status': 'passed'}))
+            (run / 'index.json').write_bytes(b'previous compatible index')
+            state = {'run': str(run), 'application': str(run / 'application'),
+                     'selected_recipes': ['first'], 'tooling_hashes': {}, 'status': 'prepared'}
+            with patch.object(runner, 'execute', side_effect=AssertionError('build started a process')), \
+                    patch.object(runner, 'free_port', side_effect=AssertionError('build opened a port')):
+                with self.assertRaisesRegex(RuntimeError, 'captures for: second'):
+                    runner.build(state)
+            self.assertEqual(json.loads((run / 'build.json').read_text())['workflows'], ['second'])
+            self.assertEqual((run / 'index.json').read_bytes(), b'previous compatible index')
+            self.assertEqual(state['status'], 'prepared')
+
+    def test_timings_record_failed_work_without_private_command_arguments(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            with patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(returncode=7)):
+                with self.assertRaisesRegex(RuntimeError, 'failed \\(7\\)'):
+                    runner.execute(['unit-command', 'private-session-token'], run, 'Capture a workflow')
+            result = json.loads((run / 'timings.json').read_text())
+            self.assertEqual(result['events'][0]['status'], 'failed')
+            self.assertGreaterEqual(result['events'][0]['elapsed_seconds'], 0)
+            self.assertNotIn('private-session-token', json.dumps(result))
+
     def test_retained_only_capture_keeps_original_bytes_without_new_capture_identity(self):
         with tempfile.TemporaryDirectory() as temporary:
             run = Path(temporary)
@@ -122,13 +205,8 @@ class ManualRunnerTests(unittest.TestCase):
             destination = application / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(runner.ROOT / relative, destination)
-        template = {'path': 'docs/guide.mdx', 'title': 'Preparazione', 'id': 'preparazione',
-            'body': '## Preparazione\n\n<Note>Bozza in attesa di prova.</Note>\n\n<Steps><Step title="Apri">Apri la pagina.\n<Frame>![Vista](/images/guide/1.png)</Frame></Step></Steps>'}
-        for relative, exports in scaffold_fixture.DRAFT_MODULES:
-            destination = application / relative
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text('\n'.join('export function ' + name + '() {return ' +
-                (json.dumps([template]) if name == 'tagDraftPages' else '[]') + ';}' for name in exports) + '\n')
+        (application / 'docs/manuale').mkdir(parents=True, exist_ok=True)
+        (application / 'docs/manuale/tag-recipes.mjs').write_text('export const contract = {};\n')
         (application / 'docs/manuale/recipes.json').write_text(json.dumps({'format': 1,
             'shared_dependencies': ['docs/manuale/', 'docs/scripts/manuale'], 'recipes': [
                 {'id': 'guide', 'script': 'selfhost/tests/browser/manuale/guide.mjs', 'pages': ['docs/guide.mdx'],
@@ -183,47 +261,25 @@ class ManualRunnerTests(unittest.TestCase):
             release='fixture-only', manual_url='https://manual.invalid', reference_date='2026-09-30', reuse_frontend=None)
         return application, manual, args
 
-    def test_prepare_bootstraps_clean_selected_snapshot_without_extra_clone_or_incremental_selection_pollution(self):
+    def test_prepare_requires_reviewed_mdx_and_never_rewrites_unreviewed_source(self):
         with tempfile.TemporaryDirectory() as temporary:
             application, manual, args = self.bootstrap_fixture(Path(temporary))
             original = (manual / 'docs/guide.mdx').read_bytes()
             source_worktrees = runner.git(manual, 'worktree', 'list', '--porcelain')
-            with patch.object(runner, 'ROOT', application), patch.object(runner, 'free_port', side_effect=[5010, 5011, 5012, 5013]):
-                state = runner.prepare(args)
-            owned_manual = Path(state['manual'])
-            self.assertEqual(state['application_input']['revision'], args.application_ref)
-            self.assertEqual(state['manual_input']['revision'], args.manual_ref)
-            self.assertEqual(state['manual_input']['state'], 'committed')
-            self.assertEqual(state['manual_input']['uncommitted_files'], {})
-            self.assertEqual(runner.git(owned_manual, 'rev-parse', 'HEAD'), args.manual_ref)
+            with patch.object(runner, 'ROOT', application), patch.object(runner, 'free_port', side_effect=AssertionError('offline preparation opened a port')):
+                with self.assertRaisesRegex(ValueError, 'reviewed MDX'):
+                    runner.prepare(args)
+            run = Path(args.output)
+            state = json.loads((run / 'run.json').read_text())
+            self.assertEqual(state['failure']['stage'], 'manual-authoring')
+            self.assertNotIn('env_file', state)
             self.assertEqual(state['selected_recipes'], ['guide'])
             self.assertEqual(state['selection']['changed_manual'], ['docs/guide.mdx'])
-            self.assertEqual(state['manual_authoring']['mode'], 'initialized-run-owned-snapshot')
-            self.assertEqual(state['manual_authoring']['input_revision'], args.manual_ref)
-            self.assertEqual(state['manual_authoring']['input_files']['docs/guide.mdx'], scaffold_fixture.digest(original))
-            self.assertFalse(state['manual_authoring']['verified'])
-            self.assertFalse(state['manual_authoring']['publication_ready'])
-            self.assertIn('.manuale-evidence.json', state['manual_authoring']['generated_files'])
-            self.assertIn('docs/scripts/manuale-scaffold.py', state['tooling_hashes'])
-            draft = (owned_manual / 'docs/guide.mdx').read_text()
-            self.assertIn('Bozza in attesa di prova', draft)
-            self.assertIn('1.placeholder.svg', draft)
-            self.assertIn('## Osservazioni\n\nTesto da conservare.', draft)
+            self.assertEqual((run / 'manual/docs/guide.mdx').read_bytes(), original)
             self.assertEqual((manual / 'docs/guide.mdx').read_bytes(), original)
             self.assertEqual(runner.git(manual, 'worktree', 'list', '--porcelain'), source_worktrees)
-            self.assertEqual({path.name for path in Path(state['run']).iterdir() if path.is_dir()}, {'application', 'manual'})
-            self.assertFalse((Path(state['run']) / 'guide.json').exists())
-            # A directly authored section outside bootstrap recipes survives a refresh.
-            sidecar_path = owned_manual / '.manuale-evidence.json'
-            sidecar = json.loads(sidecar_path.read_text())
-            editorial = {'title': 'Osservazioni', 'content_sha256': scaffold_fixture.digest(b'## Osservazioni\n\nTesto da conservare.'),
-                'recipe_module': 'docs/manuale/tag-recipes.mjs',
-                'recipe_sha256': runner.sha(Path(state['application']) / 'docs/manuale/tag-recipes.mjs'), 'content_source': 'authored-mdx'}
-            sidecar['sections']['docs/guide.mdx#osservazioni'] = editorial
-            sidecar_path.write_text(json.dumps(sidecar))
-            with patch.object(scaffold_fixture, 'ROOT', Path(state['application'])):
-                scaffold_fixture.apply_drafts(owned_manual)
-            self.assertEqual(json.loads(sidecar_path.read_text())['sections']['docs/guide.mdx#osservazioni'], editorial)
+            self.assertFalse((run / 'manual/.manuale-evidence.json').exists())
+            self.assertFalse((run / 'guide.json').exists())
 
     def test_prepare_preserves_reviewed_prose_and_rejects_invalid_or_partial_sidecars_before_mutation(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -381,34 +437,34 @@ class ManualRunnerTests(unittest.TestCase):
 
     def test_incremental_selection_is_conservative_for_shared_and_unknown_changes(self):
         registry = runner.recipe_registry()
-        self.assertEqual(runner.affected_recipes(registry, ['BE/application/services/subscription_service.py']),
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/application/services/subscription_service.py']),
                          ['tags-create-assign', 'members-profile-update', 'members-medical-manage', 'members-filter-export', 'members-import', 'medical-followups', 'membership-links-cards', 'member-tags', 'members-fee-plan-selection', 'members-tax-code-correction', 'members-account-access', 'settings-signup-checkout', 'organization-document-templates'])
-        self.assertEqual(runner.affected_recipes(registry, ['BE/application/utils/subscriptions_utils.py']),
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/application/utils/subscriptions_utils.py']),
                          ['members-search', 'members-create', 'members-approve', 'attendance-carnet-manual', 'members-filter-export', 'members-import', 'course-installments-manage', 'instructor-compensation', 'instructor-maintenance', 'medical-followups', 'course-calendar-maintenance', 'members-fee-plan-selection', 'members-tax-code-correction', 'members-account-access', 'course-types-sharing', 'settings-signup-checkout', 'attendance-carnet-maintenance', 'registration-default-category', 'attendance-automatic', 'attendance-carnet-variants', 'camps-enrollment-local', 'course-enrollment-calendar-navigation', 'dashboard-lists'])
         all_ids = [recipe['id'] for recipe in registry['recipes']]
-        self.assertEqual(runner.affected_recipes(registry, ['BE/application/permissions_registry.py']), all_ids)
-        self.assertEqual(runner.affected_recipes(registry, ['BE/application/new_dependency.py']), all_ids)
-        self.assertEqual(runner.affected_recipes(registry, [], ['faq/come-usare-ricerca-filtri-atleti.mdx']), ['members-search', 'members-filter-export'])
-        self.assertEqual(runner.affected_recipes(registry, [], ['mint.json']), all_ids)
-        self.assertEqual(runner.affected_recipes(registry, ['docs/architecture/unrelated.md']), [])
-        self.assertEqual(runner.affected_recipes(registry, ['BE/application/services/invoice_service.py']),
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/application/permissions_registry.py']), all_ids)
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/application/new_dependency.py']), all_ids)
+        self.assertCountEqual(runner.affected_recipes(registry, [], ['faq/come-usare-ricerca-filtri-atleti.mdx']), ['members-search', 'members-filter-export'])
+        self.assertCountEqual(runner.affected_recipes(registry, [], ['mint.json']), all_ids)
+        self.assertCountEqual(runner.affected_recipes(registry, ['docs/architecture/unrelated.md']), [])
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/application/services/invoice_service.py']),
                          ['payments-create-edit-approve', 'receipts-approve-download', 'receipts-edit-delete', 'course-installments-manage', 'settings-receipts-card', 'payments-maintenance', 'organization-exports', 'instructor-compensation', 'settings-print', 'instructor-maintenance', 'course-calendar-maintenance', 'camps-enrollment-local', 'course-enrollment-calendar-navigation', 'payment-classification-local', 'dashboard-lists'])
         receipt_ids = ['receipts-approve-download', 'receipts-edit-delete']
         document_ids = receipt_ids + ['members-medical-manage', 'settings-receipts-card', 'payments-maintenance', 'instructor-compensation', 'settings-print', 'payment-classification-local']
-        self.assertEqual(runner.affected_recipes(registry, ['BE/docmanager/tasks.py']), document_ids)
-        self.assertEqual(runner.affected_recipes(registry, ['BE/templates/document/application/invoice.html']), receipt_ids + ['settings-receipts-card', 'payments-maintenance', 'settings-print', 'payment-classification-local'])
-        self.assertEqual(runner.affected_recipes(registry, [], ['docs/ricevute.mdx']), receipt_ids)
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/docmanager/tasks.py']), document_ids)
+        self.assertCountEqual(runner.affected_recipes(registry, ['BE/templates/document/application/invoice.html']), receipt_ids + ['settings-receipts-card', 'payments-maintenance', 'settings-print', 'payment-classification-local'])
+        self.assertCountEqual(runner.affected_recipes(registry, [], ['docs/ricevute.mdx']), receipt_ids)
 
     def test_editorial_bindings_and_test_changes_do_not_expand_a_single_guide_capture(self):
         registry = runner.recipe_registry()
-        self.assertEqual(runner.affected_recipes(registry, [
+        self.assertCountEqual(runner.affected_recipes(registry, [
             'BE/application/tests/test_manuale_registration_forms.py',
             'UI/src/routes/manuale/manualPresentation.test.js'], [
             '.manuale-evidence.json', '.manuale-authoring.json',
             'tutorials/come-creare-moduli-iscrizione-personalizzati.mdx',
             'images/tutorials/moduli-iscrizione/1.placeholder.svg']), ['organization-settings', 'registration-forms-manage',
                 'members-fee-plan-selection', 'settings-signup-checkout', 'registration-default-category', 'organization-document-templates'])
-        self.assertEqual(runner.affected_recipes(registry, [], ['.manuale-evidence.json']), [])
+        self.assertCountEqual(runner.affected_recipes(registry, [], ['.manuale-evidence.json']), [])
 
     def test_receipt_mutation_selects_its_isolated_fixture_and_rejects_unknown_profiles(self):
         self.assertEqual(runner.recipe_seed_options({}), ['--scenario', 'baseline'])

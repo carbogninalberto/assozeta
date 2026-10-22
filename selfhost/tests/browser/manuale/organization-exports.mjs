@@ -77,8 +77,7 @@ const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const id = 'organization-exports';
 const spec = organizationAuthoredWorkflows[id];
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await scenario({
-    id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+    id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         // The export task queues mail itself. Fail before any action unless the server seed
@@ -87,7 +86,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         const read = async route => {const res = await api(route); expect(res.status()).toBe(200); return res.json();};
         const take = async (checkpoint, focus) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(page, spec.checkpoints.findIndex(item => item.id === checkpoint) + 1, checkpoint, focus);
+            await capture(page, checkpoint, focus);
         };
         const facts = {};
         const proof = (field, value) => {expect(value, field).toEqual(spec.outcome.expected[field]); facts[field] = value;};

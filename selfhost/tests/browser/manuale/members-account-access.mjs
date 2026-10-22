@@ -2,8 +2,7 @@
 import {scenario, expect} from './scenario.mjs';
 import {memberAuthoredWorkflows} from '../../../../docs/manuale/member-authored-workflows.mjs';
 const id = 'members-account-access', spec = memberAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, context, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, context, input, capture, report}) => {
         expect(input.fixture_profile).toBe('member-transfer');
         const recipient = input.identities.recipient;
         expect(recipient.user_id).not.toBe(input.user_id); expect(recipient.email).toMatch(/@aurora\.example\.test$/);
@@ -37,7 +36,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (checkpoint, browserPage = page, locator) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1;
-            await capture(browserPage, n, checkpoint, locator);
+            await capture(browserPage, checkpoint, locator);
         };
         const select = async (browserPage = page) => {
             const row = browserPage.locator('[data-row]').filter({hasText: /Giulia Bianchi/i}); await expect(row).toHaveCount(1);
@@ -107,7 +106,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(page.locator('.swal2-popup')).toHaveCount(0);
             proof('existing_access_prevents_ui_retry', true);
             // Toast is itself the visible warning being documented.
-            await capture(page, 6, 'access-already-owned-warning');
+            await capture(page, 'access-already-owned-warning');
             const repeat = await api(`subscription/${uid}/transfer`, {method: 'POST', data: {recipient: input.user_id}});
             proof('previous_owner_repeat_denied', repeat.status() === 403);
             const reader = await actor('reader');

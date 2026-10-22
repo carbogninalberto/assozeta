@@ -6,14 +6,13 @@ import {paymentMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/paym
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'payment-categories-manage', spec = paymentMaintenanceAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         const read = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
         const list = async () => (await read('payment/category/list')).data;
         const baseline = await list(), baselinePayments = (await read('payment/list?pagination[perpage]=100')).data;
         const take = async (checkpoint, focus) => {await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout:15000});
-            await capture(page, spec.checkpoints.findIndex(point => point.id === checkpoint) + 1, checkpoint, focus);};
+            await capture(page, checkpoint, focus);};
         const select = async (modal, label, option) => {await modal.getByRole('textbox', {name:label, exact:true}).click();
             await modal.locator('.list-item').getByText(option, {exact:true}).click();};
         let owned, error;

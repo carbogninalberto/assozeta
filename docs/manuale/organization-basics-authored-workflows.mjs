@@ -32,32 +32,33 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "BE/application/models/user_models.py",
-      "BE/application/permissions_registry.py",
-      "BE/application/serializers/user_serializers.py",
-      "BE/application/utils/instructors_utils.py",
-      "BE/application/views/instructor_views.py",
-      "BE/core/settings.py",
-      "UI/src/components/InplaceTabs.svelte",
-      "UI/src/components/Sidebar.svelte",
-      "UI/src/components/buttons/EditButton.svelte",
-      "UI/src/components/tables/BKNDatatable.svelte",
-      "UI/src/routes.js",
-      "UI/src/routes/association/course/instructor/InstructorList.svelte",
-      "UI/src/routes/association/course/instructor/add/AddInstructor.svelte",
-      "UI/src/routes/association/course/instructor/add/sections/Section1.svelte",
-      "UI/src/routes/association/course/instructor/info/Instructor.svelte",
-      "UI/src/routes/association/course/instructor/info/LessonsHoursCard.svelte",
-      "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte",
-      "UI/src/routes/association/course/instructor/info/modals/instructorPeriod.js",
-      "UI/src/routes/association/course/instructor/modals/EditModal.svelte",
-      "UI/src/utils/Functions.js",
-      "UI/src/utils/Permissions.js",
-      "docs/manuale/instructor-recipes.mjs",
-      "docs/manuale/organization-basics-authored-workflows.mjs",
-      "selfhost/tests/browser/manuale/instructor-sources.mjs",
-      "selfhost/tests/browser/manuale/instructors-create-edit-hours.mjs"
-    ],
+    "BE/application/models/user_models.py",
+    "BE/application/permissions_registry.py",
+    "BE/application/serializers/user_serializers.py",
+    "BE/application/utils/instructors_utils.py",
+    "BE/application/views/instructor_views.py",
+    "BE/core/settings.py",
+    "UI/src/components/InplaceTabs.svelte",
+    "UI/src/components/Sidebar.svelte",
+    "UI/src/components/buttons/EditButton.svelte",
+    "UI/src/components/tables/BKNDatatable.svelte",
+    "UI/src/routes.js",
+    "UI/src/routes/association/course/instructor/InstructorList.svelte",
+    "UI/src/routes/association/course/instructor/add/AddInstructor.svelte",
+    "UI/src/routes/association/course/instructor/add/sections/Section1.svelte",
+    "UI/src/routes/association/course/instructor/info/Instructor.svelte",
+    "UI/src/routes/association/course/instructor/info/LessonsHoursCard.svelte",
+    "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte",
+    "UI/src/routes/association/course/instructor/info/modals/instructorPeriod.js",
+    "UI/src/routes/association/course/instructor/modals/EditModal.svelte",
+    "UI/src/utils/Functions.js",
+    "UI/src/utils/Permissions.js",
+    "docs/manuale/instructor-recipes.mjs",
+    "docs/manuale/organization-basics-authored-workflows.mjs",
+    "selfhost/tests/browser/manuale/instructor-sources.mjs",
+    "selfhost/tests/browser/manuale/instructors-create-edit-hours.mjs",
+    "UI/src/routes/association/course/instructor/"
+],
     "checkpoints": [
       {
         "id": "empty-instructor-list-and-create-action",
@@ -95,7 +96,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/istruttori.mdx",
-        "id": "aggiungere-un-istruttore",
+        "id": "aggiungere-un-istruttore", "intent": "instructors.create",
         "title": "Aggiungere un Istruttore",
         "checkpoints": [
           "empty-instructor-list-and-create-action",
@@ -125,7 +126,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "informazioni-obbligatorie",
+        "id": "informazioni-obbligatorie", "intent": "instructors.create",
         "title": "Informazioni obbligatorie",
         "checkpoints": [
           "instructor-required-and-personal-data"
@@ -140,7 +141,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "informazioni-anagrafiche",
+        "id": "informazioni-anagrafiche", "intent": "instructors.create",
         "title": "Informazioni anagrafiche",
         "checkpoints": [
           "instructor-required-and-personal-data"
@@ -155,7 +156,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "informazioni-contratto",
+        "id": "informazioni-contratto", "intent": "instructors.create",
         "title": "Informazioni contratto",
         "checkpoints": [
           "instructor-contract-default-rates-and-unlinked-account"
@@ -170,7 +171,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "tariffe-predefinite",
+        "id": "tariffe-predefinite", "intent": "instructors.create",
         "title": "Tariffe predefinite",
         "checkpoints": [
           "instructor-contract-default-rates-and-unlinked-account"
@@ -185,7 +186,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "account-collaboratore-associato",
+        "id": "account-collaboratore-associato", "intent": "instructors.create",
         "title": "Account collaboratore associato",
         "checkpoints": [
           "instructor-contract-default-rates-and-unlinked-account",
@@ -205,7 +206,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "modificare-un-istruttore",
+        "id": "modificare-un-istruttore", "intent": "instructors.update",
         "title": "Modificare un Istruttore",
         "checkpoints": [
           "edit-instructor-default-hourly-rate"
@@ -220,7 +221,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "la-scheda-dell-istruttore",
+        "id": "la-scheda-dell-istruttore", "intent": "instructors.hours.read",
         "title": "La scheda dell'Istruttore",
         "checkpoints": [
           "instructor-compensation-card-before-hours",
@@ -240,7 +241,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "registrare-le-ore-lavorate",
+        "id": "registrare-le-ore-lavorate", "intent": "instructors.hours.create",
         "title": "Registrare le ore lavorate",
         "checkpoints": [
           "instructor-compensation-card-before-hours",
@@ -265,7 +266,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "campi-principali",
+        "id": "campi-principali", "intent": "instructors.hours.create",
         "title": "Campi principali",
         "checkpoints": [
           "hourly-hours-default-rate-unpaid-and-calculated-total"
@@ -280,7 +281,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "tipi-di-compenso",
+        "id": "tipi-di-compenso", "intent": "instructors.hours.create",
         "title": "Tipi di compenso",
         "checkpoints": [
           "hourly-hours-default-rate-unpaid-and-calculated-total"
@@ -295,7 +296,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "compenso-orario",
+        "id": "compenso-orario", "intent": "instructors.hours.create",
         "title": "Compenso orario",
         "checkpoints": [
           "hourly-hours-default-rate-unpaid-and-calculated-total",
@@ -315,7 +316,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "note-e-salvataggio",
+        "id": "note-e-salvataggio", "intent": "instructors.hours.create",
         "title": "Note e salvataggio",
         "checkpoints": [
           "hourly-hours-default-rate-unpaid-and-calculated-total",
@@ -335,7 +336,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/istruttori.mdx",
-        "id": "stato-dei-compensi",
+        "id": "stato-dei-compensi", "intent": "instructors.hours.read",
         "title": "Stato dei compensi",
         "checkpoints": [
           "saved-hours-unpaid-and-summary-persist-after-reload"
@@ -350,7 +351,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-impostare-gestire-istruttori.mdx",
-        "id": "aggiungere-un-nuovo-istruttore",
+        "id": "aggiungere-un-nuovo-istruttore", "intent": "instructors.create",
         "title": "Aggiungere un nuovo istruttore",
         "checkpoints": [
           "empty-instructor-list-and-create-action",
@@ -380,7 +381,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-impostare-gestire-istruttori.mdx",
-        "id": "tipologie-di-compenso",
+        "id": "tipologie-di-compenso", "intent": "instructors.hours.create",
         "title": "Tipologie di compenso",
         "checkpoints": [
           "instructor-contract-default-rates-and-unlinked-account",
@@ -400,7 +401,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-impostare-gestire-istruttori.mdx",
-        "id": "registrare-le-ore-lavorate",
+        "id": "registrare-le-ore-lavorate", "intent": "instructors.hours.create",
         "title": "Registrare le ore lavorate",
         "checkpoints": [
           "instructor-compensation-card-before-hours",
@@ -425,7 +426,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-impostare-gestire-istruttori.mdx",
-        "id": "riepilogo-ore",
+        "id": "riepilogo-ore", "intent": "instructors.hours.read",
         "title": "Riepilogo ore",
         "checkpoints": [
           "instructor-compensation-card-before-hours",
@@ -445,7 +446,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-impostare-gestire-istruttori.mdx",
-        "id": "modificare-i-dati",
+        "id": "modificare-i-dati", "intent": "instructors.update",
         "title": "Modificare i dati",
         "checkpoints": [
           "edit-instructor-default-hourly-rate"
@@ -538,25 +539,26 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "BE/application/models/subscriptions_models.py",
-      "BE/application/models/user_models.py",
-      "BE/application/permissions_registry.py",
-      "BE/application/serializers/auth_serializers.py",
-      "BE/application/serializers/subscriptions_serializers.py",
-      "BE/application/utils/api_utils.py",
-      "BE/application/views/profile_views.py",
-      "BE/application/views/subscriptions_views.py",
-      "UI/src/components/Sidebar.svelte",
-      "UI/src/routes.js",
-      "UI/src/routes/profile/ProfileMenu.svelte",
-      "UI/src/routes/profile/sections/Account.svelte",
-      "UI/src/routes/profile/sections/Settings.svelte",
-      "UI/src/utils/Permissions.js",
-      "docs/manuale/organization-access-recipes.mjs",
-      "docs/manuale/organization-basics-authored-workflows.mjs",
-      "selfhost/tests/browser/manuale/organization-access-sources.mjs",
-      "selfhost/tests/browser/manuale/organization-settings.mjs"
-    ],
+    "BE/application/models/subscriptions_models.py",
+    "BE/application/models/user_models.py",
+    "BE/application/permissions_registry.py",
+    "BE/application/serializers/auth_serializers.py",
+    "BE/application/serializers/subscriptions_serializers.py",
+    "BE/application/utils/api_utils.py",
+    "BE/application/views/profile_views.py",
+    "BE/application/views/subscriptions_views.py",
+    "UI/src/components/Sidebar.svelte",
+    "UI/src/routes.js",
+    "UI/src/routes/profile/ProfileMenu.svelte",
+    "UI/src/routes/profile/sections/Account.svelte",
+    "UI/src/routes/profile/sections/Settings.svelte",
+    "UI/src/utils/Permissions.js",
+    "docs/manuale/organization-access-recipes.mjs",
+    "docs/manuale/organization-basics-authored-workflows.mjs",
+    "selfhost/tests/browser/manuale/organization-access-sources.mjs",
+    "selfhost/tests/browser/manuale/organization-settings.mjs",
+    "UI/src/routes/profile/"
+],
     "checkpoints": [
       {
         "id": "organization-info-original-address-and-owner-controls",
@@ -594,7 +596,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/impostazioni.mdx",
-        "id": "informazioni-dell-organizzazione",
+        "id": "informazioni-dell-organizzazione", "intent": "organization.update",
         "title": "Informazioni dell'organizzazione",
         "checkpoints": [
           "organization-info-original-address-and-owner-controls",
@@ -619,7 +621,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/impostazioni.mdx",
-        "id": "anno-fiscale",
+        "id": "anno-fiscale", "intent": "organization.fiscal.update",
         "title": "Anno fiscale",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season",
@@ -649,7 +651,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/impostazioni.mdx",
-        "id": "stagione-sportiva",
+        "id": "stagione-sportiva", "intent": "organization.season.update",
         "title": "Stagione sportiva",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season",
@@ -674,7 +676,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/impostazioni.mdx",
-        "id": "durata-delle-iscrizioni-e-tesseramenti",
+        "id": "durata-delle-iscrizioni-e-tesseramenti", "intent": "organization.season.update",
         "title": "Durata delle iscrizioni e tesseramenti",
         "checkpoints": [
           "short-sport-season-and-registration-duration-before-save",
@@ -694,7 +696,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "cambiare-l-anno-sportivo-e-fiscale",
+        "id": "cambiare-l-anno-sportivo-e-fiscale", "intent": "organization.settings.read",
         "title": "Cambiare l'anno sportivo e fiscale",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season"
@@ -709,7 +711,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "qual-e-la-differenza",
+        "id": "qual-e-la-differenza", "intent": "organization.settings.read",
         "title": "Qual è la differenza?",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season"
@@ -724,7 +726,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "opzioni-disponibili",
+        "id": "opzioni-disponibili", "intent": "organization.settings.read",
         "title": "Opzioni disponibili",
         "checkpoints": [
           "custom-fiscal-year-starts-october-fifteen",
@@ -744,7 +746,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "come-cambiare-l-anno-fiscale",
+        "id": "come-cambiare-l-anno-fiscale", "intent": "organization.fiscal.update",
         "title": "Come cambiare l'anno fiscale",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season",
@@ -774,7 +776,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "come-cambiare-la-stagione-sportiva",
+        "id": "come-cambiare-la-stagione-sportiva", "intent": "organization.season.update",
         "title": "Come cambiare la stagione sportiva",
         "checkpoints": [
           "general-settings-fiscal-presets-and-separate-season",
@@ -799,7 +801,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-cambiare-anno-sportivo-fiscale.mdx",
-        "id": "cosa-cambia-dopo-la-modifica",
+        "id": "cosa-cambia-dopo-la-modifica", "intent": "organization.settings.read",
         "title": "Cosa cambia dopo la modifica",
         "checkpoints": [
           "saved-fiscal-and-season-settings-persist-after-reload"
@@ -814,7 +816,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-        "id": "configurare-l-anno-sportivo-l-anno-fiscale-e-le-causali-per-i-pagamenti",
+        "id": "configurare-l-anno-sportivo-l-anno-fiscale-e-le-causali-per-i-pagamenti", "intent": "organization.settings.read",
         "title": "Configurare l'anno sportivo, l'anno fiscale e le causali per i pagamenti",
         "checkpoints": [
           "custom-fiscal-year-starts-october-fifteen",
@@ -834,7 +836,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-        "id": "durata-di-iscrizioni-e-tesseramenti",
+        "id": "durata-di-iscrizioni-e-tesseramenti", "intent": "organization.season.update",
         "title": "Durata di iscrizioni e Tesseramenti",
         "checkpoints": [
           "short-sport-season-and-registration-duration-before-save",
@@ -908,27 +910,30 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "BE/application/models/user_models.py",
-      "BE/application/permissions_registry.py",
-      "BE/application/serializers/auth_serializers.py",
-      "BE/application/serializers/collaborators_serializers.py",
-      "BE/application/views/collaborator_views.py",
-      "BE/application/views/profile_views.py",
-      "BE/instance/permissions.py",
-      "UI/src/components/PermissionsComponent.svelte",
-      "UI/src/components/Sidebar.svelte",
-      "UI/src/routes.js",
-      "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte",
-      "UI/src/routes/connectedCollaborators/ConnectedCollaborators.svelte",
-      "UI/src/routes/connectedCollaborators/modals/EditModal.svelte",
-      "UI/src/routes/profile/ProfileMenu.svelte",
-      "UI/src/routes/profile/sections/Account.svelte",
-      "UI/src/utils/Permissions.js",
-      "docs/manuale/organization-access-recipes.mjs",
-      "docs/manuale/organization-basics-authored-workflows.mjs",
-      "selfhost/tests/browser/manuale/collaborator-permissions.mjs",
-      "selfhost/tests/browser/manuale/organization-access-sources.mjs"
-    ],
+    "BE/application/models/user_models.py",
+    "BE/application/permissions_registry.py",
+    "BE/application/serializers/auth_serializers.py",
+    "BE/application/serializers/collaborators_serializers.py",
+    "BE/application/views/collaborator_views.py",
+    "BE/application/views/profile_views.py",
+    "BE/instance/permissions.py",
+    "UI/src/components/PermissionsComponent.svelte",
+    "UI/src/components/Sidebar.svelte",
+    "UI/src/routes.js",
+    "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte",
+    "UI/src/routes/connectedCollaborators/ConnectedCollaborators.svelte",
+    "UI/src/routes/connectedCollaborators/modals/EditModal.svelte",
+    "UI/src/routes/profile/ProfileMenu.svelte",
+    "UI/src/routes/profile/sections/Account.svelte",
+    "UI/src/utils/Permissions.js",
+    "docs/manuale/organization-access-recipes.mjs",
+    "docs/manuale/organization-basics-authored-workflows.mjs",
+    "selfhost/tests/browser/manuale/collaborator-permissions.mjs",
+    "selfhost/tests/browser/manuale/organization-access-sources.mjs",
+    "BE/application/serializers/user_serializers.py",
+    "UI/src/routes/connectedCollaborators/",
+    "UI/src/routes/profile/"
+],
     "checkpoints": [
       {
         "id": "existing-accepted-custom-collaborator-and-edit-action",
@@ -970,7 +975,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/collaboratori.mdx",
-        "id": "introduzione",
+        "id": "introduzione", "intent": "collaborators.read",
         "title": "Introduzione",
         "checkpoints": [
           "existing-accepted-custom-collaborator-and-edit-action"
@@ -985,7 +990,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/collaboratori.mdx",
-        "id": "livelli-di-permessi",
+        "id": "livelli-di-permessi", "intent": "collaborators.permissions.update",
         "title": "Livelli di permessi",
         "checkpoints": [
           "owner-adds-only-update-settings-to-existing-custom-permissions",
@@ -1005,7 +1010,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/collaboratori.mdx",
-        "id": "accesso-completo",
+        "id": "accesso-completo", "intent": "collaborators.permissions.update",
         "title": "Accesso Completo",
         "checkpoints": [
           "existing-accepted-custom-collaborator-and-edit-action",
@@ -1030,7 +1035,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/collaboratori.mdx",
-        "id": "personalizzato",
+        "id": "personalizzato", "intent": "collaborators.permissions.update",
         "title": "Personalizzato",
         "checkpoints": [
           "owner-adds-only-update-settings-to-existing-custom-permissions",
@@ -1050,7 +1055,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/collaboratori.mdx",
-        "id": "modificare-i-permessi-di-un-collaboratore",
+        "id": "modificare-i-permessi-di-un-collaboratore", "intent": "collaborators.permissions.update",
         "title": "Modificare i permessi di un collaboratore",
         "checkpoints": [
           "existing-accepted-custom-collaborator-and-edit-action",
@@ -1085,7 +1090,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-invitare-collaboratori.mdx",
-        "id": "livelli-di-accesso",
+        "id": "livelli-di-accesso", "intent": "collaborators.permissions.update",
         "title": "Livelli di accesso",
         "checkpoints": [
           "owner-adds-only-update-settings-to-existing-custom-permissions",
@@ -1105,7 +1110,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-invitare-collaboratori.mdx",
-        "id": "modificare-i-permessi",
+        "id": "modificare-i-permessi", "intent": "collaborators.permissions.update",
         "title": "Modificare i permessi",
         "checkpoints": [
           "existing-accepted-custom-collaborator-and-edit-action",
@@ -1296,7 +1301,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-        "id": "causali-predefinite",
+        "id": "causali-predefinite", "intent": "payments.categories.update",
         "title": "Causali predefinite",
         "checkpoints": [
           "default-registration-category-before-edit",
@@ -1521,7 +1526,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-        "id": "creare-un-modulo-completamente-personalizzato",
+        "id": "creare-un-modulo-completamente-personalizzato", "intent": "documents.templates.create",
         "title": "Creare un modulo completamente personalizzato",
         "checkpoints": [
           "templates-list-before-create",
@@ -1546,7 +1551,7 @@ export const organizationBasicsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-        "id": "come-assegnare-un-modulo-personalizzato",
+        "id": "come-assegnare-un-modulo-personalizzato", "intent": "documents.templates.generate",
         "title": "Come assegnare un modulo personalizzato?",
         "checkpoints": [
           "member-documents-before-generation",

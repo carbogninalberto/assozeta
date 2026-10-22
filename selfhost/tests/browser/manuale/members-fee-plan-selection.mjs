@@ -9,8 +9,7 @@ import {reloadOrganizationProfile} from './organization-access-sources.mjs';
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'members-fee-plan-selection', spec = memberAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async scenarioContext => {
+await scenario({id, actions: async scenarioContext => {
         const {page, api, open, actor, context, input, capture, report} = scenarioContext;
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
@@ -21,7 +20,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const originalPayments = Object.values((await json('payment/list?pagination[perpage]=100')).data);
         const take = async checkpoint => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1; await capture(page, n, checkpoint);
+            const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1; await capture(page, checkpoint);
         };
         const facts = {}, proof = (key, value) => {expect(value, key).toEqual(spec.outcome.expected[key]); facts[key] = value;};
         let configChanged = false, created;
@@ -58,9 +57,10 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(names).toHaveCount(2); await expect(names.nth(1)).toHaveValue('Sostenitore');
             proof('plans_persist_after_reload', JSON.stringify((await profile()).subscription_fee_plans) === JSON.stringify(saved.subscription_fee_plans));
             await take('multiple-fees-module-persisted');
-            await createMember({...scenarioContext, capture: async (_page, number) => {
-                const checkpoint = {2: 'multiple-fees-selected-in-wizard', 7: 'multiple-fees-registration-summary',
-                    8: 'multiple-fees-created-registration'}[number];
+            await createMember({...scenarioContext, capture: async (_page, originalCheckpoint) => {
+                const checkpoint = {'registration-type-and-no-new-account': 'multiple-fees-selected-in-wizard',
+                    'registration-summary-before-saving': 'multiple-fees-registration-summary',
+                    'created-pending-registration-persists-after-reload': 'multiple-fees-created-registration'}[originalCheckpoint];
                 if (checkpoint) await take(checkpoint);
             }}, {expectedAmount: 45, beforeProfileContinue: async ({active}) => {
                 const field = active().locator('.svelte-select').filter({has: page.locator('input[type="hidden"][name="plan_id"]')});

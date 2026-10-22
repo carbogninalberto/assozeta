@@ -3,7 +3,7 @@ name: assozeta-manuale
 description: Maintain the Italian Assozeta user manual in Bakney/manuale, capture real seeded application workflows, validate implementation evidence, and update the versioned RAG corpus in the existing MCP and agent. Use for manual updates, screenshot refreshes, manual coverage audits, and documentation retrieval maintenance.
 ---
 
-Use the Assozeta repository's `docs/scripts/manuale.py` and `docs/scripts/manuale-generate.mjs`. Read `docs/goal-prompts/MANUALE_AUTOMATION_AND_MCP_RAG_GOAL.md` for the complete objective and `docs/manuale/README.md` for executable commands and current coverage.
+Use the Assozeta repository's `docs/scripts/manuale.py` and `docs/scripts/manuale-generate.mjs`. Read `docs/goal-prompts/MANUALE_SIMPLIFICATION_AND_APPLIANCE_DELIVERY_GOAL.md` for the current objective and `docs/manuale/README.md` for executable commands and current coverage.
 
 Resolve those files from the selected Assozeta checkout, not the installed skill directory. The portable source is `skills/assozeta-manuale`; installation and discovery commands are in `docs/manuale/README.md`. Invoke explicitly with `$assozeta-manuale`.
 
@@ -20,7 +20,7 @@ for captures. A successful doctor check proves only prerequisite availability.
 ## Evidence rules
 
 - Write user content in Italian, using the manual's MDX components and existing image conventions.
-- For authoring, use `docs/scripts/manuale-scaffold.py create` with the local original repository. The runner also initializes a clean selected manual snapshot automatically, recording generated draft provenance separately; existing reviewed MDX must be preserved. It preserves the complete navigation and MDX content and prepares SVG placeholders at 1920 × 1080. They belong only to the draft: replace them with real captures before final verification, and never index them as verified screenshots. Track completion in `.manuale-authoring.json` and `docs/manuale/DELIVERY_CHECKLIST.md`.
+- For authoring, use `docs/scripts/manuale-scaffold.py create` with the local original repository. The runner requires reviewed MDX and preserves it; an unreviewed input fails before any application services start. It preserves the complete navigation and MDX content and prepares SVG placeholders at 1920 × 1080. They belong only to the draft: replace them with real captures before final verification, and never index them as verified screenshots. Track completion in `.manuale-authoring.json` and `docs/manuale/DELIVERY_CHECKLIST.md`.
 - Follow `Bakney/manuale/CLAUDE.md`, `mint.json`, and the existing page headings. Keep its `docs/`, `faq/`, and `tutorials/` organization and use `<Steps>`, `<Step>`, `<Frame>`, and notes as appropriate. Preserve the original order of introductions, steps, and behavioral limits when projecting sections into the reader and chat.
 - Preserve Markdown formatting and associate screenshots with their actual step. Use the shared reader/chat renderer and authenticated manual assets; an ambiguous or unsupported lookup must not display a procedural guide.
 - Inspect the relevant UI, backend services, models, and permission rules. Existing manual prose and requested screenshots are claims to verify.
@@ -82,14 +82,44 @@ request code; supply authentication only to its trusted editorial step.
 
 ## Execution
 
+For an offline content build, use `manuale.py build --manual-repo PATH`.
+Compatible complete evidence is discovered automatically in the local cache;
+`--reuse-evidence VERIFIED_RUN` selects an explicit baseline and `--no-cache`
+forces a cold run. This compiles MDX and validates local links,
+images and complete evidence without Docker, a browser or ports. It produces a
+candidate, not a release verification. For an inspected wording-only correction,
+use `manuale-scaffold.py review-content --wording-only --review-note REASON` on
+the explicit sections. This records old/new reviewed hashes while preserving the
+original capture provenance; changed steps, links, images, numbers or code cannot
+pass this editorial reuse route. Ordinary behavior edits require fresh captures.
+Missing captures are listed in
+`build.json`; do not treat a partial corpus as complete.
+
+Use `manuale.py capture --manual-repo PATH --workflow ID` for targeted real
+captures; repeat `--workflow` or use affected-source selection. A new capture
+owns and cleans up its demonstration services. `prepare` alone never configures
+runtime services. Workflow metadata owns the capture slots and source paths;
+`recipes.json` is generated and checked, not maintained separately. Capture
+callbacks receive `(page, checkpoint, locator, options)`, without a second
+numeric image-slot mapping. Keep full `run` verification for release evidence.
+
+
 1. Inspect both working trees. Select the application/manual revisions and preserve unrelated changes.
 2. Run `python3 docs/scripts/manuale.py run --manual-repo /path/to/manuale`. Add `--allow-dirty` to deliberately document and hash uncommitted application and manual snapshots. Use `--keep-services` when inspecting a live failure or extending scenarios.
 3. Follow the emitted run directory. For an existing run, use `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export`, or `cleanup` with `--run /path/to/run`. Revalidate live process/container state before resuming; a state file alone does not prove a process is running. Run tooling is snapshotted and hashed: changing its retained files requires new evidence.
-4. Maintain prose directly in the manual MDX checkout. After inspecting application sources for an intentional edit, use `manuale-scaffold.py review-content --output CHECKOUT --section path#id` to bind it; this is editorial provenance, not workflow verification. After reviewing a changed recipe, add `--refresh-recipe-bindings` for the explicitly selected sections; this retains the previous hash and removes any old capture seal. Publishing reads that MDX and rejects stale prose/module bindings. `apply-drafts` only bootstraps templates and must preserve edited MDX. For new chapters, register dependencies/pages in `docs/manuale/recipes.json`, implement real scenarios and reviewed generation recipes, including persisted-state assertions and relevant roles. `--changed-since` and `--manual-changed-since` select affected recipes; use a full run to catch missing dependencies. Do not mark a whole page verified based on one unrelated capture.
+4. Maintain prose directly in the manual MDX checkout. After inspecting application sources for an intentional edit, use `manuale-scaffold.py review-content --output CHECKOUT --section path#id` to bind it; this is editorial provenance, not workflow verification. After reviewing a changed recipe, add `--refresh-recipe-bindings` for the explicitly selected sections; this retains the previous hash and removes any old capture seal. Publishing reads that MDX and rejects stale prose/module bindings. There are no prose templates or `apply-drafts` phase. For a newly authored section, `review-content` records its first explicit review against the existing editorial contract without changing its text. For new chapters, define dependencies/pages/checkpoints in the chapter workflow metadata, regenerate `recipes.json` with `node docs/scripts/manuale-registry.mjs`, and implement real scenarios and reviewed source contracts, including persisted-state assertions and relevant roles. `--changed-since` and `--manual-changed-since` select affected recipes; use a full run to catch missing dependencies. Do not mark a whole page verified based on one unrelated capture.
 5. Verify MDX/rendered pages, every new screenshot layout, retrieval results, and actual MCP/agent answers. Also verify the sidebar and header open the embedded `/#/manuale` reader in a new tab with a standalone layout, with matching steps, images, search and section deep links. Crops must contain the controls described by their step. Repeat `capture` on unchanged inputs when establishing screenshot repeatability or investigating a visual regression; ordinary text changes do not require repeating already successful scenarios. Identical inputs must stay within the documented threshold. Unsupported questions must yield missing-evidence feedback, not an invented procedure.
 6. Retain reports and both worktrees for review. Cleanup removes only the recorded run's services/data; preserve manual changes.
 
 ## Bundled release delivery
+
+Use `manuale.py verify-release --manual-repo PATH --release VERSION` for the
+complete target verification, packaging and isolated historical upgrade/rollback
+rehearsal. It defaults to the real published v1.0.17 as the transition baseline;
+record its immutable image digests. `verify-release --run DIRECTORY` consumes a
+previously verified target, with packaging revalidation, rather than generating
+it again. Neither operation publishes a release. The optional low-level
+`--previous-package` rehearsal flag is for separately verified synthetic fixtures.
 
 Release images use `manuale-release.py --bundle` after a full evaluated run for
 exact committed application and manual authoring inputs. Generated MDX and PNGs
@@ -98,8 +128,9 @@ manual commit. The new `release-bundled` state is accepted only by the image-own
 bundle loader; remote synchronization still requires `published` evidence.
 
 The bundler reproduces the index from retained proof and checks rendering,
-MCP/agent and embedded-reader results before atomic packaging. Image build and
-startup verify the required package and all screenshots. Website deployment is
+MCP/agent and embedded-reader results before atomic packaging. Image build, candidate installation/update and
+startup verify the required package and all screenshots. Candidate verification
+runs without networking, installation volumes or manual-specific configuration. Website deployment is
 independent of this distribution mode. Do not manually relabel old evidence.
 
 ## Retrieval and publication

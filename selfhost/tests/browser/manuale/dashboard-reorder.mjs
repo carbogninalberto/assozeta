@@ -1,11 +1,10 @@
 // Real mouse drag, then the production Save request and persisted readback.
 // A successful report requires the real UI scenario; no dispatch or mocked API.
 import {scenario, expect} from './scenario.mjs';
-import {dashboardWorkflowSources} from './dashboard-sources.mjs';
+
 import {runDashboardPersonalize} from './dashboard.mjs';
 
-await scenario({id: 'dashboard-reorder', prefix: 'images/bacheca/riordinamento',
-    sources: dashboardWorkflowSources, actions: async context => {
+await scenario({id: 'dashboard-reorder', actions: async context => {
         const {page, api, capture, report} = context;
         const {initialRows, profile, save, column, reader} = await runDashboardPersonalize({
             ...context, capture: async () => {},
@@ -39,7 +38,7 @@ await scenario({id: 'dashboard-reorder', prefix: 'images/bacheca/riordinamento',
         await paymentColumn.press('Space');
         await expect(labels).toHaveText(originalLabels);
         expect((await profile(api)).dashboard_layout).toEqual(before);
-        await capture(page, 1, 'dashboard-reorder-edit-before-drag');
+        await capture(page, 'dashboard-reorder-edit-before-drag');
         const from = await source.boundingBox();
         const to = await destination.boundingBox();
         expect(from).not.toBeNull();
@@ -54,13 +53,13 @@ await scenario({id: 'dashboard-reorder', prefix: 'images/bacheca/riordinamento',
         await expect(labels).toHaveText(expectedLabels);
         // Drag changes the draft, not the persisted record.
         expect((await profile(api)).dashboard_layout).toEqual(before);
-        await capture(page, 2, 'dashboard-reorder-drag-before-save');
+        await capture(page, 'dashboard-reorder-drag-before-save');
         await save(page);
         await page.reload();
         expect((await profile(api)).dashboard_layout.rows[0]).toEqual(reordered);
         await expect(labels).toHaveText(expectedLabels);
         expect((await profile(reader.api)).dashboard_layout).toEqual(readerBefore);
-        await capture(page, 3, 'dashboard-reorder-order-persists-after-reload');
+        await capture(page, 'dashboard-reorder-order-persists-after-reload');
         report.dashboard_reorder = {widgets: 8, first_widget: 'payments', second_widget: 'associates',
             real_mouse_drag: true, unsaved_database_unchanged: true, order_persisted_after_reload: true,
             sizes_preserved: true, reader_layout_preserved: true};

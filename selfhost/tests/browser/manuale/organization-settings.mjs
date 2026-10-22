@@ -6,8 +6,7 @@ import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/orga
 const spec = organizationBasicsAuthoredWorkflows['organization-settings'];
 import {organizationSettingsSources, reloadOrganizationProfile} from './organization-access-sources.mjs';
 
-await scenario({id: 'organization-settings', prefix: 'images/impostazioni/organizzazione-anno',
-    sources: spec.sources, actions: async ({page, api, context, open, actor, capture, report, input}) => {
+await scenario({id: 'organization-settings', actions: async ({page, api, context, open, actor, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async (route, client = api) => {
@@ -58,7 +57,7 @@ await scenario({id: 'organization-settings', prefix: 'images/impostazioni/organi
         };
         const take = async (number, checkpoint, locator) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(page, number, checkpoint, locator);
+            await capture(page, checkpoint, locator);
         };
         try {
         await open('Impostazioni', '/#/profile');
@@ -127,7 +126,7 @@ await scenario({id: 'organization-settings', prefix: 'images/impostazioni/organi
         await expect(reader.page.locator('#balance-sheet')).toBeDisabled();
         await expect(reader.page.locator('#season-start-month')).toBeDisabled();
         await expect(reader.page.locator('#bkn_form_password_update_submit')).toBeDisabled();
-        await capture(reader.page, 8, 'reader-can-consult-fiscal-season-settings-with-disabled-writes');
+        await capture(reader.page, 'reader-can-consult-fiscal-season-settings-with-disabled-writes');
         const denied = await reader.api('profile/settings', {method: 'POST', data: {...saved, balance_sheet_start_day: 1}});
         expect(denied.status()).toBe(403);
         expect((await json('profile/settings')).settings).toEqual(saved);

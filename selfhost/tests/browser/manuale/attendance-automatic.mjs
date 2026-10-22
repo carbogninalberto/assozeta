@@ -6,8 +6,7 @@ import {attendanceHarness, settleAttendanceCases} from './attendance-task-harnes
 import {automaticAttendanceAuthoredWorkflows} from '../../../../docs/manuale/automatic-attendance-authored-workflows.mjs';
 const id = 'attendance-automatic';
 const spec = automaticAttendanceAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
- actions: async ({page, api, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, actor, input, capture, report}) => {
     expect(input.fixture_version).toBe(8); expect(input.fixture_profile).toBe('baseline');
     let data; let athleteContext;
     const errors = []; const failed = [];
@@ -15,7 +14,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
     const take = async (currentPage, checkpoint, focus) => {
         const number = spec.checkpoints.findIndex(c => c.id === checkpoint) + 1; expect(number).toBeGreaterThan(0);
         await expect(currentPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout:15000});
-        await capture(currentPage, number, checkpoint, focus);
+        await capture(currentPage, checkpoint, focus);
     };
     try {
         data = attendanceHarness('prepare', input);

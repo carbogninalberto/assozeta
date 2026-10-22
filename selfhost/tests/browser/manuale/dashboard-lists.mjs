@@ -4,8 +4,7 @@ import {dashboardListsAuthoredWorkflows} from '../../../../docs/manuale/dashboar
 import {dashboardListsHarness} from './dashboard-lists-harness.mjs';
 import {reloadOrganizationProfile} from './organization-access-sources.mjs';
 const id='dashboard-lists',spec=dashboardListsAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
- actions:async({page,api,actor,input,capture,report})=>{
+await scenario({id,actions:async({page,api,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8);expect(input.fixture_profile||'baseline').toBe('baseline');
     const read=async(route,request=api)=>{const r=await request(route);expect(r.status()).toBe(200);return r.json();};
     const widget=async(name,key,request=api)=>(await read('statistic/dashboard?widget='+name,request)).data[key];
@@ -23,7 +22,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
     const take=async(cp,focus,current=page)=>{
         const index=spec.checkpoints.findIndex(c=>c.id===cp);expect(index).toBeGreaterThanOrEqual(0);
         await expect(current.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-        await capture(current,index+1,cp,focus);
+        await capture(current,cp,focus);
     };
     const postFor=(route,p=page)=>p.waitForResponse(r=>new URL(r.url()).pathname==='/api/'+route&&r.request().method()==='POST');
     const reloadDashboard=async(p=page,request=api)=>{await p.goto(input.origin+'/#/');

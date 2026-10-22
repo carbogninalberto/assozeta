@@ -9,8 +9,7 @@ const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(ro
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'communication-welcome-state';
 const spec = communicationCompleteAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, context, actor, open, capture, report, input}) => {
+await scenario({id, actions: async ({page, api, context, actor, open, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {
@@ -54,7 +53,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                 await expect(row()).toBeVisible();
                 focus = tableFocus(target, ['name', 'enabled'], row());
             }
-            await capture(target, index + 1, checkpoint, focus); taken.add(checkpoint);
+            await capture(target, checkpoint, focus); taken.add(checkpoint);
         };
         const details = () => read(`communications/workflows/${workflowId}/details`);
         const editor = () => page.locator('#portal-elements').filter({has: page.locator('#automation-name')});

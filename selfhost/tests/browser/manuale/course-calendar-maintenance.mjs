@@ -8,8 +8,7 @@ const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(ro
 
 const id = 'course-calendar-maintenance';
 const spec = courseCalendarMaintenanceAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {const response = await api(route); expect(response.status(), route).toBe(200); return response.json();};
@@ -38,7 +37,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (checkpoint, focus, currentPage = page) => {
             const index = spec.checkpoints.findIndex(item => item.id === checkpoint); expect(index).toBeGreaterThanOrEqual(0);
             await expect(currentPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(currentPage, index + 1, checkpoint, focus);
+            await capture(currentPage, checkpoint, focus);
         };
         const day = offset => {const date = new Date(input.reference_date + 'T12:00:00Z'); date.setUTCDate(date.getUTCDate() + offset); return date.toISOString().slice(0, 10);};
         const calendar = async () => (await read(`course/${owned.course}/calendar`)).data;

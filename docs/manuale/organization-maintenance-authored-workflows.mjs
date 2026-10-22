@@ -123,7 +123,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/archivio.mdx",
-        "id": "come-archiviare-un-elemento",
+        "id": "come-archiviare-un-elemento", "intent": "members.archive.manage",
         "title": "Come archiviare un elemento",
         "checkpoints": [
           "selected-unpaid-member-before-archiving",
@@ -160,7 +160,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/archivio.mdx",
-        "id": "consultare-l-archivio",
+        "id": "consultare-l-archivio", "intent": "archive.navigation.manage",
         "title": "Consultare l'archivio",
         "checkpoints": [
           "archived-member-and-restore-action-after-reload",
@@ -192,7 +192,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-archiviare-dati.mdx",
-        "id": "come-attivarla",
+        "id": "come-attivarla", "intent": "members.archive.automatic.configure",
         "title": "Come attivarla",
         "checkpoints": [
           "fiscal-start-before-automatic-archive-preference",
@@ -244,7 +244,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/archivio.mdx",
-        "id": "ripristinare-un-elemento-dall-archivio",
+        "id": "ripristinare-un-elemento-dall-archivio", "intent": "members.restore",
         "title": "Ripristinare un elemento dall'archivio",
         "checkpoints": [
           "archived-member-and-restore-action-after-reload",
@@ -284,7 +284,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-archiviare-dati.mdx",
-        "id": "archiviazione-manuale",
+        "id": "archiviazione-manuale", "intent": "members.archive",
         "title": "Archiviazione manuale",
         "checkpoints": [
           "selected-unpaid-member-before-archiving",
@@ -329,7 +329,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-archiviare-dati.mdx",
-        "id": "ripristinare-i-dati-archiviati",
+        "id": "ripristinare-i-dati-archiviati", "intent": "members.restore",
         "title": "Ripristinare i dati archiviati",
         "checkpoints": [
           "archived-member-and-restore-action-after-reload",
@@ -467,7 +467,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/collaboratori.mdx",
-        "id": "rimuovere-un-collaboratore",
+        "id": "rimuovere-un-collaboratore", "intent": "collaborators.delete.manage",
         "title": "Rimuovere un collaboratore",
         "checkpoints": [
           "removable-accepted-account-and-separate-pending-invite",
@@ -509,7 +509,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-invitare-collaboratori.mdx",
-        "id": "rimuovere-un-collaboratore",
+        "id": "rimuovere-un-collaboratore", "intent": "collaborators.delete.manage",
         "title": "Rimuovere un collaboratore",
         "checkpoints": [
           "removable-accepted-account-and-separate-pending-invite",
@@ -551,7 +551,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/collaboratori.mdx",
-        "id": "stato-degli-inviti",
+        "id": "stato-degli-inviti", "intent": "collaborators.read",
         "title": "Stato degli inviti",
         "checkpoints": [
           "removable-accepted-account-and-separate-pending-invite"
@@ -566,7 +566,7 @@ export const organizationMaintenanceAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-invitare-collaboratori.mdx",
-        "id": "stato-degli-inviti",
+        "id": "stato-degli-inviti", "intent": "collaborators.read",
         "title": "Stato degli inviti",
         "checkpoints": [
           "removable-accepted-account-and-separate-pending-invite"

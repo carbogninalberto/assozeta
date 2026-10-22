@@ -14,23 +14,6 @@ import textwrap
 ROOT = Path(__file__).resolve().parents[2]
 MARKER = 'assozeta-manuale-placeholder'
 IMAGE = re.compile(r'(?P<prefix>!\[[^\]]*\]\(|\bsrc=[\"\u0027])(?P<path>/images/[^\)\"\u0027]+)(?P<suffix>\)|[\"\u0027])')
-DRAFT_MODULES = [
-    ('docs/manuale/search-recipes.mjs', ['searchDraftPages']),
-    ('docs/manuale/content-recipes.mjs', ['contentDraftPages']),
-    ('docs/manuale/payment-recipes.mjs', ['paymentDraftPages']),
-    ('docs/manuale/member-recipes.mjs', ['memberDraftPages', 'memberApprovalDraftPages']),
-    ('docs/manuale/profile-recipes.mjs', ['profileDraftPages', 'medicalDraftPages']),
-    ('docs/manuale/instructor-recipes.mjs', ['instructorDraftPages']),
-    ('docs/manuale/dashboard-recipes.mjs', ['dashboardDraftPages']),
-    ('docs/manuale/attendance-carnet-recipes.mjs', ['attendanceCarnetDraftPages']),
-    ('docs/manuale/organization-access-recipes.mjs', ['organizationAccessDraftPages']),
-    ('docs/manuale/accounting-balance-recipes.mjs', ['accountingBalanceDraftPages']),
-    ('docs/manuale/camps-calendar-recipes.mjs', ['campsCalendarDraftPages']),
-    ('docs/manuale/registration-forms-recipes.mjs', ['registrationFormsDraftPages']),
-    ('docs/manuale/tag-recipes.mjs', ['tagDraftPages']),
-    ('docs/manuale/overview-recipes.mjs', ['overviewDraftPages']),
-    ('docs/manuale/reference-recipes.mjs', ['referenceDraftPages']),
-]
 
 
 def git(root, *arguments):
@@ -291,97 +274,55 @@ def gallery(output, manifest):
         + ''.join(sections) + '</main></html>\n')
 
 
-def apply_drafts(output):
-    """Place draft workflow prose and SVGs without manufacturing a passed run."""
-    output = output.resolve()
-    manifest = json.loads((output / '.manuale-authoring.json').read_text())
-    if manifest.get('purpose') != 'authoring-only' or manifest.get('verified') or manifest.get('publication_ready'):
-        raise ValueError('Draft recipes require an unverified authoring checkout')
-    pages = []
-    provenance = {}
-    bindings = {}
-    for relative_module, exports in DRAFT_MODULES:
-        module = ROOT / relative_module
-        script = 'const module = await import(process.argv[1]); console.log(JSON.stringify(JSON.parse(process.argv[2]).flatMap(name => module[name]())));'
-        draft_pages = json.loads(subprocess.run(['node', '--input-type=module', '-e', script,
-            module.as_uri(), json.dumps(exports)], capture_output=True, text=True, check=True).stdout)
-        pages.extend(draft_pages)
-        for page in draft_pages:
-            key = page['path'] + '#' + page['id']
-            if key in bindings:
-                raise ValueError('Duplicate draft section: ' + key)
-            bindings[key] = {'title': page['title'], 'content_sha256': digest(page['body'].strip().encode()),
-                'recipe_module': relative_module, 'recipe_sha256': digest(module.read_bytes())}
-            provenance.setdefault(page['path'], []).append({'path': relative_module,
-                'sha256': digest(module.read_bytes()), 'section': page['id'],
-                'status': 'pending-capture', 'verified': False})
-    staged = {}
-    sidecar_path = output / '.manuale-evidence.json'
-    previous_sidecar = json.loads(sidecar_path.read_text()) if sidecar_path.exists() else {}
-    if previous_sidecar and (previous_sidecar.get('format') != 1 or previous_sidecar.get('purpose') != 'reviewed-content' or previous_sidecar.get('verified') is not False or not isinstance(previous_sidecar.get('sections'), dict)):
-        raise ValueError('Invalid preexisting reviewed manual content bindings')
-    previous_bindings = previous_sidecar.get('sections', {})
-    for page in pages:
-        relative = page['path']
-        original = staged.get(relative, owned(output, relative).read_text())
-        headings = list(re.finditer(r'^#{1,6} +(.+)\s*$', original, re.M))
-        position = next((i for i, heading in enumerate(headings) if heading[1].strip() == page['title']), None)
-        if position is None:
-            raise ValueError('Missing existing draft section: ' + relative + ':' + page['title'])
-        start = headings[position].start()
-        end = headings[position + 1].start() if position + 1 < len(headings) else len(original)
-        previous = previous_bindings.get(relative + '#' + page['id'])
-        if previous and previous.get('content_source') == 'authored-mdx':
-            raise ValueError('apply-drafts is for bootstrap templates; preserve authored MDX: ' + relative + '#' + page['id'])
-        current_body = re.sub(r'(/images/[^\s"\u0027)]+)\.placeholder\.svg', r'\1.png', original[start:end].strip())
-        if previous and digest(current_body.encode()) != previous['content_sha256']:
-            raise ValueError('Preserve edited MDX; review-content before refreshing templates: ' + relative + '#' + page['id'])
-        body = IMAGE.sub(lambda match: match['prefix'] + str(Path(match['path']).with_suffix('.placeholder.svg')) + match['suffix'], page['body'])
-        staged[relative] = original[:start] + body.strip() + '\n\n' + original[end:]
-    # All destinations and sections were checked before mutating any page.
-    for relative, text in staged.items():
-        owned(output, relative).write_text(text)
-        record = next(page for page in manifest['pages'] if page['path'] == relative)
-        record['draft_sha256'] = digest(text.encode())
-        record['draft_recipes'] = provenance[relative]
-        record.pop('draft_recipe', None)
-    (output / '.manuale-authoring.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
-    (output / '.manuale-evidence.json').write_text(json.dumps({**previous_sidecar,
-        'format': 1, 'purpose': 'reviewed-content', 'verified': False,
-        'sections': {**previous_bindings, **bindings}}, ensure_ascii=False, indent=2) + '\n')
-    manifest['summary']['rewritten_sections'] = len(bindings)
-    (output / '.manuale-authoring.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
-    return plan(output)
-
-
-def review_content(output, selected, *, refresh_recipe_bindings=False):
+def review_content(output, selected, *, refresh_recipe_bindings=False, wording_only=False, review_note=''):
     """Record an editorial review; never claim a passed capture or procedure."""
     output = output.resolve()
+    if wording_only and (refresh_recipe_bindings or not review_note.strip()):
+        raise ValueError('A wording-only review needs --review-note and unchanged implementation recipe bindings')
     sidecar_path = owned(output, '.manuale-evidence.json')
-    sidecar = json.loads(sidecar_path.read_text())
+    sidecar = json.loads(sidecar_path.read_text()) if sidecar_path.exists() else {
+        'format': 1, 'purpose': 'reviewed-content', 'verified': False, 'sections': {}}
     if sidecar.get('format') != 1 or sidecar.get('purpose') != 'reviewed-content' or sidecar.get('verified') is not False:
         raise ValueError('Invalid reviewed content bindings')
     staged = {}
+    discovered = None
     for key in selected:
         binding = sidecar['sections'].get(key)
         if not binding:
-            raise ValueError('Unknown authored section: ' + key)
+            if wording_only:
+                raise ValueError('A wording-only review requires an existing reviewed section: ' + key)
+            if discovered is None:
+                command = 'const {editorialContracts} = await import(process.argv[1]); console.log(JSON.stringify(editorialContracts()));'
+                descriptors = json.loads(subprocess.run(['node', '--input-type=module', '-e', command,
+                    (ROOT / 'docs/manuale/editorial-contracts.mjs').as_uri()], capture_output=True, text=True, check=True).stdout)
+                discovered = {item['path'] + '#' + item['id']: item for item in descriptors}
+            descriptor = discovered.get(key)
+            if not descriptor:
+                raise ValueError('Unknown authored section: ' + key)
+            binding = {'title': descriptor['title'], 'recipe_module': descriptor['recipe_module']}
         module = binding['recipe_module']
         if not module.startswith('docs/manuale/') or not module.endswith('.mjs'):
             raise ValueError('Invalid reviewed recipe module: ' + str(module))
         current_recipe = digest(owned(ROOT, module).read_bytes())
-        if current_recipe != binding['recipe_sha256'] and not refresh_recipe_bindings:
+        if binding.get('recipe_sha256', current_recipe) != current_recipe and not refresh_recipe_bindings:
             raise ValueError('Recipe changed; update reviewed bindings before editing prose: ' + binding['recipe_module'])
         relative = key.rsplit('#', 1)[0]
         mdx = owned(output, relative).read_text()
         body = reviewed_section_body(mdx, key, binding['title'])
-        staged[key] = {'content_sha256': digest(body.encode()), 'recipe_sha256': current_recipe}
+        staged[key] = {'title': binding['title'], 'recipe_module': module,
+                       'content_sha256': digest(body.encode()), 'recipe_sha256': current_recipe}
+        if wording_only:
+            staged[key]['editorial_review'] = {'format': 1, 'kind': 'wording-only',
+                'from_sha256': binding['content_sha256'], 'to_sha256': staged[key]['content_sha256'],
+                'recipe_sha256': current_recipe, 'note': review_note.strip()}
     for key, value in staged.items():
-        binding = sidecar['sections'][key]
-        if value['recipe_sha256'] != binding['recipe_sha256']:
+        binding = sidecar['sections'].setdefault(key, {})
+        if binding.get('recipe_sha256') and value['recipe_sha256'] != binding['recipe_sha256']:
             binding['recipe_review'] = {'previous_sha256': binding['recipe_sha256'],
                 'sha256': value['recipe_sha256'], 'purpose': 'editorial-review-only'}
         binding.update(value, content_source='authored-mdx')
+        if not wording_only:
+            binding.pop('editorial_review', None)
         # New editorial review cannot retain a previous captured publication seal.
         for field in ('materialization', 'editorial_content_sha256'):
             binding.pop(field, None)
@@ -425,26 +366,18 @@ def plan(output):
                 'caption': captions[number - 1] if number <= len(captions) else titles.get(page, page) + ' · ' + str(number),
                 'placement': 'requires review of actual workflow', 'width': 1920, 'height': 1080})
             record.setdefault('caption', captions[number - 1] if number <= len(captions) else titles.get(page, page) + ' · ' + str(number))
-    # Reviewed recipe image names are known in advance, independently of whether
-    # their scenarios have run. Planning them does not create capture reports.
-    for relative in ('docs/manuale/search-recipes.mjs', 'docs/manuale/content-recipes.mjs', 'docs/manuale/payment-recipes.mjs'):
-        for original in re.findall(r'/(images/[a-zA-Z0-9_./-]+\.png)', (ROOT / relative).read_text()):
-            records.setdefault(original, {'original_path': original, 'placeholder_path': str(Path(original).with_suffix('.placeholder.svg')),
-                'pages': [], 'planned_from': relative, 'status': 'placeholder', 'verified': False,
-                'placement': 'assigned by the real workflow recipe', 'width': 1920, 'height': 1080})
-    planned = ROOT / 'docs/manuale/screenshot-plan.json'
-    if planned.exists():
-        for slot in json.loads(planned.read_text())['slots']:
-            original = slot['path']
+    # Image slots come from the same workflow inventory as capture and build.
+    registry = json.loads((ROOT / 'docs/manuale/recipes.json').read_text())
+    for workflow in registry['recipes']:
+        for number, checkpoint in enumerate(workflow['checkpoints'], 1):
+            original = workflow['capture_prefix'] + str(number) + '.png'
             owned(output, original)
-            if not original.startswith('images/') or not original.endswith('.png'):
-                raise ValueError('Screenshot plan requires an images/*.png destination')
             record = records.setdefault(original, {'original_path': original,
                 'placeholder_path': str(Path(original).with_suffix('.placeholder.svg')), 'status': 'placeholder',
                 'verified': False, 'width': 1920, 'height': 1080})
-            record.update({'pages': slot['pages'], 'caption': slot['caption'], 'workflow': slot['workflow'],
-                'checkpoint': slot['checkpoint'], 'planned_from': 'docs/manuale/screenshot-plan.json',
-                'placement': 'assigned by the workflow authoring recipe'})
+            record.update({'pages': workflow['pages'], 'caption': checkpoint['caption'], 'workflow': workflow['id'],
+                'checkpoint': checkpoint['id'], 'planned_from': 'docs/manuale/recipes.json',
+                'placement': 'assigned by the canonical workflow definition'})
     for record in records.values():
         target = owned(output, record['placeholder_path'])
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -467,7 +400,7 @@ def plan(output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('create', 'initialize', 'plan', 'apply-drafts', 'review-content', 'status', 'check-placeholders'))
+    parser.add_argument('command', choices=('create', 'initialize', 'plan', 'review-content', 'status', 'check-placeholders'))
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--branch', default='add/manuale')
@@ -475,6 +408,9 @@ def main():
     parser.add_argument('--section', action='append', help='Reviewed MDX section path#id; repeat for each intentional edit')
     parser.add_argument('--refresh-recipe-bindings', action='store_true',
                         help='After source inspection, rebind only explicitly selected sections to changed recipes; never verifies a workflow')
+    parser.add_argument('--wording-only', action='store_true',
+                        help='Explicitly review prose corrections without changed behavior; compatible captures may be reused')
+    parser.add_argument('--review-note', default='', help='Explain the wording-only correction and why behavior is unchanged')
     args = parser.parse_args()
     if args.command == 'create':
         if args.reference is None:
@@ -485,12 +421,11 @@ def main():
         result = initialize(args.output, reference_repository=args.reference, reference_revision=args.reference_revision)
     elif args.command == 'plan':
         result = plan(args.output)
-    elif args.command == 'apply-drafts':
-        result = apply_drafts(args.output)
     elif args.command == 'review-content':
         if not args.section:
             parser.error('--section is required for review-content')
-        result = review_content(args.output, args.section, refresh_recipe_bindings=args.refresh_recipe_bindings)
+        result = review_content(args.output, args.section, refresh_recipe_bindings=args.refresh_recipe_bindings,
+                                wording_only=args.wording_only, review_note=args.review_note)
     else:
         result = remaining(args.output)
     print(json.dumps(result, ensure_ascii=False, indent=2))

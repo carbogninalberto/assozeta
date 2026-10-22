@@ -1,8 +1,8 @@
 """Rehearse an evaluated bundle in disposable production images and databases.
 
-No release is published and no existing installation is selected. The empty
-baseline reproduces the old deployment's manual state using current schema;
-it does not claim to execute historical backend code.
+No release is published and no existing installation is selected. By default
+the previous release uses the immutable images in its published update manifest.
+An optional independently verified package supports additional synthetic tests.
 """
 import argparse
 import json
@@ -14,12 +14,15 @@ import subprocess
 import sys
 import tempfile
 import time
+from urllib.request import urlopen
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / 'BE')]
+sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from TESTS.http_client import Client
 from application.manuale.bundle import load_bundle
+from distribution import validate_manifest
 
 
 def free_port():
@@ -32,20 +35,23 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('package', type=Path)
     parser.add_argument('release')
-    parser.add_argument('--previous-package', type=Path, required=True)
-    parser.add_argument('--previous-release', required=True)
+    parser.add_argument('--previous-package', type=Path,
+                        help='Optional independently verified synthetic rollback package')
+    parser.add_argument('--previous-release', default='1.0.17',
+                        help='Actual published source version (default: last release without a bundled manual)')
     args = parser.parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     bundle = load_bundle(args.package, revision=revision, release=args.release,
                          required=True, verify_assets=True)
-    previous_bundle = load_bundle(args.previous_package, revision=revision, release=args.previous_release,
-                                  required=True, verify_assets=True)
+    previous_bundle = (load_bundle(args.previous_package, revision=revision, release=args.previous_release,
+                                  required=True, verify_assets=True) if args.previous_package else None)
     if args.previous_release == args.release:
-        raise ValueError('Upgrade rehearsal requires two distinct, independently evaluated versions')
+        raise ValueError('Upgrade rehearsal requires two distinct versions')
     output = ROOT / 'quality-reports/manual-release'
     output.mkdir(parents=True, exist_ok=True)
     result = {'status': 'running', 'application_revision': revision, 'release': args.release,
-              'corpus_identity': bundle.value['identity'], 'checks': []}
+              'corpus_identity': bundle.value['identity'], 'checks': [], 'timings': []}
+    started = last_checkpoint = time.monotonic()
     project = 'assozeta-manual-release-' + uuid4().hex[:10]
     images = []
     with tempfile.TemporaryDirectory(prefix=project + '-') as temporary:
@@ -98,7 +104,11 @@ def main():
                 containers[service] = identifier
             return containers
         def record(check):
+            nonlocal last_checkpoint
+            now = time.monotonic()
             result['checks'].append(check)
+            result['timings'].append({'phase': check, 'elapsed_seconds': round(now - last_checkpoint, 3)})
+            last_checkpoint = now
             print('Verified: ' + check, flush=True)
         try:
             # Copy committed source only; credentials/build output never enter
@@ -108,18 +118,28 @@ def main():
                 subprocess.run(['git', 'archive', 'HEAD', 'BE', 'selfhost'], cwd=ROOT, stdout=stream, check=True)
             command(['tar', '-xf', archive, '-C', work])
             context = work / 'BE'
-            empty = image('empty', context, '--target', 'production', '--build-arg', 'VERSION=manual-empty-baseline',
-                          '--build-arg', 'CODE_REVISION=' + revision)
             shutil.copytree(args.package, context / 'release-manual', dirs_exist_ok=True)
             backend = image('bundled', context, '--target', 'production', '--build-arg', 'VERSION=' + args.release,
                             '--build-arg', 'CODE_REVISION=' + revision, '--build-arg', 'REQUIRE_MANUAL=true')
-            shutil.rmtree(context / 'release-manual')
-            shutil.copytree(args.previous_package, context / 'release-manual')
-            previous_backend = image('previous', context, '--target', 'production',
-                '--build-arg', 'VERSION=' + args.previous_release, '--build-arg', 'CODE_REVISION=' + revision,
-                '--build-arg', 'REQUIRE_MANUAL=true')
             web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
             renderer = image('renderer', ROOT / 'selfhost/renderer')
+            if previous_bundle:
+                shutil.rmtree(context / 'release-manual')
+                shutil.copytree(args.previous_package, context / 'release-manual')
+                previous_backend = image('previous', context, '--target', 'production',
+                    '--build-arg', 'VERSION=' + args.previous_release, '--build-arg', 'CODE_REVISION=' + revision,
+                    '--build-arg', 'REQUIRE_MANUAL=true')
+                previous_images = {'backend': previous_backend, 'web': web, 'renderer': renderer}
+                result['previous_source'] = 'independently verified synthetic package'
+            else:
+                tag = 'v' + args.previous_release.removeprefix('v')
+                url = f'https://github.com/carbogninalberto/assozeta/releases/download/{tag}/assozeta-update.json'
+                with urlopen(url, timeout=60) as response:
+                    previous_manifest = validate_manifest(json.load(response), tag)
+                previous_images = {name: previous_manifest['images'][name] for name in ('backend', 'web', 'renderer')}
+                result['previous_source'] = {'release': tag, 'manifest': url, 'images': previous_images}
+                for reference in previous_images.values():
+                    command(['docker', 'pull', reference])
             registry_port = free_port()
             command(['docker', 'run', '-d', '--name', registry_name,
                      '-p', f'127.0.0.1:{registry_port}:5000', 'registry:2.8.3'])
@@ -135,38 +155,49 @@ def main():
                     raise RuntimeError('Disposable image registry failed readiness')
                 time.sleep(.5)
             repositories = {name: registry + '/' + project + '-' + name for name in ('backend', 'web', 'renderer')}
-            for version, application_image in ((args.release, backend), (args.previous_release, previous_backend),
-                                                ('manual-empty-baseline', empty)):
-                for name, source in (('backend', application_image), ('web', web), ('renderer', renderer)):
+            for version, version_images in ((args.release, {'backend': backend, 'web': web, 'renderer': renderer}),
+                                            (args.previous_release, previous_images)):
+                for name, source in version_images.items():
                     target = repositories[name] + ':' + version
                     command(['docker', 'tag', source, target]); images.append(target)
                     command(['docker', 'push', target])
+            result['target_images'] = {name: json.loads(subprocess.check_output(
+                ['docker', 'image', 'inspect', repositories[name] + ':' + args.release], text=True))[0]['Id']
+                for name in repositories}
+            record('production images built and historical image digests resolved')
             command([cli, 'configure', '--domain', f'localhost:{port}', '--version', args.release], env=env)
             set_env({'COMPOSE_PROJECT_NAME': project,
                      'ASSOZETA_BACKEND_IMAGE': repositories['backend'],
                      'ASSOZETA_WEB_IMAGE': repositories['web'],
                      'ASSOZETA_RENDERER_IMAGE': repositories['renderer'],
-                     'HTTPS_PORT': free_port(), 'MANUAL_CORPUS_BASE_URL': ''})
+                     'HTTPS_PORT': free_port()})
+            # No manual-specific configuration exists in the rehearsal, even
+            # when configure retains optional legacy download settings.
+            env_file.write_text('\n'.join(line for line in env_file.read_text().splitlines()
+                                          if not line.startswith('MANUAL_')) + '\n')
             command([cli, 'start'], env=env)
             ready()
-            setup_token = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
-                               if line.startswith('INSTANCE_SETUP_TOKEN='))
             account = {'username': 'manual-owner@example.invalid', 'password': 'ManualRehearsal123!'}
-            status, response = public.request('POST', '/instance/configure', {
-                'domain': f'localhost:{port}', 'oem': {'name': 'Manual rehearsal', 'abbreviation': 'MR',
-                'primaryColor': '#351DC2', 'supportEmail': account['username'], 'logo': ''},
-                'oauth': {}, 'stripe': {}, 'initialization': {'type': 'fresh', 'associationName': 'Manual rehearsal',
-                'ownerEmail': account['username'], 'ownerPassword': account['password']}},
-                headers={'X-Setup-Token': setup_token})
-            if status != 200:
-                raise RuntimeError(f'Disposable setup failed: HTTP {status}')
-            owner, login = public.login(account)
-            association_id = login['user_data']['sport_association']['sport_association_id']
-            status, _ = owner.request('PATCH', '/onboarding/update', {'membership_data': {
-                'season': {'day': 1, 'month': 9}, 'fiscal': {'day': 1, 'month': 1},
-                'subscription_fee': '20.00', 'membership_fee': '20.00'}})
-            if status != 200 or owner.request('GET', '/profile/info')[1]['user_data']['requires_welcome']:
-                raise RuntimeError('Disposable association onboarding did not complete through the public API')
+            def initialize_association():
+                setup_token = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
+                                   if line.startswith('INSTANCE_SETUP_TOKEN='))
+                status, response = public.request('POST', '/instance/configure', {
+                    'domain': f'localhost:{port}', 'oem': {'name': 'Manual rehearsal', 'abbreviation': 'MR',
+                    'primaryColor': '#351DC2', 'supportEmail': account['username'], 'logo': ''},
+                    'oauth': {}, 'stripe': {}, 'initialization': {'type': 'fresh', 'associationName': 'Manual rehearsal',
+                    'ownerEmail': account['username'], 'ownerPassword': account['password']}},
+                    headers={'X-Setup-Token': setup_token})
+                if status != 200:
+                    raise RuntimeError(f'Disposable setup failed: HTTP {status}')
+                owner, login = public.login(account)
+                association_id = login['user_data']['sport_association']['sport_association_id']
+                status, _ = owner.request('PATCH', '/onboarding/update', {'membership_data': {
+                    'season': {'day': 1, 'month': 9}, 'fiscal': {'day': 1, 'month': 1},
+                    'subscription_fee': '20.00', 'membership_fee': '20.00'}})
+                if status != 200 or owner.request('GET', '/profile/info')[1]['user_data']['requires_welcome']:
+                    raise RuntimeError('Disposable association onboarding did not complete through the public API')
+                return owner, association_id
+            owner, association_id = initialize_association()
             # Select a supported query from the existing shared reader plan.
             planned = subprocess.check_output(['node', '--input-type=module', '-e',
                 "import fs from 'node:fs'; import {readerPlan} from './selfhost/tests/browser/manuale/reader-plan.mjs'; "
@@ -227,31 +258,22 @@ def main():
                 raise RuntimeError('Failed candidate download did not retain the installed release')
             ready(); contracts('failed-upgrade-recovery')
             record('failed CLI candidate download restores services with the retained compatible manual')
-            # Empty persistent manual volume, already configured association:
-            # the observed manual state of v1.0.17, without historical code claims.
-            command([cli, 'upgrade', 'manual-empty-baseline'], env=env); ready()
-            if public.request('GET', '/instance/status')[1]['manual_enabled']:
-                raise RuntimeError('Empty baseline unexpectedly advertises a manual')
-            command([cli, 'upgrade', args.release], env=env); ready(); contracts('upgrade-empty', browser=True)
-            record('CLI upgrade from a configured installation with an empty manual volume delivers the release manual')
-            # Both packages have independently evaluated version bindings. The
-            # source commit is intentionally identical to isolate selection from
-            # unrelated schema migrations in this release-delivery rehearsal.
-            previous_expected = {**fixture['manual'], 'release': args.previous_release,
-                                 'corpus_identity': previous_bundle.value['identity']}
-            original_expected = fixture['manual']
-            def select_expected(expected):
-                fixture['manual'] = expected
-                fixture_path.write_text(json.dumps(fixture))
-            command([cli, 'upgrade', args.previous_release], env=env); ready()
-            select_expected(previous_expected); contracts('previous-compatible')
-            command([cli, 'upgrade', args.release], env=env); ready()
-            select_expected(original_expected); contracts('upgrade-compatible')
-            record('upgrade from a different verified package selects the new version')
-            command([cli, 'upgrade', args.previous_release], env=env); ready()
-            select_expected(previous_expected); contracts('rollback-compatible', browser=True)
-            record('rollback selects the previous version with its own compatible manual')
-            command([cli, 'upgrade', args.release], env=env); ready(); select_expected(original_expected)
+            if previous_bundle:
+                previous_expected = {**fixture['manual'], 'release': args.previous_release,
+                                     'corpus_identity': previous_bundle.value['identity']}
+                original_expected = fixture['manual']
+                def select_expected(expected):
+                    fixture['manual'] = expected
+                    fixture_path.write_text(json.dumps(fixture))
+                command([cli, 'upgrade', args.previous_release], env=env); ready()
+                select_expected(previous_expected); contracts('previous-compatible')
+                command([cli, 'upgrade', args.release], env=env); ready()
+                select_expected(original_expected); contracts('upgrade-compatible')
+                record('upgrade from a different verified package selects the new version')
+                command([cli, 'upgrade', args.previous_release], env=env); ready()
+                select_expected(previous_expected); contracts('rollback-compatible', browser=True)
+                record('rollback selects the previous version with its own compatible manual')
+                command([cli, 'upgrade', args.release], env=env); ready(); select_expected(original_expected)
             # Reject corrupt candidate image startup while the valid deployment
             # and its package remain untouched, then recreate the original image.
             first_image = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
@@ -263,12 +285,14 @@ def main():
                 'missing-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ').unlink()',
                 'corrupt-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ").write_bytes(b'corrupt')",
             }
+            corrupt_images = {}
             for name, mutation in faults.items():
                 damaged = work / name
                 damaged.mkdir()
                 (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
                     json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
                 corrupt = image(name, damaged)
+                corrupt_images[name] = corrupt
                 attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
                 log.write(attempt.stdout + attempt.stderr)
                 expected_error = {
@@ -285,6 +309,69 @@ def main():
             command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
             ready(); contracts('rollback')
             record('failed candidate leaves valid package intact; original image recreates with compatible manual')
+            if not previous_bundle:
+                # Start the real historical schema in empty, owned volumes.
+                # Current lifecycle tooling performs the ordinary upgrade; the
+                # backend, web and renderer are the published immutable images.
+                command(compose('down', '-v', '--remove-orphans'), env=env)
+                set_env({'ASSOZETA_VERSION': args.previous_release})
+                command([cli, 'start'], env=env); ready()
+                owner, association_id = initialize_association()
+                if public.request('GET', '/instance/status')[1].get('manual_enabled', False):
+                    raise RuntimeError('Historical transition expects a release without a manual')
+                before_profile = owner.request('GET', '/profile/info')[1]['user_data']
+                # Persist the legacy setting in actual historical configuration,
+                # rather than relying solely on the browser interception case.
+                command(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c',
+                    "from instance.models import InstanceConfiguration; "
+                    "c=InstanceConfiguration.objects.get(); "
+                    "c.display_settings={**c.display_settings,'sidebar':{**c.display_settings.get('sidebar',{}),'showManual':False}}; "
+                    "c.save(update_fields=['display_settings'])"), env=env)
+                command([cli, 'backup'], env=env)
+                historical_backup = max((installation / 'backups').glob('*.tar.gz'), key=lambda path: path.stat().st_mtime_ns)
+                historical_environment = env_file.read_bytes()
+                target_tag = repositories['backend'] + ':' + args.release
+                for fault, corrupt in corrupt_images.items():
+                    command(['docker', 'tag', corrupt, target_tag])
+                    command(['docker', 'push', target_tag])
+                    attempt = subprocess.run([str(cli), 'upgrade', args.release], env=env, stdout=log, stderr=log)
+                    if attempt.returncode == 0:
+                        raise RuntimeError(fault + ' was accepted by the ordinary upgrade command')
+                    configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
+                                      if line.startswith('ASSOZETA_VERSION='))
+                    if configured != args.previous_release:
+                        raise RuntimeError(fault + ' changed the installed version before validation')
+                    ready()
+                    owner, _ = public.login(account)
+                    if owner.request('GET', '/profile/info')[1]['user_data']['sport_association'] != before_profile['sport_association']:
+                        raise RuntimeError(fault + ' changed historical business data')
+                    if public.request('GET', '/instance/status')[1].get('manual_enabled', False):
+                        raise RuntimeError(fault + ' activated a candidate manual')
+                command(['docker', 'tag', backend, target_tag])
+                command(['docker', 'push', target_tag])
+                record('ordinary CLI rejects each missing/corrupt manual candidate before migrations or activation and restores the working historical release')
+                command([cli, 'upgrade', args.release], env=env); ready()
+                owner, _ = public.login(account)
+                fixture['session']['access_token'] = owner.token
+                fixture_path.write_text(json.dumps(fixture))
+                after_profile = owner.request('GET', '/profile/info')[1]['user_data']
+                for key in ('sport_association', 'requires_welcome'):
+                    if before_profile[key] != after_profile[key]:
+                        raise RuntimeError('Historical upgrade changed association data: ' + key)
+                contracts('upgrade-historical', browser=True)
+                record('real published ' + args.previous_release + ': upgrade preserves association data and delivers the manual with legacy branding and empty download volume')
+                # Restore the old schema and its data before selecting old code.
+                command([cli, 'stop'], env=env)
+                command([cli, 'restore', historical_backup, '--yes'], env=env)
+                env_file.write_bytes(historical_environment)
+                command([cli, 'start'], env=env); ready()
+                owner, _ = public.login(account)
+                restored = owner.request('GET', '/profile/info')[1]['user_data']
+                if restored['sport_association'] != before_profile['sport_association']:
+                    raise RuntimeError('Historical rollback did not preserve association data')
+                if public.request('GET', '/instance/status')[1].get('manual_enabled', False):
+                    raise RuntimeError('Historical rollback exposed an incompatible newer manual')
+                record('historical backup rollback restores the original application/data pair and its honest absence of a manual')
             result['status'] = 'passed'
         finally:
             if env_file.exists():
@@ -302,6 +389,7 @@ def main():
                 private = output / 'private-execution.log'
                 shutil.copyfile(work / 'execution.log', private); private.chmod(0o600)
                 result['status'] = 'failed'
+            result['elapsed_seconds'] = round(time.monotonic() - started, 3)
             (output / 'results.json').write_text(json.dumps(result, indent=2) + '\n')
 
 

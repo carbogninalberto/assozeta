@@ -1,12 +1,11 @@
 // Real writes belong only to the disposable owner-controlled fixture run.
 import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
-import {registrationFormsSources} from './registration-forms-sources.mjs';
-import {registrationFormsCaptureSpecs, registrationFormsExpectedOutcome} from '../../../../docs/manuale/registration-forms-recipes.mjs';
+
+import {authoredWorkflows} from '../../../../docs/manuale/authored-workflows.mjs';
 
 const id = 'registration-forms-manage';
-await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, ''),
-    sources: registrationFormsSources, actions: async ({page, api, open, actor, context, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, context, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async (route, request = api) => {
@@ -51,10 +50,9 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
                 businessWrites.push({path: url.pathname, method: request.method()});
         });
         observe(page);
-        const checkpoint = (n) => registrationFormsCaptureSpecs[id][1][n - 1];
-        const take = async (browserPage, n, locator, options = {}) => {
+        const take = async (browserPage, checkpoint, locator, options = {}) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(browserPage, n, checkpoint(n), locator, options);
+            await capture(browserPage, checkpoint, locator, options);
         };
         const save = async () => {
             const saved = page.waitForResponse(response => new URL(response.url()).pathname ===
@@ -81,16 +79,16 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             await expect(page.locator('#associate-checkbox')).toBeChecked();
             await expect(page.locator('#associate-membership-checkbox')).toBeChecked();
             await expect(page.locator('#membership-checkbox')).toBeChecked();
-            await take(page, 1);
+            await take(page, 'owner-registration-settings-and-three-enabled-types');
             await setCheckbox(page.locator('#associate-checkbox'), false);
             await setCheckbox(page.locator('#membership-checkbox'), false);
-            await take(page, 2, page.locator('.col-md-4').filter({has: page.locator('#associate-checkbox')}));
+            await take(page, 'only-socio-e-tesserato-enabled-before-save', page.locator('.col-md-4').filter({has: page.locator('#associate-checkbox')}));
             await tab('Quote');
             await page.locator('input[name="subscription_fee"]').fill('30,00');
             // NumberInput commits the input on change/keyup, rather than bind:value.
             await page.locator('input[name="subscription_fee"]').press('Tab');
             await expect(page.locator('input[name="membership_fee"]')).toHaveValue('0,00');
-            await take(page, 3, page.locator('.row.mt-8'));
+            await take(page, 'single-association-fee-thirty-before-save', page.locator('.row.mt-8'));
             await tab('Sezioni Modulo');
             await page.getByRole('button', {name: 'Aggiungi', exact: true}).click();
             await expect(sectionCard()).toHaveCount(1);
@@ -99,7 +97,7 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             await setCheckbox(sectionCard().locator('input[type="checkbox"]').nth(0), false);
             await setCheckbox(sectionCard().locator('input[type="checkbox"]').nth(1), true);
             await setCheckbox(sectionCard().locator('input[type="checkbox"]').nth(2), false);
-            await take(page, 4, sectionCard());
+            await take(page, 'custom-section-title-text-and-both-only-visibility', sectionCard());
             await tab('Campi Aggiuntivi');
             await page.getByRole('button', {name: 'Testo', exact: true}).click();
             await openField();
@@ -107,7 +105,7 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             await property('Placeholder').fill('Esempio: M');
             await property('Etichetta aiuto').fill('Indica la taglia desiderata.');
             await setCheckbox(property('Obbligatorio'), false);
-            await take(page, 5, fieldCard());
+            await take(page, 'optional-shirt-size-field-label-placeholder-and-help', fieldCard());
             // Editing is still local until the real Save request.
             expect((await profile()).sport_association.enabled_for).toEqual(original.enabled_for);
             expect((await profile()).sport_association.additional_fields).toEqual([]);
@@ -131,27 +129,27 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             expect(persisted.additional_fields[0].type).toBe('text');
             expect(persisted.additional_fields[0].props).toMatchObject({label: 'Taglia maglietta', placeholder: 'Esempio: M',
                 helperLabel: 'Indica la taglia desiderata.', required: false});
-            await take(page, 6);
+            await take(page, 'registration-type-persists-after-reload');
             await tab('Quote');
             await expect(page.locator('input[name="subscription_fee"]')).toHaveValue('30,00');
             await tab('Sezioni Modulo');
             await expect(page.getByPlaceholder('Nome sezione...')).toHaveValue('MATERIALE PER ALLENAMENTO');
             await expect(sectionCard().locator('[contenteditable="true"]')).toContainText('Porta borraccia');
             await expect(sectionCard().locator('input[type="checkbox"]').nth(1)).toBeChecked();
-            await take(page, 7, sectionCard());
+            await take(page, 'custom-section-uppercase-title-and-visibility-persist', sectionCard());
             await openField();
             await expect(property('Etichetta')).toHaveValue('Taglia maglietta');
             await expect(property('Placeholder')).toHaveValue('Esempio: M');
             await expect(property('Etichetta aiuto')).toHaveValue('Indica la taglia desiderata.');
             await expect(property('Obbligatorio')).not.toBeChecked();
-            await take(page, 8, fieldCard());
+            await take(page, 'custom-field-properties-persist-after-reload', fieldCard());
             await open('Organizzazione', '/#/members/list');
             await page.getByRole('button', {name: 'Libro Soci', exact: true}).click();
             await expect(page).toHaveURL(/#\/members\/members-book$/);
             await expect(page.getByRole('heading', {name: 'Libro Soci', exact: false})).toBeVisible();
             const share = page.getByText('Condividi link iscrizioni', {exact: true});
             await expect(share).toBeVisible();
-            await take(page, 9);
+            await take(page, 'members-book-current-registration-link-action');
             await share.click();
             const modal = page.locator('#share-link');
             await expect(modal).toBeVisible();
@@ -166,7 +164,7 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             await modal.locator('[data-clipboard="true"]').click();
             await expect(page.getByText('Link copiato negli appunti', {exact: true})).toBeVisible();
             expect(await page.evaluate(() => navigator.clipboard.readText()) === link).toBe(true);
-            await take(page, 10, modal.locator('.modal-content'), {mask: [modal.locator('input'), modal.locator('#qr-code-subscriptions')],
+            await take(page, 'registration-share-dialog-clipboard-and-options', modal.locator('.modal-content'), {mask: [modal.locator('input'), modal.locator('#qr-code-subscriptions')],
                 redactionReason: 'Registration URL and encoded QR are excluded from manual captures.'});
             const popup = page.waitForEvent('popup');
             await modal.getByRole('button', {name: 'Apri', exact: true}).click();
@@ -179,14 +177,14 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             expect(publicConfig.enabled_for).toEqual(persisted.enabled_for);
             expect(publicConfig.additional_fields).toEqual(persisted.additional_fields);
             expect(publicConfig.additional_sections).toEqual(persisted.additional_sections);
-            await take(publicPage, 11);
+            await take(publicPage, 'public-registration-start-shows-configured-single-type');
             await publicPage.getByRole('button', {name: /^Continua come/}).click();
             const shirtField = publicPage.getByLabel('Taglia maglietta', {exact: true});
             await expect(shirtField).toBeVisible();
             await expect(shirtField).toHaveAttribute('placeholder', 'Esempio: M');
             await expect(shirtField).not.toHaveAttribute('required', '');
             await expect(publicPage.getByText('Indica la taglia desiderata.', {exact: true})).toBeVisible();
-            await take(publicPage, 12, shirtField.locator('..').locator('..'), {
+            await take(publicPage, 'public-registration-personal-data-shows-shirt-size-without-submission', shirtField.locator('..').locator('..'), {
                 mask: [publicPage.locator('input:not([name="' + persisted.additional_fields[0].props.name + '"])')],
                 redactionReason: 'Other personal-data inputs are masked; the configured custom field remains visible.'});
             await publicPage.close();
@@ -194,7 +192,7 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             const reader = await actor('reader');
             await reader.open('Organizzazione', '/#/members/subscription/template');
             await expect(reader.page.locator('#bkn_form_account_update_submit')).toBeDisabled();
-            await take(reader.page, 13);
+            await take(reader.page, 'reader-registration-save-disabled');
             const denied = await reader.api('profile/update/subscription/template', {method: 'PATCH',
                 data: {sport_association: {...persisted, enabled_for: ['associate']}}});
             expect(denied.status()).toBe(403);
@@ -202,7 +200,7 @@ await scenario({id, prefix: registrationFormsCaptureSpecs[id][0].replace(/\/$/, 
             expect(await records()).toEqual(initialRecords);
             expect(businessWrites).toEqual([]);
             expect(publicErrors).toEqual([]);
-            report.registration_forms_workflow = {...registrationFormsExpectedOutcome};
+            report.registration_forms_workflow = {...authoredWorkflows[id].outcome.expected};
             report.checks = ['owner edits type, simple quote, custom section and optional text field through actual controls',
                 'actual Save PATCH and authenticated reload preserve every configured property',
                 'actual clipboard matches current registration link; URL and QR omitted from reports and masked in captures',

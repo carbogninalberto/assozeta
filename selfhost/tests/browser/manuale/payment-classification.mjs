@@ -3,8 +3,7 @@ import {scenario, expect} from './scenario.mjs';
 import {paymentClassificationAuthoredWorkflows} from '../../../../docs/manuale/payment-classification-authored-workflows.mjs';
 
 const id = 'payment-classification-local', spec = paymentClassificationAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, actor, open, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, actor, open, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         const read = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
         const categories = async () => (await read('payment/category/list')).data;
@@ -19,7 +18,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (checkpoint, focus) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const position = spec.checkpoints.findIndex(point => point.id === checkpoint);
-            expect(position).toBeGreaterThanOrEqual(0); await capture(page, position + 1, checkpoint, focus);
+            expect(position).toBeGreaterThanOrEqual(0); await capture(page, checkpoint, focus);
         };
         const savedCategory = async () => (await categories()).find(item => item.payment_category_id === categoryId);
         const savedPayment = async () => (await payments()).find(item => item.payment_id === paymentId);
@@ -130,7 +129,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const readCategory = reader.page.locator('[data-row]').filter({has: reader.page.locator('#action-col-' + categoryId)});
             await expect(readCategory).toBeVisible(); await expect(readCategory.locator('button:is([title="Modifica"],[data-original-title="Modifica"]),button[data-original-title="Modifica"]')).toBeDisabled();
             const position = spec.checkpoints.findIndex(point => point.id === 'classification-reader-readonly');
-            await capture(reader.page, position + 1, 'classification-reader-readonly', readCategory);
+            await capture(reader.page, 'classification-reader-readonly', readCategory);
         } catch (cause) {error = cause; throw cause;} finally {
             const cleanupFailures = [];
             if (paymentId) try {expect((await api(`payment/${paymentId}/delete`, {method: 'DELETE'})).status()).toBe(200);} catch (cause) {cleanupFailures.push('owned payment');}

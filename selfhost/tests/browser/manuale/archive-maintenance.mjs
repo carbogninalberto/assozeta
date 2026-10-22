@@ -4,8 +4,7 @@ import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {organizationMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/organization-maintenance-authored-workflows.mjs';
 const spec = organizationMaintenanceAuthoredWorkflows['archive-maintenance'];
-await scenario({id: 'archive-maintenance', prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id: 'archive-maintenance', actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const subscriptionId = input.subscription_ids[2], paymentId = input.payment_ids[2];
@@ -28,7 +27,7 @@ await scenario({id: 'archive-maintenance', prefix: spec.prefix.replace(/\/$/, ''
         expect(originalPayments.find(row => row.payment_id === paymentId).paid).toBe(false);
         const take = async (number, checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(target, number, checkpoint, locator);
+            await capture(target, checkpoint, locator);
         };
         const requestAction = async (route, button, method = 'POST') => {
             const received = page.waitForResponse(response => new URL(response.url()).pathname === '/api/' + route

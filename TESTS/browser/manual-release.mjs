@@ -38,6 +38,16 @@ try {
     const [reader] = await Promise.all([page.waitForEvent('popup'), help.click()]);
     reader.on('pageerror', error => errors.push(error.message));
     await expect(reader.getByRole('heading', {name: 'Come possiamo aiutarti?', exact: true})).toBeVisible();
+    const [sidebarReader] = await Promise.all([page.waitForEvent('popup'),
+        page.locator('#manuale_assozeta').getByRole('link', {name: "Manuale d'uso", exact: true}).click()]);
+    await expect(sidebarReader.getByRole('heading', {name: 'Come possiamo aiutarti?', exact: true})).toBeVisible();
+    await sidebarReader.close();
+    await reader.getByRole('combobox', {name: 'Cerca nel manuale'}).fill(fixture.manual.query);
+    await reader.getByRole('button', {name: 'Cerca', exact: true}).click();
+    const hit = reader.locator('.search-result').filter({has: reader.getByRole('heading', {name: fixture.manual.section_title, exact: true})});
+    await expect(hit).toBeVisible();
+    await hit.click();
+    await expect(reader.getByRole('heading', {name: fixture.manual.section_title, exact: true, level: 2})).toBeVisible();
     await reader.goto(origin + '/#/manuale?section=' + encodeURIComponent(fixture.manual.section_id));
     await expect(reader.getByRole('heading', {name: fixture.manual.section_title, exact: true, level: 2})).toBeVisible();
     await expect.poll(() => reader.locator('article img').evaluateAll(images =>
@@ -61,6 +71,7 @@ try {
     assert.deepEqual(errors, []);
     await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({status: 'passed',
         realLogin: true, externalNetworkBlocked: true, legacyManualSettingIgnored: true, reader: true, screenshots: true,
+        headerOpensReader: true, sidebarOpensReader: true, search: true,
         deepLinkReload: true, manualOnlyWebSocketChat: true, unsupportedAbstained: true}));
 } catch (error) {
     await page?.screenshot({path: path.join(output, 'failure.png'), fullPage: true}).catch(() => {});

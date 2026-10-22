@@ -1,14 +1,13 @@
 import {scenario, expect} from './scenario.mjs';
 import {memberProfileSources, openGiulia} from './member-profile-sources.mjs';
 
-await scenario({id: 'members-profile-update', prefix: 'images/libro-soci/scheda', sources: memberProfileSources,
-    actions: async ({page, api, open, actor, capture, report, input}) => {
+await scenario({id: 'members-profile-update', actions: async ({page, api, open, actor, capture, report, input}) => {
         const drawer = await openGiulia({page, open, expect});
-        await capture(page, 1, 'registration-profile-and-navigation-tabs', drawer);
+        await capture(page, 'registration-profile-and-navigation-tabs', drawer);
         const form = drawer.locator('#subscription_form');
         await form.locator('[name="subscription_number"]').fill('42');
         await form.locator('[name="subscription_type"]').fill('Tessera Aurora');
-        await capture(page, 2, 'edited-card-number-and-type-before-saving');
+        await capture(page, 'edited-card-number-and-type-before-saving');
         const saved = page.waitForResponse(response =>
             new URL(response.url()).pathname === `/api/subscription/${input.subscription_ids[0]}/update`
             && response.request().method() === 'PATCH');
@@ -26,7 +25,7 @@ await scenario({id: 'members-profile-update', prefix: 'images/libro-soci/scheda'
         const reloaded = await openGiulia({page, open, expect});
         await expect(reloaded.locator('[name="subscription_number"]')).toHaveValue('42');
         await expect(reloaded.locator('[name="subscription_type"]')).toHaveValue('Tessera Aurora');
-        await capture(page, 3, 'card-details-persist-after-profile-reload');
+        await capture(page, 'card-details-persist-after-profile-reload');
         const info = (await (await api(`subscription/${input.subscription_ids[0]}/info`)).json()).data.info;
         expect(info.subscription_number).toBe('42');
         expect(info.subscription_type).toBe('Tessera Aurora');

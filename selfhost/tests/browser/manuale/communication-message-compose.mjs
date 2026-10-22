@@ -8,8 +8,7 @@ const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(ro
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'communication-message-compose';
 const spec = communicationCompleteAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, context, actor, open, capture, report, input}) => {
+await scenario({id, actions: async ({page, api, context, actor, open, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {
@@ -34,7 +33,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const index = spec.checkpoints.findIndex(item => item.id === checkpoint);
             expect(index >= 0 && !taken.has(checkpoint)).toBe(true);
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(page, index + 1, checkpoint); taken.add(checkpoint);
+            await capture(page, checkpoint); taken.add(checkpoint);
         };
         const row = messageId => page.locator('.datatable-row').filter({has: page.locator(`#action-col-${messageId}`)});
         // Capture the actual identifier added by each completed UI handler. This

@@ -10,6 +10,23 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
+    def test_pr_verification_retains_complete_evidence_and_only_default_branch_saves_cache(self):
+        steps = yaml.safe_load((ROOT / '.github/workflows/manuale.yml').read_text())['jobs']['verify']['steps']
+        restore = next(step for step in steps if step.get('uses', '').startswith('actions/cache/restore@'))
+        save = next(step for step in steps if step.get('uses', '').startswith('actions/cache/save@'))
+        export = next(step for step in steps if step.get('id') == 'manual-cache-export')
+        self.assertEqual(restore['with']['path'], save['with']['path'])
+        self.assertEqual(restore['with']['key'], save['with']['key'])
+        for step in (save, export):
+            self.assertIn("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)", step['if'])
+            self.assertNotIn('always()', step['if'])
+        self.assertIn("steps.manual-cache-export.outcome == 'success'", save['if'])
+        self.assertTrue(restore['continue-on-error'])
+        verification = next(step for step in steps if 'BASE_REVISION' in step.get('env', {}))
+        self.assertEqual(verification['env']['BASE_REVISION'], '${{ github.event.pull_request.base.sha }}')
+        self.assertIn('--changed-since "$BASE_REVISION"', verification['run'])
+        self.assertNotIn('--allow-dirty', verification['run'])
+
     def test_installable_images_require_manual_verification(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         self.assertIn('manual-release', jobs['publish']['needs'])
@@ -28,13 +45,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         jobs = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())['jobs']
         steps = jobs['bundle']['steps']
         runs = '\n'.join(step.get('run', '') for step in steps)
-        self.assertIn('docs/scripts/manuale.py run', runs)
+        self.assertEqual(runs.count('docs/scripts/manuale.py verify-release'), 1)
         self.assertIn('--release "$RELEASE_VERSION"', runs)
-        self.assertIn('docs/scripts/manuale-release.py --bundle', runs)
-        self.assertIn('selfhost/tests/manual-release-smoke.sh', runs)
-        self.assertIn('--previous-package', runs)
-        self.assertIn('--previous-release', runs)
-        self.assertIn('--reuse-evidence', runs)
+        self.assertIn('--previous-release 1.0.17', runs)
+        self.assertNotIn('manuale-previous-run', runs)
+        self.assertNotIn('docs/scripts/manuale.py run', runs)
         self.assertNotIn('--allow-dirty', runs)
         self.assertNotIn('--edit-content', runs)
         upload = next(step for step in steps if step.get('with', {}).get('name') == 'manuale-release-runtime')

@@ -64,7 +64,7 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
             'BE/application/management/commands/seed_manuale.py'],
         checkpoints,
         sections: [
-            {path: 'docs/registro-presenze.mdx', id: 'sincronizzazione-con-il-calendario', title: 'Sincronizzazione con il calendario',
+            {path: 'docs/registro-presenze.mdx', id: 'sincronizzazione-con-il-calendario', "intent": "courses.calendar.update", title: 'Sincronizzazione con il calendario',
                 checkpoints: ['lesson-edit-before-save', 'lesson-edit-reopened', 'lesson-single-delete-confirmation',
                     'calendar-and-register-after-scoped-deletions'], images: [
                     {from: '/images/corsi/manutenzione-calendario/8.placeholder.svg', checkpoint: 'lesson-edit-before-save'},
@@ -72,7 +72,7 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
                     {from: '/images/corsi/manutenzione-calendario/10.placeholder.svg', checkpoint: 'lesson-single-delete-confirmation'},
                     {from: '/images/corsi/manutenzione-calendario/13.placeholder.svg', checkpoint: 'calendar-and-register-after-scoped-deletions'},
                 ], insert_images: []},
-            {path: 'docs/registro-presenze.mdx', id: 'come-funziona-la-sincronizzazione', title: 'Come funziona la sincronizzazione',
+            {path: 'docs/registro-presenze.mdx', id: 'come-funziona-la-sincronizzazione', "intent": "courses.calendar.update", title: 'Come funziona la sincronizzazione',
                 checkpoints: ['lesson-edit-before-save', 'lesson-edit-reopened', 'lesson-single-delete-confirmation',
                     'calendar-and-register-after-scoped-deletions'], images: [
                     {from: '/images/corsi/manutenzione-calendario/8.placeholder.svg', checkpoint: 'lesson-edit-before-save'},
@@ -80,14 +80,14 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
                     {from: '/images/corsi/manutenzione-calendario/10.placeholder.svg', checkpoint: 'lesson-single-delete-confirmation'},
                     {from: '/images/corsi/manutenzione-calendario/13.placeholder.svg', checkpoint: 'calendar-and-register-after-scoped-deletions'},
                 ], insert_images: []},
-            {path: 'docs/corsi.mdx', id: 'gestire-i-corsi', title: 'Gestire i corsi',
+            {path: 'docs/corsi.mdx', id: 'gestire-i-corsi', "intent": "course.navigation.manage", title: 'Gestire i corsi',
                 checkpoints: ['course-card-and-owned-enrollments', 'general-plan-edit', 'general-plan-reopened-individual-payments-unchanged',
                     'periodic-series-reopened', 'calendar-and-register-after-scoped-deletions'], images: [], insert_images: [
                     {step: 'Apri la scheda', checkpoint: 'course-card-and-owned-enrollments'},
                     {step: 'Scegli il gruppo di dati', checkpoint: 'periodic-series-reopened'},
                     {step: 'Riapri dopo un cambiamento', checkpoint: 'general-plan-reopened-individual-payments-unchanged'},
                 ]},
-            {path: 'docs/corsi.mdx', id: 'lezione-periodica', title: 'Lezione periodica',
+            {path: 'docs/corsi.mdx', id: 'lezione-periodica', "intent": "course.calendar.series.create", title: 'Lezione periodica',
                 checkpoints: ['periodic-name-and-weekdays', 'periodic-exclusive-end-and-times', 'periodic-series-reopened', 'all-day-periodic-before-save'],
                 images: [{from: '/images/course-payment-additional/course-series-pending.svg', checkpoint: 'periodic-exclusive-end-and-times'}],
                 insert_images: [
@@ -95,7 +95,7 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
                     {step: 'Indica fine e orari', checkpoint: 'all-day-periodic-before-save'},
                     {step: 'Crea e controlla la serie', checkpoint: 'periodic-series-reopened'},
                 ]},
-            {path: 'docs/corsi.mdx', id: 'modificare-o-rimuovere-le-lezioni', title: 'Modificare o rimuovere le lezioni',
+            {path: 'docs/corsi.mdx', id: 'modificare-o-rimuovere-le-lezioni', "intent": "course.calendar.lessons.update_delete", title: 'Modificare o rimuovere le lezioni',
                 checkpoints: ['lesson-edit-before-save', 'lesson-edit-reopened', 'lesson-single-delete-confirmation',
                     'lesson-following-scope', 'lesson-preceding-scope', 'calendar-and-register-after-scoped-deletions'], images: [], insert_images: [
                     {step: 'Apri la lezione', checkpoint: 'lesson-edit-before-save'},
@@ -103,7 +103,7 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
                     {step: 'Scegli l’ambito dell’eliminazione', checkpoint: 'lesson-following-scope'},
                     {step: 'Conferma e ricontrolla', checkpoint: 'calendar-and-register-after-scoped-deletions'},
                 ]},
-            {path: 'docs/corsi.mdx', id: 'eliminazione-di-un-corso', title: 'Eliminazione di un corso',
+            {path: 'docs/corsi.mdx', id: 'eliminazione-di-un-corso', "intent": "course.delete", title: 'Eliminazione di un corso',
                 remove_draft_text: ['Questa procedura e i suoi effetti attendono una prova dedicata.'],
                 checkpoints: ['athlete-installments-and-payments-before-removal', 'archive-course-confirmation', 'archived-course-before-deletion', 'course-delete-confirmation',
                     'course-absent-after-reload', 'paid-payment-after-course-deletion'], images: [], insert_images: [
@@ -111,7 +111,7 @@ export const courseCalendarMaintenanceAuthoredWorkflows = Object.freeze({
                     {step: 'Apri il corso non visibile', checkpoint: 'archived-course-before-deletion'},
                     {step: 'Valuta la conferma e verifica', checkpoint: 'course-delete-confirmation'},
                 ]},
-            {path: 'docs/corsi.mdx', id: 'eliminazione-di-un-atleta-dal-corso', title: 'Eliminazione di un atleta dal corso',
+            {path: 'docs/corsi.mdx', id: 'eliminazione-di-un-atleta-dal-corso', "intent": "course.subscription.delete", title: 'Eliminazione di un atleta dal corso',
                 checkpoints: ['athlete-installments-and-payments-before-removal', 'athlete-removal-confirmation',
                     'athlete-removed-control-enrollment-preserved', 'paid-payment-after-athlete-removal'], images: [], insert_images: [
                     {step: 'Controlla la riga', checkpoint: 'athlete-installments-and-payments-before-removal'},

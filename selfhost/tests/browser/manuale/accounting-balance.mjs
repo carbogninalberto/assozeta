@@ -1,10 +1,9 @@
 // The run owner executes this actual UI/backend workflow once the whole batch is ready.
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus} from './focus.mjs';
-import {accountingBalanceSources} from './accounting-balance-sources.mjs';
 
-await scenario({id: 'accounting-balance-manage', prefix: 'images/contabilita/bilancio',
-    sources: accountingBalanceSources, actions: async ({page, api, actor, input, capture, report}) => {
+
+await scenario({id: 'accounting-balance-manage', actions: async ({page, api, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async route => {
@@ -24,7 +23,7 @@ await scenario({id: 'accounting-balance-manage', prefix: 'images/contabilita/bil
         expect(baselinePayments).toHaveLength(3);
         const take = async (number, checkpoint, locator) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(page, number, checkpoint, locator);
+            await capture(page, checkpoint, locator);
         };
         const navigate = async (label, route) => {
             const sidebar = page.locator('#bkn_aside');

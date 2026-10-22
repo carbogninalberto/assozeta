@@ -180,13 +180,77 @@ def fixture_version(root):
     return int(match[1])
 
 
-def body_hash(manual, relative, identifier, title):
+def section_body(manual, relative, identifier, title):
     available = sections(owned(manual, relative).read_text())
     item = available.get(identifier)
     if not item or item['title'] != title:
         raise ReuseError('editorial-section-removed: ' + relative + '#' + identifier)
-    body = re.sub(r'(/images/[^\s"\')]+)\.placeholder\.svg', r'\1.png', item['mdx'].strip())
-    return digest(body)
+    return re.sub(r'(/images/[^\s"\')]+)\.placeholder\.svg', r'\1.png', item['mdx'].strip())
+
+
+def body_hash(manual, relative, identifier, title):
+    return digest(section_body(manual, relative, identifier, title))
+
+
+def editorial_structure(body):
+    """Conservative guard in addition to explicit review: preserve procedure shape."""
+    # Use full matches for tags/headings/code/numbers, and destinations for links;
+    # a link label is prose, while its target is part of the procedure contract.
+    pattern = re.compile(r'```[\s\S]*?```|`[^`\n]+`|^#{1,6}\s+[^\n]+|<[^>]+>|!?\[[^\]]*\]\(([^)]+)\)|\d+(?:[.,]\d+)*', re.M)
+    return digest(canonical([('image:' if match[0].startswith('![') else 'link:') + match[1]
+                             if match[1] is not None else re.sub(r'\s+', ' ', match[0])
+                             for match in pattern.finditer(body)]))
+
+
+def editorial_target(item):
+    editorial, published = item['editorial_content_sha256'], item['published_content_sha256']
+    for update in item.get('editorial_updates', []):
+        review = update.get('review', {})
+        if (review.get('format') != 1 or review.get('kind') != 'wording-only'
+                or review.get('from_sha256') not in (editorial, published)
+                or review.get('recipe_sha256') != item['recipe_sha256']
+                or not isinstance(review.get('note'), str) or not review['note'].strip()
+                or review.get('to_sha256') != update.get('editorial_content_sha256')
+                or not HASH.fullmatch(update.get('editorial_content_sha256', ''))
+                or not HASH.fullmatch(update.get('published_content_sha256', ''))
+                or update.get('structure_sha256') != item.get('structure_sha256')):
+            raise ReuseError('invalid-wording-only-review: ' + item['path'] + '#' + item['id'])
+        editorial, published = update['editorial_content_sha256'], update['published_content_sha256']
+    return editorial, published
+
+
+def bind_editorial_updates(state, entries, report):
+    sidecar = load(state['manual'], '.manuale-evidence.json')
+    changed = []
+    for item in entries:
+        actual = body_hash(state['manual'], item['path'], item['id'], item['title'])
+        if actual in editorial_target(item):
+            continue
+        key = item['path'] + '#' + item['id']
+        binding = sidecar.get('sections', {}).get(key, {})
+        review = binding.get('editorial_review', {})
+        if not review:
+            raise ReuseError('editorial-content-changed: ' + key + '; explicit wording-only review required')
+        update = {'review': review, 'editorial_content_sha256': actual,
+                  'published_content_sha256': '0' * 64, 'structure_sha256': item.get('structure_sha256')}
+        # Validate the explicit review chain before invoking the pure projector.
+        editorial_target({**item, 'editorial_updates': [*item.get('editorial_updates', []), update]})
+        changed.append((item, update))
+    if not changed:
+        return
+    script = owned(state['application'], 'docs/scripts/manuale-project.mjs')
+    payload = {'manual': state['manual'], 'application': state['application'], 'report': report,
+               'sections': [{'path': item['path'], 'id': item['id']} for item, _ in changed]}
+    result = subprocess.run(['node', str(script)], input=json.dumps(payload), text=True, capture_output=True)
+    if result.returncode:
+        raise ReuseError('editorial-projection-failed: ' + report['id'])
+    projected = {(item['path'], item['id']): item['body'] for item in json.loads(result.stdout)}
+    for item, update in changed:
+        body = projected[(item['path'], item['id'])].strip()
+        if editorial_structure(body) != item.get('structure_sha256'):
+            raise ReuseError('editorial-structure-changed: ' + item['path'] + '#' + item['id'])
+        update['published_content_sha256'] = digest(body)
+        item.setdefault('editorial_updates', []).append(update)
 
 
 def check_editorial(state, entries):
@@ -197,20 +261,26 @@ def check_editorial(state, entries):
         key = item['path'] + '#' + item['id']
         binding = sidecar.get('sections', {}).get(key, {})
         actual = body_hash(state['manual'], item['path'], item['id'], item['title'])
-        if actual not in {item['editorial_content_sha256'], item['published_content_sha256']} or binding.get('content_sha256') != actual:
+        editorial, published = editorial_target(item)
+        if actual not in {editorial, published} or binding.get('content_sha256') != actual:
             raise ReuseError('editorial-content-changed: ' + key)
+        if item.get('editorial_updates') and binding.get('editorial_review') != item['editorial_updates'][-1]['review']:
+            raise ReuseError('editorial-review-changed: ' + key)
+        if item.get('editorial_updates') and actual == published and editorial_structure(
+                section_body(state['manual'], item['path'], item['id'], item['title'])) != item['structure_sha256']:
+            raise ReuseError('editorial-structure-changed: ' + key)
         if (binding.get('title') != item['title'] or binding.get('recipe_module') != item['recipe_module']
                 or binding.get('recipe_sha256') != item['recipe_sha256']
                 or file_hash(state['application'], item['recipe_module']) != item['recipe_sha256']):
             raise ReuseError('editorial-recipe-binding-changed: ' + key)
-        if binding.get('editorial_content_sha256', actual) != item['editorial_content_sha256']:
+        if binding.get('editorial_content_sha256', actual) != editorial:
             raise ReuseError('editorial-origin-changed: ' + key)
-        if (actual == item['published_content_sha256'] and (actual != item['editorial_content_sha256'] or binding.get('materialization'))
+        if (actual == published and (actual != editorial or binding.get('materialization'))
                 and binding.get('materialization') != item['materialization']):
             raise ReuseError('editorial-capture-provenance-changed: ' + key)
 
 
-def origin_sections(old, manifest, identifier, report_hash, report):
+def origin_sections(old, manifest, identifier, report_hash, report, *, allow_empty=False):
     sidecar = load(old['manual'], '.manuale-evidence.json')
     result = []
     for page in manifest['pages']:
@@ -229,8 +299,9 @@ def origin_sections(old, manifest, identifier, report_hash, report):
             result.append({'path': page['path'], 'id': item['id'], 'title': title,
                            'editorial_content_sha256': binding.get('editorial_content_sha256', actual),
                            'published_content_sha256': actual, 'recipe_module': binding['recipe_module'],
-                           'recipe_sha256': binding['recipe_sha256'], 'materialization': materialization})
-    if not result:
+                           'recipe_sha256': binding['recipe_sha256'], 'materialization': materialization,
+                           'structure_sha256': editorial_structure(section_body(old['manual'], page['path'], item['id'], title))})
+    if not result and not allow_empty:
         raise ReuseError('no-retained-verified-editorial-sections')
     return result
 
@@ -313,7 +384,10 @@ def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_
     check_report(old, previous, report, origin)
     if binding.get('application_revision') != report.get('application_revision') or binding.get('source_hashes') != hashes:
         raise ReuseError('original-scenario-binding-invalid')
-    editorial = origin_sections(old, manifest, identifier, binding['report_sha256'], report)
+    editorial = (json.loads(json.dumps(prior_entry['sections'])) if binding.get('reuse') else
+                 origin_sections(old, manifest, identifier, binding['report_sha256'], report,
+                                 allow_empty=current.get('publication_sections') == []))
+    bind_editorial_updates(state, editorial, report)
     check_editorial(state, editorial)
     return {'origin': origin, 'origin_manifest': {'path': f'evidence-origin/{identifier}.manifest.json',
                 'sha256': file_hash(old['run'], origin_manifest)},
@@ -323,7 +397,7 @@ def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_
             'sections': editorial}, origin_manifest
 
 
-def build_reuse_plan(state, baseline_run, *, stage=True):
+def build_reuse_plan(state, baseline_run, *, stage=True, eligible_recipes=None):
     """Create explicit per-recipe decisions; selected recipes always remain fresh."""
     old_run = Path(baseline_run).resolve()
     if old_run == Path(state['run']).resolve():
@@ -349,7 +423,7 @@ def build_reuse_plan(state, baseline_run, *, stage=True):
     staged = []
     prior_plan = {}
     for identifier in recipes:
-        if identifier in fresh:
+        if identifier in fresh or (eligible_recipes is not None and identifier not in eligible_recipes):
             continue
         try:
             entry, origin_manifest = _entry(state, old, identifier, old_registry, current_registry, old_recipes, recipes, manifest, prior_plan)
@@ -439,7 +513,8 @@ def validate_reuse_plan(state, plan=None):
                              for section in page.get('sections', [])
                              if section.get('status') == 'verified' and section.get('scenario_ids') == [identifier]}
         editorial = entry.get('sections', [])
-        if (not editorial or len({(item['path'], item['id']) for item in editorial}) != len(editorial)
+        if ((not editorial and recipe.get('publication_sections') != [])
+                or len({(item['path'], item['id']) for item in editorial}) != len(editorial)
                 or {(item['path'], item['id']) for item in editorial} != set(retained_sections)
                 or any(item['published_content_sha256'] != retained_sections[(item['path'], item['id'])]['content_sha256'] for item in editorial)):
             raise ReuseError('retained-editorial-section-binding-invalid')

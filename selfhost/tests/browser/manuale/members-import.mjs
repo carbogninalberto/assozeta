@@ -29,8 +29,7 @@ async function selectCheckbox(row) {
     await expect(input).toBeChecked();
 }
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const facts = {};
@@ -38,7 +37,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const snap = async (checkpoint, focus, currentPage = page) => {
             const number = spec.checkpoints.findIndex(c => c.id === checkpoint) + 1;
             if (!number) throw new Error('Unknown checkpoint ' + checkpoint);
-            await settled(currentPage); await capture(currentPage, number, checkpoint, focus);
+            await settled(currentPage); await capture(currentPage, checkpoint, focus);
         };
         async function get(route, requestApi = api) {
             const res = await requestApi(route); expect(res.ok()).toBeTruthy(); return res.json();

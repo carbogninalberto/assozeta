@@ -1,8 +1,7 @@
 import {scenario, expect} from './scenario.mjs';
-import {coreLegacyAuthoredWorkflows} from '../../../../docs/manuale/core-legacy-authored-workflows.mjs';
 
-await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/registrazione',
-    sources: coreLegacyAuthoredWorkflows['payments-create-edit-approve'].sources, actions: async ({page, api, open, actor, input, capture, report}) => {
+
+await scenario({id: 'payments-create-edit-approve', actions: async ({page, api, open, actor, input, capture, report}) => {
     const payments = async () => {
         const response = await api('payment/list');
         expect(response.ok()).toBeTruthy();
@@ -27,7 +26,7 @@ await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/re
     await modal.getByRole('textbox', {name: 'Causale', exact: true}).click();
     await modal.getByText('Quote e attività associative', {exact: true}).click();
     await expect(modal.locator('input[name="payment_date"]')).toHaveValue('');
-    await capture(page, 1, 'filled-incoming-cash-payment', modal.locator('.modal-content'));
+    await capture(page, 'filled-incoming-cash-payment', modal.locator('.modal-content'));
     const creation = page.waitForResponse(response => response.url().endsWith('/payment/add') && response.request().method() === 'POST');
     await modal.getByRole('button', {name: 'Crea', exact: true}).click();
     const createdResponse = await creation;
@@ -44,12 +43,12 @@ await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/re
     await closeDrawer();
     let row = page.locator('[data-row]').filter({hasText: 'Quota laboratorio creativo'});
     await expect(row).toBeVisible();
-    await capture(page, 2, 'created-payment-in-list');
+    await capture(page, 'created-payment-in-list');
     await row.locator('button:is([title="Modifica"],[data-original-title="Modifica"])').click();
     const edit = page.getByRole('dialog', {name: 'Modifica Pagamento', exact: true});
     await expect(edit.locator('input[name="amount"]')).toBeVisible();
     await edit.locator('input[name="amount"]').fill('40,00');
-    await capture(page, 3, 'edited-payment-amount', edit.locator('.modal-content'));
+    await capture(page, 'edited-payment-amount', edit.locator('.modal-content'));
     const update = page.waitForResponse(response => response.url().endsWith(`/payment/${created.payment_id}/update`) && response.request().method() === 'PATCH');
     await edit.getByRole('button', {name: 'Modifica', exact: true}).click();
     expect((await update).status()).toBe(200);
@@ -60,7 +59,7 @@ await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/re
     const persisted = (await payments()).find(payment => payment.payment_id === created.payment_id);
     expect(Number(persisted.amount)).toBe(40);
     expect(persisted.paid).toBe(false);
-    await capture(page, 4, 'edited-payment-persists-after-reload');
+    await capture(page, 'edited-payment-persists-after-reload');
     await row.locator('button:is([title="Segna come pagato"],[data-original-title="Segna come pagato"])').click();
     const approval = page.getByRole('dialog', {name: 'Incassare il pagamento?', exact: true});
     await expect(approval.locator('input[id^="generate_invoice_"]')).toBeChecked();
@@ -68,7 +67,7 @@ await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/re
     await expect(approval.locator('input[id^="generate_invoice_"]')).not.toBeChecked();
     await expect(approval.locator('input[id^="send_receipt_email_"]')).not.toBeChecked();
     await approval.locator('input[name="payment_date"]').fill(input.reference_date);
-    await capture(page, 5, 'approval-without-immediate-pdf', approval);
+    await capture(page, 'approval-without-immediate-pdf', approval);
     const approved = page.waitForResponse(response => response.url().endsWith(`/payment/${created.payment_id}/approve`) && response.request().method() === 'POST');
     await approval.getByRole('button', {name: 'Incassa', exact: true}).click();
     const approvalResponse = await approved;
@@ -87,7 +86,7 @@ await scenario({id: 'payments-create-edit-approve', prefix: 'images/pagamenti/re
     expect(final.payment_date.slice(0, 10)).toBe(input.reference_date);
     expect(final.invoice.invoice_id).toBe(paid.invoice.invoice_id);
     expect(final.invoice.document_pdf).toBeNull();
-    await capture(page, 6, 'approved-payment-persists-with-receipt-record');
+    await capture(page, 'approved-payment-persists-with-receipt-record');
     const reader = await actor('reader');
     await reader.open('Pagamenti', '/#/payment/list');
     const readRow = reader.page.locator('[data-row]').filter({hasText: 'Quota laboratorio creativo'});

@@ -2,13 +2,12 @@ import {scenario, expect} from './scenario.mjs';
 import {attendanceHarness,settleAttendanceCases} from './attendance-task-harness.mjs';
 import {automaticAttendanceAuthoredWorkflows} from '../../../../docs/manuale/automatic-attendance-authored-workflows.mjs';
 const id='attendance-carnet-variants';const spec=automaticAttendanceAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
- actions:async({page,api,actor,input,capture,report})=>{
+await scenario({id,actions:async({page,api,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8);expect(input.fixture_profile).toBe('baseline');let data;
     const take=async(checkpoint,focus,toast=false)=>{
         const index=spec.checkpoints.findIndex(c=>c.id===checkpoint);expect(index).toBeGreaterThanOrEqual(0);
         if(!toast)await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-        await capture(page,index+1,checkpoint,toast?undefined:focus);
+        await capture(page,checkpoint,toast?undefined:focus);
     };
     try {
         data=attendanceHarness('prepare',input);await settleAttendanceCases(api,data,input,expect);

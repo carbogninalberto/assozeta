@@ -2,10 +2,9 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import {scenario, expect} from './scenario.mjs';
 import {navigateToDownload} from './download.mjs';
-import {coreLegacyAuthoredWorkflows} from '../../../../docs/manuale/core-legacy-authored-workflows.mjs';
 
-await scenario({id: 'receipts-approve-download', prefix: 'images/ricevute/consultazione',
-    sources: coreLegacyAuthoredWorkflows['receipts-approve-download'].sources, actions: async ({page, api, open, actor, input, capture, report}) => {
+
+await scenario({id: 'receipts-approve-download', actions: async ({page, api, open, actor, input, capture, report}) => {
     // Real API setup: exercise a receipt lacking its PDF so the list's repair
     // path is proved too. No production endpoint is intercepted or simulated.
     const luca = input.payment_ids[1];
@@ -25,7 +24,7 @@ await scenario({id: 'receipts-approve-download', prefix: 'images/ricevute/consul
     await expect(approval.locator('input[id^="generate_invoice_"]')).toBeChecked();
     await expect(approval.locator('input[id^="send_receipt_email_"]')).not.toBeChecked();
     await approval.locator('input[name="payment_date"]').fill(input.reference_date);
-    await capture(page, 1, 'approval-with-pdf-and-no-email', approval);
+    await capture(page, 'approval-with-pdf-and-no-email', approval);
     const approved = page.waitForResponse(response => response.url().endsWith(`/payment/${input.payment_ids[2]}/approve`) && response.request().method() === 'POST');
     await approval.getByRole('button', {name: 'Incassa', exact: true}).click();
     const response = await approved;
@@ -56,7 +55,7 @@ await scenario({id: 'receipts-approve-download', prefix: 'images/ricevute/consul
     await expect(page.locator('[data-row]')).toHaveCount(2);
     const sara = page.locator('[data-row]').filter({hasText: 'Sara Conti'});
     await expect(sara).toBeVisible();
-    await capture(page, 2, 'receipt-list-with-generated-pdfs-and-progressives');
+    await capture(page, 'receipt-list-with-generated-pdfs-and-progressives');
     const receipt = await invoice(paid.invoice.invoice_id);
     expect(Number(receipt.membership_fee)).toBe(25);
     expect(Number(receipt.activity_fee)).toBe(0);
@@ -99,7 +98,7 @@ await scenario({id: 'receipts-approve-download', prefix: 'images/ricevute/consul
     expect(previewContents.subarray(0, 5).toString()).toBe('%PDF-');
     expect(crypto.createHash('sha256').update(previewContents).digest('hex')).toBe(report.pdf_documents[1].sha256);
     // The share-link box contains a capability token. Crop to the PDF frame.
-    await capture(page, 3, 'receipt-pdf-preview-without-share-token', frame);
+    await capture(page, 'receipt-pdf-preview-without-share-token', frame);
     await preview.getByRole('button', {name: 'Chiudi', exact: true}).first().click();
     await expect(preview).not.toBeVisible();
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -113,7 +112,7 @@ await scenario({id: 'receipts-approve-download', prefix: 'images/ricevute/consul
     expect(parsedDownload.searchParams.get('download')).toBe('true');
     await share.locator('a[data-clipboard="true"]').click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(downloadUrl);
-    await capture(page, 4, 'copy-download-link-with-token-redacted', share.locator('.modal-content'),
+    await capture(page, 'copy-download-link-with-token-redacted', share.locator('.modal-content'),
         {mask: [linkInput], redactionReason: 'receipt capability link'});
     const downloadPage = await page.context().newPage();
     const download = await navigateToDownload(downloadPage, parsedDownload.href, 'Receipt');

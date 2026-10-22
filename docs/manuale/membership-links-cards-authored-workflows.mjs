@@ -76,7 +76,7 @@ const exhaustiveGuideBindings = [
     "workflow_id": "membership-links-cards",
     "section": {
       "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-      "id": "4-qr-code",
+      "id": "4-qr-code", "intent": "registration.links.qr",
       "title": "4. QR Code",
       "checkpoints": [
         "membership-share-dialog-real-qr",

@@ -24,7 +24,7 @@ selezionano quel pacchetto prima del volume opzionale dei download. Non occorron
 variabili d'ambiente, `sync-manual` o copie manuali: installazione, ricreazione e
 rollback selezionano il manuale insieme all'immagine. Non viene modificato il
 volume `manuale_data`. Una release che richiede il manuale ma lo contiene corrotto
-o incompleto non supera l'avvio; non ripiega su istruzioni incompatibili.
+o incompleto non supera il controllo dell'immagine candidata né l'avvio; non ripiega su istruzioni incompatibili.
 
 Per gli impianti già installati basta il normale aggiornamento a una release che
 include il pacchetto: non servono modifiche a `.env` né alla configurazione salvata.
@@ -33,21 +33,37 @@ e nella barra laterale: per gli utenti gestionali sono visibili quando il manual
 è disponibile. Le immagini precedenti all'integrazione, compresa la v1.0.17, non
 acquisiscono il pacchetto senza aggiornare l'applicazione.
 
-Prima di pubblicare immagini installabili, la pipeline esegue la prova reale
-`selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
---previous-package PREVIOUS_RUNTIME --previous-release PREVIOUS_VERSION`. La prova usa
-immagini di produzione, un registry locale usa e getta per i comandi CLI di
-aggiornamento e rollback, database isolati, contratti HTTP e MCP indipendenti in
-`TESTS/`, browser e chat WebSocket senza AI. La baseline vuota riproduce lo stato
-del manuale osservato nella v1.0.17 usando lo schema corrente; non costituisce
-una prova sul vecchio binario v1.0.17. La prova verifica anche aggiornamento e
-rollback fra due versioni distinte, entrambe valutate sullo stesso commit: una
-seconda esecuzione controlla la compatibilità delle catture riusabili e ripete
-rendering, lettore e MCP/assistente per la versione di prova precedente. Non
-rinomina il corpus della prima versione. Verifica inoltre il normale comando
-`start` dopo un'interruzione fra creazione e avvio del container API, e il
-ripristino automatico dei servizi dopo il download fallito di un candidato.
-Entrambi devono tornare a servire il pacchetto compatibile conservato.
+La verifica completa si esegue con un solo comando:
+
+```bash
+python3 docs/scripts/manuale.py verify-release \
+  --manual-repo ../manuale --release 1.0.18 --previous-release 1.0.17
+```
+
+Il comando verifica una volta il manuale di destinazione, prepara il pacchetto
+in una directory temporanea dedicata e lo usa per la prova dell'appliance.
+Il percorso è stampato e registrato in `RUN/release-verification.json`;
+`--package-output PATH` permette di sceglierlo fuori dai repository e dal run. Per riprendere
+il confezionamento e la prova da un run già verificato, usare
+`verify-release --run DIRECTORY`: il confezionamento ricontrolla le evidenze
+richieste prima di accettare gli artefatti, senza ripetere catture e generazione.
+Nessuno dei due comandi pubblica una release.
+
+La prova `selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
+--previous-release 1.0.17` usa immagini di produzione, un registry locale usa e
+getta, database isolati, contratti HTTP/MCP e browser con chat senza AI. Installa
+anche le vere immagini della v1.0.17, individuate dai digest nel manifest
+pubblicato, per verificare l'aggiornamento di dati preesistenti e il rollback
+con ripristino del backup storico. Quest'ultimo deve ripristinare anche
+l'assenza del manuale propria della vecchia versione. Non occorre generare un
+secondo manuale completo. L'opzione avanzata `--previous-package` rimane per
+contratti sintetici fra pacchetti già verificati separatamente.
+
+L'installazione e l'aggiornamento verificano l'immagine candidata in un container
+senza rete, volumi o `.env` prima delle migrazioni e dell'attivazione. Il controllo
+di avvio rimane come ultima protezione. La prova include pacchetti corrotti,
+ricreazione dei container, interruzione fra creazione e avvio, download fallito,
+volume dei download vuoto e impostazione storica `showManual: false` salvata.
 Non usa dati o servizi di produzione.
 
 Le PR che modificano questa integrazione eseguono la stessa pipeline senza
@@ -67,6 +83,81 @@ Le lacune restano nell'indice e nei resoconti di copertura.
 Il manuale utente rimane nel repository [Bakney/manuale](https://github.com/Bakney/manuale). Assozeta contiene l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
 
 Se i repository di input hanno metadati Git in sola lettura, aggiungere `--standalone-checkouts`: il runner crea cloni locali indipendenti dentro la directory del run, conserva il commit e l'origine effettivi, applica solo le modifiche dichiarate e registra `checkout_kind: standalone-local-clone`. Senza questa opzione usa i worktree collegati. Non richiede rete o token GitHub.
+
+## Build e cattura separati
+
+`prepare` crea soltanto gli snapshot e controlla le fonti: non alloca porte,
+configurazioni private o servizi. `build` compila realmente gli MDX con il
+compilatore fissato nel lockfile, controlla navigazione, collegamenti interni e
+immagini, genera il manifest e costruisce l'indice senza Docker o Chromium.
+Richiede prove compatibili per **tutti** i workflow del manuale; `build.json`
+elenca quelli mancanti. Non avvia catture implicitamente e non certifica una
+release: rendering, lettore e MCP richiedono ancora la verifica completa.
+
+```sh
+python3 docs/scripts/manuale.py build --manual-repo PERCORSO_MANUALE_REVISIONATO
+python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO --workflow members-search
+```
+
+Il runner ricorda automaticamente gli ultimi run completi dello stesso repository
+manuale in `quality-reports/manuale/cache.json`. Prima del riuso ricontrolla Git,
+dipendenze, fixture, rapporti e PNG; il file di cache serve solo a trovare le
+prove. `--no-cache` forza una verifica a freddo; `--reuse-evidence RUN` permette
+una baseline esplicita. Se una cache manca, le verifiche incrementali complete
+ricatturano ciò che serve senza perdere i capitoli non modificati. Anche il
+frontend può essere riusato fra commit diversi quando tutti gli input di build
+e gli artefatti coincidono.
+
+Una correzione di sola formulazione deve avere una revisione esplicita:
+
+```sh
+python3 docs/scripts/manuale-scaffold.py review-content --output PERCORSO_MANUALE_REVISIONATO \
+  --section 'docs/pagina.mdx#sezione' --wording-only --review-note 'Correzione della formulazione; comportamento invariato.'
+```
+
+La revisione lega gli hash prima/dopo e non attesta una nuova cattura. Il riuso
+mantiene le prove originali e ricontrolla la proiezione del testo: passaggi,
+componenti, collegamenti, immagini, codice e numeri devono restare invariati.
+Per cambi di comportamento usare la revisione ordinaria e nuove catture. La
+revisione editoriale non può contemporaneamente aggiornare contratti di codice.
+
+`capture` prepara un ambiente dimostrativo isolato, esegue i workflow selezionati
+e rimuove i propri servizi al termine. Ripetere `--workflow ID` per più scenari,
+oppure usare `--changed-since REF` per la selezione delle dipendenze. `--run`
+riprende invece la selezione già registrata. `--keep-services` conserva l'ambiente
+per l'ispezione. Il comando completo `run` mantiene la verifica dal principio.
+
+Le definizioni in `*-authored-workflows.mjs` e `legacy-workflows.mjs` sono la fonte
+per identità, dipendenze, fixture e checkpoint. Il browser risolve nome del
+checkpoint, numero PNG e fonti dall'inventario generato. Non modificare a mano
+`recipes.json`; dopo una modifica alle definizioni eseguire:
+
+```sh
+node docs/scripts/manuale-registry.mjs
+node docs/scripts/manuale-registry.mjs --check
+```
+
+Ogni procedura ha un solo workflow responsabile della pubblicazione. Le catture
+supplementari più ristrette conservano le loro verifiche senza sostituire le
+procedure complete. Il generatore legge il testo revisionato dagli MDX e non
+esegue le vecchie proiezioni di prosa. `timings.json` registra tempi e risultati
+delle fasi e dei comandi con etichette pubbliche, senza argomenti o credenziali.
+
+## Cache delle verifiche CI
+
+Le PR selezionano le dipendenze cambiate rispetto al commit base. La cache conserva
+un run completo prodotto dal branch predefinito; il verificatore ricontrolla ogni
+workflow per la revisione in esame. Una cache assente, scaduta o incompatibile
+porta a una cattura a freddo completa, senza pubblicare solo il sottoinsieme della PR.
+Le PR possono leggere la baseline ma non aggiornano quella condivisa.
+
+`manuale-cache.py export --run RUN --archive CACHE.tar.gz` crea un archivio
+trasportabile con un bundle Git della revisione applicativa, sorgenti pubbliche,
+MDX revisionati, rapporti e immagini. Esclude sessioni, `.env`, log e metadati Git
+locali. `manuale-cache.py import --archive CACHE.tar.gz --output NUOVO_RUN
+--manual-repo MANUALE` ricostruisce uno snapshot indipendente e lo registra per la
+ricerca automatica. L'archivio è una cache di prove, non un pacchetto installabile;
+l'importazione non rende compatibili input diversi e non esegue codice della baseline.
 
 ## Esecuzione locale
 
@@ -92,13 +183,15 @@ cd selfhost/tests/browser
 npx playwright install chromium
 cd ../../..
 python3 docs/scripts/manuale-scaffold.py create --reference ../manuale --output quality-reports/manuale-authoring --branch add/manuale
-python3 docs/scripts/manuale-scaffold.py apply-drafts --output quality-reports/manuale-authoring
 python3 docs/scripts/manuale.py run --manual-repo PERCORSO_MANUALE_REVISIONATO --allow-dirty --standalone-checkouts
 ```
 
-`create` e `apply-drafts` preparano la struttura e le bozze delle ricette iniziali.
+`create` conserva il testo MDX del repository sorgente e prepara solo i segnaposto.
+Scrivere e revisionare le nuove sezioni nel manuale, poi registrare la revisione con
+`review-content --output CHECKOUT --section pagina.mdx#sezione`. Le ricette non
+contengono copie della prosa e il runner non la sostituisce durante la preparazione.
 Per il run completo scegliere il checkout del manuale con tutte le sezioni authored
-revisionate, sul suo ramo `add/manuale`. Il preflight controlla questa condizione
+revisionate, sul riferimento mantenuto `add/manuale-release`. Il preflight controlla questa condizione
 prima dei servizi. La bozza locale può essere trasferita con un bundle Git;
 il bundle contiene prosa, binding e SVG provvisori, non un corpus pubblicabile.
 
@@ -391,7 +484,7 @@ La generazione ora legge la prosa dal checkout MDX e verifica `.manuale-evidence
 python3 docs/scripts/manuale-scaffold.py review-content --output PERCORSO_MANUALE --section 'docs/corsi.mdx#creare-un-corso'
 ```
 
-`review-content` non verifica un flusso e non rende pubblicabili gli SVG. `apply-drafts` serve a inizializzare le bozze e rifiuta di sovrascrivere prosa modificata o già mantenuta direttamente in MDX. Il run inizializza automaticamente una copia originale pulita nel proprio checkout, dopo la selezione dei flussi. Conserva un input MDX già revisionato senza sovrascriverlo; revisioni e hash degli input restano distinti dai file della stesura generata. `--allow-dirty` registra anche immagini, FAQ, tutorial e sidecar del manuale.
+`review-content` non verifica un flusso e non rende pubblicabili gli SVG. Può registrare la prima revisione di una sezione già definita nei contratti editoriali, senza cambiarne il testo. Il runner richiede un input MDX revisionato e lo conserva senza sovrascriverlo; se manca la revisione, termina prima di avviare servizi. I segnaposto previsti sono derivati dalle definizioni dei workflow: non esiste un secondo inventario da aggiornare. `--allow-dirty` registra anche immagini, FAQ, tutorial e sidecar del manuale.
 
 Quando cambia il modulo di una ricetta, ispezionare le fonti e correggere la
 prosa coinvolta; poi aggiungere `--refresh-recipe-bindings` a `review-content`
@@ -404,8 +497,8 @@ Le modifiche ai moduli di una ricetta selezionano solo i flussi che li importano
 ## Stesura e procedure aggiuntive
 
 La stesura conserva 43 pagine e 507 sezioni del repository originale. Il registro
-[`recipes.json`](./recipes.json) descrive i flussi eseguibili; il piano
-[`screenshot-plan.json`](./screenshot-plan.json) prepara gli SVG Full HD.
+[`recipes.json`](./recipes.json), generato dai metadati dei workflow, descrive
+i flussi eseguibili e gli slot da cui lo scaffold prepara gli SVG Full HD.
 I conteggi e le attività ancora aperte sono in
 [`DELIVERY_CHECKLIST.md`](./DELIVERY_CHECKLIST.md).
 

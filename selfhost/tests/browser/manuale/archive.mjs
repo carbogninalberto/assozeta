@@ -1,16 +1,9 @@
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus} from './focus.mjs';
+import {legacyWorkflows} from '../../../../docs/manuale/legacy-workflows.mjs';
+const spec = legacyWorkflows['members-archive-restore'];
 
-await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione', sources: [
-    'UI/src/components/Sidebar.svelte', 'UI/src/routes.js', 'UI/src/utils/Permissions.js',
-    'UI/src/routes/association/Members/MembersList.svelte',
-    'UI/src/routes/association/Members/MembersListArchive.svelte',
-    'UI/src/routes/association/Members/shared/NavigationTab.svelte',
-    'UI/src/components/buttons/ArchiveButton.svelte',
-    'BE/application/views/subscriptions_views.py', 'BE/application/views/payment_views.py',
-    'BE/application/models/subscriptions_models.py', 'BE/application/models/payment_models.py',
-    'BE/application/permissions_registry.py',
-], actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id: 'members-archive-restore', actions: async ({page, api, open, actor, input, capture, report}) => {
     const subscriptionId = input.subscription_ids[2];
     const unpaidId = input.payment_ids[2];
     const payments = async archived => (await (await api(`payment/list?mode=compressed&query[archived]=${archived ? 'True' : 'False'}`)).json()).data;
@@ -20,7 +13,7 @@ await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione
     const row = page.locator('[data-row]').filter({hasText: /Sara Conti/});
     await row.locator('label.checkbox').click();
     await expect(page.locator('#bkn_datatable_archive_selected')).toBeEnabled();
-    await capture(page, 1, 'select-members-to-archive', focusRegion(
+    await capture(page, 'select-members-to-archive', focusRegion(
         page.locator('#bkn_datatable_archive_selected'),
         row.locator('[data-field="subscription_id"]'),
         row.locator('[data-field="status_flag"]')));
@@ -33,7 +26,7 @@ await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione
         await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
     });
     await settleConfirmation();
-    await capture(page, 2, 'archive-confirmation', confirmation);
+    await capture(page, 'archive-confirmation', confirmation);
     const archived = page.waitForResponse(response => response.url().endsWith(`/subscription/${subscriptionId}/archive`));
     await page.getByRole('button', {name: 'Archivia selezionati', exact: true}).click();
     expect((await archived).status()).toBe(200);
@@ -47,14 +40,14 @@ await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione
     const archivedRow = page.locator('[data-row]').filter({hasText: 'Sara Conti'});
     await expect(archivedRow).toBeVisible();
     await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-    await capture(page, 3, 'archived-member-and-restore-action', focusRegion(
+    await capture(page, 'archived-member-and-restore-action', focusRegion(
         archivedRow.getByRole('button', {name: "Rimuovi dall'archivio"}),
         page.locator('.datatable-head [data-field="user"]'),
         archivedRow.locator('[data-field="user"]')));
     await archivedRow.getByRole('button', {name: "Rimuovi dall'archivio"}).click();
     await expect(page.getByText("Vuoi spostare l'atleta nel libro soci?", {exact: true})).toBeVisible();
     await settleConfirmation();
-    await capture(page, 4, 'restore-confirmation', confirmation);
+    await capture(page, 'restore-confirmation', confirmation);
     const restored = page.waitForResponse(response => response.url().endsWith(`/subscription/${subscriptionId}/archive`));
     await page.getByRole('button', {name: 'Sposta nel libro soci', exact: true}).click();
     expect((await restored).status()).toBe(200);
@@ -64,7 +57,7 @@ await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione
     await expect(page.locator('[data-row]')).toHaveCount(3);
     await expect(page.locator('[data-row]').filter({hasText: 'Sara Conti'})).toBeVisible();
     await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-    await capture(page, 5, 'restored-member-persists-after-reload', tableFocus(page, ['associate', 'status_flag'],
+    await capture(page, 'restored-member-persists-after-reload', tableFocus(page, ['associate', 'status_flag'],
         page.locator('[data-row]').filter({hasText: 'Sara Conti'})));
     // The restore branch toggles only the subscription; unpaid payments remain archived.
     expect((await payments(true)).some(payment => payment.payment_id === unpaidId)).toBe(true);
@@ -77,6 +70,10 @@ await scenario({id: 'members-archive-restore', prefix: 'images/faq/archiviazione
     const active = await api('subscription/list');
     expect(active.ok()).toBeTruthy();
     expect(Object.values((await active.json()).data).some(entry => entry.subscription_id === subscriptionId)).toBe(true);
+    report.archive_workflow = {
+        archived_member_removed: true, unpaid_payment_archived: true, paid_payment_preserved: true,
+        restored_member_persists: true, restoring_does_not_restore_payment: true, reader_archive_status: 403,
+    };
     report.checks = ['real UI selection and archive confirmation', 'archived member moves out of active list',
         'unpaid linked payment is archived; another paid payment remains active',
         'restore action and persisted active member after reload', 'restoring a member does not restore its unpaid payment',

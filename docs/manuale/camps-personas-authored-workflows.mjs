@@ -293,7 +293,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "iscrivere-gli-atleti",
+        "id": "iscrivere-gli-atleti", "intent": "camps.enrollment.create",
         "title": "Iscrivere gli atleti",
         "checkpoints": [
           "camp-existing-period-and-empty-enrollments",
@@ -318,7 +318,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "aggiungere-un-iscritto-manualmente",
+        "id": "aggiungere-un-iscritto-manualmente", "intent": "camps.enrollment.create",
         "title": "Aggiungere un iscritto manualmente",
         "checkpoints": [
           "camp-manual-adult-period-and-service-before-submit",
@@ -343,7 +343,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "modulo-di-iscrizione-pubblico",
+        "id": "modulo-di-iscrizione-pubblico", "intent": "camps.enrollment.public",
         "title": "Modulo di iscrizione pubblico",
         "checkpoints": [
           "camp-public-link-anonymous-login-gate",
@@ -368,7 +368,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "modificare-un-iscrizione",
+        "id": "modificare-un-iscrizione", "intent": "camps.enrollment.update",
         "title": "Modificare un'iscrizione",
         "checkpoints": [
           "camp-unpaid-service-removal-before-save",
@@ -393,7 +393,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "rimuovere-un-iscrizione",
+        "id": "rimuovere-un-iscrizione", "intent": "camps.enrollment.delete",
         "title": "Rimuovere un'iscrizione",
         "checkpoints": [
           "camp-enrollment-removal-confirmation",
@@ -418,7 +418,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "gestire-i-pagamenti",
+        "id": "gestire-i-pagamenti", "intent": "camps.payments.read",
         "title": "Gestire i pagamenti",
         "checkpoints": [
           "camp-combined-quota-in-payment-list",
@@ -448,7 +448,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/camp-e-ritiri.mdx",
-        "id": "flusso-di-lavoro-consigliato",
+        "id": "flusso-di-lavoro-consigliato", "intent": "camps.manage",
         "title": "Flusso di lavoro consigliato",
         "checkpoints": [
           "camp-existing-period-and-empty-enrollments",
@@ -769,7 +769,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/corsi.mdx",
-        "id": "aggiungere-o-rimuovere-atleti",
+        "id": "aggiungere-o-rimuovere-atleti", "intent": "courses.enroll",
         "title": "Aggiungere o rimuovere atleti",
         "checkpoints": [
           "course-current-athlete-selected-before-enrollment",
@@ -799,7 +799,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/corsi.mdx",
-        "id": "pubblicare-il-calendario",
+        "id": "pubblicare-il-calendario", "intent": "courses.calendar.create",
         "title": "Pubblicare il calendario",
         "checkpoints": [
           "course-lesson-ready-for-publication",
@@ -824,7 +824,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/calendario.mdx",
-        "id": "gestire-le-presenze-dal-calendario",
+        "id": "gestire-le-presenze-dal-calendario", "intent": "calendar.attendance.update",
         "title": "Gestire le presenze dal calendario",
         "checkpoints": [
           "general-calendar-lesson-has-attendance-navigation",
@@ -854,7 +854,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/calendario.mdx",
-        "id": "stampare-il-calendario",
+        "id": "stampare-il-calendario", "intent": "calendar.print",
         "title": "Stampare il calendario",
         "checkpoints": [
           "general-calendar-current-view-and-print-action"
@@ -908,28 +908,30 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "BE/application/management/commands/seed_manuale.py",
-      "BE/application/models/subscriptions_models.py",
-      "BE/application/permissions_registry.py",
-      "BE/application/serializers/subscriptions_serializers.py",
-      "BE/application/services/subscription_service.py",
-      "BE/application/views/subscriptions_views.py",
-      "UI/src/components/Sidebar.svelte",
-      "UI/src/components/drawer/basic-drawer.svelte",
-      "UI/src/routes.js",
-      "UI/src/routes/association/Members/MembersList.svelte",
-      "UI/src/routes/association/Members/detail/Detail.svelte",
-      "UI/src/routes/association/Members/detail/DetailDrawer.svelte",
-      "UI/src/routes/association/Members/detail/sections/Info.svelte",
-      "UI/src/utils/Permissions.js",
-      "docs/manuale/camps-personas-authored-workflows.mjs",
-      "selfhost/tests/browser/manuale/frame.mjs",
-      "selfhost/tests/browser/manuale/member-profile-sources.mjs",
-      "selfhost/tests/browser/manuale/member-profile.mjs",
-      "selfhost/tests/browser/manuale/redaction.mjs",
-      "selfhost/tests/browser/manuale/scenario.mjs",
-      "selfhost/tests/browser/playwright.manual.config.mjs"
-    ],
+    "BE/application/management/commands/seed_manuale.py",
+    "BE/application/models/subscriptions_models.py",
+    "BE/application/permissions_registry.py",
+    "BE/application/serializers/subscriptions_serializers.py",
+    "BE/application/services/subscription_service.py",
+    "BE/application/views/subscriptions_views.py",
+    "UI/src/components/Sidebar.svelte",
+    "UI/src/components/drawer/basic-drawer.svelte",
+    "UI/src/routes.js",
+    "UI/src/routes/association/Members/MembersList.svelte",
+    "UI/src/routes/association/Members/detail/Detail.svelte",
+    "UI/src/routes/association/Members/detail/DetailDrawer.svelte",
+    "UI/src/routes/association/Members/detail/sections/Info.svelte",
+    "UI/src/utils/Permissions.js",
+    "docs/manuale/camps-personas-authored-workflows.mjs",
+    "selfhost/tests/browser/manuale/frame.mjs",
+    "selfhost/tests/browser/manuale/member-profile-sources.mjs",
+    "selfhost/tests/browser/manuale/member-profile.mjs",
+    "selfhost/tests/browser/manuale/redaction.mjs",
+    "selfhost/tests/browser/manuale/scenario.mjs",
+    "selfhost/tests/browser/playwright.manual.config.mjs",
+    "UI/src/routes/association/Members/",
+    "docs/manuale/profile-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "registration-profile-and-navigation-tabs",
@@ -947,7 +949,7 @@ export const campsPersonasAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/libro-soci.mdx",
-        "id": "anagrafica-smart",
+        "id": "anagrafica-smart", "intent": "members.update",
         "title": "Anagrafica Smart",
         "checkpoints": [
           "registration-profile-and-navigation-tabs",

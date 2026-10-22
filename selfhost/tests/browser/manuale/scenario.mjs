@@ -10,11 +10,17 @@ import {captureFrame} from './frame.mjs';
 import {reconcileBrowserDenials} from './expected-denials.mjs';
 
 export const expect = browserExpect.configure({timeout: 15000});
-export async function scenario({id, prefix, sources, actions}) {
+export async function scenario({id, actions}) {
     const run = process.env.ASSOZETA_MANUAL_RUN;
     if (!run) throw new Error('ASSOZETA_MANUAL_RUN is required');
     const state = JSON.parse(fs.readFileSync(path.join(run, 'run.json')));
+    const registry = JSON.parse(fs.readFileSync(path.join(state.application, 'docs/manuale/recipes.json')));
+    const spec = registry.recipes.find(recipe => recipe.id === id);
+    if (!spec) throw new Error('Unknown capture workflow: ' + id);
+    const {sources, capture_prefix: prefix, checkpoints} = spec;
     const input = JSON.parse(fs.readFileSync(path.join(run, 'browser-input.json')));
+    if ((input.fixture_profile || 'baseline') !== (spec.fixture || 'baseline'))
+        throw new Error('Wrong fixture profile for capture: ' + id);
     const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
     const report = {id, status: 'running', application_revision: state.application_input.revision,
         capture_id: state.capture_id, tooling_hashes: state.tooling_hashes,
@@ -85,14 +91,18 @@ export async function scenario({id, prefix, sources, actions}) {
         }
         return {page, api, open, context};
     }
-    async function capture(page, number, checkpoint, locator, {mask = [], redactionReason = '', blurEditableFocus = false} = {}) {
-        report.screenshots.push(await captureFrame({page, run, relative: `${prefix}/${number}.png`,
+    async function capture(page, checkpoint, locator, {mask = [], redactionReason = '', blurEditableFocus = false} = {}) {
+        const number = checkpoints.findIndex(point => point.id === checkpoint) + 1;
+        if (!number || report.screenshots.some(image => image.checkpoint === checkpoint))
+            throw new Error('Unknown or repeated workflow checkpoint: ' + id + ':' + checkpoint);
+        report.screenshots.push(await captureFrame({page, run, relative: `${prefix}${number}.png`,
             checkpoint, locator, mask, redactionReason, blurEditableFocus}));
     }
     try {
         browser = await chromium.launch();
         const owner = await actor();
         await actions({...owner, actor, input, capture, report});
+        expect(report.screenshots.map(image => image.checkpoint).sort()).toEqual(checkpoints.map(point => point.id).sort());
         expect(errors).toEqual([]);
         const denials = reconcileBrowserDenials(failedResponses, report.expected_denials);
         expect(denials.unexpected).toEqual([]);

@@ -61,14 +61,8 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root = process.argv[1];
 const {readerPlan} = await import(pathToFileURL(path.join(root, 'selfhost/tests/browser/manuale/reader-plan.mjs')));
-const {accountingBalanceDraftPages} = await import(pathToFileURL(path.join(root, 'docs/manuale/accounting-balance-recipes.mjs')));
-const {campsCalendarDraftPages} = await import(pathToFileURL(path.join(root, 'docs/manuale/camps-calendar-recipes.mjs')));
-const {registrationFormsDraftPages} = await import(pathToFileURL(path.join(root, 'docs/manuale/registration-forms-recipes.mjs')));
-const rows = [
-    ...accountingBalanceDraftPages().filter(page => page.supported),
-    ...campsCalendarDraftPages().filter(page => page.targetStatus === 'verified'),
-    ...registrationFormsDraftPages().filter(page => page.reviewStatus === 'verified'),
-];
+const {authoredWorkflows} = await import(pathToFileURL(path.join(root, 'docs/manuale/authored-workflows.mjs')));
+const rows = Object.values(authoredWorkflows).flatMap(workflow => workflow.sections);
 const wanted = ['docs/contabilita-avanzata#creare-un-nuovo-conto',
     'docs/contabilita-avanzata#eliminare-un-giroconto', 'faq/come-generare-bilancio#pubblicare-il-bilancio',
     'docs/camp-e-ritiri#creare-un-camp-o-ritiro', 'docs/camp-e-ritiri#aggiungere-un-periodo',

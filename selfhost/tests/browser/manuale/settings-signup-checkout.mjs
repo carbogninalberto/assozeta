@@ -8,8 +8,7 @@ import manualConfig from '../playwright.manual.config.mjs';
 import {reloadOrganizationProfile} from './organization-access-sources.mjs';
 import {settingsPrintAuthoredWorkflows} from '../../../../docs/manuale/settings-print-authored-workflows.mjs';
 const id='settings-signup-checkout',spec=settingsPrintAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
-    actions:async({page,api,open,context,actor,input,capture,report})=>{
+await scenario({id,actions:async({page,api,open,context,actor,input,capture,report})=>{
         expect(input.fixture_version).toBe(8);expect(input.fixture_profile||'baseline').toBe('baseline');
         expect(input.integration_modes.email.external_delivery).toBe(false);
         const read=async route=>{const response=await api(route);expect(response.status()).toBe(200);return response.json();};
@@ -26,7 +25,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
         const take=async(checkpoint,focus,browserPage=page,mask=[])=>{
             const index=spec.checkpoints.findIndex(p=>p.id===checkpoint);expect(index).toBeGreaterThanOrEqual(0);
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-            await capture(browserPage,index+1,checkpoint,focus,{mask,redactionReason:mask.length?'Registration capability link and QR are private runtime evidence.':''});};
+            await capture(browserPage,checkpoint,focus,{mask,redactionReason:mask.length?'Registration capability link and QR are private runtime evidence.':''});};
         const openAccount=async()=>{await open('Impostazioni','/#/profile');await page.getByText('Informazioni Account',{exact:true}).click();await expect(page.locator('#bkn_form_account_update')).toBeVisible();};
         const block=(scope,label)=>scope.getByText(label,{exact:true}).locator('xpath=ancestor::div[contains(@class,"form-group")][1]');
         const editor=()=>page.getByRole('heading',{name:'Checkout',exact:true}).locator('xpath=ancestor::div[contains(@class,"row")][1]/following-sibling::div[1]').locator('[contenteditable="true"]');

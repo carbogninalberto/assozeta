@@ -95,7 +95,7 @@ export const twoFactorLoginAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "faq/come-abilitare-autenticazione-due-fattori.mdx",
-                "id": "come-attivare-il-2fa",
+                "id": "come-attivare-il-2fa", "intent": "account.twofa.enable",
                 "title": "Come attivare il 2FA",
                 "checkpoints": [
                     "twofa-original-disabled",
@@ -126,7 +126,7 @@ export const twoFactorLoginAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-abilitare-autenticazione-due-fattori.mdx",
-                "id": "come-funziona-il-login-con-il-2fa",
+                "id": "come-funziona-il-login-con-il-2fa", "intent": "account.twofa.login",
                 "title": "Come funziona il login con il 2FA",
                 "checkpoints": [
                     "twofa-fresh-login-credentials-masked",

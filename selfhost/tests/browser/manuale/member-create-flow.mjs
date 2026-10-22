@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 export async function createMember({page, api, open, actor, capture, report, input}, {beforeProfileContinue, expectedAmount = 25} = {}) {
         await open('Organizzazione', '/#/members/list');
         await expect(page.locator('[data-row]')).toHaveCount(3);
-        await capture(page, 1, 'members-list-and-add-action');
+        await capture(page, 'members-list-and-add-action');
         await page.getByRole('link', {name: 'Aggiungi', exact: true}).click();
         await expect(page.getByRole('heading', {name: 'Nuovo Socio o Tesserato', exact: true})).toBeVisible();
         const active = () => page.locator('[data-wizard-type="step-content"][data-wizard-state="current"]');
@@ -16,7 +16,7 @@ export async function createMember({page, api, open, actor, capture, report, inp
         await expect(page.locator('input[name="new_account_radio"][value="false"]')).toBeChecked();
         await expect(active()).toContainText('Socio e Tesserato');
         if (beforeProfileContinue) await beforeProfileContinue({page, active, input});
-        await capture(page, 2, 'registration-type-and-no-new-account');
+        await capture(page, 'registration-type-and-no-new-account');
         await next("Inserisci le informazioni dell'Associato");
         const values = {
             firstNameAssociate: 'Marta', lastNameAssociate: 'Neri',
@@ -35,9 +35,9 @@ export async function createMember({page, api, open, actor, capture, report, inp
         expect(fiscalCode).toMatch(/^[A-Z0-9]{16}$/);
         await expect(taxInput).toHaveValue(fiscalCode);
         await active().locator('[name="firstNameAssociate"]').scrollIntoViewIfNeeded();
-        await capture(page, 3, 'personal-data-and-fiscal-code');
+        await capture(page, 'personal-data-and-fiscal-code');
         await active().locator('[name="emailAssociate"]').scrollIntoViewIfNeeded();
-        await capture(page, 4, 'residence-and-contact-data');
+        await capture(page, 'residence-and-contact-data');
         await next('Firma del documento');
         const canvas = active().locator('canvas');
         await expect(canvas).toBeVisible();
@@ -58,13 +58,13 @@ export async function createMember({page, api, open, actor, capture, report, inp
                 && pixels[index - 3] < 230 && pixels[index - 2] < 230 && pixels[index - 1] < 230);
         })).toBe(true);
         const drawnSignature = await page.evaluate(() => JSON.parse(localStorage.getItem('signature')));
-        await capture(page, 5, 'fictional-signature-entered', active());
+        await capture(page, 'fictional-signature-entered', active());
         await next('Hai già un certificato medico?');
-        await capture(page, 6, 'medical-certificate-step-with-no-attachment', active());
+        await capture(page, 'medical-certificate-step-with-no-attachment', active());
         await next('Ancora un ultimo passo');
         await expect(active()).toContainText('Marta');
         await expect(active()).toContainText('Neri');
-        await capture(page, 7, 'registration-summary-before-saving', active());
+        await capture(page, 'registration-summary-before-saving', active());
         await page.locator('#subscription_submit').click();
         await expect(page.getByText('Hai inserito i dati corretti? Controlla prima di continuare.', {exact: true})).toBeVisible();
         const created = page.waitForResponse(response => response.url().endsWith('/subscription/add') && response.request().method() === 'POST');
@@ -107,7 +107,7 @@ export async function createMember({page, api, open, actor, capture, report, inp
         const signaturePreserved = signatureHash(embeddedSignature) === signatureHash(drawnSignature.data);
         expect(signaturePreserved).toBe(true);
         expect(subscription.medical).toBeNull();
-        await capture(page, 8, 'created-pending-registration-persists-after-reload');
+        await capture(page, 'created-pending-registration-persists-after-reload');
         const reader = await actor('reader');
         await reader.open('Organizzazione', '/#/members/list');
         await expect(reader.page.getByRole('link', {name: 'Aggiungi', exact: true})).toHaveCount(0);

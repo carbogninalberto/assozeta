@@ -23,8 +23,7 @@ async function settled(page) {
             .map(animation => animation.finished.catch(() => {})));
     });
 }
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, capture, report, input}) => {
+await scenario({id, actions: async ({page, api, open, actor, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const facts = {};
@@ -32,7 +31,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (checkpoint, focus, currentPage = page) => {
             const index = spec.checkpoints.findIndex(point => point.id === checkpoint);
             if (index < 0) throw new Error('Unknown member-tags checkpoint: ' + checkpoint);
-            await settled(currentPage); await capture(currentPage, index + 1, checkpoint, focus);
+            await settled(currentPage); await capture(currentPage, checkpoint, focus);
         };
         const members = async (request = api) => {
             const response = await request('subscription/list?' + new URLSearchParams({type: 'athletes', 'pagination[perpage]': '100'}));

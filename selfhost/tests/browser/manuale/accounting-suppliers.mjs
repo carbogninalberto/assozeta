@@ -1,15 +1,14 @@
 import {scenario, expect} from './scenario.mjs';
 import {accountingDocumentsAuthoredWorkflows} from '../../../../docs/manuale/accounting-documents-authored-workflows.mjs';
 const id = 'accounting-suppliers-manage', spec = accountingDocumentsAuthoredWorkflows[id];
-await scenario({id, prefix:spec.prefix.replace(/\/$/, ''), sources:spec.sources,
-    actions:async ({page, api, actor, capture, report, input}) => {
+await scenario({id, actions:async ({page, api, actor, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         const read = async route => {const response=await api(route); expect(response.status()).toBe(200); return response.json();};
         const list = async () => (await read('supplier/list?all=true')).data;
         const ordered = records => [...records].sort((a,b)=>a.supplier_id.localeCompare(b.supplier_id));
         const baseline=ordered(await list()), payments=(await read('payment/list?pagination[perpage]=100')).data;
         const take = async (checkpoint, focus) => {await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-            await capture(page,spec.checkpoints.findIndex(p=>p.id===checkpoint)+1,checkpoint,focus);};
+            await capture(page,checkpoint,focus);};
         const row = name => page.locator('[data-row]').filter({hasText:name.toUpperCase()});
         const save = () => page.locator('#portal-save-foreground').getByRole('button',{name:'Salva',exact:true}).click();
         const close = async () => {await page.locator('[role="dialog"]:visible .drawer-header button').first().click();

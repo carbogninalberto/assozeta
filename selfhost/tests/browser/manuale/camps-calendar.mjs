@@ -1,13 +1,12 @@
 // Real UI handlers and persisted API reads; the run owner executes this file.
 import {scenario, expect} from './scenario.mjs';
-import {campsCalendarSources} from './camps-calendar-sources.mjs';
+
 // Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
 // record sets: identical rows and contents, independent of physical row order.
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
-await scenario({id: 'camps-calendar-manage', prefix: 'images/camp-calendario/gestione',
-    sources: campsCalendarSources, actions: async ({page, api, actor, open, input, capture, report}) => {
+await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, open, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async (route, client = api) => {
@@ -17,7 +16,7 @@ await scenario({id: 'camps-calendar-manage', prefix: 'images/camp-calendario/ges
         };
         const take = async (number, checkpoint, locator, browserPage = page) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(browserPage, number, checkpoint, locator, {blurEditableFocus: true});
+            await capture(browserPage, checkpoint, locator, {blurEditableFocus: true});
         };
         const save = async (route, method, button, status = 200) => {
             const response = page.waitForResponse(result => new URL(result.url()).pathname === '/api/' + route

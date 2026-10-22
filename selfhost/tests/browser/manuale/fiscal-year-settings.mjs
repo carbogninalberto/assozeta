@@ -2,8 +2,7 @@
 import {scenario, expect} from './scenario.mjs';
 import {fiscalSettingsAuthoredWorkflows} from '../../../../docs/manuale/fiscal-settings-authored-workflows.mjs';
 const id = 'fiscal-year-settings', spec = fiscalSettingsAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
@@ -16,7 +15,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async checkpoint => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const position = spec.checkpoints.findIndex(point => point.id === checkpoint);
-            expect(position).toBeGreaterThanOrEqual(0); await capture(page, position + 1, checkpoint);
+            expect(position).toBeGreaterThanOrEqual(0); await capture(page, checkpoint);
         };
         const goSettings = async () => {
             await open('Impostazioni', '/#/profile'); await page.getByText('Generali', {exact: true}).click();

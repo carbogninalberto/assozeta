@@ -3,7 +3,7 @@ import {scenario, expect} from './scenario.mjs';
 import {createMember} from './member-create-flow.mjs';
 import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/organization-basics-authored-workflows.mjs';
 const id = 'registration-default-category', spec = organizationBasicsAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources, actions: async flow => {
+await scenario({id, actions: async flow => {
     const {page, api, open, actor, input, capture, report} = flow;
     expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');
     const read = async route => {const res = await api(route); expect(res.status()).toBe(200); return res.json();};
@@ -16,7 +16,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
     expect(category).toBeTruthy(); expect(category.expense).toBe(false);
     const facts = {}, proof = (key, value) => {expect(value, key).toEqual(spec.outcome.expected[key]); facts[key] = value;};
     const take = async checkpoint => {await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-        await capture(page, spec.checkpoints.findIndex(point => point.id === checkpoint) + 1, checkpoint);};
+        await capture(page, checkpoint);};
     let owned, changed = false;
     try {
         await open('Impostazioni', '/#/profile'); await page.getByText('Generali', {exact: true}).click();
@@ -31,7 +31,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         proof('other_settings_preserved', Object.keys(original).filter(key => key !== 'default_payment_category').every(key => JSON.stringify(saved[key]) === JSON.stringify(original[key])));
         proof('existing_payments_preserved_before_signup', JSON.stringify(await payments()) === JSON.stringify(beforePayments));
         await select.scrollIntoViewIfNeeded(); await take('default-registration-category-persists-after-reload');
-        await createMember({...flow, capture: async (_page, number) => {if (number === 7) await take('registration-using-default-category-summary');}});
+        await createMember({...flow, capture: async (_page, checkpoint) => {if (checkpoint === 'registration-summary-before-saving') await take('registration-using-default-category-summary');}});
         owned = (await members()).find(row => !beforeMembers.some(old => old.subscription_id === row.subscription_id)
             && row.associate.first_name === 'Marta' && row.associate.last_name === 'Neri' && row.associate.email === 'marta@example.test'
             && row.user.user_id === input.user_id);

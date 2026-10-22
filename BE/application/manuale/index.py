@@ -465,7 +465,8 @@ def build_index(manual_root, code_root, manifest, *, artifact_root=None):
                             or scenario.get('capture_id') != reused['origin']['capture_id']):
                         raise EvidenceError('Scenario differs from retained capture provenance')
                     editorial = next((item for item in reused['sections'] if item['path'] == page['path'] and item['id'] == key), None)
-                    if not editorial or editorial['published_content_sha256'] != section['content_sha256']:
+                    target_editorial = (editorial['editorial_updates'][-1] if editorial and editorial.get('editorial_updates') else editorial)
+                    if not target_editorial or target_editorial['published_content_sha256'] != section['content_sha256']:
                         raise EvidenceError('Section has no matching retained editorial evidence')
                     for relative in reused['production_paths']:
                         expected = reused['dependency_hashes'][relative]

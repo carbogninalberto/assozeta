@@ -7,8 +7,7 @@ import {courseSettingsAuthoredWorkflows} from '../../../../docs/manuale/course-s
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id='course-types-sharing',spec=courseSettingsAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
-    actions:async({page,api,open,actor,context,input,capture,report})=>{
+await scenario({id,actions:async({page,api,open,actor,context,input,capture,report})=>{
         expect(input.fixture_version).toBe(8);
         const read=async route=>{const response=await api(route);expect(response.status()).toBe(200);return response.json();};
         const list=async()=> (await read('course/list?all=1')).data;
@@ -18,7 +17,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,
         expect(category).toBeTruthy();
         const take=async(checkpoint,focus,browserPage=page,mask=[])=>{
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
-            await capture(browserPage,spec.checkpoints.findIndex(point=>point.id===checkpoint)+1,checkpoint,focus,
+            await capture(browserPage,checkpoint,focus,
                 {mask,redactionReason:mask.length?'Calendar sharing link and embedded source are excluded from the public master.':''});};
         const drawer=()=>page.locator('.drawer').filter({has:page.getByPlaceholder('Titolo Corso')});
         const begin=async(title,type)=>{await open('Attività','/#/course/list');await page.getByRole('button',{name:'Corso o Abbonamento',exact:true}).click();

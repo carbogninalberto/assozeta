@@ -4,6 +4,7 @@ Use actual temporary Git repositories and complete generated PNG fixture bytes
 so dependency, provenance and staging outcomes are exercised without a backend.
 """
 import copy
+import importlib.util
 import json
 import struct
 import subprocess
@@ -12,8 +13,13 @@ import tempfile
 import unittest
 import zlib
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
+runner_spec = importlib.util.spec_from_file_location('manual_cache_runner', ROOT / 'docs/scripts/manuale.py')
+runner = importlib.util.module_from_spec(runner_spec)
+runner_spec.loader.exec_module(runner)
 sys.path.insert(0, str(ROOT / 'BE'))
 from application.manuale import reuse
 from application.manuale import index as manual_index
@@ -62,6 +68,13 @@ class ReuseFixtureTests(unittest.TestCase):
         registry = {'format': 1, 'shared_dependencies': ['BE/core/', 'UI/src/utils/'], 'recipes': [self.recipe]}
         for relative in reuse.CORE_TOOLING:
             write(self.old_code, relative, '// Offline dependency fixture\n' if relative.endswith('.mjs') else '# Offline dependency fixture\n')
+        # Exercise the actual pure editorial projector, with an explicit unit
+        # procedure. These files do not execute browsers or fabricate captures.
+        for relative in ('docs/manuale/manual-content.mjs', 'docs/manuale/rendered-content.mjs', 'docs/scripts/manuale-project.mjs'):
+            write(self.old_code, relative, (ROOT / relative).read_text())
+        write(self.old_code, 'docs/manuale/authored-workflows.mjs', 'export const authoredWorkflows = ' + json.dumps({
+            'unit-members': {'checkpoints': [{'id': 'unit-list', 'caption': 'Unit fixture'}], 'sections': [
+                {'path': 'docs/members.mdx', 'id': 'elenco', 'title': 'Elenco', 'checkpoints': ['unit-list']}]}}) + ';\n')
         write(self.old_code, 'BE/application/management/commands/seed_manuale.py', 'FIXTURE_VERSION = 8\n')
         write(self.old_code, self.recipe['script'], "import './unit-helper.mjs';\n")
         write(self.old_code, 'selfhost/tests/browser/manuale/unit-helper.mjs', 'export const fixture = true;\n')
@@ -139,6 +152,96 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['reused_recipes'], [])
         self.assertIn(expected, plan['rejected'][0]['reasons'][0])
 
+    def test_automatic_cache_finds_a_complete_baseline_and_preserves_capture_bytes(self):
+        repository = str(self.root / 'manual-source')
+        self.old['manual_repository'] = self.state['manual_repository'] = repository
+        self.state['selected_recipes'] = ['unit-members']
+        args = SimpleNamespace(command='build', changed_since=None, manual_changed_since=None)
+        with patch.object(runner, 'ROOT', self.root), patch.object(runner, 'retained_evidence_helper', return_value=reuse), \
+                patch.object(runner, 'execute', side_effect=AssertionError('offline cache started runtime')):
+            runner.remember_run(self.old)
+            self.assertEqual(len(runner.cached_runs(repository)), 1)
+            self.assertEqual(runner.cached_runs(self.root / 'another-manual'), [])
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], [])
+        self.assertEqual(self.state['evidence_reuse']['reused_recipes'], ['unit-members'])
+        self.assertEqual(self.state['cache']['mode'], 'automatic')
+        self.assertEqual((self.run / 'unit-members.json').read_bytes(), (self.old_run / 'unit-members.json').read_bytes())
+
+    def test_partial_capture_manifest_is_discoverable_without_being_marked_complete(self):
+        repository = str(self.root / 'manual-source')
+        self.old['manual_repository'] = self.state['manual_repository'] = repository
+        with patch.object(runner, 'ROOT', self.root), patch.object(runner, 'recipe_registry', return_value={
+                'recipes': [{'id': 'unit-members'}, {'id': 'still-needs-capture'}]}):
+            runner.remember_run(self.old)
+            entry, = runner.cached_runs(repository)
+        self.assertTrue(entry['evidence'])
+        self.assertFalse(entry['complete'])
+        self.assertFalse((self.old_run / 'index.json').exists())
+
+    def test_staging_does_not_reintroduce_evidence_excluded_by_dependency_selection(self):
+        self.assertEqual(reuse.build_reuse_plan(self.state, self.old_run, stage=False)['reused_recipes'], ['unit-members'])
+        plan = reuse.build_reuse_plan(self.state, self.old_run, eligible_recipes=[])
+        self.assertEqual(plan['reused_recipes'], [])
+        self.assertEqual(plan['fresh_recipes'], [])
+        self.assertFalse((self.run / 'unit-members.json').exists())
+        reuse.validate_reuse_plan(self.state, plan)
+
+    def test_automatic_cache_recaptures_unknown_production_and_shared_orchestration_changes(self):
+        repository = str(self.root / 'manual-source')
+        self.old['manual_repository'] = self.state['manual_repository'] = repository
+        args = SimpleNamespace(command='build', changed_since=None, manual_changed_since=None)
+        registry = runner.recipe_registry(self.code)
+        registry['shared_dependencies'].append('docs/scripts/manuale')
+        for code in (self.code, self.old_code):
+            write(code, 'docs/manuale/recipes.json', registry)
+        with patch.object(runner, 'ROOT', self.root), patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.remember_run(self.old)
+            for relative in ('BE/unregistered_behavior.py', 'docs/scripts/manuale.py'):
+                with self.subTest(relative=relative):
+                    write(self.code, relative, '# Changed execution input\n')
+                    state = {**self.state, 'selected_recipes': []}
+                    runner.reuse_inputs(state, args)
+                    self.assertEqual(state['selected_recipes'], ['unit-members'])
+                    decision = state['cache']['decisions'][0]
+                    self.assertIn(relative, decision['changed_inputs'])
+                    self.assertEqual(decision['affected_recipes'], ['unit-members'])
+                    self.assertEqual(state['evidence_reuse']['reused_recipes'], [])
+                    (self.code / relative).unlink()
+
+    def test_missing_cache_makes_incremental_verification_complete_but_keeps_explicit_capture_scope(self):
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        args = SimpleNamespace(command='build', changed_since='unit-parent', manual_changed_since=None, no_cache=True)
+        with patch.object(runner, 'ROOT', self.root), patch.object(runner, 'retained_evidence_helper', side_effect=AssertionError('cold run read cache')):
+            runner.reuse_inputs(self.state, args)
+            self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+            args.command = 'capture'
+            self.state['selected_recipes'] = []
+            runner.reuse_inputs(self.state, args)
+            self.assertEqual(self.state['selected_recipes'], [])
+
+    def test_frontend_cache_uses_build_inputs_across_commits_and_rejects_modified_artifacts(self):
+        for code, state in ((self.old_code, self.old), (self.code, self.state)):
+            write(code, '.gitignore', 'UI/dist/\n')
+            write(code, 'selfhost/compose.dev.yml', 'services: {}\n')
+            override = Path(state['run']) / 'compose.override.json'
+            override.write_text(json.dumps({'services': {'ui': {'command': ['vite', 'preview'], 'environment': {'OEM_ENV': 'assozeta'}}}}))
+            state['override'] = str(override)
+        write(self.old_code, 'UI/dist/public/index.html', '<p>Unit compiled artifact</p>')
+        write(self.old_run, 'run.json', self.old)
+        write(self.old_run, 'frontend-build.json', {'sources': runner.ui_sources(self.old_code),
+            'artifacts': {'index.html': reuse.file_hash(self.old_code, 'UI/dist/public/index.html')}})
+        self.state['reuse_frontend'] = str(self.old_run)
+        self.assertNotEqual(self.old['application_input']['revision'], self.state['application_input']['revision'])
+        result = runner.reuse_frontend(self.state)
+        self.assertEqual(result['source_run'], self.old['run_id'])
+        target = self.code / 'UI/dist/public/index.html'
+        original = target.read_bytes()
+        write(self.old_code, 'UI/dist/public/index.html', '<p>Modified after verification</p>')
+        with self.assertRaisesRegex(RuntimeError, 'changed after its recorded build'):
+            runner.reuse_frontend(self.state)
+        self.assertEqual(target.read_bytes(), original)
+
     def test_new_revision_reuses_immutable_original_bytes_and_relocates_without_baseline(self):
         original = (self.old_run / 'unit-members.json').read_bytes()
         plan = reuse.build_reuse_plan(self.state, self.old_run)
@@ -206,6 +309,112 @@ class ReuseFixtureTests(unittest.TestCase):
         write(self.manual, '.manuale-evidence.json', {'format': 1, 'purpose': 'reviewed-content', 'verified': False,
                                                    'sections': {'docs/members.mdx#elenco': binding}})
         self.rejection('editorial-content-changed')
+
+    def wording_review(self, text, *, previous=None, manual=None):
+        manual = manual or self.manual
+        review = {'format': 1, 'kind': 'wording-only', 'from_sha256': reuse.digest(previous or self.published),
+                  'to_sha256': reuse.digest(text), 'recipe_sha256': self.binding['recipe_sha256'],
+                  'note': 'Correzione editoriale; comportamento e passaggi invariati.'}
+        binding = {**self.binding, 'content_sha256': reuse.digest(text), 'editorial_review': review}
+        write(manual, 'docs/members.mdx', text)
+        write(manual, '.manuale-evidence.json', {'format': 1, 'purpose': 'reviewed-content', 'verified': False,
+                                               'sections': {'docs/members.mdx#elenco': binding}})
+        return binding
+
+    def test_wording_review_reuses_original_capture_and_binds_projected_text(self):
+        changed = self.published.replace('Consulta il riepilogo.', 'Consulta anche il riepilogo.')
+        binding = self.wording_review(changed)
+        original = (self.old_run / 'unit-members.json').read_bytes()
+        plan = reuse.build_reuse_plan(self.state, self.old_run)
+        self.assertEqual(plan['reused_recipes'], ['unit-members'], plan['rejected'])
+        item = plan['recipes']['unit-members']['sections'][0]
+        self.assertEqual(item['published_content_sha256'], reuse.digest(self.published))
+        self.assertEqual(reuse.editorial_target(item), (reuse.digest(changed), reuse.digest(changed)))
+        self.assertEqual((self.run / 'unit-members.json').read_bytes(), original)
+        self.assertEqual(item['editorial_updates'][0]['review'], binding['editorial_review'])
+        # Consume the same retained plan at the actual index boundary after the
+        # generator's normal publication binding, without new browser evidence.
+        from application.manuale.index import build_index
+        self.state['manual_input'] = {'revision': 'unit-manual'}
+        self.state['evidence_reuse'] = {'path': 'evidence-reuse.json', 'sha256': reuse.file_hash(self.run, 'evidence-reuse.json'),
+                                      'reused_recipes': ['unit-members']}
+        write(self.run, 'run.json', self.state)
+        binding.update(editorial_content_sha256=reuse.digest(changed), materialization=item['materialization'])
+        write(self.manual, '.manuale-evidence.json', {'format': 1, 'purpose': 'reviewed-content', 'verified': False,
+                                                    'sections': {'docs/members.mdx#elenco': binding}})
+        frame = self.report['screenshots'][0]
+        image = self.manual / frame['path']
+        image.parent.mkdir(parents=True)
+        image.write_bytes((self.old_run / 'captures' / frame['path']).read_bytes())
+        manifest = copy.deepcopy(self.manifest)
+        manifest['metadata'].update(application_revision=self.state['application_input']['revision'],
+            manual_revision='unit-manual', manual_url='https://manual.example.test', release=self.state['release'],
+            reference_date=self.state['reference_date'], tooling_hashes=self.state['tooling_hashes'],
+            evidence_reuse=self.state['evidence_reuse'])
+        manifest['scenarios'][0].update(reuse={'path': 'evidence-reuse.json', 'sha256': self.state['evidence_reuse']['sha256'],
+                                              'recipe_id': 'unit-members'}, capture_id=self.report['capture_id'])
+        manifest['pages'][0]['sections'][0].update(content_sha256=reuse.digest(changed), kind='workflow', screenshots=[frame],
+            evidence=[{'path': 'BE/members/views.py', 'start': 1, 'end': 1, 'symbol': 'members',
+                       'sha256': self.report['source_hashes']['BE/members/views.py']}])
+        index = build_index(self.manual, self.code, manifest, artifact_root=self.run)
+        self.assertIn('Consulta anche', index['chunks'][0]['text'])
+        self.assertEqual(index['chunks'][0]['capture_provenance'][0]['capture_id'], self.report['capture_id'])
+        self.wording_review(changed + ' Aggiunta non revisionata.', previous=changed)
+        with self.assertRaisesRegex(ValueError, 'editorial-content-changed'):
+            reuse.validate_reuse_plan(self.state)
+
+    def test_wording_marker_cannot_reuse_changed_steps_links_numbers_or_code(self):
+        for extra in ('\n\n<Step title="Nuova azione">Salva.</Step>', '\n\n[Guida](https://example.invalid/other)',
+                      '\n\nRipeti 2 volte.', '\n\n`nuovo_comando()`'):
+            with self.subTest(extra=extra):
+                self.wording_review(self.published + extra)
+                self.rejection('editorial-structure-changed')
+        self.wording_review(self.published.replace('![Unit fixture]', '[Unit fixture]'))
+        self.rejection('editorial-structure-changed')
+
+    def test_supplemental_workflow_reuse_requires_an_explicit_empty_publication_contract(self):
+        self.manifest['pages'][0]['sections'] = []
+        write(self.old_run, 'manifest.json', self.manifest)
+        self.rejection('no-retained-verified-editorial-sections')
+        for code, state in ((self.old_code, self.old), (self.code, self.state)):
+            registry = reuse.load(code, 'docs/manuale/recipes.json')
+            registry['recipes'][0]['publication_sections'] = []
+            write(code, 'docs/manuale/recipes.json', registry)
+            state['application_input']['uncommitted_files']['docs/manuale/recipes.json'] = reuse.file_hash(code, 'docs/manuale/recipes.json')
+        write(self.old_run, 'run.json', self.old)
+        plan = reuse.build_reuse_plan(self.state, self.old_run)
+        self.assertEqual(plan['reused_recipes'], ['unit-members'], plan['rejected'])
+        self.assertEqual(plan['recipes']['unit-members']['sections'], [])
+        reuse.validate_reuse_plan(self.state)
+
+    def test_wording_review_preserves_immutable_capture_origin_across_successive_builds(self):
+        first_text = self.published.replace('Consulta', 'Consulta anche')
+        binding = self.wording_review(first_text)
+        first_plan = reuse.build_reuse_plan(self.state, self.old_run)
+        entry = first_plan['recipes']['unit-members']
+        self.state['evidence_reuse'] = {'path': 'evidence-reuse.json', 'sha256': reuse.file_hash(self.run, 'evidence-reuse.json'),
+                                      'reused_recipes': ['unit-members']}
+        self.state['status'] = 'generated'
+        write(self.run, 'run.json', self.state)
+        binding.update(editorial_content_sha256=reuse.digest(first_text), materialization=entry['sections'][0]['materialization'])
+        write(self.manual, '.manuale-evidence.json', {'format': 1, 'purpose': 'reviewed-content', 'verified': False,
+                                                   'sections': {'docs/members.mdx#elenco': binding}})
+        manifest = copy.deepcopy(self.manifest)
+        manifest['metadata'].update(application_revision=self.state['application_input']['revision'], release=self.state['release'])
+        manifest['scenarios'][0]['reuse'] = {'path': 'evidence-reuse.json', 'sha256': self.state['evidence_reuse']['sha256'], 'recipe_id': 'unit-members'}
+        manifest['pages'][0]['sections'][0]['content_sha256'] = reuse.digest(first_text)
+        write(self.run, 'manifest.json', manifest)
+        third_run, third_manual = self.root / 'third', self.root / 'third/manual'
+        third = {**self.state, 'run': str(third_run), 'manual': str(third_manual), 'release': 'unit-third-release'}
+        third.pop('evidence_reuse')
+        second_text = first_text.replace('anche', 'sempre')
+        self.wording_review(second_text, previous=first_text, manual=third_manual)
+        plan = reuse.build_reuse_plan(third, self.run)
+        self.assertEqual(plan['reused_recipes'], ['unit-members'], plan['rejected'])
+        updates = plan['recipes']['unit-members']['sections'][0]['editorial_updates']
+        self.assertEqual(len(updates), 2)
+        self.assertEqual(updates[-1]['published_content_sha256'], reuse.digest(second_text))
+        self.assertEqual(plan['recipes']['unit-members']['origin']['capture_id'], self.report['capture_id'])
 
     def test_selected_recipe_never_reused_and_original_reports_do_not_get_rewritten(self):
         self.state['selected_recipes'] = ['unit-members']

@@ -7,8 +7,7 @@ import {openGiulia} from './member-profile-sources.mjs';
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'members-tax-code-correction', spec = memberAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
         const subscription = async () => (await json(`subscription/${input.subscription_ids[0]}/info`)).data.info;
@@ -24,7 +23,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async checkpoint => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1;
-            await capture(page, n, checkpoint, page.getByRole('dialog', {name: 'Giulia Bianchi', exact: true}));
+            await capture(page, checkpoint, page.getByRole('dialog', {name: 'Giulia Bianchi', exact: true}));
         };
         const openPersona = async () => {
             await open('Organizzazione', '/#/personas/list');

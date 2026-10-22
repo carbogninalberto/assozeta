@@ -8,8 +8,7 @@ import {attendanceCarnetAuthoredWorkflows} from '../../../../docs/manuale/attend
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'attendance-carnet-maintenance', spec = attendanceCarnetAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async scenarioContext => {
+await scenario({id, actions: async scenarioContext => {
         const {page, api, open, actor, input, capture, report} = scenarioContext;
         const prepared = await runAttendanceCarnet({...scenarioContext, capture: async () => {}});
         const {carnet, registration, event, courseUrl, usageHref, carnetInfo, get, listPayments, openAttendance} = prepared;
@@ -20,7 +19,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (checkpoint, browserPage = page, locator) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1; expect(n).toBeGreaterThan(0);
-            await capture(browserPage, n, checkpoint, locator);
+            await capture(browserPage, checkpoint, locator);
         };
         const facts = {}, proof = (key, value) => {expect(value, key).toEqual(spec.outcome.expected[key]); facts[key] = value;};
         const mark = async present => {

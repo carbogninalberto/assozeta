@@ -133,7 +133,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
     "sections": [
       {
         "path": "docs/registro-presenze.mdx",
-        "id": "attivare-le-presenze-automatiche",
+        "id": "attivare-le-presenze-automatiche", "intent": "attendance.automatic",
         "title": "Attivare le presenze automatiche",
         "checkpoints": [
           "automatic-setting-on-before-save",
@@ -158,7 +158,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "tutorials/come-gestire-registro-presenze-carnet.mdx",
-        "id": "come-si-attivano-le-presenze-automatiche",
+        "id": "come-si-attivano-le-presenze-automatiche", "intent": "attendance.automatic",
         "title": "Come si attivano le presenze automatiche",
         "checkpoints": [
           "automatic-setting-on-before-save",
@@ -183,7 +183,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/registro-presenze.mdx",
-        "id": "presenze-automatiche-pro-teams",
+        "id": "presenze-automatiche-pro-teams", "intent": "attendance.automatic",
         "title": "Presenze automatiche (Pro/Teams)",
         "checkpoints": [
           "automatic-setting-on-persists",
@@ -223,7 +223,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/registro-presenze.mdx",
-        "id": "come-funziona",
+        "id": "come-funziona", "intent": "members.tax_code",
         "title": "Come funziona",
         "checkpoints": [
           "automatic-setting-on-persists",
@@ -263,7 +263,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "tutorials/come-gestire-registro-presenze-carnet.mdx",
-        "id": "presenze-automatiche-pro-teams",
+        "id": "presenze-automatiche-pro-teams", "intent": "attendance.automatic",
         "title": "Presenze automatiche (Pro/Teams)",
         "checkpoints": [
           "automatic-setting-on-persists",
@@ -303,7 +303,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "tutorials/come-gestire-registro-presenze-carnet.mdx",
-        "id": "come-funziona",
+        "id": "come-funziona", "intent": "members.tax_code",
         "title": "Come funziona",
         "checkpoints": [
           "automatic-setting-on-persists",
@@ -343,7 +343,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/registro-presenze.mdx",
-        "id": "segnalazione-assenze-da-parte-degli-atleti",
+        "id": "segnalazione-assenze-da-parte-degli-atleti", "intent": "attendance.automatic",
         "title": "Segnalazione assenze da parte degli atleti",
         "checkpoints": [
           "athlete-upcoming-owned-lessons",
@@ -373,7 +373,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/carnet.mdx",
-        "id": "registro-presenze-automatico-con-carnet",
+        "id": "registro-presenze-automatico-con-carnet", "intent": "attendance.automatic",
         "title": "Registro presenze automatico con carnet",
         "checkpoints": [
           "automatic-setting-on-persists",
@@ -408,7 +408,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/carnet.mdx",
-        "id": "blocco-per-assenza-prevista",
+        "id": "blocco-per-assenza-prevista", "intent": "attendance.automatic",
         "title": "Blocco per assenza prevista",
         "checkpoints": [
           "athlete-upcoming-owned-lessons",
@@ -587,7 +587,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
     "sections": [
       {
         "path": "docs/carnet.mdx",
-        "id": "logica-di-scalamento-lezioni",
+        "id": "logica-di-scalamento-lezioni", "intent": "carnet.variants",
         "title": "Logica di scalamento lezioni",
         "checkpoints": [
           "carnet-variants-eight-owned-enrollments",
@@ -642,7 +642,7 @@ export const automaticAttendanceAuthoredWorkflows=Object.freeze({
       },
       {
         "path": "docs/registro-presenze.mdx",
-        "id": "casi-particolari-con-i-carnet",
+        "id": "casi-particolari-con-i-carnet", "intent": "carnet.variants",
         "title": "Casi particolari con i carnet",
         "checkpoints": [
           "carnet-variants-eight-owned-enrollments",

@@ -4,8 +4,7 @@ import {courseSettingsAuthoredWorkflows} from '../../../../docs/manuale/course-s
 
 const id = 'course-installments-manage';
 const spec = courseSettingsAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {
@@ -17,7 +16,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const index = spec.checkpoints.findIndex(item => item.id === checkpoint);
             expect(index).toBeGreaterThanOrEqual(0);
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(page, index + 1, checkpoint, focus);
+            await capture(page, checkpoint, focus);
         };
         const day = offset => {
             const value = new Date(input.reference_date + 'T12:00:00Z');

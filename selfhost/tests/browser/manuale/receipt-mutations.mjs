@@ -2,10 +2,9 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {scenario, expect} from './scenario.mjs';
-import {coreLegacyAuthoredWorkflows} from '../../../../docs/manuale/core-legacy-authored-workflows.mjs';
 
-await scenario({id: 'receipts-edit-delete', prefix: 'images/ricevute/modifica-eliminazione',
-    sources: coreLegacyAuthoredWorkflows['receipts-edit-delete'].sources, actions: async ({page, api, open, actor, input, capture, report}) => {
+
+await scenario({id: 'receipts-edit-delete', actions: async ({page, api, open, actor, input, capture, report}) => {
     expect(input.fixture_profile).toBe('receipts-edit-delete');
     const id = input.older_receipt_id;
     expect(id).toBeTruthy();
@@ -43,7 +42,7 @@ await scenario({id: 'receipts-edit-delete', prefix: 'images/ricevute/modifica-el
     const initialPdf = (await invoice()).document_pdf;
     const row = page.locator('[data-row]').filter({hasText: 'Giulia Bianchi'});
     await expect(row).toBeVisible();
-    await capture(page, 1, 'older-receipt-with-progressive-seven');
+    await capture(page, 'older-receipt-with-progressive-seven');
     const reader = await actor('reader');
     await receiptList(reader);
     const readRow = reader.page.locator('[data-row]').filter({hasText: 'Giulia Bianchi'});
@@ -59,7 +58,7 @@ await scenario({id: 'receipts-edit-delete', prefix: 'images/ricevute/modifica-el
     await expect(edit).toBeVisible();
     await expect(edit.locator('input[name="number"]')).toHaveValue('7');
     await edit.locator('input[name="number"]').fill('9');
-    await capture(page, 2, 'edit-receipt-progressive-to-nine', edit.locator('.modal-content'));
+    await capture(page, 'edit-receipt-progressive-to-nine', edit.locator('.modal-content'));
     const updated = page.waitForResponse(response => response.url().endsWith(`/invoice/${id}/update`) && response.request().method() === 'PATCH');
     await edit.getByRole('button', {name: 'Salva', exact: true}).click();
     expect((await updated).status()).toBe(200);
@@ -101,11 +100,11 @@ await scenario({id: 'receipts-edit-delete', prefix: 'images/ricevute/modifica-el
     expect(beforeDelete.paid).toBe(true);
     expect(Number(beforeDelete.amount)).toBe(25);
     expect(beforeDelete.invoice.number).toBe(9);
-    await capture(page, 3, 'edited-receipt-persists-after-reload');
+    await capture(page, 'edited-receipt-persists-after-reload');
     await row.locator('button:is([title="Elimina Ricevuta"],[data-original-title="Elimina Ricevuta"])').click();
     const confirmation = page.getByRole('dialog').filter({hasText: 'Vuoi eliminare definitivamente la ricevuta?'});
     await expect(confirmation).toBeVisible();
-    await capture(page, 4, 'confirm-deletion-of-older-receipt', confirmation);
+    await capture(page, 'confirm-deletion-of-older-receipt', confirmation);
     const deleted = page.waitForResponse(response => response.url().endsWith(`/invoice/${id}/delete`) && response.request().method() === 'POST');
     await confirmation.getByRole('button', {name: 'Elimina', exact: true}).click();
     expect((await deleted).status()).toBe(200);
@@ -121,7 +120,7 @@ await scenario({id: 'receipts-edit-delete', prefix: 'images/ricevute/modifica-el
     await expect(paymentRow.locator('button:is([title="Segna come pagato"],[data-original-title="Segna come pagato"])')).toBeVisible();
     await page.reload();
     await expect(paymentRow.locator('button:is([title="Segna come pagato"],[data-original-title="Segna come pagato"])')).toBeVisible();
-    await capture(page, 5, 'payment-unpaid-after-receipt-deletion');
+    await capture(page, 'payment-unpaid-after-receipt-deletion');
     report.receipt_mutation = {original_number: original.number, edited_number: persisted.number,
         date_preserved: persisted.creation_date === original.creation_date, pdf_regenerated: persisted.document_pdf !== initialPdf,
         renderer_has_updated_number: rendererHtml.includes('Ricevuta n. 9'), pdf_downloaded: pdfContents.subarray(0, 5).toString() === '%PDF-',

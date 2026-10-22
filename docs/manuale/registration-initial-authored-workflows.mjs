@@ -5,8 +5,10 @@ export const registrationInitialAuthoredWorkflows = Object.freeze({
     "script": "selfhost/tests/browser/manuale/registration-forms.mjs",
     "prefix": "images/tutorials/moduli-iscrizione/",
     "pages": [
-      "docs/introduzione.mdx"
-    ],
+    "docs/introduzione.mdx",
+    "faq/come-condividere-il-link-iscrizioni.mdx",
+    "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
+],
     "sources": [
       "UI/src/components/Sidebar.svelte",
       "UI/src/routes.js",
@@ -50,10 +52,11 @@ export const registrationInitialAuthoredWorkflows = Object.freeze({
       "BE/application/manuale/views.py"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/registration-forms.mjs",
-      "selfhost/tests/browser/manuale/registration-forms-sources.mjs",
-      "docs/manuale/registration-initial-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/registration-forms.mjs",
+    "selfhost/tests/browser/manuale/registration-forms-sources.mjs",
+    "docs/manuale/registration-initial-authored-workflows.mjs",
+    "docs/manuale/registration-forms-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "owner-registration-settings-and-three-enabled-types",
@@ -111,7 +114,7 @@ export const registrationInitialAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/introduzione.mdx",
-        "id": "per-iniziare",
+        "id": "per-iniziare", "intent": "registration.forms.initial-setup",
         "title": "Per iniziare",
         "checkpoints": [
           "owner-registration-settings-and-three-enabled-types",

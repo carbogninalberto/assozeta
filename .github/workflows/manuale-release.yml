@@ -80,38 +80,14 @@ jobs:
           python3 docs/scripts/manuale.py doctor
           python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
           node --test selfhost/tests/browser/manuale/*.test.mjs
-      - name: Generate and verify the exact release manual
+      - name: Verify the target manual and rehearse the historical appliance upgrade
         run: |
-          python3 docs/scripts/manuale.py run \
+          python3 docs/scripts/manuale.py verify-release \
             --manual-repo "$RUNNER_TEMP/manuale" \
             --release "$RELEASE_VERSION" \
+            --previous-release 1.0.17 \
+            --package-output "$RUNNER_TEMP/manuale-package" \
             --output "$RUNNER_TEMP/manuale-run"
-      - name: Package evaluated evidence and offline runtime assets
-        run: |
-          python3 docs/scripts/manuale-release.py --bundle \
-            --run "$RUNNER_TEMP/manuale-run" \
-            --application-repo "$GITHUB_WORKSPACE" \
-            --manual-repo "$RUNNER_TEMP/manuale" \
-            --release "$RELEASE_VERSION" \
-            --output "$RUNNER_TEMP/manuale-package"
-      - name: Verify a second version for the upgrade and rollback rehearsal
-        run: |
-          python3 docs/scripts/manuale.py run \
-            --manual-repo "$RUNNER_TEMP/manuale" \
-            --release "$RELEASE_VERSION-rehearsal-previous" \
-            --reuse-evidence "$RUNNER_TEMP/manuale-run" \
-            --output "$RUNNER_TEMP/manuale-previous-run"
-          python3 docs/scripts/manuale-release.py --bundle \
-            --run "$RUNNER_TEMP/manuale-previous-run" \
-            --application-repo "$GITHUB_WORKSPACE" \
-            --manual-repo "$RUNNER_TEMP/manuale" \
-            --release "$RELEASE_VERSION-rehearsal-previous" \
-            --output "$RUNNER_TEMP/manuale-previous-package"
-      - name: Rehearse installation, upgrade, restart and rollback with the packaged image
-        run: |
-          selfhost/tests/manual-release-smoke.sh "$RUNNER_TEMP/manuale-package/runtime" "$RELEASE_VERSION" \
-            --previous-package "$RUNNER_TEMP/manuale-previous-package/runtime" \
-            --previous-release "$RELEASE_VERSION-rehearsal-previous"
       - name: Upload verified runtime input for the release image
         uses: actions/upload-artifact@v4
         with:
@@ -135,10 +111,9 @@ jobs:
             ${{ runner.temp }}/manuale-run/embedded-manual.json
             ${{ runner.temp }}/manuale-run/diagnostics-public/
             ${{ runner.temp }}/manuale-package/publication-plan.json
-            ${{ runner.temp }}/manuale-previous-package/publication-plan.json
-            ${{ runner.temp }}/manuale-previous-run/evidence-reuse.json
-            ${{ runner.temp }}/manuale-previous-run/evaluation.json
-            ${{ runner.temp }}/manuale-previous-run/embedded-manual.json
+            ${{ runner.temp }}/manuale-run/release-verification.json
+            ${{ runner.temp }}/manuale-run/timings.json
+            ${{ runner.temp }}/manuale-run/compile.json
             quality-reports/manual-release/
             !quality-reports/manual-release/private-execution.log
           if-no-files-found: warn

@@ -7,8 +7,7 @@ const records = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JS
 
 const id = 'instructor-maintenance';
 const spec = instructorMaintenanceAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async (route, requestApi = api) => {const res = await requestApi(route);
@@ -19,7 +18,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const number = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1;
             expect(number).toBeGreaterThan(0);
             await expect(currentPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(currentPage, number, checkpoint, locator);
+            await capture(currentPage, checkpoint, locator);
         };
         const facts = {};
         const proof = (field, value) => {expect(value, field).toEqual(spec.outcome.expected[field]); facts[field] = value;};

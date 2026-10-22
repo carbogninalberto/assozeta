@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {capturedImageCaptions} from './rendered-content.mjs';
 
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 export const normalizeDraftImages = body => body.replace(/(\/images\/[^\s"')]+)\.placeholder\.svg/g, '$1.png');
@@ -105,6 +106,15 @@ export function publicationBinding(binding, body, {captureId, scenarioId, report
             capture_id: captureId, scenario_id: scenarioId, report_sha256: reportSha256}};
 }
 
+export function projectWorkflowSection(body, spec, report, section) {
+    const screenshots = section.checkpoints.map(checkpoint => {
+        const matches = report.screenshots.filter(image => image.checkpoint === checkpoint);
+        if (matches.length !== 1) throw new Error('Missing authored section checkpoint: ' + checkpoint);
+        return {...matches[0], caption: spec.checkpoints.find(point => point.id === checkpoint).caption};
+    });
+    return {screenshots, body: capturedImageCaptions(materializeCapturedSection(body, section, screenshots), screenshots)};
+}
+
 function sectionRange(mdx, id, title) {
     const headings = [...mdx.matchAll(/^#{1,6}[ \t]+(.+?)[ \t]*$/gm)];
     const matches = headings.map((heading, index) => ({heading, index})).filter(item => item.heading[1] === title);
@@ -137,7 +147,7 @@ function owned(root, relative) {
 
 export function authoredSection(manualRoot, codeRoot, relative, id, title, {captured = false} = {}) {
     const sidecarPath = path.join(manualRoot, '.manuale-evidence.json');
-    if (!fs.existsSync(sidecarPath)) throw new Error('Prepare reviewed MDX with manuale-scaffold.py apply-drafts before generation');
+    if (!fs.existsSync(sidecarPath)) throw new Error('Review authored MDX with manuale-scaffold.py review-content before generation');
     const sidecar = JSON.parse(fs.readFileSync(owned(manualRoot, '.manuale-evidence.json'), 'utf8'));
     if (sidecar.format !== 1 || sidecar.purpose !== 'reviewed-content' || sidecar.verified !== false)
         throw new Error('Invalid reviewed manual content bindings');

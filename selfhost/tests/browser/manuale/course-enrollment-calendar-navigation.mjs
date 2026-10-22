@@ -5,7 +5,7 @@ import {campsPersonasAuthoredWorkflows} from '../../../../docs/manuale/camps-per
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id='course-enrollment-calendar-navigation',spec=campsPersonasAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,actions:async({page,api,open,actor,input,capture,report})=>{
+await scenario({id,actions:async({page,api,open,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8);expect(input.fixture_profile||'baseline').toBe('baseline');
     const read=async route=>{const res=await api(route);expect(res.status(),route).toBe(200);return(await res.json()).data;};
     const courses=()=>read('course/list?all=1'),payments=async()=>Object.values(await read('payment/list?pagination[perpage]=100'));
@@ -15,7 +15,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
     const facts={},proof=(key,value)=>{expect(value,key).toEqual(spec.outcome.expected[key]);facts[key]=value;};
     const responseFor=(route,method)=>page.waitForResponse(res=>new URL(res.url()).pathname==='/api/'+route&&res.request().method()===method);
     const enrollments=()=>read(`course-subscriptions/list?course_id=${owned.course}`),calendar=()=>read(`course/${owned.course}/calendar`),attendance=async()=>(await read(`course/${owned.course}/attendees`)).events;
-    const take=async(cp,focus,browserPage=page)=>{await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});await capture(browserPage,spec.checkpoints.findIndex(item=>item.id===cp)+1,cp,focus);};
+    const take=async(cp,focus,browserPage=page)=>{await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});await capture(browserPage,cp,focus);};
     const card=()=>input.origin+`/#/course/overview/${owned.course}`,row=()=>page.locator('[data-row]').filter({hasText:'GIULIA BIANCHI'});
     const generalLesson=async(browserPage=page)=>{await browserPage.goto(input.origin+'/#/calendar');await browserPage.reload();await expect(browserPage.locator('#general_calendar')).toBeVisible();
         await browserPage.locator('.ec-event').filter({hasText:lessonTitle}).click();const modal=browserPage.locator('#addElement');await expect(modal).toBeVisible();await expect(modal.getByRole('button',{name:'Gestisci Presenze',exact:true})).toBeVisible();return modal;};

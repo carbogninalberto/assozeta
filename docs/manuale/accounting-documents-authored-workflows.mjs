@@ -86,7 +86,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "fornitori-e-clienti",
+                "id": "fornitori-e-clienti", "intent": "accounting.fornitori-e-clienti",
                 "title": "Fornitori e clienti",
                 "checkpoints": [
                     "suppliers-list-baseline",
@@ -111,7 +111,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "aggiungere-un-fornitore-o-cliente",
+                "id": "aggiungere-un-fornitore-o-cliente", "intent": "accounting.aggiungere-un-fornitore-o-cliente",
                 "title": "Aggiungere un fornitore o cliente",
                 "checkpoints": [
                     "supplier-filled-before-save",
@@ -141,7 +141,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "modificare-un-fornitore-o-cliente",
+                "id": "modificare-un-fornitore-o-cliente", "intent": "accounting.modificare-un-fornitore-o-cliente",
                 "title": "Modificare un fornitore o cliente",
                 "checkpoints": [
                     "supplier-edit-filled",
@@ -161,7 +161,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "eliminare-un-fornitore-o-cliente",
+                "id": "eliminare-un-fornitore-o-cliente", "intent": "accounting.eliminare-un-fornitore-o-cliente",
                 "title": "Eliminare un fornitore o cliente",
                 "checkpoints": [
                     "supplier-delete-cancel",
@@ -283,7 +283,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "fatture-passive",
+                "id": "fatture-passive", "intent": "accounting.fatture-passive",
                 "title": "Fatture passive",
                 "checkpoints": [
                     "supplier-invoice-created-after-reload",
@@ -303,7 +303,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "registrare-una-fattura-passiva",
+                "id": "registrare-una-fattura-passiva", "intent": "accounting.registrare-una-fattura-passiva",
                 "title": "Registrare una fattura passiva",
                 "checkpoints": [
                     "supplier-invoice-fields-before-save",
@@ -328,7 +328,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "modificare-una-fattura-passiva",
+                "id": "modificare-una-fattura-passiva", "intent": "accounting.modificare-una-fattura-passiva",
                 "title": "Modificare una fattura passiva",
                 "checkpoints": [
                     "supplier-invoice-reopened-immutable-fields",
@@ -353,7 +353,7 @@ export const accountingDocumentsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/contabilita-avanzata.mdx",
-                "id": "segnare-una-fattura-passiva-come-pagata",
+                "id": "segnare-una-fattura-passiva-come-pagata", "intent": "accounting.segnare-una-fattura-passiva-come-pagata",
                 "title": "Segnare una fattura passiva come pagata",
                 "checkpoints": [
                     "supplier-invoice-paid-before-save",

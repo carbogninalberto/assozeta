@@ -45,20 +45,20 @@ export const paymentMaintenanceAuthoredWorkflows = Object.freeze({
             point('installment-plan-after-payment-deletion', 'Piano della singola iscrizione dopo l’eliminazione: rate, importi e scadenze da controllare separatamente.'),
         ],
         sections: [
-            {path: 'docs/pagamenti.mdx', id: 'esportare-i-pagamenti', title: 'Esportare i pagamenti',
+            {path: 'docs/pagamenti.mdx', id: 'esportare-i-pagamenti', "intent": "payment.export", title: 'Esportare i pagamenti',
                 remove_draft_text: ['Il download, il contenuto delle diverse varianti e l’apertura del file attendono una prova completa.'],
                 checkpoints: ['export-baseline-payments', 'general-export-options', 'filtered-payment-export',
                     'petty-cash-period-options', 'downloaded-exports-state-preserved', 'reader-filtered-export'], images: [],
                 insert_images: [{step: 'Scegli il tipo di esportazione', checkpoint: 'general-export-options'},
                     {step: 'Esporta una ricerca specifica', checkpoint: 'filtered-payment-export'},
                     {step: 'Controlla il file', checkpoint: 'downloaded-exports-state-preserved'}]},
-            {path: 'docs/pagamenti.mdx', id: 'personalizzare-le-colonne-della-tabella', title: 'Personalizzare le colonne della tabella',
+            {path: 'docs/pagamenti.mdx', id: 'personalizzare-le-colonne-della-tabella', "intent": "payment.columns.configure", title: 'Personalizzare le colonne della tabella',
                 remove_draft_text: ['La persistenza e il comportamento ai diversi permessi attendono una prova.'],
                 checkpoints: ['payment-columns-picker', 'payment-method-column-hidden', 'payment-column-reopened', 'reader-columns-preserved'], images: [],
                 insert_images: [{step: 'Apri le scelte della tabella', checkpoint: 'payment-columns-picker'},
                     {step: 'Scegli cosa mostrare', checkpoint: 'payment-method-column-hidden'},
                     {step: 'Controlla la riapertura', checkpoint: 'payment-column-reopened'}]},
-            {path: 'docs/pagamenti.mdx', id: 'eliminare-un-pagamento', title: 'Eliminare un pagamento',
+            {path: 'docs/pagamenti.mdx', id: 'eliminare-un-pagamento', "intent": "payment.delete", title: 'Eliminare un pagamento',
                 checkpoints: ['owned-linked-payment-before-deletion', 'payment-deletion-cancel-confirmation',
                     'payment-deletion-confirmation', 'deleted-payment-absent-after-reload', 'linked-receipt-cancelled',
                     'regenerated-cancelled-receipt-pdf', 'installment-plan-after-payment-deletion'], images: [],
@@ -165,7 +165,7 @@ export const paymentMaintenanceAuthoredWorkflows = Object.freeze({
     "sections": [
         {
             "path": "docs/pagamenti.mdx",
-            "id": "gestione-delle-causali",
+            "id": "gestione-delle-causali", "intent": "payment.categories.manage",
             "title": "Gestione delle causali",
             "checkpoints": [
                 "categories-baseline",
@@ -225,7 +225,7 @@ const exhaustiveGuideBindings = [
     "workflow_id": "payment-categories-manage",
     "section": {
       "path": "docs/contabilita-avanzata.mdx",
-      "id": "causali-di-pagamento",
+      "id": "causali-di-pagamento", "intent": "accounting.causali-di-pagamento",
       "title": "Causali di pagamento",
       "checkpoints": [
         "categories-baseline",
@@ -256,7 +256,7 @@ const exhaustiveGuideBindings = [
     "workflow_id": "payment-categories-manage",
     "section": {
       "path": "docs/contabilita-avanzata.mdx",
-      "id": "tipologie-di-causali",
+      "id": "tipologie-di-causali", "intent": "accounting.tipologie-di-causali",
       "title": "Tipologie di causali",
       "checkpoints": [
         "category-fields-before-save",
@@ -287,7 +287,7 @@ const exhaustiveGuideBindings = [
     "workflow_id": "payment-categories-manage",
     "section": {
       "path": "docs/contabilita-avanzata.mdx",
-      "id": "creare-una-causale",
+      "id": "creare-una-causale", "intent": "accounting.creare-una-causale",
       "title": "Creare una causale",
       "checkpoints": [
         "category-fields-before-save",
@@ -313,7 +313,7 @@ const exhaustiveGuideBindings = [
     "workflow_id": "payment-categories-manage",
     "section": {
       "path": "docs/contabilita-avanzata.mdx",
-      "id": "modificare-una-causale",
+      "id": "modificare-una-causale", "intent": "accounting.modificare-una-causale",
       "title": "Modificare una causale",
       "checkpoints": [
         "category-edit-before-save",

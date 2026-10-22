@@ -3,25 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {additionalPages} from '../manuale/content-recipes.mjs';
 import {referenceCatalogue} from '../manuale/reference-catalogue.mjs';
-import {paymentPages, paymentCaptureSpecs} from '../manuale/payment-recipes.mjs';
-import {memberPages, memberCaptureSpecs} from '../manuale/member-recipes.mjs';
-import {profilePages, profileCaptureSpecs} from '../manuale/profile-recipes.mjs';
-import {instructorPages, instructorCaptureSpecs} from '../manuale/instructor-recipes.mjs';
-import {dashboardPages, dashboardCaptureSpecs} from '../manuale/dashboard-recipes.mjs';
-import {attendanceCarnetPages, attendanceCarnetCaptureSpecs} from '../manuale/attendance-carnet-recipes.mjs';
-import {organizationAccessPages, organizationAccessCaptureSpecs} from '../manuale/organization-access-recipes.mjs';
 import {FULL_HD, pngDimensions, viewportCrop} from '../../selfhost/tests/browser/manuale/frame.mjs';
 
-import {authoredSection, replaceAuthoredSection as replaceSection, materializeCapturedSection, publicationBinding, editorialWorkflowPublication, authoredPublicationOwners, mayPublishAuthoredSection} from '../manuale/manual-content.mjs';
-import {searchPages} from '../manuale/search-recipes.mjs';
-import {tagPages, tagCaptureSpecs} from '../manuale/tag-recipes.mjs';
-import {accountingBalancePages, accountingBalanceCaptureSpecs} from '../manuale/accounting-balance-recipes.mjs';
-import {campsCalendarPages, campsCalendarCaptureSpecs} from '../manuale/camps-calendar-recipes.mjs';
-import {registrationFormsPages, registrationFormsCaptureSpecs} from '../manuale/registration-forms-recipes.mjs';
+import {authoredSection, replaceAuthoredSection as replaceSection, projectWorkflowSection, publicationBinding, editorialWorkflowPublication, authoredPublicationOwners, mayPublishAuthoredSection} from '../manuale/manual-content.mjs';
 import {authoredWorkflows, validateAuthoredWorkflow} from '../manuale/authored-workflows.mjs';
-import {displayedImages, capturedImageCaptions} from '../manuale/rendered-content.mjs';
+import {displayedImages} from '../manuale/rendered-content.mjs';
 
 const run = path.resolve(process.argv[2] || '');
 const state = JSON.parse(fs.readFileSync(path.join(run, 'run.json')));
@@ -110,13 +97,6 @@ const retainedOnly = !selected.length && reused.size > 0;
 if ((!['captured', 'generated', 'rendered', 'indexed', 'evaluated'].includes(state.status)
     && !(retainedOnly && ['prepared', 'running'].includes(state.status))) || !reports.length)
     throw new Error('Generation requires passed fresh captures or explicitly compatible retained real evidence');
-function source(report, relative, symbol, length) {
-    const file = path.join(code, relative);
-    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
-    const found = lines.findIndex(line => line.includes(symbol));
-    if (found < 0 || report.source_hashes[relative] !== fileSha(file)) throw new Error('Changed or missing source: ' + relative);
-    return {path: relative, symbol, start: found + 1, end: Math.min(lines.length - 1, found + length), sha256: fileSha(file), canonical_source_sha256: sha(lines.join('\n'))};
-}
 const publicationOwners = authoredPublicationOwners(authoredWorkflows);
 const canonicalReferenceKeys = new Set(references.filter(section => section.status === 'verified' && section.kind === 'code-reference')
     .map(section => section.path + '#' + section.id));
@@ -124,26 +104,12 @@ const reviewed = new Map();
 const staged = [];
 for (const result of reports) {
     const images = result.screenshots;
-    const captures = {
-        
-        'members-search': ['images/faq/ricerca-filtri/', 4],
-        'courses-create-edit': ['images/corsi/creazione-modifica/', 4],
-        'members-archive-restore': ['images/faq/archiviazione/', 5],
-        ...Object.fromEntries(Object.entries({...tagCaptureSpecs, ...accountingBalanceCaptureSpecs, ...campsCalendarCaptureSpecs, ...registrationFormsCaptureSpecs, ...dashboardCaptureSpecs, ...attendanceCarnetCaptureSpecs, ...organizationAccessCaptureSpecs}).map(([id, [prefix, checkpoints]]) => [id, [prefix, checkpoints.length]])),
-        ...Object.fromEntries(Object.entries(instructorCaptureSpecs).map(([id, [prefix, checkpoints]]) => [id, [prefix, checkpoints.length]])),
-        ...Object.fromEntries(Object.entries(profileCaptureSpecs).map(([id, [prefix, checkpoints]]) => [id, [prefix, checkpoints.length]])),
-        ...Object.fromEntries(Object.entries(memberCaptureSpecs).map(([id, [prefix, checkpoints]]) => [id, [prefix, checkpoints.length]])),
-        ...Object.fromEntries(Object.entries(paymentCaptureSpecs).map(([id, [prefix, checkpoints]]) => [id, [prefix, checkpoints.length]])),
-        ...Object.fromEntries(Object.entries(authoredWorkflows).map(([id, spec]) => [id, [spec.prefix, spec.checkpoints.length]])),
-    };
-    const [prefix, count] = captures[result.id] || [];
-    if (!prefix || images.length !== count) throw new Error('Incomplete or unknown workflow capture: ' + result.id);
-    if (authoredWorkflows[result.id]) {
-        validateAuthoredWorkflow(result, authoredWorkflows[result.id]);
-        for (const relative of authoredWorkflows[result.id].sources)
-            if (result.source_hashes[relative] !== fileSha(path.join(code, relative)))
-                throw new Error('Changed authored workflow source: ' + relative);
-    }
+    const spec = authoredWorkflows[result.id];
+    validateAuthoredWorkflow(result, spec);
+    const {prefix} = spec;
+    for (const relative of spec.sources)
+        if (result.source_hashes[relative] !== fileSha(path.join(code, relative)))
+            throw new Error('Changed authored workflow source: ' + relative);
     if (result.capture_format !== 'full-hd-v1' || result.viewport.width !== FULL_HD.width
         || result.viewport.height !== FULL_HD.height || result.device_scale_factor !== 1) throw new Error('Workflow capture requires Full HD');
     for (const capture of images) {
@@ -168,7 +134,6 @@ for (const result of reports) {
         if (!['verified', 'pending', 'unsupported', 'needs_external_verification'].includes(status)) throw new Error('Invalid reviewed section status');
         const previous = reviewed.get(relative);
         const original = previous?.text || fs.readFileSync(path.join(manual, relative), 'utf8');
-        body = authoredSection(manual, code, relative, id, title);
         const editorialStatus = editorialWorkflowPublication(relative + '#' + id, status, kind,
             authoring.sections[relative + '#' + id], {editedKeys: editorialText,
                 sections: authoredWorkflows[result.id]?.sections || []});
@@ -177,7 +142,6 @@ for (const result of reports) {
             reason = editorialStatus.reason;
         }
         if (status === 'verified' && kind === 'workflow') {
-            body = capturedImageCaptions(materializeCapturedSection(body, imageSpec, screenshots), screenshots);
             const key = relative + '#' + id;
             authoring.sections[key] = publicationBinding(authoring.sections[key], body, {
                 captureId: result.capture_id, scenarioId: result.id,
@@ -189,72 +153,13 @@ for (const result of reports) {
                 if (!bound.has(image)) throw new Error('Uncaptured image in reviewed guide: ' + relative + ':' + image);
         }
         const text = replaceSection(original, title, body, id);
-        const intents = {
-            'stagione-sportiva': 'organization.season.update',
-            'come-cambiare-la-stagione-sportiva': 'organization.season.update',
-            'pubblicazione-del-bilancio': 'accounting.balance.publish',
-            'pubblicare-il-bilancio': 'accounting.balance.publish',
-            'creare-un-corso': 'courses.create', 'modificare-le-informazioni-del-corso': 'courses.update',
-            'archiviazione-manuale': 'members.archive', 'ripristinare-i-dati-archiviati': 'members.restore',
-            'ripristinare-un-elemento-dall-archivio': 'members.restore',
-            'creare-un-socio-socio-tesserato-o-tesserato': 'members.create',
-            'ciclo-di-vita-dell-iscrizione': 'members.approve',
-            'anagrafica-smart': 'members.update', 'dal-profilo-dell-atleta': 'members.medical.upload',
-            'impostare-la-data-di-scadenza': 'members.medical.expiration',
-            'tieni-traccia-dei-certificati-agonistici': 'members.medical.update',
-            'consigli-per-una-gestione-efficiente': 'members.medical.remove',
-            'aggiungi-un-socio': 'members.create', '1-informazioni-profilo': 'members.create.profile',
-            '2-informazioni-anagrafiche': 'members.create.personal', '3-firma-del-documento': 'members.create.signature',
-            '4-certificato-medico': 'members.create.medical', '5-riepilogo-e-creazione': 'members.create.save',
-            'come-funziona': 'members.tax_code',
-            'la-barra-di-ricerca': 'members.search', 'assegna-tag': 'members.tags.assign',
-            'creare-un-pagamento': 'payments.create', 'modificare-un-pagamento': 'payments.update',
-            'segna-un-pagamento-come-pagato': 'payments.approve',
-            'come-vengono-emesse-le-ricevute': 'receipts.create', 'numerazione-progressiva': 'receipts.numbering',
-            'come-posso-scaricare-una-ricevuta': 'receipts.read',
-            'modifica-del-progressivo-della-ricevuta': 'receipts.update', 'eliminare-una-ricevuta': 'receipts.delete',
-        };
-        const instructorIntents = Object.fromEntries([
-            ['instructors.create', ['aggiungere-un-istruttore', 'aggiungere-un-nuovo-istruttore',
-                'informazioni-obbligatorie', 'informazioni-anagrafiche', 'informazioni-contratto',
-                'tariffe-predefinite', 'account-collaboratore-associato']],
-            ['instructors.update', ['modificare-un-istruttore', 'modificare-i-dati']],
-            ['instructors.hours.create', ['registrare-le-ore-lavorate', 'campi-principali',
-                'tipi-di-compenso', 'tipologie-di-compenso', 'compenso-orario', 'note-e-salvataggio']],
-            ['instructors.hours.read', ['la-scheda-dell-istruttore', 'stato-dei-compensi', 'riepilogo-ore']],
-        ].flatMap(([intent, ids]) => ids.map(id => [id, intent])));
-        const intent = explicitIntent || (result.id === 'instructors-create-edit-hours' ? instructorIntents[id] || '' : intents[id] || '');
+        const intent = explicitIntent;
         const section = {id, title, status, reason, kind, audience: 'public', intent,
             displayed_screenshots: displayedImages(body),
             content_sha256: sha(body.trim()), evidence, scenario_ids: kind === 'code-reference' ? [] : [result.id], screenshots};
         reviewed.set(relative, {text, fullReplacement: mode === 'replace-page' || previous?.fullReplacement,
             sections: [...(previous?.sections || []).filter(existing => existing.id !== id), section]});
     };
-    for (const pages of [tagPages, searchPages, accountingBalancePages, campsCalendarPages, registrationFormsPages])
-        for (const page of pages(result.id, result, source))
-            add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title,
-                page.status || 'verified', page.reason || '', 'workflow', page.intent || '');
-    for (const page of additionalPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title);
-    for (const page of memberPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title);
-    for (const page of dashboardPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title,
-            page.status || 'verified', page.reason || '', page.kind === 'reviewed-reference' ? 'code-reference' : 'workflow',
-            page.kind === 'reviewed-reference' ? 'dashboard.read.' + page.id : 'dashboard.personalize');
-    for (const page of attendanceCarnetPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title,
-            page.status || 'verified', page.reason || '', 'workflow', page.intent || '');
-    for (const page of organizationAccessPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title,
-            page.status || 'verified', page.reason || '', 'workflow', page.intent || '');
-    for (const page of instructorPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title);
-    for (const page of profilePages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title);
-    for (const page of paymentPages(result.id, result, source))
-        add(page.path, page.id, page.body, page.evidence, page.screenshots, 'replace-section', page.title,
-            page.status || 'verified', page.reason || '');
     for (const section of authoredWorkflows[result.id]?.sections || []) {
         const descriptor = references.find(item => item.path === section.path && item.id === section.id);
         if (!descriptor?.authored || descriptor.status !== 'pending' || descriptor.title !== section.title)
@@ -262,13 +167,10 @@ for (const result of reports) {
         for (const ref of descriptor.evidence)
             if (result.source_hashes[ref.path] !== ref.sha256)
                 throw new Error('Authored procedure source was not captured: ' + ref.path);
-        const screenshots = section.checkpoints.map(checkpoint => {
-            const matches = result.screenshots.filter(image => image.checkpoint === checkpoint);
-            if (matches.length !== 1) throw new Error('Missing authored section checkpoint: ' + checkpoint);
-            return {...matches[0], caption: authoredWorkflows[result.id].checkpoints.find(point => point.id === checkpoint).caption};
-        });
-        add(section.path, section.id, '', descriptor.evidence, screenshots, 'replace-section', section.title,
-            'verified', '', 'workflow', descriptor.intent || '', section);
+        const content = authoredSection(manual, code, section.path, section.id, section.title);
+        const {body, screenshots} = projectWorkflowSection(content, authoredWorkflows[result.id], result, section);
+        add(section.path, section.id, body, descriptor.evidence, screenshots, 'replace-section', section.title,
+            'verified', '', 'workflow', section.intent || descriptor.intent || '', section);
     }
 }
 function referenceSource(relative, symbol, length) {

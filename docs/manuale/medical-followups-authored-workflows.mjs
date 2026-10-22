@@ -303,7 +303,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "durante-l-iscrizione",
+                "id": "durante-l-iscrizione", "intent": "members.reference.durante-l-iscrizione",
                 "title": "Durante l'iscrizione",
                 "checkpoints": [
                     "wizard-medical-step-correct-person",
@@ -336,7 +336,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "disattivare-le-notifiche",
+                "id": "disattivare-le-notifiche", "intent": "members.reference.disattivare-le-notifiche",
                 "title": "Disattivare le notifiche",
                 "checkpoints": [
                     "medical-notifications-before-disable",
@@ -357,7 +357,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "visualizzare-i-certificati-in-scadenza",
+                "id": "visualizzare-i-certificati-in-scadenza", "intent": "members.reference.visualizzare-i-certificati-in-scadenza",
                 "title": "Visualizzare i certificati in scadenza",
                 "checkpoints": [
                     "medical-dashboard-add-expired-widget",
@@ -396,7 +396,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-gestire-i-certificati-medici.mdx",
-                "id": "caricare-un-certificato-medico",
+                "id": "caricare-un-certificato-medico", "intent": "members.reference.caricare-un-certificato-medico",
                 "title": "Caricare un certificato medico",
                 "checkpoints": [
                     "profile-medical-empty-before-upload",
@@ -423,7 +423,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-gestire-i-certificati-medici.mdx",
-                "id": "controllare-lo-stato-dei-certificati",
+                "id": "controllare-lo-stato-dei-certificati", "intent": "members.reference.controllare-lo-stato-dei-certificati",
                 "title": "Controllare lo stato dei certificati",
                 "checkpoints": [
                     "members-certificate-column-current-state",
@@ -460,7 +460,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-gestire-i-certificati-medici.mdx",
-                "id": "aggiornare-un-certificato-medico",
+                "id": "aggiornare-un-certificato-medico", "intent": "members.reference.aggiornare-un-certificato-medico",
                 "title": "Aggiornare un certificato medico",
                 "checkpoints": [
                     "replacement-real-file-before-save",
@@ -493,7 +493,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "dal-profilo-dell-atleta",
+                "id": "dal-profilo-dell-atleta", "intent": "members.medical.upload",
                 "title": "Dal profilo dell'atleta",
                 "checkpoints": [
                     "profile-medical-empty-before-upload",
@@ -518,7 +518,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "impostare-la-data-di-scadenza",
+                "id": "impostare-la-data-di-scadenza", "intent": "members.medical.expiration",
                 "title": "Impostare la data di scadenza",
                 "checkpoints": [
                     "profile-saved-certificate-after-reload",
@@ -543,7 +543,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "consigli-per-una-gestione-efficiente",
+                "id": "consigli-per-una-gestione-efficiente", "intent": "members.medical.remove",
                 "title": "Consigli per una gestione efficiente",
                 "checkpoints": [
                     "missing-certificate-filter-results",
@@ -568,7 +568,7 @@ export const medicalFollowupsAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-gestire-certificati-medici.mdx",
-                "id": "tieni-traccia-dei-certificati-agonistici",
+                "id": "tieni-traccia-dei-certificati-agonistici", "intent": "members.medical.update",
                 "title": "Tieni traccia dei certificati agonistici",
                 "checkpoints": [
                     "date-only-saved-same-document",

@@ -1,6 +1,7 @@
 // Complete legacy execution bindings; prose remains in the manual checkout.
 export const coreLegacyAuthoredWorkflows = Object.freeze({
   "members-create": {
+    capture_version: 2,
     "version": 1,
     "script": "selfhost/tests/browser/manuale/members-create.mjs",
     "prefix": "images/faq/creazione-socio/",
@@ -34,9 +35,12 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/enumUtils.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/members-create.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/members-create.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "UI/src/routes/association/Members/add/",
+    "docs/manuale/member-recipes.mjs",
+    "selfhost/tests/browser/manuale/member-create-flow.mjs"
+],
     "checkpoints": [
       {
         "id": "members-list-and-add-action",
@@ -74,7 +78,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "faq/come-si-crea-un-socio.mdx",
-        "id": "creare-un-socio-socio-tesserato-o-tesserato",
+        "id": "creare-un-socio-socio-tesserato-o-tesserato", "intent": "members.create",
         "title": "Creare un socio, socio tesserato o tesserato",
         "checkpoints": [
           "members-list-and-add-action",
@@ -123,7 +127,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "aggiungi-un-socio",
+        "id": "aggiungi-un-socio", "intent": "members.create",
         "title": "Aggiungi un Socio",
         "checkpoints": [
           "members-list-and-add-action"
@@ -137,7 +141,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "1-informazioni-profilo",
+        "id": "1-informazioni-profilo", "intent": "members.create.profile",
         "title": "1. Informazioni Profilo",
         "checkpoints": [
           "registration-type-and-no-new-account"
@@ -151,7 +155,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "2-informazioni-anagrafiche",
+        "id": "2-informazioni-anagrafiche", "intent": "members.create.personal",
         "title": "2. Informazioni Anagrafiche",
         "checkpoints": [
           "personal-data-and-fiscal-code",
@@ -170,7 +174,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "3-firma-del-documento",
+        "id": "3-firma-del-documento", "intent": "members.create.signature",
         "title": "3. Firma del Documento",
         "checkpoints": [
           "fictional-signature-entered"
@@ -184,7 +188,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "4-certificato-medico",
+        "id": "4-certificato-medico", "intent": "members.create.medical",
         "title": "4. Certificato Medico",
         "checkpoints": [
           "medical-certificate-step-with-no-attachment"
@@ -198,7 +202,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/libro-soci.mdx",
-        "id": "5-riepilogo-e-creazione",
+        "id": "5-riepilogo-e-creazione", "intent": "members.create.save",
         "title": "5. Riepilogo e Creazione",
         "checkpoints": [
           "registration-summary-before-saving",
@@ -217,7 +221,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-calcolare-generare-codici-fiscali.mdx",
-        "id": "come-funziona",
+        "id": "come-funziona", "intent": "members.tax_code",
         "title": "Come funziona",
         "checkpoints": [
           "personal-data-and-fiscal-code"
@@ -269,9 +273,13 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/members-search.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/members-search.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "BE/application/models/user_models.py",
+    "BE/application/serializers/subscriptions_serializers.py",
+    "UI/src/routes/association/Members/",
+    "docs/manuale/search-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "all-fixture-members",
@@ -308,7 +316,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-usare-ricerca-filtri-atleti.mdx",
-        "id": "la-barra-di-ricerca",
+        "id": "la-barra-di-ricerca", "intent": "members.search",
         "title": "La barra di ricerca",
         "checkpoints": [
           "all-fixture-members",
@@ -348,6 +356,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     }
   },
   "tags-create-assign": {
+    capture_version: 3,
     "version": 1,
     "script": "selfhost/tests/browser/manuale/capture.mjs",
     "prefix": "images/tutorials/tags/",
@@ -367,9 +376,11 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/capture.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/capture.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "UI/src/routes/association/Members/",
+    "docs/manuale/tag-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "members-list",
@@ -539,9 +550,11 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/payments.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/payments.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "UI/src/routes/accounting/payment/",
+    "docs/manuale/payment-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "filled-incoming-cash-payment",
@@ -571,7 +584,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/pagamenti.mdx",
-        "id": "creare-un-pagamento",
+        "id": "creare-un-pagamento", "intent": "payments.create",
         "title": "Creare un pagamento",
         "checkpoints": [
           "filled-incoming-cash-payment",
@@ -590,7 +603,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/pagamenti.mdx",
-        "id": "modificare-un-pagamento",
+        "id": "modificare-un-pagamento", "intent": "payments.update",
         "title": "Modificare un pagamento",
         "checkpoints": [
           "edited-payment-amount",
@@ -609,7 +622,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/pagamenti.mdx",
-        "id": "segna-un-pagamento-come-pagato",
+        "id": "segna-un-pagamento-come-pagato", "intent": "payments.approve",
         "title": "Segna un pagamento come \"pagato\"",
         "checkpoints": [
           "approval-without-immediate-pdf",
@@ -689,9 +702,13 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/receipts.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/receipts.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "BE/docmanager/",
+    "UI/src/routes/accounting/payment/",
+    "UI/src/routes/accounting/receipts/",
+    "docs/manuale/payment-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "approval-with-pdf-and-no-email",
@@ -713,7 +730,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/ricevute.mdx",
-        "id": "come-vengono-emesse-le-ricevute",
+        "id": "come-vengono-emesse-le-ricevute", "intent": "receipts.create",
         "title": "Come vengono emesse le ricevute?",
         "checkpoints": [
           "approval-with-pdf-and-no-email",
@@ -732,7 +749,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/ricevute.mdx",
-        "id": "numerazione-progressiva",
+        "id": "numerazione-progressiva", "intent": "receipts.numbering",
         "title": "Numerazione progressiva",
         "checkpoints": [
           "receipt-list-with-generated-pdfs-and-progressives"
@@ -746,7 +763,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/ricevute.mdx",
-        "id": "come-posso-scaricare-una-ricevuta",
+        "id": "come-posso-scaricare-una-ricevuta", "intent": "receipts.read",
         "title": "Come posso scaricare una ricevuta?",
         "checkpoints": [
           "receipt-list-with-generated-pdfs-and-progressives",
@@ -836,9 +853,12 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/utils/Permissions.js"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/receipt-mutations.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/receipt-mutations.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "BE/docmanager/",
+    "UI/src/routes/accounting/receipts/",
+    "docs/manuale/payment-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "older-receipt-with-progressive-seven",
@@ -864,7 +884,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/ricevute.mdx",
-        "id": "modifica-del-progressivo-della-ricevuta",
+        "id": "modifica-del-progressivo-della-ricevuta", "intent": "receipts.update",
         "title": "Modifica del progressivo della ricevuta",
         "checkpoints": [
           "older-receipt-with-progressive-seven",
@@ -888,7 +908,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/ricevute.mdx",
-        "id": "eliminare-una-ricevuta",
+        "id": "eliminare-una-ricevuta", "intent": "receipts.delete",
         "title": "Eliminare una ricevuta",
         "checkpoints": [
           "confirm-deletion-of-older-receipt",
@@ -945,9 +965,12 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "UI/src/routes/association/course/overview/OverviewCourse.svelte"
     ],
     "dependencies": [
-      "selfhost/tests/browser/manuale/courses.mjs",
-      "docs/manuale/core-legacy-authored-workflows.mjs"
-    ],
+    "selfhost/tests/browser/manuale/courses.mjs",
+    "docs/manuale/core-legacy-authored-workflows.mjs",
+    "BE/application/serializers/courses_serializers.py",
+    "UI/src/routes/association/course/",
+    "docs/manuale/content-recipes.mjs"
+],
     "checkpoints": [
       {
         "id": "filled-standard-course",
@@ -969,7 +992,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/corsi.mdx",
-        "id": "creare-un-corso",
+        "id": "creare-un-corso", "intent": "courses.create",
         "title": "Creare un corso",
         "checkpoints": [
           "filled-standard-course",
@@ -988,7 +1011,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/corsi.mdx",
-        "id": "modificare-le-informazioni-del-corso",
+        "id": "modificare-le-informazioni-del-corso", "intent": "courses.update",
         "title": "Modificare le informazioni del corso",
         "checkpoints": [
           "edit-course-title",

@@ -1,8 +1,8 @@
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus, focusStart} from './focus.mjs';
-import {coreLegacyAuthoredWorkflows} from '../../../../docs/manuale/core-legacy-authored-workflows.mjs';
 
-await scenario({id: 'courses-create-edit', prefix: 'images/corsi/creazione-modifica', sources: coreLegacyAuthoredWorkflows['courses-create-edit'].sources, actions: async ({page, api, open, actor, capture, report}) => {
+
+await scenario({id: 'courses-create-edit', actions: async ({page, api, open, actor, capture, report}) => {
     await open('Attività', '/#/course/list');
     await expect(page.locator('[data-row]')).toHaveCount(1);
     await page.getByRole('button', {name: 'Corso o Abbonamento', exact: true}).click();
@@ -12,7 +12,7 @@ await scenario({id: 'courses-create-edit', prefix: 'images/corsi/creazione-modif
     await drawer.locator('[contenteditable="true"]').fill('Lezioni di yoga per adulti.');
     await drawer.locator('input[name="fee"]').fill('90,00');
     await expect(drawer.locator('input[name="course_type"][value="1"]')).toBeChecked();
-    await capture(page, 1, 'filled-standard-course', drawer);
+    await capture(page, 'filled-standard-course', drawer);
     const created = page.waitForResponse(response => response.url().endsWith('/course/add') && response.request().method() === 'POST');
     await drawer.getByRole('button', {name: 'Salva', exact: true}).click();
     expect((await created).status()).toBe(200);
@@ -20,7 +20,7 @@ await scenario({id: 'courses-create-edit', prefix: 'images/corsi/creazione-modif
     const row = page.locator('[data-row]').filter({hasText: 'Yoga del mattino'});
     await expect(row).toBeVisible();
     await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-    await capture(page, 2, 'saved-course-in-list', tableFocus(page, ['title', 'description'], row));
+    await capture(page, 'saved-course-in-list', tableFocus(page, ['title', 'description'], row));
     const list = await api('course/list?all=1');
     const course = (await list.json()).data.find(course => course.title === 'Yoga del mattino');
     expect(Number(course.fee)).toBe(90);
@@ -28,7 +28,7 @@ await scenario({id: 'courses-create-edit', prefix: 'images/corsi/creazione-modif
     await page.getByRole('button', {name: 'Modifica', exact: true}).click();
     await page.getByPlaceholder('Titolo', {exact: true}).fill('Yoga del mattino avanzato');
     await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-    await capture(page, 3, 'edit-course-title', focusStart(focusRegion(
+    await capture(page, 'edit-course-title', focusStart(focusRegion(
         page.getByRole('heading', {name: 'Titolo', exact: true}),
         page.getByPlaceholder('Titolo', {exact: true}))));
     const updated = page.waitForResponse(response => response.url().endsWith(`/course/${course.course_id}/update`) && response.request().method() === 'PATCH');
@@ -39,7 +39,7 @@ await scenario({id: 'courses-create-edit', prefix: 'images/corsi/creazione-modif
     const persisted = (await (await api('course/list?all=1')).json()).data.find(entry => entry.course_id === course.course_id);
     expect(persisted.title).toBe('Yoga del mattino avanzato');
     expect(Number(persisted.fee)).toBe(90);
-    await capture(page, 4, 'edited-course-persists-after-reload', focusRegion(
+    await capture(page, 'edited-course-persists-after-reload', focusRegion(
         page.locator('.card-title').getByText('Yoga del mattino avanzato'),
         page.getByText('90,00 €', {exact: true}).first()));
     const reader = await actor('reader');

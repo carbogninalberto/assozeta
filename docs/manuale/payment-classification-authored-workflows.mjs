@@ -239,7 +239,7 @@ export const paymentClassificationAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/contabilita-avanzata.mdx",
-        "id": "causali-aggiuntive-nei-pagamenti",
+        "id": "causali-aggiuntive-nei-pagamenti", "intent": "accounting.causali-aggiuntive-nei-pagamenti",
         "title": "Causali aggiuntive nei pagamenti",
         "checkpoints": [
           "split-base-and-two-extras-before-save",
@@ -278,7 +278,7 @@ export const paymentClassificationAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/contabilita-avanzata.mdx",
-        "id": "causali-detraibili-730",
+        "id": "causali-detraibili-730", "intent": "accounting.causali-detraibili-730",
         "title": "Causali detraibili 730",
         "checkpoints": [
           "classification-categories-baseline",
@@ -312,7 +312,7 @@ export const paymentClassificationAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "docs/pagamenti.mdx",
-        "id": "causali-detraibili-730",
+        "id": "causali-detraibili-730", "intent": "payment.categories.tax",
         "title": "Causali detraibili 730",
         "checkpoints": [
           "classification-categories-baseline",

@@ -17,20 +17,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {pathToFileURL} from 'node:url';
-const {referencePages} = await import(pathToFileURL(process.env.MANUALE_REFERENCE_RECIPE));
+const {referenceSections} = await import(pathToFileURL(process.env.MANUALE_REFERENCE_RECIPE));
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
-const pages = referencePages((relative, symbol, length) => {
+const pages = referenceSections((relative, symbol, length) => {
  const bytes = fs.readFileSync(path.join(process.env.MANUALE_REFERENCE_CODE, relative));
  const lines = bytes.toString().split(/\r?\n/), found = lines.findIndex(line => line.includes(symbol));
  if(found < 0) throw new Error('Missing source symbol');
  return {path:relative,sha256:sha(bytes),canonical_source_sha256:sha(lines.join('\n')),
   symbol,start:found+1,end:Math.min(lines.length-1,found+length)};
 });
-console.log(JSON.stringify({pages:pages.length,verified:pages.flatMap(page=>page.sections).filter(section=>section.status==='verified').length,
- external:pages.flatMap(page=>page.sections).filter(section=>section.status==='needs_external_verification').length,
- unsupported:pages.flatMap(page=>page.sections).filter(section=>section.status==='unsupported').length,
- bodies:Object.fromEntries(pages.flatMap(page=>page.sections.map(section=>[section.id,section.body]))),
- headings:Object.fromEntries(pages.map(page=>[page.path,page.sections.map(section=>section.body.split('\n')[0])]))}));
+const groups = Object.groupBy(pages, section => section.path);
+console.log(JSON.stringify({pages:Object.keys(groups).length,verified:pages.filter(section=>section.status==='verified').length,
+ external:pages.filter(section=>section.status==='needs_external_verification').length,
+ unsupported:pages.filter(section=>section.status==='unsupported').length,
+ containsBodies:pages.some(section=>Object.hasOwn(section,'body')),
+ headings:Object.fromEntries(Object.entries(groups).map(([page,sections])=>[page,sections.map(section=>section.title)]))}));
 '''
 
 
@@ -49,7 +50,7 @@ class ReferenceRecipeTests(unittest.TestCase):
             env={**os.environ, 'MANUALE_REFERENCE_CODE': str(self.root),
                  'MANUALE_REFERENCE_RECIPE': str(ROOT / 'docs/manuale/reference-recipes.mjs')})
 
-    def test_reviewed_sources_preserve_eleven_original_headings_and_separate_external_guarantees(self):
+    def test_reviewed_sources_preserve_eleven_original_titles_and_separate_external_guarantees(self):
         result = self.generate()
         self.assertEqual(result.returncode, 0, result.stderr)
         generated = json.loads(result.stdout)
@@ -58,17 +59,12 @@ class ReferenceRecipeTests(unittest.TestCase):
         self.assertEqual(sum(map(len, generated['headings'].values())), 11)
         for relative, headings in generated['headings'].items():
             original = (Path(__file__).parent / 'fixtures/original-manual-headings' / relative).read_text()
-            self.assertEqual(headings, re.findall(r'^#{1,6} .+$', original, re.MULTILINE))
+            self.assertEqual(headings, re.findall(r'^#{1,6} (.+)$', original, re.MULTILINE))
 
-    def test_software_subscription_is_not_required_or_seeded(self):
+    def test_reference_contracts_do_not_keep_a_second_copy_of_user_prose(self):
         result = self.generate()
         self.assertEqual(result.returncode, 0, result.stderr)
-        bodies = json.loads(result.stdout)['bodies']
-        self.assertIn("Non serve un abbonamento attivo", bodies['piani-di-abbonamento'])
-        self.assertIn("non crea un piano software", bodies['piani-di-abbonamento'])
-        self.assertIn("nome storico", bodies['piano-pro'])
-        self.assertIn("quota di iscrizione", bodies['piani-di-abbonamento'])
-        self.assertNotIn("validità di lunga durata", '\n'.join(bodies.values()))
+        self.assertFalse(json.loads(result.stdout)['containsBodies'])
 
     def test_changed_behavior_or_import_invalidates_the_recipe_even_if_symbols_remain(self):
         for relative, old, new in [
@@ -81,7 +77,7 @@ class ReferenceRecipeTests(unittest.TestCase):
                 source.write_text(original.replace(old, new))
                 result = self.generate()
                 self.assertNotEqual(result.returncode, 0)
-                self.assertIn('claim evidence changed; review required: ' + relative, result.stderr)
+                self.assertIn('Reference evidence changed; review required: ' + relative, result.stderr)
                 source.write_text(original)
 
     def test_newline_encoding_does_not_change_reviewed_behavior(self):

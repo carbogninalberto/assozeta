@@ -5,7 +5,7 @@ import {setCheckbox} from './controls.mjs';
 import manualConfig from '../playwright.manual.config.mjs';
 import {campsPersonasAuthoredWorkflows} from '../../../../docs/manuale/camps-personas-authored-workflows.mjs';
 const id='camps-enrollment-local', spec=campsPersonasAuthoredWorkflows[id];
-await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,actions:async ({page,api,open,actor,input,capture,report})=>{
+await scenario({id,actions:async ({page,api,open,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8); expect(input.fixture_profile).toBe('member-transfer');
     const read=async(route,client=api)=>{const res=await client(route);expect(res.status()).toBe(200);return res.json();};
     const write=async(route,method,data,status=200)=>{const res=await api(route,{method,data});expect(res.status()).toBe(status);return res.json();};
@@ -24,7 +24,7 @@ await scenario({id,prefix:spec.prefix.replace(/\/$/,''),sources:spec.sources,act
     const enrollments=async()=>owned.camp?(await read(`camps-and-retreats/${owned.camp}/subscriptions/list`)).data:[];
     const take=async(checkpoint,focus,browserPage=page)=>{await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0,{timeout:15000});
         const mask=[browserPage.locator('img.qrcode'),browserPage.locator('a[href*="/camps-and-retreats/forms/"]')];
-        await capture(browserPage,spec.checkpoints.findIndex(cp=>cp.id===checkpoint)+1,checkpoint,focus,{mask,redactionReason:'Run-owned camp link and QR identifiers are private evidence.'});};
+        await capture(browserPage,checkpoint,focus,{mask,redactionReason:'Run-owned camp link and QR identifiers are private evidence.'});};
     const onSave=(route,method,browserPage=page)=>browserPage.waitForResponse(res=>new URL(res.url()).pathname==='/api/'+route&&res.request().method()===method);
     const overview=async()=>{await open('Attività','/#/course/camps-and-retreats/list');await page.getByRole('link',{name:title,exact:true}).click();};
     const row=name=>page.locator('[data-row]').filter({hasText:name});

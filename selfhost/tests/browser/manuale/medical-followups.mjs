@@ -51,8 +51,7 @@ async function excelRows(page, bytes) {
     }, parts);
 }
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const facts = {};
@@ -100,7 +99,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(index).toBeGreaterThanOrEqual(0);
             await expect(currentPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             await expect(currentPage.locator('.datatable-loading:visible')).toHaveCount(0);
-            await capture(currentPage, index + 1, checkpoint, focus);
+            await capture(currentPage, checkpoint, focus);
         };
         const responseFor = (route, browserPage = page) => browserPage.waitForResponse(response =>
             new URL(response.url()).pathname === '/api/' + route && response.request().method() === 'POST');

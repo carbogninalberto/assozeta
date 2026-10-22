@@ -222,7 +222,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "docs/impostazioni.mdx",
-                "id": "modelli-documenti",
+                "id": "modelli-documenti", "intent": "settings.modelli.documenti",
                 "title": "Modelli documenti",
                 "checkpoints": [
                     "document-templates-classic-before-save",
@@ -260,7 +260,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/impostazioni.mdx",
-                "id": "firma-del-presidente-e-timbro",
+                "id": "firma-del-presidente-e-timbro", "intent": "settings.firma.del.presidente.e.timbro",
                 "title": "Firma del presidente e timbro",
                 "checkpoints": [
                     "organization-print-fields-before-change",
@@ -304,7 +304,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "docs/impostazioni.mdx",
-                "id": "intestazione-e-pie-di-pagina-stampe",
+                "id": "intestazione-e-pie-di-pagina-stampe", "intent": "settings.intestazione.e.pie.di.pagina.stampe",
                 "title": "Intestazione e piè di pagina stampe",
                 "checkpoints": [
                     "print-header-before-save",
@@ -616,7 +616,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
         "sections": [
             {
                 "path": "docs/impostazioni.mdx",
-                "id": "moduli-d-iscrizione",
+                "id": "moduli-d-iscrizione", "intent": "settings.moduli.d.iscrizione",
                 "title": "Moduli d'iscrizione",
                 "checkpoints": [
                     "signup-requirements-before-save",
@@ -671,7 +671,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "configurare-il-modulo-d-iscrizione",
+                "id": "configurare-il-modulo-d-iscrizione", "intent": "registration.forms.configure",
                 "title": "Configurare il modulo d'iscrizione",
                 "checkpoints": [
                     "signup-module-type-before-save",
@@ -696,7 +696,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "cosa-scegliere-per-le-iscrizioni",
+                "id": "cosa-scegliere-per-le-iscrizioni", "intent": "registration.forms.types",
                 "title": "Cosa scegliere per le iscrizioni?",
                 "checkpoints": [
                     "signup-module-type-before-save",
@@ -725,7 +725,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "impostare-le-quote",
+                "id": "impostare-le-quote", "intent": "registration.forms.fees",
                 "title": "Impostare le quote",
                 "checkpoints": [
                     "signup-simple-fee-before-save",
@@ -755,7 +755,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "visualizzare-un-anteprima-del-modulo-d-iscrizione-digitale",
+                "id": "visualizzare-un-anteprima-del-modulo-d-iscrizione-digitale", "intent": "registration.forms.preview",
                 "title": "Visualizzare un'anteprima del modulo d'iscrizione digitale",
                 "checkpoints": [
                     "signup-module-type-after-reload",
@@ -785,7 +785,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "personalizzare-il-modulo-d-iscrizione",
+                "id": "personalizzare-il-modulo-d-iscrizione", "intent": "registration.forms.personalize",
                 "title": "Personalizzare il modulo d'iscrizione",
                 "checkpoints": [
                     "signup-added-clause-before-save",
@@ -825,7 +825,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "sezioni-del-modulo-d-iscrizione",
+                "id": "sezioni-del-modulo-d-iscrizione", "intent": "registration.forms.sections",
                 "title": "Sezioni del modulo d'iscrizione",
                 "checkpoints": [
                     "signup-added-clause-before-save",
@@ -850,7 +850,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "campi-aggiuntivi",
+                "id": "campi-aggiuntivi", "intent": "registration.forms.fields",
                 "title": "Campi aggiuntivi",
                 "checkpoints": [
                     "signup-optional-field-before-save",
@@ -885,7 +885,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "conclusione",
+                "id": "conclusione", "intent": "registration.forms.overview",
                 "title": "Conclusione",
                 "checkpoints": [
                     "signup-current-module-real-preview",
@@ -915,7 +915,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-                "id": "condividere-il-link-per-le-iscrizioni",
+                "id": "condividere-il-link-per-le-iscrizioni", "intent": "registration.links.read",
                 "title": "Condividere il link per le iscrizioni",
                 "checkpoints": [
                     "signup-current-module-share-dialog",
@@ -935,7 +935,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-                "id": "dove-trovo-il-link-di-iscrizione",
+                "id": "dove-trovo-il-link-di-iscrizione", "intent": "registration.links.read",
                 "title": "Dove trovo il link di iscrizione?",
                 "checkpoints": [
                     "signup-current-module-share-dialog",
@@ -955,7 +955,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-                "id": "modalita-di-condivisione",
+                "id": "modalita-di-condivisione", "intent": "registration.links.read",
                 "title": "Modalità di condivisione",
                 "checkpoints": [
                     "signup-current-module-share-dialog",
@@ -975,7 +975,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-                "id": "1-copia-il-link",
+                "id": "1-copia-il-link", "intent": "registration.links.copy",
                 "title": "1. Copia il link",
                 "checkpoints": [
                     "signup-current-module-share-dialog",
@@ -995,7 +995,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "faq/come-condividere-il-link-iscrizioni.mdx",
-                "id": "cosa-vede-chi-apre-il-link",
+                "id": "cosa-vede-chi-apre-il-link", "intent": "registration.forms.preview",
                 "title": "Cosa vede chi apre il link?",
                 "checkpoints": [
                     "public-signup-valid-profile-and-custom-field",
@@ -1020,7 +1020,7 @@ export const settingsPrintAuthoredWorkflows = Object.freeze({
             },
             {
                 "path": "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx",
-                "id": "indice",
+                "id": "indice", "intent": "registration.forms.overview",
                 "title": "Indice",
                 "checkpoints": [
                     "signup-current-module-share-dialog"

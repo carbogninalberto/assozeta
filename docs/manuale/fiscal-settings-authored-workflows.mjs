@@ -131,7 +131,7 @@ export const fiscalSettingsAuthoredWorkflows = Object.freeze({
     "sections": [
       {
         "path": "docs/bilancio.mdx",
-        "id": "anno-fiscale",
+        "id": "anno-fiscale", "intent": "accounting.anno-fiscale",
         "title": "Anno fiscale",
         "checkpoints": [
           "fiscal-settings-original-and-options",
@@ -161,7 +161,7 @@ export const fiscalSettingsAuthoredWorkflows = Object.freeze({
       },
       {
         "path": "faq/come-generare-bilancio.mdx",
-        "id": "allineamento-dell-anno-fiscale",
+        "id": "allineamento-dell-anno-fiscale", "intent": "accounting.allineamento-dell-anno-fiscale",
         "title": "Allineamento dell'anno fiscale",
         "checkpoints": [
           "fiscal-settings-original-and-options",

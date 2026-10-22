@@ -91,8 +91,7 @@ async function settled(page) {
     });
 }
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const facts = {};
@@ -101,7 +100,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const number = spec.checkpoints.findIndex(c => c.id === checkpoint) + 1;
             if (!number) throw new Error('Unknown checkpoint ' + checkpoint);
             await settled(currentPage);
-            await capture(currentPage, number, checkpoint, focus);
+            await capture(currentPage, checkpoint, focus);
         };
         async function list(params = {}, requestApi = api) {
             const query = new URLSearchParams({'pagination[perpage]': '100', type: 'athletes', ...params});

@@ -9,8 +9,7 @@ const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(ro
 const id = 'communication-workflow-manage';
 const spec = communicationAuthAuthoredWorkflows[id];
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, context, open, capture, report, input}) => {
+await scenario({id, actions: async ({page, api, context, open, capture, report, input}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async route => {
@@ -59,7 +58,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             } else if (checkpoint === 'workflow-email-content-saved') {
                 focus = focusRegion(target.locator('table[role="presentation"]').filter({hasText: await target.getByLabel('Contenuto', {exact: true}).inputValue()}).last(), target.getByLabel('Contenuto', {exact: true}));
             }
-            await capture(target, index + 1, checkpoint, focus);
+            await capture(target, checkpoint, focus);
             checkpoints.add(checkpoint);
         };
         const details = () => read(`communications/workflows/${workflowId}/details`);

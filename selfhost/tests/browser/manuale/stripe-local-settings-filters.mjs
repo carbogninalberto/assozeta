@@ -4,8 +4,7 @@ import {stripeLocalAuthoredWorkflows} from '../../../../docs/manuale/stripe-loca
 
 const id = 'stripe-local-settings-filters', spec = stripeLocalAuthoredWorkflows[id];
 const sorted = rows => [...rows].sort((a, b) => a.payment_id.localeCompare(b.payment_id));
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async (route, request = api) => {
             const res = await request(route); expect(res.status()).toBe(200); return res.json();
@@ -32,7 +31,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             const index = spec.checkpoints.findIndex(item => item.id === checkpoint);
             expect(index).toBeGreaterThanOrEqual(0);
             await expect(current.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(current, index + 1, checkpoint);
+            await capture(current, checkpoint);
         };
         const control = current => current.locator('.form-group').filter({has:
             current.locator('label.col-form-label').filter({hasText: /^Pagamenti Online$/})}).locator('input[type="checkbox"]');

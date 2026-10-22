@@ -32,8 +32,7 @@ function decodeQrImagePixels(image) {
         return reader.decode(bitmap, new Map([[window.ZXing.DecodeHintType.PURE_BARCODE, true]])).getText();
     }
 }
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, context, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, context, input, capture, report}) => {
         expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');
         const run = process.env.ASSOZETA_MANUAL_RUN;
         const state = JSON.parse(fs.readFileSync(path.join(run, 'run.json')));
@@ -58,7 +57,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const take = async (browserPage, checkpoint, locator, mask = []) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
             const n = spec.checkpoints.findIndex(item => item.id === checkpoint) + 1; expect(n).toBeGreaterThan(0);
-            await capture(browserPage, n, checkpoint, locator, {mask,
+            await capture(browserPage, checkpoint, locator, {mask,
                 redactionReason: mask.length ? 'Registration URL and encoded association/subscription identifiers are private evidence.' : ''});
         };
         const popupErrors = [], popupFailures = [], businessWrites = [];
@@ -126,7 +125,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             await expect(page.getByText('Link copiato negli appunti', {exact: true})).toBeVisible();
             proof('clipboard_equals_displayed_link', await page.evaluate(() => navigator.clipboard.readText()) === displayedLink);
             // Capture the actual success message before toast settling hides it.
-            await capture(page, 2, 'membership-link-clipboard-confirmation', modal.locator('.modal-content'), {
+            await capture(page, 'membership-link-clipboard-confirmation', modal.locator('.modal-content'), {
                 mask: [modal.locator('input'), qr], redactionReason: 'Registration URL and encoded QR are excluded from public screenshots.'});
             const opening = page.waitForEvent('popup'); await modal.getByRole('button', {name: 'Apri', exact: true}).click();
             const authenticated = await opening; pages.push(authenticated);

@@ -3,8 +3,7 @@
 import {scenario, expect} from './scenario.mjs';
 import {organizationMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/organization-maintenance-authored-workflows.mjs';
 const spec = organizationMaintenanceAuthoredWorkflows['collaborator-removal'];
-await scenario({id: 'collaborator-removal', prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id: 'collaborator-removal', actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile).toBe('collaborator-removal');
         const removableId = input.identities.removable.user_id, inviteId = input.removable_invite_id;
@@ -35,7 +34,7 @@ await scenario({id: 'collaborator-removal', prefix: spec.prefix.replace(/\/$/, '
         });
         const take = async (number, checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
-            await capture(target, number, checkpoint, locator);
+            await capture(target, checkpoint, locator);
         };
         // Icon delete buttons lose their accessible name once tooltips move title to data-original-title.
         const row = (target, email) => target.locator('[data-row]').filter({has: target.getByText(email, {exact:true})});

@@ -11,8 +11,7 @@ import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/orga
 const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 const id = 'organization-document-templates', spec = organizationBasicsAuthoredWorkflows[id];
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');
         const json = async route => {const response = await api(route); expect(response.status()).toBe(200); return response.json();};
         const templates = async () => json('templates/list');
@@ -25,7 +24,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         const facts = {}, proof = (key, value) => {expect(value, key).toEqual(spec.outcome.expected[key]); facts[key] = value;};
         const take = async (checkpoint, focus, browserPage = page) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(browserPage, spec.checkpoints.findIndex(point => point.id === checkpoint) + 1, checkpoint, focus);
+            await capture(browserPage, checkpoint, focus);
         };
         const owned = {template: null, files: new Set()}, browserErrors = [];
         const viewPattern = input.origin + '/api/document/template/*/view/**';

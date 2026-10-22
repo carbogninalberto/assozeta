@@ -14,8 +14,7 @@ const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const recordSet = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort());
 const sameRecords = (left, right) => recordSet(left) === recordSet(right);
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         const read = async (route, requestApi = api) => {
@@ -26,7 +25,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
         };
         const take = async (checkpoint, focus, activePage = page) => {
             await expect(activePage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(activePage, spec.checkpoints.findIndex(item => item.id === checkpoint) + 1, checkpoint, focus);
+            await capture(activePage, checkpoint, focus);
         };
         const italian = value => value.split('-').reverse().join('/');
         const facts = {};

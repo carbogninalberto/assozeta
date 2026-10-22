@@ -73,8 +73,7 @@ async function excelRows(page, bytes) {
     }, parts);
 }
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, open, actor, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');
         const facts = {};
         const proof = (key, value) => {expect(value, key).toEqual(spec.outcome.expected[key]); facts[key] = value;};
@@ -88,7 +87,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
             expect(index).toBeGreaterThanOrEqual(0);
             await expect(currentPage.locator('.datatable-loading:visible')).toHaveCount(0);
             await expect(currentPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 15000});
-            await capture(currentPage, index + 1, checkpoint, focus, options);
+            await capture(currentPage, checkpoint, focus, options);
         };
         const baseline = sorted(await payments()); proof('baseline_payments', baseline.length);
         expect(baseline.map(payment => payment.payment_id).sort()).toEqual([...input.payment_ids].sort());

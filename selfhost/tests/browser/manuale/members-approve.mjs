@@ -1,10 +1,9 @@
 // Prepare a signed request through the real wizard, then exercise approval.
 import {scenario, expect} from './scenario.mjs';
-import {memberApprovalSources} from './member-sources.mjs';
+
 import {createMember} from './member-create-flow.mjs';
 
-await scenario({id: 'members-approve', prefix: 'images/libro-soci/approvazione', sources: memberApprovalSources,
-    actions: async context => {
+await scenario({id: 'members-approve', actions: async context => {
         const {page, api, open, actor, capture, report} = context;
         // No copied/fabricated screenshots from preparation. This scenario's
         // four named frames cover only the distinct approval operation.
@@ -13,11 +12,11 @@ await scenario({id: 'members-approve', prefix: 'images/libro-soci/approvazione',
         expect(before.status_flag).toBe(2);
         const row = page.locator('[data-row]').filter({hasText: 'Marta Neri'});
         await expect(row).toContainText('in attesa');
-        await capture(page, 1, 'signed-pending-request-before-approval');
+        await capture(page, 'signed-pending-request-before-approval');
         await row.locator('button:is([title="Approva Iscrizione"],[data-original-title="Approva Iscrizione"])').click();
         const popup = page.locator('.swal2-popup');
         await expect(popup).toContainText("Vuoi accettare l'iscrizione?");
-        await capture(page, 2, 'confirm-single-registration-approval', popup);
+        await capture(page, 'confirm-single-registration-approval', popup);
         const response = page.waitForResponse(response =>
             new URL(response.url()).pathname === `/api/subscription/${before.subscription_id}/approve`
             && response.request().method() === 'POST');
@@ -34,7 +33,7 @@ await scenario({id: 'members-approve', prefix: 'images/libro-soci/approvazione',
         expect(after.payment.payment_id).toBe(before.payment.payment_id);
         expect(after.payment.amount).toBe(25);
         expect(after.payment.paid).toBe(false);
-        await capture(page, 3, 'accepted-registration-persists-after-reload');
+        await capture(page, 'accepted-registration-persists-after-reload');
         const reader = await actor('reader');
         await reader.open('Organizzazione', '/#/members/list');
         const readerRow = reader.page.locator('[data-row]').filter({hasText: 'Marta Neri'});
@@ -48,7 +47,7 @@ await scenario({id: 'members-approve', prefix: 'images/libro-soci/approvazione',
         const paymentRow = page.locator('[data-row]').filter({hasText: 'Marta Neri'});
         await expect(paymentRow).toBeVisible();
         await expect(paymentRow).toContainText('In attesa');
-        await capture(page, 4, 'registration-fee-remains-unpaid-after-approval');
+        await capture(page, 'registration-fee-remains-unpaid-after-approval');
         const unchanged = Object.values((await (await api('subscription/list?query[generalSearch]=Marta')).json()).data)[0];
         expect(unchanged.status_flag).toBe(4);
         expect(unchanged.acceptance_date).toBe(after.acceptance_date);

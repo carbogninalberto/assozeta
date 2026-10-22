@@ -1,6 +1,6 @@
 // Real UI writes and persisted backend assertions; execution belongs to the run owner.
 import {scenario, expect} from './scenario.mjs';
-import {dashboardWorkflowSources} from './dashboard-sources.mjs';
+
 import {focusRegion} from './focus.mjs';
 import {fileURLToPath} from 'node:url';
 
@@ -20,7 +20,7 @@ export async function runDashboardPersonalize({page, api, actor, input, capture,
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await expect(browserPage.locator('.dashboard-widget').getByText('...', {exact: true})).toHaveCount(0);
             await expect(browserPage.locator('.dashboard-widget [aria-busy="true"]')).toHaveCount(0);
-            await capture(browserPage, number, checkpoint, locator);
+            await capture(browserPage, checkpoint, locator);
         };
         const save = async browserPage => {
             const response = browserPage.waitForResponse(result =>
@@ -131,6 +131,5 @@ export async function runDashboardPersonalize({page, api, actor, input, capture,
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    await scenario({id: 'dashboard-personalize', prefix: 'images/bacheca/personalizzazione',
-        sources: dashboardWorkflowSources, actions: runDashboardPersonalize});
+    await scenario({id: 'dashboard-personalize', actions: runDashboardPersonalize});
 }

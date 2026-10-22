@@ -16,6 +16,65 @@ spec.loader.exec_module(scaffold)
 
 
 class ScaffoldTests(unittest.TestCase):
+    def test_first_explicit_review_binds_existing_mdx_without_generating_prose(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            manual = root / 'manual'
+            (manual / 'docs').mkdir(parents=True)
+            contracts = root / 'docs/manuale/editorial-contracts.mjs'
+            contracts.parent.mkdir(parents=True)
+            descriptor = {'path': 'docs/guide.mdx', 'id': 'salva', 'title': 'Salva',
+                          'recipe_module': 'docs/manuale/editorial-contracts.mjs'}
+            contracts.write_text('export function editorialContracts() {return ' + json.dumps([descriptor]) + ';}\n')
+            body = '## Salva\n\nLa prosa scritta dal manutentore rimane identica.\n'
+            page = manual / 'docs/guide.mdx'
+            page.write_text(body)
+            with patch.object(scaffold, 'ROOT', root):
+                with self.assertRaisesRegex(ValueError, 'existing reviewed section'):
+                    scaffold.review_content(manual, ['docs/guide.mdx#salva'], wording_only=True, review_note='Nessuna baseline')
+                with self.assertRaisesRegex(ValueError, 'Unknown authored'):
+                    scaffold.review_content(manual, ['docs/guide.mdx#missing'])
+                self.assertFalse((manual / '.manuale-evidence.json').exists())
+                scaffold.review_content(manual, ['docs/guide.mdx#salva'])
+                self.assertTrue(scaffold.validate_authoring_input(manual))
+            self.assertEqual(page.read_text(), body)
+            binding = json.loads((manual / '.manuale-evidence.json').read_text())['sections']['docs/guide.mdx#salva']
+            self.assertEqual(binding['content_source'], 'authored-mdx')
+            self.assertNotIn('materialization', binding)
+
+    def test_wording_review_requires_explanation_preserves_hash_chain_and_cannot_refresh_behavior(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            manual = root / 'manual'
+            (manual / 'docs').mkdir(parents=True)
+            (root / 'docs/manuale').mkdir(parents=True)
+            module = root / 'docs/manuale/recipe.mjs'
+            module.write_text('export const contract = true;\n')
+            old = '## Salva\n\nPremi Salva.'
+            new = '## Salva\n\nPremi **Salva**.'
+            (manual / 'docs/guide.mdx').write_text(new)
+            binding = {'title': 'Salva', 'recipe_module': 'docs/manuale/recipe.mjs',
+                       'recipe_sha256': scaffold.digest(module.read_bytes()), 'content_sha256': scaffold.digest(old.encode()),
+                       'materialization': {'old': True}, 'editorial_content_sha256': 'old-editorial'}
+            sidecar = {'format': 1, 'purpose': 'reviewed-content', 'verified': False,
+                       'sections': {'docs/guide.mdx#salva': binding}}
+            file = manual / '.manuale-evidence.json'
+            file.write_text(json.dumps(sidecar))
+            with patch.object(scaffold, 'ROOT', root):
+                with self.assertRaisesRegex(ValueError, 'review-note'):
+                    scaffold.review_content(manual, ['docs/guide.mdx#salva'], wording_only=True)
+                with self.assertRaisesRegex(ValueError, 'unchanged implementation'):
+                    scaffold.review_content(manual, ['docs/guide.mdx#salva'], wording_only=True,
+                                            review_note='Solo enfasi.', refresh_recipe_bindings=True)
+                result = scaffold.review_content(manual, ['docs/guide.mdx#salva'], wording_only=True, review_note='Solo enfasi.')
+                current = json.loads(file.read_text())['sections']['docs/guide.mdx#salva']
+                self.assertEqual(current['editorial_review']['from_sha256'], binding['content_sha256'])
+                self.assertEqual(current['editorial_review']['to_sha256'], scaffold.digest(new.encode()))
+                self.assertNotIn('materialization', current)
+                self.assertFalse(result['verified'])
+                scaffold.review_content(manual, ['docs/guide.mdx#salva'])
+                self.assertNotIn('editorial_review', json.loads(file.read_text())['sections']['docs/guide.mdx#salva'])
+
     def test_explicit_recipe_review_preserves_mdx_and_does_not_verify_captures(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()

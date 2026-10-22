@@ -56,8 +56,7 @@ function markPrivateContainers() {
     mark();
 }
 
-await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.sources,
-    actions: async ({page, api, context, open, input, capture, report}) => {
+await scenario({id, actions: async ({page, api, context, open, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');
         expect(Boolean(input.login_username && input.login_password)).toBe(true);
@@ -103,7 +102,7 @@ await scenario({id, prefix: spec.prefix.replace(/\/$/, ''), sources: spec.source
                     ? focusRegion(heading, form)
                     : focusRegion(heading, textFocus(form.locator('label').filter({hasText: /^Abilita Doppio Fattore$/})), form.locator('.switch'));
             }
-            await capture(target, index + 1, checkpoint, focus, {
+            await capture(target, checkpoint, focus, {
                 mask: [target.locator('[data-manual-private], input[name="otp-code"], input[name="username_login"], input[name="password_login"], input[type="password"], .swal2-input')],
                 redactionReason: 'QR, chiave segreta, OTP, identificativo e password nascosti integralmente; solo account di prova.',
             });

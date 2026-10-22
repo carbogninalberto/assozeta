@@ -39,7 +39,8 @@ try {
  assert.equal(editorialWorkflowPublication(procedureKey,'unsupported','workflow',rewritten).status,'unsupported');
  const proofSpec={version:1,prefix:'images/unit/',sources:['UI/example.svelte'],checkpoints:[{id:'saved'},{id:'reopened'}],
   outcome:{field:'proof',expected:{persisted:true,rows:2}}};
- const proof={id:'unit-test-only',fixture_version:8,fixture_profile:'baseline',source_hashes:{'UI/example.svelte':'test-source'},
+ const proof={id:'unit-test-only',status:'passed',backend:'real',capture_format:'full-hd-v1',viewport:{width:1920,height:1080},device_scale_factor:1,
+  fixture_version:8,fixture_profile:'baseline',source_hashes:{'UI/example.svelte':'test-source'},
   screenshots:[{checkpoint:'saved',path:'images/unit/1.png'},{checkpoint:'reopened',path:'images/unit/2.png'}],proof:{persisted:true,rows:2}};
  validateAuthoredWorkflow(proof,proofSpec);
  const removalSpec={...proofSpec,fixture_profile:'collaborator-removal'};
@@ -140,7 +141,7 @@ try {
  const external=path.join(temporary,'external.mdx');fs.writeFileSync(external,draft);fs.symlinkSync(external,page);
  assert.throws(()=>authoredSection(manual,code,'docs/form.mdx','salva','Salva'),/escapes checkout/);
  fs.unlinkSync(page);fs.writeFileSync(page,draft);fs.unlinkSync(sidecarPath);
- assert.throws(()=>authoredSection(manual,code,'docs/form.mdx','salva','Salva'),/Prepare reviewed MDX/);
+ assert.throws(()=>authoredSection(manual,code,'docs/form.mdx','salva','Salva'),/Review authored MDX/);
  console.log(JSON.stringify({content_mutation_rejected:true,recipe_mutation_rejected:true,escape_rejected:true,
   placeholders_retained_for_drafts:true,missing_review_rejected:true}));
 } finally {fs.rmSync(temporary,{recursive:true,force:true});}

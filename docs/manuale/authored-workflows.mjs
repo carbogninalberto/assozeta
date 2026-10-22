@@ -1,3 +1,4 @@
+import {legacyWorkflows} from './legacy-workflows.mjs';
 import {dashboardListsAuthoredWorkflows} from './dashboard-lists-authored-workflows.mjs';
 import {paymentClassificationAuthoredWorkflows} from './payment-classification-authored-workflows.mjs';
 import {registrationInitialAuthoredWorkflows} from './registration-initial-authored-workflows.mjs';
@@ -29,7 +30,7 @@ import {courseCalendarMaintenanceAuthoredWorkflows} from './course-calendar-main
 import {isDeepStrictEqual} from 'node:util';
 
 export const authoredWorkflows = {};
-for (const chapter of [memberAuthoredWorkflows, courseSettingsAuthoredWorkflows, communicationAuthAuthoredWorkflows,
+for (const chapter of [legacyWorkflows, memberAuthoredWorkflows, courseSettingsAuthoredWorkflows, communicationAuthAuthoredWorkflows,
     paymentMaintenanceAuthoredWorkflows, organizationAuthoredWorkflows, settingsPrintAuthoredWorkflows, instructorMaintenanceAuthoredWorkflows, medicalFollowupsAuthoredWorkflows,
     membershipLinksCardsAuthoredWorkflows, courseCalendarMaintenanceAuthoredWorkflows, memberTagsAuthoredWorkflows,
     organizationMaintenanceAuthoredWorkflows, twoFactorLoginAuthoredWorkflows, communicationCompleteAuthoredWorkflows, attendanceCarnetAuthoredWorkflows, stripeLocalAuthoredWorkflows, coreLegacyAuthoredWorkflows, accountingCalendarAuthoredWorkflows, dashboardAuthoredWorkflows, organizationBasicsAuthoredWorkflows, fiscalSettingsAuthoredWorkflows, accountingDocumentsAuthoredWorkflows, automaticAttendanceAuthoredWorkflows, campsPersonasAuthoredWorkflows, registrationInitialAuthoredWorkflows, paymentClassificationAuthoredWorkflows, dashboardListsAuthoredWorkflows])
@@ -41,6 +42,11 @@ Object.freeze(authoredWorkflows);
 
 export function validateAuthoredWorkflow(report, spec) {
     if (!spec || spec.version !== 1) throw new Error('Unknown authored workflow specification');
+    if (report.status !== 'passed' || report.backend !== 'real')
+        throw new Error('Workflow requires a passed real application report');
+    if (report.capture_format !== 'full-hd-v1' || report.viewport?.width !== 1920
+        || report.viewport?.height !== 1080 || report.device_scale_factor !== 1)
+        throw new Error('Workflow requires Full HD capture metadata');
     if (report.fixture_version !== 8 || report.fixture_profile !== (spec.fixture_profile || 'baseline'))
         throw new Error('Authored workflow requires the current baseline fixture or its explicitly selected profile: ' + report.id);
     // File numbers bind manual slots, while execution order may differ (for

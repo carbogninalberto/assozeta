@@ -172,6 +172,11 @@ class Command(BaseCommand):
             cases += [('Come posso modificare il progressivo di una ricevuta?', 'docs/ricevute#modifica-del-progressivo-della-ricevuta'),
                       ('Come posso eliminare una ricevuta dopo sette giorni?', 'docs/ricevute#eliminare-una-ricevuta')]
         for query, section in [
+            # Former template-only ranking regressions now exercise authored
+            # content through the actual MCP and assistant acceptance path.
+            ('Come pubblicare il bilancio e annullare la pubblicazione?', 'faq/come-generare-bilancio#pubblicare-il-bilancio'),
+            ('Manuale lezione singola calendario crea', 'docs/corsi#lezione-singola'),
+            ('Come posso rimuovere il certificato medico?', 'faq/come-gestire-i-certificati-medici#aggiornare-un-certificato-medico'),
             ('Manuale piani di abbonamento installazione self-hosted', 'faq/quali-sono-piani-abbonamento#piani-di-abbonamento'),
             ('Manuale Piano Pro installazione self-hosted', 'faq/quali-sono-piani-abbonamento#piano-pro'),
             ('Manuale acquisto cambio piano abbonamento', 'faq/quali-sono-piani-abbonamento#come-cambiare-piano'),
