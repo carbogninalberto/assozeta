@@ -1,0 +1,3509 @@
+{
+  "schema_version": 1,
+  "scope": "Explicit expected current-Django HTTP contract; three bootstrap reads only, no configuration writes or manual reader.",
+  "cases": {
+    "missing-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": null
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": false,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": null,
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "missing-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": null
+      },
+      "expected": {
+        "status": 404,
+        "body": {
+          "error": "Instance not configured"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "missing-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": null
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "configured-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "configured-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "public-ignores-credentials-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer invalid",
+          "X-Impersonation-Id": "forged",
+          "User-Id": "broken"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "public-ignores-credentials-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer invalid",
+          "X-Impersonation-Id": "forged",
+          "User-Id": "broken"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-owner": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": true,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-administrator": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "administrator",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-athlete": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "athlete",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-collaborator": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "collaborator",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-broken-collaborator": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "broken-collaborator",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-other-owner": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "other-owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "owner-historical-role": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true,
+        "owner_role": 0
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": true,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "deleted-primary-association": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true,
+        "association_deleted": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": true,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "owner-no-primary": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "admin-no-primary": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "administrator",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": true,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "owner-hosted-false": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true,
+        "config": {
+          "self_hosted": false
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "admin-hosted-false": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "administrator",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "primary": true,
+        "config": {
+          "self_hosted": false
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-anonymous": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "access-forged-anonymous": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "X-Impersonation-Id": "forged",
+          "User-Id": "broken"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "access-basic": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Basic anything"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "access-lowercase": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "bearer ignored"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "access-owner-target-ignored": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en",
+          "User-Id": "broken"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": true,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-owner-impersonation": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en",
+          "X-Impersonation-Id": "forged"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 403,
+        "body": {
+          "detail": "Esci dall’impersonificazione per accedere all’amministrazione."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "access-admin-impersonation-ignored": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "administrator",
+        "headers": {
+          "Accept-Language": "en",
+          "X-Impersonation-Id": "forged",
+          "User-Id": "broken"
+        }
+      },
+      "setup": {
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": true,
+          "data_association": {
+            "id": "00000000-0000-4000-8000-000000820001",
+            "name": "Primary à ASD"
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "head-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "options-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Instance Status",
+          "description": "GET /instance/status\nCheck if instance is configured.\nPublic endpoint - no authentication required.",
+          "renders": [
+            "application/json"
+          ],
+          "parses": [
+            "application/json",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "post-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"POST\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "unacceptable-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "text/plain",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 406,
+        "body": {
+          "detail": "Could not satisfy the request Accept header."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "format-status": {
+      "request": {
+        "path": "/instance/status?format=xml",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 404,
+        "body": {
+          "detail": "Not found."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-read-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-head-status": {
+      "request": {
+        "path": "/instance/status",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "head-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "options-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Instance Config",
+          "description": "GET /instance/config\nGet full instance configuration for frontend.\nPublic endpoint - no authentication required.",
+          "renders": [
+            "application/json"
+          ],
+          "parses": [
+            "application/json",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "post-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"POST\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "unacceptable-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "text/plain",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 406,
+        "body": {
+          "detail": "Could not satisfy the request Accept header."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "format-config": {
+      "request": {
+        "path": "/instance/config?format=xml",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 404,
+        "body": {
+          "detail": "Not found."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-read-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-head-config": {
+      "request": {
+        "path": "/instance/config",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "head-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "HEAD",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "options-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "OPTIONS",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Instance Access",
+          "description": "",
+          "renders": [
+            "application/json"
+          ],
+          "parses": [
+            "application/json",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "post-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "POST",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"POST\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "unacceptable-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "text/plain",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 406,
+        "body": {
+          "detail": "Could not satisfy the request Accept header."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "format-access": {
+      "request": {
+        "path": "/instance/access?format=xml",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer malformed"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 404,
+        "body": {
+          "detail": "Not found."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-read-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-head-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "HEAD",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true,
+        "pending": true
+      },
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "post-anonymous-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "options-anonymous-access": {
+      "request": {
+        "path": "/instance/access",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "restore-post-before-auth": {
+      "request": {
+        "path": "/instance/access",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true
+      },
+      "expected": {
+        "status": 503,
+        "body": {
+          "error": "Un’altra operazione sui dati è in corso. Riprova tra poco."
+        },
+        "headers": {
+          "Allow": null,
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": "10"
+        }
+      }
+    },
+    "pending-post-before-auth": {
+      "request": {
+        "path": "/instance/access",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "pending": true
+      },
+      "expected": {
+        "status": 503,
+        "body": {
+          "error": "Ripristino dei dati in corso. Le modifiche sono temporaneamente sospese."
+        },
+        "headers": {
+          "Allow": null,
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": "10"
+        }
+      }
+    },
+    "cors-preflight": {
+      "request": {
+        "path": "/instance/access",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Origin": "https://allowed.example.test",
+          "Access-Control-Request-Method": "GET",
+          "X-Impersonation-Id": "forged"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "canonical-logo": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/api/instance/logo.png"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/api/instance/logo.png?v=20261022123456123456",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "external-logo-unchanged": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "https://logo.example.test/raw.svg?q=1"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "https://logo.example.test/raw.svg?q=1",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "one-level-display-merge": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "display_settings": {
+            "login": {
+              "showFooterInfo": false
+            },
+            "sidebar": {
+              "showManual": false
+            },
+            "historical": {
+              "key": "kept"
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": false,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true,
+                "showManual": false
+              },
+              "historical": {
+                "key": "kept"
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "environment-integrations": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "settings": {
+          "AI_API_KEY": "private-ai-canary",
+          "MANUAL_CORPUS_BASE_URL": "https://private-manual-canary.invalid",
+          "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "environment-google",
+          "SOCIAL_AUTH_APPLE_ID_CLIENT": "environment-apple",
+          "STRIPE_PUBLIC_KEY": "pk_public",
+          "STRIPE_KEY": "private-stripe-canary",
+          "FAMILY_REGISTRATION_ENABLED": false,
+          "FEDERATION_REGISTRATION_ENABLED": true,
+          "MULTIPLE_REGISTRATION_ENABLED": true
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": "environment-google",
+            "appleClientId": "environment-apple",
+            "googleEnabled": true
+          },
+          "stripe": {
+            "publicKey": "pk_public",
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": true,
+            "manualEnabled": true,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": false,
+            "federationRegistration": true,
+            "multipleRegistration": true
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "legacy-client-id-precedence": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "settings": {
+          "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "env-google",
+          "SOCIAL_AUTH_APPLE_ID_CLIENT": "env-apple"
+        },
+        "config": {
+          "google_client_id": "legacy-google",
+          "apple_client_id": "legacy-apple"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": "legacy-google",
+            "appleClientId": "legacy-apple",
+            "googleEnabled": true
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "environment-google-disabled-by-display": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "settings": {
+          "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "env-google"
+        },
+        "config": {
+          "display_settings": {
+            "login": {
+              "allowOauthLogin": false
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": false,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "instance-overrides-no-secret-decryption": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "display_settings": {
+            "login": {
+              "allowOauthLogin": false
+            }
+          },
+          "integration_settings": {
+            "google": {
+              "settings": {
+                "enabled": true,
+                "client_id": "instance-google"
+              }
+            },
+            "apple": {
+              "settings": {
+                "enabled": true,
+                "client_id": "instance-apple"
+              }
+            },
+            "ai": {
+              "settings": {
+                "enabled": true,
+                "api_key": "corrupt-secret-canary"
+              }
+            },
+            "stripe": {
+              "settings": {
+                "enabled": true,
+                "public_key": "pk_instance",
+                "secret_key": "corrupt-secret-canary",
+                "webhook_secret": "corrupt-secret-canary"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": false,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": "instance-google",
+            "appleClientId": "instance-apple",
+            "googleEnabled": true
+          },
+          "stripe": {
+            "publicKey": "pk_instance",
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": true,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "explicit-disabled-overrides": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "settings": {
+          "AI_API_KEY": "private-ai-canary",
+          "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "env-google",
+          "SOCIAL_AUTH_APPLE_ID_CLIENT": "env-apple",
+          "STRIPE_PUBLIC_KEY": "pk_env"
+        },
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": {
+                "enabled": false
+              }
+            },
+            "google": {
+              "settings": {
+                "enabled": false
+              }
+            },
+            "apple": {
+              "settings": {
+                "enabled": false
+              }
+            },
+            "stripe": {
+              "settings": {
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "non-selfhost-ignores-overrides": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "settings": {
+          "AI_API_KEY": "private-ai-canary"
+        },
+        "config": {
+          "self_hosted": false,
+          "integration_settings": {
+            "ai": {
+              "settings": {
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": true,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": false,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "first-of-multiple": {
+      "request": {
+        "path": "/instance/config",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "second": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "oem": {
+            "name": "Fixture à ASD",
+            "abbreviation": "Fà",
+            "logo": "/oem/assozeta/brand/logo.svg",
+            "supportEmail": "support@example.test",
+            "primaryColor": "#351DC2",
+            "displaySettings": {
+              "general": {
+                "searchBar": true,
+                "cookieConsent": true,
+                "showDemoButton": false
+              },
+              "login": {
+                "showSportAssociationCreation": false,
+                "allowOauthLogin": true,
+                "showFooterInfo": true,
+                "allowOnlyAthletes": false,
+                "showTestimonials": false,
+                "termsAndConditionsUrl": ""
+              },
+              "navbar": {
+                "showAffiliateLink": false,
+                "showReview": false,
+                "showNotifications": true
+              },
+              "sidebar": {
+                "showPlanUpgrades": false,
+                "showPrivacyPolicy": true,
+                "showTermsOfService": true,
+                "showPreferences": true
+              }
+            },
+            "manualUrl": "/#/manuale"
+          },
+          "oauth": {
+            "googleClientId": null,
+            "appleClientId": null,
+            "googleEnabled": false
+          },
+          "stripe": {
+            "publicKey": null,
+            "pricingTable": null,
+            "clientPortal": null
+          },
+          "meta": {
+            "title": "Fixture à ASD",
+            "description": "Gestionale per associazioni sportive",
+            "manifest": "/api/instance/manifest.json"
+          },
+          "features": {
+            "aiEnabled": false,
+            "manualEnabled": false,
+            "isReseller": false,
+            "selfHosted": true,
+            "supportMultipleAssociations": false,
+            "showCourseAthletes": true,
+            "showMinorExemption": true,
+            "showTutorial": true,
+            "familyRegistration": true,
+            "federationRegistration": false,
+            "multipleRegistration": false
+          },
+          "setup": {
+            "provenance": "legacy",
+            "onboardingComplete": false
+          }
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "live-edit": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "live_edit": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "live_edit_observed": true
+      }
+    },
+    "public-session-cookie": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "cookie": "valid"
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "cookie-alone-is-not-api-auth": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "cookie": "valid"
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "stale-session-cookie": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "cookie": "stale"
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "inactive-actor": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "actor_state": {
+          "is_active": false
+        }
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "User is inactive",
+          "code": "user_inactive"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "deleted-actor": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "actor_state": {
+          "deleted": true
+        }
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "User not found",
+          "code": "user_not_found"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "missing-actor": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "missing-user"
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "User not found",
+          "code": "user_not_found"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "missing-bearer-token": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "missing"
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Authorization header must contain two space-delimited values",
+          "code": "bad_authorization_header"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "malformed-token": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "malformed"
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Given token not valid for any token type",
+          "code": "token_not_valid",
+          "messages": [
+            {
+              "token_class": "AccessToken",
+              "token_type": "access",
+              "message": "Token is invalid"
+            }
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "expired-token": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "expired"
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "detail": "Given token not valid for any token type",
+          "code": "token_not_valid",
+          "messages": [
+            {
+              "token_class": "AccessToken",
+              "token_type": "access",
+              "message": "Token is expired"
+            }
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": "Bearer realm=\"api\"",
+          "Retry-After": null
+        }
+      }
+    },
+    "live-role-claims-ignored": {
+      "request": {
+        "path": "/instance/access",
+        "method": "GET",
+        "actor": "athlete",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "forged-roles",
+        "primary": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "is_owner": false,
+          "is_administrator": false,
+          "data_association": null
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "null-provider": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": null
+          }
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "missing-enabled": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": {}
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "nonempty-root-list": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": [
+            "bad"
+          ]
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "invalid-settings-scalar": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": "private-ai-canary"
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "empty-root-list": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": []
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "null-settings": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": null
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": false,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "pair-array-enabled": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                [
+                  "enabled",
+                  true
+                ],
+                [
+                  "api_key",
+                  "private-ai-canary"
+                ],
+                [
+                  "api_key",
+                  "private-later-canary"
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": true,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "malformed-pair-array": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                [
+                  "enabled",
+                  true
+                ],
+                [
+                  "broken"
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "malformed-cors-policy": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Origin": "https://allowed.example.test"
+        }
+      },
+      "setup": {
+        "settings": {
+          "CORS_ALLOWED_ORIGINS": [
+            "http://[invalid"
+          ]
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "pair-array-numeric-key": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                [
+                  1,
+                  "unused"
+                ],
+                [
+                  "enabled",
+                  true
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": true,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "pair-array-string-element": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                "xy",
+                [
+                  "enabled",
+                  true
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": true,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "pair-array-last-key-wins": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                [
+                  "enabled",
+                  false
+                ],
+                [
+                  "enabled",
+                  true
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "configured": true,
+          "ai_enabled": true,
+          "manual_enabled": false,
+          "version": "v1.2.3",
+          "instance_name": "Fixture à ASD",
+          "supported_features": [
+            "import",
+            "export",
+            "oauth"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    },
+    "pair-array-unhashable-key": {
+      "request": {
+        "path": "/instance/status",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "ai": {
+              "settings": [
+                [
+                  [
+                    "bad"
+                  ],
+                  "unused"
+                ],
+                [
+                  "enabled",
+                  true
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "status": 500,
+        "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        }
+      }
+    }
+  }
+}

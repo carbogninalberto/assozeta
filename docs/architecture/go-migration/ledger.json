@@ -15096,25 +15096,63 @@
         "target": "InstanceAccessView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_bootstrap.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/pkg/manual/availability.go",
+        "BE_GO/internal/config/manual.go"
+      ],
+      "dependencies": [
+        "BE/instance/views.py",
+        "BE/instance/administration.py",
+        "BE/instance/models.py",
+        "BE/instance/integrations.py",
+        "BE/application/manuale/availability.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/instance/access",
+          "/api/v1/instance/access",
+          "/api/v2/instance/access"
+        ],
+        "request": "Read-only instance bootstrap; real authentication, method and negotiation precedence retained.",
+        "response": "200 actual-actor owner/admin flags and permitted primary-association projection; absent or non-self-hosted configuration has false flags.",
+        "errors": "Declared 401/403/404/405/406, malformed configuration 500, restore admission and locale/CORS errors match actual Django cases.",
+        "authentication": "Persisted JWT actor, then existing scope admission; anonymous access401. Session cookie does not substitute API identity.",
+        "permissions": "IsAuthenticated; owner derives from primary association owner FK, with current administrator exceptions.",
+        "resource_scope": "Global lowest-primary-key instance configuration; no collaborator tenant substitution.",
+        "side_effects": "No application database writes or provider calls. Shared session middleware retains stale-password-hash cache revocation.",
+        "transaction": "One joined configuration SELECT; authenticated access adds persisted actor SELECT. Public integration keys projected before leaving PostgreSQL.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance-bootstrap.json",
+        "TESTS/contracts/test_instance_bootstrap.py",
+        "TESTS/adapters/django/instance_bootstrap.py",
+        "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
+        "TESTS/adapters/django/manual_availability.py",
+        "TESTS/adapters/django/manual_bundle.py",
+        "TESTS/adapters/go/manual_image.py"
+      ],
+      "evidence": [
+        "86 source-authored cases pass against actual Django ASGI and Go, with real JWT/PostgreSQL/Redis, unchanged managed data and declared cache cleanup. Missing route, malformed-CORS locale and private pair-array projection RED retained before fixes. Four actual PostgreSQL groups prove secret projection and one-row/one-query plans at100/1000/10000 rows; shared buffer hits4/6/6. See docs/architecture/go-migration/instance-bootstrap.md.",
+        "Manual availability47 and actual bundle CLI19 compare with Django. The actual non-root image passes the same19 synthetic checker cases with read-only/no-network fixture execution and exact cleanup. Unchanged-frontend acceptance and genuine required-release package execution remain pending at this increment."
+      ],
+      "notes": [
+        "Current-model syncdb fixture only; historical migrations, installed activation and complete manual reader/search/assets remain open. Canonical logo/manifest remain Django-owned /api paths. JSON projection cost scales with settings size."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:admin -> InstanceAdminView.as_view()",
@@ -15656,25 +15694,63 @@
         "target": "InstanceConfigView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_bootstrap.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/pkg/manual/availability.go",
+        "BE_GO/internal/config/manual.go"
+      ],
+      "dependencies": [
+        "BE/instance/views.py",
+        "BE/instance/administration.py",
+        "BE/instance/models.py",
+        "BE/instance/integrations.py",
+        "BE/application/manuale/availability.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/instance/config",
+          "/api/v1/instance/config",
+          "/api/v2/instance/config"
+        ],
+        "request": "Read-only instance bootstrap; real authentication, method and negotiation precedence retained.",
+        "response": "200 public OEM/OAuth/Stripe/meta/features/setup projection with live overrides; absent configuration 404.",
+        "errors": "Declared 401/403/404/405/406, malformed configuration 500, restore admission and locale/CORS errors match actual Django cases.",
+        "authentication": "Public authentication bypass; supplied Bearer/scope headers ignored.",
+        "permissions": "Public",
+        "resource_scope": "Global lowest-primary-key instance configuration; no collaborator tenant substitution.",
+        "side_effects": "No application database writes or provider calls. Shared session middleware retains stale-password-hash cache revocation.",
+        "transaction": "One joined configuration SELECT; authenticated access adds persisted actor SELECT. Public integration keys projected before leaving PostgreSQL.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance-bootstrap.json",
+        "TESTS/contracts/test_instance_bootstrap.py",
+        "TESTS/adapters/django/instance_bootstrap.py",
+        "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
+        "TESTS/adapters/django/manual_availability.py",
+        "TESTS/adapters/django/manual_bundle.py",
+        "TESTS/adapters/go/manual_image.py"
+      ],
+      "evidence": [
+        "86 source-authored cases pass against actual Django ASGI and Go, with real JWT/PostgreSQL/Redis, unchanged managed data and declared cache cleanup. Missing route, malformed-CORS locale and private pair-array projection RED retained before fixes. Four actual PostgreSQL groups prove secret projection and one-row/one-query plans at100/1000/10000 rows; shared buffer hits4/6/6. See docs/architecture/go-migration/instance-bootstrap.md.",
+        "Manual availability47 and actual bundle CLI19 compare with Django. The actual non-root image passes the same19 synthetic checker cases with read-only/no-network fixture execution and exact cleanup. Unchanged-frontend acceptance and genuine required-release package execution remain pending at this increment."
+      ],
+      "notes": [
+        "Current-model syncdb fixture only; historical migrations, installed activation and complete manual reader/search/assets remain open. Canonical logo/manifest remain Django-owned /api paths. JSON projection cost scales with settings size."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:configure -> InstanceSetupView.as_view()",
@@ -15901,25 +15977,63 @@
         "target": "InstanceStatusView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_bootstrap.go",
+        "BE_GO/internal/dto/instance_bootstrap.go",
+        "BE_GO/internal/handler/instance_bootstrap.go",
+        "BE_GO/internal/service/instance_bootstrap.go",
+        "BE_GO/internal/repository/instance_bootstrap.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/pkg/manual/availability.go",
+        "BE_GO/internal/config/manual.go"
+      ],
+      "dependencies": [
+        "BE/instance/views.py",
+        "BE/instance/administration.py",
+        "BE/instance/models.py",
+        "BE/instance/integrations.py",
+        "BE/application/manuale/availability.py",
+        "BE/core/authentication.py",
+        "BE/core/middleware.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/instance/status",
+          "/api/v1/instance/status",
+          "/api/v2/instance/status"
+        ],
+        "request": "Read-only instance bootstrap; real authentication, method and negotiation precedence retained.",
+        "response": "200 configured/instance-name/version/features and actual manual/AI availability; absent configuration remains 200.",
+        "errors": "Declared 401/403/404/405/406, malformed configuration 500, restore admission and locale/CORS errors match actual Django cases.",
+        "authentication": "Public authentication bypass; supplied Bearer/scope headers ignored.",
+        "permissions": "Public",
+        "resource_scope": "Global lowest-primary-key instance configuration; no collaborator tenant substitution.",
+        "side_effects": "No application database writes or provider calls. Shared session middleware retains stale-password-hash cache revocation.",
+        "transaction": "One joined configuration SELECT; authenticated access adds persisted actor SELECT. Public integration keys projected before leaving PostgreSQL.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance-bootstrap.json",
+        "TESTS/contracts/test_instance_bootstrap.py",
+        "TESTS/adapters/django/instance_bootstrap.py",
+        "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
+        "TESTS/adapters/django/manual_availability.py",
+        "TESTS/adapters/django/manual_bundle.py",
+        "TESTS/adapters/go/manual_image.py"
+      ],
+      "evidence": [
+        "86 source-authored cases pass against actual Django ASGI and Go, with real JWT/PostgreSQL/Redis, unchanged managed data and declared cache cleanup. Missing route, malformed-CORS locale and private pair-array projection RED retained before fixes. Four actual PostgreSQL groups prove secret projection and one-row/one-query plans at100/1000/10000 rows; shared buffer hits4/6/6. See docs/architecture/go-migration/instance-bootstrap.md.",
+        "Manual availability47 and actual bundle CLI19 compare with Django. The actual non-root image passes the same19 synthetic checker cases with read-only/no-network fixture execution and exact cleanup. Unchanged-frontend acceptance and genuine required-release package execution remain pending at this increment."
+      ],
+      "notes": [
+        "Current-model syncdb fixture only; historical migrations, installed activation and complete manual reader/search/assets remain open. Canonical logo/manifest remain Django-owned /api paths. JSON projection cost scales with settings size."
+      ]
     },
     {
       "id": "schedule:BE/core/celery.py:association-quote-assign",

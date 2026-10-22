@@ -7,6 +7,13 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `0ffe9f6` (including manual evidence caching, reviewed navigation bindings and candidate manual-image validation). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
+with 86 actual Django/Go cases, bounded public configuration reads and truthful
+manual availability. Release wiring now supplies the same verified manual artifact
+to both backend build contexts. The packaged validator passes nineteen synthetic
+cases. Browser acceptance and a genuine required-release manual image remain
+pending; reader/search/assets and backend activation remain open.
+
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
 routes before the existing Django alias. Real Caddy transport checks cover exact
 roots, request/response preservation, chunked uploads, streaming, WebSockets,
@@ -490,7 +497,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 22 implementing, 6 needing review and 482
+The ledger currently has 4 deprecated, 25 implementing, 6 needing review and 479
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
