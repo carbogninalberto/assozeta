@@ -56,6 +56,10 @@ The rebuilt-image fresh installation, backup, rollback and restore rehearsal and
 the current-controller update/recovery follow-up both pass. Exact source scope,
 initial fixture timeouts and the newer-main validation boundary are recorded in
 [operational migrations](operational-migrations.md).
+The combined current-controller matrix also passes on clean `b042928` after
+alignment to `0ffe9f6`, with unchanged source hashes and complete fixture cleanup.
+It exercises the new candidate manual preflight alongside the Go transaction
+drain; its receipt explicitly excludes browser execution and background activation.
 The dependency closure correctly invalidates all sixty previous manual captures;
 those captures require regeneration before being counted as current evidence.
 
