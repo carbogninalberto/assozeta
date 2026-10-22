@@ -124,7 +124,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 43 explicit full response cases including seven concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 44 explicit full response cases including eight concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1201,3 +1201,13 @@ response cases, including seven image cases, 32 mixed concurrent responses and
 no-token/no-card-query failure behavior. Evidence is under
 `quality-reports/go-migration/image-dispatch/`. Missing formats, unresolved registry
 exceptions/reordering and public login remain open; no endpoint status advances.
+
+
+ICO now joins shared image dispatch through the existing bounded PNG/DIB decoders.
+The 678 authored Pillow/Django pixel/file cases cover eager loading, directory
+selection, alpha/masks, palette/RLE/bitfield behavior and file-size policy. Exact
+budgets, cancellation, native queue/reaping/reuse and concurrent calls are checked.
+Shared URI comparisons now report 70 passing cases and three demonstrated gaps
+(non-exhaustive); 44 PostgreSQL response cases include a concrete ICO logo.
+Evidence: `quality-reports/go-migration/ico/`. Remaining formats, unresolved registry
+exceptions, public login and all wider migration gates remain open.

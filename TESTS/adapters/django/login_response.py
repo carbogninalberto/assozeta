@@ -168,6 +168,8 @@ def run(work, log, tool_env):
     add('complete sections bypass unsupported logo',regulation='present',demand='present',logo=webp['uri'],avatar=ppm['uri'],avatar_expected=ppm['expected'])
     add('malformed image URIs remain unchanged',avatar='opaque,A',logo='literal-logo')
     add('GBR SUN collision retains original logo',logo=collision['uri'],logo_expected=collision['expected'])
+    ico=images['ICO PNG frame']
+    add('owner transforms ICO logo',logo=ico['uri'],logo_expected=ico['expected'])
     def snapshot():
         return {m._meta.label:list(m._base_manager.order_by('pk').values()) for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     before=snapshot()
@@ -209,7 +211,7 @@ def run(work, log, tool_env):
     finally:
         with connection.cursor() as cursor: cursor.execute('RESET ROLE')
     assert snapshot()==before, 'Django permission rehearsal changed state'
-    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; seven concrete image response cases included',flush=True)
+    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; eight concrete image response cases included',flush=True)
     from TESTS.adapters.django.login_jpeg import build_codec
     codec=work/'response-codec';build_codec(codec,log,tool_env)
     path=work/'login-response.json';path.write_text(json.dumps({'now':NOW.isoformat(),'tokens':TOKENS,'cases':cases,'files':file_cases,'booleans':[{'value':v,'expected':e} for v,e in boolean_cases]}));path.chmod(0o600)

@@ -12,7 +12,7 @@ import (
 // text/scientific formats. These broad guards can reject ambiguous malformed
 // inputs; they never silently report them as completed image parity.
 func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
-	supported := make(map[string]imageFormat, 13)
+	supported := make(map[string]imageFormat, 14)
 	bmp, err := NewBMPFileProcessor(path, BMPFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
 	if err != nil {
 		return nil, err
@@ -153,6 +153,14 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 		v, err := xbm.Process(ctx, b)
 		return imageFileResult(v), err
 	}}
+	ico, err := NewICOFileProcessor(path, ICOFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxTailBytes: l.MaxTailBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
+	if err != nil {
+		return nil, err
+	}
+	supported["ICO"] = imageFormat{name: "ICO", accepts: icoSignature, probe: func(ctx context.Context, b []byte) error { _, err := ico.decode(ctx, b); return err }, process: func(ctx context.Context, b []byte) (imageFileResult, error) {
+		v, err := ico.Process(ctx, b)
+		return imageFileResult(v), err
+	}}
 	order := []string{"BMP", "GIF", "JPEG", "PPM", "PNG", "BLP", "BUFR", "CUR", "PCX", "DDS", "EPS", "FITS", "FLI", "FTEX", "GBR", "GRIB", "HDF5", "JPEG2000", "ICNS", "ICO", "IM", "IMT", "IPTC", "MCIDAS", "MPEG", "TIFF", "MSP", "PCD", "PIXAR", "PSD", "QOI", "SGI", "SPIDER", "SUN", "TGA", "WEBP", "WMF", "XBM", "XPM", "XVTHUMB"}
 	formats := make([]imageFormat, 0, len(order))
 	for _, name := range order {
@@ -192,8 +200,6 @@ func missingImageCandidate(name string, b []byte) bool {
 		return prefix("\xff\x4f\xff\x51") || prefix("\x00\x00\x00\x0cjP  \x0d\x0a\x87\x0a")
 	case "ICNS":
 		return prefix("icns")
-	case "ICO":
-		return prefix("\x00\x00\x01\x00")
 	case "IM", "IMT":
 		first := b[:min(100, len(b))]
 		if !bytes.Contains(first, []byte{'\n'}) {
