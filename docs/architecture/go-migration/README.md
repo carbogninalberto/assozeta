@@ -67,6 +67,14 @@ workers and graceful/forced-stop recovery. Both are required CI checks. Only dai
 email reset is registered; producer, scheduler and installed activation remain
 unfinished. See [process evidence and limits](../../../BE_GO/internal/worker_process.md).
 
+Normal lifecycle commands now apply additive Go operational migrations after
+Django under the exclusive operations lease. Fresh install/repeat migration and
+backup/restore preserve exact pending intent and Django history. Dirty Go history
+fails closed, including rollback after a post-swap migration failure. The current
+controller also refuses recovery while an actual Go migration one-off survives
+its killed parent. See [operational migration evidence](operational-migrations.md).
+This prepares the schema without activating Go background processing.
+
 Twenty-nine actual Django scheduler scenarios now characterize effective settings,
 persisted schedules, due/DST semantics and publication state. The 21 declarations
 resolve to one configured fresh entry plus Beat's implicit cleanup; historical
@@ -1346,8 +1354,9 @@ one claim query across 1/16/128/512 jobs and an inspected 4,096-job plan. The pl
 was corrected after a test exposed an unbounded candidate scan.
 
 The separate additive golang-migrate history owns only Go operational tables and
-refuses destructive down migration. No runtime or updater invokes it yet, and
-no Celery task or schedule has moved. Per-task services/policies, production
+refuses destructive down migration. Lifecycle commands now invoke the explicit
+migrator under the operations lease; API and worker startup do not migrate.
+No Celery task or schedule has moved. Per-task services/policies, production
 process supervision and authoritative scheduling remain open. Ordinary-job
 execution and restore admission are described below. See
 [the repository contract](../../../BE_GO/internal/repository/jobs.md) and

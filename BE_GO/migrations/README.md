@@ -21,10 +21,12 @@ will report that refusal and may leave its migration history dirty; it is not a
 supported rollback procedure. Operator recovery must inspect the actual schema,
 not blindly force a version. No Django table or migration history is changed.
 
-Only disposable integration tests apply this migration today. HTTP startup,
-Compose and the updater do not call it. Deployment integration must hold the
-existing lifecycle lock and supply the existing database configuration before
-adding an explicit migration step. Importing Kuayle business migrations, forcing
+The explicit `/app/migrate` command is invoked by the tools-profile `migrate-go`
+service after Django migration in the ordinary installation/update/restore
+lifecycle. Its caller must hold the existing exclusive operations lock; it uses
+the existing direct PostgreSQL configuration. HTTP and worker startup do not
+call it. See [lifecycle contracts and evidence](../../docs/architecture/go-migration/operational-migrations.md).
+Importing Kuayle business migrations, forcing
 a baseline version, or changing an existing Django table here is prohibited.
 
 Rollback must preserve Go-written business data, pending durable jobs, file keys

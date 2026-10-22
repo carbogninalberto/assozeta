@@ -12,6 +12,8 @@ PROD_LOCK_DIR="$SELFHOST_DIR/.lifecycle.lock"
 READINESS_ATTEMPTS=${ASSOZETA_READINESS_ATTEMPTS:-60}
 READINESS_DELAY=${ASSOZETA_READINESS_DELAY:-2}
 MAINTENANCE_FLAG="$SELFHOST_DIR/.operations/maintenance.flag"
+# Never trust an inherited environment assertion about a process-owned lease.
+prod_operations_lock_held=false
 
 log() {
     printf '[assozeta] %s\n' "$*"
@@ -197,6 +199,7 @@ release_prod_lock() {
         rm -rf "$PROD_LOCK_DIR" || true
     fi
     prod_lock_held=false
+    prod_operations_lock_held=false
     exec 8>&-
 }
 
@@ -860,6 +863,31 @@ prod_optional_go_api() {
     fi
 }
 
+prod_optional_go_migrator() {
+    # Older distributions may contain api-go but no packaged migration command.
+    # Detect the tools service instead of invoking a binary absent from the source.
+    configured_tools=$(prod_compose --profile tools config --services) || return $?
+    if printf '%s\n' "$configured_tools" | awk '$0 == "migrate-go" { found = 1 } END { exit !found }'; then
+        printf 'migrate-go\n'
+    fi
+}
+
+require_prod_migration_lease() {
+    go_migration_service=$(prod_optional_go_migrator) || return $?
+    if [ -n "$go_migration_service" ] && [ "$prod_operations_lock_held" != true ]; then
+        printf '[assozeta] error: Go migration requires the lifecycle caller exclusive operations lease; flock must be available\n' >&2
+        return 1
+    fi
+}
+
+migrate_prod_schemas() {
+    require_prod_migration_lease || return $?
+    prod_compose --profile tools run --rm --no-deps migrate || return $?
+    if [ -n "$go_migration_service" ]; then
+        prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
+    fi
+}
+
 wait_public_readiness() {
     [ -f "$PROD_ENV" ] || die "run configure first"
     app_url=$(env_value APP_URL "$PROD_ENV")
@@ -942,6 +970,7 @@ start_prod_app_services() {
 initialise_prod() {
     force_recreate=${1:-false}
 
+    require_prod_migration_lease || return $?
     stop_prod_data_services || return $?
     if [ "$force_recreate" = true ]; then
         prod_compose up -d --wait --force-recreate postgres redis minio renderer || return $?
@@ -949,11 +978,12 @@ initialise_prod() {
         prod_compose up -d --wait postgres redis minio renderer || return $?
     fi
     prod_compose --profile tools run --rm minio-init || return $?
-    prod_compose --profile tools run --rm --no-deps migrate || return $?
+    migrate_prod_schemas || return $?
 }
 
 migrate_prod() {
     validate_prod
+    require_prod_migration_lease || return $?
     app_was_running=false
     if prod_app_services_running; then
         app_was_running=true
@@ -1383,6 +1413,7 @@ restore_prod() {
 
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
+    require_prod_migration_lease || return $?
     ensure_configuration_values "$PROD_ENV"
     require_command tar
     umask 077
@@ -1507,7 +1538,7 @@ restore_prod() {
         -e REDISCLI_AUTH="$(env_value REDIS_PASSWORD "$PROD_ENV")" \
         redis redis-cli FLUSHALL >/dev/null
 
-    prod_compose --profile tools run --rm --no-deps migrate
+    migrate_prod_schemas
     start_prod_app_services "${recover_upgrade_active:-false}"
     require_public_readiness
     cleanup_status=0
@@ -1551,7 +1582,14 @@ run_updater_tool() {
 }
 
 require_no_surviving_lifecycle_helpers() {
-    [ -f "$PROD_ENV" ] && [ -d "$SELFHOST_DIR/.updater" ] || return 0
+    [ -f "$PROD_ENV" ] || return 0
+    if [ ! -d "$SELFHOST_DIR/.updater" ]; then
+        # An unmanaged install can also leave a migration running after its CLI
+        # dies. Preserve historical admission when no Go migrator was delivered.
+        surviving_go_capability=$(prod_optional_go_migrator) \
+            || die "cannot inspect Go migration capability before lifecycle admission"
+        [ -n "$surviving_go_capability" ] || return 0
+    fi
     lifecycle_project=$(env_value COMPOSE_PROJECT_NAME "$PROD_ENV")
     lifecycle_project=${lifecycle_project:-assozeta}
     surviving_helpers=$(docker ps -q --filter "label=org.assozeta.lifecycle.installation=$SELFHOST_DIR") \
@@ -1707,6 +1745,10 @@ run_locked_prod_command() {
     locked_command=$1
     shift
 
+    # Reject unsupported manual-source arguments before Docker admission reads.
+    if [ "$locked_command" = sync-manual ]; then
+        [ "$#" -eq 0 ] || die "sync-manual does not accept arguments"
+    fi
     acquire_prod_lock "$locked_command"
     require_no_surviving_lifecycle_helpers
     # Shared with application ZIP restores and running background jobs.
@@ -1719,14 +1761,14 @@ run_locked_prod_command() {
             [ -n "$(find "$SELFHOST_DIR/.operations/lifecycle.lock" -prune -type f -perm -0666 -print)" ] \
                 || die "shared lifecycle lock must be readable and writable by host and application users"
         }
-        flock -x 8
+        flock -x 8 || die "failed to acquire exclusive operations lease"
+        prod_operations_lock_held=true
     fi
     case "$locked_command" in
         configure) configure "$@" ;;
         install) preflight; install_prod "$@" ;;
         pull) validate_prod; prod_compose pull ;;
         sync-manual)
-            [ "$#" -eq 0 ] || die "sync-manual does not accept arguments"
             validate_prod
             prod_compose run --rm --no-deps api python manage.py sync_manuale_corpus
             ;;
