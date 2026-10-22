@@ -17,7 +17,7 @@ import tempfile
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[3]
-NAMES={'DATA_RESTORE_LOCK_PATH':'restore_lock_path','SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
+NAMES={'EMAIL_HOST_SUPPORT':'support_email','WHITELABEL_NAME':'whitelabel','DATA_RESTORE_LOCK_PATH':'restore_lock_path','SECRET_KEY':'session_secret','DEBUG':'debug','RATELIMIT_ENABLE':'rate_enabled','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google','SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'google_secret',
        'SOCIAL_AUTH_APPLE_ID_CLIENT':'apple','SOCIAL_AUTH_APPLE_ID_TEAM':'apple_team',
        'SOCIAL_AUTH_APPLE_ID_KEY':'apple_key','SOCIAL_AUTH_APPLE_ID_SECRET':'apple_secret',
        'JWT_SECRET_KEY':'jwt_private','JWT_PUBLIC_KEY':'jwt_public','DBPASSWORD':'database_password',
@@ -39,7 +39,7 @@ def main():
     base={'AWS_ACCESS_KEY_ID':'fixture-access','AWS_SECRET_ACCESS_KEY':'fixture-secret','AWS_STORAGE_BUCKET_NAME':'fixture-bucket','AWS_S3_REGION_NAME':'us-east-1','AWS_S3_ENDPOINT_URL':'http://127.0.0.1:9000','AWS_LOCATION':'private','SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
-    expected={'provider_ca_bundle':'','restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
+    expected={'support_email':None,'whitelabel':'Bakney Sport','provider_ca_bundle':'','restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
               'origins':[],'cors_all':False,'cors_origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
@@ -147,7 +147,15 @@ def main():
     add('CA values do not expand aliases',lines='REQUESTS_CA_BUNDLE=$CA_ALIAS\nCA_ALIAS=/tmp/not-used.pem\n',want={'provider_ca_bundle':'$CA_ALIAS'})
     add('CA path spaces preserved',lines="REQUESTS_CA_BUNDLE=' /tmp/provider-ca.pem  '\n",want={'provider_ca_bundle':' /tmp/provider-ca.pem  '})
     add('SSL_CERT_FILE does not select requests bundle',lines='SSL_CERT_FILE=/tmp/urllib-ca.pem\n')
-    assert len(cases)==95
+    add('2FA support and issuer',lines='EMAIL_HOST_SUPPORT=support@example.test\nWHITELABEL_NAME=Assozeta Contract\n',want={'support_email':'support@example.test','whitelabel':'Assozeta Contract'})
+    add('2FA empty branding',lines='EMAIL_HOST_SUPPORT=\nWHITELABEL_NAME=\n',want={'support_email':'','whitelabel':''})
+    add('2FA issuer proxy',lines='WHITELABEL_NAME=$BRAND_ALIAS\nBRAND_ALIAS=Club Δ\n',want={'whitelabel':'Club Δ'})
+    add('2FA support remains literal',lines='EMAIL_HOST_SUPPORT=$SUPPORT_ALIAS\nSUPPORT_ALIAS=ignored@example.test\n',want={'support_email':'$SUPPORT_ALIAS'})
+    add('2FA issuer missing proxy retains default',lines='WHITELABEL_NAME=$MISSING\n')
+    add('2FA issuer proxy cycle',lines='WHITELABEL_NAME=$BRAND_ALIAS\nBRAND_ALIAS=$WHITELABEL_NAME\n',error=True)
+    add('2FA process branding wins',lines='WHITELABEL_NAME=File\nEMAIL_HOST_SUPPORT=file@example.test\n',process={'WHITELABEL_NAME':'Process','EMAIL_HOST_SUPPORT':'process@example.test'},want={'whitelabel':'Process','support_email':'process@example.test'})
+    add('2FA whitespace and Unicode branding',lines="WHITELABEL_NAME=' è / Club  '\nEMAIL_HOST_SUPPORT=' / support+è@example.test  '\n",want={'whitelabel':' è / Club  ','support_email':' / support+è@example.test  '})
+    assert len(cases)==103
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:

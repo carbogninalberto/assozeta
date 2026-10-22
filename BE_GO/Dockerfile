@@ -33,6 +33,7 @@ COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/README.ijg /app/licenses/
 COPY pkg/storage/loginimage/NOTICE /app/licenses/loginimage-NOTICE
 COPY migrations /app/migrations
 COPY pkg/storage/loginimage/LICENSE.pillow /app/licenses/Pillow-LICENSE
+COPY pkg/qrcode/LICENSE.go-qrcode /app/licenses/go-qrcode-LICENSE
 USER 10001:10001
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \

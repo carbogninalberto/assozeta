@@ -7,29 +7,43 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
-The public 2FA update now passes 50 declared HTTP/effect scenarios and two
-locked-row concurrency scenarios per backend on actual Django ASGI and the Go
-root. Tests cover JSON/form/multipart input, permissions and impersonation,
-JWT-versus-session audit attribution, and failed user/audit/index writes. The
-failure fixture exposed a Django orphan audit; both backends now commit the user,
-audit and association index atomically and preserve concurrent password/profile
-changes. Identical concurrent updates produce one audit.
+The public `/two-fa/setup` now generates cryptographic secrets and local SVG QR
+codes through explicit service/encoder dependencies. Actual Django ASGI and the
+Go root pass 31 declared HTTP scenarios and 62 concurrent requests per backend
+across six branding/capacity configurations. Provisioning leaves all managed
+models and session/cache values unchanged. Four cross-runtime activation/status/
+disabling flows and four fresh-login flows pass: missing or incorrect OTP is
+denied, and valid credentials work after switching runtimes.
 
-Real PostgreSQL service tests pass 4/66 statement budgets for 1/32 identical
-updates, a four-connection pool, blocked cancellation and subsequent recovery.
-246 existing Django authentication/impersonation/permission/audit tests also pass
-on private PostgreSQL/Redis. Go race and ordinary/tagged vet, twelve inventory
-tests, catalog drift, formatting and the rebuilt non-root/read-only/networkless
-image's five startup/login HTTP checks pass. These image checks do not exercise
-a successful database-backed 2FA mutation. The full accounts regression also passes,
-including existing task/scope/session/provider/image/hash/audit groups and the new
-2FA mutation checks (`full-accounts.log`, `full-accounts-results.json`).
-Evidence is under `quality-reports/go-migration/two-factor-update/`, notably
-`transport-current.log`, `django-regression-final.log`, `go-race-final.log`,
-`go-vet-final.log` and `image-http.log`. See the
-[2FA update contract](../../../BE_GO/internal/handler/two_factor_update.md).
-Setup/QR, global middleware/authentication, versioned routing and activation remain
-unfinished; no ledger entry is promoted to verified.
+An independent pixel decoder verifies 512 deterministic symbols from both encoders
+in generated-image and detector modes, including content, dimensions and error
+correction. PostgreSQL tracing finds zero provisioning queries beyond identity
+admission (one direct/two collaborator SELECTs; 48 SELECTs for 32 mixed requests
+in four connections). The environment oracle has 103 cases. Go race and
+ordinary/tagged vet pass, as do the rebuilt non-root, read-only, networkless
+image's six HTTP checks. The image probe does not prove database-backed setup.
+Twelve inventory tests, catalog drift and formatting pass. The full accounts
+regression passes with all existing task/scope/session/provider/image/hash/audit
+groups and the new provisioning checks (`full-accounts.log` and
+`full-accounts-results.json`).
+Evidence: `quality-reports/go-migration/two-factor-setup/`, especially
+`fresh-login-fixed.log`, `environment-current.log`, `qr-vectors-current.log`,
+`go-race.log` and `image-current.log`. See the
+[provisioning contract](../../../BE_GO/internal/handler/two_factor_setup.md).
+
+The preceding atomic-update change passes 50 HTTP/effect and two locked-row
+concurrency scenarios per backend, including user/audit/index rollback and
+preservation of concurrent profile/password changes. Its 246 existing Django
+authentication/impersonation/permission/audit tests pass. The manual source review
+was updated in `3f6d5c1`, with all 190 local manual tests passing. Remote manual
+run `39720462215` then stops because the external manual's reviewed recipe bindings
+still reference the previous recipe files. A local companion patch against
+`Bakney/manuale@4253c5d` refreshes 83 reviewed bindings with unchanged MDX and
+passing authoring validation (`manual-bindings-review.patch` and JSON report in
+the setup evidence directory). Publication to that separate repository awaits
+authorization; no complete manual CI success is claimed.
+Global middleware, the complete frontend workflow, versioned routing and
+activation remain unfinished; no ledger entry is promoted to verified.
 
 The public login now passes nineteen ordinary portable methods, five rate/session
 ordering methods and forty-one credential/effect scenarios on actual Django ASGI
@@ -178,7 +192,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 16 implementing, 6 needing review and 488
+The ledger currently has 4 deprecated, 17 implementing, 6 needing review and 487
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -188,8 +202,8 @@ installations, full schemas, side effects and failure behavior remain work.
 
 `BE_GO/cmd/server/main.go` constructs config, bounded database/cache pools,
 repositories, services and handlers explicitly. Business code does not import
-Echo contexts. The root registers ten upstream paths, including health/readiness,
-login, refresh, identifier checks, 2FA status/updates and retired billing responses.
+Echo contexts. The root registers eleven upstream paths, including health/readiness,
+login, refresh, identifier checks, 2FA setup/status/updates and retired billing responses.
 Login and 2FA mutations use explicit service transactions. Startup performs no
 business-schema migration; health probes and idle SIGTERM draining are tested.
 
@@ -209,7 +223,7 @@ and later corrections appear above and in the component contracts.
 | Check | Result and scope |
 | --- | --- |
 | Inventory tests | 12 tests pass; initial missing generator and later MCP-discovery failures were observed before implementation |
-| Environment subset | 95 existing environment cases plus 65 storage settings/backend-option cases execute actual settings assignments with django-environ, then Go Load; precedence, proxies, literal values, required/default rules, process isolation and redaction are checked |
+| Environment subset | 103 existing environment cases plus 65 storage settings/backend-option cases execute actual settings assignments with django-environ, then Go Load; precedence, proxies, literal values, required/default rules, process isolation and redaction are checked |
 | Go unit/race tests | Config, service, handler, CSRF admission, JWT and password tests pass; undefined implementations failed first |
 | `go vet ./...`, formatting | Pass |
 | Portable Django regression | 18 tests pass on disposable PostgreSQL using repository Python requirements: 16 configured contracts, fresh setup/restore and initial historical import |
@@ -1027,8 +1041,8 @@ extra status queries; 32 concurrent mixed reads use 48 SELECTs with four test
 connections. No managed rows or session bytes change through these reads. The
 focused `--only two-factor-info` rehearsal uses supporting identity/session/refresh/
 identifier fixtures and is not the complete account suite. Updates now have the
-separate contract linked above. Setup/QR, historical schemas, global middleware
-and activation stay open. See
+separate contract linked above, as does setup/QR provisioning. Historical schemas,
+global middleware and activation stay open. See
 [2FA status](../../../BE_GO/internal/handler/two_factor_info.md).
 
 

@@ -1,7 +1,7 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. The executable exposes
-monitoring, login, refresh, public identifier checks, scoped 2FA status and two
+monitoring, login, refresh, public identifier checks, scoped 2FA setup/status/updates and two
 retired software-billing responses. **The replacement remains incomplete and
 cannot replace Django or serve the complete frontend.** See the
 [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
@@ -54,7 +54,7 @@ username/deletion/audit/index effects, default cards, a converted avatar and
 failure before final token delivery. See [the public-login contract](internal/handler/login.md).
 The complete accounts adapter also passes after the provider transport change,
 retaining all current-model fixture limits. Race/vet, inventory, the rebuilt
-image startup/HTTP probe and the 95-case environment comparison pass.
+image startup/HTTP probe and the 103-case environment comparison pass.
 
 The composed image processor has eighteen pipelines, with explicitly reported
 missing formats and unresolved admission cases. The current reference is Pillow
@@ -90,7 +90,7 @@ The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
 proxies/multiline values follow their existing Django settings; DB/Redis values
 remain literal. Google client ID and secret must be present (empty is accepted).
-See `internal/config/README.md` for the 95-case environment comparison, required
+See `internal/config/README.md` for the 103-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 The root also composes CORS before routing/session admission using the existing
 CORS settings. See `internal/middleware/cors.md` for 51 isolated HTTP contracts,
@@ -140,7 +140,11 @@ no query beyond existing account/identity admission. See
 attribution, with atomic user/audit/index writes in both backends. Shared fixtures
 cover write failures, impersonation, concurrent profile/password changes, duplicate
 updates, query bounds and cancellation. See [the update contract](internal/handler/two_factor_update.md).
-Setup/QR and broader authentication/activation remain incomplete.
+`GET /two-fa/setup` now creates fresh secrets and inline QR codes with the same
+permissions and branding rules. Independent QR decoding and cross-runtime fresh
+login flows supplement state/query/concurrency checks. See
+[the provisioning contract](internal/handler/two_factor_setup.md). Broader
+authentication, unchanged-frontend, versioned routing and activation remain open.
 
 The legacy software-billing routes retain their authenticated HTTP 410 responses
 without entitlement or provider work. This does not retire association/course

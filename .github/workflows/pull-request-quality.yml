@@ -96,6 +96,7 @@ jobs:
           cache-dependency-path: |
             BE/requirements.txt
             TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
       - name: Verify environment, credentials and provider protocols
         run: |
           python TESTS/adapters/django/production_runtime.py
