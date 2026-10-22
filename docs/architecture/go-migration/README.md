@@ -15,7 +15,7 @@ pass the 62 table-preference contracts, three races and three health contracts p
 version through Caddy, with PostgreSQL/audit checks. Existing self-host validation
 (87 tests) and eleven reload/browser checks pass. See [versioned routing](versioned-routing.md).
 
-The next delivery increment adds `api-go` to ordinary Compose and the fifth image
+The delivery increment adds `api-go` to ordinary Compose and the fifth image
 to builds and updater manifests, using an extension accepted by the frozen
 v1.0.17 bootstrap. Fresh installation, backup and restore pass with both APIs,
 including Go writes read by Django and exact audit restoration. Current and frozen
@@ -59,6 +59,13 @@ Thirty-eight required PostgreSQL/race groups pass, alongside the five task bodie
 or scheduler, and restoring data can rewind generations: coordinated process
 shutdown and the existing lifecycle lease remain necessary. See
 [ownership evidence and limits](../../../BE_GO/internal/repository/job_ownership.md).
+
+The same image now contains explicit worker and operational migration commands.
+Thirteen native-process scenarios and seven packaged-image scenarios pass, including
+default Django inactivity, direct migration connections, maintenance, competing
+workers and graceful/forced-stop recovery. Both are required CI checks. Only daily
+email reset is registered; producer, scheduler and installed activation remain
+unfinished. See [process evidence and limits](../../../BE_GO/internal/worker_process.md).
 
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django

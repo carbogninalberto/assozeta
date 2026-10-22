@@ -9,6 +9,14 @@ has been changed.
 
 ## Latest increment: delivery alongside Django
 
+The Go image also packages explicit native worker and forward-only operational
+migration commands. Thirteen race-instrumented process scenarios and seven actual
+image scenarios pass. Startup fails on missing/dirty/unknown operational schema;
+migrations connect directly to PostgreSQL while the worker retains runtime
+pooler routing. The worker registers daily email reset only, honors maintenance
+and drains or recovers unfinished work. No scheduler, installed worker service
+or ownership handoff is implied. See [process evidence](../../../BE_GO/internal/worker_process.md).
+
 Ordinary Compose now includes the Go API. Builds and publication include its
 image; updater manifests carry an independently validated immutable Go reference
 in an extension compatible with the frozen v1.0.17 bootstrap. Target verification

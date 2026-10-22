@@ -69,6 +69,10 @@ func TestOwnershipMigrationPostgres(t *testing.T) {
 			}()
 		}
 		workers.Wait()
+		var version uint
+		if e = db.Get(&version, `SELECT version FROM assozeta_go_schema_migrations WHERE NOT dirty`); e != nil || version != CurrentVersion {
+			t.Fatal("binary schema version differs from applied migrations", e)
+		}
 		if !reflect.DeepEqual(snapshot(), before) {
 			t.Fatal("migration changed durable intent or existing lease")
 		}

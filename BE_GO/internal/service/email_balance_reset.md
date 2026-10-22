@@ -5,7 +5,9 @@
 It is an instance job with no arguments: the Go envelope requires version 1, an
 empty object and the reserved nil association UUID. It rejects association-scoped,
 wrong-kind/version or invalid execution envelopes before database access. No HTTP
-route, publisher, production worker registration or scheduler is enabled.
+route, publisher or scheduler is enabled. The packaged native worker explicitly
+registers this body, but no installed Go worker service or ownership activation
+exists; see [the process boundary](../worker_process.md).
 
 The supported mutation is one bulk UPDATE of
 `communications_communicationconfiguration.daily_email_balance` where the value

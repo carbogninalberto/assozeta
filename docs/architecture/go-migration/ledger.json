@@ -18810,7 +18810,9 @@
         "BE_GO/internal/repository/email_balance_reset.go",
         "BE_GO/internal/service/email_balance_reset.go",
         "BE_GO/internal/service/job_executor.go",
-        "BE_GO/internal/service/job_restore_admission.go"
+        "BE_GO/internal/service/job_restore_admission.go",
+        "BE_GO/cmd/worker/main.go",
+        "BE_GO/cmd/migrate/main.go"
       ],
       "dependencies": [
         "BE/communications/models.py",
@@ -18839,15 +18841,18 @@
         "BE_GO/internal/service/email_balance_reset_integration_test.go",
         "BE_GO/internal/service/job_ownership_integration_test.go",
         "BE_GO/migrations/ownership_integration_test.go",
-        "TESTS/adapters/go/jobs.py"
+        "TESTS/adapters/go/jobs.py",
+        "TESTS/adapters/go/worker_process.py",
+        "TESTS/adapters/go/worker_image.py"
       ],
       "evidence": [
         "Actual Django task body passes empty/mixed association/NULL/deleted/zero/max-int/repeated reset and one-query cases at 1/16/128/512 rows. Real PostgreSQL trigger failure is caught with None result and no partial update. Go initially fails compilation for missing implementation, then all seven declared PostgreSQL integration groups pass under race detection; Django reads Go-written counters and all unrelated managed models unchanged. Evidence: quality-reports/go-migration/email-balance-reset/.",
         "Go service uses four statements for 0/1/16/128/512 positive counters within 512 configurations. EXPLAIN shows intentional global bulk UPDATE with sequential scan; no constant-work or latency claim. Tests cover invalid envelopes before SQL, later-usage preservation on replay, stale token rollback, redacted handled SQL failures and blocked UPDATE cancellation/pool recovery.",
-        "Runtime ownership increment 4f30dcd: additive migration defaults to Django and preserves operational intent/history. Claims and all outcomes require current Go generation; daily reset locks that generation before business writes. Required adapter passes 38 queue/executor/ownership/migration PostgreSQL/race groups, including concurrent handoff, ABA fencing, stale-effect rollback and owner-before-job lock ordering. All five task bodies have 48 passing groups; restore admission regression also passes. See BE_GO/internal/repository/job_ownership.md and ignored job-ownership/required-adapter-final.log. No production activation/handoff/scheduler or complete restore window is established; backup restore can rewind generations."
+        "Runtime ownership increment 4f30dcd: additive migration defaults to Django and preserves operational intent/history. Claims and all outcomes require current Go generation; daily reset locks that generation before business writes. Required adapter passes 38 queue/executor/ownership/migration PostgreSQL/race groups, including concurrent handoff, ABA fencing, stale-effect rollback and owner-before-job lock ordering. All five task bodies have 48 passing groups; restore admission regression also passes. See BE_GO/internal/repository/job_ownership.md and ignored job-ownership/required-adapter-final.log. No production activation/handoff/scheduler or complete restore window is established; backup restore can rewind generations.",
+        "Packaged native worker explicitly registers daily reset; explicit forward migration retains Django business ownership and default runtime ownership. Thirteen native-process scenarios pass under Go race detection, including missing/dirty/unknown schema, direct migration versus pooler routing, missing/blank coordination-path rejection, maintenance, competing workers, drain/crash recovery and generation loss. Seven packaged-image scenarios cover actual binaries as UID10001/read-only, Linux lifecycle locking and default server health. Both adapters are required CI checks. Synthetic business sentinels do not replace actual Django task parity or prove installed activation, scheduler behavior or Celery handoff. See BE_GO/internal/worker_process.md and ignored worker-process/ and worker-image/ receipts."
       ],
       "notes": [
-        "Task body implemented but not registered in production. Generic executor/restore admission has separate thirteen-group evidence; no task-level scheduler, backend switching, deployment or historical migration claim. See BE_GO/internal/service/email_balance_reset.md.",
+        "Task body is explicitly registered in the packaged native worker; no installed worker service or production ownership activation exists. Generic executor/restore admission has separate thirteen-group evidence; no task-level scheduler, backend switching or historical migration claim. See BE_GO/internal/service/email_balance_reset.md and BE_GO/internal/worker_process.md.",
         "Actual Celery policy captured: acks_late=false, max_retries=3, default_retry_delay=180, no rate/hard/soft limit, result retained, track_started=false, UTC. The task body never retries. Static midnight declaration is absent from initialized beat_schedule and the fresh fixture Beat table; historical persisted schedules/operator overrides remain unresolved. No timer is invented or activated.",
         "A future publisher must choose and verify durable occurrence keys, attempt/time limits and authoritative ownership. Existing Django early acknowledgement and swallowed errors are distinct from Go durable operational failure/recovery semantics. Concurrent SMTP accounting, realistic scale and lifecycle gates remain open."
       ]

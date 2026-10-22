@@ -24,6 +24,10 @@ application support remain unfinished, and the installable-release gate rejects
 this incomplete migration. See the [delivery status](../docs/architecture/go-migration/delivery-transition.md)
 and [routing status](../docs/architecture/go-migration/versioned-routing.md)
 before migration testing.
+The Go image includes `/app/worker` and `/app/migrate` for the verified development
+process contracts. Compose does not start a Go worker or scheduler, and the CLI
+does not yet invoke operational migrations. These commands are not an operator
+backend-switch procedure; see [their scope and prerequisites](../BE_GO/internal/worker_process.md).
 
 ## Install
 
