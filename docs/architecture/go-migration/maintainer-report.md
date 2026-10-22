@@ -21,8 +21,13 @@ The exact-row periodic publisher additionally passes seventeen real PostgreSQL
 race/fault groups using Django's actual Beat schema. Ownership, source and schedule
 definition locks precede an atomic job/receipt/cursor transaction; retained sequence
 numbers survive count reset and source-ID reuse. Additive schema 3 is delivered
-through the explicit migrator. Candidate scanning, an installed scheduler and
-Celery handoff remain open; see [publication limits](../../../BE_GO/internal/service/occurrence.md).
+through the explicit migrator. Bounded candidate pages also pass eleven service
+groups and nine actual-Beat PostgreSQL/race groups, with finite rotations under
+continuous inserts and measured plans at 100/1,000/10,000 rows. Each page retains
+its cursor on errors and independently locks each publication. An installed
+scheduler, cardinality/backlog policy and Celery handoff remain open; see
+[publication limits](../../../BE_GO/internal/service/occurrence.md) and
+[page bounds](../../../BE_GO/internal/service/schedule_page.md).
 
 Explicit repository transactions now retain their private connection through
 automatic rollback and driver/socket cleanup. Eight real PostgreSQL/race groups
