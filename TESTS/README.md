@@ -754,7 +754,7 @@ either backend runs. Invalid fixture requests fail independently of expected aut
 failure. The PR Go job runs this adapter. See `BE_GO/pkg/social/google.md` for
 versions, limits, remaining inputs and the absence of public/live-provider proof.
 
-`python TESTS/adapters/django/environment.py` declares 87 environment cases and
+`python TESTS/adapters/django/environment.py` declares 95 environment cases and
 executes selected unchanged assignments from `BE/core/settings.py` with actual
 django-environ. It compares Go file/process precedence, provider/JWT proxies,
 raw DB/Redis values, multiline/base64, required SECRET_KEY/DEBUG, derived rate/CORS
@@ -1032,9 +1032,9 @@ PIXAR; complete image-registry and public-login parity remain unfinished.
 
 
 `adapters/django/accounts.py --only login-http` exercises the registered login root
-against real Django ASGI on private PostgreSQL/Redis. Eighteen portable methods,
-five rate/session ordering methods, fifteen credential/effect scenarios and
-sixteen concurrent requests per backend check full responses, JWT signatures,
+against real Django ASGI on private PostgreSQL/Redis. Nineteen portable methods,
+five rate/session ordering methods, forty-one credential/effect scenarios and
+sixteen password plus sixteen social concurrent requests per backend check full responses, JWT signatures,
 cookies, OTP, session audit attribution, exact durable audit/index/card effects,
 final-write failures and a converted avatar. The fixture restores all declared
 state and detects other managed-table mutations. `adapters/go/server.py` builds
@@ -1044,3 +1044,12 @@ pre-credential HTTP cases in the actual non-root, read-only, networkless image.
 Neither fixture proves full image/provider or backend-switch parity. See
 [`BE_GO/internal/handler/login.md`](../BE_GO/internal/handler/login.md) for bounds,
 current evidence and remaining gates.
+
+`adapters/django/login_provider_proxy.py` is a private CONNECT/TLS fixture used by
+the public login adapter. Standard proxy/CA environment variables direct unchanged
+Google/Apple URLs into it; it never forwards traffic and rejects other destinations.
+Provider keys and TLS trust are ephemeral. Exact call sequences/counts, 45 provider
+requests per backend, access-token fallback and cross-identity concurrency are
+checked alongside actual HTTP signatures/cookies and persisted effects. The
+95-case environment adapter now checks requests/curl CA precedence using the real
+requests merger. It does not read developer credentials or contact public providers.

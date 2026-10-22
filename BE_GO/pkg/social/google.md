@@ -2,8 +2,8 @@
 
 `Google` implements the inspected `SocialAuthService.verify_google_token` boundary
 with an explicit HTTP client, dedicated JWK transport, clock and concurrency bound.
-`SocialProviders` supplies the current configured audience. The composition root
-and public login remain unwired; this client is not evidence of live Google login.
+`SocialProviders` supplies the current configured audience. The public root now wires this client and has private CONNECT/TLS HTTP evidence;
+live Google/browser compatibility remains unverified.
 
 The certificate path fetches the fixed Google certificate URL before parsing a
 token, checks RSA/SHA-256 or ECDSA/P-256 signatures using PEM public keys or X.509

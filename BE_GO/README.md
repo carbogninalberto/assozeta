@@ -46,14 +46,15 @@ The focused public HTTP adapter is:
 python TESTS/adapters/django/accounts.py --only login-http
 ```
 
-Current focused checks pass eighteen portable HTTP methods, five rate/session
-ordering methods, fifteen credential/effect scenarios and sixteen concurrent
-logins per backend. They verify actual Django ASGI and the compiled Go root,
+Current focused checks pass nineteen portable HTTP methods, five rate/session
+ordering methods, forty-one credential/effect scenarios and sixteen concurrent
+password plus sixteen concurrent social logins per backend. They verify actual Django ASGI and the compiled Go root,
 full response shapes, signed credentials, cookies, OTP, active/deleted accounts,
 username/deletion/audit/index effects, default cards, a converted avatar and
 failure before final token delivery. See [the public-login contract](internal/handler/login.md).
-The complete accounts adapter also passes after this composition change, with
-current-model fixture limits retained.
+The complete accounts adapter also passes after the provider transport change,
+retaining all current-model fixture limits. Race/vet, inventory, the rebuilt
+image startup/HTTP probe and the 95-case environment comparison pass.
 
 The composed image processor has eighteen pipelines, with explicitly reported
 missing formats and unresolved admission cases. The current reference is Pillow
@@ -65,8 +66,13 @@ limits still require supported-data sizing before activation; they are not a
 claim of full Pillow compatibility or a total RSS bound. Historical hash-cost
 limits and mixed-runtime creation races also remain open rollout requirements.
 
-Google/Apple clients are concrete, bounded dependencies with existing protocol
-oracles; end-to-end public HTTP provider evidence remains incomplete. Most
+Google/Apple clients are concrete, bounded dependencies. The public HTTP fixture
+now verifies both through a private HTTPS CONNECT proxy and ephemeral CA, including
+signatures, audience/expiry/email denials, aliases, OTP and Google access-token
+fallback. Each backend makes exactly 45 declared provider requests, including
+concurrent identities. No live provider or customer credential is used. Existing
+`REQUESTS_CA_BUNDLE` and `CURL_CA_BUNDLE` file precedence now reaches the provider
+transport; directory/rotation and complete proxy-policy compatibility remain open. Most
 business workflows, realtime, deployment switching and release delivery are
 still required. Login registration does not close the authentication ledger.
 
@@ -84,7 +90,7 @@ The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
 proxies/multiline values follow their existing Django settings; DB/Redis values
 remain literal. Google client ID and secret must be present (empty is accepted).
-See `internal/config/README.md` for the 87-case environment comparison, required
+See `internal/config/README.md` for the 95-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 The root also composes CORS before routing/session admission using the existing
 CORS settings. See `internal/middleware/cors.md` for 51 isolated HTTP contracts,

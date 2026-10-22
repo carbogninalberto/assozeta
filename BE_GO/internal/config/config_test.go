@@ -139,3 +139,20 @@ func TestJWTEnvironmentMatchesDjangoKeyPrecedence(t *testing.T) {
 		t.Fatal("invalid encoded key error must not leak input")
 	}
 }
+
+func TestRequestsCABundleEnvironmentPrecedence(t *testing.T) {
+	for _, tc := range []struct{ requests, curl, want string }{
+		{"", "", ""}, {"", "curl.pem", "curl.pem"}, {"requests.pem", "curl.pem", "requests.pem"}, {" requests.pem ", "curl.pem", " requests.pem "},
+	} {
+		env := environment()
+		env["REQUESTS_CA_BUNDLE"] = tc.requests
+		env["CURL_CA_BUNDLE"] = tc.curl
+		cfg, err := Parse(env)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cfg.ProviderCABundle != tc.want {
+			t.Fatal("requests CA precedence differs")
+		}
+	}
+}

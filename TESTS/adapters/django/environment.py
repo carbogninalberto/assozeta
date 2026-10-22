@@ -28,6 +28,7 @@ NAMES={'DATA_RESTORE_LOCK_PATH':'restore_lock_path','SECRET_KEY':'session_secret
 
 def main():
     import environ
+    import requests
     out=ROOT/'quality-reports/go-migration/environment';out.mkdir(parents=True,exist_ok=True)
     (out/'results.json').write_text(json.dumps({'success':False,'phase':'started'})+'\n')
     source=ast.parse((ROOT/'BE/core/settings.py').read_text())
@@ -38,7 +39,7 @@ def main():
     base={'AWS_ACCESS_KEY_ID':'fixture-access','AWS_SECRET_ACCESS_KEY':'fixture-secret','AWS_STORAGE_BUCKET_NAME':'fixture-bucket','AWS_S3_REGION_NAME':'us-east-1','AWS_S3_ENDPOINT_URL':'http://127.0.0.1:9000','AWS_LOCATION':'private','SECRET_KEY':'synthetic-session-secret','DEBUG':'False','DBTYPE':'POSTGRES','DBNAME':'fixture','DBUSER':'fixture','DBHOST':'/tmp/fixture','DBPORT':'5432',
           'DBPASSWORD':'database-fixture','REDIS_PASSWORD':'redis-fixture','SOCIAL_AUTH_GOOGLE_OAUTH2_KEY':'google-fixture',
           'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET':'sensitive-fixture-secret','JWT_SECRET_KEY':r'private\nfixture','JWT_PUBLIC_KEY':'public-fixture'}
-    expected={'restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
+    expected={'provider_ca_bundle':'','restore_lock_path':'','session_secret':'synthetic-session-secret','debug':False,'rate_enabled':True,'google':'google-fixture','google_secret':'sensitive-fixture-secret','apple':'','apple_team':'','apple_key':'','apple_secret':'',
               'jwt_private':'private\nfixture','jwt_public':'public-fixture','database_password':'database-fixture','redis_password':'redis-fixture',
               'origins':[],'cors_all':False,'cors_origins':[],'family':True,'federation':False,'multiple':False}
     cases=[]
@@ -138,7 +139,15 @@ def main():
     add('restore lock proxy cycle',lines='DATA_RESTORE_LOCK_PATH=$LOCK_ALIAS\nLOCK_ALIAS=$DATA_RESTORE_LOCK_PATH\n',error=True)
     add('restore lock retains spaces and Unicode',lines="DATA_RESTORE_LOCK_PATH=' /tmp/è.lock  '\n",want={'restore_lock_path':' /tmp/è.lock  '})
     add('restore lock path does not expand escapes',lines=r'DATA_RESTORE_LOCK_PATH="/tmp/literal\nlock"'+'\n',want={'restore_lock_path':r'/tmp/literal\nlock'})
-    assert len(cases)==87
+    add('requests CA file',lines='REQUESTS_CA_BUNDLE=/tmp/provider-ca.pem\n',want={'provider_ca_bundle':'/tmp/provider-ca.pem'})
+    add('curl CA fallback',lines='CURL_CA_BUNDLE=/tmp/curl-ca.pem\n',want={'provider_ca_bundle':'/tmp/curl-ca.pem'})
+    add('requests wins over curl CA',lines='REQUESTS_CA_BUNDLE=/tmp/provider-ca.pem\nCURL_CA_BUNDLE=/tmp/curl-ca.pem\n',want={'provider_ca_bundle':'/tmp/provider-ca.pem'})
+    add('empty requests uses curl CA',lines='REQUESTS_CA_BUNDLE=\nCURL_CA_BUNDLE=/tmp/curl-ca.pem\n',want={'provider_ca_bundle':'/tmp/curl-ca.pem'})
+    add('CA process beats file',lines='REQUESTS_CA_BUNDLE=/tmp/file.pem\n',process={'REQUESTS_CA_BUNDLE':'/tmp/process.pem'},want={'provider_ca_bundle':'/tmp/process.pem'})
+    add('CA values do not expand aliases',lines='REQUESTS_CA_BUNDLE=$CA_ALIAS\nCA_ALIAS=/tmp/not-used.pem\n',want={'provider_ca_bundle':'$CA_ALIAS'})
+    add('CA path spaces preserved',lines="REQUESTS_CA_BUNDLE=' /tmp/provider-ca.pem  '\n",want={'provider_ca_bundle':' /tmp/provider-ca.pem  '})
+    add('SSL_CERT_FILE does not select requests bundle',lines='SSL_CERT_FILE=/tmp/urllib-ca.pem\n')
+    assert len(cases)==95
     tool_env={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     with patch.object(logging.getLogger('environ.environ'),'disabled',True):
         for case in cases:
@@ -151,6 +160,9 @@ def main():
                 assert failed==case['error'],(case['name'],'Django error boundary',error_type)
                 if not failed:
                     actual={label:namespace[name] for name,label in NAMES.items()}
+                    with requests.Session() as session:
+                        trust=session.merge_environment_settings('https://provider.example.test',{},False,None,None)['verify']
+                    actual['provider_ca_bundle']='' if trust is True else trust
                     assert actual==case['expected'],(case['name'],'Django declared values differ')
     print(f'Django: {len(cases)} declared environment cases passed',flush=True)
     with tempfile.TemporaryDirectory(prefix='az-environment-') as directory:

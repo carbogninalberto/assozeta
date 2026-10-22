@@ -23,7 +23,8 @@ The typed configuration includes the existing Google client ID/secret and Apple
 client/team/key IDs/secret. Google ID and secret must be present, just as in Django;
 empty strings remain valid configuration and disable the relevant fallback ID.
 Apple fields default to empty. These are existing variables, not new credentials
-or a second configuration file. Parsing them does not register public social login.
+or a second configuration file. The login composition root supplies these values
+to the concrete provider clients.
 
 The existing `SECRET_KEY` is required and exposed internally as `SessionSecret`.
 Its value follows `env.str`, including leading-dollar references, literal escape
@@ -31,7 +32,7 @@ sequences, Unicode, whitespace and an explicitly empty assignment. Unlike JWT
 keys it has no base64 override or multiline expansion. These are settings-assignment
 semantics; Django may reject an empty secret when it initializes runtime settings.
 The composition root supplies the value to session authentication on the public
-refresh route. Public login and other route composition remain open.
+login/refresh routes; complete authentication and route parity remain open.
 
 JWT raw keys must be present unless a nonempty base64 value supplies the key.
 Base64 takes precedence and is decoded without subsequent multiline expansion.
@@ -62,8 +63,9 @@ omits the session secret, provider credentials, JWT keys and the Redis password;
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Eighty-seven declared cases execute selected unchanged AST assignments
-from actual `core.settings` with django-environ 0.12.0, then run Go `Load` over the
+environment. Ninety-five declared cases execute selected unchanged AST assignments
+from actual `core.settings` with django-environ 0.12.0 and the actual requests
+CA-bundle precedence resolver, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,
 precedence, raw/proxy differences, multiline/base64 behavior, unchanged process
 environment and redaction. It does not import settings, load developer `.env`,
@@ -105,3 +107,13 @@ coverage; see `../../pkg/storage/s3credentials/README.md`. Complete fallback-cha
 compatibility and production composition remain open. Explicit file-read failures and PostgreSQL/listener validation
 are Go startup checks; these tests do not claim every Django startup failure has
 the same diagnostic or timing. Backend switching remains unimplemented.
+
+The provider HTTP transport also consumes the existing literal `REQUESTS_CA_BUNDLE`
+and `CURL_CA_BUNDLE` paths. Nonempty requests configuration wins; otherwise curl is
+used. Empty values, spaces and leading dollar signs follow requests' raw environment
+lookup, without Django `env.str` proxy expansion. Explicit PEM files replace default
+trust. `SSL_CERT_FILE` does not select this requests bundle. Invalid files cause
+provider HTTPS failure at use, with no credential/path disclosure or trust fallback.
+The separate Google JWK transport is unaffected. OpenSSL hashed directories, live
+bundle rotation, full proxy precedence/file handling and default-root equivalence
+remain compatibility gaps; see `../../pkg/social/README.md`.
