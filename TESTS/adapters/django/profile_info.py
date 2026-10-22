@@ -16,6 +16,8 @@ from .login_response import base_profile,association_profile,FEATURES,FLAGS
 
 
 def run(work,log,tool_env,address):
+    artifacts=ROOT/'quality-reports/go-migration/profile-info'
+    artifacts.mkdir(parents=True,exist_ok=True)
     from django.apps import apps
     from django.conf import settings
     from django.core.asgi import get_asgi_application
@@ -156,7 +158,7 @@ def run(work,log,tool_env,address):
             poll(ready,bool,timeout=30);contracts(base,flags)
             total+=len(selected);concurrent+=8
         fixture['cases']=cases;fixture['concurrent_count']=32;path.write_text(json.dumps(fixture))
-        subprocess.run(['go','test','-race','-tags=profileinfointegration','./internal/service','-run','^TestProfileInfoPostgres$','-count=1'],cwd=ROOT/'BE_GO',check=True,timeout=120,env={**tool_env,'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable','ASSOZETA_IDENTITY_CACHE':address,'TESTS_PROFILE_INFO_FIXTURE':str(path),'ASSOZETA_IMAGE_CODEC':str(work/'image-codec'),'ASSOZETA_PROFILE_PLAN_OUTPUT':str(ROOT/'quality-reports/go-migration/profile-info/details-plan.json')})
+        subprocess.run(['go','test','-race','-tags=profileinfointegration','./internal/service','-run','^TestProfileInfoPostgres$','-count=1'],cwd=ROOT/'BE_GO',check=True,timeout=120,env={**tool_env,'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable','ASSOZETA_IDENTITY_CACHE':address,'TESTS_PROFILE_INFO_FIXTURE':str(path),'ASSOZETA_IMAGE_CODEC':str(work/'image-codec'),'ASSOZETA_PROFILE_PLAN_OUTPUT':str(artifacts/'details-plan.json')})
         assert snapshot()==before and cache_snapshot()==cache_before,'profile query checks changed existing state'
         return {'http_scenarios_per_backend':total,'concurrent_reads_per_backend':concurrent,'registration_modes':8,'fresh_state_reads_per_backend':4,'query_plan_additional_tenants':4000,'complete_profile_parity':False}
     finally:
