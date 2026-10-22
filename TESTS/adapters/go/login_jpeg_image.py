@@ -38,6 +38,7 @@ from TESTS.adapters.django.login_gif import vectors as gif_vectors
 from TESTS.adapters.django.login_images import vectors as dispatch_vectors
 from TESTS.adapters.django.login_ico import vectors as ico_vectors
 from TESTS.adapters.django.login_webp import vectors as webp_vectors
+from TESTS.adapters.django.login_cur import vectors as cur_vectors
 
 
 def main():
@@ -88,6 +89,8 @@ def main():
         (work / 'sun.json').chmod(0o644)
         (work / 'gbr.json').write_text(json.dumps(gbr_vectors()))
         (work / 'gbr.json').chmod(0o644)
+        (work / 'cur.json').write_text(json.dumps(cur_vectors()))
+        (work / 'cur.json').chmod(0o644)
         (work / 'webp.json').write_text(json.dumps(webp_vectors()))
         (work / 'webp.json').chmod(0o644)
         (work / 'ico.json').write_text(json.dumps(ico_vectors()))
@@ -140,6 +143,7 @@ def main():
             '--env', 'ASSOZETA_IMAGE_DISPATCH_FIXTURE=/fixtures/dispatch.json',
             '--env', 'ASSOZETA_ICO_FIXTURE=/fixtures/ico.json',
             '--env', 'ASSOZETA_WEBP_FIXTURE=/fixtures/webp.json',
+            '--env', 'ASSOZETA_CUR_FIXTURE=/fixtures/cur.json',
             '--env', 'ASSOZETA_PNG_STREAM_FIXTURE=/fixtures/png-stream.json',
             '--env', 'ASSOZETA_BILEVEL_FIXTURE=/fixtures/bilevel.json',
             '--env', 'ASSOZETA_PNG_HEADER_FIXTURE=/fixtures/png-header.json',
@@ -149,7 +153,7 @@ def main():
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ICOAgainstPillow|WebPAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ICOAgainstPillow|WebPAgainstPillow|CURAgainstPillow)$', '-test.v'],
             check=True, timeout=180)
 
 

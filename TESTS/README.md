@@ -956,12 +956,12 @@ adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
 
-`adapters/django/login_images.py` checks shared data-URI/file composition: 72
+`adapters/django/login_images.py` checks shared data-URI/file composition: 80
 Django-matching cases and two explicitly reported missing-codec gaps. The latter
 are not counted as passing parity; `complete_image_parity` remains false and the
 gap list is not exhaustive. Mixed-format admission, cancellation, output limits
 and the shipped-image test are included. `accounts.py --only login-response`
-checks all 45 response cases, including nine concrete image cases and concurrent
+checks all 46 response cases, including ten concrete image cases and concurrent
 composition against PostgreSQL; the full accounts adapter includes both checks.
 
 
@@ -987,3 +987,13 @@ in addition to libjpeg/zlib; Linux CI installs `libwebp-dev`. The shipped image
 includes static libwebp with its license, patent grant and verified binary/package
 version. Its full codec oracle includes WebP. Shared URI parity is now 72 cases
 with two demonstrated, non-exhaustive gaps; the response fixture has 45 cases.
+
+`adapters/django/login_cur.py` adds 495 declared CUR header/pixel/file cases, checked
+against Pillow and the actual Django helper. These distinguish strict two-dimension
+directory selection, literal zero dimensions, offset-dependent alpha, lazy DIB
+loading and recoverable versus terminal opening errors. It also checks bounded
+stages, 32 concurrent requests, queue expiry, native JPEG reaping and reuse.
+The shared dispatcher has 80 passing URI comparisons plus two non-exhaustive gaps;
+the response fixture has 46 cases including CUR avatar/logo conversion. The accounts
+and shipped-image adapters require these cases. BMP (512 cases) and ICO (678 cases)
+regressions verify that the shared DIB parser still preserves their behavior.

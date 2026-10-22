@@ -124,7 +124,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 45 explicit full response cases including nine concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 46 explicit full response cases including ten concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1228,3 +1228,18 @@ response and dispatch cases plus the existing authentication/task/HTTP/scope/res
 checks. Terminal evidence is retained in
 `quality-reports/go-migration/webp/full-accounts-results.json`; its two demonstrated
 image gaps remain explicit and non-exhaustive.
+
+CUR now joins shared image dispatch through the existing DIB parser and sample
+decoder. Its 495 authored cases preserve directory selection, offset-specific alpha,
+lazy loading, halved-height admission and recoverable/terminal opening failures.
+Eighty URI comparisons include CUR/TGA precedence, with two separate non-exhaustive
+gaps. The PostgreSQL fixture contains 46 responses and ten concrete image scenarios.
+Existing BMP/ICO oracles and Go race/vet checks pass. Evidence is retained under
+`quality-reports/go-migration/cur/`. Public login and all remaining migration
+requirements are still open.
+
+The complete production-Python 3.13.2 accounts rerun also passes with these CUR
+and response cases and the existing task/authentication/HTTP/scope/restore checks.
+Its terminal evidence is `quality-reports/go-migration/cur/full-accounts-results.json`.
+The final shipped image passes all codec comparisons. Neither this current-model
+rehearsal nor the two demonstrated image gaps establishes full migration parity.

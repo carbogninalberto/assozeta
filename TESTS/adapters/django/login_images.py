@@ -18,6 +18,7 @@ def vectors():
     from TESTS.adapters.django.login_bmp import bitmap
     from TESTS.adapters.django.login_gbr import gbr
     from TESTS.adapters.django.login_msp import msp
+    from TESTS.adapters.django.login_cur import cur
     # Test the default preinit-before-init registry ordering used by Image.open.
     Image.preinit();Image.init()
     cases=[];compress=helper()
@@ -76,6 +77,21 @@ def vectors():
         add('unimplemented TIFF' if fmt=='TIFF' else 'ICO PNG frame' if fmt=='ICO' else 'WebP frame',out.getvalue(),mode='RGB',size=(16,16),pixels=b'\x49'*768,gap=fmt=='TIFF')
     pixels=bytes([10,20,30,127])*6;im=Image.frombytes('RGBA',(3,2),pixels);out=io.BytesIO();im.save(out,format='WEBP',lossless=True,exact=True)
     add('WebP alpha',out.getvalue(),mode='RGBA',pixels=pixels)
+    pixels=bytes([100,50,25,127])*6
+    cursor=cur([(bitmap(3,4,32,bytes([25,50,100,127])*6,dib=True),3,2)])
+    add('CUR alpha',cursor,mode='RGBA',pixels=pixels)
+    add('CUR lazy passthrough',cur([(bitmap(200,200,24,dib=True),200,100)]),original=True)
+    tga=bytearray(18);tga[2]=2;struct.pack_into('<HH',tga,12,1,1);tga[16]=24
+    add('TGA after empty CUR directory',bytes(tga)+bytes([73])*3,mode='RGB',size=(1,1),pixels=bytes([73])*3)
+    def collision(dib):
+        data=bytearray(cur([(dib,1,1)]));struct.pack_into('<H',data,12,1);struct.pack_into('<I',data,14,0x00180001)
+        return bytes(data)
+    dib=bitmap(1,2,32,bytes([25,50,100,127]),dib=True)
+    add('CUR precedes TGA',collision(dib),mode='RGBA',size=(1,1),pixels=bytes([100,50,25,127]))
+    add('terminal CUR header precedes TGA',collision(struct.pack('<I',4)),original=True)
+    add('TGA after truncated CUR header word',collision(b''),mode='RGB',size=(1,1),pixels=bytes([0,0,22]))
+    add('TGA after zero CUR dimensions',collision(bitmap(0,0,24,dib=True)),mode='RGB',size=(1,1),pixels=bytes([0,0,22]))
+    add('TGA after truncated CUR bitfields',collision(bitmap(1,2,32,dib=True,comp=3)),mode='RGB',size=(1,1),pixels=bytes([0,0,22]))
     qoi=b'qoif'+struct.pack('>II',1,1)+bytes([3,0])+b'\xfe\x49\x49\x49'+bytes(8)
     pcd=qoi+bytes(2048-len(qoi))+b'PCD_'+bytes(1535)
     add('PCD before QOI remains a gap',pcd,original=True,gap=True)

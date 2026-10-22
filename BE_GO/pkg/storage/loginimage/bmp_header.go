@@ -32,7 +32,16 @@ func bmpSignature(data []byte) bool {
 // ReadBMPHeader preserves Pillow 11.1's lazy admission, including its palette
 // mode reduction and offset quirks. maxBytes bounds consumed header bytes.
 func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, error) {
+	return readBMPHeader(ctx, data, maxBytes, false)
+}
+
+// CUR adjusts the DIB height before Image.open applies its pixel ceiling.
+func readBMPHeader(ctx context.Context, data []byte, maxBytes int, halfHeight bool) (BMPHeader, error) {
 	empty := BMPHeader{}
+	rejected, terminal := ErrBMPHeader, ErrBMPHeader
+	if halfHeight {
+		rejected, terminal = ErrCURRejected, ErrCURTerminal
+	}
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
@@ -45,14 +54,14 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 			return nil, err
 		}
 		if n < 0 {
-			return nil, ErrBMPHeader
+			return nil, rejected
 		}
 		available := min(n, len(data)-pos)
 		if available > maxBytes-pos {
 			return nil, ErrWorkingLimit
 		}
 		if strict && available != n {
-			return nil, ErrBMPHeader
+			return nil, rejected
 		}
 		out := data[pos : pos+available]
 		pos += available
@@ -60,7 +69,7 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 	}
 	h := BMPHeader{Format: "DIB"}
 	offset := uint64(0)
-	if len(data) >= 2 && string(data[:2]) == "BM" {
+	if !halfHeight && len(data) >= 2 && string(data[:2]) == "BM" {
 		b, err := read(14, true)
 		if err != nil {
 			return empty, err
@@ -74,10 +83,13 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 	}
 	n := binary.LittleEndian.Uint32(b)
 	if !bmpHeaderSize(n) {
-		return empty, ErrBMPHeader
+		return empty, terminal
 	}
 	b, err = read(int(n)-4, true)
 	if err != nil {
+		if errors.Is(err, rejected) {
+			return empty, terminal
+		}
 		return empty, err
 	}
 	le := binary.LittleEndian
@@ -95,7 +107,7 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 			y = (1 << 32) - y
 		}
 		if w > uint64(^uint(0)>>1) || y > uint64(^uint(0)>>1) {
-			return empty, ErrBMPHeader
+			return empty, terminal
 		}
 		h.Width = int(w)
 		h.Height = int(y)
@@ -121,10 +133,12 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 			}
 		}
 	}
-	if h.Width <= 0 || h.Height <= 0 || uint64(h.Width)*uint64(h.Height) > 178956970 {
-		return empty, ErrBMPHeader
+	if !halfHeight {
+		if h.Width <= 0 || h.Height <= 0 || uint64(h.Width)*uint64(h.Height) > 178956970 {
+			return empty, terminal
+		}
+		h.PixelWarning = uint64(h.Width)*uint64(h.Height) > 89478485
 	}
-	h.PixelWarning = uint64(h.Width)*uint64(h.Height) > 89478485
 	switch h.Bits {
 	case 1:
 		h.Mode = "P"
@@ -145,7 +159,7 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 		h.Mode = "RGB"
 		h.RawMode = "BGRX"
 	default:
-		return empty, ErrBMPHeader
+		return empty, terminal
 	}
 	if colors == 0 {
 		colors = uint64(1) << h.Bits
@@ -158,7 +172,7 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 	case 3:
 		h.RawMode = bmpMaskMode(h.Bits, masks)
 		if h.RawMode == "" {
-			return empty, ErrBMPHeader
+			return empty, terminal
 		}
 		for _, c := range h.RawMode {
 			if c == 'A' {
@@ -166,12 +180,12 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 			}
 		}
 	default:
-		return empty, ErrBMPHeader
+		return empty, terminal
 	}
 	if h.Mode == "P" {
 		// Pillow compares each entry with o8(index), wrapping at 256.
 		if colors > 65536 {
-			return empty, ErrBMPHeader
+			return empty, terminal
 		}
 		palette, e := read(padding*int(colors), false)
 		if e != nil {
@@ -203,12 +217,24 @@ func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, e
 			h.InvalidPalette = len(palette)/padding > 256
 		}
 	}
+	// The CUR driver completes DIB admission before halving height. ImageFile
+	// rejects zero dimensions recoverably; Image.open's bomb ceiling is terminal.
+	if halfHeight {
+		h.Height /= 2
+		if h.Width <= 0 || h.Height <= 0 {
+			return empty, rejected
+		}
+		if uint64(h.Width)*uint64(h.Height) > 178956970 {
+			return empty, terminal
+		}
+		h.PixelWarning = uint64(h.Width)*uint64(h.Height) > 89478485
+	}
 	stride := ((uint64(h.Width)*uint64(h.Bits) + 31) >> 3) &^ uint64(3)
 	if offset == 0 {
 		offset = uint64(pos)
 	}
 	if stride > uint64(^uint(0)>>1) || offset > uint64(^uint(0)>>1) {
-		return empty, ErrBMPHeader
+		return empty, terminal
 	}
 	h.Stride = int(stride)
 	h.DataOffset = int(offset)
