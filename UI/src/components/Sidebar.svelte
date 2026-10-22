@@ -928,7 +928,7 @@
                         </div>
                     {/if}
                 {/if}
-                {#if $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
+                {#if $manualEnabled}
                     <!-- svelte-ignore a11y-role-supports-aria-props -->
                     <div
                         id="manuale_assozeta"

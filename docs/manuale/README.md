@@ -26,6 +26,13 @@ rollback selezionano il manuale insieme all'immagine. Non viene modificato il
 volume `manuale_data`. Una release che richiede il manuale ma lo contiene corrotto
 o incompleto non supera l'avvio; non ripiega su istruzioni incompatibili.
 
+Per gli impianti già installati basta il normale aggiornamento a una release che
+include il pacchetto: non servono modifiche a `.env` né alla configurazione salvata.
+Il vecchio flag di branding `showManual` non nasconde più i collegamenti in testata
+e nella barra laterale: per gli utenti gestionali sono visibili quando il manuale
+è disponibile. Le immagini precedenti all'integrazione, compresa la v1.0.17, non
+acquisiscono il pacchetto senza aggiornare l'applicazione.
+
 Prima di pubblicare immagini installabili, la pipeline esegue la prova reale
 `selfhost/tests/manual-release-smoke.sh PACKAGE_RUNTIME VERSION
 --previous-package PREVIOUS_RUNTIME --previous-release PREVIOUS_VERSION`. La prova usa

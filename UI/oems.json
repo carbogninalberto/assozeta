@@ -65,8 +65,7 @@
                 "showPlanUpgrades": false,
                 "showPrivacyPolicy": false,
                 "showTermsOfService": false,
-                "showPreferences": false,
-                "showManual": false
+                "showPreferences": false
             }
         }
     }

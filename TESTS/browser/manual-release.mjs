@@ -16,6 +16,14 @@ try {
     // Prove that no external manual/AI/CDN request is needed for the reader.
     await context.route('**/*', route => new URL(route.request().url()).origin === origin
         ? route.continue() : route.abort());
+    // Older installations may retain the former branding opt-out. A bundled
+    // manual must remain discoverable without editing that saved setting.
+    await context.route('**/api/instance/config', async route => {
+        const response = await route.fetch();
+        const config = await response.json();
+        config.oem.displaySettings.sidebar.showManual = false;
+        await route.fulfill({response, json: config});
+    });
     page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin + '/#/login');
@@ -26,6 +34,7 @@ try {
     const notice = page.getByRole('button', {name: /Ok, grazie/});
     if (await notice.isVisible()) await notice.click();
     const help = page.locator('#bkn_header').getByRole('link', {name: "Manuale d'uso", exact: true});
+    await expect(page.locator('#manuale_assozeta').getByRole('link', {name: "Manuale d'uso", exact: true})).toBeVisible();
     const [reader] = await Promise.all([page.waitForEvent('popup'), help.click()]);
     reader.on('pageerror', error => errors.push(error.message));
     await expect(reader.getByRole('heading', {name: 'Come possiamo aiutarti?', exact: true})).toBeVisible();
@@ -51,7 +60,7 @@ try {
     await expect(chat).toContainText('Non ho trovato istruzioni verificate');
     assert.deepEqual(errors, []);
     await fs.writeFile(path.join(output, 'results.json'), JSON.stringify({status: 'passed',
-        realLogin: true, externalNetworkBlocked: true, reader: true, screenshots: true,
+        realLogin: true, externalNetworkBlocked: true, legacyManualSettingIgnored: true, reader: true, screenshots: true,
         deepLinkReload: true, manualOnlyWebSocketChat: true, unsupportedAbstained: true}));
 } catch (error) {
     await page?.screenshot({path: path.join(output, 'failure.png'), fullPage: true}).catch(() => {});

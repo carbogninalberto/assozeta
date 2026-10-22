@@ -27,8 +27,7 @@ DEFAULT_DISPLAY_SETTINGS = {
         "showPlanUpgrades": False,
         "showPrivacyPolicy": True,
         "showTermsOfService": True,
-        "showPreferences": True,
-        "showManual": True
+        "showPreferences": True
     }
 }
 

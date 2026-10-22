@@ -206,7 +206,7 @@
         <!--begin::Topbar-->
         <div class="topbar">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            {#if $role !== 'athlete' && $manualEnabled && $oemConfig?.displaySettings?.sidebar?.showManual}
+            {#if $role !== 'athlete' && $manualEnabled}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <a
                     class="topbar-item"
