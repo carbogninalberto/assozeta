@@ -43,7 +43,7 @@ def main():
                             '--mount',f'type=bind,source={probe},target=/contract-probe,readonly',args.image],check=True,capture_output=True,timeout=30)
             uid=subprocess.check_output(['docker','exec',name,'id','-u'],text=True,timeout=10).strip();assert uid=='10001'
             result=subprocess.check_output(['docker','exec',name,'/contract-probe'],text=True,timeout=30)
-            record=json.loads(result);assert record['success'] and record['http_cases']==9
+            record=json.loads(result);assert record['success'] and record['http_cases']==10
             print(json.dumps({**record,'uid':uid,'read_only':True,'network':'none'}),flush=True)
         finally:
             subprocess.run(['docker','rm','--force',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)

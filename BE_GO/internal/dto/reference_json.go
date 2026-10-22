@@ -50,6 +50,9 @@ func parseReferenceJSON(data []byte, constants map[int64]any, rateLimit bool) (a
 				if err != nil {
 					return nil, err
 				}
+				if original, exists := constants[decoder.InputOffset()]; exists {
+					key = original
+				}
 				name, ok := key.(string)
 				if !ok {
 					return nil, domain.ErrInvalidScopedRequest

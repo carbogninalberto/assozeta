@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -12,6 +14,10 @@ import (
 // in the endpoint handler. AllowAny routes have distinct anonymous-scope behavior.
 // Write handlers must pass the returned actor/effective/scope to their audit services.
 func authenticatedRESTIdentity(c echo.Context, actors *service.ActorAuthentication, identities *service.IdentityResolver, method, operation string) (*domain.ResolvedIdentity, error) {
+	return authenticatedRESTIdentityBody(c, actors, identities, method, operation, readAuthenticatedRESTBody)
+}
+
+func authenticatedRESTIdentityBody(c echo.Context, actors *service.ActorAuthentication, identities *service.IdentityResolver, method, operation string, readBody func(echo.Context) (any, error)) (*domain.ResolvedIdentity, error) {
 	r := c.Request()
 	c.Response().Header().Set("Allow", method+", OPTIONS")
 	c.Response().Header().Set("Content-Language", restLanguage(r))
@@ -29,7 +35,7 @@ func authenticatedRESTIdentity(c echo.Context, actors *service.ActorAuthenticati
 	var body any
 	var bodyErr error
 	if actor != nil && (r.Header.Get("X-Impersonation-Id") != "" || r.Header.Get("User-Id") != "") {
-		body, bodyErr = readAuthenticatedRESTBody(c)
+		body, bodyErr = readBody(c)
 	}
 	// IsAuthenticated resolves scope even for an anonymous request. Forged
 	// impersonation therefore retains its denial before missing-credential 401.
@@ -57,10 +63,14 @@ type authenticatedRESTBody struct {
 const authenticatedRESTBodyKey = "assozeta.authenticated-rest.body"
 
 func readAuthenticatedRESTBody(c echo.Context) (any, error) {
+	return readAuthenticatedRESTBodyUsing(c, readReferenceBody)
+}
+
+func readAuthenticatedRESTBodyUsing(c echo.Context, readBody func(*http.Request) (any, error)) (any, error) {
 	if cached, ok := c.Get(authenticatedRESTBodyKey).(authenticatedRESTBody); ok {
 		return cached.value, cached.err
 	}
-	value, err := readReferenceBody(c.Request())
+	value, err := readBody(c.Request())
 	c.Set(authenticatedRESTBodyKey, authenticatedRESTBody{value: value, err: err})
 	return value, err
 }

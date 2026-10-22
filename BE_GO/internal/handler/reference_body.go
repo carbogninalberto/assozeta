@@ -100,6 +100,10 @@ func parseReferenceForm(raw string) domain.RequestObject {
 }
 
 func readReferenceBody(r *http.Request) (any, error) {
+	return readReferenceBodyJSON(r, dto.ParseReferenceJSON)
+}
+
+func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error)) (any, error) {
 	if r.Body == nil || r.ContentLength == 0 {
 		return domain.RequestObject{}, nil
 	}
@@ -173,7 +177,7 @@ func readReferenceBody(r *http.Request) (any, error) {
 		if !utf8.Valid(raw) {
 			return nil, &restInputError{Status: 400, Detail: dto.UTF8ParseDetail(raw)}
 		}
-		value, err := dto.ParseReferenceJSON(raw)
+		value, err := parseJSON(raw)
 		if err != nil {
 			if errors.Is(err, dto.ErrReferenceNesting) {
 				return nil, err

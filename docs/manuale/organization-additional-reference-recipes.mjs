@@ -1,3 +1,5 @@
+// Table preferences re-reviewed: mapped-owner settings and their audits commit
+// atomically; unrelated profile/credential changes are preserved. UI behavior is unchanged.
 // Profile source re-reviewed: profile, association and audit writes now commit atomically;
 // locked reads and selected columns preserve concurrent changes. Successful settings
 // and registration workflows remain unchanged; failed saves leave no partial profile.
@@ -41,7 +43,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/PaymentListArchive.svelte": "6d6a23a9476b388069d43efafa3d8446fd8cb3f493f949d96d13f937b97cf07b",
     "UI/src/routes/accounting/receipts/ReceiptList.svelte": "69b7c0c6188590a5be6db126e497cc1e7aa9dabf5ef91e2e07f05499928b7e51",
     "UI/src/routes/association/archive/Archive.svelte": "dc000f87fcd9fe66213b4b753049d0b9e254e907092ce12f6e4759fbb63d9a24",
-    "BE/application/views/profile_views.py": "66719e85b6e918943fd7246f7ec15c39e98b77f1ab32b8b443f9a3de60b94697",
+    "BE/application/views/profile_views.py": "f3efd7ea691981da8f4bf2da5a17a2efb149652c631c4c62ae49672aefe686bd",
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "ffa954fe33b662b6cf580c8e19474ca8a24d19b517af83f92fdf392263f48c4d",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",

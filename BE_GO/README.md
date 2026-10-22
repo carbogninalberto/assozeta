@@ -265,3 +265,9 @@ updates selected fields and commits their audits/indexes together. Django's
 confirmed partial-write behavior is repaired to the same invariant. See the
 [profile update contract](internal/handler/profile_update.md) for the 52 HTTP cases,
 concurrency, query counts, failure boundaries and remaining acceptance gaps.
+
+`POST /profile/settings/tables` preserves partial JSONField input, mapped-owner
+preferences for collaborators and atomic audit/index writes. Missing fields do
+not modify the user. Django's stale full-row saves are repaired to preserve
+concurrent personal fields and credentials. The [table-preference contract](internal/handler/profile_tables.md)
+records 62 HTTP cases, concurrency/query counts and remaining acceptance gaps.
