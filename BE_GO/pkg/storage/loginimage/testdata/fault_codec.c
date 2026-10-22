@@ -7,8 +7,10 @@ int main(int argc, char **argv) {
     if (getenv("ASSOZETA_TEST_SECRET")) return 3;
     int decoding = argc == 4 && !strcmp(argv[1], "decode");
     int png = argc == 11 && !strcmp(argv[1], "png-inflate");
+    int webp = argc == 4 && (!strcmp(argv[1], "webp-info") || !strcmp(argv[1], "webp-decode"));
     int code;
-    if (png) code = atoi(argv[3]);
+    if (webp) code = atoi(argv[2]) - 16;
+    else if (png) code = atoi(argv[3]);
     else if (decoding) code = atoi(argv[2]) - 3;
     else if (argc == 6 && !strcmp(argv[1], "encode") &&
              (!strcmp(argv[2], "L") || !strcmp(argv[2], "RGB"))) code = atoi(argv[3]);
@@ -28,6 +30,14 @@ int main(int argc, char **argv) {
     case 4: return 3;
     case 5: fputs("invalid JPEG", stdout); return 0;
     case 6: {
+        if (webp) {
+            unsigned char frame[35] = {'A','Z','W','P'};
+            frame[7] = 1; frame[11] = 1; frame[12] = 3;
+            frame[19] = 1; frame[23] = 1;
+            frame[32] = 42; frame[33] = 43; frame[34] = 44;
+            size_t n = !strcmp(argv[1], "webp-info") ? 32 : 35;
+            return fwrite(frame, 1, n, stdout) == n ? 0 : 3;
+        }
         if (png) {
             unsigned char frame[47] = {'A','Z','P','N'};
             frame[15] = 3;

@@ -77,8 +77,10 @@ static int positive_size(const char *value, size_t *result) {
 }
 int decode_jpeg(int argc, char **argv);
 int inflate_png(int argc, char **argv);
+int process_webp(int argc, char **argv);
 
 int main(int argc, char **argv) {
+    if (argc > 1 && (!strcmp(argv[1], "webp-info") || !strcmp(argv[1], "webp-decode") || !strcmp(argv[1], "webp-version"))) return process_webp(argc, argv);
     if (argc > 1 && !strcmp(argv[1], "png-inflate")) return inflate_png(argc, argv);
     if (argc > 1 && !strcmp(argv[1], "decode")) return decode_jpeg(argc, argv);
     size_t width, height, limit, comment_size = 0;

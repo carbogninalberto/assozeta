@@ -160,16 +160,18 @@ def run(work, log, tool_env):
     add('default configuration is composed and persisted',created=True)
     from TESTS.adapters.django.login_images import vectors as image_vectors
     images={case['name']:case for case in image_vectors()}
-    png=images['PNG alpha'];gif=images['GIF 3x2'];tga=images['TGA alpha'];gbr=images['GBR'];webp=images['unimplemented WEBP'];ppm=images['PPM 3x2'];collision=images['GBR precedes SUN']
+    png=images['PNG alpha'];gif=images['GIF 3x2'];tga=images['TGA alpha'];gbr=images['GBR'];unsupported=images['unimplemented TIFF'];ppm=images['PPM 3x2'];collision=images['GBR precedes SUN']
     add('owner transforms avatar and logo before creating card',avatar=png['uri'],avatar_expected=png['expected'],logo=gif['uri'],logo_expected=gif['expected'],created=True)
     add('collaborator transforms own avatar and owner logo',role=3,instructors=1,avatar=tga['uri'],avatar_expected=tga['expected'],logo=gbr['uri'],logo_expected=gbr['expected'])
-    add('athlete bypasses image conversion',role=2,avatar=webp['uri'])
-    add('administrator bypasses image conversion',admin=True,avatar=webp['uri'])
-    add('complete sections bypass unsupported logo',regulation='present',demand='present',logo=webp['uri'],avatar=ppm['uri'],avatar_expected=ppm['expected'])
+    add('athlete bypasses image conversion',role=2,avatar=unsupported['uri'])
+    add('administrator bypasses image conversion',admin=True,avatar=unsupported['uri'])
+    add('complete sections bypass unsupported logo',regulation='present',demand='present',logo=unsupported['uri'],avatar=ppm['uri'],avatar_expected=ppm['expected'])
     add('malformed image URIs remain unchanged',avatar='opaque,A',logo='literal-logo')
     add('GBR SUN collision retains original logo',logo=collision['uri'],logo_expected=collision['expected'])
     ico=images['ICO PNG frame']
     add('owner transforms ICO logo',logo=ico['uri'],logo_expected=ico['expected'])
+    webp=images['WebP frame'];alpha=images['WebP alpha']
+    add('owner transforms WebP avatar and logo',avatar=alpha['uri'],avatar_expected=alpha['expected'],logo=webp['uri'],logo_expected=webp['expected'])
     def snapshot():
         return {m._meta.label:list(m._base_manager.order_by('pk').values()) for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     before=snapshot()
@@ -211,7 +213,7 @@ def run(work, log, tool_env):
     finally:
         with connection.cursor() as cursor: cursor.execute('RESET ROLE')
     assert snapshot()==before, 'Django permission rehearsal changed state'
-    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; eight concrete image response cases included',flush=True)
+    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; nine concrete image response cases included',flush=True)
     from TESTS.adapters.django.login_jpeg import build_codec
     codec=work/'response-codec';build_codec(codec,log,tool_env)
     path=work/'login-response.json';path.write_text(json.dumps({'now':NOW.isoformat(),'tokens':TOKENS,'cases':cases,'files':file_cases,'booleans':[{'value':v,'expected':e} for v,e in boolean_cases]}));path.chmod(0o600)

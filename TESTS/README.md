@@ -498,7 +498,7 @@ customer image is committed, and all managed tables remain unchanged.
 native protocol failures, output limits, timeout/cancellation, bounded process
 admission and 32 concurrent encodes. All 54 transformed pixel fixtures now also
 compare their JPEG output. The account suite runs both stages; the JPEG stage can
-also run independently with Pillow, `cc`, `pkg-config` and libjpeg development files.
+also run independently with Pillow, `cc`, `pkg-config`, libjpeg, zlib and libwebp/libwebpdemux development files.
 
 After building the image, run:
 
@@ -956,12 +956,12 @@ adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
 
-`adapters/django/login_images.py` checks shared data-URI/file composition: 70
-Django-matching cases and three explicitly reported missing-codec gaps. The latter
+`adapters/django/login_images.py` checks shared data-URI/file composition: 72
+Django-matching cases and two explicitly reported missing-codec gaps. The latter
 are not counted as passing parity; `complete_image_parity` remains false and the
 gap list is not exhaustive. Mixed-format admission, cancellation, output limits
 and the shipped-image test are included. `accounts.py --only login-response`
-checks all 44 response cases, including eight concrete image cases and concurrent
+checks all 45 response cases, including nine concrete image cases and concurrent
 composition against PostgreSQL; the full accounts adapter includes both checks.
 
 
@@ -973,3 +973,17 @@ The full accounts and shipped-image adapters run it; the concrete PostgreSQL
 response fixture now has 44 cases, including an ICO logo. Shared image dispatch
 has 70 parity cases and three demonstrated missing-codec gaps; the gap census is
 not exhaustive and public login remains incomplete.
+
+
+`adapters/django/login_webp.py` adds 178 declared WebP header/pixel/file comparisons
+against Pillow and the actual Django helper. It checks static and animated first
+frames, partial canvases, alpha, quantized grayscale, metadata, truncation, deferred
+pixel errors and file-size policy. Native protocol and stage-budget tests accompany
+concurrency, cancellation, reaping and reuse. `adapters/go/login_webp_sanitizer.py`
+checks 380 exact frames/errors/protocol outcomes under ASan/UBSan, including a
+canvas allocation guard. The existing PNG sanitizer also uses the combined helper.
+All local native builds now require `pkg-config` packages `libwebpdemux` and `libwebp`
+in addition to libjpeg/zlib; Linux CI installs `libwebp-dev`. The shipped image
+includes static libwebp with its license, patent grant and verified binary/package
+version. Its full codec oracle includes WebP. Shared URI parity is now 72 cases
+with two demonstrated, non-exhaustive gaps; the response fixture has 45 cases.

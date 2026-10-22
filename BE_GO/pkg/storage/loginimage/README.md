@@ -2,7 +2,7 @@
 
 This package implements bounded Pillow-compatible file pipelines and the shared
 `Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
-fourteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+fifteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
@@ -900,22 +900,22 @@ unproven interpretation. External plugin registration/reordering is unverified.
 
 Missing Pillow formats retain candidate guards, including no-signature text and
 scientific formats. These guards are deliberately conservative: some malformed or
-ambiguous data that Django preserves may currently fail in Go. WebP, TIFF,
-PCD and other missing codecs must still be implemented; the three demonstrated
+ambiguous data that Django preserves may currently fail in Go. TIFF,
+PCD and other missing codecs must still be implemented; the two demonstrated
 fixture gaps are **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 70 whole-URI expectations against
-the actual Django helper and the composed Go processor. Fourteen pipelines,
+`TESTS/adapters/django/login_images.py` asserts 72 whole-URI expectations against
+the actual Django helper and the composed Go processor. Fifteen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
-files, the 1 MiB size boundary and registry collisions are exercised. Three separate
+files, the 1 MiB size boundary and registry collisions are exercised. Two separate
 missing-codec cases deliberately report `complete_image_parity=false`; they are
 never counted as passing parity. The shipped-image test includes both sets.
 
 Race/integration tests mix formats through one processor, enforce a two-child
 bound across different codecs, cancel running/queued work, check deadline and exact
 URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
-now injects this concrete processor: 44 response cases include eight image cases,
+now injects this concrete processor: 45 response cases include nine image cases,
 32 mixed concurrent responses, unchanged database snapshots after declared card/
 audit resets, and a missing-decoder failure with no response tokens or card query.
 No public HTTP login, full registry coverage or backend activation is established.
@@ -967,3 +967,60 @@ queue expiry, reaping and slot reuse. The accounts and shipped-image adapters in
 this oracle. Shared URI parity now has 70 cases and three demonstrated, non-exhaustive
 gaps. Forty-four PostgreSQL response cases include a concrete ICO logo conversion.
 Public login, remaining formats and backend activation remain unfinished.
+
+
+## WebP native first-frame pipeline
+
+`WebPDecoder` uses the isolated helper's `webp-info` and `webp-decode` operations.
+Like [Pillow 11.1's WebP binding](https://github.com/python-pillow/Pillow/blob/11.1.0/src/_webp.c),
+it uses `WebPAnimDecoder` for static and animated files. Feature inspection selects
+RGB or RGBA; default animation decoding returns a complete first-frame canvas,
+including frame offsets and alpha. The parser validates the container before
+reporting dimensions. Pixel corruption may remain deferred until decoding.
+`WebPFileProcessor` inspects first, applies the login size policy, and decodes pixels
+only when conversion is needed. ICC/EXIF/XMP do not become JPEG encoder options.
+
+A single file slot and outer deadline cover inspection, decoding, transform and
+JPEG output. There are at most two WebP child invocations and one JPEG child per
+conversion. No native decoder is shared across requests. Input and output are
+bounded and cancellation kills/reaps the current child before releasing admission.
+Malformed native input returns the original URI; resource/cancellation/unavailable
+codec errors return no file result. Valid WebP signatures require the native parser
+even for unchanged-size passthrough. Shared registry collisions remain a separate,
+incomplete gate; native format support does not prove all registry interactions.
+
+The helper preflights demuxed dimensions before constructing `WebPAnimDecoder`,
+which allocates two RGBA canvases. The explicit logical native budget includes the
+whole input, both canvases and a packed RGB row when needed. It also enforces the
+Pillow hard pixel ceiling. Demux/codec internal allocations, allocator overhead and
+combined process RSS are not covered by this logical budget. Deployment budgets
+and supported-data sizing remain unverified while public login is unwired.
+
+The `AZWP` protocol has a fixed 32-byte header: magic; big-endian width and height;
+channel count plus three zero bytes; frame count, loop count and ARGB background;
+and four zero bytes. Decode responses append exact packed RGB/RGBA samples.
+The Go reader validates dimensions, reserved bytes, mode, counts and exact length.
+Neither a failed child nor an invalid frame exposes partial output. The native
+helper accepts only exact declared stdin length and emits no malformed-input result.
+
+`TESTS/adapters/django/login_webp.py` has 178 declared header/pixel/file cases:
+lossless RGB/RGBA, independently declared lossy grayscale values, transparent pixels,
+animated first frames and partial canvases, ignored metadata, truncated RIFF data,
+deferred entropy errors and whole-file size boundaries. Every case checks actual
+Pillow and Django. Native failure doubles verify malformed/oversized output,
+missing executables, sanitized environments, queue expiry, cancellation at parser,
+decoder and encoder stages, reaping and reuse. Thirty-two concurrent calls and
+exact stage budgets are checked. The PostgreSQL response fixture has 45 cases,
+including WebP avatar/logo conversion; TIFF still proves unsupported-image bypass
+and no-token/no-card-query failure behavior.
+
+The shipped helper links static libwebp and distributes its BSD license, patent
+grant and exact package version. The image test checks those files and the binary
+version. The same oracle passes against local libwebp 1.6.0 and Alpine 3.21's
+libwebp 1.4.0, with Pillow's libwebp 1.5.0 reference. This is evidence for the declared
+cases, not a blanket equivalence claim across library versions. The WebP wrapper
+passes 380 exact frame/error/protocol ASan/UBSan checks, including allocation bounds
+before a 100-million-pixel canvas; linked system libraries are not rebuilt with
+sanitizers. The existing PNG sanitizer suite also passes with the combined helper.
+Shared URI tests now report 72 parity cases and two demonstrated missing-codec
+gaps; that census remains non-exhaustive. Public login and remaining formats stay open.
