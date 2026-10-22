@@ -41,6 +41,7 @@ type Config struct {
 	ListenAddress                 string
 	Version                       string
 	databaseURL                   string
+	migrationDatabaseURL          string
 	RedisAddress                  string
 	RedisUsername                 string
 	RedisPassword                 string `json:"-"`
@@ -52,6 +53,12 @@ type Config struct {
 func (c Config) String() string      { return "Assozeta Go configuration (credentials redacted)" }
 func (c Config) GoString() string    { return c.String() }
 func (c Config) DatabaseURL() string { return c.databaseURL }
+
+// MigrationDatabaseURL keeps session advisory locks on one PostgreSQL backend.
+// Transaction-mode PgBouncer may route consecutive statements to different
+// sessions, so migrations use the original DBHOST/DBPORT with the same identity
+// and TLS configuration. Runtime application queries retain DatabaseURL routing.
+func (c Config) MigrationDatabaseURL() string { return c.migrationDatabaseURL }
 
 // Load gives process environment priority over the optional existing .env file.
 // It does not mutate the process environment or log parser input on failure.
@@ -124,6 +131,11 @@ func Parse(values map[string]string) (Config, error) {
 		query.Set("sslrootcert", values["DBSSLROOTCERT"])
 	}
 	dsn := url.URL{Scheme: "postgres", User: url.UserPassword(values["DBUSER"], values["DBPASSWORD"]), RawQuery: query.Encode()}
+	migrationDSN := dsn
+	migrationQuery := migrationDSN.Query()
+	migrationQuery.Set("host", values["DBHOST"])
+	migrationQuery.Set("port", get("DBPORT", "5432"))
+	migrationDSN.RawQuery = migrationQuery.Encode()
 	debugValue, err := environmentString(values, "DEBUG", "", true)
 	if err != nil {
 		return Config{}, err
@@ -199,7 +211,7 @@ func Parse(values map[string]string) (Config, error) {
 	}
 	return Config{WhitelabelName: whitelabelName, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
-		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
+		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
 		RedisUsername: get("REDIS_USERNAME", "default"), RedisPassword: values["REDIS_PASSWORD"],
 		// Existing Django code uses string truthiness, not env.bool, for this flag.

@@ -40,6 +40,10 @@ The reusable `go-quality.yml` runs for PRs and publication. Release events also
 require its compatibility inventory gate; the current incomplete Go ledger is
 deliberately denied. Passing inventory alone does not prove complete migration
 acceptance.
+The Go job also requires native worker/migration process checks and execution of
+the packaged commands in private PostgreSQL containers. The image fixture verifies
+non-root/read-only execution, maintenance exclusion and shutdown/crash recovery;
+it does not activate a backend or prove scheduler and Celery handoff parity.
 
 Local workflow validation:
 

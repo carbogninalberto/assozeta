@@ -17,6 +17,10 @@ import (
 //go:embed *.sql
 var files embed.FS
 
+// CurrentVersion is the operational schema understood by this binary. Worker
+// startup may check it without running Apply or changing migration history.
+const CurrentVersion = 2
+
 // Apply has no force/down operation: rolling back a binary retains job intent.
 // The dedicated connection and migration history cannot affect Django's history.
 // Callers must hold the deployment lifecycle lock before applying in an install.

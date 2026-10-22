@@ -3,7 +3,9 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server
+RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
+    CGO_ENABLED=0 go build -trimpath -o /worker ./cmd/worker && \
+    CGO_ENABLED=0 go build -trimpath -o /migrate ./cmd/migrate
 
 # Keep the codec independent of Go's CGO toolchain and isolate codec faults in a
 # bounded child process. Static linking also avoids cross-stage musl ABI drift.
@@ -25,6 +27,8 @@ WORKDIR /app
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION
 COPY --from=builder /server /app/server
+COPY --from=builder /worker /app/worker
+COPY --from=builder /migrate /app/migrate
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt
 COPY --from=codec-builder /zlib-version /app/licenses/zlib-version.txt

@@ -19,6 +19,16 @@ keys follow leading-dollar references, resolved after the complete file/process
 merge. The original required/default rule follows every reference. Cycles and
 missing required targets produce errors naming only the original setting.
 
+Database queries continue to use the configured PgBouncer host/port only when
+`USE_PGBOUNCER` is exactly `True`. Explicit Go operational migrations use the
+separate internal `MigrationDatabaseURL()` accessor, built from the original
+`DBHOST` and `DBPORT` with the same database, credentials, connection timeout and
+conditional TLS settings. No new environment variable or credential is needed.
+The migration driver's session advisory locks require a direct PostgreSQL
+connection; transaction-mode pooling cannot provide that guarantee. Both URLs
+remain private and absent from JSON and diagnostic representations. This
+connection choice does not transfer migration or worker ownership to Go.
+
 The typed configuration includes the existing Google client ID/secret and Apple
 client/team/key IDs/secret. Google ID and secret must be present, just as in Django;
 empty strings remain valid configuration and disable the relevant fallback ID.

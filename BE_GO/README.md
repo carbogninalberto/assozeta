@@ -104,9 +104,11 @@ The server requires the existing `SECRET_KEY` and valid
 `JWT_SECRET_KEY`/`JWT_PUBLIC_KEY` values (or
 their supported base64 variants); invalid keys stop startup without logging them.
 
-Business migration ownership remains in Django. The Dockerfile follows the
-reference multi-stage non-root pattern, but is not yet part of release images or
-updater manifests. No operator activation/rollback command exists yet. Do not
+Business migration ownership remains in Django. The image is delivered alongside
+Django through the ordinary build/update path, with an installable-release gate
+rejecting incomplete parity. It includes explicit worker and operational migration
+commands; see [process contracts and evidence](internal/worker_process.md).
+No operator activation/rollback command exists yet. Do not
 point this incomplete implementation at an installation as its selected backend.
 
 Shared login rate counters now preserve Django Redis keys, windows, thresholds
