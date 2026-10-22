@@ -3,7 +3,7 @@
 This draft retains all fourteen [accepted requirements](requirements.md).
 **It is not ready for production activation or merge as a backend replacement.**
 Work is isolated on `codex/go-backend-parity`, reconciled through
-`main@fddcee3`. Django retains production API selection, business-schema,
+`main@941321e`. Django retains production API selection, business-schema,
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
@@ -36,8 +36,17 @@ repository. Current-head CI remains an independent gate.
 
 The user additionally requires periodic main alignment and communicating parallel
 agents. The initial fetch confirmed `origin/main@fddcee3` was contained. Upstream
-subsequently advanced to `65f0535` with a manual-visibility fix; rebase and
-source-binding reassessment are required before pushing this increment.
+subsequently advanced to `65f0535` with a manual-visibility fix. The completed
+rebase has exactly the tree of an independently computed clean merge. The subsequent
+rebase also includes `941321e`, a manual-delivery goal document without runtime changes.
+[Independent reassessment](main-alignment.md) found and repaired pre-SQL audit-index
+exceptions that previously left successful partial Django mutations. Six focused
+PostgreSQL tests and separate JWT/fresh-connection proof pass, together with
+324 existing Django tests and the profile/table/2FA Go/Django HTTP, concurrency
+and query checks. Twenty manual recipe modules now bind reviewed current sources;
+190 manual Python, eleven manual Node, 163 frontend and three SSO diagnostic tests
+pass. The private companion patch changes 507 bindings with all 44 authored MDX
+files unchanged; separate-repository publication remains pending.
 
 ## Implementation and architecture
 
@@ -85,7 +94,7 @@ those differences remain explicit activation gaps.
 | Operations | Restore HTTP admission, shared lifecycle locks, dependency loss/recovery, idle SIGTERM and non-root image checks have evidence. Historical restore, active-request/task/WebSocket draining, normal release delivery and backend switching remain unverified. |
 
 Current reference: Python 3.13.16, Pillow 13.0.0, Django 5.2.18, DRF 3.17.2 and
-SimpleJWT 5.5.1, reconciled with `main@fddcee3`. Tests use disposable PostgreSQL,
+SimpleJWT 5.5.1, reconciled with `main@941321e`. Tests use disposable PostgreSQL,
 Redis, synthetic identities/keys and private provider fixtures. Current-model
 `migrate --run-syncdb` does **not** verify historical migration chains. No skipped,
 mocked-away or unexecuted required behavior counts as parity. Detailed component

@@ -1,7 +1,7 @@
 """
 @ copyright: Bakney SRL
 """
-from django.db import transaction
+from application.audit_context import atomic_audit_mutation
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -91,7 +91,7 @@ def two_fa_update(request):
     # Lock and reload only the mutation target: authentication/scoping has already
     # selected it. Restricted update fields preserve concurrent password/profile
     # changes instead of writing the earlier request.user snapshot back wholesale.
-    with transaction.atomic():
+    with atomic_audit_mutation():
         current = User.original_objects.select_for_update().get(pk=user.pk)
         current.two_fa = bool(enable)
         fields = ['two_fa']

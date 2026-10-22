@@ -44,9 +44,9 @@ const reviewed = {
 };
 const contracts = [
   ["UI/src/App.svelte","{:else if isManualPage}",20],
-  ["UI/src/components/Header.svelte","aria-label=\"Manuale d'uso\"",16],
+  ["UI/src/components/Header.svelte","{#if $role !== 'athlete' && $manualEnabled}",19],
   ["UI/src/routes.js","'/manuale':",13],
-  ["UI/src/components/Sidebar.svelte","id=\"manuale_assozeta\"",16],
+  ["UI/src/components/Sidebar.svelte","{#if $manualEnabled}",18],
   ["UI/src/routes/manuale/Manuale.svelte","async function load()",40],
   ["UI/src/routes/manuale/ManualContent.svelte","part.kind === 'cards'",22],
   ["UI/src/routes/manuale/manualPresentation.js","export function manualLinkUrl(",22],
