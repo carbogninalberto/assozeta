@@ -308,11 +308,16 @@ type lifetimeCancelRead struct {
 	once   sync.Once
 }
 
-func (*lifetimeCancelRead) TraceQueryStart(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryStartData) context.Context {
-	return ctx
+type lifetimeReadQueryKey struct{}
+
+func (*lifetimeCancelRead) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
+	// Cancel only after the snapshot has actually read its business relation.
+	// The preceding shared restore fence SELECT acquires no relation lock.
+	return context.WithValue(ctx, lifetimeReadQueryKey{}, strings.Contains(data.SQL, "FROM bakney_user"))
 }
-func (t *lifetimeCancelRead) TraceQueryEnd(_ context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
-	if data.Err == nil && strings.HasPrefix(data.CommandTag.String(), "SELECT") {
+func (t *lifetimeCancelRead) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
+	businessRead, _ := ctx.Value(lifetimeReadQueryKey{}).(bool)
+	if businessRead && data.Err == nil && strings.HasPrefix(data.CommandTag.String(), "SELECT") {
 		t.once.Do(t.cancel)
 	}
 }

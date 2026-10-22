@@ -94,6 +94,36 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	remote := "127.0.0.1"
 	audit := domain.LoginAuditContext{RemoteAddress: &remote}
 	results := make([]*dto.LoginResponse, len(fixture.Cases))
+	// Count each acknowledged transaction fence in addition to the unchanged
+	// Django business baseline; early exits reach fewer transaction boundaries.
+	fenceQueries := map[string]int{
+		"athlete complete session":                       4,
+		"association creates default card":               7,
+		"association existing card":                      7,
+		"collaborator owner association":                 7,
+		"administrator avoids association":               4,
+		"valid OTP":                                      4,
+		"missing OTP retains normalization":              2,
+		"wrong OTP retains normalization":                2,
+		"wrong password prevents normalization":          1,
+		"disabled account":                               1,
+		"deleted account":                                1,
+		"unsupported role retains normalization":         2,
+		"missing association retains normalization":      3,
+		"future deletion clears after response":          4,
+		"today deletion clears after response":           4,
+		"past deletion retained":                         4,
+		"historical zero role":                           4,
+		"final database write fails after card creation": 7,
+		"social Google athlete session":                  3,
+		"social Apple creates default card":              6,
+		"social Google collaborator session":             6,
+		"social missing OTP retains normalization":       1,
+		"social wrong OTP retains normalization":         1,
+		"social token denial prevents normalization":     0,
+		"social Apple administrator session":             3,
+		"social finalization fails after card creation":  6,
+	}
 	for i, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			otp, err := dto.ParseReferenceJSON(tc.OTP)
@@ -136,8 +166,12 @@ func TestPasswordSessionPostgres(t *testing.T) {
 			if outcome != tc.Outcome {
 				t.Fatal("wrong session outcome", outcome, tc.Outcome)
 			}
-			if got := counter.count.Load(); got != int64(tc.Queries) {
-				t.Errorf("query count %d want %d", got, tc.Queries)
+			protocol, known := fenceQueries[tc.Name]
+			if !known {
+				t.Fatal("missing explicit session protocol query budget")
+			}
+			if got := counter.count.Load(); got != int64(tc.Queries+protocol) {
+				t.Errorf("query count %d want %d", got, tc.Queries+protocol)
 			}
 			if outcome != "" {
 				if result != nil {

@@ -50,7 +50,14 @@ stops before session completion. All managed model tables must match after the
 declared resets. Audit fields/indexes, selected identities and provider call
 counts are checked explicitly.
 
-Small admission cases use exactly one, two, five or six business statements.
+Small admission cases retain exactly one, two, five or six business statements.
+The composed `SocialAdmission` also opens one owned `LoginPreparation`
+transaction after successful selection and before OTP. Its acknowledged server
+fence adds one SELECT: unchanged normalization costs 2→3 statements, changed
+normalization 5→6, and trusted-actor auditing 6→7. Successful admission and OTP
+denial both include that fence. Selection/provider failures stop earlier and
+remain at one statement. These counts exclude BEGIN/COMMIT, as the original
+regression counter does; the Django fixture baselines remain unchanged.
 Read-only selection for 1/16/128/512 candidates uses one SELECT; 32 concurrent
 selections use 32 SELECTs with a four-connection pool. A persisted inactive/active
 transition is observed immediately. Cancellation, closed-database failure and

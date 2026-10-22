@@ -87,9 +87,9 @@ strict fiscal boundaries, foreign ownership, each write/audit/index failure,
 stale completion, cancellation/pool recovery, overlapping jobs, real executor
 heartbeat, failure on page two, and truthful historical linked audits.
 
-Query tracing requires `2*ceil(n/100)+4` statements for independent subscriptions
-and `6*ceil(n/100)+4` for distinct linked subscription/payment/invoice chains,
-including BEGIN/final empty read/completion/COMMIT, across increasing sizes through
+Query tracing requires `2*ceil(n/100)+5` statements for independent subscriptions
+and `6*ceil(n/100)+5` for distinct linked subscription/payment/invoice chains,
+including BEGIN/shared transaction fence/final empty read/completion/COMMIT, across increasing sizes through
 512. An executed 4,096-row page plan returns 100 rows using existing subscription,
 association and user indexes. These fixtures claim no general latency improvement.
 

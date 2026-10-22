@@ -12,7 +12,8 @@ The preparation service owns the transaction; the repository owns parameterized
 SQL over existing Django tables. Unchanged names require one locked account read
 and generate no audit. Changed names use one bounded lookup for associations of
 both the target and trusted actor, one update and one audit insert. An applicable
-association index adds one insert: four queries without an index, five with one.
+association index adds one insert. Including the shared transaction fence gives
+five queries without an index and six with one; unchanged names use two.
 No model, schema or migration ownership changes are introduced.
 
 Audit fields preserve the existing user update representation: action 1, user

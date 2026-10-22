@@ -109,12 +109,12 @@ func TestProfileTablesPostgres(t *testing.T) {
 		if err = flow.Update(ctx, identity, dto.ProfileTablesRequest{Present: true, Value: values}, domain.LoginAuditContext{}); err != nil {
 			t.Fatal(size, err)
 		}
-		q.expect(t, 2, 1, 2)
+		q.expect(t, 3, 1, 2)
 		q.reset()
 		if err = flow.Update(ctx, identity, dto.ProfileTablesRequest{Present: true, Value: values}, domain.LoginAuditContext{}); err != nil {
 			t.Fatal(size, err)
 		}
-		q.expect(t, 1, 1, 0)
+		q.expect(t, 2, 1, 0)
 	}
 	restore()
 	q.reset()
@@ -129,7 +129,7 @@ func TestProfileTablesPostgres(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	q.expect(t, 25, 24, 2)
+	q.expect(t, 49, 24, 2)
 	var events int
 	if err = db.GetContext(ctx, &events, `SELECT count(*) FROM auditlog_logentry WHERE id>$1`, lastAudit); err != nil || events != 1 {
 		t.Fatal("duplicate audit", events, err)
@@ -159,9 +159,9 @@ func TestProfileTablesPostgres(t *testing.T) {
 			t.Fatal(stage, "did not cancel", err)
 		}
 		if stage == "row" {
-			q.expect(t, 1, 0, 0)
+			q.expect(t, 2, 0, 0)
 		} else {
-			q.expect(t, 2, 1, 1)
+			q.expect(t, 3, 1, 1)
 		}
 		if db.Stats().InUse != 0 {
 			t.Fatal("cancelled write retained connection")

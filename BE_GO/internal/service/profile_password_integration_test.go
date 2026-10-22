@@ -72,13 +72,13 @@ func TestProfilePasswordPostgres(t *testing.T) {
 	q.reads.Store(0)
 	q.writes.Store(0)
 	got, err := flow.Change(ctx, identity, input)
-	if err != nil || got != ProfilePasswordChanged || q.reads.Load() != 1 || q.writes.Load() != 1 {
+	if err != nil || got != ProfilePasswordChanged || q.reads.Load() != 2 || q.writes.Load() != 1 {
 		t.Fatalf("changed=%v err=%v reads=%d writes=%d", got, err, q.reads.Load(), q.writes.Load())
 	}
 	q.reads.Store(0)
 	q.writes.Store(0)
 	got, err = flow.Change(ctx, identity, input)
-	if err != nil || got != ProfilePasswordIncorrect || q.reads.Load() != 1 || q.writes.Load() != 0 {
+	if err != nil || got != ProfilePasswordIncorrect || q.reads.Load() != 2 || q.writes.Load() != 0 {
 		t.Fatalf("old credential accepted: %v %v", got, err)
 	}
 	restore()
@@ -103,7 +103,7 @@ func TestProfilePasswordPostgres(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	if changed.Load() != 1 || incorrect.Load() != 23 || q.reads.Load() != 24 || q.writes.Load() != 1 {
+	if changed.Load() != 1 || incorrect.Load() != 23 || q.reads.Load() != 48 || q.writes.Load() != 1 {
 		t.Fatalf("concurrent outcomes %d/%d queries %d/%d", changed.Load(), incorrect.Load(), q.reads.Load(), q.writes.Load())
 	}
 	restore()

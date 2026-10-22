@@ -33,16 +33,17 @@ Association welcome decisions use the account's own nondeleted association:
 The repository uses a read-only repeatable-read transaction: one parameterized
 query joins account/association and the first matching instance configuration;
 ordinary association profiles add one onboarding query capped at two rows.
-Transaction commands are not counted as business SELECTs. There is no duplicate
+Transaction commands are not counted as business SELECTs. Total traced SELECTs
+also include the shared transaction fence. There is no duplicate
 onboarding count scan or per-row request. The schema remains Django-owned.
 
 `TESTS/adapters/django/login_profile.py` writes explicit expected JSON, compares it
 with the actual serializer through DRF's JSON renderer, then runs Go against the
 same disposable PostgreSQL. Forty-six cases cover preference fields, category
 references, Google JSON representations, setup precedence, the exact date
-boundary, and onboarding counts 0/1/2/128/512. Real query counters assert one/two
-SELECTs; 32 concurrent association reads with 512 duplicate onboarding rows use
-64 SELECTs and release a four-connection pool. A persisted logo transition is
+boundary, and onboarding counts 0/1/2/128/512. Real query counters assert two/three
+SELECTs including the shared fence; 32 concurrent association reads with 512 duplicate onboarding rows use
+96 SELECTs and release a four-connection pool. A persisted logo transition is
 visible on the next read. All managed tables match after the declared transition
 is restored. Unit tests reject partial/foreign data and cancellation and cover
 UTC elapsed-time behavior across a local daylight-saving boundary.

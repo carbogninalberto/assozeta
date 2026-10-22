@@ -181,7 +181,7 @@ func TestLoginPreparationPostgresAtomicityAndConcurrency(t *testing.T) {
 	counter.count.Store(0)
 	gate := NewLoginPreparation(store, time.Now)
 	result, err := gate.Prepare(context.Background(), id, domain.LoginAuditContext{})
-	if err != nil || result.Username != "AUDIT-ATOMIC" || counter.count.Load() != 5 {
+	if err != nil || result.Username != "AUDIT-ATOMIC" || counter.count.Load() != 6 {
 		t.Fatalf("changed username query count=%d error=%v", counter.count.Load(), err)
 	}
 	counter.count.Store(0)
@@ -197,7 +197,7 @@ func TestLoginPreparationPostgresAtomicityAndConcurrency(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	if counter.count.Load() != 32 || db.Stats().InUse != 0 {
+	if counter.count.Load() != 64 || db.Stats().InUse != 0 {
 		t.Fatal("unchanged preparation did extra reads/writes or leaked pool connections")
 	}
 	var count int
@@ -230,8 +230,8 @@ func TestLoginPreparationPostgresAtomicityAndConcurrency(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	if counter.count.Load() != 36 {
-		t.Fatalf("concurrent normalization queries=%d; want 36", counter.count.Load())
+	if counter.count.Load() != 68 {
+		t.Fatalf("concurrent normalization queries=%d; want 68 including 32 server fences", counter.count.Load())
 	}
 	if db.Get(&count, `SELECT count(*) FROM auditlog_logentry WHERE object_pk=$1`, id) != nil || count != 1 {
 		t.Fatal("concurrent normalization created duplicate audits")

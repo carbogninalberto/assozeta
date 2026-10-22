@@ -355,7 +355,9 @@ func TestSchedulePagesPostgres(t *testing.T) {
 		queries.reset()
 		result, e := pager(candidates, 16).Tick(ctx, domain.ScheduleCursor{})
 		captured := queries.snapshot()
-		if e != nil || len(result.Outcomes) != 16 || len(captured) > 2+12*16 {
+		// Two discovery reads, eleven existing statements and one acknowledged
+		// shared server fence for each successful publication; count every statement.
+		if e != nil || len(result.Outcomes) != 16 || len(captured) != 2+(11+1)*16 {
 			t.Fatal("publication query budget", len(captured), e)
 		}
 		candidateReads := 0

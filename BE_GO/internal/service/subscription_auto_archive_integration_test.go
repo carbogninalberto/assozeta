@@ -329,7 +329,7 @@ func TestSubscriptionAutoArchivePostgres(t *testing.T) {
 				t.Fatal(e)
 			}
 			got := trace.count.Load()
-			want := int64(2*((n+99)/100) + 4)
+			want := int64(2*((n+99)/100) + 5)
 			if got != want {
 				t.Fatalf("%d rows: %d statements want %d", n, got, want)
 			}
@@ -356,7 +356,7 @@ func TestSubscriptionAutoArchivePostgres(t *testing.T) {
 				t.Fatal(e)
 			}
 			got := trace.count.Load()
-			want := int64(6*((n+99)/100) + 4)
+			want := int64(6*((n+99)/100) + 5)
 			if got != want {
 				t.Fatalf("%d linked rows: %d statements want %d", n, got, want)
 			}

@@ -84,6 +84,12 @@ jobs:
         run: python TESTS/adapters/go/schedule_page.py
       - name: Verify transaction cleanup retains lifecycle admission
         run: python TESTS/adapters/go/transaction_lifetime.py
+      - name: Verify queue mutations retain a server transaction fence
+        run: python TESTS/adapters/go/server_fence.py
+      - name: Verify transaction pooling and CLI database drains
+        run: python TESTS/adapters/go/restore_drain_pooler.py
+      - name: Verify Django restore drains cooperating Go transactions
+        run: python TESTS/adapters/django/restore_server_barrier.py
       - name: Verify legacy medical storage keys
         run: python TESTS/adapters/django/document_keys.py
       - name: Verify existing storage environment and backend options
@@ -138,6 +144,9 @@ jobs:
             quality-reports/go-migration/occurrence/
             quality-reports/go-migration/schedule-page/
             quality-reports/go-migration/transaction-lifetime/
+            quality-reports/go-migration/server-fence/
+            quality-reports/go-migration/restore-drain-pooler/
+            quality-reports/go-migration/restore-server-barrier/
             quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/subscription-token-cleanup/
             quality-reports/go-migration/associate-age-update/

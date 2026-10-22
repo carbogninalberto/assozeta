@@ -51,9 +51,9 @@ buffers. Highest-ID lookups use backward index-only scans with two to three
 buffers. These fixture measurements do not establish throughput or physical
 I/O bounds for arbitrary production data or index bloat.
 
-Sixteen successful publications use 178 measured statements: two discovery
-statements plus eleven per independently locked source transaction. The explicit
-test allowance also covers a possible enqueue conflict. This is bounded by page
+Sixteen successful publications use 194 measured statements: two discovery
+statements plus twelve per independently locked source transaction, including its
+shared server-drain fence. The test requires this exact cost for successful publications. This is bounded by page
 size and preserves independent publication rollback; it is not one transaction
 over every schedule. Separate service tests cover deadlines, malformed candidate
 pages, redacted errors and preservation of earlier outcomes after a later failure.

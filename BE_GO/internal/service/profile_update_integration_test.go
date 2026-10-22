@@ -110,12 +110,12 @@ func TestProfileUpdatePostgres(t *testing.T) {
 	if _, err = flow.Change(ctx, identity, input, domain.LoginAuditContext{}); err != nil {
 		t.Fatal(err)
 	}
-	q.expect(t, 3, 2, 4)
+	q.expect(t, 4, 2, 4)
 	q.reset()
 	if _, err = flow.Change(ctx, identity, input, domain.LoginAuditContext{}); err != nil {
 		t.Fatal(err)
 	}
-	q.expect(t, 2, 2, 0)
+	q.expect(t, 3, 2, 0)
 	restore()
 	q.reset()
 	var wg sync.WaitGroup
@@ -129,7 +129,7 @@ func TestProfileUpdatePostgres(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	q.expect(t, 49, 48, 4)
+	q.expect(t, 73, 48, 4)
 	var events int
 	if err = db.GetContext(ctx, &events, `SELECT count(*) FROM auditlog_logentry WHERE id>$1`, lastAudit); err != nil || events != 2 {
 		t.Fatal("duplicate audit", events, err)
@@ -160,9 +160,9 @@ func TestProfileUpdatePostgres(t *testing.T) {
 			t.Fatal(locked, "did not cancel", err)
 		}
 		if locked == "association" {
-			q.expect(t, 3, 1, 2)
+			q.expect(t, 4, 1, 2)
 		} else {
-			q.expect(t, 1, 0, 0)
+			q.expect(t, 2, 0, 0)
 		}
 		if db.Stats().InUse != 0 {
 			t.Fatal("cancelled mutation retained connection")

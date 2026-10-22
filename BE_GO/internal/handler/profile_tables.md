@@ -59,12 +59,12 @@ locked-row scenarios per backend: unrelated profile/credential preservation,
 duplicate preferences and ordered competing preferences. The full accounts
 adapter includes this workflow.
 
-The required `profiletablesintegration` suite measures 2 SELECT / 1 UPDATE /
+The required `profiletablesintegration` suite measures 3 SELECT / 1 UPDATE /
 2 INSERT across 1, 16, 128 and 512 table entries. Identical repetition uses
-1 / 1 / 0, while an omitted field uses 0 / 0 / 0. Twenty-four concurrent writes
-produce 25 / 24 / 2 and one audit. Cancellation before the row lock and during
+2 / 1 / 0, while an omitted field uses 0 / 0 / 0. Twenty-four concurrent writes
+produce 49 / 24 / 2 and one audit. Cancellation before the row lock and during
 audit insertion rolls back, releases connections and recovers within a four-slot
-pool. Counts exclude HTTP admission; they do not prove application-wide latency
+pool. Counts include the shared transaction fence and exclude HTTP admission; they do not prove application-wide latency
 or memory bounds.
 
 TDD and final evidence are under ignored

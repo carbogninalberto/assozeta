@@ -85,11 +85,12 @@ func TestLoginFinalizationPostgres(t *testing.T) {
 			if err := NewLoginFinalization(store, clock).Finalize(context.Background(), tc.ID, tc.Audit); err != nil {
 				t.Fatal(err)
 			}
-			want := int64(2)
+			// The shared server fence adds one SELECT to every business path.
+			want := int64(3)
 			if tc.Clear {
-				want = 4
+				want = 5
 				if tc.Association != nil {
-					want = 5
+					want = 6
 				}
 			}
 			if counter.count.Load() != want {
@@ -135,7 +136,7 @@ func TestLoginFinalizationPostgres(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		if counter.count.Load() != 67 || db.Stats().InUse != 0 {
+		if counter.count.Load() != 99 || db.Stats().InUse != 0 {
 			t.Fatalf("query bound/pool: %d", counter.count.Load())
 		}
 		var n int

@@ -53,8 +53,8 @@ owner/collaborator avatar and logo conversion, athlete/administrator bypass,
 complete-section logo bypass, malformed URIs, GBR/SUN precedence, ICO logo conversion, and WebP/CUR/PCD/PIXAR avatar/logo conversion. Default card
 creation/audit follows successful conversion. Thirty-two mixed image responses
 retain the existing query bounds and four-connection pool. A real missing decoder
-returns no response or supplied tokens after five profile/association/settings
-statements, before the two card-configuration statements. Fixture mutations are
+returns no response or supplied tokens after eight profile/association/settings
+statements including their shared fences, before the three card-configuration statements. Fixture mutations are
 restored and the complete managed-table snapshot remains equal.
 
 A nil processor still fails when an image requires processing. Unit doubles remain
@@ -91,10 +91,10 @@ The same adapter establishes 28 explicitly expected boolean values, eight dotenv
 cases and cyclic-proxy failure using the installed Django environment parser.
 Go config parsing and loading must match those expected outcomes.
 
-Ordinary association/collaborator responses use seven business statements with
-existing configuration and ten for default creation. Instructor counts
-0/1/2/128/512 do not change the seven-statement bound. Thirty-two concurrent
-512-instructor compositions use 224 statements on a four-connection pool. Current
+Ordinary association/collaborator responses use eleven statements with
+existing configuration and fourteen for default creation, including four shared fences. Instructor counts
+0/1/2/128/512 do not change the eleven-statement bound. Thirty-two concurrent
+512-instructor compositions use 352 statements on a four-connection pool. Current
 settings/instructor changes are observed after explicit persisted transitions.
 A real denied-SELECT role proves instructor access is required for collaborator
 responses but is not a new dependency of owner responses. Errors and cancellation

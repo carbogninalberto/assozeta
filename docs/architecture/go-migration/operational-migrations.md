@@ -103,6 +103,35 @@ the surviving packaged migrator and exact restored occurrence receipt. Its
 IDs and dirty source state; `update.log` retains the executed failure matrix.
 The earlier frozen-controller/browser run remains version-2 evidence.
 
+The server-transaction-drain follow-up repeats the fresh production rehearsal
+with both rebuilt application images. It passes initial migration, both API
+checks, backup, corrupt-input rejection, dirty-history post-swap rollback and
+valid restore, including exact Go-written preferences, audit/index rows, pending
+intent and retained occurrence receipts. The initial attempt exceeded the
+existing 30-second Django snapshot-probe deadline; the unchanged rerun passes.
+No deadline or expected result was relaxed. All fixture containers, volumes and
+networks are absent after cleanup. Evidence is under ignored
+`quality-reports/go-migration/server-transaction-drain/`: `production.log`,
+`production-probe-timeout.log`, `production-cleanup.json` and `image-sources.json`.
+The manifest identifies both immutable images and their dirty source snapshot
+based on `149c415`; it is not clean-commit or scheduler-activation evidence.
+The 148 self-host unit tests also pass, including the six CLI drain-ordering,
+failure and historical-capability checks. The current-controller follow-up also
+passes its complete update/recovery matrix, including interruption while the
+packaged Go migrator waits in PostgreSQL and exact restored job/occurrence state.
+`server-transaction-drain/update-recovery.json` records immutable fixture image
+IDs and dirty source state; `update.log` retains the executed matrix. Cleanup
+asserts that the fixture containers, volumes and networks are absent before
+writing the passing receipt.
+
+An earlier run exceeded the fixture's unchanged 90-second rendezvous deadline:
+both database drains completed, but Django initialization and static collection
+delayed arrival at the Go launch gate. Its timing and cleanup evidence remain in
+`update-marker-diagnosis.json` and `update-marker-timeout.log`. The subsequent
+unchanged run passes; no timeout or product behavior was relaxed. These source
+receipts precede main's candidate manual-image preflight (`0ffe9f6`), which requires
+its own combined update validation after alignment.
+
 Installed backend selection, a Go worker/scheduler service, coordinated queue
 transfer, historical application-schema coverage and a complete restore window
 remain required. This increment does not activate Go background execution or

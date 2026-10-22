@@ -47,9 +47,9 @@ they must retain valid types, UUID version and ordering. This does not normalize
 last_login: that value must equal the explicit fixed clock exactly. Every managed
 table is compared after restoring the declared fixture mutations.
 
-Real PostgreSQL tests check two statements for no cancellation, four for an
-unindexed cancellation and five with an association index. Thirty-two simultaneous
-Go calls on a four-connection pool perform 67 statements and produce one
+Real PostgreSQL tests check three statements for no cancellation, five for an
+unindexed cancellation and six with an association index, including the shared fence. Thirty-two simultaneous
+Go calls on a four-connection pool perform 99 statements and produce one
 cancellation event/index; the remaining calls update last_login only. Tests also
 cover actual permission and deferred actor/index FK failures, injected failures
 after update/audit and before commit, cancellation, missing users and pool release.

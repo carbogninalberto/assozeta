@@ -37,6 +37,22 @@ seventeen transaction entrypoints use the helper without changing their original
 context or isolation. Local socket cleanup and server disconnect processing are
 distinct boundaries; see [the transaction contract](../../../BE_GO/internal/repository/transaction.md).
 
+A separate database barrier now drains cooperating Go transactions before recovery
+export, CLI backup snapshots and schema migration. The original seventeen explicit
+transactions and five queue mutations acquire an acknowledged shared transaction
+lock before effects; the lifecycle caller takes the exclusive form while retaining
+its file lease. Fifteen queue cases, five actual PgBouncer/CLI cases and three
+Go→Django restore cases cover late commits, canceled admission and fail-closed
+timeout. Eighty-eight Django restore/operations tests pass. This adds fixed protocol
+query costs, recorded [per path](transaction-query-costs.md), and does not fence
+every Django writer or provider. See [the exact guarantee](transaction-drain.md).
+The rebuilt-image fresh installation, backup, rollback and restore rehearsal and
+the current-controller update/recovery follow-up both pass. Exact source scope,
+initial fixture timeouts and the newer-main validation boundary are recorded in
+[operational migrations](operational-migrations.md).
+The dependency closure correctly invalidates all sixty previous manual captures;
+those captures require regeneration before being counted as current evidence.
+
 ## Latest increment: delivery alongside Django
 
 The Go image also packages explicit native worker and forward-only operational
@@ -97,11 +113,15 @@ workflow `39733767137` fails on external dashboard recipe bindings. The reviewed
 local companion patch remains unpublished, pending authorization for the separate
 repository. Current-head CI remains an independent gate.
 
-After publishing `ca25332`, manual verification `39850428436` and release-manual
-rehearsal `39850428390` both stop at the external content recipe review boundary
-(`docs/manuale/content-recipes.mjs`). Quality run `39850428388` is still pending
-at this observation. These failures are not passing manual-delivery evidence;
-the reviewed separate-repository companion changes remain unpublished.
+Published `149c415` passes the complete [quality workflow](https://github.com/carbogninalberto/assozeta/actions/runs/39852318675),
+including Go, backend, frontend, production and current/historical controller
+checks. [Manual verification](https://github.com/carbogninalberto/assozeta/actions/runs/39852318676)
+and the [release-manual rehearsal](https://github.com/carbogninalberto/assozeta/actions/runs/39852318993)
+both stop at the external content recipe review boundary
+(`docs/manuale/content-recipes.mjs`). These results cover that published commit,
+not the subsequent transaction-drain changes or newer main commits. The reviewed
+separate-repository companion changes remain unpublished; manual delivery still
+requires passing evidence.
 
 The user additionally requires periodic main alignment and communicating parallel
 agents. The initial fetch confirmed `origin/main@fddcee3` was contained. Upstream

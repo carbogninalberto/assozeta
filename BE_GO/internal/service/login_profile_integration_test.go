@@ -71,6 +71,7 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 	}
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
+			// Count the shared server fence in addition to the unchanged Django query baseline.
 			counter.count.Store(0)
 			profile, err := flow.Read(context.Background(), tc.ID)
 			outcome := ""
@@ -96,8 +97,8 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 					t.Fatalf("profile JSON mismatch: got %s want %s", actual, tc.Expected)
 				}
 			}
-			if got := counter.count.Load(); got != int64(tc.Queries) {
-				t.Fatalf("queries %d want %d", got, tc.Queries)
+			if got := counter.count.Load(); got != int64(tc.Queries+1) {
+				t.Fatalf("queries %d want %d", got, tc.Queries+1)
 			}
 		})
 	}
@@ -169,7 +170,7 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		if counter.count.Load() != 64 || db.Stats().InUse != 0 {
+		if counter.count.Load() != 96 || db.Stats().InUse != 0 {
 			t.Fatal("profile query bound or connection release violated")
 		}
 	})

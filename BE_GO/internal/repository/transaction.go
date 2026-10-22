@@ -54,6 +54,15 @@ func beginOwnedTransaction(ctx context.Context, db *sqlx.DB, options *sql.TxOpti
 		_ = owned.finish(err)
 		return nil, err
 	}
+	// This separate acknowledged command precedes every effect statement.
+	// A cancelled waiter cannot send later writes after a restore's exclusive
+	// server barrier passes. A CTE inside the mutation would not establish that
+	// protocol ordering. This SELECT also establishes REPEATABLE READ snapshots.
+	_, err = owned.tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock_shared($1::int,$2::int)`, 1095981639, 1381192786)
+	if err != nil {
+		_ = owned.Rollback()
+		return nil, err
+	}
 	return owned, nil
 }
 

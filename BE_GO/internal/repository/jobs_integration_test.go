@@ -494,8 +494,8 @@ func TestDurableJobsPostgres(t *testing.T) {
 			}
 			queries.count.Store(0)
 			jobs, e := queue.Claim(ctx, []string{"contract.event"}, "batch", 1, time.Minute)
-			if e != nil || len(jobs) != 1 || queries.count.Load() != 1 {
-				t.Fatal("claim added per-record queries", e)
+			if e != nil || len(jobs) != 1 || queries.count.Load() != 4 {
+				t.Fatal("claim must use BEGIN/server fence/bounded claim/COMMIT", e)
 			}
 			reset(t)
 		}

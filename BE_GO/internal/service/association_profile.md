@@ -25,7 +25,8 @@ otherwise it retains the persisted value. This uses the owner's timestamp, not
 the logging-in collaborator's. Avatars/logos/signatures are unchanged here.
 Image processing is a later login-response augmentation stage.
 
-Two SELECTs inside a read-only repeatable-read transaction fetch the association
+Two business SELECTs, after the shared transaction fence, fetch the association
+inside a read-only repeatable-read transaction
 and its groups; missing associations require one. Group lookup is constrained by
 the selected association ID and follows Django's unsorted query and projection.
 No name/UUID ordering, truncation or pagination is invented. Memory is proportional
@@ -40,8 +41,8 @@ They cover all 50 fields, current/deleted/inactive owners, missing/deleted
 associations, the exact five-day/microsecond boundary, positive/negative numeric
 limits and PostgreSQL scale rounding, nullable/scalar JSON, custom templates and
 0/1/16/128/512 groups. A real role with denied group SELECT reproduces the required
-failure in both runtimes. Query counters assert one/two SELECTs; 32 concurrent
-512-group reads use 64 SELECTs and release the four-connection pool. Unit tests
+failure in both runtimes. Query counters assert two/three SELECTs including the shared fence; 32 concurrent
+512-group reads use 96 SELECTs and release the four-connection pool. Unit tests
 reject foreign owner/group data and cancellation. All managed tables match after
 the declared deletion/restoration test transition.
 

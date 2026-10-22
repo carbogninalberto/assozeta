@@ -66,11 +66,11 @@ covers all supported roles, impersonation, denied/forged scopes, malformed input
 null/conversion behavior, native avatars and injected audit/index/database errors.
 Snapshots check managed models and cache state; fixture cleanup restores them.
 
-Measured mutation statements are 3 SELECT / 2 UPDATE / 4 INSERT for an owner
-change and 2 / 2 / 0 for an unchanged repetition. Twenty-four competitors execute
-49 / 48 / 4 with exactly two audit records. Pre-write and mid-write cancellation
+Measured mutation statements are 4 SELECT / 2 UPDATE / 4 INSERT for an owner
+change and 3 / 2 / 0 for an unchanged repetition. Twenty-four competitors execute
+73 / 48 / 4 with exactly two audit records. Pre-write and mid-write cancellation
 roll back, release connections and permit recovery with a maximum pool of four.
-Direct foreign-owner/scope and unlisted-column probes reject writes. These counts
+Direct foreign-owner/scope and unlisted-column probes reject writes. These counts include the shared transaction fence and
 exclude authentication and response reads and are not application-wide latency or
 memory claims.
 
