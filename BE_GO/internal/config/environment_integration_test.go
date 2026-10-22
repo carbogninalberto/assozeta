@@ -25,7 +25,7 @@ func TestDjangoEnvironmentInterop(t *testing.T) {
 		Expected   map[string]any
 		Error      bool
 	}
-	if json.Unmarshal(raw, &cases) != nil || len(cases) != 95 {
+	if json.Unmarshal(raw, &cases) != nil || len(cases) != 103 {
 		t.Fatal("invalid environment fixture")
 	}
 	for _, tc := range cases {
@@ -72,7 +72,11 @@ func TestDjangoEnvironmentInterop(t *testing.T) {
 			for _, value := range cfg.CORSAllowedOrigins {
 				corsOrigins = append(corsOrigins, value)
 			}
-			actual := map[string]any{"provider_ca_bundle": cfg.ProviderCABundle, "restore_lock_path": cfg.RestoreLockPath, "cors_all": cfg.CORSAllowAll, "cors_origins": corsOrigins, "session_secret": cfg.SessionSecret, "debug": cfg.Debug, "rate_enabled": cfg.RateLimitEnabled, "google": cfg.GoogleClientID, "google_secret": cfg.GoogleClientSecret, "apple": cfg.AppleClientID, "apple_team": cfg.AppleTeamID, "apple_key": cfg.AppleKeyID, "apple_secret": cfg.AppleSecret,
+			var supportEmail any
+			if cfg.EmailHostSupport != nil {
+				supportEmail = *cfg.EmailHostSupport
+			}
+			actual := map[string]any{"support_email": supportEmail, "whitelabel": cfg.WhitelabelName, "provider_ca_bundle": cfg.ProviderCABundle, "restore_lock_path": cfg.RestoreLockPath, "cors_all": cfg.CORSAllowAll, "cors_origins": corsOrigins, "session_secret": cfg.SessionSecret, "debug": cfg.Debug, "rate_enabled": cfg.RateLimitEnabled, "google": cfg.GoogleClientID, "google_secret": cfg.GoogleClientSecret, "apple": cfg.AppleClientID, "apple_team": cfg.AppleTeamID, "apple_key": cfg.AppleKeyID, "apple_secret": cfg.AppleSecret,
 				"jwt_private": cfg.JWTSigningKey, "jwt_public": cfg.JWTVerifyingKey, "database_password": db.Password, "redis_password": cfg.RedisPassword, "origins": origins, "family": cfg.FamilyRegistrationEnabled, "federation": cfg.FederationRegistrationEnabled, "multiple": cfg.MultipleRegistrationEnabled}
 			if !reflect.DeepEqual(actual, tc.Expected) {
 				t.Fatal("declared configuration values differ")

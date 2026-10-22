@@ -26,6 +26,14 @@ Apple fields default to empty. These are existing variables, not new credentials
 or a second configuration file. The login composition root supplies these values
 to the concrete provider clients.
 
+Two-factor provisioning uses existing `WHITELABEL_NAME` and `EMAIL_HOST_SUPPORT`.
+The issuer follows `env.str` aliases and defaults to `Bakney Sport`; an explicitly
+empty issuer stays empty. The support address follows literal `os.environ` lookup,
+preserving absent versus empty values. The setup service maps those to PyOTP's
+`None` label and `Secret` fallback respectively. Support configuration is omitted
+from JSON diagnostics. Eight environment cases cover defaults, aliases, Unicode,
+whitespace and process precedence; no additional configuration is introduced.
+
 The existing `SECRET_KEY` is required and exposed internally as `SessionSecret`.
 Its value follows `env.str`, including leading-dollar references, literal escape
 sequences, Unicode, whitespace and an explicitly empty assignment. Unlike JWT
@@ -63,7 +71,7 @@ omits the session secret, provider credentials, JWT keys and the Redis password;
 unexported. Error text does not include proxy targets or supplied values.
 
 Run `python TESTS/adapters/django/environment.py` in the repository's dependency
-environment. Ninety-five declared cases execute selected unchanged AST assignments
+environment. One hundred and three declared cases execute selected unchanged AST assignments
 from actual `core.settings` with django-environ 0.12.0 and the actual requests
 CA-bundle precedence resolver, then run Go `Load` over the
 same synthetic files/process values. The adapter checks value/error boundaries,

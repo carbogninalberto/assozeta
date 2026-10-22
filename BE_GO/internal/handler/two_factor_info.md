@@ -44,5 +44,5 @@ Run `TESTS/adapters/django/accounts.py` for the full private fixture suite, or
 `accounts.py --only two-factor-info` for this component and its supporting
 account/identity/session/refresh/identifier fixtures. These use current-model
 run-syncdb, not historical migrations. This endpoint only reads status; [2FA updates](two_factor_update.md) now have
-separate write/effect contracts. Setup/QR, full global middleware, versioned proxy
+separate write/effect contracts. [Setup/QR](two_factor_setup.md) has separate provisioning evidence. Full global middleware, versioned proxy
 routing and production activation remain unfinished.

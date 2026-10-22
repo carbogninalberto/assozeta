@@ -71,5 +71,5 @@ Initial red evidence includes `http-route-red.log` (Go route absent),
 (impersonated body consumed twice), under
 `quality-reports/go-migration/two-factor-update/`. Final verification is recorded
 in the migration evidence index and ledger. Current-model run-syncdb does not
-prove historical migrations. Setup/QR, full authentication/middleware coverage,
+prove historical migrations. Setup/QR now has [separate provisioning evidence](two_factor_setup.md). Full authentication/middleware coverage,
 versioned proxy routing, unchanged-frontend use and release activation remain open.

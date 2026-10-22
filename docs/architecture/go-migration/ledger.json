@@ -13026,7 +13026,7 @@
         "The complete current accounts adapter passes on production Python 3.13.2 with restore/CORS/security composition, all existing account/scope/login/image/audit checks and managed-state readback. Evidence: quality-reports/go-migration/restore-admission/full-accounts-production.log and full-accounts-results.json. Bidirectional credentials, permissions, provider protocols, cache/rate/security adapters, Go race/vet, health/recovery and the non-root Linux image rehearsal also pass. Current-model fixtures do not prove historical migrations, browser switching or complete backend parity."
       ],
       "notes": [
-        "Current-model run-syncdb only; setup/QR 2FA endpoint (updates now have separate implementation/evidence), complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md.",
+        "Current-model run-syncdb only; setup/QR and updates now have separate implementation/evidence; complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md.",
         "The new shared HTTP admission does not implement restore upload/execution/recovery, historical imports, stale-task fencing, WebSocket lifetimes or authoritative worker/scheduler switching. No new schema, lock namespace or environment setting; Django remains the migration/task owner. Prior runtime-dependent evidence must be read with the production Python correction above."
       ]
     },
@@ -13045,25 +13045,63 @@
         "target": "two_fa_setup",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/internal/domain/two_factor_setup.go",
+        "BE_GO/internal/dto/two_factor_setup.go",
+        "BE_GO/internal/handler/two_factor_setup.go",
+        "BE_GO/internal/service/two_factor_setup.go",
+        "BE_GO/pkg/crypto/totp_setup.go",
+        "BE_GO/pkg/qrcode/svg.go"
+      ],
+      "dependencies": [
+        "BE/application/views/two_fa_views.py",
+        "BE/core/settings.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "UI/src/routes/profile/sections/TwoFactor.svelte"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/two-fa/setup"
+        ],
+        "request": "No business parameters. Shared Bearer/session/identity/scope handling, negotiation and method precedence.",
+        "response": "200 data.otp_secret (32-character unpadded Base32) and data.qrcode_uri (UTF-8 SVG data URI). Fresh cryptographic entropy on every successful setup. OPTIONS preserves current metadata.",
+        "errors": "Existing 401/403 authentication/scope denials, 405 unsupported methods including HEAD, and generic 500 for QR capacity/generation failures. No partial secret on failure.",
+        "authentication": "Bearer required; BKN_AUTH does not authenticate REST. Separate actor/effective/scope resolution.",
+        "permissions": "other.settings.update with existing FULL collaborator exception. Administrator must impersonate; association-scoped athlete setup denied.",
+        "resource_scope": "Use the admitted scope. Foreign resource references remain denied. QR label uses configured support address, not an account identifier.",
+        "side_effects": "No persistence or external I/O. Twenty bytes CSPRNG entropy and bounded local QR encoding. Setup does not enable 2FA or change the stored secret; confirmation is a separate atomic update.",
+        "transaction": "Read-only existing identity admission. Provisioning adds zero SQL queries and owns no write transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_two_factor_setup.py",
+        "TESTS/contracts/qr.py",
+        "TESTS/adapters/django/two_factor_setup.py",
+        "TESTS/adapters/django/two_factor_qr.py",
+        "TESTS/adapters/go/testdata/qr_vectors.go",
+        "TESTS/adapters/django/environment.py",
+        "BE_GO/internal/service/two_factor_setup_test.go",
+        "BE_GO/internal/service/two_factor_setup_integration_test.go",
+        "BE_GO/pkg/crypto/totp_setup_test.go",
+        "BE_GO/pkg/qrcode/svg_test.go"
+      ],
+      "evidence": [
+        "Django passes declared setup contracts before Go fails on the absent route; new crypto/service/QR and configuration tests fail before implementation. Evidence: quality-reports/go-migration/two-factor-setup/http-route-red.log, unit-red.log, qr-unit-red.log and environment-red.log.",
+        "31 HTTP cases, 62 concurrent requests, six branding/capacity modes, four setup/update combinations and four fresh-login combinations pass on actual roots with durable readback and cleanup. Missing/incorrect OTP denies tokens; issued credentials work across runtimes. 512 deterministic QR symbols decode in both generated-image and detector modes with expected URI, size and correction level. Query integration measures 1/2 admission SELECTs, zero extra provisioning SQL, and 48 SELECTs for 32 calls within four connections. Evidence: fresh-login-fixed.log, qr-vectors-current.log.",
+        "103 environment declarations pass against actual Django settings/django-environ, including missing/empty support address, issuer defaults, literal versus expanded aliases, process precedence and Unicode. Evidence: environment-current.log. The full accounts regression passes with existing task/scope/session/provider/image/hash/audit groups plus provisioning (full-accounts.log and full-accounts-results.json). Go race, ordinary/tagged vet, twelve inventory tests, catalog drift, workflow lint and formatting pass. The rebuilt non-root/read-only/networkless image passes six HTTP checks (image-current.log); these do not prove database-backed setup."
+      ],
+      "notes": [
+        "Functional QR equivalence is decoded payload plus symbol size/correction policy; SVG bytes and matrices can differ through segmentation/mask choice. No physical-phone, full frontend, versioned-routing, historical-schema or activation claim. See BE_GO/internal/handler/two_factor_setup.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:two-fa/update -> two_fa_update",
@@ -13132,7 +13170,7 @@
         "246 existing Django authentication/impersonation/permission/audit tests pass on private PostgreSQL and Redis; django-regression-final.log. Go race/vet, formatting, twelve inventory tests and catalog drift pass. Rebuilt non-root/read-only/networkless image passes its five startup/login HTTP checks; this does not exercise successful 2FA writes. The full accounts regression passes, including all existing task/scope/session/provider/image/hash/audit groups and the new 2FA checks; full-accounts.log and full-accounts-results.json."
       ],
       "notes": [
-        "Current-model schema only. Setup/QR, complete global middleware/authentication, versioned API/frontend, historical data and release/activation remain unfinished; this entry is not verified. See BE_GO/internal/handler/two_factor_update.md."
+        "Current-model schema only. Setup/QR now has separate implementation/evidence; complete global middleware/authentication, versioned API/frontend, historical data and release/activation remain unfinished; this entry is not verified. See BE_GO/internal/handler/two_factor_update.md."
       ]
     },
     {

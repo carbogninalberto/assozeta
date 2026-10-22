@@ -15,6 +15,8 @@ import (
 )
 
 type Config struct {
+	WhitelabelName                string
+	EmailHostSupport              *string         `json:"-"`
 	Storage                       StorageSettings `json:"-"`
 	ProviderCABundle              string          `json:"-"`
 	SessionSecret                 string          `json:"-"`
@@ -166,6 +168,14 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	whitelabelName, err := environmentString(values, "WHITELABEL_NAME", "Bakney Sport", false)
+	if err != nil {
+		return Config{}, err
+	}
+	var supportEmail *string
+	if value, exists := values["EMAIL_HOST_SUPPORT"]; exists {
+		supportEmail = &value
+	}
 	storage, err := parseStorage(values)
 	if err != nil {
 		return Config{}, err
@@ -174,7 +184,7 @@ func Parse(values map[string]string) (Config, error) {
 	if providerCABundle == "" {
 		providerCABundle = values["CURL_CA_BUNDLE"]
 	}
-	return Config{ProviderCABundle: providerCABundle, Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{WhitelabelName: whitelabelName, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

@@ -26,7 +26,10 @@ development database. Concurrent invocations use separate database names, ports,
 media, caches and task queues. Historical restoration tests use separate empty
 instances. Never point the suite at production: setup/restore replace test data.
 
-The portable client and runner require only Python 3.10+. The Django adapter uses
+The portable client and runner require only Python 3.10+. The focused 2FA
+provisioning contract additionally uses Pillow/ZXing to decode actual SVG pixels;
+install `TESTS/contracts/requirements-qr.txt` when targeting either backend.
+It remains independent of application and ORM imports. The Django adapter uses
 the repository's existing Docker development image, PostgreSQL image and development network.
 Contracts use real HTTP, real authentication and bounded operation polling. The
 adapter disables development SQL profiling before building Django middleware.
