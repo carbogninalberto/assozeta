@@ -49,7 +49,7 @@ missing-codec and ambiguous-header gaps; it is not wired into public login.
 
 The real PostgreSQL fixture injects this processor. Ten additional cases verify
 owner/collaborator avatar and logo conversion, athlete/administrator bypass,
-complete-section logo bypass, malformed URIs, GBR/SUN precedence, ICO logo conversion, and WebP/CUR avatar/logo conversion. Default card
+complete-section logo bypass, malformed URIs, GBR/SUN precedence, ICO logo conversion, and WebP/CUR/PCD avatar/logo conversion. Default card
 creation/audit follows successful conversion. Thirty-two mixed image responses
 retain the existing query bounds and four-connection pool. A real missing decoder
 returns no response or supplied tokens after five profile/association/settings
@@ -78,7 +78,7 @@ without a second credential file or mutation of the process environment.
 
 ## Executed component evidence
 
-`TESTS/adapters/django/login_response.py` specifies 46 full response JSON/outcome
+`TESTS/adapters/django/login_response.py` specifies 47 full response JSON/outcome
 cases and runs the actual Django `JWTTokenService.build_login_response` with its
 real serializers, queries and default-card write. Only serializer time is fixed;
 input token strings are explicit synthetic response fixtures, not proof of JWT
@@ -105,6 +105,8 @@ coverage, social authentication, rate limiting, full HTTP/global middleware and
 cookie/finalization composition remain open. This component does not advance any
 ledger entry to verified.
 
-The current fixture also composes CUR avatars and logos, including CUR/TGA format
-precedence. Its ten image cases participate in the 32 mixed concurrent responses.
-TIFF still exercises unsupported-image bypass and failure before card creation.
+The current fixture composes CUR avatars/logos, including CUR/TGA precedence,
+and PCD avatar conversion with failed-rotation logo fallback. Eleven concrete
+image scenarios participate in the 32 mixed concurrent responses. TIFF bypass
+and missing-decoder no-token/no-card-query cases remain required; complete image
+and public-login parity is not established.

@@ -15,6 +15,9 @@ int main(int argc, char **argv) {
     else if (argc == 6 && !strcmp(argv[1], "encode") &&
              (!strcmp(argv[2], "L") || !strcmp(argv[2], "RGB"))) code = atoi(argv[3]);
     else return 3;
+    /* PCD has one fixed raster size; stall before reading its large stdin. */
+    if (argc == 6 && !strcmp(argv[1], "encode") &&
+        !strcmp(argv[2], "RGB") && !strcmp(argv[3], "768") && !strcmp(argv[4], "512")) code = 1;
     switch (code) {
     case 1: {
         char path[4096];

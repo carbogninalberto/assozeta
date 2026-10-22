@@ -2,7 +2,7 @@
 
 This package implements bounded Pillow-compatible file pipelines and the shared
 `Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
-sixteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+seventeen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
@@ -900,22 +900,21 @@ unproven interpretation. External plugin registration/reordering is unverified.
 
 Missing Pillow formats retain candidate guards, including no-signature text and
 scientific formats. These guards are deliberately conservative: some malformed or
-ambiguous data that Django preserves may currently fail in Go. TIFF,
-PCD and other missing codecs must still be implemented; the two demonstrated
-fixture gaps are **not an exhaustive list**. Do not wire this into a deployment
+ambiguous data that Django preserves may currently fail in Go. TIFF and other missing codecs must still be implemented; the demonstrated
+TIFF fixture gap is **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 80 whole-URI expectations against
-the actual Django helper and the composed Go processor. Sixteen pipelines,
+`TESTS/adapters/django/login_images.py` asserts 84 whole-URI expectations against
+the actual Django helper and the composed Go processor. Seventeen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
-files, the 1 MiB size boundary and registry collisions are exercised. Two separate
-missing-codec cases deliberately report `complete_image_parity=false`; they are
+files, the 1 MiB size boundary and registry collisions are exercised. A separate
+missing-codec case deliberately reports `complete_image_parity=false`; it is
 never counted as passing parity. The shipped-image test includes both sets.
 
 Race/integration tests mix formats through one processor, enforce a two-child
 bound across different codecs, cancel running/queued work, check deadline and exact
 URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
-now injects this concrete processor: 46 response cases include ten image cases,
+now injects this concrete processor: 47 response cases include eleven image cases,
 32 mixed concurrent responses, unchanged database snapshots after declared card/
 audit resets, and a missing-decoder failure with no response tokens or card query.
 No public HTTP login, full registry coverage or backend activation is established.
@@ -1070,3 +1069,40 @@ cases pass with the shared parser change. The shared dispatcher has 80 URI parit
 cases and two separately reported, non-exhaustive gaps. The PostgreSQL fixture
 contains 46 responses, including CUR avatar/logo conversion. Public login and
 complete image/backend parity remain unverified.
+
+
+## PCD PhotoYCC pipeline
+
+`PCDFileProcessor` follows Pillow 11.1.0's `PcdImagePlugin` and its PhotoYCC
+unpacker. The header seeks to byte 2048, reads up to 2048 bytes, checks `PCD_`,
+and masks the orientation byte at offset 3586 with 3. The fixed raster is
+768×512 RGB. Pixel blocks start at byte 196608: two 768-byte luma rows followed
+by 384-byte Cb and Cr rows. Each chroma sample applies to a two-by-two cell.
+Five attributed Pillow lookup tables preserve signed rounding and clipped RGB;
+no new native decoder dependency is introduced.
+
+Orientation 2 leaves pixels unchanged. Orientations 1 and 3 trigger a broken
+rotation hook in the pinned Pillow release (`ImagingCore.rotate` is missing).
+The actual Django helper catches that failure and retains the original URI;
+Go preserves that observed result. This deliberately does not correct rotation.
+Files at most 1 MiB convert at 768×512; larger files resize to 200×133. Truncated
+pixels retain the original. Header rejection can fall through to QOI, while an
+accepted PCD with failed pixels must retain the original instead of selecting QOI.
+
+Header budgets charge bytes read after the seek. Decode budgets cover input plus
+1,179,648 RGB bytes before allocation. Input, transform, encoder and outer URI
+limits remain independent logical bounds, not an aggregate RSS guarantee. The
+pipeline checks cancellation during row-pair decoding and shares one admission
+slot and deadline through JPEG encoding. Cancellation/resource failures expose no
+result; fallback only applies to the declared image/encoding failures.
+
+`TESTS/adapters/django/login_pcd.py` declares 59 cases: seven fixed RGB anchors,
+independent arithmetic luma/chroma sweeps, chroma-cell layout, all masked
+orientations, truncated headers/pixels, bad signatures and exact 1 MiB boundaries.
+Pillow and the unmodified Django helper check those expectations. Go tests cover
+exact budgets, ownership, cancellation, 32 mixed calls and native encoder reuse.
+A fixed-size fault child stops before reading stdin, verifying cancellation and
+reaping while the 1.18 MiB raster writer is blocked. The shared dispatcher has
+84 URI parity cases and one separately reported non-exhaustive TIFF gap. The
+PostgreSQL response fixture adds PCD avatar conversion and failed-rotation logo
+fallback. Public login and complete image coverage remain unfinished.

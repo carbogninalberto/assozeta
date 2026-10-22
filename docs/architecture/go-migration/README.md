@@ -124,7 +124,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 46 explicit full response cases including ten concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 47 explicit full response cases including eleven concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1243,3 +1243,24 @@ and response cases and the existing task/authentication/HTTP/scope/restore check
 Its terminal evidence is `quality-reports/go-migration/cur/full-accounts-results.json`.
 The final shipped image passes all codec comparisons. Neither this current-model
 rehearsal nor the two demonstrated image gaps establishes full migration parity.
+
+
+PCD adds 59 authored PhotoYCC header/pixel/file cases, including independent RGB
+arithmetic, chroma cells, masked orientations, truncation and file-size thresholds.
+Go preserves Pillow 11.1's rotation-hook failure for orientations 1/3, so Django's
+original-URI fallback remains unchanged. Shared dispatch now composes seventeen
+pipelines with 84 URI comparisons and one demonstrated, non-exhaustive TIFF gap.
+The PostgreSQL fixture contains 47 responses and eleven image scenarios. Exact
+logical budgets, row-pair cancellation, blocked native stdin cancellation, queue
+deadlines, child reaping/reuse and 32 mixed calls are covered. Evidence:
+`quality-reports/go-migration/pcd/`. Remaining formats, registry exceptions,
+public login and all fourteen full-migration acceptance gates remain open.
+
+The complete production-Python 3.13.2 accounts suite passes with 59 PCD cases,
+47 responses and 84 URI comparisons, retaining the TIFF gap separately and
+`complete_image_parity=false`. Its terminal report is
+`quality-reports/go-migration/pcd/full-accounts-results.json`. The final non-root,
+read-only, networkless Docker image passes the full codec oracle. Go race/vet,
+image/response-tagged vet, all twelve inventory tests, catalog drift, workflow
+lint, formatting and diff checks pass. Current-model fixtures do not establish
+historical-schema, backend-switching or complete lifecycle parity.

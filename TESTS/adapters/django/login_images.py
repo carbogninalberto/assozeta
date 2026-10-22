@@ -19,6 +19,7 @@ def vectors():
     from TESTS.adapters.django.login_gbr import gbr
     from TESTS.adapters.django.login_msp import msp
     from TESTS.adapters.django.login_cur import cur
+    from TESTS.adapters.django.login_pcd import pcd as pcd_file
     # Test the default preinit-before-init registry ordering used by Image.open.
     Image.preinit();Image.init()
     cases=[];compress=helper()
@@ -94,7 +95,10 @@ def vectors():
     add('TGA after truncated CUR bitfields',collision(bitmap(1,2,32,dib=True,comp=3)),mode='RGB',size=(1,1),pixels=bytes([0,0,22]))
     qoi=b'qoif'+struct.pack('>II',1,1)+bytes([3,0])+b'\xfe\x49\x49\x49'+bytes(8)
     pcd=qoi+bytes(2048-len(qoi))+b'PCD_'+bytes(1535)
-    add('PCD before QOI remains a gap',pcd,original=True,gap=True)
+    add('PCD before QOI retains original',pcd,original=True)
+    add('QOI after truncated PCD header',pcd[:-1],mode='RGB',size=(1,1),pixels=bytes([73])*3)
+    add('PCD frame',pcd_file(),mode='RGB',size=(768,512),pixels=bytes([99])*(768*512*3))
+    add('PCD reference rotation failure',pcd_file(orientation=1),original=True)
     return cases
 
 
