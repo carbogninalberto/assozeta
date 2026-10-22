@@ -153,6 +153,7 @@ class GoDistributionTests(unittest.TestCase):
                     for reference in (*self.manifest['images'].values(), GO_REF)]
         expected.append(['sh', str(ROOT / 'selfhost/bin/check-manual-image'),
                          self.manifest['images']['backend'], '1.0.2'])
+        expected.append(['sh', str(ROOT / 'selfhost/bin/check-manual-image'), GO_REF, '1.0.2', 'go'])
         def pull(command, **kwargs):
             self.assertLess(len(observed), len(expected))
             self.assertEqual(command, expected[len(observed)])
@@ -181,6 +182,20 @@ class GoDistributionTests(unittest.TestCase):
                 raise subprocess.CalledProcessError(1, ['docker', 'pull', 'synthetic-go-image'])
         with self.assertRaises(subprocess.CalledProcessError):
             self.prepare(pull)
+        self.assertEqual(self.env.read_bytes(), original)
+        self.assertEqual((self.root / 'compose.yml').read_bytes(), b'source-compose')
+        self.assertFalse((self.root / '.updater/pending-distribution').exists())
+        self.prepare()
+        self.assertEqual(read_env(self.env)['ASSOZETA_BACKEND_GO_REF'], GO_REF)
+
+    def test_invalid_go_manual_leaves_source_retryable_without_pending_snapshot(self):
+        original = self.env.read_bytes()
+        def validate(command, **kwargs):
+            if command[-1] == 'go':
+                self.assertEqual(command[-3:], [GO_REF, '1.0.2', 'go'])
+                raise subprocess.CalledProcessError(1, command)
+        with self.assertRaises(subprocess.CalledProcessError):
+            self.prepare(validate)
         self.assertEqual(self.env.read_bytes(), original)
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'source-compose')
         self.assertFalse((self.root / '.updater/pending-distribution').exists())

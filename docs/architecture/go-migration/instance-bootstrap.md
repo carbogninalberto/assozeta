@@ -71,5 +71,18 @@ and fixture cleanup are verified. The image is
 built from the explicitly dirty `9a090cc` snapshot recorded in the integration
 manifest. This synthetic checker proof uses an optional empty image package; the
 genuine required-release artifact rehearsal remains pending. The Django image
-gate remains unchanged. Candidate lifecycle preflight still validates only the
-Django package and needs a corresponding Go boundary before activation.
+gate remains unchanged.
+
+Candidate lifecycle validation now checks both packages before managed files,
+environment or a pending recovery snapshot can change. CLI install/start/update
+uses the Go check only when the source Compose configuration declares `api-go`;
+a Compose inspection error fails admission. Go always requires its metadata
+marker and packaged checker. The historical Django marker exemption remains
+limited to its existing versions, and explicit development images keep their
+optional-package semantics. Nineteen shell/CLI checks, fourteen distribution
+checks and the full 174-test self-host suite pass. Explicit failure propagation
+also preserves rejection when the caller uses a shell conditional, which disables
+implicit `errexit` handling inside the function. Three actual image-helper cases
+verify optional success, wrong-release rejection and required-package absence;
+the derived invalid fixture image is removed. The full update/recovery matrix
+must still be rerun with this additional Go gate after main alignment.

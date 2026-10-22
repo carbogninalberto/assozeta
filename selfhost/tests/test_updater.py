@@ -273,12 +273,14 @@ class DistributionTests(unittest.TestCase):
 
     def test_verified_distribution_preserves_env_and_can_restore_before_migrations(self):
         run = self.prepare()
-        self.assertEqual(run.call_count, 6)
+        self.assertEqual(run.call_count, 7)
         self.assertEqual(run.call_args_list[4].args[0],
                          ['docker', 'pull', self.metadata['extensions']['go_backend']['image']])
         self.assertEqual(run.call_args_list[5].args[0][0], 'sh')
         self.assertEqual(run.call_args_list[5].args[0][-2:],
                          [self.metadata['images']['backend'], '1.0.2'])
+        self.assertEqual(run.call_args_list[6].args[0][-3:],
+                         [self.metadata['extensions']['go_backend']['image'], '1.0.2', 'go'])
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'new-compose')
         self.assertEqual(read_env(self.env)['CUSTOM'], 'value')
         self.assertEqual(read_env(self.env)['DBPASSWORD'], 'keep-private')

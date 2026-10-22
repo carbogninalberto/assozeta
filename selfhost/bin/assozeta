@@ -1041,7 +1041,16 @@ check_prod_manual() {
         manual_repository=$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")
         manual_image="${manual_repository:-ghcr.io/carbogninalberto/assozeta-backend}:$manual_version"
     fi
-    sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_image" "$manual_version"
+    sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_image" "$manual_version" || return $?
+    manual_go_service=$(prod_optional_go_api) || return $?
+    if [ -n "$manual_go_service" ]; then
+        manual_go_image=$(env_value ASSOZETA_BACKEND_GO_REF "$PROD_ENV")
+        if [ -z "$manual_go_image" ]; then
+            manual_go_repository=$(env_value ASSOZETA_BACKEND_GO_IMAGE "$PROD_ENV")
+            manual_go_image="${manual_go_repository:-ghcr.io/carbogninalberto/assozeta-backend-go}:$manual_version"
+        fi
+        sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_go_image" "$manual_version" go || return $?
+    fi
 }
 
 install_prod() {

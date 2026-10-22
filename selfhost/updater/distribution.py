@@ -183,6 +183,7 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
     if not image_check.exists():
         image_check = Path(__file__).resolve().parent.parent / 'bin/check-manual-image'
     subprocess.run(['sh', str(image_check), manifest['images']['backend'], image_version(tag)], check=True)
+    subprocess.run(['sh', str(image_check), go_reference, image_version(tag), 'go'], check=True)
 
     # Publish the recovery transaction only after its entire snapshot is durable.
     # A failed snapshot cannot leave a half-written transaction blocking retries.
