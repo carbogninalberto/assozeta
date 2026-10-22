@@ -4,6 +4,7 @@ from django.dispatch import receiver, Signal
 from django.db.models import Q
 
 from .models import CourseSubscription, CourseSubscriptionInstallment, Payment
+from .audit_context import audit_index_errors_are_fatal
 from .tasks import check_workflows_trigger
 import logging
 
@@ -381,6 +382,8 @@ def create_audit_log_index(sender, instance, created, **kwargs):
             )
         except Exception as e:
             logger.error(f"Failed to create AuditLogIndex for LogEntry {instance.pk}: {e}")
+            if audit_index_errors_are_fatal():
+                raise
     else:
         logger.debug(
             f"Could not resolve sport_association for LogEntry {instance.pk} "

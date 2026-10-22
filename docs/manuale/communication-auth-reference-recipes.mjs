@@ -1,5 +1,6 @@
-// 2FA source re-reviewed: OTP confirmation, QR setup, and successful enable/disable
-// remain unchanged after atomic user/audit writes and concurrent-profile protection.
+// 2FA source re-reviewed: OTP confirmation, QR setup and successful enable/disable
+// remain unchanged. Any audit-index exception rolls back the selected user mutation;
+// locked reads and selected columns preserve concurrent profile changes.
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const communicationAuthReviewedSources = Object.freeze({
@@ -16,11 +17,11 @@ export const communicationAuthReviewedSources = Object.freeze({
     "BE/application/tasks.py": "ee7d03286be8cc3e6fec84861496020ac40d2dfe56ec02102fb75c0170d35ebc",
     "UI/src/routes/association/communication/automation/Automation.svelte": "8a0b6012241c3a32ab2bc92dc119793579d08efd19934b6afaa7f73885d6e699",
     "UI/src/routes/association/communication/automation/editor/AutomationEditor.svelte": "03a5be42ad985df535861ee1c5dc2df4f97876b7ae5a43fdc313456907a15c6a",
-    "BE/application/signals.py": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f",
+    "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e",
     "UI/src/components/inputs/email-builder/EmailBuilder.svelte": "96085ea1094e0a8ef3c48e38b9ad17b31f9a1d2eb35447a42d10ed5b5de3352d",
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
     "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
-    "BE/application/views/two_fa_views.py": "256cbbaa52dca083c83fce3145b36d562ba97be2c70b4fbb134046bd20c373b1",
+    "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
     "UI/src/routes/login/Login.svelte": "1510aacbaefbe51d95da6a5b1f7cac164bc7318bc4e733fefe50c4e39755e5f0",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",

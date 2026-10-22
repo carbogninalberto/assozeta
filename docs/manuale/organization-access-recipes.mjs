@@ -1,8 +1,6 @@
-// Table preferences re-reviewed: mapped-owner settings and their audits commit
-// atomically; unrelated profile/credential changes are preserved. UI behavior is unchanged.
-// Profile source re-reviewed: profile, association and audit writes now commit atomically;
-// locked reads and selected columns preserve concurrent changes. Successful settings
-// and registration workflows remain unchanged; failed saves leave no partial profile.
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
@@ -11,7 +9,7 @@ const reviewed = {
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
   "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
-  "BE/application/views/profile_views.py": "f3efd7ea691981da8f4bf2da5a17a2efb149652c631c4c62ae49672aefe686bd",
+  "BE/application/views/profile_views.py": "f542c0007dfeaf0e2dcdd1ca1063d26a1b5f853b2c9eab0290b6ce1eefc8b130",
   "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
   "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",

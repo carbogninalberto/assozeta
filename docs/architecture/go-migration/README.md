@@ -4,7 +4,7 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
+Baseline: `main` through `941321e` (security dependencies, manual delivery and manual visibility). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
@@ -23,8 +23,21 @@ external dashboard recipe binding. Current-head CI remains separate evidence.
 
 Upstream is fetched and reassessed periodically and before pushes, with rebase
 when `main` advances and communicating subagent review. The initial fetch confirmed
-`origin/main@fddcee3` was contained; upstream subsequently advanced to `65f0535`
-with a manual-visibility fix, requiring rebase and source-binding reassessment.
+`origin/main@fddcee3` was contained; the rebase onto the manual-visibility fix
+`65f0535` passed an exact full-tree comparison against an independent clean merge.
+The subsequent rebase includes `941321e`, which adds only a manual-delivery goal document. See
+[main reassessment](main-alignment.md) for review findings and publication boundaries.
+
+That review found an additional Django failure mode: pre-SQL audit-index errors
+were swallowed despite atomic profile/table/2FA mutations. A context-local strict
+audit transaction now propagates those errors for these three mutations. Six
+PostgreSQL regression tests and separate JWT/fresh-connection fault readback pass,
+as do 324 existing Django tests and the actual Django/Go profile (52), table (62)
+and 2FA (50) scenarios with concurrency/query checks. Table contracts also pass
+through both versioned roots. Twenty manual recipe modules were reviewed and
+refreshed; 190 manual Python tests, eleven Node tests, 163 frontend tests and
+three SSO diagnostics tests pass. The new private companion patch refreshes 507
+bindings while preserving all 44 authored MDX files; it remains unpublished.
 
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django

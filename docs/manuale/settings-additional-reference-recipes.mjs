@@ -1,16 +1,15 @@
-// Table preferences re-reviewed: mapped-owner settings and their audits commit
-// atomically; unrelated profile/credential changes are preserved. UI behavior is unchanged.
-// Profile source re-reviewed: profile, association and audit writes now commit atomically;
-// locked reads and selected columns preserve concurrent changes. Successful settings
-// and registration workflows remain unchanged; failed saves leave no partial profile.
-// 2FA source re-reviewed: OTP confirmation, QR setup, and successful enable/disable
-// remain unchanged after atomic user/audit writes and concurrent-profile protection.
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
+// 2FA source re-reviewed: OTP confirmation, QR setup and successful enable/disable
+// remain unchanged. Any audit-index exception rolls back the selected user mutation;
+// locked reads and selected columns preserve concurrent profile changes.
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
-  "BE/application/views/profile_views.py": "f3efd7ea691981da8f4bf2da5a17a2efb149652c631c4c62ae49672aefe686bd",
+  "BE/application/views/profile_views.py": "f542c0007dfeaf0e2dcdd1ca1063d26a1b5f853b2c9eab0290b6ce1eefc8b130",
   "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/application/services/invoice_service.py": "98ba3acf0950b310fb5e47abbd8ba57cc9737b757fa461e5c2989ab18af95519",
@@ -26,7 +25,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/utils/subscriptions_utils.py": "ab922f87b8b1dd491bba41dd86eaabdefd1127c08bdaeb7be4f990657effd22a",
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
-  "BE/application/views/two_fa_views.py": "256cbbaa52dca083c83fce3145b36d562ba97be2c70b4fbb134046bd20c373b1"
+  "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3"
 });
 const contracts = {
   "menu": [

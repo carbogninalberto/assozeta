@@ -1,5 +1,6 @@
 from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
+from application.audit_context import atomic_audit_mutation
 """
 @ copyright: Bakney SRL
 """
@@ -46,7 +47,7 @@ def profile_update(request):
 
     # Person, association and both audit records belong to one mutation.
     # Read current values under locks so audit diffs cannot use stale profiles.
-    with transaction.atomic():
+    with atomic_audit_mutation():
         user = User.objects.select_for_update().get(pk=user.pk)
         updated_fields = []
         if user_data.initial_data['first_name'] is not None:
@@ -524,7 +525,7 @@ def profile_settings_tables(request):
     if 'tables_settings' in preferences.validated_data:
         # Preserve the mapped association owner for collaborators. Lock fresh
         # values for the audit diff and commit only this preference with its audit.
-        with transaction.atomic():
+        with atomic_audit_mutation():
             user = User.objects.select_for_update().get(pk=request.user.pk)
             user.tables_settings = preferences.validated_data['tables_settings']
             user.save(update_fields=['tables_settings'])

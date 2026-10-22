@@ -10019,7 +10019,8 @@
         "BE/application/tests/test_profile_views.py",
         "BE_GO/internal/dto/profile_tables_json_test.go",
         "TESTS/contracts/test_versioned_routing.py",
-        "TESTS/adapters/caddy.py"
+        "TESTS/adapters/caddy.py",
+        "BE/application/tests/test_atomic_profile_audit.py"
       ],
       "evidence": [
         "TDD in quality-reports/go-migration/profile-tables/: http-initial.log passes 33 Django HTTP/effect/audit cases then fails on absent Go route. django-atomic-red.log proves successful response and persisted preference after index failure; django-concurrency-red.log proves overwriting a parallel credential/name change. dto-red.log and service-red.log fail on missing implementations. After the reference repair, http-after-django-repair.log passes 36 Django cases and three locked scenarios before Go 404s.",
@@ -10031,7 +10032,8 @@
         "See BE_GO/internal/handler/profile_tables.md. Atomic selected-field mutation intentionally repairs confirmed Django stale full-row writes and audit-index failure behavior.",
         "Current-model and mutation-query evidence does not establish historical data, browser/versioned-routing, full lifecycle or whole-application performance parity. Status remains implementing.",
         "The expanded characterization corrected an authored null-body expectation: Django returns the untranslated No data provided message. This is an expectation correction, not a reference defect.",
-        "Fixed Caddy version paths are defined, but ordinary Compose/updater delivery of api-go, active-backend selection and coordinated worker/scheduler ownership remain open. See docs/architecture/go-migration/versioned-routing.md."
+        "Fixed Caddy version paths are defined, but ordinary Compose/updater delivery of api-go, active-backend selection and coordinated worker/scheduler ownership remain open. See docs/architecture/go-migration/versioned-routing.md.",
+        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json."
       ]
     },
     {
@@ -10094,7 +10096,8 @@
         "BE_GO/internal/service/profile_update_test.go",
         "BE_GO/internal/service/profile_update_response_test.go",
         "BE_GO/internal/service/profile_value_test.go",
-        "BE_GO/internal/service/profile_update_integration_test.go"
+        "BE_GO/internal/service/profile_update_integration_test.go",
+        "BE/application/tests/test_atomic_profile_audit.py"
       ],
       "evidence": [
         "TDD fails first for missing upload method/size policy (image-unit-red.log; image-native-red.log), then 50 upload cases and 94 presentation cases pass with native codecs, including shared mixed-mode cancellation/recovery. The rebuilt UID 10001 read-only/networkless image passes the complete shipped-codec suite including uploads and eight pre-database HTTP checks. Artifacts: quality-reports/go-migration/profile-update/. This was preparatory image evidence before the mutation implementation.",
@@ -10108,7 +10111,8 @@
         "See BE_GO/internal/handler/profile_update.md. Status remains implementing: current-model fixtures do not prove historical imports, frontend/versioned API workflows, switching or release compatibility. TIFF/AVIF image gaps remain explicit and non-exhaustive.",
         "Atomic mutation is an intentional repair of confirmed Django partial-write/audit-index failures. The successful field/null/conversion/response contract is preserved. Post-commit response errors remain legacy behavior.",
         "Counts cover mutation statements, not the complete authenticated HTTP request. Existing profile-reader query evidence is separate; no whole-application performance improvement is claimed.",
-        "Concurrent writes to other serialized personal preferences from different endpoints still require characterization; the current response snapshot proof covers first_name, last_name, username and avatar_image. Full frontend/versioned routing remains unverified."
+        "Concurrent writes to other serialized personal preferences from different endpoints still require characterization; the current response snapshot proof covers first_name, last_name, username and avatar_image. Full frontend/versioned routing remains unverified.",
+        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json."
       ]
     },
     {
@@ -13316,7 +13320,8 @@
         "BE_GO/internal/service/two_factor_update_test.go",
         "BE_GO/internal/service/two_factor_update_integration_test.go",
         "BE_GO/internal/handler/authenticated_rest_test.go",
-        "BE/application/tests/test_auth_views.py"
+        "BE/application/tests/test_auth_views.py",
+        "BE/application/tests/test_atomic_profile_audit.py"
       ],
       "evidence": [
         "Initial Django HTTP expectations exposed unregistered Go route; impersonation then exposed consumed request body. Real PostgreSQL trigger failure exposed Django orphan audit before atomic fix. See quality-reports/go-migration/two-factor-update/http-route-red.log, composed-first.log and atomic-reference-red.log.",
@@ -13324,7 +13329,8 @@
         "246 existing Django authentication/impersonation/permission/audit tests pass on private PostgreSQL and Redis; django-regression-final.log. Go race/vet, formatting, twelve inventory tests and catalog drift pass. Rebuilt non-root/read-only/networkless image passes its five startup/login HTTP checks; this does not exercise successful 2FA writes. The full accounts regression passes, including all existing task/scope/session/provider/image/hash/audit groups and the new 2FA checks; full-accounts.log and full-accounts-results.json."
       ],
       "notes": [
-        "Current-model schema only. Setup/QR now has separate implementation/evidence; complete global middleware/authentication, versioned API/frontend, historical data and release/activation remain unfinished; this entry is not verified. See BE_GO/internal/handler/two_factor_update.md."
+        "Current-model schema only. Setup/QR now has separate implementation/evidence; complete global middleware/authentication, versioned API/frontend, historical data and release/activation remain unfinished; this entry is not verified. See BE_GO/internal/handler/two_factor_update.md.",
+        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json."
       ]
     },
     {
@@ -17101,9 +17107,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 180,
+        "line": 181,
         "symbol": "delete_installment_of_payment",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17135,9 +17141,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 202,
+        "line": 203,
         "symbol": "delete_related_course_payment",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17169,9 +17175,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 232,
+        "line": 233,
         "symbol": "delete_related_payment",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17203,9 +17209,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 315,
+        "line": 316,
         "symbol": "medical_certificate_expired_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17237,9 +17243,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 327,
+        "line": 328,
         "symbol": "medical_certificate_expiring_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17271,9 +17277,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 151,
+        "line": 152,
         "symbol": "membership_created_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17305,9 +17311,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 300,
+        "line": 301,
         "symbol": "new_course_subscription_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17339,9 +17345,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 261,
+        "line": 262,
         "symbol": "new_subscription_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17373,9 +17379,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 339,
+        "line": 340,
         "symbol": "payment_paid_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17407,9 +17413,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 287,
+        "line": 288,
         "symbol": "subscription_approved_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17441,9 +17447,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 274,
+        "line": 275,
         "symbol": "subscription_signed_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17475,9 +17481,9 @@
       "kind": "signal",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 103,
+        "line": 104,
         "symbol": "update_metadata_courses_callback",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17509,9 +17515,9 @@
       "kind": "signal_connection",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 397,
+        "line": 400,
         "symbol": "post_save.connect:create_audit_log_index",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
@@ -17556,7 +17562,8 @@
         "BE_GO/internal/service/membership_card_configuration_integration_test.go",
         "TESTS/adapters/django/login_finalization.py",
         "BE_GO/internal/service/login_finalization_test.go",
-        "BE_GO/internal/service/login_finalization_integration_test.go"
+        "BE_GO/internal/service/login_finalization_integration_test.go",
+        "BE/application/tests/test_atomic_profile_audit.py"
       ],
       "evidence": [
         "20 actual Django login/audit-middleware versus composed Go password/preparation/OTP cases; exact username/event/index fields and Django readback, with all managed tables unchanged after fixture restoration. Real PostgreSQL checks prove atomic failure rollback, five queries for indexed normalization, one for unchanged names, 32 concurrent calls without duplicate events, and retry after a forced cross-actor deadlock.",
@@ -17568,7 +17575,8 @@
         "Username-normalization, final-login deletion-cancellation and membership-card default-creation audits are currently implemented in Go. Other registered models, changes-JSON fallbacks, deletion and audit lifecycle operations remain open.",
         "The explicit Go invariant transaction propagates index failures and rolls back username/event/index; Django can suppress index failures or leave pre-save collision events. These failure-side-effect differences remain explicit, not certified as identical parity.",
         "Django concurrent missing configuration lookups can create two rows; denied audit/index inserts retain partial autocommit effects. Go serializes participating Go writers and atomically rolls back the invariant. These differences are explicit; the Go parent lock does not coordinate unmodified Django writers. Cross-runtime concurrent creation remains unimplemented/unverified before activation.",
-        "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md."
+        "Final-login writes are a separate, unwired service: last_login and qualifying delete_on cancellation with atomic audit/index. Django full-model saves overwrite concurrent password/name/active changes; Go preserves them. End-to-end revocation admission and mixed-runtime audit races remain open. See BE_GO/internal/service/login_finalization.md.",
+        "Main-alignment audit review exposed pre-SQL index failures swallowed by Django despite transaction.atomic. Scoped atomic_audit_mutation now propagates index errors for profile, table preferences and 2FA only; unrelated legacy signal callers retain behavior. Six real-PostgreSQL regressions and JWT/fresh-connection fault readback pass; SQL-trigger coverage alone had not established this failure mode. See main-alignment.md and ignored audit-index-exceptions/green-results.json."
       ]
     },
     {
@@ -17576,9 +17584,9 @@
       "kind": "signal_connection",
       "django": {
         "file": "BE/application/signals.py",
-        "line": 199,
+        "line": 200,
         "symbol": "pre_delete.connect:delete_installment_of_payment",
-        "sha256": "81f0445115b59c4aeb94cefcd40d3379657f5bc00f4719d8e4302d30cb941a2f"
+        "sha256": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
       },
       "source_present": true,
       "declaration": {
