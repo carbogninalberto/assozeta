@@ -66,6 +66,11 @@ func TestImageProcessorAgainstDjango(t *testing.T) {
 }
 
 func TestImageProcessorSharedAdmissionAcrossFormats(t *testing.T) {
+	testImageSharedAdmission(t, false)
+}
+
+func testImageSharedAdmission(t *testing.T, profile bool) {
+	t.Helper()
 	l := imageProcessorTestLimits()
 	l.Codec.Timeout = 10 * time.Second
 	fault := os.Getenv("ASSOZETA_LOGIN_JPEG_FAULT_CODEC")
@@ -79,9 +84,13 @@ func TestImageProcessorSharedAdmissionAcrossFormats(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	done := make(chan error, 2)
-	for _, input := range [][]byte{[]byte("P5\n1 1\n255\nI"), gifTestFile(1, 1, []byte{73})} {
+	for i, input := range [][]byte{[]byte("P5\n1 1\n255\nI"), gifTestFile(1, 1, []byte{73})} {
 		go func() {
-			got, err := p.CompressLoginImage(ctx, imageURI(input))
+			compress := p.CompressLoginImage
+			if profile && i == 1 {
+				compress = p.CompressProfileImage
+			}
+			got, err := compress(ctx, imageURI(input))
 			if got != "" {
 				done <- errors.New("cancelled decoder exposed output")
 				return
@@ -101,7 +110,11 @@ func TestImageProcessorSharedAdmissionAcrossFormats(t *testing.T) {
 		time.Sleep(5 * time.Millisecond)
 	}
 	queued, stop := context.WithTimeout(context.Background(), 20*time.Millisecond)
-	got, err := p.CompressLoginImage(queued, imageURI(tgaTestFile(1, 1, 3, 8, 32, []byte{73})))
+	compress := p.CompressLoginImage
+	if profile {
+		compress = p.CompressProfileImage
+	}
+	got, err := compress(queued, imageURI(tgaTestFile(1, 1, 3, 8, 32, []byte{73})))
 	stop()
 	if got != "" || !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatal("global queue deadline", err)

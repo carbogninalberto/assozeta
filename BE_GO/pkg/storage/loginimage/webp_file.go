@@ -37,6 +37,10 @@ func NewWebPFileProcessor(path string, l WebPFileLimits) (*WebPFileProcessor, er
 	return &WebPFileProcessor{d, e, l, make(chan struct{}, l.Codec.Concurrency)}, nil
 }
 func (p *WebPFileProcessor) Process(ctx context.Context, b []byte) (WebPFileResult, error) {
+	return p.processSize(ctx, b, 200)
+}
+
+func (p *WebPFileProcessor) processSize(ctx context.Context, b []byte, maxSize int) (WebPFileResult, error) {
 	empty := WebPFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -68,7 +72,7 @@ func (p *WebPFileProcessor) Process(ctx context.Context, b []byte) (WebPFileResu
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(b))
+	plan, err := decideSize(h.Width, h.Height, len(b), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

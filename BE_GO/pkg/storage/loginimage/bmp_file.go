@@ -40,6 +40,10 @@ func NewBMPFileProcessor(path string, limits BMPFileLimits) (*BMPFileProcessor, 
 	return &BMPFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *BMPFileProcessor) Process(ctx context.Context, input []byte) (BMPFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *BMPFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (BMPFileResult, error) {
 	empty := BMPFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *BMPFileProcessor) Process(ctx context.Context, input []byte) (BMPFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

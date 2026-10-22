@@ -40,6 +40,10 @@ func NewMSPFileProcessor(path string, limits MSPFileLimits) (*MSPFileProcessor, 
 	return &MSPFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *MSPFileProcessor) Process(ctx context.Context, input []byte) (MSPFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *MSPFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (MSPFileResult, error) {
 	empty := MSPFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *MSPFileProcessor) Process(ctx context.Context, input []byte) (MSPFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

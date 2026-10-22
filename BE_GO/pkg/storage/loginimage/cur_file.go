@@ -36,6 +36,10 @@ func NewCURFileProcessor(path string, limits CURFileLimits) (*CURFileProcessor, 
 	return &CURFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *CURFileProcessor) Process(ctx context.Context, input []byte) (CURFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *CURFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (CURFileResult, error) {
 	empty := CURFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -67,7 +71,7 @@ func (p *CURFileProcessor) Process(ctx context.Context, input []byte) (CURFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

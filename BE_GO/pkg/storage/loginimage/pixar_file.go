@@ -36,6 +36,10 @@ func NewPIXARFileProcessor(path string, limits PIXARFileLimits) (*PIXARFileProce
 	return &PIXARFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PIXARFileProcessor) Process(ctx context.Context, input []byte) (PIXARFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *PIXARFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PIXARFileResult, error) {
 	empty := PIXARFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -67,7 +71,7 @@ func (p *PIXARFileProcessor) Process(ctx context.Context, input []byte) (PIXARFi
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

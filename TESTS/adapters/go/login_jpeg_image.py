@@ -37,6 +37,7 @@ from TESTS.adapters.django.login_gbr import vectors as gbr_vectors
 from TESTS.adapters.django.login_msp import vectors as msp_vectors
 from TESTS.adapters.django.login_gif import vectors as gif_vectors
 from TESTS.adapters.django.login_images import vectors as dispatch_vectors
+from TESTS.adapters.django.profile_images import vectors as profile_vectors
 from TESTS.adapters.django.login_ico import vectors as ico_vectors
 from TESTS.adapters.django.login_webp import vectors as webp_vectors
 from TESTS.adapters.django.login_cur import vectors as cur_vectors
@@ -106,6 +107,8 @@ def main():
         (work / 'ico.json').chmod(0o644)
         (work / 'dispatch.json').write_text(json.dumps(dispatch_vectors()))
         (work / 'dispatch.json').chmod(0o644)
+        (work / 'profile.json').write_text(json.dumps(profile_vectors()))
+        (work / 'profile.json').chmod(0o644)
         (work / 'gif.json').write_text(json.dumps(gif_vectors()))
         (work / 'gif.json').chmod(0o644)
         (work / 'msp.json').write_text(json.dumps(msp_vectors()))
@@ -151,6 +154,7 @@ def main():
             '--env', 'ASSOZETA_MSP_FIXTURE=/fixtures/msp.json',
             '--env', 'ASSOZETA_GIF_FIXTURE=/fixtures/gif.json',
             '--env', 'ASSOZETA_IMAGE_DISPATCH_FIXTURE=/fixtures/dispatch.json',
+            '--env', 'ASSOZETA_PROFILE_IMAGE_FIXTURE=/fixtures/profile.json',
             '--env', 'ASSOZETA_ICO_FIXTURE=/fixtures/ico.json',
             '--env', 'ASSOZETA_WEBP_FIXTURE=/fixtures/webp.json',
             '--env', 'ASSOZETA_CUR_FIXTURE=/fixtures/cur.json',
@@ -165,7 +169,7 @@ def main():
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(LoginImageAgainstPillow|JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ICOAgainstPillow|WebPAgainstPillow|CURAgainstPillow|PCDAgainstPillow|PIXARAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(LoginImageAgainstPillow|JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ProfileImageAgainstDjango|ICOAgainstPillow|WebPAgainstPillow|CURAgainstPillow|PCDAgainstPillow|PIXARAgainstPillow)$', '-test.v'],
             check=True, timeout=180)
 
 

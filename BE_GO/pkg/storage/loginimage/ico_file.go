@@ -103,6 +103,10 @@ func readICODirectory(ctx context.Context, b []byte, maxBytes int) (icoEntry, er
 }
 
 func (p *ICOFileProcessor) Process(ctx context.Context, b []byte) (ICOFileResult, error) {
+	return p.processSize(ctx, b, 200)
+}
+
+func (p *ICOFileProcessor) processSize(ctx context.Context, b []byte, maxSize int) (ICOFileResult, error) {
 	empty := ICOFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -134,7 +138,7 @@ func (p *ICOFileProcessor) Process(ctx context.Context, b []byte) (ICOFileResult
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(r.Width, r.Height, len(b))
+	plan, err := decideSize(r.Width, r.Height, len(b), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

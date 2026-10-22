@@ -36,6 +36,10 @@ func NewPCDFileProcessor(path string, limits PCDFileLimits) (*PCDFileProcessor, 
 	return &PCDFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PCDFileProcessor) Process(ctx context.Context, input []byte) (PCDFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *PCDFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PCDFileResult, error) {
 	empty := PCDFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -67,7 +71,7 @@ func (p *PCDFileProcessor) Process(ctx context.Context, input []byte) (PCDFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

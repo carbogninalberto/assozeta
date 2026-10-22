@@ -40,6 +40,10 @@ func NewTGAFileProcessor(path string, limits TGAFileLimits) (*TGAFileProcessor, 
 	return &TGAFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *TGAFileProcessor) Process(ctx context.Context, input []byte) (TGAFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *TGAFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (TGAFileResult, error) {
 	empty := TGAFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *TGAFileProcessor) Process(ctx context.Context, input []byte) (TGAFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

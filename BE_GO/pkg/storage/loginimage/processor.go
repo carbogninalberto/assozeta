@@ -27,7 +27,7 @@ type imageFormat struct {
 	name               string
 	accepts            func([]byte) bool
 	probe              func(context.Context, []byte) error
-	process            func(context.Context, []byte) (imageFileResult, error)
+	process            func(context.Context, []byte, int) (imageFileResult, error)
 }
 
 // Processor composes implemented file pipelines with one admission/deadline.
@@ -53,6 +53,17 @@ func NewProcessor(path string, limits ProcessorLimits) (*Processor, error) {
 const jpegDataPrefix = "data:image/jpeg;base64,"
 
 func (p *Processor) CompressLoginImage(ctx context.Context, value string) (string, error) {
+	return p.compress(ctx, value, 200)
+}
+
+// CompressProfileImage applies the avatar-upload variant of compress_base64.
+// Uploads and presentation share the same admission pool, codecs and budgets.
+// The 512-pixel bound applies only above the helper's strict 1 MiB threshold.
+func (p *Processor) CompressProfileImage(ctx context.Context, value string) (string, error) {
+	return p.compress(ctx, value, 512)
+}
+
+func (p *Processor) compress(ctx context.Context, value string, maxSize int) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
 	if err := ctx.Err(); err != nil {
@@ -80,7 +91,7 @@ func (p *Processor) CompressLoginImage(ctx context.Context, value string) (strin
 	if err != nil {
 		return "", err
 	}
-	result, err := p.processFile(ctx, raw)
+	result, err := p.processFile(ctx, raw, maxSize)
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +126,7 @@ func (p *Processor) CompressLoginImage(ctx context.Context, value string) (strin
 	}
 	return string(output), nil
 }
-func (p *Processor) processFile(ctx context.Context, input []byte) (imageFileResult, error) {
+func (p *Processor) processFile(ctx context.Context, input []byte, maxSize int) (imageFileResult, error) {
 	matches := make([]*imageFormat, 0, 4)
 	for i := range p.formats {
 		if err := ctx.Err(); err != nil {
@@ -147,7 +158,7 @@ func (p *Processor) processFile(ctx context.Context, input []byte) (imageFileRes
 				return imageFileResult{}, ErrImageDecoderUnavailable
 			}
 		}
-		return first.process(ctx, input)
+		return first.process(ctx, input, maxSize)
 	}
 	return imageFileResult{KeepOriginal: true}, nil
 }

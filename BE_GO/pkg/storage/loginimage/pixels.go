@@ -27,10 +27,14 @@ type Raster struct {
 // can be enlarged when its encoded data is over 1 MiB; under that limit only the
 // JPEG representation changes. Zero-sized resize results are Django fallbacks.
 func Decide(width, height, encodedBytes int) (Plan, error) {
-	if width <= 0 || height <= 0 || encodedBytes < 0 {
+	return decideSize(width, height, encodedBytes, 200)
+}
+
+func decideSize(width, height, encodedBytes, maxSize int) (Plan, error) {
+	if width <= 0 || height <= 0 || encodedBytes < 0 || maxSize <= 0 {
 		return Plan{}, ErrDimensions
 	}
-	ratio := math.Min(200/float64(width), 200/float64(height))
+	ratio := math.Min(float64(maxSize)/float64(width), float64(maxSize)/float64(height))
 	w, h := int(float64(width)*ratio), int(float64(height)*ratio)
 	if encodedBytes <= 1024*1024 {
 		return Plan{width, height, w == width && h == height}, nil

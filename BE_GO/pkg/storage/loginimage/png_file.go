@@ -44,6 +44,10 @@ func NewPNGFileProcessor(path string, limits PNGFileLimits) (*PNGFileProcessor, 
 	return &PNGFileProcessor{decoder, encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PNGFileProcessor) Process(ctx context.Context, input []byte) (PNGFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *PNGFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PNGFileResult, error) {
 	empty := PNGFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -76,7 +80,7 @@ func (p *PNGFileProcessor) Process(ctx context.Context, input []byte) (PNGFileRe
 		return empty, err
 	}
 	h := state.header
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

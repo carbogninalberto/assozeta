@@ -40,6 +40,10 @@ func NewPCXFileProcessor(path string, limits PCXFileLimits) (*PCXFileProcessor, 
 	return &PCXFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PCXFileProcessor) Process(ctx context.Context, input []byte) (PCXFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *PCXFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PCXFileResult, error) {
 	empty := PCXFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *PCXFileProcessor) Process(ctx context.Context, input []byte) (PCXFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}
