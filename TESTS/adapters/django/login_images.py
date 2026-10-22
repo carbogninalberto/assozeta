@@ -20,6 +20,7 @@ def vectors():
     from TESTS.adapters.django.login_msp import msp
     from TESTS.adapters.django.login_cur import cur
     from TESTS.adapters.django.login_pcd import pcd as pcd_file
+    from TESTS.adapters.django.login_pixar import pixar
     # Test the default preinit-before-init registry ordering used by Image.open.
     Image.preinit();Image.init()
     cases=[];compress=helper()
@@ -99,6 +100,12 @@ def vectors():
     add('QOI after truncated PCD header',pcd[:-1],mode='RGB',size=(1,1),pixels=bytes([73])*3)
     add('PCD frame',pcd_file(),mode='RGB',size=(768,512),pixels=bytes([99])*(768*512*3))
     add('PCD reference rotation failure',pcd_file(orientation=1),original=True)
+    frame=pixar(3,2,bytes([73])*18)
+    add('PIXAR frame',frame,mode='RGB',pixels=bytes([73])*18)
+    add('PIXAR lazy passthrough',pixar(200,3)[:428],original=True)
+    collision=frame+bytes(2048-len(frame))+b'PCD_'+bytes(1534)
+    add('PIXAR after truncated PCD header',collision,mode='RGB',pixels=bytes([73])*18)
+    add('PCD before PIXAR retains original',collision+b'\0',original=True)
     return cases
 
 

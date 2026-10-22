@@ -12,7 +12,7 @@ import (
 // text/scientific formats. These broad guards can reject ambiguous malformed
 // inputs; they never silently report them as completed image parity.
 func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
-	supported := make(map[string]imageFormat, 17)
+	supported := make(map[string]imageFormat, 18)
 	bmp, err := NewBMPFileProcessor(path, BMPFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
 	if err != nil {
 		return nil, err
@@ -191,6 +191,17 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 		v, err := pcd.Process(ctx, b)
 		return imageFileResult(v), err
 	}}
+	pixar, err := NewPIXARFileProcessor(path, PIXARFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
+	if err != nil {
+		return nil, err
+	}
+	supported["PIXAR"] = imageFormat{name: "PIXAR", rejected: ErrPIXARHeader, terminal: ErrPIXARPixelLimit, accepts: pixarSignature, probe: func(ctx context.Context, b []byte) error {
+		_, err := ReadPIXARHeader(ctx, b, l.MaxHeaderBytes)
+		return err
+	}, process: func(ctx context.Context, b []byte) (imageFileResult, error) {
+		v, err := pixar.Process(ctx, b)
+		return imageFileResult(v), err
+	}}
 	order := []string{"BMP", "GIF", "JPEG", "PPM", "PNG", "BLP", "BUFR", "CUR", "PCX", "DDS", "EPS", "FITS", "FLI", "FTEX", "GBR", "GRIB", "HDF5", "JPEG2000", "ICNS", "ICO", "IM", "IMT", "IPTC", "MCIDAS", "MPEG", "TIFF", "MSP", "PCD", "PIXAR", "PSD", "QOI", "SGI", "SPIDER", "SUN", "TGA", "WEBP", "WMF", "XBM", "XPM", "XVTHUMB"}
 	formats := make([]imageFormat, 0, len(order))
 	for _, name := range order {
@@ -256,8 +267,6 @@ func missingImageCandidate(name string, b []byte) bool {
 		return prefix("\x00\x00\x01\xb3")
 	case "TIFF":
 		return prefix("II*\x00") || prefix("MM\x00*") || prefix("II+\x00") || prefix("MM\x00+")
-	case "PIXAR":
-		return prefix("\x80\xe8\x00\x00")
 	case "PSD":
 		return prefix("8BPS")
 	case "SPIDER":
