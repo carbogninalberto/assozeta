@@ -146,18 +146,23 @@ class GoDistributionTests(unittest.TestCase):
                 self.assertEqual((self.root / 'compose.yml').read_bytes(), b'source-compose')
                 self.assertFalse((self.root / '.updater/pending-distribution').exists())
 
-    def test_all_five_pulls_precede_files_environment_and_snapshot_publication(self):
+    def test_five_pulls_and_manual_check_precede_files_environment_and_snapshot_publication(self):
         original = self.env.read_bytes()
         observed = []
+        expected = [['docker', 'pull', reference]
+                    for reference in (*self.manifest['images'].values(), GO_REF)]
+        expected.append(['sh', str(ROOT / 'selfhost/bin/check-manual-image'),
+                         self.manifest['images']['backend'], '1.0.2'])
         def pull(command, **kwargs):
-            self.assertEqual(command[:2], ['docker', 'pull'])
+            self.assertLess(len(observed), len(expected))
+            self.assertEqual(command, expected[len(observed)])
             self.assertTrue(kwargs['check'])
             self.assertEqual(self.env.read_bytes(), original)
             self.assertEqual((self.root / 'compose.yml').read_bytes(), b'source-compose')
             self.assertFalse((self.root / '.updater/pending-distribution').exists())
-            observed.append(command[-1])
+            observed.append(command)
         self.prepare(pull)
-        self.assertEqual(observed, [*self.manifest['images'].values(), GO_REF])
+        self.assertEqual(observed, expected)
         self.assertEqual(read_env(self.env)['ASSOZETA_BACKEND_GO_REF'], GO_REF)
         self.assertEqual(read_env(self.env)['CUSTOM'], 'preserve')
         self.assertEqual((self.root / '.updater/pending-distribution/environment').read_bytes(), original)
