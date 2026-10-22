@@ -271,7 +271,7 @@ La disconnessione coinvolge anche la revoca presso Google.
 // Populated from the inspected working tree. A fresh capture cannot silently
 // upgrade changed implementation semantics to a reviewed recipe.
 export const campsCalendarReviewedSources = Object.freeze({
-    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",

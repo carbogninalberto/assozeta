@@ -176,7 +176,7 @@ Il destinatario iniziale è dimostrativo: sostituiscilo con quello corretto nel 
 
 // These canonical hashes seal the semantic review, separately from capture hashes.
 export const registrationFormsReviewedSources = Object.freeze({
-    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
     "UI/src/routes/association/Members/subscription/Template.svelte": "e01e73eb4435b7ea9ecf35971dd59182c4b6752fd404921e44a0770a64682903",
     "UI/src/routes/association/Members/subscription/partials/TypesModule.svelte": "f83c5113b5bf8ce41420ceafe5a8311802284cb4c9e4ca2891e94c0cca5924bd",

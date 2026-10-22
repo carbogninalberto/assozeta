@@ -22,7 +22,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
     "UI/src/routes/login/Login.svelte": "1510aacbaefbe51d95da6a5b1f7cac164bc7318bc4e733fefe50c4e39755e5f0",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
-    "UI/src/components/Sidebar.svelte": "d808a8787130a1faf9e8ebeee04f4c4e3a9ed6e87c24365573841bda79b506f3",
+    "UI/src/components/Sidebar.svelte": "da92d11c5ca4d82b3e923cb221c29ee348f0f4df57c79df38d2af9bc33bc487a",
     "UI/src/components/inputs/email-builder/emailbuilder.js": "1e96505ab77517ff72f491223a91992d80d33ad8b79a42d13868c844ab331f07"
 });
 
