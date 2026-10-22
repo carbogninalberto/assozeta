@@ -7,6 +7,30 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The public 2FA update now passes 50 declared HTTP/effect scenarios and two
+locked-row concurrency scenarios per backend on actual Django ASGI and the Go
+root. Tests cover JSON/form/multipart input, permissions and impersonation,
+JWT-versus-session audit attribution, and failed user/audit/index writes. The
+failure fixture exposed a Django orphan audit; both backends now commit the user,
+audit and association index atomically and preserve concurrent password/profile
+changes. Identical concurrent updates produce one audit.
+
+Real PostgreSQL service tests pass 4/66 statement budgets for 1/32 identical
+updates, a four-connection pool, blocked cancellation and subsequent recovery.
+246 existing Django authentication/impersonation/permission/audit tests also pass
+on private PostgreSQL/Redis. Go race and ordinary/tagged vet, twelve inventory
+tests, catalog drift, formatting and the rebuilt non-root/read-only/networkless
+image's five startup/login HTTP checks pass. These image checks do not exercise
+a successful database-backed 2FA mutation. The full accounts regression also passes,
+including existing task/scope/session/provider/image/hash/audit groups and the new
+2FA mutation checks (`full-accounts.log`, `full-accounts-results.json`).
+Evidence is under `quality-reports/go-migration/two-factor-update/`, notably
+`transport-current.log`, `django-regression-final.log`, `go-race-final.log`,
+`go-vet-final.log` and `image-http.log`. See the
+[2FA update contract](../../../BE_GO/internal/handler/two_factor_update.md).
+Setup/QR, global middleware/authentication, versioned routing and activation remain
+unfinished; no ledger entry is promoted to verified.
+
 The public login now passes nineteen ordinary portable methods, five rate/session
 ordering methods and forty-one credential/effect scenarios on actual Django ASGI
 and the compiled Go root. Sixteen password and sixteen social requests per backend
@@ -154,29 +178,33 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 15 implementing, 6 needing review and 489
+The ledger currently has 4 deprecated, 16 implementing, 6 needing review and 488
 uncharacterized declarations; none is verified. Implementing entries include
-partial HTTP, audit, task and model-hook components. Refresh now has a registered upstream handler and portable HTTP evidence; login remains component work.
+partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
 installations, full schemas, side effects and failure behavior remain work.
 
 ## Current implementation and evidence
 
 `BE_GO/cmd/server/main.go` constructs config, bounded database/cache pools,
-repository probes, a service and handlers explicitly. Business code does not
-import Echo contexts. The server registers upstream `/healthz` and `/readyz`
-paths, supports bounded dependency checks and SIGTERM HTTP draining. It performs
-no business writes or schema migration.
+repositories, services and handlers explicitly. Business code does not import
+Echo contexts. The root registers ten upstream paths, including health/readiness,
+login, refresh, identifier checks, 2FA status/updates and retired billing responses.
+Login and 2FA mutations use explicit service transactions. Startup performs no
+business-schema migration; health probes and idle SIGTERM draining are tested.
 
 Configuration reuses the existing DB/Redis variables and optional deployment
 `.env`, with process environment taking precedence. PgBouncer's exact `True`
 comparison and Django's nonempty-string `REDIS_SSLAUTH` behavior are preserved.
 The configuration reader now follows django-environ literal file rules;
-`go-redis/v9` is an infrastructure extension using a separate short-lived probe key, never Django cache pickle or
-Channels/Celery payload encoding. JWT key parsing now supports the existing raw/multiline and base64 precedence.
-Other environment settings remain unported.
+`go-redis/v9` health probes use a separate short-lived key. Session and impersonation
+repositories implement their separately tested Django cache boundaries; Channels
+and Celery encodings are not treated as general interoperability protocols. JWT
+keys retain raw/multiline and base64 precedence. Environment coverage and remaining
+gaps are recorded in the current evidence above.
 
-TDD evidence from this worktree:
+Foundation and historical TDD checkpoints follow; the current aggregate results
+and later corrections appear above and in the component contracts.
 
 | Check | Result and scope |
 | --- | --- |
@@ -998,8 +1026,9 @@ fresh reads. A PostgreSQL race check measures one/two admission SELECTs and zero
 extra status queries; 32 concurrent mixed reads use 48 SELECTs with four test
 connections. No managed rows or session bytes change through these reads. The
 focused `--only two-factor-info` rehearsal uses supporting identity/session/refresh/
-identifier fixtures and is not the complete account suite. Setup/update, historical
-schemas, global middleware and activation stay open. See
+identifier fixtures and is not the complete account suite. Updates now have the
+separate contract linked above. Setup/QR, historical schemas, global middleware
+and activation stay open. See
 [2FA status](../../../BE_GO/internal/handler/two_factor_info.md).
 
 

@@ -7,41 +7,46 @@ activation or merge as a backend replacement.** Django retains business-schema,
 worker and scheduler ownership. No production installation, customer data or
 published release has been changed.
 
-The public login now passes nineteen ordinary portable methods, five rate/session
-ordering methods and forty-one credential/effect scenarios on actual Django ASGI
-and the compiled Go root. Sixteen password and sixteen social requests per backend
-also pass concurrently; social requests use distinct identities/providers. A private
-CONNECT/TLS fixture serves the unchanged Google/Apple URLs without public traffic.
-It verifies signatures, audience/expiry/email denials, aliases, OTP and Google's
-access-token fallback, with exactly 45 provider requests per backend and persisted
-audit/index/card/last-login readback. The fixture first passed Django and exposed
-18 Go failures because the root ignored `REQUESTS_CA_BUNDLE`; an explicit cloned
-transport now honors that file and `CURL_CA_BUNDLE` fallback without weakening TLS.
-The environment oracle now has 95 cases, including actual requests precedence.
+The public 2FA update now passes 50 declared HTTP/effect scenarios and two
+locked-row concurrency scenarios per backend on actual Django ASGI and the Go
+root. Tests cover JSON/form/multipart input, permissions and impersonation,
+JWT-versus-session audit attribution, and failed user/audit/index writes. The
+failure fixture exposed a Django orphan audit; both backends now commit the user,
+audit and association index atomically and preserve concurrent password/profile
+changes. Identical concurrent updates produce one audit.
 
-Focused evidence: `quality-reports/go-migration/login-http/provider-red.log`,
-`provider-concurrency-current.log`, `provider-environment-current.log` and
-`ca-unit-current.log`. The complete accounts adapter now also passes after the
-transport change (`provider-full-accounts-results.json` and `provider-full-accounts.log`).
-The final fixture isolation/backlog correction separately passes the full focused
-contracts and 256 TLS requests at concurrency eight. Race/vet, formatting, twelve
-inventory tests, catalog drift and rebuilt image startup/HTTP checks pass. The
-preceding root checkpoint `1fe83c7` additionally passed health and the full shipped
-codec oracle; codec implementation/build inputs are unchanged in this increment. Its predecessor `6c2ccb5` passed
-remote Go/backend/UI/SSO/smoke checks, but legacy and manual runs were cancelled
-when the next commit arrived; that is not a green complete CI matrix.
+Real PostgreSQL service tests pass 4/66 statement budgets for 1/32 identical
+updates, a four-connection pool, blocked cancellation and subsequent recovery.
+246 existing Django authentication/impersonation/permission/audit tests also pass
+on private PostgreSQL/Redis. Go race and ordinary/tagged vet, twelve inventory
+tests, catalog drift, formatting and the rebuilt non-root/read-only/networkless
+image's five startup/login HTTP checks pass. These image checks do not exercise
+a successful database-backed 2FA mutation. The full accounts regression also passes,
+including existing task/scope/session/provider/image/hash/audit groups and the new
+2FA mutation checks (`full-accounts.log`, `full-accounts-results.json`).
+Evidence is under `quality-reports/go-migration/two-factor-update/`, notably
+`transport-current.log`, `django-regression-final.log`, `go-race-final.log`,
+`go-vet-final.log` and `image-http.log`. See the
+[2FA update contract](../../../BE_GO/internal/handler/two_factor_update.md).
+Setup/QR, global middleware/authentication, versioned routing and activation remain
+unfinished; no ledger entry is promoted to verified.
 
-Full image coverage, supported-data/resource sizing, global middleware, provider
-trust directories/rotation/proxy policy, versioned routing and activation remain
-incomplete. See [the public-login contract](../../../BE_GO/internal/handler/login.md).
+The preceding public-login checkpoint `e709159` passed nineteen ordinary HTTP
+methods, five rate/session methods, forty-one credential/effect scenarios and
+sixteen password plus sixteen cross-identity social requests per backend. It also
+passed the full accounts suite and private provider TLS checks. Provider trust
+rotation/directories, full image coverage and representative resource sizing remain
+open. The full shipped codec oracle belongs to the preceding `1fe83c7` checkpoint;
+codec implementation/build inputs are unchanged in this increment. The complete remote quality workflow for `e709159` passed; its manual run is
+still running. These are prior-commit results, not current-patch CI evidence.
 
 ## Implementation and architecture
 
-The root exposes nine upstream paths: health/readiness, login, refresh, email and
-username availability, scoped 2FA status, and two retired software-billing
+The root exposes ten upstream paths: health/readiness, login, refresh, email and
+username availability, scoped 2FA status and updates, and two retired software-billing
 responses. CORS, restore admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 15 implementing, 6 requiring review and 489 uncharacterized; none
+4 deprecated, 16 implementing, 6 requiring review and 488 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 
@@ -55,7 +60,7 @@ production workers/scheduling.** No schema rename, customer identity regeneratio
 production deployment or release publication has occurred.
 
 Implemented service transactions cover credentials, username/audit/index writes,
-card configuration and login finalization. JSON audit data is explicitly supplied
+card configuration, login finalization and 2FA user/audit/index changes. JSON audit data is explicitly supplied
 as text for the root's transaction-pooler-safe pgx mode. Earlier committed effects
 remain after later login failure, but credentials are delivered only after success.
 Go-only creation locks do not coordinate unmodified Django writers. Deliberate
@@ -68,6 +73,7 @@ those differences remain explicit activation gaps.
 | --- | --- |
 | Public login | 19 ordinary and 5 rate methods; 41 credential/effect scenarios; 16 password and 16 cross-identity social concurrent requests per backend; exact response/cookie/signature and persistent audit/index/card readback. Complete login remains open. |
 | Identity and credentials | Bidirectional Django/Go hashes/JWTs; 54 cache-session cases; 132 scoped-request and 67 resource-scope cases; 37 refresh, 16 identifier, 10 2FA-status and 10 retired-billing HTTP methods per backend. These do not prove authorization on every endpoint. |
+| 2FA writes | 50 HTTP/effect and two locked-row concurrency scenarios per backend; atomic failure rollback, correct impersonation audit, query/pool bounds and cancellation. Setup/QR and frontend activation remain open. |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 95 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |
 | Query and concurrency bounds | Real PostgreSQL/Redis tests measure batched lookups, fixed connection pools, concurrent identities and query counts across growing datasets. Critical job claiming uses measured indexed plans. No representative whole-application performance improvement is claimed. |
 | Jobs | Transactional intent, deduplication, fencing, leases, retries, crash recovery and executor drain are tested in private PostgreSQL. Five task bodies have 48 scenario groups. Production worker/scheduler entrypoints, remaining task bodies and coordinated ownership are unfinished. |

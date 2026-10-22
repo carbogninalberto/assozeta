@@ -13026,7 +13026,7 @@
         "The complete current accounts adapter passes on production Python 3.13.2 with restore/CORS/security composition, all existing account/scope/login/image/audit checks and managed-state readback. Evidence: quality-reports/go-migration/restore-admission/full-accounts-production.log and full-accounts-results.json. Bidirectional credentials, permissions, provider protocols, cache/rate/security adapters, Go race/vet, health/recovery and the non-root Linux image rehearsal also pass. Current-model fixtures do not prove historical migrations, browser switching or complete backend parity."
       ],
       "notes": [
-        "Current-model run-syncdb only; setup/update 2FA endpoints, complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md.",
+        "Current-model run-syncdb only; setup/QR 2FA endpoint (updates now have separate implementation/evidence), complete middleware, versioned routing, historical schema and activation gates remain open. See BE_GO/internal/handler/two_factor_info.md.",
         "The new shared HTTP admission does not implement restore upload/execution/recovery, historical imports, stale-task fencing, WebSocket lifetimes or authoritative worker/scheduler switching. No new schema, lock namespace or environment setting; Django remains the migration/task owner. Prior runtime-dependent evidence must be read with the production Python correction above."
       ]
     },
@@ -13080,25 +13080,60 @@
         "target": "two_fa_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/two_factor_update.go",
+        "BE_GO/internal/dto/two_factor_update.go",
+        "BE_GO/internal/handler/two_factor_update.go",
+        "BE_GO/internal/service/two_factor_update.go",
+        "BE_GO/internal/repository/two_factor_update.go",
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/authenticated_rest.go",
+        "BE_GO/internal/repository/model_audit.go",
+        "BE_GO/internal/domain/login_preparation.go"
+      ],
+      "dependencies": [
+        "BE/application/views/two_fa_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/models/user_models.py",
+        "BE/application/models/audit_models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/two-fa/update"
+        ],
+        "request": "Required enable, secret, otp; preserve Python truthiness and OTP verification before disable. JSON, form and multipart use shared parser.",
+        "response": "200 existing enabled/disabled data.msg; OPTIONS current metadata.",
+        "errors": "400 invalid OTP or malformed JSON; 500 missing fields, incompatible types, invalid base32 and database failures; shared 401/403/405/415 admission boundaries.",
+        "authentication": "Existing Bearer actor and session middleware. JWT actor overrides session audit actor on this protected mutation.",
+        "permissions": "other.settings.update, existing FULL collaborator exception, administrator explicit impersonation, association-scoped athlete denial.",
+        "resource_scope": "Mutate resolved ScopeUser; actor/effective/scope remain distinct; validate scoped body references before mutation.",
+        "side_effects": "Update two_fa and, only when enabling, two_fa_secret. Changed fields produce one existing audit and optional association index. Preserve impersonation additional_data and target-then-actor association resolution. No-op produces no audit.",
+        "transaction": "SELECT FOR UPDATE plus limited UPDATE, audit and index in one transaction in BOTH Django and Go. Confirmed Django orphan-audit/stale-profile bug fixed explicitly. Three bounded Go conflict attempts; context cancellation rolls back.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_two_factor_update.py",
+        "TESTS/adapters/django/two_factor_update.py",
+        "TESTS/adapters/django/accounts.py",
+        "BE_GO/internal/service/two_factor_update_test.go",
+        "BE_GO/internal/service/two_factor_update_integration_test.go",
+        "BE_GO/internal/handler/authenticated_rest_test.go",
+        "BE/application/tests/test_auth_views.py"
+      ],
+      "evidence": [
+        "Initial Django HTTP expectations exposed unregistered Go route; impersonation then exposed consumed request body. Real PostgreSQL trigger failure exposed Django orphan audit before atomic fix. See quality-reports/go-migration/two-factor-update/http-route-red.log, composed-first.log and atomic-reference-red.log.",
+        "50 declared HTTP/effect scenarios and two locked-row concurrency scenarios per backend pass, including JSON/form/multipart, OPTIONS, HEAD and unsupported media. All managed-model/session state restored. Tagged real PostgreSQL tests pass 4/66 statement budgets for 1/32 writes, bounded four-connection pool, blocked cancellation and subsequent recovery. Evidence: query-current.log and transport-current.log.",
+        "246 existing Django authentication/impersonation/permission/audit tests pass on private PostgreSQL and Redis; django-regression-final.log. Go race/vet, formatting, twelve inventory tests and catalog drift pass. Rebuilt non-root/read-only/networkless image passes its five startup/login HTTP checks; this does not exercise successful 2FA writes. The full accounts regression passes, including all existing task/scope/session/provider/image/hash/audit groups and the new 2FA checks; full-accounts.log and full-accounts-results.json."
+      ],
+      "notes": [
+        "Current-model schema only. Setup/QR, complete global middleware/authentication, versioned API/frontend, historical data and release/activation remain unfinished; this entry is not verified. See BE_GO/internal/handler/two_factor_update.md."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/email-logs/list -> communication_email_logs_list",
