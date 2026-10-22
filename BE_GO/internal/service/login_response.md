@@ -43,14 +43,22 @@ must still call finalization and withhold the response on any failure.
 ## Image gate
 
 The image processor is an explicit `domain.LoginImageProcessor` dependency.
-Individual Pillow-compatible file pipelines, including GIF first-frame handling,
-now exist in `pkg/storage/loginimage`; the shared registry/data-URI implementation
-of this interface is still missing. Unit doubles verify dispatch,
-ordering and error propagation only; they are not image compatibility evidence.
-A nil processor fails when an association avatar or qualifying logo needs work;
-it never silently passes those images through. The database fixture deliberately
-uses null images or paths Django leaves unchanged, and supplies no processor.
-No complete login or image parity is claimed and no public route is wired.
+`pkg/storage/loginimage.Processor` now composes the existing file pipelines with
+shared admission/deadline and data-URI handling. Its registry still has explicit
+missing-codec and ambiguous-header gaps; it is not wired into public login.
+
+The real PostgreSQL fixture injects this processor. Seven additional cases verify
+owner/collaborator avatar and logo conversion, athlete/administrator bypass,
+complete-section logo bypass, malformed URIs and GBR/SUN precedence. Default card
+creation/audit follows successful conversion. Thirty-two mixed image responses
+retain the existing query bounds and four-connection pool. A real missing decoder
+returns no response or supplied tokens after five profile/association/settings
+statements, before the two card-configuration statements. Fixture mutations are
+restored and the complete managed-table snapshot remains equal.
+
+A nil processor still fails when an image requires processing. Unit doubles remain
+useful for ordering/failure injection, but the added image evidence uses concrete
+codecs. Full image-registry, public-login and session-delivery parity remain open.
 
 ## Registration environment
 
@@ -70,13 +78,13 @@ without a second credential file or mutation of the process environment.
 
 ## Executed component evidence
 
-`TESTS/adapters/django/login_response.py` specifies 36 full response JSON/outcome
+`TESTS/adapters/django/login_response.py` specifies 43 full response JSON/outcome
 cases and runs the actual Django `JWTTokenService.build_login_response` with its
 real serializers, queries and default-card write. Only serializer time is fixed;
 input token strings are explicit synthetic response fixtures, not proof of JWT
 issuance. Go composes the actual PostgreSQL services. Whole JSON values are
 compared with exact number decoding. All managed tables match after restoring the
-one declared default configuration and its audit/index. Django reads those rows.
+declared default configurations and their audit/index records. Django reads those rows.
 
 The same adapter establishes 28 explicitly expected boolean values, eight dotenv
 cases and cyclic-proxy failure using the installed Django environment parser.
@@ -92,7 +100,7 @@ responses but is not a new dependency of owner responses. Errors and cancellatio
 release transactions and return no partial response.
 
 Query counts do not prove workload performance or query-plan adequacy. Whole-login
-revocation/snapshot consistency, mixed-runtime default creation/audit races, image
-conversion, social authentication, rate limiting, full HTTP/global middleware and
+revocation/snapshot consistency, mixed-runtime default creation/audit races, complete image-registry
+coverage, social authentication, rate limiting, full HTTP/global middleware and
 cookie/finalization composition remain open. This component does not advance any
 ledger entry to verified.
