@@ -1181,3 +1181,12 @@ See `BE_GO/pkg/storage/s3credentials/README.md` for precise limits. Direct/defau
 metadata chains, SSO/legacy files, full INI and provider precedence, early renewal,
 live cloud/IdP policy, `.env` fallback-chain and production composition remain open.
 No additional cleanup task or backend activation is claimed.
+
+The first-frame GIF pipeline adds 644 declared header/pixel/file cases. Grayscale
+conversion, palette-dependent JPEG fallback, transparency/canvas offsets,
+interlacing, LZW dictionary/reset rules, complete subblocks, premature-end 64 KiB
+refills, comments and first-frame isolation are checked against Pillow and the
+actual Django helper, including the shipped image. Stage budgets, cancellation,
+32 mixed concurrent pipelines and encoder admission/reaping/reuse are tested.
+Evidence is under `quality-reports/go-migration/gif/`. Shared image dispatch and
+remaining formats still block complete public login; no endpoint status advances.

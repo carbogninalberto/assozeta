@@ -393,6 +393,23 @@ Whole-workflow success must be assessed at the PR head, separately from these
 component results. Safe logs remain in `storage-credentials/ui-job.log` and
 `reload-ui.log` beneath the evidence directory.
 
+The GIF first-frame path now has 644 declared Django/Pillow comparisons for
+palette/grayscale behavior, canvas/transparency, interlacing, LZW decoding,
+truncated blocks, 64 KiB refill boundaries, comments and JPEG output. The shipped
+image and local race checks cover the same vectors, plus bounded admission and
+cancellation. Evidence is in `quality-reports/go-migration/gif/`. Shared image
+dispatch and remaining formats still prevent complete public login composition.
+The complete accounts rerun passes with production Python 3.13.2, real PostgreSQL
+and Redis, including all 644 GIF cases, 68 password cases, 47 OTP cases, 26 sessions,
+20 admission/audit cases and existing task/HTTP/scope/restore/image checks. Results:
+`quality-reports/go-migration/gif/full-accounts-results.json`.
+
+The `f66c816` Linux legacy/browser CI job failed while installing Playwright's
+browser: `cdn.playwright.dev` presented a certificate for `*.azureedge.net`
+(`ERR_TLS_CERT_ALTNAME_INVALID`). Browser verification did not run. This is an
+unresolved CI gap, not a passing rehearsal or a code fix. The log is retained in
+`quality-reports/go-migration/gif/previous-head-linux-legacy.log` (job 119558174927).
+
 ## Remaining completion gates
 
 Every requirement in the [acceptance matrix](README.md#required-acceptance-matrix)

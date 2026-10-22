@@ -1,9 +1,12 @@
 # Login HTTP transport
 
 `LoginHandler` implements the transport boundary around a `LoginRequestService`.
-It is deliberately not registered by `cmd/server` while request credential
-coercion, password/social composition, shared rate limits, trusted audit middleware
-and complete image processing remain unfinished.
+It is deliberately not registered by `cmd/server` while shared image dispatch
+and complete production request composition remain unfinished. Raw credential
+coercion, password/social session composition, provider clients, shared rate limits
+and trusted session-audit middleware now exist as separately tested components;
+their existence does not prove the combined public login. See the component
+contracts under `internal/service`, `internal/middleware` and `pkg/social`.
 
 The handler uses the existing DRF-compatible body reader and response helpers.
 Negotiation and `format` selection precede supplied-Bearer authentication; trusted

@@ -42,8 +42,10 @@ must still call finalization and withhold the response on any failure.
 
 ## Image gate
 
-The image processor is an explicit `domain.LoginImageProcessor` dependency. The
-Pillow-compatible implementation is still missing. Unit doubles verify dispatch,
+The image processor is an explicit `domain.LoginImageProcessor` dependency.
+Individual Pillow-compatible file pipelines, including GIF first-frame handling,
+now exist in `pkg/storage/loginimage`; the shared registry/data-URI implementation
+of this interface is still missing. Unit doubles verify dispatch,
 ordering and error propagation only; they are not image compatibility evidence.
 A nil processor fails when an association avatar or qualifying logo needs work;
 it never silently passes those images through. The database fixture deliberately

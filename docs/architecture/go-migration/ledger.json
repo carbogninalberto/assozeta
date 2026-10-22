@@ -7905,7 +7905,10 @@
         "BE_GO/internal/repository/session_accounts.go",
         "BE_GO/internal/repository/session_cache.go",
         "BE_GO/internal/repository/session_codec.go",
-        "BE_GO/internal/middleware/session_audit.go"
+        "BE_GO/internal/middleware/session_audit.go",
+        "BE_GO/pkg/storage/loginimage/gif_header.go",
+        "BE_GO/pkg/storage/loginimage/gif_decode.go",
+        "BE_GO/pkg/storage/loginimage/gif_file.go"
       ],
       "dependencies": [
         "BE/application/views/auth_views.py",
@@ -8114,7 +8117,11 @@
         "BE_GO/internal/middleware/session_audit_integration_test.go",
         "BE_GO/internal/repository/session_audit_port_integration_test.go",
         "TESTS/adapters/django/credential_concurrency.py",
-        "BE_GO/internal/service/credential_concurrency_integration_test.go"
+        "BE_GO/internal/service/credential_concurrency_integration_test.go",
+        "TESTS/adapters/django/login_gif.py",
+        "BE_GO/pkg/storage/loginimage/gif_test.go",
+        "BE_GO/pkg/storage/loginimage/gif_file_test.go",
+        "BE_GO/pkg/storage/loginimage/gif_integration_test.go"
       ],
       "evidence": [
         "21 explicit Django actual-view versus Go service account-selection/password-write cases using production hashers; Django verifies Go-written hashes and all managed model tables are compared after restoring declared test changes. This is credential-stage evidence, not portable Go login HTTP parity.",
@@ -8165,7 +8172,8 @@
         "Twenty-seven portable session HTTP contracts cover 16 malformed cache/UUID/hash inputs on real Django ASGI and Go. Django middleware exception conversion yields exact production HTML 500 with Vary: Cookie, no cookie deletion and unchanged cached bytes. Cache readback before each fixture reset prevents later cases hiding mutations. Debug pages and full exception/global middleware policy remain unverified. Red evidence: quality-reports/go-migration/session-config/http-red.log; complete rerun evidence recorded in the maintainer report.",
         "The complete accounts adapter passed with all latest changes: 43 service session cases, 27 HTTP contracts per backend, 30 public refresh contracts and all existing image/login/audit/scope checks. Required synthetic startup settings were updated; production was untouched. Full Go race/vet, tagged vet, environment, rate, health and inventory checks also passed. Results: quality-reports/go-migration/session-config/full-accounts-results.json. No public session wiring or migration-history parity is claimed.",
         "The complete current accounts adapter passes on production Python 3.13.2 with restore/CORS/security composition, all existing account/scope/login/image/audit checks and managed-state readback. Evidence: quality-reports/go-migration/restore-admission/full-accounts-production.log and full-accounts-results.json. Bidirectional credentials, permissions, provider protocols, cache/rate/security adapters, Go race/vet, health/recovery and the non-root Linux image rehearsal also pass. Current-model fixtures do not prove historical migrations, browser switching or complete backend parity.",
-        "Full accounts at 30f9c10 failed an eight-concurrent-session case after credential SELECT FOR UPDATE exhausted three serialization attempts on unrelated last_login writes. Six deterministic PostgreSQL interleavings now pass with unlocked repeatable-read candidate snapshots, including actual Django second-connection finalization, stale rehash/reset protection, current active/deleted admission denial, page 129, cancellation and pool recovery. The complete production-Python accounts rerun passes, including all 68 real-hash cases, 16 concurrent credential requests, 26 composed sessions with eight concurrent repetitions, 47 OTP cases, 20 admission/audit cases and all existing image/HTTP/scope/task fixtures. Evidence: quality-reports/go-migration/credential-concurrency/full-accounts.log and full-accounts-results.json. Go race/vet, tagged vet, inventory/drift, formatting and workflow lint pass. Latest focused cancellation also proves the actual PostgreSQL lock wait before canceling."
+        "Full accounts at 30f9c10 failed an eight-concurrent-session case after credential SELECT FOR UPDATE exhausted three serialization attempts on unrelated last_login writes. Six deterministic PostgreSQL interleavings now pass with unlocked repeatable-read candidate snapshots, including actual Django second-connection finalization, stale rehash/reset protection, current active/deleted admission denial, page 129, cancellation and pool recovery. The complete production-Python accounts rerun passes, including all 68 real-hash cases, 16 concurrent credential requests, 26 composed sessions with eight concurrent repetitions, 47 OTP cases, 20 admission/audit cases and all existing image/HTTP/scope/task fixtures. Evidence: quality-reports/go-migration/credential-concurrency/full-accounts.log and full-accounts-results.json. Go race/vet, tagged vet, inventory/drift, formatting and workflow lint pass. Latest focused cancellation also proves the actual PostgreSQL lock wait before canceling.",
+        "GIF first-frame pipeline: 644 declared header/pixel/file cases check actual Django/Pillow and Go, including the shipped non-root read-only/networkless image. Covers palettes and retained global-palette JPEG failure, transparent canvas/offset expansion, interlace, LZW widths/reset/growth/saturation, full subblocks, malformed/end-code behavior at 64 KiB refill boundaries, comments and animation isolation. Exact logical stage budgets, overflow/ownership, scanning/LZW/fill cancellation, 32 mixed concurrent pipelines and encoder admission/cancellation/reaping/reuse are checked. Evidence: quality-reports/go-migration/gif/. Shared registry dispatch, remaining formats and complete public login remain open; no endpoint is newly verified. The complete production-Python 3.13.2 accounts adapter also passes with all 644 GIF cases and existing task/HTTP/scope/restore/image, real-hash credential and concurrent-session checks; results are retained in gif/full-accounts-results.json under the same evidence root."
       ],
       "notes": [
         "No public Go login handler is registered. Refresh has its separate upstream handler; current identity, collaborator and scoped-reference evidence is documented in README.md.",

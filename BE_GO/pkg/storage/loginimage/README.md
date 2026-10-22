@@ -839,3 +839,39 @@ overflow, ownership, raw/RLE/surplus cancellation, 32 mixed concurrent pipelines
 and encoder-stage queue/cancellation/reaping/reuse pass. Production native code
 is unchanged. Remaining formats, shared dispatch/admission and public login
 composition remain open.
+
+## GIF first-frame images
+
+`ReadGIFHeader`, `DecodeGIF` and `GIFFileProcessor` implement the first-frame
+path from Pillow 11.1's [GIF plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/GifImagePlugin.py)
+and [LZW decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/GifDecode.c). Global/local identity
+palettes produce L; colored palettes produce P. A retained global colored palette
+also makes a locally grayscale frame fail JPEG saving during resizing. Those
+images preserve the original URI. Grayscale frames use the common transformation
+and JPEG encoder, retaining joined comment extensions. Transparency fills the
+initial canvas with the declared index; it does not introduce RGBA conversion for
+this first-frame loading strategy. Offsets can enlarge the logical canvas.
+
+The bounded LZW decoder supports initial widths 0 through 12, clear/reset,
+self-reference, dictionary growth/saturation and four-pass interlacing. It requires
+a whole declared subblock before reading it and finishes at the last required
+pixel without demanding a trailer/end code. A premature end code returns control
+to Pillow's 64 KiB input loop; even buffered data cannot resume without another
+read. The oracle exposed and verifies that boundary. Subsequent animation frames
+are ignored. Malformed files and JPEG save failures retain the original; resource,
+cancellation and unavailable-codec failures propagate without a successful result.
+
+Header budgets charge consumed bytes plus retained comments. Decode budgets charge
+input, output and the fixed 16 KiB dictionary/stack. These are logical payload
+bounds, excluding allocator capacity/overhead and total RSS. One deadline and
+admission slot cover header, decode, transformation and encoding. Tests verify
+exact stage limits, independent output/comment storage, overflow rejection,
+cancellation during scanning/LZW/fill, 32 concurrent mixed files, queued deadlines
+and encoder cancellation/reaping/reuse.
+
+`TESTS/adapters/django/login_gif.py` declares 644 header/pixel/file cases and checks
+the actual unmodified Django helper, Pillow and Go. Authored literals and explicit
+sample expectations anchor the oracle; Pillow-written inputs additionally exercise
+long dictionary chains and resets. Tests run inside the shipped non-root,
+read-only, networkless image as well. Native codec sources are unchanged.
+Other formats, shared registry dispatch/admission and public login remain open.
