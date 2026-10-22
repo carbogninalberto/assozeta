@@ -1056,3 +1056,15 @@ requests per backend, access-token fallback and cross-identity concurrency are
 checked alongside actual HTTP signatures/cookies and persisted effects. The
 95-case environment adapter now checks requests/curl CA precedence using the real
 requests merger. It does not read developer credentials or contact public providers.
+
+### Authenticated profile HTTP
+
+`accounts.py --only profile-info` exercises actual Django ASGI and the Go root
+with private PostgreSQL/Redis: 56 declared scenarios, 88 concurrent reads and four
+fresh-state reads per backend across eight registration modes. Expectations check
+effective-person versus owner fields, actual image conversion and no profile-read
+writes. `profileinfointegration` measures SELECT/pool bounds across growing groups,
+foreign lookup denial, blocked cancellation/recovery and the actual details-query
+plan with 4,000 additional synthetic tenants. Fixtures and plans contain synthetic
+data only. See `BE_GO/internal/handler/profile_info.md` for precise limits; this
+current-model rehearsal does not establish full frontend or migration parity.

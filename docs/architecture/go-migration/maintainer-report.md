@@ -7,36 +7,45 @@ activation or merge as a backend replacement.** Django retains business-schema,
 worker and scheduler ownership. No production installation, customer data or
 published release has been changed.
 
-The public `/two-fa/setup` now generates cryptographic secrets and local SVG QR
-codes through explicit service/encoder dependencies. Actual Django ASGI and the
-Go root pass 31 declared HTTP scenarios and 62 concurrent requests per backend
-across six branding/capacity configurations. Provisioning leaves all managed
-models and session/cache values unchanged. Four cross-runtime activation/status/
-disabling flows and four fresh-login flows pass: missing or incorrect OTP is
-denied, and valid credentials work after switching runtimes.
+The public `/profile/info` now preserves the effective person's profile and the
+admitted owner's association, including collaborator-specific preferences,
+review settings and registration choices. It performs no login/card/audit writes.
+Actual Django ASGI and the Go root pass 56 declared HTTP scenarios and 88
+concurrent reads per backend across all eight registration-flag combinations.
+Four further reads per backend verify fresh stored personal/review settings.
+Managed model rows and session/cache bytes remain unchanged by reads.
 
-An independent pixel decoder verifies 512 deterministic symbols from both encoders
-in generated-image and detector modes, including content, dimensions and error
-correction. PostgreSQL tracing finds zero provisioning queries beyond identity
-admission (one direct/two collaborator SELECTs; 48 SELECTs for 32 mixed requests
-in four connections). The environment oracle has 103 cases. Go race and
-ordinary/tagged vet pass, as do the rebuilt non-root, read-only, networkless
-image's six HTTP checks. The image probe does not prove database-backed setup.
-Twelve inventory tests, catalog drift and formatting pass. The full accounts
-regression passes with all existing task/scope/session/provider/image/hash/audit
-groups and the new provisioning checks (`full-accounts.log` and
-`full-accounts-results.json`).
-Evidence: `quality-reports/go-migration/two-factor-setup/`, especially
-`fresh-login-fixed.log`, `environment-current.log`, `qr-vectors-current.log`,
-`go-race.log` and `image-current.log`. See the
-[provisioning contract](../../../BE_GO/internal/handler/two_factor_setup.md).
+Real PostgreSQL/Redis/native-image tests measure two SELECTs for direct
+athlete/administrator reads and six for owner/collaborator reads. Thirty-two mixed
+calls use 128 SELECTs within four connections. Adding 1/16/128/512 nested groups
+retains six SELECTs and excludes foreign groups. An executed plan with 4,000
+additional synthetic tenants uses the existing user and association-owner indexes.
+A blocked read cancels, releases
+its connection and recovers. The legacy full group payload remains unpaginated;
+query counts do not establish total-memory bounds or whole-application performance.
+Login and profile share the same process-wide image pool. Unit tests cover reader,
+identity, image and cancellation failures. Go race and ordinary/tagged vet pass.
+The rebuilt non-root/read-only/networkless image passes seven HTTP checks; these
+do not exercise a database-backed profile. Dependency loss/recovery and idle
+SIGTERM checks pass, along with twelve inventory tests, drift and formatting.
+The full accounts regression passes (`full-accounts.log` and
+`full-accounts-results.json`). The final focused rehearsal additionally passes
+the 4,000-tenant plan and unchanged-token transitions (`fresh-token-final.log`
+and `final-focused-results.json`).
+Evidence is under `quality-reports/go-migration/profile-info/`; see the
+[profile contract](../../../BE_GO/internal/handler/profile_info.md).
+
+The preceding setup checkpoint `d11eff6` passes 31 HTTP scenarios and 62 concurrent
+requests per backend, 512 decoded QR symbols, four activation/disabling flows and
+four fresh-login flows. Its full accounts suite, 103 environment cases and image
+probe pass. These are prior-checkpoint results, not current-head CI evidence.
 
 The preceding atomic-update change passes 50 HTTP/effect and two locked-row
 concurrency scenarios per backend, including user/audit/index rollback and
 preservation of concurrent profile/password changes. Its 246 existing Django
 authentication/impersonation/permission/audit tests pass. The manual source review
 was updated in `3f6d5c1`, with all 190 local manual tests passing. Remote manual
-run `39720462215` then stops because the external manual's reviewed recipe bindings
+run `39721860028` at `d11eff6` stops because the external manual's reviewed recipe bindings
 still reference the previous recipe files. A local companion patch against
 `Bakney/manuale@4253c5d` refreshes 83 reviewed bindings with unchanged MDX and
 passing authoring validation (`manual-bindings-review.patch` and JSON report in
@@ -53,11 +62,11 @@ do not establish current-head CI or complete application parity.
 
 ## Implementation and architecture
 
-The root exposes eleven upstream paths: health/readiness, login, refresh, email and
-username availability, scoped 2FA setup, status and updates, and two retired software-billing
+The root exposes twelve upstream paths: health/readiness, login, refresh, email and
+username availability, scoped profile information and 2FA setup/status/updates, and two retired software-billing
 responses. CORS, restore admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 17 implementing, 6 requiring review and 487 uncharacterized; none
+4 deprecated, 18 implementing, 6 requiring review and 486 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 
@@ -84,6 +93,7 @@ those differences remain explicit activation gaps.
 | --- | --- |
 | Public login | 19 ordinary and 5 rate methods; 41 credential/effect scenarios; 16 password and 16 cross-identity social concurrent requests per backend; exact response/cookie/signature and persistent audit/index/card readback. Complete login remains open. |
 | Identity and credentials | Bidirectional Django/Go hashes/JWTs; 54 cache-session cases; 132 scoped-request and 67 resource-scope cases; 37 refresh, 16 identifier, 10 2FA-status and 10 retired-billing HTTP methods per backend. These do not prove authorization on every endpoint. |
+| Profile information | 56 HTTP scenarios, 88 concurrent and four fresh-state reads per backend across eight registration modes. Exact effective/owner fields, actual image conversion, query/pool bounds, foreign lookup denial and cancellation; all image formats/frontend workflows remain open. |
 | 2FA writes | 50 HTTP/effect and two locked-row concurrency scenarios per backend; atomic failure rollback, correct impersonation audit, query/pool bounds and cancellation. Setup has separate evidence below; full frontend activation remains open. |
 | 2FA provisioning | 31 HTTP scenarios, 62 concurrent requests per backend, 512 decoded symbols, four cross-runtime update flows and four fresh-login flows. No setup persistence; entropy/encoder failures and cancellation covered. Full browser/phone interaction remains unverified. |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 103 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |

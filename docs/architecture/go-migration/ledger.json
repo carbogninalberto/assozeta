@@ -9830,25 +9830,56 @@
         "target": "profile_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/profile_info.go",
+        "BE_GO/internal/dto/profile_info.go",
+        "BE_GO/internal/handler/profile_info.go",
+        "BE_GO/internal/service/profile_info.go",
+        "BE_GO/internal/repository/profile_info.go"
+      ],
+      "dependencies": [
+        "BE/application/views/profile_views.py",
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/impersonation.py",
+        "BE/application/impersonation_scope.py",
+        "BE/instance/registration_features.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/profile/info"
+        ],
+        "request": "No business body; existing Bearer authentication, impersonation and referenced-resource admission. Methods/negotiation retain REST precedence.",
+        "response": "200 info.role plus complete UserAuthSerializer data and role-specific profile association/review/settings fields. Effective collaborator data stays distinct from owner scope. No credentials, login/card/instructor augmentation.",
+        "errors": "401 disabled/deleted/anonymous; 403 invalid scope/owner/reference; 404 format; 405 including HEAD; 406 Accept; generic 500 for missing association, unsupported stored role or required reads.",
+        "authentication": "Bearer required; BKN_AUTH alone does not authenticate. Actor, effective person and resource scope remain separate.",
+        "permissions": "Existing profile exemption for collaborators/instructors. Administrator profile allowed without impersonation.",
+        "resource_scope": "Effective person profile, admitted owner association, checked person/owner relationship and explicit impersonation association; association-bound foreign nested references denied by shared guard.",
+        "side_effects": "Read-only managed model/cache state. Local image processing through the pool shared with login; no default-card creation, audit, credentials, jobs or providers.",
+        "transaction": "Existing profile/association reader read-only snapshots; no business write transaction. Details query is a parameterized person/owner join.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_profile_info.py",
+        "TESTS/adapters/django/profile_info.py",
+        "BE_GO/internal/service/profile_info_test.go",
+        "BE_GO/internal/service/profile_info_integration_test.go",
+        "TESTS/adapters/go/login_http_image.py"
+      ],
+      "evidence": [
+        "Django first passes 26 declared HTTP cases and 32 concurrent reads; Go then fails on the missing route. Unit tests fail for missing service/domain and later expose a partial administrator response after cancellation. Evidence: quality-reports/go-migration/profile-info/http-route-red.log, unit-red.log, cancel-red.log.",
+        "Final focused contracts pass 56 HTTP scenarios, 88 concurrent reads, eight registration-flag combinations and four fresh-state reads per backend, with unchanged managed rows and cache/session bytes. Complete response assertions include actual native image conversion and exact large JSON integers. Evidence: modes-current.log; final unchanged-token transitions and query-plan fixture are repeated in fresh-token-final.log.",
+        "Actual PostgreSQL/Redis/native-image integration measures 2/6 SELECTs for athlete/admin versus owner/collaborator; 32 mixed calls use 128 SELECTs within four connections. Additional 1/16/128/512 groups retain six SELECTs and exclude foreign groups. Foreign owner details fail; a blocked read cancels and recovers with no connection left in use. An EXPLAIN ANALYZE of the actual details statement over 4,000 additional synthetic tenants uses the existing user primary-key and association-owner unique indexes with one row each and zero filtered rows (details-plan.json; plan-final.log). Go race, ordinary/tagged vet, twelve inventory tests, drift and formatting pass. The non-root/read-only/networkless image passes seven HTTP checks; dependency loss/recovery and idle SIGTERM pass. The full accounts regression passes with all existing groups and the new profile scenarios (full-accounts.log, full-accounts-results.json). The final focused rehearsal additionally verifies the 4,000-tenant plan and unchanged-token state transitions (fresh-token-final.log, final-focused-results.json)."
+      ],
+      "notes": [
+        "Full nested group payload remains unpaginated as in Django. Query count is not a total-memory or performance claim. Full image formats, frontend workflows, historical-schema, versioned routing and activation remain gaps. See BE_GO/internal/handler/profile_info.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/integrations -> profile_integrations",
