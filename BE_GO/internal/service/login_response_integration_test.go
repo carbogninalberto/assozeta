@@ -21,6 +21,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/loginimage"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -82,7 +83,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 			Expected bool
 		}
 	}
-	if json.Unmarshal(data, &fixture) != nil || len(fixture.Cases) == 0 {
+	if json.Unmarshal(data, &fixture) != nil || len(fixture.Cases) != 43 {
 		t.Fatal("invalid response fixture")
 	}
 	now, err := time.Parse(time.RFC3339Nano, fixture.Now)
@@ -129,9 +130,14 @@ func TestLoginResponsePostgres(t *testing.T) {
 	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
+	images, err := loginimage.NewProcessor(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), loginimage.ProcessorLimits{
+		Codec: loginimage.JPEGLimits{MaxRasterBytes: 64 << 20, MaxEncodedBytes: 4 << 20, Concurrency: 2, Timeout: 5 * time.Second}, MaxURIBytes: 8 << 20, MaxHeaderBytes: 4 << 20, MaxTailBytes: 4 << 20, MaxDecodeBytes: 64 << 20, MaxTransformBytes: 64 << 20})
+	if err != nil {
+		t.Fatal(err)
+	}
 	builder := func(db *sqlx.DB, tc responseFixtureCase) *LoginResponses {
 		clock := func() time.Time { return now }
-		return NewLoginResponses(NewLoginProfiles(repository.NewLoginProfiles(db), clock), NewAssociationProfiles(repository.NewAssociationProfiles(db), clock), repository.NewLoginResponseSettings(db), NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), clock), nil, responseChoices(t, tc.Flags))
+		return NewLoginResponses(NewLoginProfiles(repository.NewLoginProfiles(db), clock), NewAssociationProfiles(repository.NewAssociationProfiles(db), clock), repository.NewLoginResponseSettings(db), NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), clock), images, responseChoices(t, tc.Flags))
 	}
 	account := func(tc responseFixtureCase) domain.Account {
 		return domain.Account{ID: tc.ID, Role: tc.Role, Superuser: tc.Admin, Active: true, ConnectedUserID: tc.Owner}
@@ -178,6 +184,68 @@ func TestLoginResponsePostgres(t *testing.T) {
 			}
 		})
 	}
+	t.Run("mixed image response concurrency", func(t *testing.T) {
+		var wg sync.WaitGroup
+		counter.count.Store(0)
+		want := int64(0)
+		for i := 0; i < 32; i++ {
+			tc := fixture.Cases[36+i%7]
+			queries := tc.Queries
+			if tc.Created {
+				queries = 7
+			}
+			want += int64(queries)
+			service := builder(db, tc)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				result, err := service.Build(context.Background(), account(tc), fixture.Tokens, domain.LoginAuditContext{})
+				if err != nil || result == nil {
+					t.Error("image response failed", err)
+					return
+				}
+				encoded, err := json.Marshal(result)
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				var got, want any
+				a, b := json.NewDecoder(bytes.NewReader(encoded)), json.NewDecoder(bytes.NewReader(tc.Expected))
+				a.UseNumber()
+				b.UseNumber()
+				if a.Decode(&got) != nil || b.Decode(&want) != nil || !reflect.DeepEqual(got, want) {
+					t.Error("concurrent image response differs", tc.Name)
+				}
+			}()
+		}
+		wg.Wait()
+		if counter.count.Load() != want || db.Stats().InUse != 0 {
+			t.Fatal("image response query/pool bound", counter.count.Load(), want)
+		}
+	})
+	t.Run("missing image decoder returns no token response", func(t *testing.T) {
+		target, source := fixture.Cases[36], fixture.Cases[38]
+		var original string
+		if err := db.Get(&original, "SELECT avatar_image FROM bakney_user WHERE user_id=$1", target.ID); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := db.Exec("UPDATE bakney_user SET avatar_image=(SELECT avatar_image FROM bakney_user WHERE user_id=$1) WHERE user_id=$2", source.ID, target.ID); err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			if _, err := db.Exec("UPDATE bakney_user SET avatar_image=$1 WHERE user_id=$2", original, target.ID); err != nil {
+				t.Error(err)
+			}
+		}()
+		counter.count.Store(0)
+		result, err := builder(db, target).Build(context.Background(), account(target), fixture.Tokens, domain.LoginAuditContext{})
+		if result != nil || !errors.Is(err, loginimage.ErrImageDecoderUnavailable) {
+			t.Fatal("missing codec exposed response tokens", err)
+		}
+		if counter.count.Load() != 5 || db.Stats().InUse != 0 {
+			t.Fatal("image failure reached card or retained connection", counter.count.Load())
+		}
+	})
 	t.Run("bounded concurrent response composition", func(t *testing.T) {
 		var tc responseFixtureCase
 		for _, candidate := range fixture.Cases {

@@ -955,3 +955,11 @@ comments, animation isolation and exact JPEG/original decisions. The full accoun
 adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
+
+`adapters/django/login_images.py` checks shared data-URI/file composition: 69
+Django-matching cases and four explicitly reported missing-codec gaps. The latter
+are not counted as passing parity; `complete_image_parity` remains false and the
+gap list is not exhaustive. Mixed-format admission, cancellation, output limits
+and the shipped-image test are included. `accounts.py --only login-response`
+checks all 43 response cases, including seven concrete image cases and concurrent
+composition against PostgreSQL; the full accounts adapter includes both checks.

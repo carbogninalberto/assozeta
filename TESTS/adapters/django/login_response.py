@@ -1,7 +1,8 @@
-"""Explicit complete response shapes for login cases that need no image transform.
+"""Explicit response shapes, including concrete login image transformations.
 
 The real response builder and Go services run on one disposable database. Image
-conversion, HTTP admission and final session delivery are separate open gates.
+dispatch still has declared format gaps; HTTP admission and final session delivery
+remain separate open gates.
 """
 import datetime
 import json
@@ -93,7 +94,7 @@ def run(work, log, tool_env):
         foreign_owner=User.original_objects.create(user_id=uid(90000),username='RESPONSE-FOREIGN',password='!unused',role=1)
         SportAssociation.original_objects.create(sport_association_id=uid(91000),user=foreign_owner,denomination='Foreign association')
     def add(name, *, role=1, admin=False, flags=(True,False,False), tables=None, json_null=False, temporary=True,
-            regulation=None,demand=None,logo=None,avatar=None,instructors=0,missing_owner=False,missing_association=False,deleted_association=False,created=False):
+            regulation=None,demand=None,logo=None,avatar=None,instructors=0,missing_owner=False,missing_association=False,deleted_association=False,created=False,avatar_expected=None,logo_expected=None):
         n=len(cases);id=uid(90100+n);owner_id=uid(90300+n) if role==3 else id;association_id=uid(91100+n)
         with disable_auditlog():
             owner=None
@@ -130,6 +131,8 @@ def run(work, log, tool_env):
                 expected['user_data']['temporary_invoice_deletion']=temporary
                 expected['user_data']['preview_and_custom_features']=[{'name':label,'description':''} for enabled,label in zip(flags,FEATURES) if enabled]
                 expected['tables_settings']=None if json_null else {} if tables is None else tables
+                if avatar_expected is not None:expected['user_data']['avatar_image']=avatar_expected
+                if logo_expected is not None and (regulation in (None,'') or demand in (None,'')):expected['user_data']['sport_association']['logo']=logo_expected
         queries=0 if outcome=='role' else 1 if admin or role in (0,2) or (role==1 and outcome) or missing_owner else 2 if outcome else 10 if created else 7
         cases.append({'name':name,'id':id,'owner':str(owner.pk) if owner else None,'role':role,'admin':admin,'flags':list(flags),
             'association':str(association.pk) if association else None,'created':created,'expected':expected,'outcome':outcome,'queries':queries,'instructors':instructors})
@@ -155,6 +158,16 @@ def run(work, log, tool_env):
     add('collaborator missing association',role=3,missing_association=True)
     add('collaborator deleted association',role=3,deleted_association=True)
     add('default configuration is composed and persisted',created=True)
+    from TESTS.adapters.django.login_images import vectors as image_vectors
+    images={case['name']:case for case in image_vectors()}
+    png=images['PNG alpha'];gif=images['GIF 3x2'];tga=images['TGA alpha'];gbr=images['GBR'];webp=images['unimplemented WEBP'];ppm=images['PPM 3x2'];collision=images['GBR precedes SUN']
+    add('owner transforms avatar and logo before creating card',avatar=png['uri'],avatar_expected=png['expected'],logo=gif['uri'],logo_expected=gif['expected'],created=True)
+    add('collaborator transforms own avatar and owner logo',role=3,instructors=1,avatar=tga['uri'],avatar_expected=tga['expected'],logo=gbr['uri'],logo_expected=gbr['expected'])
+    add('athlete bypasses image conversion',role=2,avatar=webp['uri'])
+    add('administrator bypasses image conversion',admin=True,avatar=webp['uri'])
+    add('complete sections bypass unsupported logo',regulation='present',demand='present',logo=webp['uri'],avatar=ppm['uri'],avatar_expected=ppm['expected'])
+    add('malformed image URIs remain unchanged',avatar='opaque,A',logo='literal-logo')
+    add('GBR SUN collision retains original logo',logo=collision['uri'],logo_expected=collision['expected'])
     def snapshot():
         return {m._meta.label:list(m._base_manager.order_by('pk').values()) for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     before=snapshot()
@@ -196,12 +209,14 @@ def run(work, log, tool_env):
     finally:
         with connection.cursor() as cursor: cursor.execute('RESET ROLE')
     assert snapshot()==before, 'Django permission rehearsal changed state'
-    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; image conversion excluded',flush=True)
+    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; seven concrete image response cases included',flush=True)
+    from TESTS.adapters.django.login_jpeg import build_codec
+    codec=work/'response-codec';build_codec(codec,log,tool_env)
     path=work/'login-response.json';path.write_text(json.dumps({'now':NOW.isoformat(),'tokens':TOKENS,'cases':cases,'files':file_cases,'booleans':[{'value':v,'expected':e} for v,e in boolean_cases]}));path.chmod(0o600)
     try:
         subprocess.run(['go','test','-race','-tags=responseintegration','./internal/service','-run','^TestLoginResponsePostgres'],cwd=ROOT/'BE_GO',check=True,timeout=180,
-            env={**tool_env,'ASSOZETA_LOGIN_RESPONSE_FIXTURE':str(path),'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
+            env={**tool_env,'ASSOZETA_LOGIN_JPEG_CODEC':str(codec),'ASSOZETA_LOGIN_RESPONSE_FIXTURE':str(path),'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
         for case in cases:reset_created(case)
         assert snapshot()==before, 'Go response composition changed undeclared state'
-    finally:path.unlink(missing_ok=True)
+    finally:path.unlink(missing_ok=True);codec.unlink(missing_ok=True)
     return len(cases)

@@ -79,7 +79,7 @@ immutable manual-package boundary delivered by PR #20.
 | Session HTTP audit | 27 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Sixteen malformed cache/UUID/hash inputs retain exact production HTML 500, Cookie Vary and unchanged cache bytes. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy and remaining route wiring stay open; public refresh has separate evidence. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
-| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. The domain LoginImageProcessor and complete format dispatch remain unimplemented; partial codec evidence is not successful public-login evidence. |
+| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes thirteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
 The application oracle now requires Python **3.13.2**, matching the production
@@ -403,6 +403,23 @@ The complete accounts rerun passes with production Python 3.13.2, real PostgreSQ
 and Redis, including all 644 GIF cases, 68 password cases, 47 OTP cases, 26 sessions,
 20 admission/audit cases and existing task/HTTP/scope/restore/image checks. Results:
 `quality-reports/go-migration/gif/full-accounts-results.json`.
+
+Shared image composition now has 69 whole-URI Django comparisons under one
+admission/deadline and explicit resource limits. Four demonstrated missing-codec
+cases are separately recorded as gaps, with complete image parity explicitly
+false; other missing formats and ambiguous registry cases remain open. Forty-three
+PostgreSQL response cases now include seven concrete image scenarios, concurrent
+composition and a missing-decoder failure that releases the pool and returns no
+tokens before card reads/writes. Evidence: `quality-reports/go-migration/image-dispatch/`.
+The shipped non-root/read-only/networkless image passes the complete codec oracle,
+including shared dispatch. Go race/vet, tagged vet, inventory/drift, formatting
+and workflow lint pass. The complete accounts adapter also passes on production
+Python 3.13.2 and private PostgreSQL/Redis, including all 43 response cases, 69
+image parity cases with four separately reported gaps, 68 password cases, 47 OTP
+cases, 26 sessions and 20 admission/audit cases. The terminal successful report is
+retained as `image-dispatch/full-accounts-results.json` under the same evidence
+root. Current-model fixtures do not establish historical-schema or lifecycle parity.
+Public login remains unwired.
 
 The `f66c816` Linux legacy/browser CI job failed while installing Playwright's
 browser: `cdn.playwright.dev` presented a certificate for `*.azureedge.net`

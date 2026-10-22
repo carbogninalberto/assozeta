@@ -1,15 +1,12 @@
 # Login image primitives — not a complete image processor
 
-This package implements prerequisites of Django's `compress_base64`:
-permissive data-URI decoding, size-policy decisions and decoded 8-bit pixel
-transformation, bounded libjpeg JPEG encoding/decoding, PNG header/pixel and
-chunk-stream decoding, BMP/DIB header/raw/RLE decoding, PPM-family decoding and
-PCX/DCX decoding. It does
-**not** implement `domain.LoginImageProcessor`, recognize all Pillow file formats
-or wire the public service. JPEG marker/EXIF/MPO admission and the complete
-JPEG, PNG first-frame, BMP/DIB, PPM-family and PCX/DCX file pipelines are available
-as separate components.
-Public login remains unwired; no unsupported image is silently accepted as completed parity.
+This package implements bounded Pillow-compatible file pipelines and the shared
+`Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
+thirteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
+codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
+That error is an implementation gap, not an intentional compatibility correction.
+Public login remains unwired; no unsupported image is silently accepted as parity.
 
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
 matches Python's non-strict Base64 handling, including ignored ASCII garbage,
@@ -447,9 +444,9 @@ cover every stage's logical byte limit, exact tail/canvas budgets, immutable inp
 32 concurrent pipelines, mid-tail/canvas cancellation, and running/queued pipeline
 cancellation during encoding with child reaping and subsequent admission reuse.
 
-These components still do not implement the complete `LoginImageProcessor`:
-other supported file formats, format dispatch, admission across formats and
-public login/response composition remain necessary. No backend parity or release
+The shared processor below adds partial format dispatch, admission across formats
+and concrete response-component checks. Other supported formats and public login
+composition remain necessary. No backend parity or release
 activation is inferred from the PNG pipeline evidence.
 
 ## BMP and standalone DIB file pipeline
@@ -874,4 +871,51 @@ the actual unmodified Django helper, Pillow and Go. Authored literals and explic
 sample expectations anchor the oracle; Pillow-written inputs additionally exercise
 long dictionary chains and resets. Tests run inside the shipped non-root,
 read-only, networkless image as well. Native codec sources are unchanged.
-Other formats, shared registry dispatch/admission and public login remain open.
+The shared processor below now supplies admission and partial registry dispatch.
+Other formats and public login remain open.
+
+## Shared data-URI processor — partial registry
+
+`NewProcessor` requires the trusted codec path and explicit URI, file-stage,
+concurrency and deadline limits. One slot is acquired before Base64 decoding and
+held through format selection, pixels, native children and final Base64 encoding.
+All formats share that bound. Nested file deadlines cannot extend the outer
+request deadline. Input/output URI bytes are bounded independently of decoded
+file/raster/header budgets; allocations and caller-owned queued inputs are not a
+total RSS guarantee. Cancellation/resource/codec failures return no URI.
+
+Malformed Base64 and definitively unrecognized data preserve the original string.
+The media-type prefix is opaque; successful conversion always emits the JPEG
+prefix. Lazy passthrough and malformed-file fallback come from the existing file
+pipelines. A formatted JPEG exceeding the URI budget fails before output allocation;
+encoding checks cancellation between bounded chunks.
+
+Registry order follows Pillow 11.1's default `preinit()` followed by `init()`.
+GBR identification failures now fall through to later QOI/SUN readers; GBR hard
+pixel-limit failures terminate opening and preserve the original. Empty CUR
+containers do not shadow valid TGA files. Known-format overlap is checked before
+choosing a pipeline. Other readers still collapse recoverable and terminal opening
+exceptions; those unresolved collisions fail explicitly instead of selecting an
+unproven interpretation. External plugin registration/reordering is unverified.
+
+Missing Pillow formats retain candidate guards, including no-signature text and
+scientific formats. These guards are deliberately conservative: some malformed or
+ambiguous data that Django preserves may currently fail in Go. WebP, TIFF, ICO,
+PCD and other missing codecs must still be implemented; the four demonstrated
+fixture gaps are **not an exhaustive list**. Do not wire this into a deployment
+and claim complete image or public-login compatibility.
+
+`TESTS/adapters/django/login_images.py` asserts 69 whole-URI expectations against
+the actual Django helper and the composed Go processor. Thirteen pipelines,
+alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
+files, the 1 MiB size boundary and registry collisions are exercised. Four separate
+missing-codec cases deliberately report `complete_image_parity=false`; they are
+never counted as passing parity. The shipped-image test includes both sets.
+
+Race/integration tests mix formats through one processor, enforce a two-child
+bound across different codecs, cancel running/queued work, check deadline and exact
+URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
+now injects this concrete processor: 43 response cases include seven image cases,
+32 mixed concurrent responses, unchanged database snapshots after declared card/
+audit resets, and a missing-decoder failure with no response tokens or card query.
+No public HTTP login, full registry coverage or backend activation is established.

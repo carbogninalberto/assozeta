@@ -124,7 +124,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 36 explicit full response cases without image conversion; seven/ten-statement paths, 32 concurrent calls, required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 43 explicit full response cases including seven concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1188,5 +1188,16 @@ interlacing, LZW dictionary/reset rules, complete subblocks, premature-end 64 Ki
 refills, comments and first-frame isolation are checked against Pillow and the
 actual Django helper, including the shipped image. Stage budgets, cancellation,
 32 mixed concurrent pipelines and encoder admission/reaping/reuse are tested.
-Evidence is under `quality-reports/go-migration/gif/`. Shared image dispatch and
-remaining formats still block complete public login; no endpoint status advances.
+Evidence is under `quality-reports/go-migration/gif/`. The shared processor below
+adds partial dispatch; remaining formats still block complete public login. No
+endpoint status advances.
+
+The shared login image processor now composes thirteen existing file pipelines
+under one admission/deadline and URI-size policy. Sixty-nine whole-URI cases match
+the actual Django helper; four separate missing-codec cases remain explicit gaps,
+not passing parity or an exhaustive missing-format census. GBR/QOI/SUN and CUR/TGA
+precedence are covered. The concrete processor is exercised in 43 PostgreSQL
+response cases, including seven image cases, 32 mixed concurrent responses and
+no-token/no-card-query failure behavior. Evidence is under
+`quality-reports/go-migration/image-dispatch/`. Missing formats, unresolved registry
+exceptions/reordering and public login remain open; no endpoint status advances.

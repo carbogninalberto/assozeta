@@ -4,9 +4,14 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"fmt"
 )
 
 var ErrGBRHeader = errors.New("login GBR header invalid")
+
+// Pixel-limit failures terminate Pillow registry lookup; malformed GBR headers
+// instead allow later plugins to recognize the same bytes.
+var ErrGBRPixelLimit = fmt.Errorf("%w: pixel limit exceeded", ErrGBRHeader)
 
 type GBRHeader struct {
 	Width, Height, Depth, Version                        int
@@ -64,7 +69,7 @@ func ReadGBRHeader(ctx context.Context, data []byte, maxBytes int) (GBRHeader, e
 		return empty, ErrWorkingLimit
 	}
 	if w > 178956970/h {
-		return empty, ErrGBRHeader
+		return empty, ErrGBRPixelLimit
 	}
 	if err := ctx.Err(); err != nil {
 		return empty, err
