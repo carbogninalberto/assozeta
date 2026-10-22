@@ -123,11 +123,11 @@ jobs:
           persist-credentials: false
 
       - name: Download the verified release manual
-        if: matrix.name == 'backend' && github.event_name != 'push'
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && github.event_name != 'push'
         uses: actions/download-artifact@v4
         with:
           name: manuale-release-runtime
-          path: BE/release-manual
+          path: ${{ matrix.context }}/release-manual
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

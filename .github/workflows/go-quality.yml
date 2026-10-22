@@ -74,6 +74,12 @@ jobs:
         run: python TESTS/adapters/django/cors.py
       - name: Verify current Django security headers
         run: python TESTS/adapters/django/security_headers.py
+      - name: Verify public instance bootstrap and manual package contracts
+        run: |
+          python TESTS/adapters/django/manual_availability.py
+          python TESTS/adapters/django/manual_bundle.py
+          python TESTS/adapters/django/instance_bootstrap.py --backend django
+          python TESTS/adapters/django/instance_bootstrap.py --backend go
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
       - name: Verify effective scheduler authority and Go timing
@@ -118,8 +124,9 @@ jobs:
         run: python3 TESTS/adapters/go/health.py
       - name: Build isolated Go image and verify non-root execution
         run: |
-          docker build -t assozeta-go-foundation:test BE_GO
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-foundation:test BE_GO
           test "$(docker run --rm --network none --entrypoint id assozeta-go-foundation:test -u)" = "10001"
+          python TESTS/adapters/go/manual_image.py --image assozeta-go-foundation:test --expected-version v0.0.0 --expected-revision "${{ github.sha }}" --expected-required false
           python TESTS/adapters/go/login_jpeg_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/login_http_image.py --image assozeta-go-foundation:test
           docker pull postgres:16-alpine
@@ -138,6 +145,11 @@ jobs:
             quality-reports/go-migration/login-rate/
             quality-reports/go-migration/cors/
             quality-reports/go-migration/security-headers/
+            quality-reports/go-migration/instance-bootstrap/
+            quality-reports/go-migration/instance-bootstrap-go/
+            quality-reports/go-migration/manual-availability/
+            quality-reports/go-migration/manual-bundle/
+            quality-reports/go-migration/manual-image/
             quality-reports/go-migration/environment/
             quality-reports/go-migration/restore-admission/
             quality-reports/go-migration/runtime.json

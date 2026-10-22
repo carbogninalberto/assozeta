@@ -65,6 +65,14 @@ those captures require regeneration before being counted as current evidence.
 
 ## Latest increment: delivery alongside Django
 
+The [bootstrap increment](instance-bootstrap.md) implements public status/config
+and authenticated instance access with 86 cases per backend and four PostgreSQL
+projection/plan groups. Manual availability47 and strict bundle CLI19 agree with
+Django. Both image contexts receive the same verified release artifact, and Go
+packages its own non-root validator, which passes nineteen actual image cases.
+Browser acceptance and a genuine required-release artifact rehearsal remain
+pending; manual reader/search/assets are separate work.
+
 The Go image also packages explicit native worker and forward-only operational
 migration commands. Fourteen race-instrumented process scenarios and seven actual
 image scenarios pass. Startup fails on missing/dirty/unknown operational schema;
@@ -162,7 +170,7 @@ The root exposes fifteen upstream paths: health/readiness, login, refresh, email
 username availability, scoped profile information/profile and password changes, table preferences and 2FA setup/status/updates, and two retired software-billing
 responses. CORS, restore admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 22 implementing, 6 requiring review and 482 uncharacterized; none
+4 deprecated, 25 implementing, 6 requiring review and 479 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 
