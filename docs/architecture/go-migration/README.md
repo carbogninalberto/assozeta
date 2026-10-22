@@ -4,15 +4,35 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `0ffe9f6` (including manual evidence caching, reviewed navigation bindings and candidate manual-image validation). Worktree branch: `codex/go-backend-parity`.
-The manual-delivery worktree and production installations have not been changed.
+Baseline: `main` through `a86c9d9` (including the consolidated manual registry,
+editorial reuse checks and capture-helper cleanup). Worktree branch:
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 25 implementing,
+478 uncharacterized, 7 needing review, 4 deprecated and **0 verified**. Production
+installations remain unchanged.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful
 manual availability. Release wiring now supplies the same verified manual artifact
 to both backend build contexts. The packaged validator passes nineteen synthetic
-cases. Browser acceptance and a genuine required-release manual image remain
-pending; reader/search/assets and backend activation remain open.
+cases. The unchanged-frontend personal-profile workflow now passes against both
+API versions, including fresh login, collaborator edit and ordinary reload after
+the [profile-response correction](profile-response.md). Candidate checks validate
+both backend manual packages before lifecycle changes. A genuine externally
+reviewed required-release manual image, reader/search/assets HTTP delivery and
+backend activation remain open. These scoped checks do not establish complete
+frontend or backend parity.
+
+Main alignment passes 165 manual Python tests, 78 Node checks and 21 inventory
+tests; the final profile binding refresh also passes the 67 compiler/registry
+checks. The latest private companion starts at manual revision `9d9cffd`: 277
+explicit recipe bindings are refreshed while all 44 authored MDX files remain
+unchanged. It is unpublished and grants no new screenshot evidence. Earlier
+receipts and the separate `b042582` capture retain their original source scope.
+
+The installed-bundle manual library passes 36 actual Django/Go applicability
+and asset cases plus five race groups. It returns immutable request-local
+section IDs and digest-checked asset bytes; it does not implement HTTP reader
+routes, search, preview/development/remote modes, MCP or assistant behavior.
 
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
 routes before the existing Django alias. Real Caddy transport checks cover exact

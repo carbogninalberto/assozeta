@@ -41,7 +41,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/PaymentListArchive.svelte": "6d6a23a9476b388069d43efafa3d8446fd8cb3f493f949d96d13f937b97cf07b",
     "UI/src/routes/accounting/receipts/ReceiptList.svelte": "69b7c0c6188590a5be6db126e497cc1e7aa9dabf5ef91e2e07f05499928b7e51",
     "UI/src/routes/association/archive/Archive.svelte": "dc000f87fcd9fe66213b4b753049d0b9e254e907092ce12f6e4759fbb63d9a24",
-    "BE/application/views/profile_views.py": "f542c0007dfeaf0e2dcdd1ca1063d26a1b5f853b2c9eab0290b6ce1eefc8b130",
+    "BE/application/views/profile_views.py": "2aa3a223244222df909cb3a77eea10e4a93a5fea7f8b4533b977eb33d87d40d4",
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "ffa954fe33b662b6cf580c8e19474ca8a24d19b517af83f92fdf392263f48c4d",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",

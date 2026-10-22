@@ -30,7 +30,7 @@ const reviewed = {
   "UI/src/components/filters/FilterSelect.svelte": "556100c1c9aecd36f7aad7a3de0ad389ecd908517a8e8934586474ff111c35e5",
   "UI/src/routes/accounting/receipts/modals/EditModal.svelte": "33f23e11f3b2d8e8abc3ec748c8190915d6114f5128cadc7664d8824304f5873",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
-  "BE/application/views/profile_views.py": "f542c0007dfeaf0e2dcdd1ca1063d26a1b5f853b2c9eab0290b6ce1eefc8b130"
+  "BE/application/views/profile_views.py": "2aa3a223244222df909cb3a77eea10e4a93a5fea7f8b4533b977eb33d87d40d4"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Pagamenti</span>",53],

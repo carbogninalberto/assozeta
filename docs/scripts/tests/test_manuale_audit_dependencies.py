@@ -58,6 +58,14 @@ console.log(JSON.stringify([
             contract['symbol'] in atomic_symbols for contract in section['source_contracts'])]
         self.assertTrue(affected)
         for section in affected:
+            for contract in section['source_contracts']:
+                if contract['symbol'] == 'def profile_update(request):':
+                    lines = (ROOT / contract['path']).read_text().splitlines()
+                    start = next(index for index, line in enumerate(lines) if contract['symbol'] in line)
+                    excerpt = '\n'.join(lines[start:start + contract['length']])
+                    self.assertIn('elif user.role == User.COLLABORATOR:', excerpt)
+                    self.assertIn('user.connected_user_id != request.user.pk', excerpt)
+                    self.assertIn('return Response(content, status=status.HTTP_200_OK)', excerpt)
             for relative in AUDIT:
                 with self.subTest(section=section['path'] + '#' + section['id'], source=relative):
                     contracts = [item for item in section['source_contracts'] if item['path'] == relative]

@@ -77,13 +77,14 @@ backend switching or worker ownership transfer.
 ## Manual evidence dependency closure
 
 Changing `BE/application/views/profile_views.py` changes the file hash consumed
-by the following six reviewed recipe modules and sixteen authored-workflow
+by the following seven reviewed recipe modules and sixteen authored-workflow
 modules. Existing sealed artifacts must not be relabelled as evidence for the new
 source. Review the affected bindings and capture dependencies, then generate a
 fresh verified release package. Whole-file invalidation does not imply every
 listed workflow changed behavior. The personal profile/organization settings
-response requires fresh relevant workflow evidence. No manual revision or source
-hash was silently refreshed by this correction.
+response requires fresh relevant workflow evidence. The compact-registry source
+bindings were explicitly reviewed and refreshed after main alignment; this does
+not refresh any screenshot or grant release verification.
 
 | Binding module under `docs/manuale/` | Authored capture workflows directly declaring this source |
 | --- | --- |
@@ -100,6 +101,7 @@ hash was silently refreshed by this correction.
 | `organization-additional-reference-recipes.mjs` | Reviewed recipe source binding |
 | `organization-basics-authored-workflows.mjs` | `organization-settings`, `collaborator-permissions`, `registration-default-category`, `organization-document-templates` |
 | `organization-maintenance-authored-workflows.mjs` | `archive-maintenance`, `collaborator-removal` |
+| `overview-recipes.mjs` | Reviewed recipe source binding |
 | `payment-classification-authored-workflows.mjs` | `payment-classification-local` |
 | `payment-maintenance-authored-workflows.mjs` | `payments-maintenance` |
 | `payment-recipes.mjs` | Reviewed recipe source binding |
@@ -110,7 +112,7 @@ hash was silently refreshed by this correction.
 | `stripe-local-authored-workflows.mjs` | `stripe-local-settings-filters` |
 | `two-factor-login-authored-workflows.mjs` | `account-two-factor-login` |
 
-The closure above is source-derived from this reviewed snapshot: 22 modules and
+The closure above is source-derived from this reviewed snapshot: 23 modules and
 26 directly declared authored workflows. Transitive release selection and newly
 aligned main-branch capture policies must be evaluated by the release assembler;
 this table does not authorize reusing old screenshots or bypassing its gates.
