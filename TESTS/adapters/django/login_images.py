@@ -70,10 +70,10 @@ def vectors():
     for n in (1024*1024,1024*1024+1):
         data=raw+b'\0'*(n-len(raw));target=(3,2) if n==1024*1024 else (200,133)
         add(f'size policy {n}',data,size=target,pixels=b'\x49'*(target[0]*target[1]))
-    # These named cases must remain reported as gaps, never passing image parity.
+    # Missing WebP/TIFF remain gaps; ICO now passes the concrete processor.
     for fmt in ('WEBP','TIFF','ICO'):
         im=Image.new('RGB',(16,16),(73,73,73));out=io.BytesIO();im.save(out,format=fmt,**({'lossless':True} if fmt=='WEBP' else {}))
-        add(f'unimplemented {fmt}',out.getvalue(),mode='RGB',size=(16,16),pixels=b'\x49'*768,gap=True)
+        add(f'unimplemented {fmt}' if fmt!='ICO' else 'ICO PNG frame',out.getvalue(),mode='RGB',size=(16,16),pixels=b'\x49'*768,gap=fmt!='ICO')
     qoi=b'qoif'+struct.pack('>II',1,1)+bytes([3,0])+b'\xfe\x49\x49\x49'+bytes(8)
     pcd=qoi+bytes(2048-len(qoi))+b'PCD_'+bytes(1535)
     add('PCD before QOI remains a gap',pcd,original=True,gap=True)

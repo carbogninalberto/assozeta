@@ -956,10 +956,20 @@ adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
 
-`adapters/django/login_images.py` checks shared data-URI/file composition: 69
-Django-matching cases and four explicitly reported missing-codec gaps. The latter
+`adapters/django/login_images.py` checks shared data-URI/file composition: 70
+Django-matching cases and three explicitly reported missing-codec gaps. The latter
 are not counted as passing parity; `complete_image_parity` remains false and the
 gap list is not exhaustive. Mixed-format admission, cancellation, output limits
 and the shipped-image test are included. `accounts.py --only login-response`
-checks all 43 response cases, including seven concrete image cases and concurrent
+checks all 44 response cases, including eight concrete image cases and concurrent
 composition against PostgreSQL; the full accounts adapter includes both checks.
+
+
+`adapters/django/login_ico.py` adds 678 authored ICO pixel/file expectations against
+Pillow and the actual Django helper: eager frame loading, directory precedence,
+PNG metadata isolation, DIB palette/RLE/bitfield decoding and AND/32-bit alpha.
+Resource, cancellation, concurrency and child-reaping tests accompany the oracle.
+The full accounts and shipped-image adapters run it; the concrete PostgreSQL
+response fixture now has 44 cases, including an ICO logo. Shared image dispatch
+has 70 parity cases and three demonstrated missing-codec gaps; the gap census is
+not exhaustive and public login remains incomplete.

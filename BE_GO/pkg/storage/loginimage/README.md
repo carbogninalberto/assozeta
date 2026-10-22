@@ -2,7 +2,7 @@
 
 This package implements bounded Pillow-compatible file pipelines and the shared
 `Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
-thirteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+fourteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
@@ -900,22 +900,70 @@ unproven interpretation. External plugin registration/reordering is unverified.
 
 Missing Pillow formats retain candidate guards, including no-signature text and
 scientific formats. These guards are deliberately conservative: some malformed or
-ambiguous data that Django preserves may currently fail in Go. WebP, TIFF, ICO,
-PCD and other missing codecs must still be implemented; the four demonstrated
+ambiguous data that Django preserves may currently fail in Go. WebP, TIFF,
+PCD and other missing codecs must still be implemented; the three demonstrated
 fixture gaps are **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 69 whole-URI expectations against
-the actual Django helper and the composed Go processor. Thirteen pipelines,
+`TESTS/adapters/django/login_images.py` asserts 70 whole-URI expectations against
+the actual Django helper and the composed Go processor. Fourteen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
-files, the 1 MiB size boundary and registry collisions are exercised. Four separate
+files, the 1 MiB size boundary and registry collisions are exercised. Three separate
 missing-codec cases deliberately report `complete_image_parity=false`; they are
 never counted as passing parity. The shipped-image test includes both sets.
 
 Race/integration tests mix formats through one processor, enforce a two-child
 bound across different codecs, cancel running/queued work, check deadline and exact
 URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
-now injects this concrete processor: 43 response cases include seven image cases,
+now injects this concrete processor: 44 response cases include eight image cases,
 32 mixed concurrent responses, unchanged database snapshots after declared card/
 audit resets, and a missing-decoder failure with no response tokens or card query.
 No public HTTP login, full registry coverage or backend activation is established.
+
+
+## ICO selected-frame pipeline
+
+`ICOFileProcessor` follows Pillow 11.1.0's `IcoImagePlugin`, using the existing
+bounded PNG and DIB decoders. It scans every 16-byte directory entry without
+retaining a per-entry allocation. Selection is by largest declared area, then
+**lowest** color depth, retaining directory order for ties. Zero dimensions mean
+256; zero bit depth uses the palette-count rule, including the one-color fallback.
+The selected frame's actual dimensions replace the directory dimensions.
+
+ICO loads its selected image eagerly, even when the login size policy ultimately
+returns the original URI. A PNG frame uses the complete first-frame decoder and
+post-pixel parsing; its comment and other metadata do not become ICO metadata.
+A DIB frame checks the original double-height header before halving its height.
+It uses existing raw/RLE/bitfield decoding, expands palette samples to RGBA, and
+applies the alpha mask. Missing palette entries are black. For directory depth 32,
+alpha comes from every fourth byte at the DIB pixel offset, always bottom-up even
+for top-down RGB rows. Other depths use the inverted, padded one-bit AND mask at
+`frame_offset + declared_size - mask_size`. PNG decoding ignores declared size.
+No cursor support is inferred from ICO support.
+
+The processor bounds encoded input, cumulative directory/embedded-header reads,
+PNG tail work, decoded pixels and alpha buffers, transform buffers, native codec
+concurrency and deadlines. The decode budget counts the full original input;
+DIB alpha composition additionally charges the decoded raster and new RGBA raster.
+These are logical stage limits, not a total RSS guarantee. Cancellation and
+resource/native-codec failures return neither JPEG bytes nor a passthrough result.
+Malformed image content retains Django's original-URI fallback. Directory scanning
+and alpha composition check cancellation within bounded work chunks.
+
+`TESTS/adapters/django/login_ico.py` has 678 authored pixel/file expectations checked
+against actual Pillow and the unmodified Django helper. They cover PNG modes,
+metadata dropping, directory selection, actual dimensions, 1/4/8/16/24/32-bit DIB,
+all alpha values and AND bit patterns, top-down color/bottom-up alpha, all supported
+DIB header sizes, odd heights, bitfields, RLE, partial palettes, truncated directory/
+PNG/masks and the whole-file 1 MiB threshold. Existing PNG/DIB component oracles
+remain applicable; the ICO-specific sample set does not prove every possible
+container/plugin interaction. The shared registry still reports unresolved opening
+collisions explicitly.
+
+Go tests additionally cover exact header/decode bounds, unchanged input ownership,
+eager-decoding limits on unchanged-size images, absent native executables, 32 mixed
+concurrent calls, mid-scan/mid-alpha cancellation, and native PNG/JPEG cancellation,
+queue expiry, reaping and slot reuse. The accounts and shipped-image adapters include
+this oracle. Shared URI parity now has 70 cases and three demonstrated, non-exhaustive
+gaps. Forty-four PostgreSQL response cases include a concrete ICO logo conversion.
+Public login, remaining formats and backend activation remain unfinished.
