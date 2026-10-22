@@ -37,6 +37,7 @@ from TESTS.adapters.django.login_msp import vectors as msp_vectors
 from TESTS.adapters.django.login_gif import vectors as gif_vectors
 from TESTS.adapters.django.login_images import vectors as dispatch_vectors
 from TESTS.adapters.django.login_ico import vectors as ico_vectors
+from TESTS.adapters.django.login_webp import vectors as webp_vectors
 
 
 def main():
@@ -87,6 +88,8 @@ def main():
         (work / 'sun.json').chmod(0o644)
         (work / 'gbr.json').write_text(json.dumps(gbr_vectors()))
         (work / 'gbr.json').chmod(0o644)
+        (work / 'webp.json').write_text(json.dumps(webp_vectors()))
+        (work / 'webp.json').chmod(0o644)
         (work / 'ico.json').write_text(json.dumps(ico_vectors()))
         (work / 'ico.json').chmod(0o644)
         (work / 'dispatch.json').write_text(json.dumps(dispatch_vectors()))
@@ -100,9 +103,17 @@ def main():
         (work / 'jpeg.test').chmod(0o755)
         identity = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'id', args.image, '-u'], text=True).strip()
         assert identity == '10001', 'image no longer runs as expected unprivileged user'
-        for name in ('Pillow-LICENSE', 'libjpeg-turbo-LICENSE.md', 'libjpeg-turbo-README.ijg', 'loginimage-NOTICE', 'libjpeg-turbo-version.txt', 'zlib-version.txt', 'zlib-LICENSE'):
+        for name in ('Pillow-LICENSE', 'libjpeg-turbo-LICENSE.md', 'libjpeg-turbo-README.ijg', 'loginimage-NOTICE', 'libjpeg-turbo-version.txt', 'zlib-version.txt', 'zlib-LICENSE', 'libwebp-version.txt', 'libwebp-LICENSE', 'libwebp-PATENTS'):
             notice = subprocess.check_output(['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'cat', args.image, '/app/licenses/' + name], text=True)
             assert notice.strip(), f'missing image notice: {name}'
+            if name == 'libwebp-version.txt':
+                match = re.fullmatch(r'libwebp-static-(\d+\.\d+\.\d+)-r\d+\n', notice)
+                assert match, 'missing libwebp package version'
+                version = subprocess.check_output(['docker','run','--rm','--network','none','--entrypoint','/app/image-codec',args.image,'webp-version'],text=True).strip()
+                assert version == match.group(1), 'WebP binary/package versions differ'
+                print(notice.strip(), flush=True)
+            if name == 'libwebp-LICENSE': assert notice == (ROOT / 'BE_GO/pkg/storage/loginimage/LICENSE.libwebp').read_text()
+            if name == 'libwebp-PATENTS': assert 'Google' in notice and 'patent' in notice
             if name == 'zlib-version.txt':
                 assert re.fullmatch(r'zlib-static-\d+\.\d+\.\d+-r\d+\n', notice), 'missing zlib package version'
                 print(notice.strip(), flush=True)
@@ -128,6 +139,7 @@ def main():
             '--env', 'ASSOZETA_GIF_FIXTURE=/fixtures/gif.json',
             '--env', 'ASSOZETA_IMAGE_DISPATCH_FIXTURE=/fixtures/dispatch.json',
             '--env', 'ASSOZETA_ICO_FIXTURE=/fixtures/ico.json',
+            '--env', 'ASSOZETA_WEBP_FIXTURE=/fixtures/webp.json',
             '--env', 'ASSOZETA_PNG_STREAM_FIXTURE=/fixtures/png-stream.json',
             '--env', 'ASSOZETA_BILEVEL_FIXTURE=/fixtures/bilevel.json',
             '--env', 'ASSOZETA_PNG_HEADER_FIXTURE=/fixtures/png-header.json',
@@ -137,7 +149,7 @@ def main():
             '--env', 'ASSOZETA_JPEG_HEADER_FIXTURE=/fixtures/header.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE=/fixtures/decode.json',
             '--env', 'ASSOZETA_LOGIN_JPEG_FIXTURE=/fixtures/jpeg.json', '--env', 'ASSOZETA_LOGIN_JPEG_CODEC=/app/image-codec',
-            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ICOAgainstPillow)$', '-test.v'],
+            '--entrypoint', '/fixtures/jpeg.test', args.image, '-test.run', '^Test(JPEG(AgainstPillow|NativeProtocol|DecodeAgainstPillow|DecodeNativeProtocol|MarkerAgainstPillow|MetadataAgainstPillow|FileAgainstPillow)|PNGScanlinesAgainstPillow|PNGHeaderAgainstPillow|BilevelAgainstPillow|PNGStreamAgainstPillow|PNGStreamNativeProtocol|PNGFileAgainstPillow|BMPAgainstPillow|PPMAgainstPillow|PCXAgainstPillow|TGAAgainstPillow|QOIAgainstPillow|XBMAgainstPillow|SGIAgainstPillow|SUNAgainstPillow|GBRAgainstPillow|MSPAgainstPillow|GIFAgainstPillow|ImageProcessorAgainstDjango|ICOAgainstPillow|WebPAgainstPillow)$', '-test.v'],
             check=True, timeout=180)
 
 

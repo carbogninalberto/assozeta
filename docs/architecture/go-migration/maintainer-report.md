@@ -79,7 +79,7 @@ immutable manual-package boundary delivered by PR #20.
 | Session HTTP audit | 27 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Sixteen malformed cache/UUID/hash inputs retain exact production HTML 500, Cookie Vary and unchanged cache bytes. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy and remaining route wiring stay open; public refresh has separate evidence. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
-| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes fourteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
+| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes fifteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
 The application oracle now requires Python **3.13.2**, matching the production
@@ -457,3 +457,25 @@ non-root/read-only/networkless image passes the complete codec oracle. Go race/v
 image/response-tagged vet, all twelve inventory tests, catalog drift, formatting
 and workflow lint pass. These current-model fixtures do not prove historical
 migration, browser switching or full lifecycle compatibility.
+
+
+WebP first-frame decoding now follows the native animation API used by Pillow.
+Its 178 declared header/pixel/file cases pass against the actual Django helper,
+local libwebp 1.6.0 and the shipped static libwebp 1.4.0 image (Pillow uses 1.5.0).
+The native wrapper passes 380 exact ASan/UBSan frame/error/protocol checks; linked
+system libraries are not rebuilt with sanitizers. Existing PNG sanitizer checks
+also pass with the combined executable. Required license/patent/version notices
+are verified in the non-root image. Stage budgets, native failures, cancellation,
+reaping/reuse and concurrent calls pass. Shared URI parity now has 72 cases and
+two demonstrated non-exhaustive gaps; 45 PostgreSQL responses include WebP images.
+Evidence: `quality-reports/go-migration/webp/`. Full public login, all format/registry
+coverage and the other migration requirements remain unverified.
+
+The complete production-Python 3.13.2 accounts suite now passes with all 178 WebP
+cases, 45 responses and 72 URI comparisons, retaining the two demonstrated gaps
+separately. Existing task/HTTP/scope/restore/image and credential/session checks
+also pass. The terminal report is
+`quality-reports/go-migration/webp/full-accounts-results.json`. The final image
+passes its complete codec oracle. Go race/vet, image/response-tagged vet, twelve
+inventory tests, catalog drift, formatting and workflow lint pass. These remain
+current-model component checks, not historical-data or switching proof.

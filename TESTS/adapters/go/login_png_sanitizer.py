@@ -26,9 +26,9 @@ def main():
         work=Path(directory);normal=work/'normal';sanitized=work/'sanitized'
         build_codec(normal,None,env)
         native=ROOT/'BE_GO/pkg/storage/loginimage/native'
-        flags=shlex.split(subprocess.check_output(['pkg-config','--cflags','--libs','libjpeg'],text=True,env=env))
+        flags=shlex.split(subprocess.check_output(['pkg-config','--cflags','--libs','libjpeg','libwebpdemux','libwebp'],text=True,env=env))
         subprocess.run(['cc','-std=c11','-O1','-g','-Wall','-Wextra','-Werror','-fsanitize=address,undefined','-fno-omit-frame-pointer',
-            str(native/'jpeg_encode.c'),str(native/'jpeg_decode.c'),str(native/'png_stream.c'),*flags,'-lz','-o',str(sanitized)],check=True,env=env,timeout=60)
+            str(native/'jpeg_encode.c'),str(native/'jpeg_decode.c'),str(native/'png_stream.c'),str(native/'webp_decode.c'),*flags,'-lz','-o',str(sanitized)],check=True,env=env,timeout=60)
         def check(name,data,args,code):
             outputs=[]
             for executable in (normal,sanitized):

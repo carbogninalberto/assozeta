@@ -124,7 +124,7 @@ TDD evidence from this worktree:
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 44 explicit full response cases including eight concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Login response composition | 45 explicit full response cases including nine concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
 | Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
 | Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
@@ -1211,3 +1211,20 @@ Shared URI comparisons now report 70 passing cases and three demonstrated gaps
 (non-exhaustive); 44 PostgreSQL response cases include a concrete ICO logo.
 Evidence: `quality-reports/go-migration/ico/`. Remaining formats, unresolved registry
 exceptions, public login and all wider migration gates remain open.
+
+
+WebP now joins shared dispatch through bounded native animation inspection and
+first-frame decoding. The 178 declared Pillow/Django header/pixel/file cases pass
+locally and in the shipped static image; versioned license/patent notices are
+verified. Exact native protocol, stage budgets, cancellation/reaping/reuse and
+32 concurrent calls pass, as do 380 WebP sanitizer checks and the existing PNG
+sanitizer suite. Shared URI parity now has 72 cases and two demonstrated gaps
+(non-exhaustive). Forty-five PostgreSQL responses include WebP avatar/logo conversion.
+Evidence: `quality-reports/go-migration/webp/`. Remaining formats, registry collisions,
+public login and the wider migration/lifecycle gates remain open.
+
+The full production-Python 3.13.2 accounts rerun passes with these WebP, composed
+response and dispatch cases plus the existing authentication/task/HTTP/scope/restore
+checks. Terminal evidence is retained in
+`quality-reports/go-migration/webp/full-accounts-results.json`; its two demonstrated
+image gaps remain explicit and non-exhaustive.

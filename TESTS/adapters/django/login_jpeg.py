@@ -1,6 +1,6 @@
 """Exact JPEG encoder oracle; no file decoding or public login parity claim.
 
-Standalone execution needs Pillow, Go, a C compiler, pkg-config and libjpeg.
+Standalone execution needs Pillow, Go, a C compiler, pkg-config, libjpeg, zlib and libwebp/libwebpdemux.
 All native executables and raster/JPEG fixtures live in a disposable directory.
 """
 import base64
@@ -53,9 +53,9 @@ def vectors():
     return result
 
 
-def build_codec(output, log, tool_env):
-    flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg'], text=True, env=tool_env))
-    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), str(NATIVE.with_name("png_stream.c")), *flags, "-lz", '-o', str(output)],
+def build_codec(output, log, tool_env, extra_flags=()):
+    flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg', 'libwebpdemux', 'libwebp'], text=True, env=tool_env))
+    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', *extra_flags, str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), str(NATIVE.with_name("png_stream.c")), str(NATIVE.with_name("webp_decode.c")), *flags, "-lz", '-o', str(output)],
         check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
 
 
