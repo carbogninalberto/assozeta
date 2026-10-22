@@ -7,6 +7,13 @@ Work is isolated on `codex/go-backend-parity`, reconciled through
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
+Scheduler authority now has 29 explicit observations against the pinned actual
+Django runtime and private PostgreSQL. It distinguishes 21 source declarations
+from the single effective configured fresh entry, implicit cleanup and persisted
+historical rows. Tests also expose cursor advancement before failed publication.
+The oracle is required in CI; it does not activate Go scheduling or establish
+broker/handoff parity. See [the characterization](scheduler-authority.md).
+
 ## Latest increment: delivery alongside Django
 
 The Go image also packages explicit native worker and forward-only operational
