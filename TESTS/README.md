@@ -956,12 +956,12 @@ adapter and shipped-image codec check include them. Unit/race checks cover stage
 budgets, cancellation, 32 mixed concurrent pipelines and encoder admission/reuse.
 Shared image dispatch and public login are still incomplete.
 
-`adapters/django/login_images.py` checks shared data-URI/file composition: 80
-Django-matching cases and two explicitly reported missing-codec gaps. The latter
-are not counted as passing parity; `complete_image_parity` remains false and the
+`adapters/django/login_images.py` checks shared data-URI/file composition: 84
+Django-matching cases and one explicitly reported missing-codec gap. The latter
+is not counted as passing parity; `complete_image_parity` remains false and the
 gap list is not exhaustive. Mixed-format admission, cancellation, output limits
 and the shipped-image test are included. `accounts.py --only login-response`
-checks all 46 response cases, including ten concrete image cases and concurrent
+checks all 47 response cases, including eleven concrete image cases and concurrent
 composition against PostgreSQL; the full accounts adapter includes both checks.
 
 
@@ -997,3 +997,15 @@ The shared dispatcher has 80 passing URI comparisons plus two non-exhaustive gap
 the response fixture has 46 cases including CUR avatar/logo conversion. The accounts
 and shipped-image adapters require these cases. BMP (512 cases) and ICO (678 cases)
 regressions verify that the shared DIB parser still preserves their behavior.
+
+
+`adapters/django/login_pcd.py` adds 59 authored PCD header/pixel/file cases against
+Pillow 11.1 and the actual Django helper. Independent PhotoYCC arithmetic checks
+fixed anchors, luma/chroma sweeps and two-by-two chroma cells. Orientation masks,
+truncated headers/pixels and exact file-size thresholds are explicit. Pillow's
+rotation failure for orientations 1/3 retains the original URI. Resource limits,
+cancellation during blocked native stdin, queue deadlines, child reaping/reuse
+and 32 mixed calls are checked. The shared dispatcher has 84 passing URI cases
+plus one demonstrated, non-exhaustive TIFF gap. The 47 PostgreSQL response cases
+include eleven image scenarios. The accounts suite and shipped-image oracle run
+the new PCD cases; public HTTP login and complete image parity remain open.

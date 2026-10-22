@@ -79,7 +79,7 @@ immutable manual-package boundary delivered by PR #20.
 | Session HTTP audit | 27 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Sixteen malformed cache/UUID/hash inputs retain exact production HTML 500, Cookie Vary and unchanged cache bytes. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy and remaining route wiring stay open; public refresh has separate evidence. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
-| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes sixteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
+| Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes seventeen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
 The application oracle now requires Python **3.13.2**, matching the production
@@ -497,3 +497,23 @@ Existing task/HTTP/scope/restore/image and real-hash/session checks also pass. T
 final non-root, read-only, networkless image passes the full codec oracle. Twelve
 inventory tests, catalog drift, formatting and workflow lint pass. Historical data,
 backend switching and lifecycle compatibility remain separate unverified gates.
+
+
+PCD decoding adds 59 authored Django/Pillow cases with independent PhotoYCC RGB
+expectations. Header/read limits, chroma layout, masked orientation, truncation
+and file-size policy are covered. The pinned Pillow rotation hook fails for
+orientations 1/3; Go retains the original image as Django does. Shared dispatch
+has 84 URI comparisons and one non-exhaustive demonstrated TIFF gap. The response
+fixture has 47 cases, including eleven concrete image scenarios. Exact logical
+budgets, row-pair cancellation, blocked JPEG stdin cancellation, queued deadlines,
+child reaping/reuse and mixed concurrency are checked. Evidence is retained under
+`quality-reports/go-migration/pcd/`; full registry and public login remain open.
+
+The complete production-Python 3.13.2 accounts suite passes with 59 PCD cases,
+47 responses and 84 URI comparisons, retaining the TIFF gap separately and
+`complete_image_parity=false`. Its terminal report is
+`quality-reports/go-migration/pcd/full-accounts-results.json`. The final non-root,
+read-only, networkless Docker image passes the full codec oracle. Go race/vet,
+image/response-tagged vet, all twelve inventory tests, catalog drift, workflow
+lint, formatting and diff checks pass. Current-model fixtures do not establish
+historical-schema, backend-switching or complete lifecycle parity.

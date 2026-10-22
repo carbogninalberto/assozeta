@@ -174,6 +174,8 @@ def run(work, log, tool_env):
     add('owner transforms WebP avatar and logo',avatar=alpha['uri'],avatar_expected=alpha['expected'],logo=webp['uri'],logo_expected=webp['expected'])
     cur=images['CUR alpha'];collision=images['CUR precedes TGA']
     add('owner transforms CUR avatar and logo',avatar=cur['uri'],avatar_expected=cur['expected'],logo=collision['uri'],logo_expected=collision['expected'])
+    pcd=images['PCD frame'];rotation=images['PCD reference rotation failure']
+    add('owner transforms PCD avatar and retains failed rotation logo',avatar=pcd['uri'],avatar_expected=pcd['expected'],logo=rotation['uri'],logo_expected=rotation['expected'])
     def snapshot():
         return {m._meta.label:list(m._base_manager.order_by('pk').values()) for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     before=snapshot()
@@ -215,7 +217,7 @@ def run(work, log, tool_env):
     finally:
         with connection.cursor() as cursor: cursor.execute('RESET ROLE')
     assert snapshot()==before, 'Django permission rehearsal changed state'
-    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; ten concrete image response cases included',flush=True)
+    print(f'Django: {len(cases)} explicit composed response cases, {len(boolean_cases)} boolean values, eight dotenv cases and required instructor denial passed; eleven concrete image response cases included',flush=True)
     from TESTS.adapters.django.login_jpeg import build_codec
     codec=work/'response-codec';build_codec(codec,log,tool_env)
     path=work/'login-response.json';path.write_text(json.dumps({'now':NOW.isoformat(),'tokens':TOKENS,'cases':cases,'files':file_cases,'booleans':[{'value':v,'expected':e} for v,e in boolean_cases]}));path.chmod(0o600)
