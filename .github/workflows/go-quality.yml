@@ -187,3 +187,92 @@ jobs:
             quality-reports/go-migration/storage-web-identity/
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/accounts/
+
+  profile-browser:
+    name: Unchanged frontend personal profile on Django and Go
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/quality-browsers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install private database, native codec and browser dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python TESTS/adapters/django/production_runtime.py
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
+      - uses: docker/setup-buildx-action@v3
+      # Build once from this checkout. The adapter hashes these same bytes before
+      # and after BOTH API runs; neither backend receives a patched frontend.
+      - name: Build one unchanged frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./UI
+          load: true
+          tags: assozeta-profile-web:ci
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=profile-browser-web
+          cache-to: type=gha,mode=max,scope=profile-browser-web
+      - name: Prepare immutable UI provenance and private proxy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY
+          python TESTS/adapters/django/profile_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json
+      - name: Verify fresh login, personal edit and reload on both API versions
+        # Current-model fixture and private canonical /api selection only.
+        # Root WebSockets/manifest/logo/export denial retain real Django service.
+        run: |
+          python TESTS/adapters/django/profile_browser.py \
+            --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/profile-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-profile-browser-evidence
+          path: |
+            quality-reports/go-migration/profile-browser/
+            quality-reports/go-migration/profile-browser-ui/provenance.json
