@@ -90,9 +90,9 @@ func TestTwoFactorUpdatePostgres(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		// One SELECT FOR UPDATE and one UPDATE per request. Only the actual
+		// One shared server fence, SELECT FOR UPDATE and UPDATE per request. Only the actual
 		// transition adds the batched association read and audit INSERT SELECT.
-		if queries.count.Load() != int64(2*calls+2) {
+		if queries.count.Load() != int64(3*calls+2) {
 			t.Fatalf("write query budget: %d for %d calls", queries.count.Load(), calls)
 		}
 		var count int

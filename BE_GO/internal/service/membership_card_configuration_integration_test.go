@@ -74,10 +74,10 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 			}
 			counter.count.Store(0)
 			result, err := service.ForLogin(context.Background(), account, tc.Association, tc.Audit)
-			wantQueries := 2
+			wantQueries := 3 // two business reads plus the shared server fence
 			switch {
 			case tc.Outcome == "missing":
-				wantQueries = 1
+				wantQueries = 2
 				if result != nil || !errors.Is(err, domain.ErrAssociationNotFound) {
 					t.Fatalf("missing association produced configuration: %v", err)
 				}
@@ -102,7 +102,7 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 					t.Fatalf("configuration mismatch: got %s want %s", actual, tc.Expected)
 				}
 				if tc.Created {
-					wantQueries = 5
+					wantQueries = 6
 				}
 			}
 			if counter.count.Load() != int64(wantQueries) {
@@ -129,7 +129,7 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		if counter.count.Load() != 67 || db.Stats().InUse != 0 {
+		if counter.count.Load() != 99 || db.Stats().InUse != 0 {
 			t.Fatalf("query bound/pool release: %d", counter.count.Load())
 		}
 		var count int

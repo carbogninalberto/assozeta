@@ -340,7 +340,7 @@ func TestAssociateAgeUpdatePostgres(t *testing.T) {
 			if e := service.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if trace.count.Load() != 4 {
+			if trace.count.Load() != 5 {
 				t.Fatalf("%d rows: %d statements", n, trace.count.Load())
 			}
 			counts(t, n, n, n)

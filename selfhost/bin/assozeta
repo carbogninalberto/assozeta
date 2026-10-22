@@ -880,8 +880,29 @@ require_prod_migration_lease() {
     fi
 }
 
-migrate_prod_schemas() {
+drain_prod_go_transactions() {
+    # Historical distributions without the Go operational command retain their
+    # existing lifecycle. Current Go writes acquire the shared transaction form
+    # of this lock before sending effects. A closed client socket alone cannot
+    # prove that PostgreSQL has finished an interrupted COMMIT.
     require_prod_migration_lease || return $?
+    [ -n "$go_migration_service" ] || return 0
+    go_drain_database_user=$(env_value DBUSER "$PROD_ENV")
+    go_drain_database_name=$(env_value DBNAME "$PROD_ENV")
+    log "waiting for admitted Go database transactions"
+    if prod_compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+        -U "$go_drain_database_user" -d "$go_drain_database_name" \
+        -c "BEGIN; SET LOCAL statement_timeout = '5s'; SELECT pg_advisory_xact_lock(1095981639,1381192786); COMMIT;" >/dev/null; then
+        return 0
+    else
+        go_drain_status=$?
+        printf '[assozeta] error: database transaction drain failed; snapshot or migration was not started\n' >&2
+        return "$go_drain_status"
+    fi
+}
+
+migrate_prod_schemas() {
+    drain_prod_go_transactions || return $?
     prod_compose --profile tools run --rm --no-deps migrate || return $?
     if [ -n "$go_migration_service" ]; then
         prod_compose --profile tools run --rm --no-deps "$go_migration_service" || return $?
@@ -1323,6 +1344,7 @@ backup_prod() {
     preflight
     [ -f "$PROD_ENV" ] || die "run configure first"
     ensure_configuration_values "$PROD_ENV"
+    require_prod_migration_lease || return $?
     require_command tar
 
     umask 077
@@ -1363,6 +1385,8 @@ backup_prod() {
     log "stopping application services for consistent backup"
     backup_app_stopped=true
     stop_prod_data_services
+
+    drain_prod_go_transactions || return $?
 
     log "backing up PostgreSQL"
     prod_compose exec -T postgres pg_dump -U "$database_user" -d "$database_name" -Fc > "$working/postgres.dump"

@@ -65,6 +65,7 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 	profiles := NewAssociationProfiles(repository.NewAssociationProfiles(db), func() time.Time { return fixture.Now })
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
+			// Count the shared server fence in addition to the unchanged Django query baseline.
 			queries.count.Store(0)
 			result, err := profiles.Read(context.Background(), tc.Owner)
 			if tc.Outcome == "missing" {
@@ -87,8 +88,8 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 					t.Fatalf("association profile mismatch: got %s want %s", actual, tc.Expected)
 				}
 			}
-			if queries.count.Load() != int64(tc.Queries) {
-				t.Fatalf("query count %d want %d", queries.count.Load(), tc.Queries)
+			if queries.count.Load() != int64(tc.Queries+1) {
+				t.Fatalf("query count %d want %d", queries.count.Load(), tc.Queries+1)
 			}
 		})
 	}
@@ -117,7 +118,7 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		if queries.count.Load() != 64 || db.Stats().InUse != 0 {
+		if queries.count.Load() != 96 || db.Stats().InUse != 0 {
 			t.Fatal("query bound or connection release violated")
 		}
 	})
@@ -151,10 +152,11 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 		deniedDB.SetMaxOpenConns(1)
 		flow := NewAssociationProfiles(repository.NewAssociationProfiles(deniedDB), func() time.Time { return fixture.Now })
 		for i := 0; i < 2; i++ {
+			// Count the shared server fence in addition to the unchanged Django query baseline.
 			queries.count.Store(0)
 			result, err := flow.Read(context.Background(), fixture.Cases[0].Owner)
 			var sqlError *pgconn.PgError
-			if result != nil || !errors.As(err, &sqlError) || sqlError.Code != "42501" || queries.count.Load() != 2 {
+			if result != nil || !errors.As(err, &sqlError) || sqlError.Code != "42501" || queries.count.Load() != 3 {
 				t.Fatalf("required group permission failure was not exercised: %v", err)
 			}
 			if deniedDB.Stats().InUse != 0 {

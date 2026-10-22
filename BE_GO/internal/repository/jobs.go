@@ -83,20 +83,32 @@ func (r *Jobs) Claim(ctx context.Context, kinds []string, owner string, limit in
 		}
 	}
 	jobs := []domain.Job{}
-	err := r.db.SelectContext(ctx, &jobs, claimJobsSQL, kinds, limit, owner, uuid.New(), lease.Milliseconds())
-	return jobs, err
+	err := r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
+		return tx.SelectContext(ctx, &jobs, claimJobsSQL, kinds, limit, owner, uuid.New(), lease.Milliseconds())
+	})
+	if err != nil {
+		return nil, err
+	}
+	return jobs, nil
 }
 
 func (r *Jobs) Renew(ctx context.Context, id, token uuid.UUID, lease time.Duration) error {
 	if !validLease(lease) {
 		return domain.ErrJobInvalid
 	}
-	result, err := r.db.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET lease_until=GREATEST(lease_until,clock_timestamp()+make_interval(secs=>$3::double precision/1000))
+	return r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
+		result, err := tx.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET lease_until=GREATEST(lease_until,clock_timestamp()+make_interval(secs=>$3::double precision/1000))
  FROM ownership o WHERE id=$1 AND lease_token=$2 AND state='running' AND lease_until>clock_timestamp() AND j.ownership_generation=o.generation`, id, token, lease.Milliseconds())
-	return jobLeaseResult(result, err)
+		return jobLeaseResult(result, err)
+	})
 }
 func (r *Jobs) Complete(ctx context.Context, id, token uuid.UUID, result json.RawMessage) error {
-	return completeJob(ctx, r.db, id, token, result)
+	if result != nil && !validJobJSON(result) {
+		return domain.ErrJobInvalid
+	}
+	return r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
+		return completeJob(ctx, tx, id, token, result)
+	})
 }
 
 // CompleteInTx lets a service commit database effects and completion atomically.
@@ -125,12 +137,14 @@ func (r *Jobs) Fail(ctx context.Context, id, token uuid.UUID, code string, retry
 	if !jobKind.MatchString(code) || delay < 0 || delay > 30*24*time.Hour {
 		return domain.ErrJobInvalid
 	}
-	changed, err := r.db.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET
+	return r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
+		changed, err := tx.ExecContext(ctx, goJobOwnershipCTE+`UPDATE public.assozeta_go_jobs j SET
  state=CASE WHEN $4 AND attempts<max_attempts THEN 'pending' ELSE 'failed' END,
  finished_at=CASE WHEN $4 AND attempts<max_attempts THEN NULL ELSE clock_timestamp() END,
  available_at=CASE WHEN $4 AND attempts<max_attempts THEN clock_timestamp()+make_interval(secs=>$5::double precision/1000) ELSE available_at END,
  error_code=$3,`+clearJobLease+` FROM ownership o WHERE id=$1 AND lease_token=$2 AND state='running' AND lease_until>clock_timestamp() AND j.ownership_generation=o.generation`, id, token, code, retry, delay.Milliseconds())
-	return jobLeaseResult(changed, err)
+		return jobLeaseResult(changed, err)
+	})
 }
 func jobLeaseResult(result sql.Result, err error) error {
 	if err != nil {
@@ -158,26 +172,48 @@ func (r *Jobs) Get(ctx context.Context, association, id uuid.UUID) (domain.Job, 
 // CancelPending deliberately cannot claim to interrupt a running provider call.
 // Running cancellation requires a cooperative executor and workflow policy.
 func (r *Jobs) CancelPending(ctx context.Context, association, id uuid.UUID) error {
-	result, err := r.db.ExecContext(ctx, `UPDATE public.assozeta_go_jobs SET state='cancelled',finished_at=COALESCE(finished_at,clock_timestamp()) WHERE association_id=$1 AND id=$2 AND state IN ('pending','cancelled')`, association, id)
+	return r.withOwnedTransaction(ctx, func(tx *sqlx.Tx) error {
+		result, err := tx.ExecContext(ctx, `UPDATE public.assozeta_go_jobs SET state='cancelled',finished_at=COALESCE(finished_at,clock_timestamp()) WHERE association_id=$1 AND id=$2 AND state IN ('pending','cancelled')`, association, id)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n == 1 {
+			return nil
+		}
+		// The private transaction retains its pool connection. Read the fallback
+		// on that same connection, including with a one-connection pool.
+		var job domain.Job
+		err = tx.GetContext(ctx, &job, `SELECT `+jobColumns+` FROM public.assozeta_go_jobs WHERE association_id=$1 AND id=$2`, association, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrJobNotFound
+		}
+		if err != nil {
+			return err
+		}
+		return domain.ErrJobConflict
+	})
+}
+
+// Every standalone queue mutation is an explicit fenced transaction. Caller-
+// supplied Enqueue/CompleteInTx remain responsible for this same prerequisite.
+func (r *Jobs) withOwnedTransaction(ctx context.Context, action func(*sqlx.Tx) error) error {
+	tx, err := beginOwnedTransaction(ctx, r.db, nil)
 	if err != nil {
 		return err
 	}
-	n, err := result.RowsAffected()
-	if err != nil {
+	defer tx.Rollback()
+	if err = action(tx.tx); err != nil {
 		return err
 	}
-	if n == 1 {
-		return nil
-	}
-	_, err = r.Get(ctx, association, id)
-	if err != nil {
-		return err
-	}
-	return domain.ErrJobConflict
+	return tx.Commit()
 }
 
 // Each kind/state branch locks at most limit rows before merging candidates.
-// Extra locks last only through this statement, at most 2*limit*len(kinds).
+// Extra row locks last through the fenced transaction, at most 2*limit*len(kinds).
 // Stable statement time lets PostgreSQL use the due-time index range; writes
 // still check/extend ownership against wall-clock time after acquiring row locks.
 // The correlated LIMIT requires ownership to be evaluated before either branch

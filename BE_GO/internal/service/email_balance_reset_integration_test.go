@@ -250,8 +250,8 @@ func TestEmailBalanceResetPostgres(t *testing.T) {
 			if e := reset.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if got := trace.count.Load(); got != 5 {
-				t.Fatalf("%d positive counters: %d queries, want BEGIN/ownership fence/UPDATE/complete/COMMIT", n, got)
+			if got := trace.count.Load(); got != 6 {
+				t.Fatalf("%d positive counters: %d queries, want BEGIN/server fence/ownership fence/UPDATE/complete/COMMIT", n, got)
 			}
 			balances(0)
 		}

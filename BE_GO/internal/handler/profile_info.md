@@ -51,10 +51,12 @@ reads; fixture transitions and cleanup are checked separately. The server's
 short-lived readiness keys are excluded explicitly from cache comparisons.
 
 `profileinfointegration` uses actual repositories, identity resolution and the
-native image processor. Direct athlete/administrator reads use two SELECTs;
-owner/collaborator reads use six. Thirty-two mixed calls use 128 SELECTs with a
+native image processor. Direct athlete/administrator reads use three SELECTs;
+owner/collaborator reads use eight. Thirty-two mixed calls use 176 SELECTs with a
 four-connection pool and no connections left in use. Adding 1/16/128/512 groups
-to the owner leaves the six-SELECT count unchanged and excludes foreign groups.
+to the owner leaves the eight-SELECT count unchanged and excludes foreign groups.
+These counts include one shared transaction fence for the profile snapshot and,
+for owners/collaborators, a second fence for the association snapshot.
 The executed details statement is also inspected with 4,000 additional synthetic
 tenants. EXPLAIN ANALYZE uses `bakney_user_pkey` and the existing association-owner
 unique index, returning one row from each relation without filtered rows. Its JSON

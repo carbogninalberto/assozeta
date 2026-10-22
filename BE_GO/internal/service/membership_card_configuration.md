@@ -38,9 +38,10 @@ Evidence from `TESTS/adapters/django/membership_card_configuration.py`:
 - Twenty explicitly expected cases use the actual Django login-response builder
   and audit middleware, followed by the Go service on the same private PostgreSQL.
   Django reads and validates every Go-written configuration/audit/index field.
-- Existing configurations (including 2/128/512 duplicates) require two business
-  statements; creation requires five. Transaction commands are excluded.
-- Thirty-two concurrent Go calls use 67 business statements, create one
+- Existing configurations (including 2/128/512 duplicates) require three
+  statements including the shared transaction fence; creation requires six.
+  BEGIN/COMMIT are excluded.
+- Thirty-two concurrent Go calls use 99 statements including the shared transaction fences, create one
   configuration/audit/index, and release a four-connection pool.
 - Real denied-INSERT roles, actor/index foreign-key failures, injected failures
   after configuration/audit writes or before commit, and cancellation leave no

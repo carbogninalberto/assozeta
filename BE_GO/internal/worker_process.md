@@ -84,8 +84,8 @@ success. Both adapters are required in the reusable Go quality workflow.
 
 Evidence is under ignored `quality-reports/go-migration/worker-process/` and
 `worker-image/`. The image proof used immutable image
-`sha256:bcf220b3872775d61d23542f48f37c71886779904c0d8ea82e6edb82c88f6e12`,
-built from the schema-3 working tree with joined transaction cleanup with version `test`; its embedded parent
+`sha256:7d2241db25b793ab4e525ced1bb1dc1637cf77c323d44663a5e5fc0b9fb278a6`,
+built from the schema-3 working tree with joined transaction cleanup and server drain fencing with version `test`; its embedded parent
 revision is not a claim of a clean source commit. The tables/triggers in these
 fixtures are synthetic transaction sentinels. Actual task behavior remains
 covered separately by Django/task adapters. These checks do not prove scheduler

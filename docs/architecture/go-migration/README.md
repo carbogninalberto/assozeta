@@ -115,6 +115,28 @@ seventeen transaction entrypoints use the helper without changing their original
 context or isolation. Local socket cleanup and server disconnect processing are
 distinct boundaries; see [the transaction contract](../../../BE_GO/internal/repository/transaction.md).
 
+A server-side transaction fence now closes the separate late-commit gap: all
+explicit Go transactions and five standalone queue mutations acquire an acknowledged
+shared transaction advisory lock before sending effects. Django restore and the
+CLI acquire the exclusive form before export/snapshot or migration, under their
+existing exclusive file lease, and fail closed on timeout. Fifteen queue cases,
+five actual transaction-pooler/CLI cases and three Go→Django restore cases verify
+ordering even when cancellation delivery fails. This covers cooperating Go writes;
+it is not a universal Django/provider fence or complete handoff. See the
+[drain protocol](transaction-drain.md) and [exact query-cost changes](transaction-query-costs.md).
+Current Go counts below include that protocol where applicable; historical Django
+fixture counts remain unchanged. Earlier capture/evidence artifacts retain their
+original source scope. All sixty existing manual recipe captures are invalidated
+by the restore implementation dependency change and require fresh capture.
+
+The complete accounts adapter passes after correcting all affected fixed query
+budgets, including composed social login and profile information. Its receipt is
+`quality-reports/go-migration/server-transaction-drain/accounts-results.json`;
+`accounts.log` retains the run. The fresh production and current-controller
+update/recovery matrices also pass for this drain source snapshot, with unchanged
+fixture deadlines. The checkpoint validation records exact sources and evidence;
+newer-main manual-image preflight integration requires separate validation.
+
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django
 full-row saves overwriting concurrent names/passwords and successful responses
@@ -122,13 +144,13 @@ after audit-index failures. Both runtimes now lock fresh state, update only
 `tables_settings` and commit the preference, audit and index together.
 
 Actual roots pass 62 HTTP/durable-effect/audit cases and three locked-row races
-per backend. PostgreSQL counts stay at 2 SELECT / 1 UPDATE / 2 INSERT across
-1/16/128/512 table entries; unchanged repeats use 1 / 1 / 0, missing fields use
-0 / 0 / 0, and 24 identical competitors use 25 / 24 / 2 with one audit.
+per backend. Go PostgreSQL counts stay at 3 SELECT / 1 UPDATE / 2 INSERT across
+1/16/128/512 table entries; unchanged repeats use 2 / 1 / 0, missing fields use
+0 / 0 / 0, and 24 identical competitors use 49 / 24 / 2 with one audit.
 Pre-write and mid-audit cancellation roll back, release connections and recover.
 The pool limit is four. See the [table-preference contract](../../../BE_GO/internal/handler/profile_tables.md)
-and `quality-reports/go-migration/profile-tables/surrogate-http-green.log`. These counts cover
-mutation statements only; no whole-application performance claim is made.
+and `quality-reports/go-migration/profile-tables/surrogate-http-green.log`. These counts include the shared-fence SELECT and business statements, excluding
+BEGIN/COMMIT; no whole-application performance claim is made.
 
 Final Go race tests and ordinary/tagged vet pass, as do 324 existing Django tests.
 The rebuilt image passes ten
@@ -155,9 +177,9 @@ null/conversion behavior, impersonation attribution and post-commit serializatio
 failures remain explicit contracts.
 
 Actual Django and Go roots pass 52 HTTP/durable-effect/audit cases and four
-locked-row concurrency scenarios per backend. PostgreSQL measures 3 SELECT / 2
-UPDATE / 4 INSERT for an owner change, 2 / 2 / 0 for an unchanged repetition and
-49 / 48 / 4 for 24 competitors with exactly two audit records. Cancellation before
+locked-row concurrency scenarios per backend. Go PostgreSQL measures 4 SELECT / 2
+UPDATE / 4 INSERT for an owner change, 3 / 2 / 0 for an unchanged repetition and
+73 / 48 / 4 for 24 competitors with exactly two audit records. Cancellation before
 and during mutation rolls back all writes, releases the connection and recovers
 within a four-connection pool. These are mutation-only counts. See the
 [profile update contract](../../../BE_GO/internal/handler/profile_update.md) and
@@ -193,9 +215,9 @@ preserve the new credentials and profile edit, with one profile-field audit.
 Password-only writes produce no audit/session changes, matching the reference
 registration.
 
-The real PostgreSQL mutation test measures one SELECT/one UPDATE for success and
-one SELECT/no UPDATE for incorrect credentials. Twenty-four competing requests
-produce one success, 24 SELECTs and one UPDATE. Cancellation, connection release,
+The real PostgreSQL mutation test measures two SELECTs/one UPDATE for success and
+two SELECTs/no UPDATE for incorrect credentials, including the shared transaction fence. Twenty-four competing requests
+produce one success, 48 SELECTs and one UPDATE. Cancellation, connection release,
 recovery and trigger-rejected writes pass with a four-connection pool. The full
 focused evidence is `quality-reports/go-migration/profile-password/profile-write-interleave-green.log`.
 Go race and ordinary/tagged vet pass, along with 324 existing Django tests,
@@ -236,10 +258,10 @@ concurrent reads per backend across all eight registration-flag combinations.
 Four further reads per backend verify fresh stored personal/review settings.
 Managed model rows and session/cache bytes remain unchanged by reads.
 
-Real PostgreSQL/Redis/native-image tests measure two SELECTs for direct
-athlete/administrator reads and six for owner/collaborator reads. Thirty-two mixed
-calls use 128 SELECTs within four connections. Adding 1/16/128/512 nested groups
-retains six SELECTs and excludes foreign groups. An executed plan with 4,000
+Real PostgreSQL/Redis/native-image tests measure three SELECTs for direct
+athlete/administrator reads and eight for owner/collaborator reads. Thirty-two mixed
+calls use 176 SELECTs within four connections. Adding 1/16/128/512 nested groups
+retains eight SELECTs and excludes foreign groups. An executed plan with 4,000
 additional synthetic tenants uses the existing user and association-owner indexes.
 A blocked read cancels, releases
 its connection and recovers. The legacy full group payload remains unpaginated;
@@ -500,9 +522,9 @@ and later corrections appear above and in the component contracts.
 | Impersonation cache boundary | 10 Django-written records read in Go and 2 Go records read in Django; protocol 4/5, TTL, expiry, no-renewal, revocation and concurrent reads pass on private Redis |
 | Identity selection | 46 explicit Django/Go cases, 8 eligibility/configuration changes and 32 concurrent resolutions using a four-connection pool; real PostgreSQL/Redis and unchanged persisted readback |
 | Login image pixel prerequisites | Ten actual Django decisions, 54 exact Pillow pixel vectors and 19,535 Base64 cases; cancellation, logical memory limits and concurrency; JPEG codec covered separately, other decoding remains open |
-| Login response composition | 48 explicit full response cases including twelve concrete image scenarios; seven/ten-statement paths, concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
-| Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, two/four/five-statement paths, concurrent cancellation and atomic failure rollback |
-| Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, two/five-statement paths, concurrent Go creation, failure rollback and real deadlock retry |
+| Login response composition | 48 explicit full response cases including twelve concrete image scenarios; 11/14 SQL statements including shared fences and excluding BEGIN/COMMIT; concurrent calls, no-token decoder failure and required instructor denial; 28 boolean and eight dotenv cases |
+| Final login user writes | 17 actual Django view cases; UTC date boundaries, exact audit/index readback, 3/5/6 SQL statements including the shared fence and excluding BEGIN/COMMIT; concurrent cancellation and atomic failure rollback |
+| Login membership-card configuration | 20 actual Django response-builder/audit cases; exact durable readback, 3 SQL statements for existing configuration and 6 for creation including the shared fence and excluding BEGIN/COMMIT; concurrent Go creation, failure rollback and real deadlock retry |
 | Association login profile | 23 explicit Django-rendered/Go JSON cases; all 50 fields, exact decimal text, reviewed boundary, scoped groups, required-read failure, bounded queries and concurrency |
 | Base login profile | 46 explicit Django-rendered/Go JSON cases; all 37 fields, welcome/onboarding precedence, bounded queries, current preferences and concurrent reads |
 | Composed password admission | 20 actual Django login/audit middleware versus Go service cases; exact event/index readback, rollback, bounded queries, concurrent normalization and forced deadlock recovery |
@@ -792,8 +814,8 @@ returning no admitted account. Target and request audit actor remain separate.
 Twenty actual Django login/audit-middleware cases now pass against this composed
 Go service; Django reads the Go-written event/index fields and relationships. The
 fixture checks every managed table after restoring declared changes. Real PostgreSQL
-checks cover rollback, constraint/cancellation/commit failures, five queries for
-indexed normalization and one for unchanged names, 32 concurrent calls with one
+checks cover rollback, constraint/cancellation/commit failures, six queries for
+indexed normalization and two for unchanged names (including the shared fence), 32 concurrent calls with one
 event, and retry after a forced cross-actor deadlock.
 
 The adapter now rebuilds audit resolvers after its schema creation, matching normal
@@ -811,8 +833,8 @@ The internal profile service now preserves all 37 `UserAuthSerializer` fields.
 Forty-six explicit JSON cases run against Django's real serializer/renderer and
 Go on the same PostgreSQL. They cover null/scalar JSON, integer precision, category
 UUIDs, Google-credential presence, welcome/setup precedence, strict elapsed-time
-boundaries and missing/duplicate onboarding. One/two SELECTs suffice for up to
-512 onboarding rows; 32 concurrent association reads use 64 SELECTs and release
+boundaries and missing/duplicate onboarding. Two/three SELECTs including the shared fence suffice for up to
+512 onboarding rows; 32 concurrent association reads use 96 SELECTs and release
 the four-connection pool. Managed tables remain unchanged after test restoration.
 
 This is response-component evidence, not a public login route. A real PostgreSQL
@@ -827,8 +849,8 @@ configuration-stage and final-write composition remain open. See the
 Twenty-three explicit contracts now compare all 50 `SportAssociationSerializer`
 fields against Go. Exact decimal strings, PostgreSQL scale rounding, nullable and
 scalar JSON, custom template names and the strict five-day reviewed boundary are
-preserved. One/two SELECTs fetch an association and its scoped groups; 32 concurrent
-reads with 512 groups use 64 SELECTs. A deletion/restoration transition, foreign
+preserved. Two/three SELECTs including the shared fence fetch an association and its scoped groups; 32 concurrent
+reads with 512 groups use 96 SELECTs. A deletion/restoration transition, foreign
 scope denials and a real required-group permission failure return no stale or
 partial profile. Managed tables remain unchanged after fixture restoration.
 
@@ -842,8 +864,8 @@ The response stage now selects the existing lowest-UUID configuration or creates
 its default, audit event and direct association index transactionally. Twenty
 explicit cases compare the actual Django response builder/audit middleware with
 Go; Django validates every written field and all managed tables after resets.
-Existing rows require two statements, creation five. Thirty-two concurrent Go
-calls use 67 statements and create one configuration/audit/index. Permission/FK
+Including the shared fence, existing rows require three statements and creation six. Thirty-two concurrent Go
+calls use 99 statements and create one configuration/audit/index. Permission/FK
 failures, injected failures and cancellation roll back; a forced PostgreSQL audit
 actor deadlock verifies whole-transaction retry.
 
@@ -886,8 +908,8 @@ acceptance matrix above.
 The separate finalization service now matches 17 explicitly expected actual
 Django-login cases for last_login and scheduled-deletion cancellation. UTC date
 boundaries include midnight between the view's two clock reads. Cancellation
-writes its User audit and association index in the same transaction. Two/four/five
-statements cover unchanged/unindexed/indexed paths; 32 concurrent Go calls use 67
+writes its User audit and association index in the same transaction. Three/five/six
+statements including the shared fence cover unchanged/unindexed/indexed paths; 32 concurrent Go calls use 99
 statements and cancel once. Real permission/FK failures, injected failures and
 cancellation leave no partial invariant and release the pool. All managed tables
 match after fixture restoration and Django reads Go-written audits.
@@ -909,8 +931,8 @@ Django-builder cases compare complete JSON/outcomes with Go, including historica
 role 0, empty feature arrays, JSON null/scalars/large integers and duplicate draft
 instructors across owners. That metadata lookup does not authorize instructors.
 
-Existing association responses use seven statements, default configuration ten;
-32 concurrent 512-instructor responses use 224 statements. A real denied instructor
+Existing association responses use eleven statements, default configuration fourteen,
+including four shared transaction fences; 32 concurrent 512-instructor responses use 352 statements. A real denied instructor
 SELECT is required for collaborators but does not affect owners. Persisted
 settings/instructor transitions are visible and all managed tables match after
 fixture restoration. Twenty-eight boolean values and eight literal dotenv cases
@@ -1138,7 +1160,7 @@ status counts and backend activation restrictions are unchanged.
 `PasswordSessions` now composes password/OTP admission, JWT issuance, response
 construction and final login writes. Eighteen declared Django/Go cases and eight
 concurrent repetitions verify response fields, signed claims, durable audit/card/
-user effects and bounded query counts (1–18 for these fixtures). A real final-write
+user effects and bounded query counts including the fixed per-transaction drain protocol cost. A real final-write
 failure withholds the response while retaining earlier committed invariants. See
 [the service contract](../../../BE_GO/internal/service/password_session.md).
 Public HTTP login, complete images, social admission and middleware remain open.
@@ -1385,7 +1407,7 @@ Kuayle operation/lease pattern. Transactional enqueue/completion, permanent scop
 deduplication, lease renewal/expiry/fencing, bounded attempts and delay, pending
 cancellation, concurrent claims and actual SIGKILL recovery pass on private
 PostgreSQL. Ten scenario groups include 16 competing publishers, eight consumers,
-one claim query across 1/16/128/512 jobs and an inspected 4,096-job plan. The plan
+four claim statements (BEGIN, shared fence, mutation, COMMIT) across 1/16/128/512 jobs and an inspected 4,096-job plan. The plan
 was corrected after a test exposed an unbounded candidate scan.
 
 The separate additive golang-migrate history owns only Go operational tables and

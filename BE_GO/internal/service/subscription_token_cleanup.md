@@ -60,7 +60,7 @@ query counts, actual heartbeat overlap and an executed query plan. It rejects
 missing/skipped groups and verifies complete managed-row cleanup afterwards.
 
 For 1/16/128 tokens, Django uses 7/52/389 SQL statements in the captured fixture.
-The Go service uses four statements for 0/1/16/128/129/257/512 tokens: BEGIN, the
+The Go service uses five statements for 0/1/16/128/129/257/512 tokens: BEGIN, shared transaction fence, the
 audited deletion, fenced completion, COMMIT. These counts exclude worker claim,
 restore admission, verification and heartbeats. EXPLAIN ANALYZE of the actual SQL
 over 4,096 tokens deletes/audits 128 and filters 3,968 in a sequential token scan;

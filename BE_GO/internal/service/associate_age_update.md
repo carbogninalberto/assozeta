@@ -56,7 +56,7 @@ cover exact selection and readback, invalid envelopes without SQL, failures,
 stale ownership/replay, two observed overlapping commands, blocked SQL cancellation
 and pool recovery, scaling/plan inspection, and real executor heartbeat.
 Django uses 9/114/898 statements for 1/16/128 eligible associates in this fixture.
-Go uses four at 0/1/16/128/512: BEGIN, the update/audit/index command, completion and
+Go uses five at 0/1/16/128/512: BEGIN, shared transaction fence, the update/audit/index command, completion and
 COMMIT. These counts exclude claim/admission/heartbeat and test setup/readback.
 EXPLAIN ANALYZE of the actual command over 4,096 rows updates, logs and indexes 128.
 The observed plan uses the existing birth-date bitmap index and content-type unique

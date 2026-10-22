@@ -154,8 +154,16 @@ func TestSocialPostgres(t *testing.T) {
 			} else if account != nil {
 				t.Fatal("failed admission exposed account")
 			}
-			if counter.count.Load() != int64(tc.Queries) {
-				t.Fatal("query count", counter.count.Load(), tc.Queries)
+			// Selection alone is nontransactional. Admission reaches the owned
+			// LoginPreparation transaction before successful or rejected OTP, so
+			// those outcomes include one acknowledged server fence SELECT.
+			protocol := 0
+			switch tc.Outcome {
+			case "", "required", "invalid_otp", "otp_type":
+				protocol = 1
+			}
+			if counter.count.Load() != int64(tc.Queries+protocol) {
+				t.Fatal("query count including admission fence", counter.count.Load(), tc.Queries+protocol)
 			}
 			if db.Stats().InUse != 0 {
 				t.Fatal("connection retained")

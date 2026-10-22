@@ -114,10 +114,15 @@ func TestProfileInfoPostgres(t *testing.T) {
 		return value
 	}
 	cases := []struct {
-		name    string
-		n       int
-		queries int64
-	}{{"owner", 82000, 6}, {"athlete", 82002, 2}, {"collaborator", 82003, 6}, {"administrator", 82004, 2}}
+		name              string
+		n                 int
+		queries, protocol int64
+	}{
+		// Profiles always open one snapshot; owner/collaborator also open the
+		// association snapshot. The direct detail and identity reads are unchanged.
+		{"owner", 82000, 6, 2}, {"athlete", 82002, 2, 1},
+		{"collaborator", 82003, 6, 2}, {"administrator", 82004, 2, 1},
+	}
 	for _, c := range cases {
 		queries.count.Store(0)
 		identity, err := resolve(c.n)
@@ -135,8 +140,8 @@ func TestProfileInfoPostgres(t *testing.T) {
 		if !reflect.DeepEqual(comparable(actual), comparable(expected[c.name])) {
 			t.Fatal(c.name, "profile differs")
 		}
-		if got := queries.count.Load(); got != c.queries {
-			t.Fatal(c.name, "SELECT budget", got, c.queries)
+		if got := queries.count.Load(); got != c.queries+c.protocol {
+			t.Fatal(c.name, "SELECT budget", got, c.queries+c.protocol)
 		}
 	}
 	queries.count.Store(0)
@@ -156,7 +161,7 @@ func TestProfileInfoPostgres(t *testing.T) {
 		}(i)
 	}
 	wg.Wait()
-	if queries.count.Load() != 128 || db.Stats().InUse != 0 || db.Stats().OpenConnections > 4 {
+	if queries.count.Load() != 128+8*(2+1+2+1) || db.Stats().InUse != 0 || db.Stats().OpenConnections > 4 {
 		t.Fatal("concurrent query/pool budget", queries.count.Load(), db.Stats())
 	}
 	// Grow one tenant's nested groups while foreign rows remain present.
@@ -182,7 +187,7 @@ func TestProfileInfoPostgres(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(value.UserData.SportAssociation.Groups) != count+3 || queries.count.Load() != 6 {
+		if len(value.UserData.SportAssociation.Groups) != count+3 || queries.count.Load() != 6+2 {
 			t.Fatal("nested groups changed SELECT budget", count, queries.count.Load())
 		}
 		for _, group := range value.UserData.SportAssociation.Groups {

@@ -33,7 +33,7 @@ statement from the closed client connection. Ambiguous commits remain errors;
 the helper does not invent a definite rollback outcome. Cleanup can extend elapsed
 return time beyond the caller's admission/work deadline.
 
-All seventeen explicit production transaction entrypoints use this helper:
+All seventeen original explicit production transaction entrypoints use this helper:
 five worker mutations, eight HTTP mutation constructors, three read-only snapshots
 and exact-row periodic publication. Existing error classifications and transaction
 options remain unchanged. This does not replace process draining, restore fences
@@ -41,10 +41,11 @@ or the coordination required for backend switching.
 
 Separate regressions also reproduce remote commits after local cleanup when the
 cancel-request connection fails, using ordinary PostgreSQL triggers as timing
-barriers. The five standalone queue mutations are not explicit transactions
-covered by this helper. A server-side drain protocol for those mutations and
-ambiguous commits, before recovery export or backup snapshots, remains required;
-the local cleanup fix does not close that acceptance gate.
+barriers. The five standalone queue mutations now also use the helper. A separate first
+statement acquires a shared transaction advisory lock before any effects, allowing
+Django restore and CLI backup/migration to drain remote transactions under the
+exclusive file lease. See the [server-drain protocol](../../../docs/architecture/go-migration/transaction-drain.md)
+for the tested boundary and remaining mixed-runtime limits.
 
 The required private PostgreSQL adapter runs eight named groups under the race
 detector. Three exercise real worker, HTTP middleware/service and snapshot paths;

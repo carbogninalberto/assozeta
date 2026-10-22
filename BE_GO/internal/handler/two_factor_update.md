@@ -57,10 +57,10 @@ foreign-reference denial and three database-trigger failures. Two locked-row HTT
 scenarios per backend prove concurrent profile/password preservation and one audit
 for identical concurrent writes.
 
-The tagged PostgreSQL service test measures four SQL statements for a single
-athlete transition and 66 for 32 concurrent identical calls: two per request plus
+The tagged PostgreSQL service test measures five SQL statements for a single
+athlete transition and 98 for 32 concurrent identical calls: three per request plus
 the association lookup and audit insertion for the single actual transition.
-These counts exclude BEGIN/COMMIT and HTTP authentication/middleware. The test
+These counts include the shared transaction fence and exclude BEGIN/COMMIT and HTTP authentication/middleware. The test
 uses at most four database connections, proves deadline cancellation while blocked
 on a row lock, and checks subsequent pool recovery. Service tests bound conflict
 retry to three attempts and prevent commit after cancellation following audit.

@@ -29,8 +29,9 @@ or attempt policy produces a conflict. JSONB comparison is semantic and retains
 large integer precision. The first schedule wins. This does not deduplicate a
 caller's business mutation; its service must enforce that invariant separately.
 
-Workers supply explicitly supported kinds and an owner. Claiming uses one SQL
-statement and `FOR UPDATE SKIP LOCKED`; active leases cannot be claimed again.
+Workers supply explicitly supported kinds and an owner. Claiming uses one effect
+statement with `FOR UPDATE SKIP LOCKED` inside an owned transaction, after its
+shared server-drain fence; active leases cannot be claimed again.
 Each claim invocation has a fresh random fencing token. Completion, failure and
 renewal require the job ID, current token, running state and unexpired lease.
 Reusing the same worker name cannot revive an earlier token. Renewal cannot
@@ -43,7 +44,7 @@ also mean that exhausted jobs were terminalized; an executor must keep polling.
 Claim size and kind count are each limited to 64. Each kind's pending and expired
 branches select through separate due-time indexes before merging a bounded set.
 At most `2 × batch size × distinct kinds` candidates are temporarily row-locked;
-unused locks are released at statement completion. Stable statement time permits
+unused locks are released at transaction completion. Stable statement time permits
 index range filtering. No per-job query or application-side table filtering is
 used. Services must still establish task-specific fairness, rates and priorities.
 
@@ -69,7 +70,8 @@ atomic intent and effects, durable scoped deduplication, conflicting payloads,
 mixed kinds/states, 32 claims across eight concurrent consumers and four database
 connections, renewal/expiry/stale-token denial, delayed and exhausted retries,
 pending cancellation, actual SIGKILL recovery, and 16 concurrent publishers.
-Query counts stay at one claim statement over 1/16/128/512 jobs. The actual claim
+Successful claims use four statements over 1/16/128/512 jobs: BEGIN, the shared
+fence, the claim effect and COMMIT. The actual claim
 EXPLAIN on 4,096 jobs originally scanned the whole candidate table; the corrected
 plan uses the pending, expired and primary-key indexes, visiting only the requested
 branch batches. This is bounded fixture evidence, not a latency claim or a full

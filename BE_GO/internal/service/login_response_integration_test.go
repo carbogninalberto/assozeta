@@ -48,6 +48,21 @@ type responseFixtureCase struct {
 	Expected                   json.RawMessage
 }
 
+// The Django fixture records business queries. Go additionally acknowledges one
+// server fence for each profile, association, settings or card transaction reached.
+func responseFenceQueries(tc responseFixtureCase) int {
+	if tc.Queries == 0 {
+		return 0
+	}
+	if tc.Queries == 1 {
+		return 1
+	}
+	if tc.Outcome == "association" {
+		return 2
+	}
+	return 4
+}
+
 func responseChoices(t *testing.T, flags []bool) domain.RegistrationChoices {
 	t.Helper()
 	values := map[string]string{"AWS_ACCESS_KEY_ID": "fixture-access", "AWS_SECRET_ACCESS_KEY": "fixture-secret", "AWS_STORAGE_BUCKET_NAME": "fixture-bucket", "AWS_S3_REGION_NAME": "us-east-1", "AWS_S3_ENDPOINT_URL": "http://127.0.0.1:9000", "AWS_LOCATION": "private", "DBTYPE": "POSTGRES", "DBHOST": "/tmp/synthetic", "DBNAME": "synthetic", "DBUSER": "synthetic", "SECRET_KEY": "synthetic-session-secret", "DEBUG": "False", "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "", "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "", "JWT_SECRET_KEY": "synthetic-private", "JWT_PUBLIC_KEY": "synthetic-public"}
@@ -176,8 +191,8 @@ func TestLoginResponsePostgres(t *testing.T) {
 				}
 				compare(result, tc.Expected)
 			}
-			if counter.count.Load() != int64(tc.Queries) {
-				t.Fatalf("queries %d want %d", counter.count.Load(), tc.Queries)
+			if counter.count.Load() != int64(tc.Queries+responseFenceQueries(tc)) {
+				t.Fatalf("queries %d want %d", counter.count.Load(), tc.Queries+responseFenceQueries(tc))
 			}
 			if db.Stats().InUse != 0 {
 				t.Fatal("response retained database connection")
@@ -194,7 +209,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 			if tc.Created {
 				queries = 7
 			}
-			want += int64(queries)
+			want += int64(queries + responseFenceQueries(tc))
 			service := builder(db, tc)
 			wg.Add(1)
 			go func() {
@@ -242,7 +257,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 		if result != nil || !errors.Is(err, loginimage.ErrImageDecoderUnavailable) {
 			t.Fatal("missing codec exposed response tokens", err)
 		}
-		if counter.count.Load() != 5 || db.Stats().InUse != 0 {
+		if counter.count.Load() != 8 || db.Stats().InUse != 0 {
 			t.Fatal("image failure reached card or retained connection", counter.count.Load())
 		}
 	})
@@ -276,7 +291,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		if counter.count.Load() != 224 || db.Stats().InUse != 0 {
+		if counter.count.Load() != 352 || db.Stats().InUse != 0 {
 			t.Fatalf("query bound/pool release: %d", counter.count.Load())
 		}
 	})

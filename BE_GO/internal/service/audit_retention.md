@@ -55,7 +55,7 @@ query scaling/plan inspection and actual executor heartbeat. Missing or skipped
 groups fail the adapter.
 
 Django uses 5/5/6 statements at 1/16/128 indexed expired logs in the fixture. Go
-uses four at 0/1/16/128/512: BEGIN, the deletion command, completion and COMMIT,
+uses five at 0/1/16/128/512: BEGIN, shared transaction fence, deletion, completion and COMMIT,
 excluding worker claim/admission/heartbeat and test setup/readback. EXPLAIN ANALYZE
 of the actual command over 4,096 logs and indexes deletes 128 of each and rolls
 back the experiment. The observed plan scans both tables (3,968 retained logs);
