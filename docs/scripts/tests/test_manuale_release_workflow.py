@@ -45,7 +45,12 @@ class ReleaseWorkflowTests(unittest.TestCase):
         steps = jobs['publish']['steps']
         download = next(step for step in steps if step.get('uses', '').startswith('actions/download-artifact@'))
         self.assertEqual(download['with']['name'], 'manuale-release-runtime')
-        self.assertEqual(download['with']['path'], 'BE/release-manual')
+        self.assertEqual(download['with']['path'], '${{ matrix.context }}/release-manual')
+        for backend, context in (('backend', './BE'), ('backend-go', './BE_GO')):
+            self.assertIn("matrix.name == '" + backend + "'", download['if'])
+            entry = next(item for item in jobs['publish']['strategy']['matrix']['include']
+                         if item['name'] == backend)
+            self.assertEqual(entry['context'], context)
         build = next(step for step in steps if step.get('uses', '').startswith('docker/build-push-action@'))
         self.assertIn('REQUIRE_MANUAL=', build['with']['build-args'])
         self.assertIn('manual-release', jobs['release-bundle']['needs'])

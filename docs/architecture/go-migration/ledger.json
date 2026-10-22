@@ -150,7 +150,7 @@
         "file": "BE/application/management/commands/evaluate_manuale.py",
         "line": 77,
         "symbol": "evaluate_manuale",
-        "sha256": "b8680b32c4fff3a60ba5043919e0d357fdd7f3bab7b64f92b22eeb09117ceee4"
+        "sha256": "a84116fe6fd2fef2fe2e7e09d8efbce074eba0acd5aac62f2be8446486e9ffc5"
       },
       "source_present": true,
       "declaration": {
@@ -158,7 +158,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
