@@ -7,12 +7,15 @@ Work is isolated on `codex/go-backend-parity`, reconciled through
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
-Scheduler authority now has 29 explicit observations against the pinned actual
+Scheduler authority now has 48 explicit observations against the pinned actual
 Django runtime and private PostgreSQL. It distinguishes 21 source declarations
 from the single effective configured fresh entry, implicit cleanup and persisted
 historical rows. Tests also expose cursor advancement before failed publication.
-The oracle is required in CI; it does not activate Go scheduling or establish
-broker/handoff parity. See [the characterization](scheduler-authority.md).
+The pure Go evaluator passes 23 differential timing cases, 37 unsupported-input
+and five calendar/precision rejection cases. It supports persisted daily reset
+using seconds intervals or scalar daily UTC cron, without publishing jobs. The
+combined oracle/differential adapter is required in CI; it does not activate Go
+scheduling or establish broker/handoff parity. See [the characterization](scheduler-authority.md).
 
 ## Latest increment: delivery alongside Django
 
@@ -98,7 +101,7 @@ The root exposes fifteen upstream paths: health/readiness, login, refresh, email
 username availability, scoped profile information/profile and password changes, table preferences and 2FA setup/status/updates, and two retired software-billing
 responses. CORS, restore admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 21 implementing, 6 requiring review and 483 uncharacterized; none
+4 deprecated, 22 implementing, 6 requiring review and 482 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 

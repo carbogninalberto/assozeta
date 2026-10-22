@@ -15933,7 +15933,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -15977,7 +15977,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16021,7 +16021,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16065,7 +16065,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16109,7 +16109,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16153,7 +16153,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16197,7 +16197,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16241,7 +16241,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16285,7 +16285,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16329,7 +16329,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16373,7 +16373,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16417,7 +16417,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16461,7 +16461,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16505,7 +16505,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16527,9 +16527,16 @@
           "app.conf.beat_schedule"
         ]
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go"
+      ],
+      "dependencies": [
+        "BE/core/settings.py",
+        "BE/instance/scheduler.py",
+        "BE/requirements.txt"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -16546,13 +16553,16 @@
       "tests": [
         "TESTS/fixtures/scheduler-authority.json",
         "TESTS/contracts/test_scheduler_authority.py",
-        "TESTS/adapters/django/scheduler_authority.py"
+        "TESTS/adapters/django/scheduler_authority.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
+        "Pure persisted timing evaluator: 48 actual Django oracle cases, 23 Go differential matches, 37 unsupported-input and five calendar/precision rejection cases pass under race detection; focused vet passes. Exact daily-reset task, seconds intervals or scalar daily UTC cron, empty args/kwargs/headers and default transport only. Receives explicit clock and immutable snapshot; no enqueue, cursor write, static seeding or activation. Raw NextCheckAfter requires bounded scheduler rechecks. Source hashes/red-green receipts: ignored schedule-due/validation.json. See scheduler-authority.md; complete task/schedule execution and handoff remain unverified."
       ],
       "notes": [
-        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
+        "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. The timing component is implementing; no verified status or automatic reseeding of lower-priority static declarations."
       ]
     },
     {
@@ -16593,7 +16603,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16637,7 +16647,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16681,7 +16691,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16725,7 +16735,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16769,7 +16779,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -16813,7 +16823,7 @@
         "TESTS/adapters/django/scheduler_authority.py"
       ],
       "evidence": [
-        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes29 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
+        "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. No status promotion or automatic reseeding of lower-priority static declarations."
@@ -18982,7 +18992,9 @@
         "BE_GO/internal/service/job_executor.go",
         "BE_GO/internal/service/job_restore_admission.go",
         "BE_GO/cmd/worker/main.go",
-        "BE_GO/cmd/migrate/main.go"
+        "BE_GO/cmd/migrate/main.go",
+        "BE_GO/internal/domain/schedule.go",
+        "BE_GO/internal/service/schedule_due.go"
       ],
       "dependencies": [
         "BE/communications/models.py",
@@ -18990,7 +19002,8 @@
         "BE/core/settings.py",
         "BE/instance/restore/task_base.py",
         "BE/instance/scheduler.py",
-        "BE_GO/internal/repository/jobs.go"
+        "BE_GO/internal/repository/jobs.go",
+        "BE/requirements.txt"
       ],
       "contract": {
         "methods": null,
@@ -19013,14 +19026,17 @@
         "BE_GO/migrations/ownership_integration_test.go",
         "TESTS/adapters/go/jobs.py",
         "TESTS/adapters/go/worker_process.py",
-        "TESTS/adapters/go/worker_image.py"
+        "TESTS/adapters/go/worker_image.py",
+        "BE_GO/internal/service/schedule_due_test.go",
+        "TESTS/adapters/go/schedule_due.py"
       ],
       "evidence": [
         "Actual Django task body passes empty/mixed association/NULL/deleted/zero/max-int/repeated reset and one-query cases at 1/16/128/512 rows. Real PostgreSQL trigger failure is caught with None result and no partial update. Go initially fails compilation for missing implementation, then all seven declared PostgreSQL integration groups pass under race detection; Django reads Go-written counters and all unrelated managed models unchanged. Evidence: quality-reports/go-migration/email-balance-reset/.",
         "Go service uses four statements for 0/1/16/128/512 positive counters within 512 configurations. EXPLAIN shows intentional global bulk UPDATE with sequential scan; no constant-work or latency claim. Tests cover invalid envelopes before SQL, later-usage preservation on replay, stale token rollback, redacted handled SQL failures and blocked UPDATE cancellation/pool recovery.",
         "Runtime ownership increment 4f30dcd: additive migration defaults to Django and preserves operational intent/history. Claims and all outcomes require current Go generation; daily reset locks that generation before business writes. Required adapter passes 38 queue/executor/ownership/migration PostgreSQL/race groups, including concurrent handoff, ABA fencing, stale-effect rollback and owner-before-job lock ordering. All five task bodies have 48 passing groups; restore admission regression also passes. See BE_GO/internal/repository/job_ownership.md and ignored job-ownership/required-adapter-final.log. No production activation/handoff/scheduler or complete restore window is established; backup restore can rewind generations.",
         "Packaged native worker explicitly registers daily reset; explicit forward migration retains Django business ownership and default runtime ownership. Thirteen native-process scenarios pass under Go race detection, including missing/dirty/unknown schema, direct migration versus pooler routing, missing/blank coordination-path rejection, maintenance, competing workers, drain/crash recovery and generation loss. Seven packaged-image scenarios cover actual binaries as UID10001/read-only, Linux lifecycle locking and default server health. Both adapters are required CI checks. Synthetic business sentinels do not replace actual Django task parity or prove installed activation, scheduler behavior or Celery handoff. See BE_GO/internal/worker_process.md and ignored worker-process/ and worker-image/ receipts.",
-        "Normal operational migration lifecycle: fresh install/repeated migration preserves the entire Django migration-history digest and exact pending job including a large JSON integer. Dirty Go history stops both APIs/worker/Beat and retains maintenance. Corrupt backups are rejected; dirty-history post-swap restore rolls back to prior live DB/objects/intent, while valid backup restores exact pre-backup state. Current-controller SIGKILL leaves an actual UID10001/read-only Go migrator blocked in PostgreSQL; recovery refuses the surviving helper, then succeeds after real migration completion. The 139 static self-host checks also pass. See docs/architecture/go-migration/operational-migrations.md and ignored worker-lifecycle-production-final.log, worker-lifecycle-update-green.log and operational-migration/update-recovery.json. This is a current-application disposable fixture, not installed Go background activation or complete historical-data compatibility."
+        "Normal operational migration lifecycle: fresh install/repeated migration preserves the entire Django migration-history digest and exact pending job including a large JSON integer. Dirty Go history stops both APIs/worker/Beat and retains maintenance. Corrupt backups are rejected; dirty-history post-swap restore rolls back to prior live DB/objects/intent, while valid backup restores exact pre-backup state. Current-controller SIGKILL leaves an actual UID10001/read-only Go migrator blocked in PostgreSQL; recovery refuses the surviving helper, then succeeds after real migration completion. The 139 static self-host checks also pass. See docs/architecture/go-migration/operational-migrations.md and ignored worker-lifecycle-production-final.log, worker-lifecycle-update-green.log and operational-migration/update-recovery.json. This is a current-application disposable fixture, not installed Go background activation or complete historical-data compatibility.",
+        "Pure persisted timing evaluator: 48 actual Django oracle cases, 23 Go differential matches, 37 unsupported-input and five calendar/precision rejection cases pass under race detection; focused vet passes. Exact daily-reset task, seconds intervals or scalar daily UTC cron, empty args/kwargs/headers and default transport only. Receives explicit clock and immutable snapshot; no enqueue, cursor write, static seeding or activation. Raw NextCheckAfter requires bounded scheduler rechecks. Source hashes/red-green receipts: ignored schedule-due/validation.json. See scheduler-authority.md; complete task/schedule execution and handoff remain unverified."
       ],
       "notes": [
         "Task body is explicitly registered in the packaged native worker; no installed worker service or production ownership activation exists. Generic executor/restore admission has separate thirteen-group evidence; no task-level scheduler, backend switching or historical migration claim. See BE_GO/internal/service/email_balance_reset.md and BE_GO/internal/worker_process.md.",

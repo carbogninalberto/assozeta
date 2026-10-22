@@ -649,6 +649,298 @@
         "enabled": true,
         "count": 0
       }
+    },
+    "utc_daily_before_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T11:59:59.500000+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 0.5,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_at_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_after_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T12:00:01+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86399,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_already_dispatched": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_future_cursor": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": "2026-10-22T12:01:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 120,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_future_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-23T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 172800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T11:59:00+00:00",
+        "now": "2026-10-22T11:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 3600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T11:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 90000,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_reached": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_initial_cursor": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_initial_started": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "start": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 60,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_initial_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_initial_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": null,
+        "date_changed": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_previous_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_future_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-23T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 174600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_same_date_before_minute": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_previous_date_at_due_minute": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:30:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_future_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-23T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 174600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_same_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T11:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 5400,
+        "enabled": true,
+        "count": 0
+      }
     }
   },
   "gaps": [

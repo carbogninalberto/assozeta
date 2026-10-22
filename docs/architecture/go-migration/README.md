@@ -75,11 +75,17 @@ controller also refuses recovery while an actual Go migration one-off survives
 its killed parent. See [operational migration evidence](operational-migrations.md).
 This prepares the schema without activating Go background processing.
 
-Twenty-nine actual Django scheduler scenarios now characterize effective settings,
+Forty-eight actual Django scheduler scenarios now characterize effective settings,
 persisted schedules, due/DST semantics and publication state. The 21 declarations
 resolve to one configured fresh entry plus Beat's implicit cleanup; historical
 rows remain a separate authority. Failed publication can persist a reserved
-cursor. This required CI oracle does not implement a Go scheduler or handoff.
+cursor. The pure Go evaluator passes 23 differential timing cases, 37 unsupported
+input rejections and five calendar/precision checks. Its supported subset is
+persisted daily email reset with seconds intervals or scalar daily UTC cron;
+it performs no publication or activation. The required CI differential adapter
+runs the actual Django oracle first. A future loop must bound rechecks rather
+than sleeping for the raw ModelEntry delay. This is not complete scheduler or
+handoff parity.
 See [scheduler authority and limits](scheduler-authority.md).
 
 `POST /profile/settings/tables` now preserves partial JSONField validation and
@@ -425,7 +431,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 21 implementing, 6 needing review and 483
+The ledger currently has 4 deprecated, 22 implementing, 6 needing review and 482
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
