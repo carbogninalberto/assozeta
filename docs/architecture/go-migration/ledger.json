@@ -10002,34 +10002,66 @@
         "target": "profile_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/profile_update.go",
+        "BE_GO/internal/dto/profile_update.go",
+        "BE_GO/internal/handler/profile_update.go",
+        "BE_GO/internal/service/profile_update.go",
+        "BE_GO/internal/repository/profile_update.go",
+        "BE_GO/internal/service/profile_update_response.go",
+        "BE_GO/internal/service/profile_value.go"
+      ],
+      "dependencies": [
+        "Existing JWT/actor/effective-person/scoped-request permission admission",
+        "Existing profile/association/registration response readers and shared native image processor",
+        "PostgreSQL bakney_user, application_sportassociation, auditlog_logentry and application_auditlogindex"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/profile/update"
+        ],
+        "request": "Required nested user_data with first_name, last_name, username, avatar_image and sport_association. Null personal fields are skipped. Owner association updates require 17 legacy keys and accept nine optional keys with field-specific null semantics. Unknown fields are ignored; nested references still pass the resource guard.",
+        "response": "200 role/user_data; owner-only base association and registration choices; avatar/logo compression. No tokens, message, cards, review fields or profile-info augmentation.",
+        "errors": "401 missing/inactive/deleted credentials; 403 restricted collaborator, direct administrator and foreign scoped references; 405 methods; 400 malformed JSON; 406 negotiation; 415 media; 500 malformed legacy fields, rejected writes or response construction.",
+        "authentication": "Existing Bearer JWT; authenticated actor, effective personal profile and mapped association owner remain separate.",
+        "permissions": "other.settings.update; existing administrator/impersonation/scoped-reference admission.",
+        "resource_scope": "Personal writes use admitted effective ID, including collaborators. Association writes only for the locked role-1 person and matching trusted owner/optional impersonation association; fixed-column whitelist and SQL predicates.",
+        "side_effects": "Selected personal/association fields plus one audit and index per changed entity, with trusted actor, impersonation, CID, remote IP and association resolution. No session/cache/job changes.",
+        "transaction": "Go and repaired Django lock/re-read user then association; all field writes and audit/index writes commit together. Response serialization remains after commit and its failures retain the committed mutation.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/adapters/django/profile_images.py",
         "BE_GO/pkg/storage/loginimage/profile_test.go",
-        "BE_GO/pkg/storage/loginimage/profile_integration_test.go"
+        "BE_GO/pkg/storage/loginimage/profile_integration_test.go",
+        "TESTS/contracts/test_profile_update.py",
+        "TESTS/adapters/django/profile_update.py",
+        "TESTS/adapters/django/profile_password.py",
+        "BE_GO/internal/dto/profile_update_test.go",
+        "BE_GO/internal/service/profile_update_test.go",
+        "BE_GO/internal/service/profile_update_response_test.go",
+        "BE_GO/internal/service/profile_value_test.go",
+        "BE_GO/internal/service/profile_update_integration_test.go"
       ],
       "evidence": [
-        "TDD fails first for missing upload method/size policy (image-unit-red.log; image-native-red.log), then 50 upload cases and 94 presentation cases pass with native codecs, including shared mixed-mode cancellation/recovery. The rebuilt UID 10001 read-only/networkless image passes the complete shipped-codec suite including uploads and eight pre-database HTTP checks. Artifacts: quality-reports/go-migration/profile-update/. Full mutation/HTTP/audit parity is still required.",
-        "The full accounts regression also passes with the 50 upload cases and existing 67 password cases, three locked scenarios per backend and two real profile/password writer races (full-accounts.log; full-accounts-results.json). Go race, ordinary/image-tagged vet, twelve inventory tests and catalog drift pass. These are preparatory image and existing-route checks, not completed Go profile mutations."
+        "TDD fails first for missing upload method/size policy (image-unit-red.log; image-native-red.log), then 50 upload cases and 94 presentation cases pass with native codecs, including shared mixed-mode cancellation/recovery. The rebuilt UID 10001 read-only/networkless image passes the complete shipped-codec suite including uploads and eight pre-database HTTP checks. Artifacts: quality-reports/go-migration/profile-update/. This was preparatory image evidence before the mutation implementation.",
+        "The full accounts regression also passes with the 50 upload cases and existing 67 password cases, three locked scenarios per backend and two real profile/password writer races (full-accounts.log; full-accounts-results.json). Go race, ordinary/image-tagged vet, twelve inventory tests and catalog drift pass. These are preparatory image and existing-route checks, not completed Go profile mutations.",
+        "TDD: dto-red.log, service-red.log and response-red.log fail for missing APIs; http-route-red.log passes the repaired Django reference then fails on the missing Go route. http-django-atomic-confirmed-red.log proves a partial personal write on association failure and a successful response after audit-index rejection. The reference now uses one transaction, locked reads and selected association columns. Artifacts: quality-reports/go-migration/profile-update/.",
+        "association-audit-final.log passes 52 HTTP/durable-effect/audit cases and four deterministic locked-row scenarios per backend, including duplicate/successive profile writes and concurrent credential/logo preservation. Real PostgreSQL mutation counts are 3 SELECT/2 UPDATE/4 INSERT for owner change, 2/2/0 for unchanged repetition, and 49/48/4 for 24 competitors with exactly two audit records. Pre-write and mid-write cancellation roll back all effects, release connections and recover within a four-connection pool. Foreign association/owner and unlisted column probes deny writes.",
+        "Final focused run response-snapshot-final.log passes 52 HTTP/effect/audit cases, all four concurrent scenarios per root and PostgreSQL counts/cancellation. Association-audit and association-index failures after personal writes also roll back. response-snapshot-red.log first demonstrates a post-commit reader replacing the mutation response; the service now preserves the committed four personal fields and the actual competing HTTP writers assert their own response names. Final Go race and ordinary/tagged vet pass; the rebuilt non-root/read-only/networkless image passes nine pre-database HTTP checks. 190 manual Python tests, 11 manual Node tests and twelve inventory tests pass; 324 Django tests passed on the unchanged repaired source.",
+        "The full accounts regression passes (full-current.log; full-current-results.json), including 52 profile cases, 67 password cases, all four profile/password writer combinations and 50 upload fixtures. It began before the final response-snapshot correction; final focused HTTP/SQL, Go race/vet and rebuilt-image evidence additionally pass after that correction. Prior commit 1ede0ff passes remote quality workflow 39727996265; its separate manual workflow 39727996235 still fails on external recipe bindings. Current-head remote CI remains required."
       ],
       "notes": [
-        "Django personal-field saves now use update_fields to avoid overwriting concurrent credentials. Two real HTTP profile/password interleavings are covered by TESTS/adapters/django/profile_password.py. This narrow repair is not Go implementation or complete profile-update characterization; association writes and full mutation/audit invariants remain required.",
-        "The shared native image Processor now exposes the 512-pixel avatar-upload helper mode with the same admission pool as 200-pixel presentation. Fifty declared cases across eighteen implemented pipelines and 32 concurrent uploads pass against Django; TIFF/AVIF stay explicit gaps. This preparatory component does not implement the profile-update HTTP route; status remains uncharacterized."
+        "See BE_GO/internal/handler/profile_update.md. Status remains implementing: current-model fixtures do not prove historical imports, frontend/versioned API workflows, switching or release compatibility. TIFF/AVIF image gaps remain explicit and non-exhaustive.",
+        "Atomic mutation is an intentional repair of confirmed Django partial-write/audit-index failures. The successful field/null/conversion/response contract is preserved. Post-commit response errors remain legacy behavior.",
+        "Counts cover mutation statements, not the complete authenticated HTTP request. Existing profile-reader query evidence is separate; no whole-application performance improvement is claimed.",
+        "Concurrent writes to other serialized personal preferences from different endpoints still require characterization; the current response snapshot proof covers first_name, last_name, username and avatar_image. Full frontend/versioned routing remains unverified."
       ]
     },
     {
@@ -10091,7 +10123,8 @@
         "Final focused rehearsal passes 67 declared HTTP/effect scenarios, three deterministic locked-row concurrency scenarios per backend and four cross-runtime password/login/JWT flows (complete-focused.log; focused-results.json). Actual PostgreSQL mutation integration uses one SELECT and one UPDATE for a change, one SELECT/no UPDATE for incorrect credentials, and 24 SELECTs/one UPDATE for 24 competing requests with exactly one success. Cancellation releases connections and subsequent work succeeds; a trigger-rejected write leaves the hash unchanged. Pool maximum is four. Go race and ordinary/tagged vet pass; 324 existing Django tests, 190 manual Python tests, 11 manual Node tests and twelve inventory tests pass. The rebuilt non-root/read-only/networkless image passes eight HTTP checks, without claiming database-backed image parity.",
         "An additional real HTTP interleaving first proves Django profile_update can overwrite a Go-written password (profile-write-interleave-red.log). Django profile_update now saves only the supplied personal fields. The permanent adapter repeats two locked-row HTTP races with Django and Go password writers against the Django profile writer; new credentials and profile edits both survive and exactly one profile-field audit is emitted (profile-write-interleave-green.log). The 324 existing Django tests pass again after this repair (django-regression-final.log).",
         "After the legacy profile-writer repair, the final focused rehearsal repeats all 67 HTTP/effect cases, three locked concurrency scenarios per password backend, two real legacy-profile/password HTTP races, four cross-runtime login/JWT flows and the real PostgreSQL race/cancellation/write-failure suite successfully (profile-write-interleave-green.log; final-focused-results.json). Manual verification repeats successfully: 190 Python tests and 11 Node tests (manual-final.log; manual-node-final.log).",
-        "Full accounts regression passes, including all prior groups plus 67 password cases, three locked scenarios per backend and four switching flows (full-accounts.log; full-accounts-results.json). This run began before the final legacy-profile writer repair; the final focused rehearsal and 324 existing Django tests additionally pass after that repair. Preceding commit 25b91ba passes remote quality workflow 39723905840; current-head CI remains required."
+        "Full accounts regression passes, including all prior groups plus 67 password cases, three locked scenarios per backend and four switching flows (full-accounts.log; full-accounts-results.json). This run began before the final legacy-profile writer repair; the final focused rehearsal and 324 existing Django tests additionally pass after that repair. Preceding commit 25b91ba passes remote quality workflow 39723905840; current-head CI remains required.",
+        "The profile-update increment expands the real HTTP writer races to all four Django/Go profile-versus-password combinations; the full accounts regression passes them alongside all 67 password cases, three locked scenarios per password backend and four cross-runtime login flows (quality-reports/go-migration/profile-update/full-current.log; full-current-results.json)."
       ],
       "notes": [
         "See BE_GO/internal/handler/profile_password.md. Current-model HTTP proof does not establish historical-schema/frontend/versioned-routing/release parity. Repository concurrency, full regression and final-head evidence must be reviewed before promotion; status remains implementing.",

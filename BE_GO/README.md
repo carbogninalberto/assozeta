@@ -259,3 +259,9 @@ person's password with a row lock and a credential-only update. The correspondin
 Django race repair prevents stale profile/reset overwrites. See the
 [password contract](internal/handler/profile_password.md) for transaction,
 permission, hash and failure boundaries; full migration acceptance remains open.
+
+`PATCH /profile/update` locks the effective person and optional owned association,
+updates selected fields and commits their audits/indexes together. Django's
+confirmed partial-write behavior is repaired to the same invariant. See the
+[profile update contract](internal/handler/profile_update.md) for the 52 HTTP cases,
+concurrency, query counts, failure boundaries and remaining acceptance gaps.
