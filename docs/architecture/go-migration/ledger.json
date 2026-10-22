@@ -10018,10 +10018,18 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/adapters/django/profile_images.py",
+        "BE_GO/pkg/storage/loginimage/profile_test.go",
+        "BE_GO/pkg/storage/loginimage/profile_integration_test.go"
+      ],
+      "evidence": [
+        "TDD fails first for missing upload method/size policy (image-unit-red.log; image-native-red.log), then 50 upload cases and 94 presentation cases pass with native codecs, including shared mixed-mode cancellation/recovery. The rebuilt UID 10001 read-only/networkless image passes the complete shipped-codec suite including uploads and eight pre-database HTTP checks. Artifacts: quality-reports/go-migration/profile-update/. Full mutation/HTTP/audit parity is still required.",
+        "The full accounts regression also passes with the 50 upload cases and existing 67 password cases, three locked scenarios per backend and two real profile/password writer races (full-accounts.log; full-accounts-results.json). Go race, ordinary/image-tagged vet, twelve inventory tests and catalog drift pass. These are preparatory image and existing-route checks, not completed Go profile mutations."
+      ],
       "notes": [
-        "Django personal-field saves now use update_fields to avoid overwriting concurrent credentials. Two real HTTP profile/password interleavings are covered by TESTS/adapters/django/profile_password.py. This narrow repair is not Go implementation or complete profile-update characterization; association writes and full mutation/audit invariants remain required."
+        "Django personal-field saves now use update_fields to avoid overwriting concurrent credentials. Two real HTTP profile/password interleavings are covered by TESTS/adapters/django/profile_password.py. This narrow repair is not Go implementation or complete profile-update characterization; association writes and full mutation/audit invariants remain required.",
+        "The shared native image Processor now exposes the 512-pixel avatar-upload helper mode with the same admission pool as 200-pixel presentation. Fifty declared cases across eighteen implemented pipelines and 32 concurrent uploads pass against Django; TIFF/AVIF stay explicit gaps. This preparatory component does not implement the profile-update HTTP route; status remains uncharacterized."
       ]
     },
     {

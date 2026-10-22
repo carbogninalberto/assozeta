@@ -53,6 +53,13 @@ server logs are diagnostic artifacts, not source fixtures.
 
 ## Native Django adapter
 
+The focused avatar-upload image check is
+`python TESTS/adapters/django/profile_images.py`, using the production Python
+version, Pillow and native codec build dependencies. It declares 50 upload
+expectations and reports TIFF/AVIF as explicit missing codecs. The full accounts
+adapter runs it too. This component check does not establish `/profile/update`
+HTTP or database parity.
+
 When Docker is unavailable, the same HTTP contracts can use local PostgreSQL and
 Redis and an existing backend virtualenv:
 

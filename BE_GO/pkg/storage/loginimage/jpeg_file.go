@@ -46,6 +46,10 @@ func NewJPEGFileProcessor(path string, limits JPEGFileLimits) (*JPEGFileProcesso
 }
 
 func (p *JPEGFileProcessor) Process(ctx context.Context, input []byte) (JPEGFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *JPEGFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (JPEGFileResult, error) {
 	empty := JPEGFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -77,7 +81,7 @@ func (p *JPEGFileProcessor) Process(ctx context.Context, input []byte) (JPEGFile
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(info.Header.Width, info.Header.Height, len(input))
+	plan, err := decideSize(info.Header.Width, info.Header.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

@@ -40,6 +40,10 @@ func NewXBMFileProcessor(path string, limits XBMFileLimits) (*XBMFileProcessor, 
 	return &XBMFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *XBMFileProcessor) Process(ctx context.Context, input []byte) (XBMFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *XBMFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (XBMFileResult, error) {
 	empty := XBMFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *XBMFileProcessor) Process(ctx context.Context, input []byte) (XBMFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

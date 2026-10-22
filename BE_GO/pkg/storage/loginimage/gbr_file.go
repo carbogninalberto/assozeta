@@ -40,6 +40,10 @@ func NewGBRFileProcessor(path string, limits GBRFileLimits) (*GBRFileProcessor, 
 	return &GBRFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *GBRFileProcessor) Process(ctx context.Context, input []byte) (GBRFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *GBRFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (GBRFileResult, error) {
 	empty := GBRFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *GBRFileProcessor) Process(ctx context.Context, input []byte) (GBRFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

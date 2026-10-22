@@ -9,6 +9,24 @@ That error is an implementation gap, not an intentional compatibility correction
 The public-login root now composes this processor. Missing formats remain
 explicit errors; no unsupported image is silently accepted as parity.
 
+`CompressProfileImage` supplies the 512×512 avatar-upload variant of the same
+helper. `CompressLoginImage` retains 200×200 presentation behavior. Both use the
+same processor instance, admission pool, codecs, deadline and resource budgets;
+the target is passed explicitly through each of the eighteen pipelines. The
+strict 1 MiB file-byte rule below also applies to uploads: a smaller file is
+re-encoded at its original dimensions, except an already matching bounding size
+is returned unchanged. This is not an unconditional 512-pixel resize.
+
+`TESTS/adapters/django/profile_images.py` checks 50 declared upload cases against
+the actual Django helper and native Go, plus explicit TIFF/AVIF gaps. Each
+implemented format is exercised below and above the threshold, with additional
+exact-threshold, lazy passthrough, alpha and malformed cases. Thirty-two concurrent
+uploads preserve exact output. A native fault-codec test fills the shared pool
+with one upload and one presentation operation, verifies a third call times out,
+cancels and reaps both children, then verifies recovery. The 94-case presentation
+suite also passes. Evidence is under `quality-reports/go-migration/profile-update/`.
+The upload method is preparatory; `/profile/update` is not yet implemented in Go.
+
 The current production reference is Python 3.13.16 / Pillow 13.0.0. The full
 accounts adapter and rebuilt non-root shipped-image oracle pass the implemented
 pipelines, including 84 pixel transformations, 19,535 Base64 comparisons and 94

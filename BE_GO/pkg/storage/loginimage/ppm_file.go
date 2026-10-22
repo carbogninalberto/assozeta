@@ -40,6 +40,10 @@ func NewPPMFileProcessor(path string, limits PPMFileLimits) (*PPMFileProcessor, 
 	return &PPMFileProcessor{encoder, limits, make(chan struct{}, limits.Codec.Concurrency)}, nil
 }
 func (p *PPMFileProcessor) Process(ctx context.Context, input []byte) (PPMFileResult, error) {
+	return p.processSize(ctx, input, 200)
+}
+
+func (p *PPMFileProcessor) processSize(ctx context.Context, input []byte, maxSize int) (PPMFileResult, error) {
 	empty := PPMFileResult{}
 	ctx, cancel := context.WithTimeout(ctx, p.limits.Codec.Timeout)
 	defer cancel()
@@ -71,7 +75,7 @@ func (p *PPMFileProcessor) Process(ctx context.Context, input []byte) (PPMFileRe
 	if err != nil {
 		return empty, err
 	}
-	plan, err := Decide(h.Width, h.Height, len(input))
+	plan, err := decideSize(h.Width, h.Height, len(input), maxSize)
 	if errors.Is(err, ErrDimensions) || plan.KeepOriginal {
 		return original()
 	}

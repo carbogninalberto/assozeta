@@ -399,6 +399,8 @@ def main():
                     pixar_cases = login_pixar(work, log, tool_env)
                     from TESTS.adapters.django.login_images import run as login_images
                     image_dispatch = login_images(work, log, tool_env)
+                    from TESTS.adapters.django.profile_images import run as profile_images
+                    profile_image_result = profile_images(work, log, tool_env)
                     from TESTS.adapters.django.login_msp import run as login_msp
                     msp_cases = login_msp(work, log, tool_env, compress_base64)
                     from TESTS.adapters.django.password_login import run as password_login
@@ -431,6 +433,7 @@ def main():
                 report['two_factor_setup']=two_factor_setup_result
                 report['profile_info']=profile_info_result
                 report['profile_password']=profile_password_result
+                report['profile_images']=profile_image_result
                 report['identifier_http_contracts_per_backend']=identifier_contracts
                 report['session_auth_cases']=session_auth_cases
                 report['session_http_contracts_per_backend']=session_http_contracts

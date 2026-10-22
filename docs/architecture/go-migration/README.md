@@ -7,6 +7,24 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The shared image processor now supports the profile-upload helper's 512-pixel
+mode alongside 200-pixel presentation. It preserves the strict decoded-file
+1 MiB threshold, original-size re-encoding and lazy passthrough. All eighteen
+implemented pipelines receive the size explicitly and use the same admission
+pool. Fifty declared upload cases and 32 concurrent uploads pass against Django;
+a mixed upload/presentation fault test verifies queue cancellation and recovery.
+The existing 94 presentation cases pass too. The rebuilt non-root, read-only,
+networkless image passes the shipped-codec suite including upload cases, plus
+eight pre-database HTTP checks. TIFF/AVIF remain explicit gaps, and the Go
+`/profile/update` mutation route remains unimplemented. Evidence is under
+`quality-reports/go-migration/profile-update/`; this component does not change
+the ledger's 19 implementing / 485 uncharacterized counts.
+
+The full accounts regression for this image change also passes, including the
+new upload fixtures and both existing real HTTP profile/password writer races
+(`full-accounts.log`, `full-accounts-results.json`). Go race tests, ordinary and
+image-tagged vet, twelve inventory tests, catalog drift and formatting pass.
+
 The new `PATCH /profile/update/password` preserves the effective person's
 credential ownership, model-hash behavior, password policy and endpoint-specific
 response. Actual Django and Go roots pass 67 declared HTTP/effect scenarios,
@@ -35,6 +53,12 @@ before the final legacy profile-writer repair. The final focused rehearsal and
 324 existing Django tests additionally pass after that repair. Current-head
 remote CI remains pending. See the
 [password contract](../../../BE_GO/internal/handler/profile_password.md).
+
+Quality run `39726135777` at preceding commit `ba8d116` reports an SSO browser
+failure while other jobs are still running: the initial pairing button is absent,
+the instance endpoints return 200 and the redacted artifact records one frontend
+`TypeError`. The cause is not established. Its manual workflow `39726135675` also
+fails on external dashboard recipe bindings. Neither gate is claimed green.
 
 Remote quality workflow `39723905840` passes at preceding commit `25b91ba`,
 including the Go accounts/image job and existing backend/UI/self-host/browser
