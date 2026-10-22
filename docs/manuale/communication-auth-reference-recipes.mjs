@@ -1,3 +1,5 @@
+// 2FA source re-reviewed: OTP confirmation, QR setup, and successful enable/disable
+// remain unchanged after atomic user/audit writes and concurrent-profile protection.
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const communicationAuthReviewedSources = Object.freeze({
@@ -18,7 +20,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/components/inputs/email-builder/EmailBuilder.svelte": "96085ea1094e0a8ef3c48e38b9ad17b31f9a1d2eb35447a42d10ed5b5de3352d",
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
     "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
-    "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
+    "BE/application/views/two_fa_views.py": "256cbbaa52dca083c83fce3145b36d562ba97be2c70b4fbb134046bd20c373b1",
     "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
     "UI/src/routes/login/Login.svelte": "1510aacbaefbe51d95da6a5b1f7cac164bc7318bc4e733fefe50c4e39755e5f0",
     "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
