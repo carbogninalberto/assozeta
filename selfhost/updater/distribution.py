@@ -151,6 +151,12 @@ def prepare(root, env_file, version, backup_archive=None, operation_id=None):
     # Verify and download all immutable application/controller images before changing files.
     for reference in manifest['images'].values():
         subprocess.run(['docker', 'pull', reference], check=True)
+    # The immutable candidate must be usable before changing configuration or
+    # managed files. No database, environment file or persistent volume is used.
+    image_check = Path(__file__).with_name('check-manual-image')
+    if not image_check.exists():
+        image_check = Path(__file__).resolve().parent.parent / 'bin/check-manual-image'
+    subprocess.run(['sh', str(image_check), manifest['images']['backend'], image_version(tag)], check=True)
 
     # Publish the recovery transaction only after its entire snapshot is durable.
     # A failed snapshot cannot leave a half-written transaction blocking retries.

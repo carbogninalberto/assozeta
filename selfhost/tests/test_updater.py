@@ -246,7 +246,7 @@ class DistributionTests(unittest.TestCase):
 
     def test_verified_distribution_preserves_env_and_can_restore_before_migrations(self):
         run = self.prepare()
-        self.assertEqual(run.call_count, 4)
+        self.assertEqual(run.call_count, 5)
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'new-compose')
         self.assertEqual(read_env(self.env)['CUSTOM'], 'value')
         self.assertEqual(read_env(self.env)['DBPASSWORD'], 'keep-private')
@@ -255,6 +255,24 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual((self.root / 'compose.yml').read_bytes(), b'old-compose')
         self.assertEqual(read_env(self.env)['ASSOZETA_VERSION'], '1.0.1')
         self.assertFalse((self.root / 'bin/assozeta').exists())
+
+    def test_invalid_candidate_manual_cannot_modify_installation(self):
+        original_environment = self.env.read_bytes()
+        def run(command, **kwargs):
+            if command[0] == 'sh':
+                self.assertEqual(command[-2], self.metadata['images']['backend'])
+                self.assertEqual(command[-1], '1.0.2')
+                raise subprocess.CalledProcessError(1, command)
+        with patch('distribution.resolve_tag', return_value='v1.0.2'), \
+             patch('distribution.read_json', return_value=self.metadata), \
+             patch('distribution.download', return_value=self.content), \
+             patch('distribution.subprocess.run', side_effect=run), \
+             self.assertRaises(subprocess.CalledProcessError):
+            prepare(self.root, self.env, '1.0.2', self.backup)
+        self.assertEqual(self.env.read_bytes(), original_environment)
+        self.assertEqual((self.root / 'compose.yml').read_bytes(), b'old-compose')
+        self.assertFalse((self.root / 'bin/assozeta').exists())
+        self.assertFalse((self.root / '.updater/pending-distribution').exists())
 
     def test_customized_files_abort_without_overwriting_operator_changes(self):
         (self.root / 'compose.yml').write_bytes(b'operator-customization')

@@ -961,10 +961,21 @@ migrate_prod() {
     return "$migrate_status"
 }
 
+check_prod_manual() {
+    manual_image=$(env_value ASSOZETA_BACKEND_REF "$PROD_ENV")
+    manual_version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
+    if [ -z "$manual_image" ]; then
+        manual_repository=$(env_value ASSOZETA_BACKEND_IMAGE "$PROD_ENV")
+        manual_image="${manual_repository:-ghcr.io/carbogninalberto/assozeta-backend}:$manual_version"
+    fi
+    sh "$SELFHOST_DIR/bin/check-manual-image" "$manual_image" "$manual_version"
+}
+
 install_prod() {
     configure "$@"
     validate_prod
     prod_compose pull
+    check_prod_manual
     if supports_self_update; then
         updater_install_version=$(env_value ASSOZETA_VERSION "$PROD_ENV")
         updater_tool_image="ghcr.io/carbogninalberto/assozeta-updater:${updater_install_version#v}"
@@ -980,6 +991,7 @@ install_prod() {
 
 start_prod() {
     validate_prod
+    check_prod_manual
     initialise_prod
     start_prod_app_services
     require_public_readiness
@@ -1573,14 +1585,14 @@ upgrade_prod() {
     fi
     set_env_value ASSOZETA_VERSION "$version" "$PROD_ENV"
     log "upgrading from $previous to $version"
-    if ! prod_compose pull; then
+    if ! prod_compose pull || { [ "$managed_update" = false ] && ! check_prod_manual; }; then
         if [ "$managed_update" = true ]; then
             run_updater_tool /runner/distribution.py rollback "$SELFHOST_DIR"
         else
             set_env_value ASSOZETA_VERSION "$previous" "$PROD_ENV"
         fi
         start_prod_app_services || true
-        die "failed to pull version $version; restored configured version $previous"
+        die "failed to download or validate version $version; restored configured version $previous"
     fi
     printf '%s\n' '@@ASSOZETA_STAGE migrating'
     if [ "$managed_update" = true ]; then

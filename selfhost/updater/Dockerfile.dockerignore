@@ -1,5 +1,7 @@
 **
 !selfhost/
+!selfhost/bin/
+!selfhost/bin/check-manual-image
 !selfhost/updater/
 !selfhost/updater/*.py
 !selfhost/updater/Dockerfile

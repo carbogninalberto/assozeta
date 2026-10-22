@@ -1,0 +1,24 @@
+#!/bin/sh
+# Check the candidate without mounting installation data or loading its .env.
+set -eu
+[ "$#" -eq 2 ] || { echo 'Usage: check-manual-image IMAGE RELEASE' >&2; exit 2; }
+exec docker run --rm --network none --read-only --cap-drop ALL \
+    --security-opt no-new-privileges --entrypoint sh "$1" -ec '
+    expected=${1#v}
+    actual=$(cat /app/VERSION)
+    [ "${actual#v}" = "$expected" ] || {
+        echo "Candidate backend version differs from the requested release" >&2; exit 1;
+    }
+    # These published releases predate the image-owned manual contract. A
+    # historical rollback must retain their historical absence of a manual.
+    case "$expected" in
+        1.0.[0-9]|1.0.1[0-7])
+            if [ ! -e /app/MANUAL_REQUIRED ]; then exit 0; fi ;;
+    esac
+    required=$(cat /app/MANUAL_REQUIRED)
+    case "$required" in true|false) ;; *) exit 1 ;; esac
+    # Installable release builds set this immutable marker to true. Explicit
+    # development images remain optional, as they are at build and startup.
+    exec python -m application.manuale.bundle --root /app/release-manual \
+        --revision "$(cat /app/CODE_REVISION)" --release "$actual" --required "$required"
+' check-manual-image "$2"
