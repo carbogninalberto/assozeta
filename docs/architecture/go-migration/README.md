@@ -4,7 +4,7 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `941321e` (security dependencies, manual delivery and manual visibility). Worktree branch: `codex/go-backend-parity`.
+Baseline: `main` through `0ffe9f6` (including manual evidence caching, reviewed navigation bindings and candidate manual-image validation). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go

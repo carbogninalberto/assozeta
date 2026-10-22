@@ -102,6 +102,29 @@ six new tests cover reuse invalidation, retained unrelated captures, dependency
 hashes and changed-source rejection. The source/test correction is committed as
 `bc03bb7`; the separate manual patch remains private and unpublished.
 
+The next alignment includes `0dbcfeb` (invocation-local manual evidence caching),
+`f97975a` (reviewed navigation source bindings) and `0ffe9f6` (candidate manual-image
+validation). The navigation digests were already identical to the migration
+branch; its audit dependency additions and reviewed excerpts remain intact.
+The verified drain checkpoint `2a633dd` is preserved on local branch
+`codex/go-drain-before-main-alignment-20261022`. Replaying its 111 commits onto
+`0ffe9f6` produces `6c54da6`; only the updater test required conflict resolution.
+
+Independent review confirms that all five immutable images are pulled before the
+sixth command validates the Django image's manual, before any pending snapshot,
+environment or managed-file publication. CLI install/start and unmanaged upgrades
+retain the upstream preflight; backup and schema migration retain the Go database
+drain under the exclusive operations lease. The helper is included in both the
+updater image and distribution bundle. Historical capability detection and Go
+reference rollback remain unchanged. The existing five-pull test initially fails
+on the new command; its updated contract asserts all six commands and unchanged
+installation state before each. Source-specific lifecycle proofs from before this
+alignment remain historical evidence until the combined flow is exercised.
+After the assertion update, all 156 self-host unit tests pass. The aligned manual
+suite passes 198 Python and eleven Node tests; the catalog still records zero
+verified entries. These checks do not substitute for the combined disposable
+update/recovery or fresh manual captures.
+
 ## Publication boundary
 
 Normal verified commits use the configured identity and upstream. Rebasing an

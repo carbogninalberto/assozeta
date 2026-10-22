@@ -3,7 +3,7 @@
 This draft retains all fourteen [accepted requirements](requirements.md).
 **It is not ready for production activation or merge as a backend replacement.**
 Work is isolated on `codex/go-backend-parity`, reconciled through
-`main@941321e`. Django retains production API selection, business-schema,
+`main@0ffe9f6`. Django retains production API selection, business-schema,
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
@@ -188,7 +188,7 @@ those differences remain explicit activation gaps.
 | Operations | Restore HTTP admission, shared lifecycle locks, dependency loss/recovery, idle SIGTERM and non-root image checks have evidence. Dual-API fresh install, backup and restore pass. Complete historical restore, active-request/task/WebSocket draining, release/activation acceptance and backend switching remain open. |
 
 Current reference: Python 3.13.16, Pillow 13.0.0, Django 5.2.18, DRF 3.17.2 and
-SimpleJWT 5.5.1, reconciled with `main@941321e`. Tests use disposable PostgreSQL,
+SimpleJWT 5.5.1, reconciled with `main@0ffe9f6`. Tests use disposable PostgreSQL,
 Redis, synthetic identities/keys and private provider fixtures. Current-model
 `migrate --run-syncdb` does **not** verify historical migration chains. No skipped,
 mocked-away or unexecuted required behavior counts as parity. Detailed component
