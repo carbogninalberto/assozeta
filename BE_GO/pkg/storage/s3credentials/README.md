@@ -128,10 +128,34 @@ fetch and one STS call: two total HTTP requests for ECS, four for IMDSv2. The
 44-case selection oracle and seven real MinIO groups pass again. Evidence lives
 under `quality-reports/go-migration/storage-metadata/`.
 
+Web identity has 38 separate authored S3Storage/Boto3 cases in
+`TESTS/adapters/django/storage_web_identity.py`. Requests are unsigned and use
+Boto3 session names. Tested selection covers explicit profiles, environment
+profiles, literal environment overrides, static option/environment precedence,
+web identity before shared static keys, the default ordinary role before web
+identity environment settings and nested web-identity signing sources. Role
+options such as duration/MFA/external ID are ignored for web identity, as in Boto3.
+
+Token files are reopened on refresh without expanding their paths. UTF-8 and
+universal-newline behavior match Python; whitespace remains literal. Projected
+symlinks work, while nonregular files are rejected without waiting on a FIFO.
+Regular token input is capped at 1 MiB, including an exact-limit success case.
+The oracle records one intentional correction: Boto3 sends a larger token to the
+fixture, while Go rejects it before HTTP. InvalidIdentityToken has one HTTP attempt;
+invalid/malformed/missing/expired responses return fixed errors before unchecked
+SDK dereferences. Provider response/token text is excluded from artifacts.
+
+A real HTTP race test verifies two waves of 64 callers, actual credential expiry,
+atomic projected-token replacement and one STS call per wave. A separate FIFO
+case proves nonblocking rejection. Evidence lives under
+`quality-reports/go-migration/storage-web-identity/`. This proves protocol and
+file handling against the fixture, not JWT authenticity or live STS/IdP policy.
+
 This covers the tested `source_profile`, Environment, EcsContainer and
 Ec2InstanceMetadata role paths. Remaining gates include direct/default-chain
-metadata parity, complete token-file/refresh/error semantics, web identity, SSO,
+metadata parity, complete token-file/refresh/error semantics, SSO,
 legacy Boto credential files, full INI compatibility (including quoted source
-references/conflicting aliases), live cloud evidence and production composition
+references/conflicting aliases), remaining provider precedence (empty environment
+overrides and mixed declarations), live cloud evidence and production composition
 with all `.env`-only fallback-chain settings. Production destructive cleanup still needs
 durable intent, reference/upload exclusion, restore fencing and scheduler ownership.

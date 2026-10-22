@@ -178,11 +178,7 @@ func (p *roleClient) AssumeRole(ctx context.Context, in *sts.AssumeRoleInput, op
 	}
 	// The SDK provider dereferences these fields without validating malformed
 	// successful responses. Fail closed before caching or dereferencing them.
-	if out == nil || out.Credentials == nil {
-		return nil, ErrCredentials
-	}
-	c := out.Credentials
-	if c.AccessKeyId == nil || c.SecretAccessKey == nil || c.SessionToken == nil || c.Expiration == nil || *c.AccessKeyId == "" || *c.SecretAccessKey == "" || *c.SessionToken == "" || !c.Expiration.After(time.Now()) {
+	if out == nil || !validSTSCredentials(out.Credentials) {
 		return nil, ErrCredentials
 	}
 	return out, nil

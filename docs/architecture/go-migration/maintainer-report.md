@@ -346,8 +346,8 @@ separate lazy-backend validation boundary. No credential file or provider is ope
 The shared URL-origin parser retains the CORS contract; 51 HTTP contracts per backend,
 40 URL cases, the 87 existing environment cases and live health/dependency recovery
 pass again. See `BE_GO/internal/config/README.md` and
-`TESTS/adapters/django/storage_configuration.py`. Credential discovery/profile-file
-loading, storage composition and destructive cleanup coordination remain open.
+`TESTS/adapters/django/storage_configuration.py`. Complete provider-chain
+parity, production storage composition and destructive cleanup coordination remain open.
 
 The full accounts suite was rerun after storage configuration became required at
 server startup. All real-server adapters now supply the same synthetic storage
@@ -356,63 +356,42 @@ body checks pass on production Python 3.13.2. Evidence:
 `quality-reports/go-migration/storage-configuration/full-accounts-results.json`.
 This is current-model regression evidence, not historical-schema or switch parity.
 
-Storage credential construction now passes 44 authored S3Storage/Boto3 comparisons
-using private profile files and actual credential processes. It preserves tested
-selection/INI/error boundaries, rejects unusable partial credentials and bounds
-process output. HTTP tests verify concurrent caching, short-lived expiry/refresh,
-fixed errors, body limits and caller/transport deadlines. Credential subprocesses
-cannot write to the console and their process groups are terminated on cancellation.
-Two nested roles over a local STS endpoint require one process and two signed requests
-for 32 callers. Seven real MinIO groups pass with this constructor supplying the
-S3 deletion client. See `BE_GO/pkg/storage/s3credentials/README.md` and
-`TESTS/adapters/django/storage_credentials.py`. This is a tested dependency, not
-complete Boto3 credential-chain parity or production worker/storage composition.
+Storage credentials are constructed through explicit SDK-backed providers with
+fixed errors and bounded HTTP/process/token-file reads. Tested selection preserves
+Django priorities; partial static credentials and oversized process/token output
+are explicitly rejected. Subprocess groups terminate on cancellation, and shared
+caches coalesce concurrent retrieval. The storage deletion client uses this
+constructor in the disposable MinIO rehearsal; production composition is still open.
 
-The `dd146b7` quality run reported an empty initial frontend-version label in
-`self-instance-reload.spec.js`. Its independent Vite/Node/Caddy fixture does not
-run Go. An unchanged local rerun passed all eleven browser cases; the CI failure
-is recorded as not reproduced, not fixed. Evidence:
-`quality-reports/go-migration/storage-credentials/ui-job.log` and `reload-ui.log`.
+| Boundary | Executed differential evidence |
+|---|---|
+| Static/environment/shared-file/process selection | 44 cases, `TESTS/adapters/django/storage_credentials.py` |
+| AssumeRole, MFA and ECS/IMDS sources | 82 cases, `TESTS/adapters/django/storage_roles.py`; independent SigV4 checks, exact fields/counts, nested identities, validation and provider failures |
+| Web identity | 38 cases, `TESTS/adapters/django/storage_web_identity.py`; unsigned requests, profile/environment priorities, literal token files, newline/UTF-8 behavior, symlinks and response failures |
+| Real object deletion | Seven MinIO groups and four Django cases, `TESTS/adapters/django/s3_objects.py` |
 
+Go race tests verify one process plus two STS calls for 32 nested-role callers,
+one MFA callback for 32 waiters despite cancellation, and one source fetch plus
+one STS call for 64 ECS/IMDS callers. Web-identity rotation uses two waves of 64
+callers, actual expiry and atomic symlink replacement, with one STS call per wave.
+MFA never implicitly reads console input and does not reprompt within the same
+provider after failure/expiry. IMDS endpoint prefixes and container token-file
+precedence are covered. The web-token oracle records its 1 MiB cap as an explicit
+correction; FIFO rejection is tested separately. Go vet/race, inventory and workflow
+lint pass. Evidence is under `quality-reports/go-migration/storage-credentials/`,
+`storage-roles/`, `storage-mfa/`, `storage-metadata/` and `storage-web-identity/`.
 
-AssumeRole compatibility now adds 44 authored S3Storage/Boto3 cases against a
-private HTTP endpoint that independently verifies SigV4 signatures, signing
-identity, tokens, exact fields and request counts. Source-profile/environment
-roles preserve omitted or explicit duration, session naming and local parameter
-rejection. Nested roles use the preceding identity. Malformed/missing/expired STS
-credentials return fixed errors before the SDK can dereference absent fields.
-The previous 44-case credential oracle, Go race/vet and real MinIO checks pass
-again. See `TESTS/adapters/django/storage_roles.py` and
-`quality-reports/go-migration/storage-roles/`. MFA, metadata/ECS roles, SSO, web
-identity, full INI/refresh behavior and production composition remain unverified;
-this does not implement another task or activate a backend.
+See `BE_GO/pkg/storage/s3credentials/README.md` for precise limits. Direct/default
+metadata chains, SSO/legacy files, full INI and provider precedence, early renewal,
+live cloud/IdP policy, `.env` fallback-chain and production composition remain open.
+No additional cleanup task or backend activation is claimed.
 
-
-The STS comparison now has 62 authored cases, including 18 MFA cases. A trusted,
-explicit context-aware callback supplies the configured device's code; workers
-never implicitly read console input. Like Boto3, each role consumes one callback
-attempt and refuses to reprompt after an error or credential expiry. Real local
-signed requests verify literal codes, parameter validation order, nested roles and
-environment sources. Race tests verify 32 callers share one callback and at most
-one HTTP request after a waiter cancels, with fixed failure errors. The existing
-44-case selection oracle and Go race/vet pass again. Evidence:
-`TESTS/adapters/django/storage_roles.py`, `BE_GO/pkg/storage/s3credentials/mfa_test.go`
-and `quality-reports/go-migration/storage-mfa/`. Production callback composition,
-MFA early refresh, other provider chains and the full migration remain open.
-
-
-STS coverage now has 82 authored Boto3 cases. Twenty new cases verify ECS and IMDS
-signing sources, token-file precedence, IMDSv2, allowed/disabled v1 fallback,
-disabled or incomplete metadata, nested roles and MFA. The Go adapter retains the
-SDK-selected identity and restores endpoint path prefixes that its IMDS serializer
-otherwise drops, including escaped/repeated-slash paths and config precedence.
-Two race groups verify 64 callers share one source fetch plus one STS request
-(two HTTP calls for ECS, four for IMDSv2). The existing 44 credential-selection
-cases, Go race/vet and seven MinIO groups pass again. Evidence:
-`BE_GO/pkg/storage/s3credentials/metadata_test.go`,
-`TESTS/adapters/django/storage_roles.py`, and
-`quality-reports/go-migration/storage-metadata/`. Direct/default metadata chains,
-full renewal/error behavior, cloud policy and production composition remain open.
+The `dd146b7` CI reload fixture once reported an empty frontend-version label.
+Its Vite/Node/Caddy fixture does not run Go. All eleven cases passed unchanged
+locally, and the later `bcbb8c7` UI job passed; no cause or fix is attributed.
+Whole-workflow success must be assessed at the PR head, separately from these
+component results. Safe logs remain in `storage-credentials/ui-job.log` and
+`reload-ui.log` beneath the evidence directory.
 
 ## Remaining completion gates
 
