@@ -1,3 +1,5 @@
+// Profile source re-reviewed: credential and profile writes protect unrelated columns;
+// existing user-facing settings/registration workflows remain unchanged.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
@@ -7,7 +9,7 @@ const reviewed = {
   "UI/src/components/widgets/StaffBoard.svelte": "1e22ec4c29067df662454be5e7acccc81388ae2717b86a0ab742818be0b6ffc0",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "BE/application/views/statistic_views.py": "9a97f4e8fac492aff785b6636165a4583510473d057616fd9f2f1e0a9b0693de",
-  "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+  "BE/application/views/profile_views.py": "a8d85d6ea8aed975e85e814beb6a28e0b473a110ead32a45c9e30c5af1bfe295",
   "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
   "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
   "BE/application/models/subscriptions_models.py": "b6b592e5ced8b685df6196e877ad75679bdf650c0d79774de9c537455eab465a",

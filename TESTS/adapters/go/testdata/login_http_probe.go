@@ -35,6 +35,7 @@ func main() {
 		cookieVary               bool
 	}{
 		{"health", "GET", "/healthz", "", nil, 200, map[string]any{"status": "ok", "version": "v0.0.0-contract"}, false},
+		{"password update requires bearer", "PATCH", "/profile/update/password", "{}", map[string]string{"Accept-Language": "en", "Content-Type": "application/json"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"profile requires bearer", "GET", "/profile/info", "", map[string]string{"Accept-Language": "en"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"two-factor setup requires bearer", "GET", "/two-fa/setup", "", map[string]string{"Accept-Language": "en"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"missing credentials", "POST", "/oauth2/login", "{}", map[string]string{"Content-Type": "application/json"}, 400, map[string]any{"msg": "Invalid request."}, true},

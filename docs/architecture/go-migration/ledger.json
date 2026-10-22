@@ -10020,7 +10020,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Django personal-field saves now use update_fields to avoid overwriting concurrent credentials. Two real HTTP profile/password interleavings are covered by TESTS/adapters/django/profile_password.py. This narrow repair is not Go implementation or complete profile-update characterization; association writes and full mutation/audit invariants remain required."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/update/password -> profile_update_password",
@@ -10037,25 +10039,56 @@
         "target": "profile_update_password",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/profile_password.go",
+        "BE_GO/internal/service/profile_password.go",
+        "BE_GO/internal/repository/profile_password.go",
+        "BE_GO/pkg/crypto/model_password.go"
+      ],
+      "dependencies": [
+        "Existing Bearer/identity/permission/scoped-request admission",
+        "Django model password hashes and existing cost limits",
+        "PostgreSQL bakney_user; existing profile/association readers; shared native image processor"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/profile/update/password"
+        ],
+        "request": "Nested password_data.current_password and new_password; existing JSON/form/media error precedence.",
+        "response": "200 msg/role/user_data; incorrect current password adds EC000. Owner-only base association; no login tokens or profile-info augmentation.",
+        "errors": "400 invalid new format, 401 missing/inactive/deleted credentials, 403 permission/impersonation denial, 405 wrong method, 406/415 negotiation/media, 500 malformed fields/hash or response construction.",
+        "authentication": "Existing Bearer JWT; effective person is distinct from actor and mapped association owner.",
+        "permissions": "other.settings.update for restricted collaborators; existing direct-admin restriction and association-bound credential-operation denial.",
+        "resource_scope": "Only admitted effective user ID is locked and updated. Collaborator owner credentials remain unchanged.",
+        "side_effects": "Password-only write, including stale model-hash upgrade when new format fails. No password audit/session/cache/job writes. Login flows separately update last_login.",
+        "transaction": "Go and repaired Django lock current user before verification and atomically update password only. Serialization occurs after commit; later response failures retain credential change.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_profile_password.py",
+        "TESTS/adapters/django/profile_password.py",
+        "BE_GO/internal/service/profile_password_test.go",
+        "BE_GO/internal/service/profile_password_integration_test.go",
+        "BE_GO/pkg/crypto/model_password_test.go",
+        "BE/application/tests/test_profile_views.py"
+      ],
+      "evidence": [
+        "Before implementation, Django passes 55 declared HTTP/effect cases and Go fails on the missing route (http-route-red.log). Unit tests fail for missing model-password/service types (unit-red.log). Locked-row rehearsal exposes Django overwriting a concurrent profile (concurrency-red.log), then all three HTTP concurrency scenarios pass on both roots after row locking and password-only saves. Artifacts: quality-reports/go-migration/profile-password/.",
+        "Final focused rehearsal passes 67 declared HTTP/effect scenarios, three deterministic locked-row concurrency scenarios per backend and four cross-runtime password/login/JWT flows (complete-focused.log; focused-results.json). Actual PostgreSQL mutation integration uses one SELECT and one UPDATE for a change, one SELECT/no UPDATE for incorrect credentials, and 24 SELECTs/one UPDATE for 24 competing requests with exactly one success. Cancellation releases connections and subsequent work succeeds; a trigger-rejected write leaves the hash unchanged. Pool maximum is four. Go race and ordinary/tagged vet pass; 324 existing Django tests, 190 manual Python tests, 11 manual Node tests and twelve inventory tests pass. The rebuilt non-root/read-only/networkless image passes eight HTTP checks, without claiming database-backed image parity.",
+        "An additional real HTTP interleaving first proves Django profile_update can overwrite a Go-written password (profile-write-interleave-red.log). Django profile_update now saves only the supplied personal fields. The permanent adapter repeats two locked-row HTTP races with Django and Go password writers against the Django profile writer; new credentials and profile edits both survive and exactly one profile-field audit is emitted (profile-write-interleave-green.log). The 324 existing Django tests pass again after this repair (django-regression-final.log).",
+        "After the legacy profile-writer repair, the final focused rehearsal repeats all 67 HTTP/effect cases, three locked concurrency scenarios per password backend, two real legacy-profile/password HTTP races, four cross-runtime login/JWT flows and the real PostgreSQL race/cancellation/write-failure suite successfully (profile-write-interleave-green.log; final-focused-results.json). Manual verification repeats successfully: 190 Python tests and 11 Node tests (manual-final.log; manual-node-final.log).",
+        "Full accounts regression passes, including all prior groups plus 67 password cases, three locked scenarios per backend and four switching flows (full-accounts.log; full-accounts-results.json). This run began before the final legacy-profile writer repair; the final focused rehearsal and 324 existing Django tests additionally pass after that repair. Preceding commit 25b91ba passes remote quality workflow 39723905840; current-head CI remains required."
+      ],
+      "notes": [
+        "See BE_GO/internal/handler/profile_password.md. Current-model HTTP proof does not establish historical-schema/frontend/versioned-routing/release parity. Repository concurrency, full regression and final-head evidence must be reviewed before promotion; status remains implementing.",
+        "Negative Python role-index labels are covered only at the service-unit boundary: current PostgreSQL PositiveSmallIntegerField constraints forbid inserting negative roles. No historical database parity is inferred from those unit cases."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/update/subscription/template -> profile_update_subscription_template",
