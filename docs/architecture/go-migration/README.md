@@ -7,6 +7,37 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+`POST /profile/settings/tables` now preserves partial JSONField validation and
+mapped association-owner preferences for collaborators. TDD exposed Django
+full-row saves overwriting concurrent names/passwords and successful responses
+after audit-index failures. Both runtimes now lock fresh state, update only
+`tables_settings` and commit the preference, audit and index together.
+
+Actual roots pass 62 HTTP/durable-effect/audit cases and three locked-row races
+per backend. PostgreSQL counts stay at 2 SELECT / 1 UPDATE / 2 INSERT across
+1/16/128/512 table entries; unchanged repeats use 1 / 1 / 0, missing fields use
+0 / 0 / 0, and 24 identical competitors use 25 / 24 / 2 with one audit.
+Pre-write and mid-audit cancellation roll back, release connections and recover.
+The pool limit is four. See the [table-preference contract](../../../BE_GO/internal/handler/profile_tables.md)
+and `quality-reports/go-migration/profile-tables/surrogate-http-green.log`. These counts cover
+mutation statements only; no whole-application performance claim is made.
+
+Final Go race tests and ordinary/tagged vet pass, as do 324 existing Django tests.
+The rebuilt image passes ten
+pre-database HTTP checks under UID 10001, read-only and without network access;
+190 manual Python tests and 11 Node tests pass. The first full accounts run
+exposed silent replacement of an unpaired Unicode surrogate. A route-specific
+parser now preserves the rejection boundary, while valid pairs, literal U+FFFD
+and ignored fields remain distinct. The final focused suite and 571,538 fuzz
+executions pass. The full accounts regression also passes after this correction
+(`full-final.log` and `full-final-results.json` in the same evidence directory),
+including current profile, password, 2FA, provider, image and task checks.
+Six source maps were reviewed against the single changed Django function. The
+local companion patch still updates 204 bindings without changing authored MDX;
+authoring validation passes. Its current location is
+`quality-reports/go-migration/profile-tables/manual-bindings-review.patch`.
+Publication to the separate manual repository still awaits authorization.
+
 `PATCH /profile/update` now updates the admitted personal profile and optional
 owner association in one transaction, including audit entries and indexes.
 Characterization exposed Django partial writes after an association error and a
@@ -315,7 +346,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 20 implementing, 6 needing review and 484
+The ledger currently has 4 deprecated, 21 implementing, 6 needing review and 483
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

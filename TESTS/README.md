@@ -1100,3 +1100,15 @@ repository owner/scope predicates. Full `accounts.py` includes this adapter and 
 four Django/Go profile-versus-password writer combinations. Only disposable
 current-model fixtures are used; historical migration and frontend parity remain
 separate requirements.
+
+### Table preference adapter
+
+`python TESTS/adapters/django/accounts.py --only profile-tables` runs 62 portable
+HTTP cases against both roots with durable-row/audit/index/cache assertions and
+three locked-row races per backend. It covers mapped collaborator ownership,
+impersonation/foreign-reference denial, JSON/form/multipart validation, English
+and Italian errors and injected storage/audit/index failure. The required
+`profiletablesintegration` suite measures 1/16/128/512 table entries, 24 competing
+writers, pre-write/mid-audit cancellation and connection-pool recovery. Full
+`accounts.py` includes it. Current-model fixtures do not establish historical
+schema, browser or deployment parity.

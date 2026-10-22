@@ -9967,25 +9967,58 @@
         "target": "profile_settings_tables",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/profile_tables.go",
+        "BE_GO/internal/dto/profile_tables.go",
+        "BE_GO/internal/handler/profile_tables.go",
+        "BE_GO/internal/service/profile_tables.go",
+        "BE_GO/internal/repository/profile_tables.go",
+        "BE_GO/internal/dto/profile_tables_json.go"
+      ],
+      "dependencies": [
+        "Existing JWT/identity/impersonation/scoped-request admission and other.settings.update permission",
+        "PostgreSQL bakney_user, auditlog_logentry and application_auditlogindex",
+        "Existing sorted Python-style JSON audit formatter and association-index resolver"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/profile/settings/tables"
+        ],
+        "request": "Partial tables_settings JSONField; all JSON value types except direct null/non-finite values; unknown/missing fields ignored. Form and multipart values decode as JSON documents.",
+        "response": "200 {status: success}; same OPTIONS metadata and English/Italian field-validation errors as DRF.",
+        "errors": "400 shape/JSONField validation, 401 absent/inactive/deleted credentials, 403 permission/admin/impersonation/foreign-reference denial, 405 methods, 406 negotiation, 415 media, 500 storage/audit/index errors including form-decoded null and numeric overflow.",
+        "authentication": "Existing Bearer actor and effective identity.",
+        "permissions": "other.settings.update, with existing collaborator grant and administrator/impersonation rules.",
+        "resource_scope": "Mutates trusted ScopeUser: effective person for ordinary accounts, connected association owner for collaborators. Service validates that mapping; SQL uses only that user ID and excludes deleted rows.",
+        "side_effects": "Only tables_settings plus changed-field audit and optional association index, with trusted actor/impersonation/CID/IP. No session/cache/job changes. Missing fields are no-ops.",
+        "transaction": "Go and repaired Django lock fresh user state and commit the selected preference, audit and index atomically. Bounded conflict retries in Go; cancellation/failure rolls back.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_profile_tables.py",
+        "TESTS/adapters/django/profile_tables.py",
+        "BE_GO/internal/dto/profile_tables_test.go",
+        "BE_GO/internal/service/profile_tables_test.go",
+        "BE_GO/internal/service/profile_tables_integration_test.go",
+        "BE/application/tests/test_profile_views.py",
+        "BE_GO/internal/dto/profile_tables_json_test.go"
+      ],
+      "evidence": [
+        "TDD in quality-reports/go-migration/profile-tables/: http-initial.log passes 33 Django HTTP/effect/audit cases then fails on absent Go route. django-atomic-red.log proves successful response and persisted preference after index failure; django-concurrency-red.log proves overwriting a parallel credential/name change. dto-red.log and service-red.log fail on missing implementations. After the reference repair, http-after-django-repair.log passes 36 Django cases and three locked scenarios before Go 404s.",
+        "surrogate-http-green.log passes 62 HTTP/effect/audit cases and three deterministic locked scenarios per backend. Real PostgreSQL counts across 1/16/128/512 table entries are 2 SELECT/1 UPDATE/2 INSERT; unchanged repetitions 1/1/0; omitted fields 0/0/0. Twenty-four competitors use 25/24/2 with exactly one audit. Cancellation before row locking and during audit insertion rolls back all writes, releases connections and recovers within four connections.",
+        "surrogate-red.log and the first full-accounts.log expose Go replacing an unpaired UTF-16 escape and committing a value that Django rejects. The route-specific parser preserves invalid code units for service rejection and distinguishes valid pairs, literal U+FFFD and ignored values/keys. The final focused suite passes 62 HTTP/effect/audit cases and the same concurrency/PostgreSQL checks (surrogate-http-green.log). Parser unit/race tests and 571538 fuzz executions pass (json-fuzz.log). Final Go race/vet, 324 Django tests, 190 manual Python tests and 11 Node tests pass; the rebuilt non-root read-only/networkless image passes ten pre-database HTTP checks. Full accounts regression passes after the parser repair, including all 62 table cases, three races per backend, SQL checks and existing account/profile/password/2FA/provider/image/task checks (full-final.log and full-final-results.json)."
+      ],
+      "notes": [
+        "See BE_GO/internal/handler/profile_tables.md. Atomic selected-field mutation intentionally repairs confirmed Django stale full-row writes and audit-index failure behavior.",
+        "Current-model and mutation-query evidence does not establish historical data, browser/versioned-routing, full lifecycle or whole-application performance parity. Status remains implementing.",
+        "The expanded characterization corrected an authored null-body expectation: Django returns the untranslated No data provided message. This is an expectation correction, not a reference defect."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:profile/update -> profile_update",

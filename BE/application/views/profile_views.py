@@ -519,10 +519,15 @@ def profile_update_password(request):
 @permission_classes([IsAuthenticated])
 def profile_settings_tables(request):
 
-    user = UserTablesSettingsSerializer(request.user, data=request.data, partial=True)
-
-    if user.is_valid(raise_exception=True):
-        user.save()
+    preferences = UserTablesSettingsSerializer(request.user, data=request.data, partial=True)
+    preferences.is_valid(raise_exception=True)
+    if 'tables_settings' in preferences.validated_data:
+        # Preserve the mapped association owner for collaborators. Lock fresh
+        # values for the audit diff and commit only this preference with its audit.
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=request.user.pk)
+            user.tables_settings = preferences.validated_data['tables_settings']
+            user.save(update_fields=['tables_settings'])
 
     return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
