@@ -215,7 +215,6 @@ passing. The full repository-wide Docker regression suite remains unverified on
 this workstation. Native verification above used the same HTTP contracts and
 application code; CI retains the standard Docker checks.
 
-
 ## Go migration foundation
 
 Configured smoke/regression runs now also execute
@@ -1112,3 +1111,15 @@ and Italian errors and injected storage/audit/index failure. The required
 writers, pre-write/mid-audit cancellation and connection-pool recovery. Full
 `accounts.py` includes it. Current-model fixtures do not establish historical
 schema, browser or deployment parity.
+
+The table-preference adapter now also requires Docker and runs the same contracts,
+three races and three health contracts per version through the pinned Caddy image
+at `/api/v1` and `/api/v2`. It verifies audit IP attribution against the proxy's
+observed client address, not a forged forwarded header. Servers use generated
+host ports and synthetic data; containers are removed after the run.
+
+`python3 selfhost/tests/versioned-routing.py` separately checks proxy transport,
+including chunked uploads, streamed responses, WebSocket frames, maintenance and
+Go outage isolation, using synthetic upstreams. See
+[`versioned-routing.md`](../docs/architecture/go-migration/versioned-routing.md)
+for evidence, fixture boundaries and remaining delivery/switching requirements.

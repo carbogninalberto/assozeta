@@ -7,45 +7,37 @@ Work is isolated on `codex/go-backend-parity`, reconciled through
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 
-## Latest increment: table preferences
+## Latest increment: fixed versioned proxy routes
 
-`POST /profile/settings/tables` preserves partial JSONField validation, mapped
-association-owner preferences for collaborators and existing permission/scope
-admission. TDD exposed Django full-row saves overwriting concurrent personal and
-credential fields, plus successful responses after audit-index failure. Both
-runtimes now lock fresh state and commit the selected preference with its audit
-and index. Missing fields are no-ops; unrelated columns remain intact.
+Caddy now sends `/api/v1` to Django and `/api/v2` to Go before matching the legacy
+Django alias. Exact version roots preserve methods, bodies and queries. Root
+Bakney and WebSocket protocols also have versioned aliases; pairing responses
+retain restrictive cache/referrer headers. Readiness stays available during
+maintenance, other new application requests are blocked, and admitted response
+streams can finish. A Go outage does not fall back to Django.
 
-The actual roots pass 62 HTTP/effect/audit cases and three locked-row races per
-backend. Mutation counts across 1/16/128/512 table entries are 2 SELECT / 1 UPDATE /
-2 INSERT; unchanged repeats use 1 / 1 / 0; missing fields use 0 / 0 / 0.
-Twenty-four competing writes produce 25 / 24 / 2 with one audit. Cancellation
-before locking and during audit insertion rolls back, releases connections and
-recovers within a four-slot pool. These counts exclude HTTP admission.
+The real pinned Caddy image passes transport contracts for encoded paths/queries,
+binary and chunked uploads, errors, cookies, redirects, ranges, HEAD, streaming
+and WebSocket frames. The actual Django/Go roots also pass 62 table contracts,
+three locked-row races and three health contracts per version, with independent
+PostgreSQL/audit readback and retained query/cancellation checks. Eighty-seven
+existing self-host tests and eleven reload/browser tests pass. The browser tests
+still use their existing synthetic API fixture. See [routing evidence and limits](versioned-routing.md).
 
-The first full regression exposed Go replacing an invalid Unicode surrogate and
-saving data that Django rejects. A route-specific parser now preserves this
-failure boundary without conflating valid pairs, literal U+FFFD or ignored fields.
-The final focused suite, unit/race tests and 571,538 fuzz executions pass; fuzzing
-is bounded evidence. The full accounts regression passes after the repair, including
-the table workflow and all existing profile, password, 2FA, provider, image and task
-checks (`full-final.log` and `full-final-results.json`).
-See the [contract](../../../BE_GO/internal/handler/profile_tables.md) and
-`quality-reports/go-migration/profile-tables/` for red/green logs.
+**Ordinary Compose/release delivery does not yet provide `api-go`.** Runtime
+selection, coordinated worker/scheduler ownership, interrupted switching and
+WebSocket draining remain required. No production activation or complete browser,
+SSO/callback, private-file or realtime parity is established by these checks.
 
-Go race tests and ordinary/tagged vet pass, as do 324 existing Django tests,
-190 manual Python tests, 11 manual Node tests and twelve inventory tests. The
-rebuilt UID 10001, read-only, networkless image passes ten pre-database HTTP
-checks. This does not establish authenticated database-backed image parity.
+The preceding `6e6d6f9` quality workflow `39733767156` passes completely. Its manual
+workflow `39733767137` fails on external dashboard recipe bindings. The reviewed
+local companion patch remains unpublished, pending authorization for the separate
+repository. Current-head CI remains an independent gate.
 
-The preceding `a08b8ff` quality workflow `39730720795` passes completely, including
-Go, backend, UI, SSO, self-host, recovery and legacy checks. Its manual workflow
-`39730720797` fails on external dashboard recipe bindings. A local reviewed patch against `Bakney/manuale@4253c5d` refreshes
-204 bindings with unchanged MDX and passing authoring validation; publication to
-that separate repository awaits authorization. The current patch is
-`quality-reports/go-migration/profile-tables/manual-bindings-review.patch`.
-Prior commit `1ede0ff` passes quality workflow `39727996265`; prior success does
-not establish current-head CI or full manual verification.
+The user additionally requires periodic main alignment and communicating parallel
+agents. The initial fetch confirmed `origin/main@fddcee3` was contained. Upstream
+subsequently advanced to `65f0535` with a manual-visibility fix; rebase and
+source-binding reassessment are required before pushing this increment.
 
 ## Implementation and architecture
 
@@ -81,6 +73,7 @@ those differences remain explicit activation gaps.
 | Public login | 19 ordinary and 5 rate methods; 41 credential/effect scenarios; 16 password and 16 cross-identity social concurrent requests per backend; exact response/cookie/signature and persistent audit/index/card readback. Complete login remains open. |
 | Identity and credentials | Bidirectional Django/Go hashes/JWTs; 54 cache-session cases; 132 scoped-request and 67 resource-scope cases; 37 refresh, 16 identifier, 10 2FA-status and 10 retired-billing HTTP methods per backend. These do not prove authorization on every endpoint. |
 | Profile information | 56 HTTP scenarios, 88 concurrent and four fresh-state reads per backend across eight registration modes. Exact effective/owner fields, actual image conversion, query/pool bounds, foreign lookup denial and cancellation; all image formats/frontend workflows remain open. |
+| Table preferences | 62 HTTP/effect/audit cases and three locked-row races per backend, now also through each versioned API. Fixed mutation-query counts, 24 competing writers, atomic audit/index rollback and cancellation recovery; invalid Unicode surrogates preserve rejection. Full frontend/lifecycle parity remains open. |
 | Profile mutations | 52 HTTP/effect/audit cases and four locked-row scenarios per backend; selected personal/association writes and audits are atomic. Responses retain each writer's committed personal fields. Cross-endpoint races involving other serialized preferences remain open. |
 | Password changes | 67 HTTP/effect cases, three locked scenarios per backend, four Django/Go profile/password writer combinations and four cross-runtime login flows. Credential-only writes preserve other columns; full frontend/lifecycle parity remains open. |
 | 2FA writes | 50 HTTP/effect and two locked-row concurrency scenarios per backend; atomic failure rollback, correct impersonation audit, query/pool bounds and cancellation. Setup has separate evidence below; full frontend activation remains open. |
@@ -107,7 +100,7 @@ contracts, historical checkpoints and local evidence paths are maintained in the
 | 2. Kuayle architecture | Apply the established boundaries to all remaining business, realtime and operational implementations. |
 | 3. Existing database | Complete model hooks, financial invariants, historical-data and rollback readback; resolve mixed-runtime write races. |
 | 4. Authentication/permissions | Finish remaining auth routes, global middleware, endpoint/resource denials and credential/resource sizing. |
-| 5. Versioned routing | Implement `/api/v1`, `/api/v2`, compatibility selection, callbacks/root protocols and safe drain. |
+| 5. Versioned routing | Deliver the Go upstream; implement validated compatibility selection, real callbacks/links, worker ownership and safe drain. Fixed proxy paths have scoped evidence. |
 | 6. Existing environment | Finish provider/proxy, logging, manual/instance and remaining configuration compatibility. |
 | 7. Background processing | Finish every supported task/schedule, production commands, interoperability and ownership transitions. |
 | 8. Realtime/integrations/documents | Implement all supported WS and provider flows, private files, documents and immutable manual/MCP delivery. |

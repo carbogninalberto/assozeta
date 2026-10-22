@@ -338,3 +338,13 @@ Completion requires proof that:
 “100% complete” means **100% of the agreed supported behavior and deliverables is proven**, not merely a coverage percentage or a green subset of tests.
 
 If any requirement is incomplete, keep working and report it accurately. Missing credentials, unavailable integration evidence, failing tests or unexecuted rehearsals are gaps—not successful completion.
+
+## Ongoing main alignment — user amendment, 2026-10-22
+
+Keep the migration aligned with `main`: fetch and inspect upstream at the start
+of implementation increments, before pushing, and again after long verification
+runs. Rebase the dedicated branch when upstream advances, then reassess changed
+contracts, dependencies and operational behavior. Use communicating subagents for
+parallel implementation and independent reassessment, within the available
+concurrency limit. Preserve the complete fourteen-requirement objective and the
+configured Git identity/history policy throughout.
