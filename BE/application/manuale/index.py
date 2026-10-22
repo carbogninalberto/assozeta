@@ -404,6 +404,9 @@ def build_index(manual_root, code_root, manifest, *, artifact_root=None):
         dependencies[path] = expected
     reuse_plan = retained_evidence(manual_root, code_root, artifact_root, metadata)
     scenarios = {scenario['id']: scenario for scenario in manifest.get('scenarios', [])}
+    # A build reads each proof once. Caches are local to this invocation: later
+    # builds and independent package boundaries revalidate mutable input bytes.
+    verified_reports, verified_sources = {}, {}
     seen_pages = set()
     for page_order, page in enumerate(manifest['pages']):
         if page['path'] in seen_pages:
@@ -433,7 +436,12 @@ def build_index(manual_root, code_root, manifest, *, artifact_root=None):
                 raise EvidenceError(f'Stale manual text: {page["path"]}#{key}')
             if not section.get('evidence'):
                 raise EvidenceError('Verified sections need implementation evidence')
-            sources = [verify_source(code_root, source, catalog=catalog) for source in section['evidence']]
+            sources = []
+            for source in section['evidence']:
+                binding = canonical(source)
+                if binding not in verified_sources:
+                    verified_sources[binding] = verify_source(code_root, source, catalog=catalog)
+                sources.append(verified_sources[binding])
             for source in sources:
                 dependencies[source['path']] = source['sha256']
             captures = []
@@ -469,26 +477,30 @@ def build_index(manual_root, code_root, manifest, *, artifact_root=None):
                         raise EvidenceError(f'Scenario evidence is stale: {scenario_id}')
                 if artifact_root is None or not scenario.get('report_path'):
                     raise EvidenceError('Browser evidence needs a retained report')
-                report_path = owned_path(artifact_root, scenario['report_path'])
-                if file_digest(report_path) != scenario.get('report_sha256'):
-                    raise EvidenceError('Browser report changed')
-                report = json.loads(report_path.read_text())
-                if report.get('status') != 'passed' or report.get('backend') != 'real' or report.get('id') != scenario_id or report.get('application_revision') != expected_revision:
-                    raise EvidenceError('Browser report does not prove this scenario passed')
-                if report.get('source_hashes') != scenario.get('source_hashes'):
-                    raise EvidenceError('Browser report source binding differs')
-                for relative, expected in report.get('source_hashes', {}).items():
-                    if relative.startswith(('BE/', 'UI/')):
-                        if file_digest(owned_path(code_root, relative)) != expected:
-                            raise EvidenceError('Scenario implementation changed: ' + relative)
-                        runtime_dependencies[relative] = expected
-                if not reused and report.get('tooling_hashes', {}) != tooling:
-                    raise EvidenceError('Browser report tooling binding differs')
-                if report.get('capture_format') == 'full-hd-v1':
-                    if report.get('viewport') != {'width': 1920, 'height': 1080} or report.get('device_scale_factor') != 1:
-                        raise EvidenceError('Browser report has incompatible Full HD capture settings')
-                    for frame in report.get('screenshots', []):
-                        verify_capture_frame(artifact_root, frame)
+                if scenario_id not in verified_reports:
+                    report_path = owned_path(artifact_root, scenario['report_path'])
+                    if file_digest(report_path) != scenario.get('report_sha256'):
+                        raise EvidenceError('Browser report changed')
+                    report = json.loads(report_path.read_text())
+                    if report.get('status') != 'passed' or report.get('backend') != 'real' or report.get('id') != scenario_id or report.get('application_revision') != expected_revision:
+                        raise EvidenceError('Browser report does not prove this scenario passed')
+                    if report.get('source_hashes') != scenario.get('source_hashes'):
+                        raise EvidenceError('Browser report source binding differs')
+                    for relative, expected in report.get('source_hashes', {}).items():
+                        if relative.startswith(('BE/', 'UI/')):
+                            if file_digest(owned_path(code_root, relative)) != expected:
+                                raise EvidenceError('Scenario implementation changed: ' + relative)
+                    if not reused and report.get('tooling_hashes', {}) != tooling:
+                        raise EvidenceError('Browser report tooling binding differs')
+                    if report.get('capture_format') == 'full-hd-v1':
+                        if report.get('viewport') != {'width': 1920, 'height': 1080} or report.get('device_scale_factor') != 1:
+                            raise EvidenceError('Browser report has incompatible Full HD capture settings')
+                        for frame in report.get('screenshots', []):
+                            verify_capture_frame(artifact_root, frame)
+                    verified_reports[scenario_id] = report
+                report = verified_reports[scenario_id]
+                runtime_dependencies.update({relative: expected for relative, expected in report.get('source_hashes', {}).items()
+                                             if relative.startswith(('BE/', 'UI/'))})
                 captures.extend(report.get('screenshots', []))
                 capture_provenance.append({'scenario_id': scenario_id, 'application_revision': report['application_revision'],
                                            'capture_id': report.get('capture_id'), 'report_sha256': scenario['report_sha256'],
