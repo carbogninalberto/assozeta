@@ -256,7 +256,8 @@ complete registry. It prohibits database access and saves only counts/results to
 not proof of HTTP admission, persisted identity resolution or resource scope.
 
 
-`TESTS/adapters/django/accounts.py` also requires local PostgreSQL binaries. It
+`TESTS/adapters/django/accounts.py` also requires local PostgreSQL/Redis binaries,
+a C compiler, `pkg-config`, libjpeg, zlib and libwebp/libwebpdemux. It
 creates a private Unix-socket cluster and the current Django model schema, writes
 23 synthetic accounts and identity/resource relationships through Django, and runs Go repository tests against
 that same database. Django checks the expected lookup semantics first and verifies
@@ -1028,3 +1029,18 @@ The shared dispatcher has 94 URI comparisons, including PCD/PIXAR precedence,
 plus separately reported, non-exhaustive TIFF and AVIF gaps. The response fixture has 48 cases
 with twelve concrete image scenarios. Accounts and shipped-image checks include
 PIXAR; complete image-registry and public-login parity remain unfinished.
+
+
+`adapters/django/accounts.py --only login-http` exercises the registered login root
+against real Django ASGI on private PostgreSQL/Redis. Eighteen portable methods,
+five rate/session ordering methods, fifteen credential/effect scenarios and
+sixteen concurrent requests per backend check full responses, JWT signatures,
+cookies, OTP, session audit attribution, exact durable audit/index/card effects,
+final-write failures and a converted avatar. The fixture restores all declared
+state and detects other managed-table mutations. `adapters/go/server.py` builds
+the server with its adjacent native codec; missing codecs fail startup.
+`adapters/go/login_http_image.py --image IMAGE` separately verifies five
+pre-credential HTTP cases in the actual non-root, read-only, networkless image.
+Neither fixture proves full image/provider or backend-switch parity. See
+[`BE_GO/internal/handler/login.md`](../BE_GO/internal/handler/login.md) for bounds,
+current evidence and remaining gates.

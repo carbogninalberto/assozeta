@@ -3,7 +3,7 @@
 `LoginRate` enforces the existing `login-ip` 20/minute and `login-account`
 5/minute counter thresholds for an already resolved request key. The service
 receives a clock and a `domain.LoginRateCounter`; the repository owns Redis.
-Neither component is registered in the public server yet.
+The public-login root now composes both through request middleware.
 
 The protocol follows the installed django-ratelimit implementation and the
 unchanged `core.settings.CACHES` declaration:
@@ -47,8 +47,9 @@ Python string/casefold representations, IP-before-account denial, exact HTTP 429
 method/disable bypass and unchanged body bytes. The environment adapter now has
 55 cases including required DEBUG and the derived RATELIMIT_ENABLE default.
 See `../middleware/login_rate.md` for the boundary and remaining parser/body gaps.
-Public login composition and the application's other middleware remain open.
+Five public-root ordering contracts now exercise actual session/rate/REST
+composition; the application's remaining global middleware stays open.
 Django's fallback for corrupted/pickled or larger-than-int64 counters also remains
 open; normal counters created by these login gates use Redis integer values.
-No public login or backend activation is claimed. Evidence is recorded under
+These counter fixtures do not establish complete login parity or backend activation. Evidence is recorded under
 `quality-reports/go-migration/login-rate/` without credential values.

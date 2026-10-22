@@ -148,6 +148,7 @@ jobs:
           docker build -t assozeta-go-foundation:test BE_GO
           test "$(docker run --rm --network none --entrypoint id assozeta-go-foundation:test -u)" = "10001"
           python TESTS/adapters/go/login_jpeg_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/login_http_image.py --image assozeta-go-foundation:test
       - uses: actions/upload-artifact@v4
         if: always()
         with:

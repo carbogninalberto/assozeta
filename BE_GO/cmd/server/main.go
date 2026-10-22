@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -88,6 +89,15 @@ func run() error {
 	relations := repository.NewIdentityRelations(db)
 	scopeGuard := service.NewScopedRequestGuard(repository.NewScopedResources(db), relations, sessions)
 	identities := service.NewIdentityResolver(accounts, relations, sessions, service.NewPermissions(), scopeGuard)
+	executable, err := os.Executable()
+	if err != nil {
+		return errors.New("cannot resolve bundled image codec")
+	}
+	loginHandler, loginRate, closeProviders, err := composeLogin(cfg, db, cache, tokens, accounts, identities, filepath.Join(filepath.Dir(executable), "image-codec"))
+	if err != nil {
+		return err
+	}
+	defer closeProviders()
 	refreshHandler := handler.NewRefreshHandler(service.NewRefreshService(tokens), service.NewActorAuthentication(accounts, tokens), identities)
 	identifierHandler := handler.NewIdentifierAvailabilityHandler(service.NewIdentifierAvailability(repository.NewIdentifierAccounts(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	twoFactorHandler := handler.NewTwoFactorInfoHandler(service.NewTwoFactorInfo(), service.NewActorAuthentication(accounts, tokens), identities)
@@ -103,6 +113,7 @@ func run() error {
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/readyz", healthHandler.Readiness, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
+	e.Any("/oauth2/login", loginHandler.Login, middleware.DjangoSessionAudit(sessionAuthentication), middleware.LoginRateLimit(cfg.RateLimitEnabled, loginRate))
 	e.Any("/oauth2/refresh-token", refreshHandler.Refresh, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/oauth2/check/email", identifierHandler.Email, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/oauth2/check/username", identifierHandler.Username, middleware.DjangoSessionAudit(sessionAuthentication))

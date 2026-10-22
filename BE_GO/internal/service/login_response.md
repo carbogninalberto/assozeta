@@ -45,7 +45,8 @@ must still call finalization and withhold the response on any failure.
 The image processor is an explicit `domain.LoginImageProcessor` dependency.
 `pkg/storage/loginimage.Processor` now composes the existing file pipelines with
 shared admission/deadline and data-URI handling. Its registry still has explicit
-missing-codec and ambiguous-header gaps; it is not wired into public login.
+missing-codec and ambiguous-header gaps. The public-login root now composes it;
+those gaps remain explicit failures and do not count as parity.
 
 The real PostgreSQL fixture injects this processor. Ten additional cases verify
 owner/collaborator avatar and logo conversion, athlete/administrator bypass,
