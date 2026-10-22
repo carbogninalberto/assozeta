@@ -2,7 +2,7 @@
 
 This package implements bounded Pillow-compatible file pipelines and the shared
 `Processor`, which satisfies `domain.LoginImageProcessor`. The processor composes
-fifteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
+sixteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
@@ -905,8 +905,8 @@ PCD and other missing codecs must still be implemented; the two demonstrated
 fixture gaps are **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 72 whole-URI expectations against
-the actual Django helper and the composed Go processor. Fifteen pipelines,
+`TESTS/adapters/django/login_images.py` asserts 80 whole-URI expectations against
+the actual Django helper and the composed Go processor. Sixteen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
 files, the 1 MiB size boundary and registry collisions are exercised. Two separate
 missing-codec cases deliberately report `complete_image_parity=false`; they are
@@ -915,7 +915,7 @@ never counted as passing parity. The shipped-image test includes both sets.
 Race/integration tests mix formats through one processor, enforce a two-child
 bound across different codecs, cancel running/queued work, check deadline and exact
 URI-output limits, and prove reaping/slot reuse. The PostgreSQL response adapter
-now injects this concrete processor: 45 response cases include nine image cases,
+now injects this concrete processor: 46 response cases include ten image cases,
 32 mixed concurrent responses, unchanged database snapshots after declared card/
 audit resets, and a missing-decoder failure with no response tokens or card query.
 No public HTTP login, full registry coverage or backend activation is established.
@@ -1024,3 +1024,49 @@ before a 100-million-pixel canvas; linked system libraries are not rebuilt with
 sanitizers. The existing PNG sanitizer suite also passes with the combined helper.
 Shared URI tests now report 72 parity cases and two demonstrated missing-codec
 gaps; that census remains non-exhaustive. Public login and remaining formats stay open.
+
+
+## CUR directory and lazy DIB pipeline
+
+`CURFileProcessor` follows Pillow 11.1.0's `CurImagePlugin` and reuses the existing
+DIB parser and raw/RLE sample decoder. Selection replaces the current entry only
+when **both** directory width and height are strictly larger. Directory zeros are
+literal zero values. Hotspots, color-count and declared byte size do not control
+decoding. The selected DIB supplies the actual dimensions. A zero offset continues
+from the cursor after directory reads; overlapping or ignored partial entries
+retain Pillow's behavior.
+
+CUR halves the DIB height before applying the image pixel ceiling. Odd heights
+truncate; zero final dimensions reject opening. The parser still validates bit
+fields, compression and palette before this final dimension check. For raw 32-bit
+DIB data, only a declared offset of 22 selects BGRA/RGBA; other offsets use BGRX/RGB.
+Unlike ICO, CUR does not reconstruct an AND mask or accept embedded PNG. DIB alpha
+follows row orientation. Pixel loading remains lazy when the login policy returns
+the original file; corrupt pixel payloads can therefore remain unchanged.
+
+`ErrCURRejected` identifies recoverable opening failures such as incomplete
+struct words, empty directories and zero final dimensions. `ErrCURTerminal`
+identifies terminal failures such as truncated DIB blocks, unsupported encodings
+and the hard pixel ceiling. Both wrap `ErrCURHeader`. Shared dispatch uses these
+categories to preserve CUR/TGA precedence; it does not treat a terminal CUR failure
+as permission to try TGA. Other formats' unresolved registry exceptions remain open.
+
+One file admission slot and deadline cover directory inspection, DIB decoding,
+transformation and JPEG output. Header budgets charge bytes actually consumed,
+including repeated reads of overlapping data. Decode budgets charge the whole
+input and the normalized raster. Existing transform and JPEG budgets apply before
+allocation/output. Directory/palette/pixel loops observe cancellation. These are
+logical buffer budgets, not total-process RSS or production sizing guarantees.
+
+`TESTS/adapters/django/login_cur.py` checks 495 independently declared cases against
+Pillow and the actual Django helper: selection, offsets, all raw alpha values,
+core/v1-v5 DIB headers, palettes, RLE, bitfields, orientation, ignored masks, lazy
+passthrough, file-size boundaries and exact opening-failure categories. Separate
+header-only boundary checks validate halving before the pixel ceiling without
+allocating huge rasters. Go checks exact resource boundaries, output ownership,
+pre-cancellation and directory cancellation, 32 concurrent calls, queue deadlines,
+JPEG child reaping and pipeline reuse. The existing 512 BMP and 678 ICO oracle
+cases pass with the shared parser change. The shared dispatcher has 80 URI parity
+cases and two separately reported, non-exhaustive gaps. The PostgreSQL fixture
+contains 46 responses, including CUR avatar/logo conversion. Public login and
+complete image/backend parity remain unverified.

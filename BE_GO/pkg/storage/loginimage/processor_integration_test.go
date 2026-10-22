@@ -23,7 +23,7 @@ func TestImageProcessorAgainstDjango(t *testing.T) {
 		Name, URI, Expected string
 		Gap                 bool
 	}
-	if err = json.Unmarshal(raw, &cases); err != nil || len(cases) != 74 {
+	if err = json.Unmarshal(raw, &cases); err != nil || len(cases) != 82 {
 		t.Fatal("required dispatch fixture", len(cases), err)
 	}
 	p, err := NewProcessor(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), imageProcessorTestLimits())

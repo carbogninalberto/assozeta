@@ -12,7 +12,7 @@ import (
 // text/scientific formats. These broad guards can reject ambiguous malformed
 // inputs; they never silently report them as completed image parity.
 func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
-	supported := make(map[string]imageFormat, 15)
+	supported := make(map[string]imageFormat, 16)
 	bmp, err := NewBMPFileProcessor(path, BMPFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
 	if err != nil {
 		return nil, err
@@ -169,6 +169,17 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 		v, err := webp.Process(ctx, b)
 		return imageFileResult(v), err
 	}}
+	cur, err := NewCURFileProcessor(path, CURFileLimits{Codec: l.Codec, MaxHeaderBytes: l.MaxHeaderBytes, MaxDecodeBytes: l.MaxDecodeBytes, MaxTransformBytes: l.MaxTransformBytes})
+	if err != nil {
+		return nil, err
+	}
+	supported["CUR"] = imageFormat{name: "CUR", rejected: ErrCURRejected, terminal: ErrCURTerminal, accepts: curSignature, probe: func(ctx context.Context, b []byte) error {
+		_, err := ReadCURHeader(ctx, b, l.MaxHeaderBytes)
+		return err
+	}, process: func(ctx context.Context, b []byte) (imageFileResult, error) {
+		v, err := cur.Process(ctx, b)
+		return imageFileResult(v), err
+	}}
 	order := []string{"BMP", "GIF", "JPEG", "PPM", "PNG", "BLP", "BUFR", "CUR", "PCX", "DDS", "EPS", "FITS", "FLI", "FTEX", "GBR", "GRIB", "HDF5", "JPEG2000", "ICNS", "ICO", "IM", "IMT", "IPTC", "MCIDAS", "MPEG", "TIFF", "MSP", "PCD", "PIXAR", "PSD", "QOI", "SGI", "SPIDER", "SUN", "TGA", "WEBP", "WMF", "XBM", "XPM", "XVTHUMB"}
 	formats := make([]imageFormat, 0, len(order))
 	for _, name := range order {
@@ -188,8 +199,6 @@ func missingImageCandidate(name string, b []byte) bool {
 		return prefix("BLP1") || prefix("BLP2")
 	case "BUFR":
 		return prefix("BUFR") || prefix("ZCZC")
-	case "CUR":
-		return len(b) >= 22 && prefix("\x00\x00\x02\x00") && binary.LittleEndian.Uint16(b[4:]) > 0
 	case "DDS":
 		return prefix("DDS ")
 	case "EPS":
