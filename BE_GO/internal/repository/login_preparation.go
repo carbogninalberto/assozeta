@@ -13,14 +13,14 @@ type LoginPreparations struct{ db *sqlx.DB }
 
 func NewLoginPreparations(db *sqlx.DB) *LoginPreparations { return &LoginPreparations{db: db} }
 func (r *LoginPreparations) BeginLoginPreparation(ctx context.Context) (domain.LoginPreparationTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &loginPreparationTransaction{tx: tx}, nil
+	return &loginPreparationTransaction{ownedTransaction: tx}, nil
 }
 
-type loginPreparationTransaction struct{ tx *sqlx.Tx }
+type loginPreparationTransaction struct{ *ownedTransaction }
 
 func (t *loginPreparationTransaction) AccountForUpdate(ctx context.Context, id string) (domain.LoginChallenge, error) {
 	var account domain.LoginChallenge
@@ -62,6 +62,6 @@ func (t *loginPreparationTransaction) AppendUsernameAudit(ctx context.Context, e
 	}))
 }
 func (t *loginPreparationTransaction) Commit() error {
-	return credentialTransactionError(t.tx.Commit())
+	return credentialTransactionError(t.ownedTransaction.Commit())
 }
-func (t *loginPreparationTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *loginPreparationTransaction) Rollback() error { return t.ownedTransaction.Rollback() }

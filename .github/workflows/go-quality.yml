@@ -78,6 +78,10 @@ jobs:
         run: python TESTS/adapters/django/accounts.py
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
+      - name: Verify atomic periodic publication on the Django schedule schema
+        run: python TESTS/adapters/go/occurrence.py
+      - name: Verify transaction cleanup retains lifecycle admission
+        run: python TESTS/adapters/go/transaction_lifetime.py
       - name: Verify legacy medical storage keys
         run: python TESTS/adapters/django/document_keys.py
       - name: Verify existing storage environment and backend options
@@ -129,6 +133,8 @@ jobs:
             quality-reports/go-migration/worker-image/
             quality-reports/go-migration/scheduler-authority/
             quality-reports/go-migration/schedule-due/
+            quality-reports/go-migration/occurrence/
+            quality-reports/go-migration/transaction-lifetime/
             quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/subscription-token-cleanup/
             quality-reports/go-migration/associate-age-update/

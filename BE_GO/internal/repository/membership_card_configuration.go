@@ -19,14 +19,14 @@ func NewMembershipCardConfigurations(db *sqlx.DB) *MembershipCardConfigurations 
 var _ domain.MembershipCardConfigurationStore = (*MembershipCardConfigurations)(nil)
 
 func (r *MembershipCardConfigurations) BeginCardConfiguration(ctx context.Context) (domain.MembershipCardConfigurationTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, cardConfigurationError(err)
 	}
-	return &cardConfigurationTransaction{tx: tx}, nil
+	return &cardConfigurationTransaction{ownedTransaction: tx}, nil
 }
 
-type cardConfigurationTransaction struct{ tx *sqlx.Tx }
+type cardConfigurationTransaction struct{ *ownedTransaction }
 
 func (t *cardConfigurationTransaction) LockAssociation(ctx context.Context, owner, association string) error {
 	var id string
@@ -65,8 +65,10 @@ func (t *cardConfigurationTransaction) AppendConfigurationAudit(ctx context.Cont
 		Changes: event.Changes, Context: event.Context, AssociationID: &event.AssociationID, ResolutionPath: &path, At: event.At,
 	}))
 }
-func (t *cardConfigurationTransaction) Commit() error   { return cardConfigurationError(t.tx.Commit()) }
-func (t *cardConfigurationTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *cardConfigurationTransaction) Commit() error {
+	return cardConfigurationError(t.ownedTransaction.Commit())
+}
+func (t *cardConfigurationTransaction) Rollback() error { return t.ownedTransaction.Rollback() }
 func cardConfigurationError(err error) error {
 	var pg *pgconn.PgError
 	if errors.As(err, &pg) && (pg.Code == "40001" || pg.Code == "40P01") {

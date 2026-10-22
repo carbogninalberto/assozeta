@@ -17,10 +17,25 @@ using seconds intervals or scalar daily UTC cron, without publishing jobs. The
 combined oracle/differential adapter is required in CI; it does not activate Go
 scheduling or establish broker/handoff parity. See [the characterization](scheduler-authority.md).
 
+The exact-row periodic publisher additionally passes seventeen real PostgreSQL
+race/fault groups using Django's actual Beat schema. Ownership, source and schedule
+definition locks precede an atomic job/receipt/cursor transaction; retained sequence
+numbers survive count reset and source-ID reuse. Additive schema 3 is delivered
+through the explicit migrator. Candidate scanning, an installed scheduler and
+Celery handoff remain open; see [publication limits](../../../BE_GO/internal/service/occurrence.md).
+
+Explicit repository transactions now retain their private connection through
+automatic rollback and driver/socket cleanup. Eight real PostgreSQL/race groups
+cover worker, HTTP and snapshot lifetime plus connection reuse and failure paths;
+the old implementation fails the three representative lifetime assertions. All
+seventeen transaction entrypoints use the helper without changing their original
+context or isolation. Local socket cleanup and server disconnect processing are
+distinct boundaries; see [the transaction contract](../../../BE_GO/internal/repository/transaction.md).
+
 ## Latest increment: delivery alongside Django
 
 The Go image also packages explicit native worker and forward-only operational
-migration commands. Thirteen race-instrumented process scenarios and seven actual
+migration commands. Fourteen race-instrumented process scenarios and seven actual
 image scenarios pass. Startup fails on missing/dirty/unknown operational schema;
 migrations connect directly to PostgreSQL while the worker retains runtime
 pooler routing. The worker registers daily email reset only, honors maintenance
@@ -76,6 +91,12 @@ The preceding `6e6d6f9` quality workflow `39733767156` passes completely. Its ma
 workflow `39733767137` fails on external dashboard recipe bindings. The reviewed
 local companion patch remains unpublished, pending authorization for the separate
 repository. Current-head CI remains an independent gate.
+
+After publishing `ca25332`, manual verification `39850428436` and release-manual
+rehearsal `39850428390` both stop at the external content recipe review boundary
+(`docs/manuale/content-recipes.mjs`). Quality run `39850428388` is still pending
+at this observation. These failures are not passing manual-delivery evidence;
+the reviewed separate-repository companion changes remain unpublished.
 
 The user additionally requires periodic main alignment and communicating parallel
 agents. The initial fetch confirmed `origin/main@fddcee3` was contained. Upstream

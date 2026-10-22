@@ -13,11 +13,11 @@ type ProfilePasswords struct{ db *sqlx.DB }
 
 func NewProfilePasswords(db *sqlx.DB) *ProfilePasswords { return &ProfilePasswords{db} }
 func (r *ProfilePasswords) BeginProfilePassword(ctx context.Context) (domain.ProfilePasswordTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &profilePasswordTransaction{passwordLoginTransaction{tx: tx}}, nil
+	return &profilePasswordTransaction{passwordLoginTransaction{ownedTransaction: tx}}, nil
 }
 
 type profilePasswordTransaction struct{ passwordLoginTransaction }

@@ -114,8 +114,8 @@ db_query() {
 
 assert_go_operational_schema() {
     actual=$(db_query "SELECT version || ':' || dirty FROM public.assozeta_go_schema_migrations;")
-    [ "$actual" = '2:false' ] || {
-        printf 'Expected clean Go operational schema 2, got %s.\n' "$actual" >&2
+    [ "$actual" = '3:false' ] || {
+        printf 'Expected clean Go operational schema 3, got %s.\n' "$actual" >&2
         exit 1
     }
     actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")
@@ -134,6 +134,11 @@ assert_go_intent() {
     actual=$(go_intent_digest)
     [ -n "$actual" ] && [ "$actual" = "$expected" ] || {
         printf 'Lifecycle did not preserve the exact Go operational intent.\n' >&2
+        exit 1
+    }
+    actual=$(db_query "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222';")
+    [ -n "$actual" ] && [ "$actual" = "$go_occurrence_snapshot" ] || {
+        printf 'Lifecycle did not preserve the exact retained occurrence receipt.\n' >&2
         exit 1
     }
     assert_go_operational_schema
@@ -248,6 +253,9 @@ django_migration_count=$(db_query 'SELECT count(*) FROM django_migrations;')
 [ "$django_migration_count" -gt 0 ]
 django_migration_digest=$(db_query 'SELECT md5(json_agg(m ORDER BY id)::text) FROM django_migrations m;')
 db_sql "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'production-smoke','{\"checkpoint\":\"before-backup\",\"integer\":9007199254740993}',3,clock_timestamp());"
+# Storage sentinel only: this fixture does not activate periodic publication.
+db_sql "INSERT INTO public.assozeta_go_periodic_occurrences(id,periodic_task_id,source_name,dispatch_sequence,job_id,dispatched_at,ownership_generation,definition_sha256) VALUES ('22222222-2222-4222-8222-222222222222',17,'fixture-retained',9,'11111111-1111-4111-8111-111111111111',clock_timestamp(),7,repeat('a',64));"
+go_occurrence_snapshot=$(db_query "SELECT md5(row_to_json(r)::text) FROM public.assozeta_go_periodic_occurrences r WHERE id='22222222-2222-4222-8222-222222222222';")
 go_before_backup=$(go_intent_digest)
 
 phase "verify public production endpoints"

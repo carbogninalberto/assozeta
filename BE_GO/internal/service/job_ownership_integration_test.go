@@ -84,7 +84,7 @@ func TestJobOwnershipPostgres(t *testing.T) {
 		}
 	}
 	clean := func() {
-		exec(`TRUNCATE assozeta_go_jobs`)
+		exec(`TRUNCATE assozeta_go_periodic_occurrences,assozeta_go_jobs`)
 		exec(`UPDATE communications_communicationconfiguration SET daily_email_balance=9`)
 	}
 	t.Run("default Django ownership never claims or spends attempts", func(t *testing.T) {

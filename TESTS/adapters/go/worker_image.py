@@ -217,7 +217,7 @@ class Proof:
         self.go('migrate-repeat', '/app/migrate', network=self.network)
         self.stop(migration_lock)
         assert self.value('SELECT json_build_array(runtime,generation) FROM assozeta_go_job_ownership;') == ['django', 1]
-        assert self.value('SELECT json_build_array(version,dirty) FROM assozeta_go_schema_migrations;') == [2, False]
+        assert self.value('SELECT json_build_array(version,dirty) FROM assozeta_go_schema_migrations;') == [3, False]
         assert self.value('SELECT json_build_array(id,app,name) FROM django_migrations;') == [7, 'fixture', 'unchanged']
         self.case('forward migration preserves Django history and starts with Django ownership')
 

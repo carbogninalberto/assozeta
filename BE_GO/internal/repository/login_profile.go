@@ -17,11 +17,12 @@ var _ domain.LoginProfileReader = (*LoginProfiles)(nil)
 
 func (r *LoginProfiles) LoginProfile(ctx context.Context, id string) (domain.LoginProfileSnapshot, error) {
 	var row domain.LoginProfileSnapshot
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
+	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return row, err
 	}
-	defer tx.Rollback()
+	defer owned.Rollback()
+	tx := owned.tx
 	err = tx.GetContext(ctx, &row, `SELECT
  u.user_id,
  u.first_name,
@@ -91,7 +92,7 @@ func (r *LoginProfiles) LoginProfile(ctx context.Context, id string) (domain.Log
 			return row, errors.Join(domain.ErrProfileOnboardingUnavailable, err)
 		}
 	}
-	if err = tx.Commit(); err != nil {
+	if err = owned.Commit(); err != nil {
 		return domain.LoginProfileSnapshot{}, err
 	}
 	return row, nil

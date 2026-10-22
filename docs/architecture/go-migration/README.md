@@ -61,7 +61,7 @@ shutdown and the existing lifecycle lease remain necessary. See
 [ownership evidence and limits](../../../BE_GO/internal/repository/job_ownership.md).
 
 The same image now contains explicit worker and operational migration commands.
-Thirteen native-process scenarios and seven packaged-image scenarios pass, including
+Fourteen native-process scenarios and seven packaged-image scenarios pass, including
 default Django inactivity, direct migration connections, maintenance, competing
 workers and graceful/forced-stop recovery. Both are required CI checks. Only daily
 email reset is registered; producer, scheduler and installed activation remain
@@ -87,6 +87,23 @@ runs the actual Django oracle first. A future loop must bound rechecks rather
 than sleeping for the raw ModelEntry delay. This is not complete scheduler or
 handoff parity.
 See [scheduler authority and limits](scheduler-authority.md).
+
+An exact-row periodic publisher now joins owner admission, locked source/definition,
+durable daily-reset job, retained occurrence receipt and source cursor in one
+transaction. Seventeen actual-Beat-schema PostgreSQL groups pass, including races,
+editor contention, all write/commit faults, sequence retention and lifecycle
+lease lifetime. Schema 3 is additive and defaults remain Django-owned. Its
+three-attempt operational crash policy is explicit; no installed scheduler or
+Celery handoff is enabled. See [publication boundaries](../../../BE_GO/internal/service/occurrence.md).
+
+
+Explicit repository transactions now retain their private connection through
+automatic rollback and driver/socket cleanup. Eight real PostgreSQL/race groups
+cover worker, HTTP and snapshot lifetime plus connection reuse and failure paths;
+the old implementation fails the three representative lifetime assertions. All
+seventeen transaction entrypoints use the helper without changing their original
+context or isolation. Local socket cleanup and server disconnect processing are
+distinct boundaries; see [the transaction contract](../../../BE_GO/internal/repository/transaction.md).
 
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django
@@ -361,8 +378,10 @@ made that the reference implements a general durable queue or distributed hub.
 The current implementation uses one Assozeta-owned module in **`BE_GO/`**.
 The earlier document's `BE-go/` path and final Django-retirement phase do not
 supersede this request's coexistence requirement. Django continues to own all
-existing business tables. One additive Go operational job migration has been
-introduced and applied only in disposable tests, with its own migration history.
+existing business tables. Three additive Go operational migrations own durable
+jobs, runtime ownership and retained occurrence receipts under separate history.
+The ordinary lifecycle invokes their explicit migrator; only disposable
+installations have been exercised.
 
 Current `main` has retired software subscription gating, platform checkout and
 SaaS nurturing. `auto_move_users_to_base_plan` and `nurturing_warm_leads` remain

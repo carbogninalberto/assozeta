@@ -17,11 +17,12 @@ var _ domain.AssociationProfileReader = (*AssociationProfiles)(nil)
 
 func (r *AssociationProfiles) AssociationProfile(ctx context.Context, owner string) (domain.AssociationProfileSnapshot, error) {
 	var row domain.AssociationProfileSnapshot
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
+	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return row, err
 	}
-	defer tx.Rollback()
+	defer owned.Rollback()
+	tx := owned.tx
 	// The association's active manager excludes deleted associations. Django's
 	// related User base manager still exposes its inactive/soft-deleted owner.
 	err = tx.GetContext(ctx, &row, `SELECT
@@ -89,7 +90,7 @@ func (r *AssociationProfiles) AssociationProfile(ctx context.Context, owner stri
 	if err != nil {
 		return domain.AssociationProfileSnapshot{}, err
 	}
-	if err = tx.Commit(); err != nil {
+	if err = owned.Commit(); err != nil {
 		return domain.AssociationProfileSnapshot{}, err
 	}
 	return row, nil

@@ -16,11 +16,12 @@ func NewLoginResponseSettings(db *sqlx.DB) *LoginResponseSettings {
 }
 func (r *LoginResponseSettings) LoginResponseSettings(ctx context.Context, id string, instructor bool) (domain.LoginResponseSettings, error) {
 	empty := domain.LoginResponseSettings{}
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
+	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{ReadOnly: true, Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return empty, err
 	}
-	defer tx.Rollback()
+	defer owned.Rollback()
+	tx := owned.tx
 	var row struct {
 		UserID                   string `db:"user_id"`
 		TemporaryInvoiceDeletion bool   `db:"temporary_invoice_deletion"`
@@ -45,7 +46,7 @@ func (r *LoginResponseSettings) LoginResponseSettings(ctx context.Context, id st
 			return empty, err
 		}
 	}
-	if err = tx.Commit(); err != nil {
+	if err = owned.Commit(); err != nil {
 		return empty, err
 	}
 	return result, nil

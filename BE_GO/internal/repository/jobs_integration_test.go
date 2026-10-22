@@ -64,7 +64,7 @@ func TestDurableJobsPostgres(t *testing.T) {
 	}
 	var version int
 	var dirty bool
-	if err = db.QueryRowContext(ctx, `SELECT version,dirty FROM assozeta_go_schema_migrations`).Scan(&version, &dirty); err != nil || version != 2 || dirty {
+	if err = db.QueryRowContext(ctx, `SELECT version,dirty FROM assozeta_go_schema_migrations`).Scan(&version, &dirty); err != nil || uint(version) != migrations.CurrentVersion || dirty {
 		t.Fatal("separate operational migration history missing", err)
 	}
 	var legacy int
@@ -113,7 +113,7 @@ func TestDurableJobsPostgres(t *testing.T) {
 	}
 	reset := func(t *testing.T) {
 		t.Helper()
-		if _, err := db.ExecContext(ctx, `TRUNCATE assozeta_go_jobs`); err != nil {
+		if _, err := db.ExecContext(ctx, `TRUNCATE assozeta_go_periodic_occurrences,assozeta_go_jobs`); err != nil {
 			t.Fatal(err)
 		}
 	}

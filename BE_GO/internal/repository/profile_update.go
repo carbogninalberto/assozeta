@@ -18,11 +18,11 @@ type ProfileUpdates struct{ db *sqlx.DB }
 
 func NewProfileUpdates(db *sqlx.DB) *ProfileUpdates { return &ProfileUpdates{db} }
 func (r *ProfileUpdates) BeginProfileUpdate(ctx context.Context) (domain.ProfileUpdateTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &profileUpdateTransaction{loginPreparationTransaction{tx: tx}}, nil
+	return &profileUpdateTransaction{loginPreparationTransaction{ownedTransaction: tx}}, nil
 }
 
 type profileUpdateTransaction struct{ loginPreparationTransaction }

@@ -16,14 +16,14 @@ type AuditRetentions struct{ db *sqlx.DB }
 
 func NewAuditRetentions(db *sqlx.DB) *AuditRetentions { return &AuditRetentions{db: db} }
 func (r *AuditRetentions) BeginAuditRetention(ctx context.Context) (domain.AuditRetentionTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &auditRetentionTransaction{tx: tx}, nil
+	return &auditRetentionTransaction{ownedTransaction: tx}, nil
 }
 
-type auditRetentionTransaction struct{ tx *sqlx.Tx }
+type auditRetentionTransaction struct{ *ownedTransaction }
 
 // DeleteExpiredAuditRecords replaces the collector's explicit index cascade.
 // Django's existing foreign key is deferred; both deletes and fenced completion
@@ -46,7 +46,7 @@ func (t *auditRetentionTransaction) CompleteJob(ctx context.Context, id, token u
 	return completeJob(ctx, t.tx, id, token, nil)
 }
 func (t *auditRetentionTransaction) Commit() error {
-	err := t.tx.Commit()
+	err := t.ownedTransaction.Commit()
 	var constraint *pgconn.PgError
 	// A PostgreSQL FK rejection at COMMIT has definitely rolled back this
 	// transaction. Never classify transport errors or other commit failures as
@@ -56,4 +56,4 @@ func (t *auditRetentionTransaction) Commit() error {
 	}
 	return err
 }
-func (t *auditRetentionTransaction) Rollback() error { return t.tx.Rollback() }
+func (t *auditRetentionTransaction) Rollback() error { return t.ownedTransaction.Rollback() }

@@ -14,11 +14,11 @@ type LoginFinalizations struct{ db *sqlx.DB }
 
 func NewLoginFinalizations(db *sqlx.DB) *LoginFinalizations { return &LoginFinalizations{db: db} }
 func (r *LoginFinalizations) BeginLoginFinalization(ctx context.Context) (domain.LoginFinalizationTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &loginFinalizationTransaction{loginPreparationTransaction{tx: tx}}, nil
+	return &loginFinalizationTransaction{loginPreparationTransaction{ownedTransaction: tx}}, nil
 }
 
 // Shared user-audit association lookup and transaction conflict classification.

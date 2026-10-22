@@ -14,11 +14,11 @@ type ProfileTables struct{ db *sqlx.DB }
 
 func NewProfileTables(db *sqlx.DB) *ProfileTables { return &ProfileTables{db} }
 func (r *ProfileTables) BeginProfileTables(ctx context.Context) (domain.ProfileTablesTransaction, error) {
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &profileTablesTransaction{profileUpdateTransaction{loginPreparationTransaction{tx: tx}}}, nil
+	return &profileTablesTransaction{profileUpdateTransaction{loginPreparationTransaction{ownedTransaction: tx}}}, nil
 }
 
 type profileTablesTransaction struct{ profileUpdateTransaction }
