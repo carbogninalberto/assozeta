@@ -12,6 +12,7 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -43,18 +44,23 @@ def profile_update(request):
     user_data = UserAuthUpdateSerializer(data=request.data['user_data'])
     user = request.user if request.collaborator is None or request.collaborator is False else acting_user(request)
 
+    updated_fields = []
     if user_data.initial_data['first_name'] is not None:
         user.first_name = user_data.initial_data['first_name']
+        updated_fields.append('first_name')
 
     if user_data.initial_data['last_name'] is not None:
         user.last_name = user_data.initial_data['last_name']
+        updated_fields.append('last_name')
 
     if user_data.initial_data['username'] is not None:
         user.username = user_data.initial_data['username'].upper()
+        updated_fields.append('username')
 
     if user_data.initial_data['avatar_image'] is not None:
         user.avatar_image = compress_base64(user_data.initial_data['avatar_image'], max_size=(512, 512))
-    user.save()
+        updated_fields.append('avatar_image')
+    user.save(update_fields=updated_fields)
 
     if user_data.initial_data['sport_association'] is not None and user.role == User.ASSOCIATION:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
@@ -444,19 +450,21 @@ def profile_update_password(request):
     password_validated = re.search(password_pattern, password_data['new_password'])
 
     content = {}
-    if user.check_password(password_data['current_password']) and password_validated:
-        logger.info("Password updated successfully", extra={'user_id': str(user.user_id)})
-        user.set_password(password_data['new_password'])
-        content['msg'] = "password updated with success."
-        user.save()
-    elif password_validated is None:
-        logger.warning("Password update failed - invalid format", extra={'user_id': str(user.user_id)})
-        content['msg'] = "password not valid."
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        logger.warning("Password update failed - incorrect current password", extra={'user_id': str(user.user_id)})
-        content['code'] = ApiMessages.PASSWORD_NOT_VALID
-        content['msg'] = "old password not correct."
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(pk=user.pk)
+        if user.check_password(password_data['current_password']) and password_validated:
+            logger.info("Password updated successfully", extra={'user_id': str(user.user_id)})
+            user.set_password(password_data['new_password'])
+            content['msg'] = "password updated with success."
+            user.save(update_fields=['password'])
+        elif password_validated is None:
+            logger.warning("Password update failed - invalid format", extra={'user_id': str(user.user_id)})
+            content['msg'] = "password not valid."
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.warning("Password update failed - incorrect current password", extra={'user_id': str(user.user_id)})
+            content['code'] = ApiMessages.PASSWORD_NOT_VALID
+            content['msg'] = "old password not correct."
 
     # logger.info(content)
     content['role'] = User.ROLE_CHOICES[user.role - 1][1]

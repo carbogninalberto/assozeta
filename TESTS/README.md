@@ -1068,3 +1068,14 @@ foreign lookup denial, blocked cancellation/recovery and the actual details-quer
 plan with 4,000 additional synthetic tenants. Fixtures and plans contain synthetic
 data only. See `BE_GO/internal/handler/profile_info.md` for precise limits; this
 current-model rehearsal does not establish full frontend or migration parity.
+
+`accounts.py --only profile-password` runs the portable password response/effect
+contracts on actual Django and Go roots with private PostgreSQL/Redis. Fixtures
+cover model hash formats, malformed inputs, policy edges, collaborator ownership,
+impersonation denials, database failures and errors after successful writes.
+Locked-row rehearsals exercise concurrent profile edits, credential resets and
+duplicate changes. Cross-runtime flows check old-password rejection, new logins
+and previously issued JWTs. `profilepasswordintegration` measures the real
+credential transaction's query/pool bounds, cancellation and write rollback.
+The full accounts runner includes this adapter. This is current-model evidence,
+not complete frontend, historical-data or deployment-switching parity.

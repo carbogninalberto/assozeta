@@ -252,3 +252,10 @@ backend, all eight registration modes and four fresh-state reads per backend.
 The root shares the existing image processor across login and profile. See the
 [profile contract](internal/handler/profile_info.md) for query/pool/cancellation
 evidence and remaining frontend/image/lifecycle gaps.
+
+`PATCH /profile/update/password` preserves model-password verification, the
+legacy password rule and the endpoint-specific response. It changes the admitted
+person's password with a row lock and a credential-only update. The corresponding
+Django race repair prevents stale profile/reset overwrites. See the
+[password contract](internal/handler/profile_password.md) for transaction,
+permission, hash and failure boundaries; full migration acceptance remains open.

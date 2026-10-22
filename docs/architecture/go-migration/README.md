@@ -7,6 +7,48 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The new `PATCH /profile/update/password` preserves the effective person's
+credential ownership, model-hash behavior, password policy and endpoint-specific
+response. Actual Django and Go roots pass 67 declared HTTP/effect scenarios,
+three locked-row concurrency scenarios per backend and four cross-runtime
+password/login/JWT flows. The concurrency test exposed Django's full-row save
+losing a concurrent profile edit; both runtimes now lock before verification and
+write only the password. Concurrent resets invalidate stale credentials, and a
+duplicate change succeeds once. Two further real HTTP races exposed the reverse
+problem: Django profile updates could overwrite Go-written credentials. Those
+personal-profile saves now update only supplied fields. Both password backends
+preserve the new credentials and profile edit, with one profile-field audit.
+Password-only writes produce no audit/session changes, matching the reference
+registration.
+
+The real PostgreSQL mutation test measures one SELECT/one UPDATE for success and
+one SELECT/no UPDATE for incorrect credentials. Twenty-four competing requests
+produce one success, 24 SELECTs and one UPDATE. Cancellation, connection release,
+recovery and trigger-rejected writes pass with a four-connection pool. The full
+focused evidence is `quality-reports/go-migration/profile-password/profile-write-interleave-green.log`.
+Go race and ordinary/tagged vet pass, along with 324 existing Django tests,
+190 manual Python tests, 11 manual Node tests and twelve inventory tests.
+The rebuilt non-root/read-only/networkless image passes eight HTTP checks;
+these do not exercise database-backed password changes. The full accounts
+regression passes (`full-accounts.log`, `full-accounts-results.json`); it began
+before the final legacy profile-writer repair. The final focused rehearsal and
+324 existing Django tests additionally pass after that repair. Current-head
+remote CI remains pending. See the
+[password contract](../../../BE_GO/internal/handler/profile_password.md).
+
+Remote quality workflow `39723905840` passes at preceding commit `25b91ba`,
+including the Go accounts/image job and existing backend/UI/self-host/browser
+checks. Its manual workflow `39723905805` still fails on external recipe bindings.
+Those results do not establish current-head remote CI.
+
+Six manual source maps were reviewed after the credential/profile race repairs.
+Other profile functions and recipe behavior are unchanged. The updated local companion
+patch against `Bakney/manuale@4253c5d` now refreshes 204 bindings in total while
+preserving all authored MDX; authoring validation passes. It is saved as
+`quality-reports/go-migration/profile-password/manual-bindings-review.patch`.
+The previously offered 83-binding patch is preserved. Publication to the separate
+repository still awaits authorization; no full manual CI success is claimed.
+
 The public `/profile/info` now preserves the effective person's profile and the
 admitted owner's association, including collaborator-specific preferences,
 review settings and registration choices. It performs no login/card/audit writes.
@@ -142,7 +184,7 @@ now required by the shipped-image oracle. AVIF admission is now guarded in regis
 but its decoder and other unsupported formats remain implementation gaps.
 
 Go race, ordinary/tagged vet, formatting, twelve inventory tests, catalog drift,
-workflow lint, self-host static checks and eighteen supplementary adapter checks
+workflow lint, self-host static checks and nineteen supplementary adapter checks
 pass. The resize cancellation test now exercises reachable checkpoints in both
 pass orders, including the final check. Current evidence is retained in
 `quality-reports/go-migration/security-baseline/`, notably `full-accounts-results.json`,
@@ -233,7 +275,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 18 implementing, 6 needing review and 486
+The ledger currently has 4 deprecated, 19 implementing, 6 needing review and 486
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -1422,7 +1464,7 @@ historical-schema, backend-switching or complete lifecycle parity.
 PIXAR adds 81 authored raw-RGB header/pixel/file cases with explicit mode and
 pixel-ceiling errors, short headers, refill boundaries, ignored fields, lazy
 passthrough, size thresholds and JPEG dimension limits. Shared dispatch now
-composes eighteen pipelines and has 88 URI comparisons plus one demonstrated,
+composes nineteen pipelines and has 88 URI comparisons plus one demonstrated,
 non-exhaustive TIFF gap. The PostgreSQL fixture has 48 response cases and twelve
 image scenarios. Exact logical budgets, ownership, cancellation, native queue/
 deadline/reaping/reuse and concurrent calls are checked. Evidence is under
