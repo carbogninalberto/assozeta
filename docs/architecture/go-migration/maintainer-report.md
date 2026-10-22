@@ -35,6 +35,19 @@ and `final-focused-results.json`).
 Evidence is under `quality-reports/go-migration/profile-info/`; see the
 [profile contract](../../../BE_GO/internal/handler/profile_info.md).
 
+Remote quality run `39721860272` at `d11eff6` failed while saving a QR
+preview: the full accounts runner had not created the setup artifact directory.
+Backend/UI/SSO/recovery/legacy, self-host and workflow jobs passed, but the Go
+job and aggregate quality gate failed; later Go steps were skipped. Both setup
+and profile adapters now create their own artifact directory before use. The
+same clean-directory reproduction also exposed the profile SQL-plan output path.
+Local red evidence is `fresh-artifact-red.log` and `plan-artifact-red.log` under
+`quality-reports/go-migration/profile-info/`. Repeating both real Django/Go
+rehearsals with initially absent artifact roots passes and verifies the generated
+files (`fresh-artifact-green.log`, `plan-artifact-green.log`): all 31 setup and
+56 profile scenarios per backend, 512 QR vectors and the 4,000-tenant query plan.
+Current-head CI remains required.
+
 The preceding setup checkpoint `d11eff6` passes 31 HTTP scenarios and 62 concurrent
 requests per backend, 512 decoded QR symbols, four activation/disabling flows and
 four fresh-login flows. Its full accounts suite, 103 environment cases and image

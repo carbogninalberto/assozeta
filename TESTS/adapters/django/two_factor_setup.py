@@ -12,6 +12,8 @@ from .scoped_resources import uid
 
 
 def run(work,log,tool_env,address):
+    artifacts=ROOT/'quality-reports/go-migration/two-factor-setup'
+    artifacts.mkdir(parents=True,exist_ok=True)
     from django.apps import apps
     from django.conf import settings
     from django.conf.global_settings import PASSWORD_HASHERS
@@ -141,7 +143,7 @@ def run(work,log,tool_env,address):
                     material=response[1]['data'];decoded,preview=decode_svg_qr(material['qrcode_uri'])
                     label='django' if producer==django_base else 'go'
                     # Synthetic disposable-account QR; never a customer credential.
-                    preview.resize((392,392),Image.Resampling.NEAREST).save(ROOT/'quality-reports/go-migration/two-factor-setup'/f'{label}-qr.png')
+                    preview.resize((392,392),Image.Resampling.NEAREST).save(artifacts/f'{label}-qr.png')
                     before=User.original_objects.filter(pk=uid(8)).values('two_fa','two_fa_secret').get()
                     events=set(LogEntry.objects.values_list('pk',flat=True))
                     result=Client(consumer,token(8)).request('POST','/two-fa/update',{'enable':True,'secret':material['otp_secret'],'otp':otp(material['otp_secret'])})
