@@ -27,7 +27,7 @@ func TestQOIHeaderLazySeekAndBudget(t *testing.T) {
 }
 func TestQOIInitialIndexAndOvershoot(t *testing.T) {
 	for _, tc := range []struct{ payload, pixels []byte }{
-		{[]byte{53}, []byte{0, 0, 0, 255}},
+		{[]byte{53}, []byte{0, 0, 0, 0}},
 		{[]byte{52}, []byte{0, 0, 0, 0}},
 		{[]byte{253}, []byte{0, 0, 0, 255}},
 		{[]byte{254, 10, 20, 30}, []byte{10, 20, 30, 255}},

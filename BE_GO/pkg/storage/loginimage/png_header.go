@@ -34,7 +34,6 @@ type pngHeaderState struct {
 	frameCount uint32
 	hasBBox    bool
 	sequence   int64
-	disposal   int
 	textMemory int64
 }
 
@@ -55,7 +54,7 @@ func readPNGHeaderState(ctx context.Context, data []byte, maxHeaderBytes int) (p
 		return empty, ErrPNGHeader
 	}
 	cursor := pngHeaderCursor{ctx: ctx, data: data, position: 8, limit: maxHeaderBytes}
-	state := pngHeaderState{sequence: -1, disposal: -1}
+	state := pngHeaderState{sequence: -1}
 	for {
 		chunk, err := cursor.take(8)
 		if err != nil {
@@ -110,10 +109,7 @@ func readPNGHeaderState(ctx context.Context, data []byte, maxHeaderBytes int) (p
 				if h.DefaultImage {
 					h.Frames++
 				}
-				// Frame-zero disposal PREVIOUS becomes BACKGROUND and crops the extent.
-				if state.hasBBox && h.InvalidTile && (state.disposal == 1 || state.disposal == 2) {
-					return empty, ErrPNGHeader
-				}
+
 			}
 			if kind == "IEND" {
 				h.Tile = PNGRect{}
@@ -178,7 +174,7 @@ func (s *pngHeaderState) chunk(ctx context.Context, kind string, body []byte) er
 			return ErrPNGHeader
 		}
 	case "cHRM":
-		if len(body)%4 != 0 {
+		if len(body) < 32 {
 			return ErrPNGHeader
 		}
 	case "sRGB":
@@ -219,7 +215,6 @@ func (s *pngHeaderState) chunk(ctx context.Context, kind string, body []byte) er
 		h.Tile = PNGRect{int(x), int(y), int(width), int(height)}
 		h.InvalidTile = false
 		s.hasBBox = true
-		s.disposal = int(body[24])
 	case "tEXt", "zTXt", "iTXt", "iCCP":
 		return s.textChunk(ctx, kind, body)
 	}

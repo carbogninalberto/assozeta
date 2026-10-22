@@ -45,10 +45,10 @@ func TestPCDHeaderPixelsAndBudgets(t *testing.T) {
 			t.Fatal("header", n, h, err)
 		}
 	}
-	if _, err := ReadPCDHeader(ctx, b[:3587], 1539); err != nil {
-		t.Fatal("exact short header budget", err)
+	if _, err := ReadPCDHeader(ctx, b, 1539); err != nil {
+		t.Fatal("exact header budget", err)
 	}
-	for _, limit := range []int{0, 1538, 2047} {
+	for _, limit := range []int{0, 1538} {
 		if _, err := ReadPCDHeader(ctx, b, limit); !errors.Is(err, ErrWorkingLimit) {
 			t.Fatal("header budget", limit, err)
 		}
@@ -69,18 +69,35 @@ func TestPCDHeaderPixelsAndBudgets(t *testing.T) {
 	if r.Pixels[0] != 99 {
 		t.Fatal("pixels retain input alias")
 	}
-	for _, bad := range []PCDHeader{{767, 512, 0}, {768, 511, 0}, {768, 512, 4}, {}} {
+	for _, bad := range []PCDHeader{{767, 512, 0}, {768, 511, 0}, {768, 512, 4}, {768, 512, 1}, {512, 768, 0}, {512, 768, 2}, {}} {
 		if r, err := DecodePCD(ctx, bad, b, budget); !errors.Is(err, ErrPCDDecode) || r.Pixels != nil {
 			t.Fatal("forged header", bad, err)
 		}
 	}
 	for _, orientation := range []uint8{1, 3} {
-		h.Orientation = orientation
-		if r, err := DecodePCD(ctx, h, b, budget); !errors.Is(err, ErrPCDDecode) || r.Pixels != nil {
-			t.Fatal("reference rotation failure", orientation, err)
+		b[3586] = orientation
+		h, err := ReadPCDHeader(ctx, b, 1539)
+		if err != nil || h != (PCDHeader{512, 768, orientation}) {
+			t.Fatal("rotated header", h, err)
+		}
+		r, err := DecodePCD(ctx, h, b, budget)
+		if err != nil || r.Width != 512 || r.Height != 768 || r.Mode != "RGB" {
+			t.Fatal("rotated raster", orientation, err)
+		}
+		// The sole black source pixel at (0,0) moves to opposite corners.
+		black := 767 * 512 * 3
+		if orientation == 3 {
+			black = 511 * 3
+		}
+		want := bytes.Repeat([]byte{99}, 768*512*3)
+		copy(want[black:black+3], []byte{0, 0, 0})
+		if !bytes.Equal(r.Pixels, want) {
+			t.Fatal("rotation direction", orientation)
+		}
+		if got, err := DecodePCD(ctx, h, b, budget-1); !errors.Is(err, ErrWorkingLimit) || got.Pixels != nil {
+			t.Fatal("rotated decode budget", orientation, err)
 		}
 	}
-	h.Orientation = 0
 	parent, cancel := context.WithCancel(ctx)
 	defer cancel()
 	controlled := &cancellingImageContext{Context: parent, cancel: cancel, trigger: 3}
@@ -110,8 +127,8 @@ func TestPCDFileFallbackUnavailableAndLimits(t *testing.T) {
 		}
 	}
 	b[3586] = 1
-	if got, err := p.Process(context.Background(), b); err != nil || !got.KeepOriginal || got.JPEG != nil {
-		t.Fatal("rotation fallback required encoder", err)
+	if got, err := p.Process(context.Background(), b); !errors.Is(err, ErrJPEGCodecUnavailable) || got.KeepOriginal || got.JPEG != nil {
+		t.Fatal("rotated image hid missing encoder", err)
 	}
 	b[3586] = 0
 	if got, err := p.Process(context.Background(), b); !errors.Is(err, ErrJPEGCodecUnavailable) || got.KeepOriginal || got.JPEG != nil {

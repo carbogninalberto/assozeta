@@ -39,8 +39,8 @@ def vectors():
         try:
             with warnings.catch_warnings():warnings.simplefilter('ignore');im=Image.open(io.BytesIO(data))
             assert not invalid,(name,'invalid header accepted')
-            offset=128 if bits==8 and planes==1 else start+min(128,len(data)-start)
-            headerbytes=directory+min(128,len(data)-start)+(min(769,len(data)) if bits==8 and planes==1 else 0)
+            offset=start+128
+            headerbytes=directory+min(68,len(data)-start)+(min(769,len(data)) if bits==8 and planes==1 else 0)
             assert im.mode==mode and im.size==(w,h) and im.tile[0].offset==offset and im.tile[0].args==(raw,stride),(name,im.mode,im.size,im.tile)
             assert getattr(im,'n_frames',1)==frames,(name,'frame count')
             expected_header=dict(width=w,height=h,bits=bits,planes=planes,stride=stride,mode=mode,rawmode=raw,format='DCX' if directory else 'PCX',frames=frames,dataoffset=offset,headerbytes=headerbytes,pixelwarning=w*h>89478485)
@@ -85,19 +85,19 @@ def vectors():
             for version in (0,2,3):
                 b=bytearray(data);b[1]=version
                 add(f'version {version} {bits}/{planes} width={w}',bytes(b),pixels=bytes(pixels) if bits==1 else None,invalid=bits!=1,**kwargs)
-    # Explicit narrow padded layouts: these are observable decoder quirks.
+    # Explicit padded planes: padding must not become another channel or index.
     for w,payload,pixels in [
-        (1,bytes([10,1,20,2,30,3]),bytes([10,1,20])),
-        (3,bytes([10,11,12,1,20,21,22,2,30,31,32,3]),bytes([10,1,22,11,20,2,12,21,30])),
+        (1,bytes([10,1,20,2,30,3]),bytes([10,20,30])),
+        (3,bytes([10,11,12,1,20,21,22,2,30,31,32,3]),bytes([10,20,30,11,21,31,12,22,32])),
         (5,bytes([10,11,12,13,14,1,20,21,22,23,24,2,30,31,32,33,34,3]),bytes([10,20,30,11,21,31,12,22,32,13,23,33,14,24,34])),
     ]:
         for provided in (0,w+1,65535):
             data=pcx(w,1,8,3,provided)+payload
             add(f'RGB padded width={w} declared={provided}',data,w=w,h=1,planes=3,stride=(w+1)*3,mode='RGB',raw='RGB;L',pixels=pixels)
             add(f'RGB final padding required width={w} declared={provided}',data[:-1],w=w,h=1,planes=3,stride=(w+1)*3,mode='RGB',raw='RGB;L')
-    for planes,payload,pixels in [(2,b'\xa0\0\x60\0',bytes([1,0,1])),(4,b'\xa0\0\x60\0\x20\0\x40\0',bytes([1,4,13]))]:
+    for planes,payload,pixels in [(2,b'\xa0\0\x60\0',bytes([1,2,3])),(4,b'\xa0\0\x60\0\x20\0\x40\0',bytes([1,10,7]))]:
         add(f'padded indexed planes={planes}',pcx(3,1,1,planes,2)+rle(payload),h=1,bits=1,planes=planes,stride=2*planes,mode='P',raw=f'P;{planes}L',pixels=pixels)
-    add('padded indexed width17',pcx(17,1,1,2,4)+rle(b'\xff\xff\x80\0\0\xff\0\0'),w=17,h=1,bits=1,planes=2,stride=8,mode='P',raw='P;2L',pixels=bytes([1]*16+[3]))
+    add('padded indexed width17',pcx(17,1,1,2,4)+rle(b'\xff\xff\x80\0\0\xff\0\0'),w=17,h=1,bits=1,planes=2,stride=8,mode='P',raw='P;2L',pixels=bytes([1]*8+[3]*8+[1]))
     for count in range(64):
         w=max(1,count);payload=bytes([0xc0|count,42])+(b'\x2a' if count==0 else b'')
         add(f'run count {count}',pcx(w,1)+payload,w=w,h=1,stride=w,pixels=bytes([42]*w))
@@ -136,26 +136,25 @@ def vectors():
     add('pixel warning',pcx(10000,10000),w=10000,h=10000,stride=10000)
     add('pixel hard limit',pcx(65536,65536,stride=0),invalid=True)
     # DCX only loads the first entry; later offsets are not inspected.
-    for bits,planes,mode,raw,payload,pixels in [(1,1,'1','1',b'\xa0\x40',b'\xff\0\xff\0\xff\0'),(8,1,'L','L',bytes(range(6)),bytes(6)),(8,3,'RGB','RGB;L',bytes(range(18)),bytes([0,3,6,1,4,7,2,5,8,9,12,15,10,13,16,11,14,17]))]:
+    for bits,planes,mode,raw,payload,pixels in [(1,1,'1','1',b'\xa0\x40',b'\xff\0\xff\0\xff\0'),(8,1,'L','L',bytes(range(6)),bytes(range(6))),(8,3,'RGB','RGB;L',bytes(range(18)),bytes([0,3,6,1,4,7,2,5,8,9,12,15,10,13,16,11,14,17]))]:
         for frames in (1,2,1024):
             directory=4+4*(frames+(frames<1024));start=directory
             prefix=struct.pack('<I',0x3ade68b1)+struct.pack('<I',start)+struct.pack('<I',0xffffffff)*(frames-1)+(bytes(4) if frames<1024 else b'')
             data=prefix+pcx(3,2,bits,planes)+rle(payload)
-            # The 8-bit absolute seek lands in all-FF directory entries with
-            # 1024 frames, so its first run overruns the row.
-            add(f'DCX {bits}/{planes} frames={frames}',data,bits=bits,planes=planes,stride=((3*bits+7)//8)*planes,mode=mode,raw=raw,start=start,directory=directory,frames=frames,pixels=None if bits==8 and planes==1 and frames==1024 else pixels)
+            # Every frame mode starts 128 bytes after its own frame offset.
+            add(f'DCX {bits}/{planes} frames={frames}',data,bits=bits,planes=planes,stride=((3*bits+7)//8)*planes,mode=mode,raw=raw,start=start,directory=directory,frames=frames,pixels=pixels)
     prefix=struct.pack('<III',0x3ade68b1,12,0)
     for offset in (13,64):
         pre=struct.pack('<III',0x3ade68b1,offset,0)+bytes(offset-12)
         for planes in (1,3):
-            expected=(bytes(6) if offset==13 else bytes([0,1,3,0,0,0])) if planes==1 else bytes([0,3,6,1,4,7,2,5,8,9,12,15,10,13,16,11,14,17])
+            expected=bytes(range(6)) if planes==1 else bytes([0,3,6,1,4,7,2,5,8,9,12,15,10,13,16,11,14,17])
             add(f'DCX frame offset {offset} planes={planes}',pre+pcx(3,2,planes=planes)+bytes(range(6*planes)),planes=planes,stride=3*planes,mode='L' if planes==1 else 'RGB',raw='L' if planes==1 else 'RGB;L',start=offset,directory=12,pixels=expected)
     for bits,planes,mode,raw in ((1,1,'1','1'),(8,1,'L','L'),(8,3,'RGB','RGB;L')):
         add(f'DCX partial lazy header {bits}/{planes}',prefix+pcx(200,100,bits,planes)[:68],w=200,h=100,bits=bits,planes=planes,stride=((200*bits+7)//8)*planes,mode=mode,raw=raw,start=12,directory=12,lazy=True)
     for index in (None,255):
         palette=bytearray(gray)
         if index is not None:palette[1+index*3]^=1
-        add(f'DCX palette at whole file end {index}',prefix+pcx(3,2)+bytes(range(6))+palette,start=12,directory=12,mode='L' if index is None else 'P',raw='L' if index is None else 'P',pixels=bytes(6))
+        add(f'DCX palette at whole file end {index}',prefix+pcx(3,2)+bytes(range(6))+palette,start=12,directory=12,mode='L' if index is None else 'P',raw='L' if index is None else 'P',pixels=bytes(range(6)))
     for n in (4,5,7,8,9,11):add(f'DCX short directory {n}',prefix[:n],invalid=True)
     for data in (struct.pack('<II',0x3ade68b1,0),struct.pack('<III',0x3ade68b1,0xffffffff,0),prefix+b'bad'):
         add(f'DCX invalid first frame {data!r}',data,invalid=True)

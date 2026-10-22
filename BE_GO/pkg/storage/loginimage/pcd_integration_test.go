@@ -24,7 +24,7 @@ func TestPCDAgainstPillow(t *testing.T) {
 		Header             *PCDHeader
 		Keep               bool
 	}
-	if err := json.Unmarshal(raw, &cases); err != nil || len(cases) != 59 {
+	if err := json.Unmarshal(raw, &cases); err != nil || len(cases) != 63 {
 		t.Fatal("required PCD cases", len(cases), err)
 	}
 	l := bmpFileTestLimits()
@@ -60,7 +60,7 @@ func TestPCDAgainstPillow(t *testing.T) {
 			if err == nil || r.Pixels != nil {
 				t.Errorf("%s: invalid pixels accepted", c.Name)
 			}
-		} else if err != nil || r.Width != 768 || r.Height != 512 || r.Mode != "RGB" || !bytes.Equal(r.Pixels, c.Pixels) {
+		} else if err != nil || r.Width != h.Width || r.Height != h.Height || r.Mode != "RGB" || !bytes.Equal(r.Pixels, c.Pixels) {
 			t.Errorf("%s: pixel mismatch %v", c.Name, err)
 		}
 		if !bytes.Equal(c.Data, before) {
@@ -91,7 +91,7 @@ func TestPCDFileStagesAndNativeCancellation(t *testing.T) {
 		case "input":
 			l.Codec.MaxEncodedBytes = len(b) - 1
 		case "header":
-			l.MaxHeaderBytes = 2047
+			l.MaxHeaderBytes = 1538
 		case "decode":
 			l.MaxDecodeBytes = int64(len(b)+pixels) - 1
 		case "transform":

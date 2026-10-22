@@ -7,8 +7,8 @@ import (
 
 var ErrPCXDecode = errors.New("login PCX pixel decoding failed")
 
-// DecodePCX preserves Pillow's PCX RLE and planar unpacking, including padding
-// compaction quirks. Mode 1 becomes 0/255 and P retains indices. The logical
+// DecodePCX preserves Pillow 13's PCX RLE and per-plane padding removal.
+// Mode 1 becomes 0/255 and P retains indices. The logical
 // budget counts the input, normalized output and one decoded row, not total RSS.
 func DecodePCX(ctx context.Context, h PCXHeader, data []byte, maxBytes int64) (Raster, error) {
 	empty := Raster{}
@@ -93,18 +93,7 @@ func DecodePCX(ctx context.Context, h PCXHeader, data []byte, maxBytes int64) (R
 			}
 			x += n
 		}
-		// Reproduce PcxDecode.c's byte-count/pixel-width heuristic, which
-		// intentionally differs from simply stripping each plane's padding.
-		if h.Stride%h.Width != 0 && h.Stride > h.Width {
-			bands := h.Stride / h.Width
-			stride := h.Stride / bands
-			for i := 1; i < bands; i++ {
-				if err := ctx.Err(); err != nil {
-					return empty, err
-				}
-				copy(row[i*h.Width:][:h.Width], row[i*stride:][:h.Width])
-			}
-		}
+		planeStride := h.Stride / planes
 		dst := out[y*h.Width*c:]
 		for x := 0; x < h.Width; x++ {
 			if x&4095 == 0 {
@@ -119,12 +108,12 @@ func DecodePCX(ctx context.Context, h PCXHeader, data []byte, maxBytes int64) (R
 				dst[x] = row[x]
 			case "RGB;L":
 				dst[x*3] = row[x]
-				dst[x*3+1] = row[x+h.Width]
-				dst[x*3+2] = row[x+h.Width*2]
+				dst[x*3+1] = row[x+planeStride]
+				dst[x*3+2] = row[x+planeStride*2]
 			default:
 				v := byte(0)
 				for p := 0; p < planes; p++ {
-					v |= ((row[p*int(minimum)+x/8] >> uint(7-x%8)) & 1) << uint(p)
+					v |= ((row[p*planeStride+x/8] >> uint(7-x%8)) & 1) << uint(p)
 				}
 				dst[x] = v
 			}

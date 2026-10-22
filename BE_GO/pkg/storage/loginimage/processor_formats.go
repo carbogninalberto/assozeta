@@ -202,7 +202,7 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 		v, err := pixar.Process(ctx, b)
 		return imageFileResult(v), err
 	}}
-	order := []string{"BMP", "GIF", "JPEG", "PPM", "PNG", "BLP", "BUFR", "CUR", "PCX", "DDS", "EPS", "FITS", "FLI", "FTEX", "GBR", "GRIB", "HDF5", "JPEG2000", "ICNS", "ICO", "IM", "IMT", "IPTC", "MCIDAS", "MPEG", "TIFF", "MSP", "PCD", "PIXAR", "PSD", "QOI", "SGI", "SPIDER", "SUN", "TGA", "WEBP", "WMF", "XBM", "XPM", "XVTHUMB"}
+	order := []string{"BMP", "GIF", "JPEG", "PPM", "PNG", "AVIF", "BLP", "BUFR", "CUR", "PCX", "DDS", "EPS", "FITS", "FLI", "FTEX", "GBR", "GRIB", "HDF5", "JPEG2000", "ICNS", "ICO", "IM", "IMT", "IPTC", "MCIDAS", "MPEG", "TIFF", "MSP", "PCD", "PIXAR", "PSD", "QOI", "SGI", "SPIDER", "SUN", "TGA", "WEBP", "WMF", "XBM", "XPM", "XVTHUMB"}
 	formats := make([]imageFormat, 0, len(order))
 	for _, name := range order {
 		if f, ok := supported[name]; ok {
@@ -217,6 +217,15 @@ func newImageFormats(path string, l ProcessorLimits) ([]imageFormat, error) {
 func missingImageCandidate(name string, b []byte) bool {
 	prefix := func(s string) bool { return bytes.HasPrefix(b, []byte(s)) }
 	switch name {
+	case "AVIF":
+		if len(b) < 12 || string(b[4:8]) != "ftyp" {
+			return false
+		}
+		switch string(b[8:12]) {
+		case "avif", "avis", "mif1", "msf1":
+			return true
+		}
+		return false
 	case "BLP":
 		return prefix("BLP1") || prefix("BLP2")
 	case "BUFR":

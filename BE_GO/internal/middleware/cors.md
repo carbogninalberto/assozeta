@@ -21,7 +21,7 @@ access remain disabled, as in current settings. Existing Vary members and `*`
 are preserved. Headers are applied at the writer boundary before the first
 streamed chunk/flush and when Echo handles returned errors.
 
-Origin comparison preserves shipped Python 3.13.2 `urlsplit` scheme/netloc behavior rather
+Origin comparison preserves shipped Python 3.13.16 `urlsplit` scheme/netloc behavior rather
 than browser-origin normalization. Schemes are lowercased; host case, explicit
 ports and literal percent escapes remain significant. Paths/query/fragments do
 not participate. IPv6/IPvFuture and NFKC delimiter failures deny an origin even
@@ -71,3 +71,10 @@ hosts. See CPython's [shipped parser](https://github.com/python/cpython/blob/v3.
 Application-wide oracles and CI now require the Dockerfile's exact Python version;
 older local interpreters fail clearly instead of silently defining production
 compatibility. Earlier Python 3.12.6 evidence is superseded for these URL cases.
+
+Current Python 3.13.16 reconciliation admits IPvFuture with either `v` or `V`,
+while retaining authority case for allowlist comparison. The portable suite now
+checks 44 declared URL cases and 51 HTTP methods per backend; the production patch
+version is required by the adapter. Red Go comparisons preceded this correction.
+Evidence: `quality-reports/go-migration/security-baseline/cors-red-comparison.log`
+and `cors-current.log`.

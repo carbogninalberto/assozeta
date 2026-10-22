@@ -25,8 +25,8 @@ func pcxSignature(data []byte) bool {
 	return pcxPrefix(data) || len(data) >= 4 && binary.LittleEndian.Uint32(data) == dcxMagic
 }
 
-// ReadPCXHeader follows Pillow 11.1's PCX/DCX lazy admission. Byte budgets include
-// the DCX directory, partial 128-byte header and whole-file tail palette reads.
+// ReadPCXHeader follows Pillow 13's PCX/DCX lazy admission. Byte budgets include
+// the DCX directory, 68-byte header and whole-file tail palette reads.
 func ReadPCXHeader(ctx context.Context, data []byte, maxBytes int) (PCXHeader, error) {
 	empty := PCXHeader{}
 	if err := ctx.Err(); err != nil {
@@ -85,7 +85,7 @@ func ReadPCXHeader(ctx context.Context, data []byte, maxBytes int) (PCXHeader, e
 			return empty, ErrPCXHeader
 		}
 	}
-	b, err := read(start, 128)
+	b, err := read(start, 68)
 	if err != nil {
 		return empty, err
 	}
@@ -102,7 +102,7 @@ func ReadPCXHeader(ctx context.Context, data []byte, maxBytes int) (PCXHeader, e
 	h.Bits = int(b[3])
 	h.Planes = int(b[65])
 	provided := int(le.Uint16(b[66:]))
-	h.DataOffset = start + len(b)
+	h.DataOffset = start + 128
 	switch {
 	case h.Bits == 1 && h.Planes == 1:
 		h.Mode = "1"
@@ -117,7 +117,7 @@ func ReadPCXHeader(ctx context.Context, data []byte, maxBytes int) (PCXHeader, e
 		h.Mode = "L"
 		h.RawMode = "L"
 		// BytesIO clamps negative SEEK_END positions to zero. DCX inherits
-		// this whole-file palette lookup and absolute pixel seek to 128.
+		// this whole-file palette lookup, independently of the frame pixel offset.
 		palette, err := read(max(0, len(data)-769), 769)
 		if err != nil {
 			return empty, err
@@ -135,7 +135,6 @@ func ReadPCXHeader(ctx context.Context, data []byte, maxBytes int) (PCXHeader, e
 				}
 			}
 		}
-		h.DataOffset = 128
 	case b[1] == 5 && h.Bits == 8 && h.Planes == 3:
 		h.Mode = "RGB"
 		h.RawMode = "RGB;L"

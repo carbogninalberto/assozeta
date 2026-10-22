@@ -71,7 +71,7 @@ func InspectJPEG(ctx context.Context, data []byte, maxHeaderBytes int) (JPEGInfo
 			return JPEGInfo{}, err
 		}
 		if i >= uint64(len(entries.data)/16) {
-			return JPEGInfo{}, ErrJPEGHeader
+			return base, nil // Pillow 13 falls back to JPEG on malformed MP entries.
 		}
 		attribute := entryOrder.Uint32(entries.data[int(i)*16:])
 		if (attribute>>24)&7 != 0 {
@@ -124,6 +124,8 @@ func readJPEGDirectory(ctx context.Context, data []byte) (jpegDirectory, error) 
 	}
 	count := order.Uint16(data[int(offset):])
 	offset += 2
+	seen := make(map[uint16]struct{})
+	var externalBytes uint64
 	for i := 0; i < int(count); i++ {
 		if err := ctx.Err(); err != nil {
 			return empty, err
@@ -134,6 +136,9 @@ func readJPEGDirectory(ctx context.Context, data []byte) (jpegDirectory, error) 
 		entry := data[int(offset) : int(offset)+12]
 		offset += 12
 		tag, kind := order.Uint16(entry), order.Uint16(entry[2:])
+		if _, exists := seen[tag]; exists {
+			continue // First successfully read occurrence wins, including unused tags.
+		}
 		unit := jpegTIFFUnit(kind)
 		if unit == 0 {
 			continue
@@ -144,6 +149,10 @@ func readJPEGDirectory(ctx context.Context, data []byte) (jpegDirectory, error) 
 		}
 		value := entry[8:]
 		if size > 4 {
+			externalBytes += size
+			if externalBytes > uint64(len(data)) {
+				continue // Oversized values consume the budget but do not stop inline tags.
+			}
 			location := uint64(order.Uint32(value))
 			if location > uint64(len(data)) || size > uint64(len(data))-location {
 				break
@@ -152,6 +161,7 @@ func readJPEGDirectory(ctx context.Context, data []byte) (jpegDirectory, error) 
 		} else {
 			value = value[:int(size)]
 		}
+		seen[tag] = struct{}{}
 		// Other tags still participate in bounds validation, but cannot influence
 		// JPEG DPI admission or MP frame selection. Avoid materializing unused data.
 		if tag == 0x128 || tag == 0x11a || tag == 0xb001 || tag == 0xb002 {

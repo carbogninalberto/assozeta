@@ -25,7 +25,7 @@ func TestXBMAgainstPillow(t *testing.T) {
 		Lazy, Keep         bool
 		PixelMode          string
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1485 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1509 {
 		t.Fatal("XBM fixture", len(cases), err)
 	}
 	l := xbmFileTestLimits()
@@ -94,7 +94,7 @@ func TestXBMFileStageBudgetsAndCancellation(t *testing.T) {
 		case "input":
 			l.Codec.MaxEncodedBytes = len(input) - 1
 		case "header":
-			l.MaxHeaderBytes = len(input) - 1
+			l.MaxHeaderBytes = len(xbmTestFile(1, 1, nil)) - 1
 		case "decode":
 			l.MaxDecodeBytes = int64(len(input))
 		case "transform":

@@ -64,7 +64,7 @@ func TestDjangoSessionAuthentication(t *testing.T) {
 	}
 	var fixture struct {
 		Secret, Address string
-		TransitionKey   string `json:"transition_key"`
+		TransitionKeys  []string `json:"transition_keys"`
 		Cases           []struct {
 			Name, Key            string
 			CacheKey             string `json:"cache_key"`
@@ -75,7 +75,7 @@ func TestDjangoSessionAuthentication(t *testing.T) {
 			Before               *string
 		}
 	}
-	if json.Unmarshal(raw, &fixture) != nil || len(fixture.Cases) != 43 {
+	if json.Unmarshal(raw, &fixture) != nil || len(fixture.Cases) != 54 || len(fixture.TransitionKeys) != 4 {
 		t.Fatal("invalid session fixture")
 	}
 	cfg, err := pgx.ParseConfig(os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
@@ -163,54 +163,56 @@ func TestDjangoSessionAuthentication(t *testing.T) {
 	if queries.count.Load() != 32 || db.Stats().InUse != 0 || db.Stats().OpenConnections > 4 || hook.reads.Load()-concurrentReads != 32 || client.PoolStats().TotalConns > 4 {
 		t.Fatal("concurrent session query/pool bound differs")
 	}
-	t.Run("current account transitions revoke cached session", func(t *testing.T) {
-		var original struct {
-			Email, Password string
-			Active          bool `db:"is_active"`
-			Deleted         bool
-		}
-		if err := db.GetContext(ctx, &original, `SELECT email,password,is_active,deleted FROM bakney_user WHERE user_id=$1`, valid.ActorID); err != nil {
-			t.Fatal("fixture account unavailable")
-		}
-		t.Cleanup(func() {
-			if _, err := db.ExecContext(ctx, `UPDATE bakney_user SET email=$2,password=$3,is_active=$4,deleted=$5 WHERE user_id=$1`, valid.ActorID, original.Email, original.Password, original.Active, original.Deleted); err != nil {
-				t.Error("fixture account restore failed")
+	for _, transitionKey := range fixture.TransitionKeys {
+		t.Run(transitionKey+" observes current account and revokes cached session", func(t *testing.T) {
+			var original struct {
+				Email, Password string
+				Active          bool `db:"is_active"`
+				Deleted         bool
+			}
+			if err := db.GetContext(ctx, &original, `SELECT email,password,is_active,deleted FROM bakney_user WHERE user_id=$1`, valid.ActorID); err != nil {
+				t.Fatal("fixture account unavailable")
+			}
+			t.Cleanup(func() {
+				if _, err := db.ExecContext(ctx, `UPDATE bakney_user SET email=$2,password=$3,is_active=$4,deleted=$5 WHERE user_id=$1`, valid.ActorID, original.Email, original.Password, original.Active, original.Deleted); err != nil {
+					t.Error("fixture account restore failed")
+				}
+			})
+			check := func(email string, empty bool) {
+				t.Helper()
+				queries.count.Store(0)
+				got, err := s.Resolve(ctx, transitionKey)
+				if err != nil || got.Empty != empty || queries.count.Load() != 1 || db.Stats().InUse != 0 {
+					t.Fatal("state transition/query bound differs")
+				}
+				if email == "" {
+					if got.Actor != nil {
+						t.Fatal("revoked/inactive account retained actor")
+					}
+				} else if got.Actor == nil || got.Actor.ID != valid.ActorID || got.Actor.Email != email {
+					t.Fatal("current actor state not observed")
+				}
+			}
+			update := func(query string, args ...any) {
+				t.Helper()
+				if _, err := db.ExecContext(ctx, query, args...); err != nil {
+					t.Fatal("fixture transition failed")
+				}
+			}
+			check(original.Email, false)
+			update(`UPDATE bakney_user SET email=$2 WHERE user_id=$1`, valid.ActorID, "session-changed@example.test")
+			check("session-changed@example.test", false)
+			update(`UPDATE bakney_user SET is_active=false WHERE user_id=$1`, valid.ActorID)
+			check("", false)
+			update(`UPDATE bakney_user SET is_active=true,deleted=true WHERE user_id=$1`, valid.ActorID)
+			check("session-changed@example.test", false)
+			update(`UPDATE bakney_user SET password=$2 WHERE user_id=$1`, valid.ActorID, "!synthetic-session-password-change")
+			check("", true)
+			if n, err := client.Exists(ctx, ":1:django.contrib.sessions.cache"+transitionKey).Result(); err != nil || n != 0 {
+				t.Fatal("password change did not remove Django session")
 			}
 		})
-		check := func(email string, empty bool) {
-			t.Helper()
-			queries.count.Store(0)
-			got, err := s.Resolve(ctx, fixture.TransitionKey)
-			if err != nil || got.Empty != empty || queries.count.Load() != 1 || db.Stats().InUse != 0 {
-				t.Fatal("state transition/query bound differs")
-			}
-			if email == "" {
-				if got.Actor != nil {
-					t.Fatal("revoked/inactive account retained actor")
-				}
-			} else if got.Actor == nil || got.Actor.ID != valid.ActorID || got.Actor.Email != email {
-				t.Fatal("current actor state not observed")
-			}
-		}
-		update := func(query string, args ...any) {
-			t.Helper()
-			if _, err := db.ExecContext(ctx, query, args...); err != nil {
-				t.Fatal("fixture transition failed")
-			}
-		}
-		check(original.Email, false)
-		update(`UPDATE bakney_user SET email=$2 WHERE user_id=$1`, valid.ActorID, "session-changed@example.test")
-		check("session-changed@example.test", false)
-		update(`UPDATE bakney_user SET is_active=false WHERE user_id=$1`, valid.ActorID)
-		check("", false)
-		update(`UPDATE bakney_user SET is_active=true,deleted=true WHERE user_id=$1`, valid.ActorID)
-		check("session-changed@example.test", false)
-		update(`UPDATE bakney_user SET password=$2 WHERE user_id=$1`, valid.ActorID, "!synthetic-session-password-change")
-		check("", true)
-		if n, err := client.Exists(ctx, ":1:django.contrib.sessions.cache"+fixture.TransitionKey).Result(); err != nil || n != 0 {
-			t.Fatal("password change did not remove Django session")
-		}
-	})
+	}
 	t.Run("bounded cache response and deadline recovery", func(t *testing.T) {
 		key := "session-auth-resource-fixture"
 		cacheKey := ":1:django.contrib.sessions.cache" + key

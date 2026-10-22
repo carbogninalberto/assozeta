@@ -56,6 +56,13 @@ def run(work,log,tool_env,address):
         values={'active':data(),'inactive':data(3),'deleted':data(4),
                 'social-inactive':data(3,'social_core.backends.google.GoogleOAuth2'),
                 'wrong':{**data(),'_auth_user_hash':'wrong'},'empty':{},'oauth':{'state':'fixture'},'none':None,'corrupt':None,'unicode':data()}
+        for provider,backend in [('google','google.GoogleOAuth2'),('apple','apple.AppleIdAuth'),('orcid','orcid.ORCIDOAuth2')]:
+            backend='social_core.backends.'+backend
+            values[provider+'-active']=data(1,backend)
+            values[provider+'-deleted']=data(4,backend)
+            values[provider+'-inactive']=data(3,backend)
+            values[provider+'-inactive-wrong']={**data(3,backend),'_auth_user_hash':'wrong'}
+            values[provider+'-inactive-oversized']={**data(3,backend),'_auth_user_hash':[10**4300]}
         # Malformed cache data must fail before the terminal without revocation.
         for name,value in [('list',[]),('tuple',()),('bool',False),('integer',0),('string','scalar'),('bytes',b'scalar'),('float',1.5)]:
             values['invalid-'+name]=value

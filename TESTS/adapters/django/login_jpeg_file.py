@@ -49,11 +49,16 @@ def vectors():
         add('header-only decode failure '+mode, jpeg(17,13,channels), (17,13), mode, invalid=True)
         data = jpeg(channels=channels)
         add('header-only over threshold '+mode, data+bytes(1024*1024+1-len(data)), (200,100), mode, invalid=True)
+    for channels,mode in [(1,'L'),(3,'RGB'),(4,'CMYK')]:
+        for suffix in (b'',b'\xff',b'junk',b'\xff\xd9'):
+            for size,keep in [((200,100),True),((17,13),False)]:
+                data=jpeg(*size,channels)[:-4]+suffix
+                add(f'EOF without scan {mode} {suffix.hex()} {size}',data,size,mode,keep=keep,invalid=not keep)
     # Pillow retains metadata preceding an EOI/SOI tables-only boundary.
     image = Image.new('RGB',(17,13),(20,40,60)); out = io.BytesIO(); image.save(out,format='JPEG')
     data = b'\xff\xd8'+marker(254,b'tables-only comment')+b'\xff\xd9'+out.getvalue()
     add('comment from tables-only prefix', data, (17,13), 'RGB')
-    assert len(cases) == 73
+    assert len(cases) == 97
     return cases
 
 
@@ -84,7 +89,7 @@ def run(work, log, tool_env, django_helper=None):
         for path in paths: path.unlink(missing_ok=True)
         codec.unlink(missing_ok=True); fault.unlink(missing_ok=True)
         Path(str(fault)+".started").unlink(missing_ok=True)
-    print(f'JPEG file pipeline: {len(cases)} size/lazy/fallback cases plus 226 metadata and 1868 decoder cases', flush=True)
+    print(f'JPEG file pipeline: {len(cases)} size/lazy/fallback cases plus 236 metadata and 1870 decoder cases', flush=True)
     return len(cases)
 
 

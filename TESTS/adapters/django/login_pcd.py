@@ -1,4 +1,4 @@
-"""Authored PhotoYCC samples and Pillow 11.1 PCD failure/file-policy cases."""
+"""Authored PhotoYCC samples and Pillow 13 PCD rotation/file-policy cases."""
 import base64
 import contextlib
 import io
@@ -31,23 +31,22 @@ def vectors():
         try:
             im=Image.open(io.BytesIO(data))
             assert not invalid,(name,'invalid header accepted')
-            assert im.format=='PCD' and im.mode=='RGB' and im.size==(W,H)
-            expected_rotate=90 if orientation&3==1 else -90 if orientation&3==3 else None
+            size=(H,W) if orientation&3 in (1,3) else (W,H)
+            assert im.format=='PCD' and im.mode=='RGB' and im.size==size
+            expected_rotate=90 if orientation&3==1 else 270 if orientation&3==3 else None
             assert im.tile_post_rotate==expected_rotate
-            header=dict(width=W,height=H,orientation=orientation&3)
+            header=dict(width=size[0],height=size[1],orientation=orientation&3)
         except (OSError,SyntaxError,ValueError,IndexError):
             assert invalid,(name,'unexpected open failure')
         if header:
             try:
                 im.load();assert pixels is not None and im.tobytes()==pixels,(name,'authored samples differ')
-            except AttributeError as e:
-                assert orientation&3 in (1,3) and pixels is None and "has no attribute 'rotate'" in str(e),(name,e)
             except (OSError,ValueError):
                 assert pixels is None,(name,'unexpected pixel failure')
         expected=None
         if pixels is not None:
-            image=Image.frombytes('RGB',(W,H),pixels)
-            if len(data)>1024*1024:image=image.resize((200,133),Image.Resampling.LANCZOS)
+            image=Image.frombytes('RGB',size,pixels)
+            if len(data)>1024*1024:image=image.resize((133,200) if orientation&3 in (1,3) else (200,133),Image.Resampling.LANCZOS)
             out=io.BytesIO();image.save(out,format='JPEG');expected=out.getvalue()
         enc=lambda b:base64.b64encode(b).decode() if b is not None else None
         uri='opaque,'+enc(data)
@@ -58,9 +57,9 @@ def vectors():
     for values,color in anchors:
         assert rgb(*values)==bytes(color),(values,rgb(*values),color)
         for orientation in (0,1,2,3):
-            add(f'constant {values}/{orientation}',pcd(*values,orientation),orientation=orientation,pixels=bytes(color)*(W*H) if orientation in (0,2) else None)
+            add(f'constant {values}/{orientation}',pcd(*values,orientation),orientation=orientation,pixels=bytes(color)*(W*H))
     for orientation in (4,5,6,7,128,129,130,255):
-        add(f'orientation mask {orientation}',pcd(orientation=orientation),orientation=orientation,pixels=bytes([99])*(W*H*3) if orientation&3 in (0,2) else None)
+        add(f'orientation mask {orientation}',pcd(orientation=orientation),orientation=orientation,pixels=bytes([99])*(W*H*3))
     # Independent arithmetic, not pixels copied from a PCD decoder. Each chroma
     # sample applies to a two-by-two block; luma differs for every pixel/row.
     payload=bytearray();pixels=bytearray()
@@ -70,10 +69,16 @@ def vectors():
         payload.extend(rows[0]+rows[1]+cb+cr)
         for row in rows:
             for x in range(W):pixels.extend(rgb(row[x],cb[x//2],cr[x//2]))
-    for orientation in (0,2):
+    for orientation in (0,1,2,3):
+        expected=bytes(pixels)
+        if orientation in (1,3):
+            # Independent index mapping for a quarter turn, with no image API.
+            expected=b''.join(pixels[(y*W+x)*3:(y*W+x+1)*3]
+                              for x in (range(W-1,-1,-1) if orientation==1 else range(W))
+                              for y in (range(H) if orientation==1 else range(H-1,-1,-1)))
         data=pcd(orientation=orientation)[:OFFSET]+bytes(payload)
-        add(f'chroma cell and luma sweep {orientation}',data,orientation=orientation,pixels=bytes(pixels))
-        add(f'large chroma cell sweep {orientation}',data+bytes(1024*1024+1-len(data)),orientation=orientation,pixels=bytes(pixels))
+        add(f'chroma cell and luma sweep {orientation}',data,orientation=orientation,pixels=expected)
+        add(f'large chroma cell sweep {orientation}',data+bytes(1024*1024+1-len(data)),orientation=orientation,pixels=expected)
     data=pcd()
     for n in (0,2047,2048,2051,2052,3585,3586,3587,4095,4096,196607,196608,len(data)-1):
         add(f'truncated {n}',data[:n],invalid=n<3587)

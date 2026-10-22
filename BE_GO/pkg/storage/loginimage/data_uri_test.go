@@ -13,10 +13,14 @@ func TestPythonBase64DataURI(t *testing.T) {
 		bad         bool
 	}{
 		{"anything,TQ==", "M", false}, {"😀,TWE=", "Ma", false}, {",TWFu", "Man", false},
-		{",===TQ==ignored", "M", false}, {",T! Q=\n=after", "M", false}, {",TWE===", "Ma", false},
+		{",===TQ==ignored", "", true}, {",T! Q=\n=after", "", true}, {",TWE===", "Ma", false},
 		{",TWFu====", "Man", false}, {",TQ", "", true}, {",TWE", "", true}, {",A===", "", true},
 		{",TQ==é", "", true}, {"missing comma", "", true}, {",", "", false}, {",!%_-$", "", false},
 		{",TQ=A=", "M\x00", false},
+		{",===TQ==", "M", false}, {",T! Q=\n=!", "M", false},
+		{",TQ==AA", "M\x00\x00", false}, {",TWE=A=", "Ma\x00", false},
+		{",TQ==AAAA==", "M\x00\x00\x00", false}, {",TQ==AA==AA", "", true},
+		{",TQ==A", "", true},
 	} {
 		result, err := DecodeDataURI(context.Background(), tc.input, 1024)
 		if tc.bad {

@@ -69,6 +69,15 @@ func DecodeTGA(ctx context.Context, h TGAHeader, data []byte, maxBytes int64) (R
 	if maxBytes <= 0 || size > int64(^uint(0)>>1) || size > maxBytes-int64(len(data)) {
 		return empty, ErrWorkingLimit
 	}
+	// The v2 extension can explicitly disable alpha after decoding. Read its
+	// single attribute byte in place; malformed/missing extensions preserve alpha.
+	opaque := false
+	if mode == "RGBA" && len(data) >= 26 && string(data[len(data)-18:]) == "TRUEVISION-XFILE.\x00" {
+		offset := uint64(binary.LittleEndian.Uint32(data[len(data)-26:]))
+		if offset != 0 && offset+494 < uint64(len(data)) {
+			opaque = data[int(offset+494)] == 0
+		}
+	}
 	out := make([]byte, int(size))
 	put := func(i int, src []byte) {
 		x, y := i%h.Width, i/h.Width
@@ -97,6 +106,9 @@ func DecodeTGA(ctx context.Context, h TGAHeader, data []byte, maxBytes int64) (R
 			dst[1] = byte(((v >> 5) & 31) * 255 / 31)
 			dst[2] = byte((v & 31) * 255 / 31)
 			dst[3] = 255 - byte(v>>15)*255
+		}
+		if opaque {
+			dst[3] = 255
 		}
 	}
 	pos, unit, total := h.DataOffset, depth/8, int(size)/c

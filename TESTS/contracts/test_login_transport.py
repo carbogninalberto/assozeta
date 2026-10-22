@@ -73,7 +73,7 @@ class LoginTransportContracts(unittest.TestCase):
         status,body,headers=self.request(headers={'Authorization':'Bearer synthetic-invalid'},method='GET')
         self.assertEqual(status,401)
         self.assertEqual(body,{'detail':'Given token not valid for any token type','code':'token_not_valid',
-            'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid or expired'}]})
+            'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid'}]})
         self.assertEqual(headers['WWW-Authenticate'],'Bearer realm="api"')
 
     def test_other_auth_schemes_do_not_authenticate(self):

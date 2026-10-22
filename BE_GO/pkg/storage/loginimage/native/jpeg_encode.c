@@ -96,9 +96,6 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[2], "YCbCr")) { channels = 3; color = JCS_YCbCr; }
     else if (!strcmp(argv[2], "CMYK")) { channels = 4; color = JCS_CMYK; }
     else return 2;
-    size_t pillow_block = width * 4 > 65536 ? width * 4 : 65536;
-    size_t marker_prefix = color == JCS_CMYK ? 18 : 20;
-    if (argc == 7 && comment_size + marker_prefix + 4 >= pillow_block) return 2;
     if (width > SIZE_MAX / (size_t)channels / height) return 2;
     struct encoder *s = calloc(1, sizeof(*s));
     if (!s) return 3;

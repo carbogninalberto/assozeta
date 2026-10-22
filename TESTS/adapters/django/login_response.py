@@ -174,8 +174,8 @@ def run(work, log, tool_env):
     add('owner transforms WebP avatar and logo',avatar=alpha['uri'],avatar_expected=alpha['expected'],logo=webp['uri'],logo_expected=webp['expected'])
     cur=images['CUR alpha'];collision=images['CUR precedes TGA']
     add('owner transforms CUR avatar and logo',avatar=cur['uri'],avatar_expected=cur['expected'],logo=collision['uri'],logo_expected=collision['expected'])
-    pcd=images['PCD frame'];rotation=images['PCD reference rotation failure']
-    add('owner transforms PCD avatar and retains failed rotation logo',avatar=pcd['uri'],avatar_expected=pcd['expected'],logo=rotation['uri'],logo_expected=rotation['expected'])
+    pcd=images['PCD frame'];rotation=images['PCD rotated frame']
+    add('owner transforms PCD avatar and rotated logo',avatar=pcd['uri'],avatar_expected=pcd['expected'],logo=rotation['uri'],logo_expected=rotation['expected'])
     pixar=images['PIXAR frame'];lazy=images['PIXAR lazy passthrough']
     add('owner transforms PIXAR avatar and retains lazy logo',avatar=pixar['uri'],avatar_expected=pixar['expected'],logo=lazy['uri'],logo_expected=lazy['expected'])
     def snapshot():

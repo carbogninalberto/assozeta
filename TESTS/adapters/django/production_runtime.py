@@ -7,17 +7,22 @@ import sys
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def require_production_python():
+def production_python_version():
     match = re.search(r'^FROM python:(\d+\.\d+\.\d+)-',
                       (ROOT / 'BE/Dockerfile').read_text(), re.MULTILINE)
     assert match, 'production Python version must remain explicit in BE/Dockerfile'
-    expected = tuple(int(part) for part in match[1].split('.'))
+    return match[1]
+
+
+def require_production_python():
+    version = production_python_version()
+    expected = tuple(int(part) for part in version.split('.'))
     if sys.version_info[:3] != expected:
         raise RuntimeError(
-            f'Application parity requires Python {match[1]} from BE/Dockerfile; '
+            f'Application parity requires Python {version} from BE/Dockerfile; '
             f'got {sys.version.split()[0]}'
         )
-    return {'success': True, 'python': match[1], 'source': 'BE/Dockerfile',
+    return {'success': True, 'python': version, 'source': 'BE/Dockerfile',
             'scope': 'production interpreter selection; not backend parity'}
 
 

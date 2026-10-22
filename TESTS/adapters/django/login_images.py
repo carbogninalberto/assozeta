@@ -48,11 +48,11 @@ def vectors():
         add(f'{fmt} alpha',out.getvalue(),mode='RGBA',pixels=pixels)
     add('DIB',bitmap(3,2,24,b'\x49'*12*2,dib=True),mode='RGB',pixels=b'\x49'*18)
     im=Image.new('L',(3,2),73);out=io.BytesIO();im.save(out,format='PCX');pcx=out.getvalue()
-    add('DCX first frame',struct.pack('<II',0x3ade68b1,4100)+bytes(4092)+pcx,pixels=bytes(6))
+    add('DCX first frame',struct.pack('<II',0x3ade68b1,4100)+bytes(4092)+pcx,pixels=bytes([73])*6)
     add('GBR',gbr(3,2)+b'\x49'*6)
     add('SUN',struct.pack('>8I',0x59a66a95,3,2,8,8,1,0,0)+b'\x49'*8)
     add('MSP',msp(3,2,payload=b'\xe0\xe0'),mode='1',pixels=b'\xff'*6)
-    xbm=b'#define sample_width 3\n#define sample_height 2\nstatic char sample_bits[] = {0x07,0x07};'
+    xbm=b'#define sample_width 3\n#define sample_height 2\nstatic char sample_bits[] = {\n0x07,0x07};'
     add('XBM',xbm,mode='1',pixels=b'\xff'*6)
     # A SUN signature can be accepted by the earlier GBR plugin.
     add('GBR precedes SUN',struct.pack('>8I',0x59a66a95,1,1,8,1,1,0,0)+b'\x49',original=True)
@@ -70,6 +70,8 @@ def vectors():
     text=base64.b64encode(raw).decode()
     add('first comma separates payload',uri='opaque,ignored,'+text,original=True)
     add('Base64 whitespace and punctuation',uri='x,'+'! \n'.join(text))
+    for position in (0,1,2,3,4,len(text)//2):
+        add(f'Base64 intermediate padding {position}',uri='x,'+text[:position]+'===='+text[position:])
     for n in (1024*1024,1024*1024+1):
         data=raw+b'\0'*(n-len(raw));target=(3,2) if n==1024*1024 else (200,133)
         add(f'size policy {n}',data,size=target,pixels=b'\x49'*(target[0]*target[1]))
@@ -99,13 +101,15 @@ def vectors():
     add('PCD before QOI retains original',pcd,original=True)
     add('QOI after truncated PCD header',pcd[:-1],mode='RGB',size=(1,1),pixels=bytes([73])*3)
     add('PCD frame',pcd_file(),mode='RGB',size=(768,512),pixels=bytes([99])*(768*512*3))
-    add('PCD reference rotation failure',pcd_file(orientation=1),original=True)
+    add('PCD rotated frame',pcd_file(orientation=1),mode='RGB',size=(512,768),pixels=bytes([99])*(768*512*3))
     frame=pixar(3,2,bytes([73])*18)
     add('PIXAR frame',frame,mode='RGB',pixels=bytes([73])*18)
     add('PIXAR lazy passthrough',pixar(200,3)[:428],original=True)
     collision=frame+bytes(2048-len(frame))+b'PCD_'+bytes(1534)
     add('PIXAR after truncated PCD header',collision,mode='RGB',pixels=bytes([73])*18)
     add('PCD before PIXAR retains original',collision+b'\0',original=True)
+    avif=io.BytesIO();Image.new('RGB',(3,2),(73,73,73)).save(avif,format='AVIF',quality=100,subsampling='4:4:4')
+    add('unimplemented AVIF',avif.getvalue(),mode='RGB',pixels=bytes([73])*18,gap=True)
     return cases
 
 

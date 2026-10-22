@@ -54,6 +54,9 @@ def vectors():
         try:image.load()
         except OSError:pass
         else:raise AssertionError('header-only JPEG unexpectedly has pixels')
+    for channels,mode in [(1,'L'),(3,'RGB'),(4,'CMYK')]:
+        for suffix in (b'',b'\xff',b'junk',b'\xff\xd9'):
+            add(f'EOF without scan {mode} {suffix.hex()}',jpeg(channels=channels)[:-4]+suffix,mode=mode)
     add('no component entries is accepted lazily',b'\xff\xd8'+marker(192,frame(200,100,entries=False))+marker(218))
     known=set(range(192,255))
     frame_codes=set(range(192,208))-{196,200,204}|{222}
@@ -96,8 +99,14 @@ def vectors():
         add('encoded '+case['name'],data,width=case['width'],height=case['height'],mode=case['mode'] if case['mode'] in ('L','CMYK') else 'RGB',header_bytes=end)
     case=next(v for v in encoded if v['name']=='RGB 17x13 noise')
     data=base64.b64decode(case['expected']);scan=data.index(b'\xff\xda');end=scan+2+int.from_bytes(data[scan+2:scan+4],'big')
+    # These authored boundaries are the ends of SOF and four DHT segments.
+    # EOF there (or after a single FF) now admits dimensions without pixels.
+    boundaries=(177,210,393,426,609)
+    assert data[158:160]==b'\xff\xc0' and end==623
+    assert all(data[n:n+2] in (b'\xff\xc4',b'\xff\xda') for n in boundaries)
     for length in range(len(data)+1):
-        add('lazy prefix '+str(length),data[:length],valid=length>=end,width=17,height=13,header_bytes=end)
+        valid=length>=end or length in boundaries or length-1 in boundaries
+        add('lazy prefix '+str(length),data[:length],valid=valid,width=17,height=13,header_bytes=min(length,end))
     return cases
 
 

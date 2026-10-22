@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[3]
 
 
 def xbm(w,h):
-    return f'#define im_width {w}\n#define im_height {h}\nstatic char im_bits[]'.encode()
+    return f'#define im_width {w}\n#define im_height {h}\nstatic char im_bits[] = {{\n'.encode()
 
 
 def vectors():
@@ -28,9 +28,9 @@ def vectors():
         try:
             with warnings.catch_warnings():warnings.simplefilter('ignore');im=Image.open(io.BytesIO(data))
             assert not invalid,(name,'invalid header accepted')
-            offset=data.rfind(b'_bits[]',0,512)+7 if offset is None else offset
+            offset=data.index(b'_bits[] = {')+len(b'_bits[] = {\n') if offset is None else offset
             assert im.format=='XBM' and im.mode=='1' and im.size==(w,h) and im.tile[0].offset==offset,(name,im.format,im.mode,im.size,im.tile)
-            expected_header=dict(width=w,height=h,mode='1',dataoffset=offset,headerbytes=min(512,len(data)),pixelwarning=w*h>89478485)
+            expected_header=dict(width=w,height=h,mode='1',dataoffset=offset,headerbytes=offset,pixelwarning=w*h>89478485)
         except (OSError,ValueError,SyntaxError,IndexError,EOFError,Image.DecompressionBombError):assert invalid,(name,'header rejected')
         if expected_header is not None and not lazy:
             try:
@@ -59,7 +59,7 @@ def vectors():
         nibble=byte-48 if 48<=byte<=57 else byte-65+10 if 65<=byte<=70 else byte-97+10 if 97<=byte<=102 else 0
         add(f'first nibble {byte}',xbm(8,1)+b'x'+bytes([byte])+b'f',pixels=bits(nibble*16+15))
         add(f'second nibble {byte}',xbm(8,1)+b'xF'+bytes([byte]),pixels=bits(240+nibble))
-        data=b'#define a'+bytes([byte])+b'_width 8\n#define b_height 1\n_bits[]xff'
+        data=b'#define a'+bytes([byte])+b'_width 8\n#define b_height 1\n_bits[] = {\nxff'
         add(f'byte in macro name {byte}',data,pixels=bits(255) if byte!=10 else None,invalid=byte==10)
     for w in (1,2,3,7,8,9,15,16,17,31,32,33,63,64,65,127,128,129):
         values=[(x*13+y*47)%256 for y in range(3) for x in range((w+7)//8)]
@@ -74,30 +74,51 @@ def vectors():
         add(f'truncated read boundary {padding}',xbm(8,1)+b' '*padding+b'x8')
     for whitespace in (b' ',b'\t',b'\n',b'\r',b'\v',b'\f'):
         for count in (1,8,9,10,16):
-            add(f'prefix whitespace {whitespace!r}/{count}',whitespace*count+xbm(8,1)+b'xff',pixels=bits(255) if count<=9 else None,invalid=count>9)
+            add(f'prefix whitespace {whitespace!r}/{count}',whitespace*count+xbm(8,1)+b'xff',pixels=bits(255) if whitespace==b'\n' and count==1 else None,invalid=not (whitespace==b'\n' and count==1))
     for byte in (0,28,133,160,255):add(f'non ASCII whitespace {byte}',bytes([byte])+xbm(8,1)+b'xff',invalid=True)
     for sep in (b' ',b'\t',b' \t '):
         for end in (b'\n',b'\r',b'\r\n',b'\n\r',b'\r\n\n\r'):
-            data=b'#define'+sep+b'_width'+sep+b'8'+end+b'#define'+sep+b'other_height'+sep+b'1'+end+b'_bits[]xff'
-            add(f'header whitespace {sep!r}/{end!r}',data,pixels=bits(255))
+            data=b'#define'+sep+b'_width'+sep+b'8'+end+b'#define'+sep+b'other_height'+sep+b'1'+end+b'_bits[] = {\nxff'
+            valid=sep!=b'\t' and end in (b'\n',b'\r\n')
+            add(f'header whitespace {sep!r}/{end!r}',data,pixels=bits(255) if valid else None,invalid=not valid)
     for width in (b'0008',b'0'*200+b'8'):
-        add(f'leading numeric zeros {len(width)}',b'#define a_width '+width+b'\n#define b_height 0001\n_bits[]xff',pixels=bits(255))
+        add(f'leading numeric zeros {len(width)}',b'#define a_width '+width+b'\n#define b_height 0001\n_bits[] = {\nxff',pixels=bits(255) if len(width)<60 else None,invalid=len(width)>=60)
     for width in (b'+8',b'-8',b'8_',b'8 ',b'8;',b'8.0',b'',b'0',b'9'*100):
-        add(f'invalid width {width[:10]!r}',b'#define a_width '+width+b'\n#define b_height 1\n_bits[]xff',invalid=True)
+        valid=width in (b'+8',b'8 ')
+        add(f'width spelling {width[:10]!r}',b'#define a_width '+width+b'\n#define b_height 1\n_bits[] = {\nxff',pixels=bits(255) if valid else None,invalid=not valid)
     for header in (b'#define a_width 8\n #define b_height 1\n_bits[]',b'#define a_height 1\n#define b_width 8\n_bits[]',b'#define a_width 8\n#define b_height 1_bits[]',b'#define a_width 8\n#define b_height 1\nbits[]',b'#define a_width 8\n#define b_height 1\n_bits[ ]'):
         add(f'invalid grammar {header!r}',header+b'xff',invalid=True)
     for hotspot in (b'#define a_x_hot 1\n#define a_y_hot 2\n',b'#define a_b_x_hot 1\n#define a_b_y_hot 2\n',b'#define a_x_hot -1\n#define a_y_hot nonsense\n',b'#define a_x_hot '+b'9'*100+b'\n#define a_y_hot '+b'8'*100+b'\n'):
-        add(f'hotspot ignored {hotspot[:25]!r}/{len(hotspot)}',b'#define a_width 8\n#define b_height 1\n'+hotspot+b'_bits[]xff',pixels=bits(255))
-    add('greedy width before carriage return',b'#define a_width 99\r#define b_width 8\n#define c_height 1\n_bits[]xff',pixels=bits(255))
-    add('greedy height before carriage return',b'#define a_width 8\n#define b_height 99\r#define c_height 1\n_bits[]xff',pixels=bits(255))
-    add('last marker selects later data',xbm(8,1)+b'xff\0\xff_bits[]x01',pixels=bits(1))
+        valid=b'nonsense' not in hotspot and len(hotspot)<75
+        add(f'hotspot {hotspot[:25]!r}/{len(hotspot)}',b'#define a_width 8\n#define b_height 1\n'+hotspot+b'_bits[] = {\nxff',pixels=bits(255) if valid else None,invalid=not valid)
+    add('greedy width before carriage return',b'#define a_width 99\r#define b_width 8\n#define c_height 1\n_bits[] = {\nxff',pixels=bits(255))
+    add('greedy height before carriage return',b'#define a_width 8\n#define b_height 99\r#define c_height 1\n_bits[] = {\nxff',pixels=bits(255))
+    add('first declaration selects data',xbm(8,1)+b'xff\0\xff_bits[]x01',pixels=bits(255))
     for end in (511,512,513):
         head=b'#define a_width 8\n#define b_height 1\n'
-        data=head+b' '*(end-len(head)-7)+b'_bits[]xff'
-        add(f'header window marker end={end}',data,pixels=bits(255) if end<=512 else None,invalid=end>512)
-    for n in range(len(xbm(200,100))):
+        data=head+b' '*(end-len(head)-7)+b'_bits[] = {\nxff'
+        add(f'header window marker end={end}',data,invalid=True)
+    for n in range(len(xbm(200,100))-1):
         add(f'short lazy header {n}',xbm(200,100)[:n],w=200,h=100,invalid=True)
+    add('lazy header without final newline',xbm(200,100)[:-1],w=200,h=100,lazy=True,offset=len(xbm(200,100))-1)
     add('lazy header without pixels',xbm(200,100),w=200,h=100,lazy=True)
+    for prefix in (b'/* note */\n',b'/* note\nmore\n*/\n',b'/*'+b'a'*200+b'*/\n',b'/* x */\n'*100):
+        add(f'block comments {len(prefix)}',prefix+xbm(8,1)+b'xff',pixels=bits(255))
+    for extra in (b'#define unused 9\n',b'#define x_x_hot -1\n#define x_y_hot 2\n',b'#define im_width 9\n#define im_width 8\n'):
+        head=xbm(8,1);split=head.index(b'static')
+        add(f'additional defines {extra!r}',head[:split]+extra+head[split:]+b'xff',pixels=bits(255))
+    for extra in (b'#define unused nope\n',b'// unsupported comment\n',b' /* indented comment */\n',b'\n\n'):
+        head=xbm(8,1);split=head.index(b'static')
+        add(f'invalid intervening line {extra!r}',head[:split]+extra+head[split:]+b'xff',invalid=True)
+    for length in (74,75,76):
+        prefix=b'#define im_width 8\n#define im_height 1\n'
+        line=b's'*(length-len(b'_bits[] = {'))+b'_bits[] = {\n'
+        add(f'declaration line boundary {length}',prefix+line+b'xff',pixels=bits(255) if length<=75 else None,invalid=length>75,offset=len(prefix)+min(75,len(line)))
+    add('dimension order reversed',b'#define im_height 1\n#define im_width 8\n_bits[] = {\nxff',pixels=bits(255))
+    add('unterminated comment',b'/* comment\n'+xbm(8,1)+b'xff',invalid=True)
+    add('underscored width',b'#define im_width 0_8\n#define im_height 1\n_bits[] = {\nxff',pixels=bits(255))
+    add('unused large integer',b'#define ignored '+b'9'*50+b'\n'+xbm(8,1)+b'xff',pixels=bits(255))
+    add('legacy inline pixels rejected',b'#define im_width 8\n#define im_height 1\nstatic char im_bits[] = {0xff};',invalid=True)
     add('pixel warning',xbm(10000,10000),w=10000,h=10000)
     add('pixel hard limit',xbm(178956971,1),invalid=True)
     for size in (1024*1024,1024*1024+1):

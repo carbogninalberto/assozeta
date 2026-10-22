@@ -51,12 +51,12 @@ func TestBMPHeaderAndRawPixels(t *testing.T) {
 		t.Fatal("cancelled BMP", err)
 	}
 }
-func TestBMPRLEDeltaUsesSecondPair(t *testing.T) {
+func TestBMPRLEDeltaUsesFirstPair(t *testing.T) {
 	h := BMPHeader{Width: 3, Height: 2, Mode: "L", RawMode: "L", Bits: 8, Compression: 1, TopDown: true}
-	// Pillow reads and discards the first pair, then takes right/up from the next.
+	// The first pair overshoots and zero-fills the remaining bounded output.
 	data := []byte{1, 42, 0, 2, 99, 99, 1, 1, 1, 77}
 	got, err := DecodeBMP(context.Background(), h, data, 1024)
-	if err != nil || !bytes.Equal(got.Pixels, []byte{42, 0, 0, 0, 0, 77}) {
+	if err != nil || !bytes.Equal(got.Pixels, []byte{42, 0, 0, 0, 0, 0}) {
 		t.Fatal("RLE delta", got, err)
 	}
 }
@@ -75,7 +75,7 @@ func TestBMPHeaderPaletteBudgets(t *testing.T) {
 			t.Fatal("partial palette header", h, err)
 		}
 	}
-	// Palette-offset correction uses four bytes per entry even for OS/2.
+	// Palette-offset correction uses three bytes per entry for OS/2.
 	core := make([]byte, 26)
 	copy(core, "BM")
 	binary.LittleEndian.PutUint32(core[10:], 26)
@@ -85,7 +85,7 @@ func TestBMPHeaderPaletteBudgets(t *testing.T) {
 	binary.LittleEndian.PutUint16(core[24:], 1)
 	core = append(core, 0, 0, 0, 255, 255, 255)
 	h, err := ReadBMPHeader(context.Background(), core, 32)
-	if err != nil || h.HeaderBytes != 32 || h.DataOffset != 34 || h.Mode != "1" {
+	if err != nil || h.HeaderBytes != 32 || h.DataOffset != 32 || h.Mode != "1" {
 		t.Fatal("OS/2 palette offset", h, err)
 	}
 	// Forty-byte bitfield headers consume three external masks, not alpha.

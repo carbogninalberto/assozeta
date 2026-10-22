@@ -65,8 +65,8 @@ func TestJPEGMetadataMalformedMPFAndTruncatedEntries(t *testing.T) {
 	}
 	// Two records are declared, but the byte-valued entry has just one inline byte.
 	mpf := metadataIFD(entry{0xb001, 4, 1, 2}, entry{0xb002, 7, 1, 0})
-	if got, err := InspectJPEG(context.Background(), wrap(mpf), 1024); got.Format != "" || !errors.Is(err, ErrJPEGHeader) {
-		t.Fatal("truncated MP records accepted", err)
+	if got, err := InspectJPEG(context.Background(), wrap(mpf), 1024); got.Format != "JPEG" || got.Frames != 1 || err != nil {
+		t.Fatal("truncated MP records did not retain base JPEG", err)
 	}
 }
 
@@ -96,5 +96,28 @@ func TestJPEGMetadataCancellationInsideDirectoriesAndRecords(t *testing.T) {
 	cancel()
 	if !errors.Is(err, context.Canceled) || info.Format != "" || info.Header.MPF != nil {
 		t.Fatal("MP record cancellation exposed partial image", err)
+	}
+}
+
+func TestJPEGDirectoryExternalBudgetAndFirstOccurrence(t *testing.T) {
+	type entry = struct {
+		tag, typ     uint16
+		count, value uint32
+	}
+	// A repeated unused tag must not consume the external budget twice. The
+	// trailing resolution still fits the 62-byte stream when that tag is skipped.
+	data := metadataIFD(entry{999, 7, 32, 0}, entry{999, 7, 32, 0}, entry{0x11a, 7, 8, 0}, entry{0x128, 3, 1, 2})
+	directory, err := readJPEGDirectory(context.Background(), data)
+	if err != nil || len(directory.values[0x11a].data) != 8 {
+		t.Fatal("duplicate unused tag consumed budget", directory, err)
+	}
+	// Distinct unused values do consume the aggregate budget, including values
+	// skipped for exceeding it. Inline tags are still read afterwards.
+	binary.LittleEndian.PutUint16(data[22:], 998)
+	directory, err = readJPEGDirectory(context.Background(), data)
+	_, resolution := directory.values[0x11a]
+	_, unit := directory.values[0x128]
+	if err != nil || resolution || !unit {
+		t.Fatal("aggregate metadata budget", directory, err)
 	}
 }

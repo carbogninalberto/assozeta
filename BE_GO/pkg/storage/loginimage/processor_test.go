@@ -121,3 +121,24 @@ func TestImageProcessorPreCancelledCallReturnsNoResult(t *testing.T) {
 		t.Fatal("cancellation retained global slot")
 	}
 }
+
+func TestAVIFMissingDecoderAdmission(t *testing.T) {
+	for _, brand := range []string{"avif", "avis", "mif1", "msf1"} {
+		data := append([]byte{0, 0, 0, 32}, []byte("ftyp"+brand)...)
+		if !missingImageCandidate("AVIF", data) {
+			t.Fatal("AVIF candidate not identified", brand)
+		}
+		for n := 0; n < 12; n++ {
+			if missingImageCandidate("AVIF", data[:n]) {
+				t.Fatal("truncated AVIF brand admitted", n)
+			}
+		}
+		data[4] = 'F'
+		if missingImageCandidate("AVIF", data) {
+			t.Fatal("wrong container marker admitted")
+		}
+	}
+	if missingImageCandidate("AVIF", []byte("\x00\x00\x00\x20ftypheic")) {
+		t.Fatal("unconfigured major brand admitted")
+	}
+}

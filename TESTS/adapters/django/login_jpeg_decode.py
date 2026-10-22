@@ -88,9 +88,11 @@ def vectors():
     def com(payload): return b'\xff\xfe' + (len(payload)+2).to_bytes(2,'big') + payload
     add('last pre-scan comment wins', data[:2] + com(b'first') + com(b'last') + data[2:], (17, 13), 'RGB')
     add('late comment does not replace initial comment', data[:2] + com(b'first') + data[2:-2] + com(b'late') + data[-2:], (17, 13), 'RGB')
-    add('RGB comment exhausts Pillow buffer', data[:2] + com(b'c' * 65512) + data[2:], (17, 13), 'RGB', encode_invalid=True)
+    add('RGB long comment preserved', data[:2] + com(b'c' * 65512) + data[2:], (17, 13), 'RGB')
     add('CMYK comment boundary preserved', cmyk_data[:2] + com(b'c' * 65513) + cmyk_data[2:], (17, 13), 'CMYK')
-    add('CMYK comment exhausts Pillow buffer', cmyk_data[:2] + com(b'c' * 65514) + cmyk_data[2:], (17, 13), 'CMYK', encode_invalid=True)
+    add('CMYK long comment preserved', cmyk_data[:2] + com(b'c' * 65514) + cmyk_data[2:], (17, 13), 'CMYK')
+    add('RGB maximum comment preserved',data[:2]+com(b'c'*65533)+data[2:],(17,13),'RGB')
+    add('CMYK maximum comment preserved',cmyk_data[:2]+com(b'c'*65533)+cmyk_data[2:],(17,13),'CMYK')
     wide=Image.new('RGB',(16400,1),(20,40,60));out=io.BytesIO();wide.save(out,format='JPEG',comment=b'c'*65533)
     add('wide image enlarges comment buffer',out.getvalue(),(16400,1),'RGB')
     add('not JPEG' , b'not JPEG', invalid=True)

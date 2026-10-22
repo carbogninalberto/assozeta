@@ -32,7 +32,7 @@ func tgaSignature(b []byte) bool {
 	return false
 }
 
-// ReadTGAHeader follows Pillow 11.1's short ID/palette reads. The budget counts
+// ReadTGAHeader follows Pillow 13's short ID/palette reads. The budget counts
 // consumed input bytes; a palette's implicit zero prefix is never allocated.
 func ReadTGAHeader(ctx context.Context, data []byte, maxBytes int) (TGAHeader, error) {
 	empty := TGAHeader{}
@@ -121,7 +121,7 @@ func ReadTGAHeader(ctx context.Context, data []byte, maxBytes int) (TGAHeader, e
 		if err != nil {
 			return empty, err
 		}
-		h.InvalidPalette = b[7] == 32 || int(le.Uint16(b[3:]))+len(palette)/unit > 256
+		h.InvalidPalette = int(le.Uint16(b[3:]))+len(palette)/unit > 256
 	}
 	h.DataOffset = pos
 	if err := ctx.Err(); err != nil {

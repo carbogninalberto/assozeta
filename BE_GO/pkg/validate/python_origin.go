@@ -26,7 +26,7 @@ func (o URLOrigin) RawHostname() string {
 }
 
 // PythonURLOrigin preserves the scheme/netloc and ValueError boundary of shipped
-// Python 3.13.2. net/url.Parse is not equivalent: Python accepts invalid ports and
+// Python 3.13.16. net/url.Parse is not equivalent: Python accepts invalid ports and
 // literal percent escapes here. This is not full endpoint or port validation.
 func PythonURLOrigin(raw string) (URLOrigin, bool) {
 	value := strings.TrimLeftFunc(raw, func(r rune) bool { return r <= ' ' })
@@ -77,7 +77,7 @@ func PythonURLOrigin(raw string) (URLOrigin, bool) {
 		} else {
 			host, _, _ = strings.Cut(hostAndPort, ":")
 		}
-		if strings.HasPrefix(host, "v") {
+		if strings.HasPrefix(host, "v") || strings.HasPrefix(host, "V") {
 			version, address, dot := strings.Cut(host[1:], ".")
 			if !dot || version == "" || address == "" {
 				return URLOrigin{}, false

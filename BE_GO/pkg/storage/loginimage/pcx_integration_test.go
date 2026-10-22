@@ -93,7 +93,7 @@ func TestPCXFileStageBudgetsAndCancellation(t *testing.T) {
 		case "input":
 			l.Codec.MaxEncodedBytes = len(input) - 1
 		case "header":
-			l.MaxHeaderBytes = 256
+			l.MaxHeaderBytes = 196
 		case "decode":
 			l.MaxDecodeBytes = int64(len(input))
 		case "transform":

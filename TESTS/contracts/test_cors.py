@@ -46,6 +46,8 @@ class CORSContracts(unittest.TestCase):
                ('https://[127.0.0.1]',set()),
                ('https://[::1]',{'all'}),
                ('https://[vF.future]',{'all'}),
+               ('https://[VF.future]',{'all'}),
+               ('https://[VX.future]',set()),
                ('https://[vX.future]',set()),
                ('https://[fe80::1%zone]',{'all'}),
                ('https://[fe80::1%]',set()),

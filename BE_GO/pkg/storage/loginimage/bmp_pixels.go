@@ -37,7 +37,7 @@ func DecodeBMP(ctx context.Context, h BMPHeader, data []byte, maxBytes int64) (R
 		return empty, ErrBMPDecode
 	}
 	if h.Compression == 1 || h.Compression == 2 {
-		if h.Mode != "L" && h.Mode != "P" {
+		if h.Mode != "1" && h.Mode != "L" && h.Mode != "P" {
 			return empty, ErrBMPDecode
 		}
 		out := make([]byte, int(size))
@@ -159,6 +159,9 @@ func bmpRLE(ctx context.Context, h BMPHeader, data, out []byte) error {
 			if !h.TopDown {
 				y = h.Height - 1 - y
 			}
+			if h.Mode == "1" && value != 0 {
+				value = 255
+			}
 			out[y*h.Width+col] = value
 			count++
 		}
@@ -196,29 +199,32 @@ func bmpRLE(ctx context.Context, h BMPHeader, data, out []byte) error {
 				return ErrBMPDecode
 			}
 		case 2:
-			// Pillow 11.1 discards the first pair and uses a second pair.
-			if pos > len(data)-4 {
+			// Delta is exactly one pair: right followed by up.
+			if pos > len(data)-2 {
 				return ErrBMPDecode
 			}
-			rows := int(data[pos+3])
+			rows := int(data[pos+1])
 			if rows > (len(out)-count)/h.Width {
 				count = len(out)
 			} else {
 				zeros(rows * h.Width)
-				zeros(int(data[pos+2]))
+				zeros(int(data[pos]))
 			}
-			pos += 4
+			pos += 2
 			x = count % h.Width
 		default:
-			n := v
+			dataCount := min(v, len(out)-count)
+			n := dataCount
 			if h.Compression == 2 {
-				n /= 2
+				n = (dataCount + 1) / 2
 			}
 			actual := min(n, len(data)-pos)
-			for _, b := range data[pos : pos+actual] {
+			for i, b := range data[pos : pos+actual] {
 				if h.Compression == 2 {
 					put(b >> 4)
-					put(b & 15)
+					if i*2+1 < dataCount {
+						put(b & 15)
+					}
 				} else {
 					put(b)
 				}
@@ -230,7 +236,7 @@ func bmpRLE(ctx context.Context, h BMPHeader, data, out []byte) error {
 				}
 				break
 			}
-			x += min(v, max(0, h.Width-x))
+			x += v
 			if pos%2 != 0 {
 				pos++
 			}

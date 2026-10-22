@@ -25,7 +25,7 @@ func TestQOIAgainstPillow(t *testing.T) {
 		Lazy, Keep         bool
 		PixelMode          string
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 2758 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 2762 {
 		t.Fatal("QOI fixture", len(cases), err)
 	}
 	l := qoiFileTestLimits()

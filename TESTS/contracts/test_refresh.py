@@ -43,8 +43,10 @@ class RefreshContracts(unittest.TestCase):
         self.assertEqual(after['token_type'], 'access')
         self.assertNotEqual(after['jti'], before['jti'])
         self.assertAlmostEqual(after['exp'], time.time() + 14400, delta=5)
-        for key in ('user_id', 'role', 'email', 'iat', 'iss', 'aud', 'custom'):
+        for key in ('user_id', 'role', 'email', 'iss', 'aud', 'custom'):
             self.assertEqual(after[key], before[key])
+        self.assertAlmostEqual(after['iat'], time.time(), delta=5)
+        self.assertNotEqual(after['iat'], before['iat'])
         cookie = SimpleCookie(); cookie.load(headers.get('Set-Cookie', ''))
         self.assertEqual(set(cookie), {'BKN_AUTH'})
         value = cookie['BKN_AUTH']
@@ -260,7 +262,7 @@ class RefreshContracts(unittest.TestCase):
         status, body, headers = self.request({}, {'Authorization':'Bearer invalid'})
         self.assertEqual(status,401)
         self.assertEqual(body, {'detail':'Given token not valid for any token type','code':'token_not_valid',
-            'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid or expired'}]})
+            'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid'}]})
         self.assertEqual(headers['WWW-Authenticate'],'Bearer realm="api"')
 
     def test_invalid_impersonation_has_legacy_string_flag(self):
@@ -291,8 +293,16 @@ class RefreshContracts(unittest.TestCase):
             with self.subTest(case=case['name']):
                 status,body,headers=self.request({'refresh_token':self.fixture['refresh']},{'Authorization':'Bearer '+case['token']})
                 self.assertEqual((status,body),(401,{'detail':'Given token not valid for any token type','code':'token_not_valid',
-                    'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is invalid or expired'}]}))
+                    'messages':[{'token_class':'AccessToken','token_type':'access','message':'Token is expired' if case['name']=='access-duplicate-exp-last-expired' else 'Token is invalid'}]}))
                 self.assertEqual(headers.get('WWW-Authenticate'),'Bearer realm="api"')
+                self.assertIsNone(headers.get('Set-Cookie'))
+
+    def test_expired_bearer_error_precedence(self):
+        for name,message in [('expired_access','Token is expired'),('future_expired_access','Token is invalid'),('foreign_expired_access','Token is invalid')]:
+            with self.subTest(name=name):
+                status,body,headers=self.request({}, {'Authorization':'Bearer '+self.fixture[name]})
+                self.assertEqual((status,body),(401,{'detail':'Given token not valid for any token type','code':'token_not_valid',
+                    'messages':[{'token_class':'AccessToken','token_type':'access','message':message}]}))
                 self.assertIsNone(headers.get('Set-Cookie'))
 
     def test_signed_valid_document_bearer_reaches_body_validation(self):
@@ -322,9 +332,10 @@ class RefreshContracts(unittest.TestCase):
                 self.assertEqual(after,before)
                 access=claims(body['access_token'])
                 for name,value in before.items():
-                    if name not in ('token_type','exp','jti'):self.assertEqual(access[name],value)
+                    if name not in ('token_type','exp','jti','iat'):self.assertEqual(access[name],value)
                 self.assertNotEqual(access['jti'],before['jti'])
                 self.assertAlmostEqual(access['exp'],time.time()+14400,delta=5)
+                self.assertAlmostEqual(access['iat'],time.time(),delta=5)
                 cookie=SimpleCookie();cookie.load(headers.get('Set-Cookie',''))
                 self.assertEqual(set(cookie),{'BKN_AUTH'})
                 self.assertTrue(cookie['BKN_AUTH'].value==body['access_token'],'cookie does not contain issued access token')

@@ -86,10 +86,6 @@ func (p *PNGFileProcessor) Process(ctx context.Context, input []byte) (PNGFileRe
 	if h.InvalidTile || h.DataKind == "IEND" || h.DataOffset == len(input) {
 		return original()
 	}
-	// Pillow's decoder.setimage interprets x0=x1=0 as the full image rectangle.
-	if h.Tile.X == 0 && h.Tile.Width == 0 {
-		h.Tile = PNGRect{Width: h.Width, Height: h.Height}
-	}
 	tile := h.Tile
 	if tile.Width <= 0 || tile.Height <= 0 || tile.X < 0 || tile.Y < 0 || tile.X > h.Width-tile.Width || tile.Y > h.Height-tile.Height {
 		return original()

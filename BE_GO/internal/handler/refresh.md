@@ -8,21 +8,23 @@ identity resolution before method dispatch and refresh. The service performs
 credential refresh without account writes; repositories continue to own SQL.
 DRF exempts this route from CSRF middleware, including cookie-less POST requests.
 
-The same 36 portable contracts run over actual Django ASGI/Uvicorn and the Go
+The same 37 portable contracts run over actual Django ASGI/Uvicorn and the Go
 executable using private PostgreSQL, Redis and ephemeral Ed25519 keys. They cover:
 
-- The response schema, non-rotating refresh credential, copied claims/original
-  `iat`, new access JTI/expiry and the Secure/HttpOnly/Strict `BKN_AUTH` cookie.
+- The response schema, non-rotating refresh credential, copied custom claims, original refresh
+  `iat` and fresh access `iat`/JTI/expiry and the Secure/HttpOnly/Strict `BKN_AUTH` cookie.
 - Fifty-six signed JWT document scenarios cover critical headers, key-ID types,
   padding, JSON/UTF-8 validation, duplicate claims, integer conversion and exact
   refresh reserialization. Invalid Bearer admission still precedes body refresh.
+- Distinct expired/invalid Bearer messages, with signature and future timestamp
+  failures taking precedence over expiry on SimpleJWT 5.5.1.
 - Missing/invalid values, null construction, inactive/deleted/missing-account
   refresh credentials, and an independently supplied Bearer actor.
 - Bearer/impersonation denial precedence, string `impersonation_invalid` flags,
   ignored anonymous impersonation headers and REST's ignored BKN_AUTH cookie.
 - GET/HEAD/PUT/DELETE denials, OPTIONS metadata, JSON/form/multipart parsing,
   duplicate form values, file-valued credentials, Latin-1 JSON and malformed JSON
-  with shipped Python 3.13.2 error positions, including explicit trailing-comma diagnostics. Default Italian and English method errors are
+  with shipped Python 3.13.16 error positions, including explicit trailing-comma diagnostics. Default Italian and English method errors are
   checked. Parse errors do not override an earlier scoped operation denial.
 - Session reads retain the cookie and cannot change the identity from a refresh
   token. Missing/stale sessions delete `sessionid` while preserving a successful

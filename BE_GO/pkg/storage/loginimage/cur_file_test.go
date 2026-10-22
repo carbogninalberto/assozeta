@@ -102,7 +102,7 @@ func TestCURHeaderHeightBudgetAndCancellation(t *testing.T) {
 	if err != nil || h.DataOffset != 62 || h.HeaderBytes != 62 || h.RawMode != "BGRA" {
 		t.Fatal("exact header budget", h, err)
 	}
-	r, err := DecodeBMP(context.Background(), h, b, int64(len(b)+4))
+	r, err := DecodeCUR(context.Background(), h, b, int64(len(b)+4))
 	if err != nil {
 		t.Fatal(err)
 	}

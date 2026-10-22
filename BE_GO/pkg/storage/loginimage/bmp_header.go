@@ -16,6 +16,7 @@ type BMPHeader struct {
 	TopDown, PixelWarning            bool
 	InvalidPalette                   bool
 	Stride, DataOffset, HeaderBytes  int
+	CURMaskHeight                    int // Full DIB height for gray CUR AND/XOR planes.
 }
 
 func bmpHeaderSize(n uint32) bool {
@@ -29,7 +30,7 @@ func bmpSignature(data []byte) bool {
 	return len(data) >= 2 && string(data[:2]) == "BM" || len(data) >= 4 && bmpHeaderSize(binary.LittleEndian.Uint32(data))
 }
 
-// ReadBMPHeader preserves Pillow 11.1's lazy admission, including its palette
+// ReadBMPHeader preserves Pillow 13's lazy admission, including its palette
 // mode reduction and offset quirks. maxBytes bounds consumed header bytes.
 func ReadBMPHeader(ctx context.Context, data []byte, maxBytes int) (BMPHeader, error) {
 	return readBMPHeader(ctx, data, maxBytes, false)
@@ -165,7 +166,7 @@ func readBMPHeader(ctx context.Context, data []byte, maxBytes int, halfHeight bo
 		colors = uint64(1) << h.Bits
 	}
 	if offset == 14+uint64(n) && h.Bits <= 8 {
-		offset += 4 * colors
+		offset += uint64(padding) * colors
 	}
 	switch h.Compression {
 	case 0, 1, 2:
@@ -207,7 +208,7 @@ func readBMPHeader(ctx context.Context, data []byte, maxBytes int, halfHeight bo
 		}
 		if gray {
 			h.Mode = "L"
-			if colors == 2 {
+			if colors <= 2 {
 				h.Mode = "1"
 			}
 			h.RawMode = h.Mode
@@ -220,6 +221,10 @@ func readBMPHeader(ctx context.Context, data []byte, maxBytes int, halfHeight bo
 	// The CUR driver completes DIB admission before halving height. ImageFile
 	// rejects zero dimensions recoverably; Image.open's bomb ceiling is terminal.
 	if halfHeight {
+		if h.Mode == "1" || h.Mode == "L" {
+			h.CURMaskHeight = h.Height
+			h.Mode = "LA"
+		}
 		h.Height /= 2
 		if h.Width <= 0 || h.Height <= 0 {
 			return empty, rejected
