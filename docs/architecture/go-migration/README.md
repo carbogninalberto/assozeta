@@ -7,7 +7,35 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
-The public `/two-fa/setup` now generates cryptographic secrets and local SVG QR
+The public `/profile/info` now preserves the effective person's profile and the
+admitted owner's association, including collaborator-specific preferences,
+review settings and registration choices. It performs no login/card/audit writes.
+Actual Django ASGI and the Go root pass 56 declared HTTP scenarios and 88
+concurrent reads per backend across all eight registration-flag combinations.
+Four further reads per backend verify fresh stored personal/review settings.
+Managed model rows and session/cache bytes remain unchanged by reads.
+
+Real PostgreSQL/Redis/native-image tests measure two SELECTs for direct
+athlete/administrator reads and six for owner/collaborator reads. Thirty-two mixed
+calls use 128 SELECTs within four connections. Adding 1/16/128/512 nested groups
+retains six SELECTs and excludes foreign groups. An executed plan with 4,000
+additional synthetic tenants uses the existing user and association-owner indexes.
+A blocked read cancels, releases
+its connection and recovers. The legacy full group payload remains unpaginated;
+query counts do not establish total-memory bounds or whole-application performance.
+Login and profile share the same process-wide image pool. Unit tests cover reader,
+identity, image and cancellation failures. Go race and ordinary/tagged vet pass.
+The rebuilt non-root/read-only/networkless image passes seven HTTP checks; these
+do not exercise a database-backed profile. Dependency loss/recovery and idle
+SIGTERM checks pass, along with twelve inventory tests, drift and formatting.
+The full accounts regression passes (`full-accounts.log` and
+`full-accounts-results.json`). The final focused rehearsal additionally passes
+the 4,000-tenant plan and unchanged-token transitions (`fresh-token-final.log`
+and `final-focused-results.json`).
+Evidence is under `quality-reports/go-migration/profile-info/`; see the
+[profile contract](../../../BE_GO/internal/handler/profile_info.md).
+
+The preceding `/two-fa/setup` increment generates cryptographic secrets and local SVG QR
 codes through explicit service/encoder dependencies. Actual Django ASGI and the
 Go root pass 31 declared HTTP scenarios and 62 concurrent requests per backend
 across six branding/capacity configurations. Provisioning leaves all managed
@@ -192,7 +220,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 17 implementing, 6 needing review and 487
+The ledger currently has 4 deprecated, 18 implementing, 6 needing review and 486
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -202,8 +230,8 @@ installations, full schemas, side effects and failure behavior remain work.
 
 `BE_GO/cmd/server/main.go` constructs config, bounded database/cache pools,
 repositories, services and handlers explicitly. Business code does not import
-Echo contexts. The root registers eleven upstream paths, including health/readiness,
-login, refresh, identifier checks, 2FA setup/status/updates and retired billing responses.
+Echo contexts. The root registers twelve upstream paths, including health/readiness,
+login, refresh, identifier checks, profile information, 2FA setup/status/updates and retired billing responses.
 Login and 2FA mutations use explicit service transactions. Startup performs no
 business-schema migration; health probes and idle SIGTERM draining are tested.
 

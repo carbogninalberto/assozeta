@@ -13,21 +13,13 @@ import (
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/social"
-	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/loginimage"
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
 )
 
-// composeLogin owns process-wide dependencies and admission pools. The current
-// image registry/resource policy remains partial; this is not an activation gate.
-func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *jwt.Manager, accounts *repository.Accounts, identities *service.IdentityResolver, codecPath string) (*handler.LoginHandler, *service.LoginRate, func(), error) {
-	images, err := loginimage.NewProcessor(codecPath, loginimage.ProcessorLimits{
-		Codec:       loginimage.JPEGLimits{MaxRasterBytes: 64 << 20, MaxEncodedBytes: 8 << 20, Concurrency: 2, Timeout: 10 * time.Second},
-		MaxURIBytes: 16 << 20, MaxHeaderBytes: 8 << 20, MaxTailBytes: 8 << 20, MaxDecodeBytes: 64 << 20, MaxTransformBytes: 128 << 20,
-	})
-	if err != nil {
-		return nil, nil, nil, err
-	}
+// composeLogin constructs login providers and credential admission pools. The
+// composition root supplies the shared image pool used by all image-bearing routes.
+func composeLogin(cfg config.Config, db *sqlx.DB, cache *redis.Client, tokens *jwt.Manager, accounts *repository.Accounts, identities *service.IdentityResolver, images domain.LoginImageProcessor) (*handler.LoginHandler, *service.LoginRate, func(), error) {
 	counter, err := repository.NewDjangoLoginRateCache(cache)
 	if err != nil {
 		return nil, nil, nil, err

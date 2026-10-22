@@ -35,6 +35,7 @@ func main() {
 		cookieVary               bool
 	}{
 		{"health", "GET", "/healthz", "", nil, 200, map[string]any{"status": "ok", "version": "v0.0.0-contract"}, false},
+		{"profile requires bearer", "GET", "/profile/info", "", map[string]string{"Accept-Language": "en"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"two-factor setup requires bearer", "GET", "/two-fa/setup", "", map[string]string{"Accept-Language": "en"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"missing credentials", "POST", "/oauth2/login", "{}", map[string]string{"Content-Type": "application/json"}, 400, map[string]any{"msg": "Invalid request."}, true},
 		{"method", "GET", "/oauth2/login", "", map[string]string{"Accept-Language": "en"}, 405, map[string]any{"detail": "Method \"GET\" not allowed."}, true},
@@ -74,5 +75,5 @@ func main() {
 			panic("preflight policy differs")
 		}
 	}
-	fmt.Printf("{\"success\":true,\"http_cases\":%d,\"scope\":\"shipped root without PostgreSQL/Redis; no successful-login or provisioning parity claim\"}\n", len(cases))
+	fmt.Printf("{\"success\":true,\"http_cases\":%d,\"scope\":\"shipped root without PostgreSQL/Redis; no database-backed login, provisioning or profile parity claim\"}\n", len(cases))
 }

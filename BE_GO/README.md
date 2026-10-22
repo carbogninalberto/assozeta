@@ -1,7 +1,7 @@
 # Assozeta Go backend — incomplete migration
 
 This module follows the pinned Kuayle architecture. The executable exposes
-monitoring, login, refresh, public identifier checks, scoped 2FA setup/status/updates and two
+monitoring, login, refresh, public identifier checks, scoped profile information, 2FA setup/status/updates and two
 retired software-billing responses. **The replacement remains incomplete and
 cannot replace Django or serve the complete frontend.** See the
 [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
@@ -244,3 +244,11 @@ response bounds, cancellation, deadlines, admission and fixed errors. It is not
 wired to the medical task: durable intent, uploads/references and restore fencing
 remain open. See `BE_GO/pkg/storage/s3objects/README.md` and run
 `TESTS/adapters/django/s3_objects.py`.
+
+`GET /profile/info` preserves the effective person's fields, owner association,
+review settings and registration choices without login's card or credential writes.
+Its current focused proof passes 56 HTTP scenarios and 88 concurrent reads per
+backend, all eight registration modes and four fresh-state reads per backend.
+The root shares the existing image processor across login and profile. See the
+[profile contract](internal/handler/profile_info.md) for query/pool/cancellation
+evidence and remaining frontend/image/lifecycle gaps.
