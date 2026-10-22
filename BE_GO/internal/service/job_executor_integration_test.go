@@ -41,6 +41,10 @@ func TestJobExecutorPostgres(t *testing.T) {
 	if _, err = db.ExecContext(ctx, `CREATE TABLE executor_effects(id uuid PRIMARY KEY,association_id uuid NOT NULL,amount numeric(10,2) NOT NULL); CREATE TABLE instance_datarestore(id uuid PRIMARY KEY,state text NOT NULL,completed_at timestamptz)`); err != nil {
 		t.Fatal(err)
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	scope := uuid.New()
 	locks := repository.NewRestoreFileLock(filepath.Join(t.TempDir(), "shared-restore.lock"))

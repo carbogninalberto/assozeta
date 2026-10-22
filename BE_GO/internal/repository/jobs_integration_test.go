@@ -64,12 +64,16 @@ func TestDurableJobsPostgres(t *testing.T) {
 	}
 	var version int
 	var dirty bool
-	if err = db.QueryRowContext(ctx, `SELECT version,dirty FROM assozeta_go_schema_migrations`).Scan(&version, &dirty); err != nil || version != 1 || dirty {
+	if err = db.QueryRowContext(ctx, `SELECT version,dirty FROM assozeta_go_schema_migrations`).Scan(&version, &dirty); err != nil || version != 2 || dirty {
 		t.Fatal("separate operational migration history missing", err)
 	}
 	var legacy int
 	if err = db.GetContext(ctx, &legacy, `SELECT count(*) FROM django_migrations WHERE id=1 AND app='fixture' AND name='existing' AND applied='2020-01-01Z'`); err != nil || legacy != 1 {
 		t.Fatal("Django migration ownership changed")
+	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
 	}
 	queue := NewJobs(db)
 	scope := uuid.New()

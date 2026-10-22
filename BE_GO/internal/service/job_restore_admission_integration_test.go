@@ -55,6 +55,10 @@ func TestJobRestoreAdmissionDjango(t *testing.T) {
 	if err = db.GetContext(ctx, &collision, `SELECT count(*) FROM assozeta_go_jobs WHERE association_id=$1`, scope); err != nil || collision != 0 {
 		t.Fatal("job fixture scope collides")
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	cleanup := func() {
 		if _, e := db.ExecContext(ctx, `DELETE FROM assozeta_go_jobs WHERE association_id=$1`, scope); e != nil {

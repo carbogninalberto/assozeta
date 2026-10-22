@@ -103,6 +103,10 @@ func TestSubscriptionTokenCleanupPostgres(t *testing.T) {
 	if err = db.GetContext(ctx, &jobCount, `SELECT count(*) FROM assozeta_go_jobs`); err != nil || jobCount != 0 {
 		t.Fatal("private job table is not empty")
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	var messages bytes.Buffer
 	// +14 changes the civil day, but this is still the same UTC execution instant.

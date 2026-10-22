@@ -13,9 +13,13 @@ type EmailBalanceResets struct{ db *sqlx.DB }
 
 func NewEmailBalanceResets(db *sqlx.DB) *EmailBalanceResets { return &EmailBalanceResets{db: db} }
 
-func (r *EmailBalanceResets) BeginEmailBalanceReset(ctx context.Context) (domain.EmailBalanceResetTransaction, error) {
+func (r *EmailBalanceResets) BeginEmailBalanceReset(ctx context.Context, job domain.Job) (domain.EmailBalanceResetTransaction, error) {
 	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
+		return nil, err
+	}
+	if err = fenceJobEffects(ctx, tx, job.ID, job.LeaseToken); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 	return &emailBalanceResetTransaction{tx: tx}, nil
