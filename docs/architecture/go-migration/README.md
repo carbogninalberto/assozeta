@@ -7,6 +7,25 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
+routes before the existing Django alias. Real Caddy transport checks cover exact
+roots, request/response preservation, chunked uploads, streaming, WebSockets,
+maintenance and upstream failure isolation. Actual application roots additionally
+pass the 62 table-preference contracts, three races and three health contracts per
+version through Caddy, with PostgreSQL/audit checks. Existing self-host validation
+(87 tests) and eleven reload/browser checks pass. See [versioned routing](versioned-routing.md).
+
+This does not deliver `api-go` through the normal Compose/updater path or implement
+coordinated selection and worker/scheduler ownership. Those requirements remain
+open; ordinary installations retain Django. Quality workflow `39733767156` at
+preceding commit `6e6d6f9` passes; manual workflow `39733767137` still fails on the
+external dashboard recipe binding. Current-head CI remains separate evidence.
+
+Upstream is fetched and reassessed periodically and before pushes, with rebase
+when `main` advances and communicating subagent review. The initial fetch confirmed
+`origin/main@fddcee3` was contained; upstream subsequently advanced to `65f0535`
+with a manual-visibility fix, requiring rebase and source-binding reassessment.
+
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django
 full-row saves overwriting concurrent names/passwords and successful responses
@@ -295,9 +314,13 @@ not expand that allowlist. The fixed `TESTS/fixtures/bakney-v1.json` remains the
 historical contract.
 
 Manual source, search/MCP tools, authenticated assets and corpus revision binding
-are part of current scope. `selfhost/compose.yml` mounts `manuale_data` and sets
-`MANUAL_INDEX_PATH`; Go release integration must consume the same verified
-package. Seed/demo commands cannot substitute for package delivery.
+are part of current scope. Main now packages a verified manual in the immutable
+backend image (`BE/release-manual`), validates it as the runtime user at startup
+and rehearses installed HTTP/browser/MCP access, upgrade, restart, interruption
+and rollback. Release bundle provenance binds application revision, release,
+manual revision and corpus identity. The optional `manuale_data` download volume
+and `MANUAL_INDEX_PATH` remain separate. Go must consume the same package and
+preserve these lifecycle gates; this merge alone proves no Go manual support.
 
 ## Ledger use and limitations
 

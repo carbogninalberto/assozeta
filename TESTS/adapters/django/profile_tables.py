@@ -1,5 +1,6 @@
 """Table preferences: real HTTP, audit and concurrency on private PostgreSQL/Redis."""
 import json
+import ipaddress
 import os
 import socket
 import subprocess
@@ -141,7 +142,7 @@ def run(work, log, tool_env, address):
         cursor.execute("CREATE TRIGGER tables_http_reject_audit BEFORE INSERT ON auditlog_logentry FOR EACH ROW WHEN (NEW.object_pk = '" + audit_target + "') EXECUTE FUNCTION tables_http_reject_audit()")
         cursor.execute("CREATE TRIGGER tables_http_reject_index BEFORE INSERT ON application_auditlogindex FOR EACH ROW WHEN (NEW.sport_association_id = '" + expected[index_target][-1] + "'::uuid) EXECUTE FUNCTION tables_http_reject_audit()")
 
-    def contracts(base):
+    def contracts(base, remote_addr='198.51.100.83'):
         events = set(LogEntry.objects.values_list('pk', flat=True))
         try:
             with patch.dict(os.environ, TESTS_BASE_URL=base, TESTS_PROFILE_TABLES_FIXTURE=str(path)):
@@ -159,7 +160,7 @@ def run(work, log, tool_env, address):
                     assert event.changes_dict == {'tables_settings': [json.dumps(before['tables_settings'], sort_keys=True), json.dumps(after, sort_keys=True)]}, (case['name'], event.changes_dict)
                     assert event.object_repr == 'name: ' + before['first_name'] + ' ' + before['last_name'] and event.action == 1 and event.content_type.model == 'user'
                     assert str(event.actor_id) == actor_id and event.actor_email == actor_email and event.additional_data == additional, (case['name'], 'audit attribution')
-                    assert event.cid == case['name'] and event.remote_addr == '198.51.100.83'
+                    assert event.cid == case['name'] and event.remote_addr == remote_addr
                     indexes = list(AuditLogIndex.objects.filter(log_entry=event))
                     assert len(indexes) == int(association is not None)
                     if indexes: assert str(indexes[0].sport_association_id) == association and indexes[0].resolution_path == 'user.sport_association'
@@ -215,7 +216,7 @@ def run(work, log, tool_env, address):
             assert snapshot() == seeded and cache_snapshot() == cache_before
         print('Three table-preference locked-row races passed', flush=True)
 
-    server = uvicorn.Server(uvicorn.Config(get_asgi_application(), host='127.0.0.1', port=0, lifespan='off', log_level='critical'))
+    server = uvicorn.Server(uvicorn.Config(get_asgi_application(), host='0.0.0.0', port=0, lifespan='off', log_level='critical'))
     thread = threading.Thread(target=server.run, daemon=True); thread.start(); api = None
     try:
         deadline = time.monotonic() + 10
@@ -228,7 +229,7 @@ def run(work, log, tool_env, address):
         from TESTS.adapters.go.server import build_server
         build_server(work / 'profile-tables-server', log, tool_env)
         with socket.socket() as sock: sock.bind(('127.0.0.1', 0)); http_port = sock.getsockname()[1]
-        environment = {**tool_env, 'DBTYPE': 'POSTGRES', 'DBNAME': 'assozeta_contract_accounts', 'DBUSER': 'contracts', 'DBPASSWORD': 'test-only', 'DBHOST': str(work), 'DBPORT': '5432', 'REDIS_HOST': host, 'REDIS_PORT': port, 'REDIS_PASSWORD': 'synthetic-identity-only', 'GO_LISTEN_ADDR': f'127.0.0.1:{http_port}', **{name: getattr(settings, name) for name in ('SECRET_KEY', 'JWT_SECRET_KEY', 'JWT_PUBLIC_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_STORAGE_BUCKET_NAME', 'AWS_S3_REGION_NAME', 'AWS_S3_ENDPOINT_URL', 'AWS_LOCATION', 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')}, 'DEBUG': 'False', 'RATELIMIT_ENABLE': 'False'}
+        environment = {**tool_env, 'DBTYPE': 'POSTGRES', 'DBNAME': 'assozeta_contract_accounts', 'DBUSER': 'contracts', 'DBPASSWORD': 'test-only', 'DBHOST': str(work), 'DBPORT': '5432', 'REDIS_HOST': host, 'REDIS_PORT': port, 'REDIS_PASSWORD': 'synthetic-identity-only', 'GO_LISTEN_ADDR': f'0.0.0.0:{http_port}', **{name: getattr(settings, name) for name in ('SECRET_KEY', 'JWT_SECRET_KEY', 'JWT_PUBLIC_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_STORAGE_BUCKET_NAME', 'AWS_S3_REGION_NAME', 'AWS_S3_ENDPOINT_URL', 'AWS_LOCATION', 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')}, 'DEBUG': 'False', 'RATELIMIT_ENABLE': 'False'}
         api = subprocess.Popen([str(work / 'profile-tables-server')], cwd=work, env=environment, stdout=log, stderr=subprocess.STDOUT)
         base = f'http://127.0.0.1:{http_port}'
         def ready():
@@ -236,9 +237,24 @@ def run(work, log, tool_env, address):
             try: return Client(base).request('GET', '/readyz')[0] == 200
             except OSError: return False
         poll(ready, bool, timeout=30); contracts(base); concurrent_updates(base)
+        from TESTS.adapters.caddy import proxy
+        django_port = server.servers[0].sockets[0].getsockname()[1]
+        with proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{http_port}', log) as (gateway, _image):
+            _, _, headers = Client(gateway).request('GET', '/healthz', include_headers=True)
+            remote_addr = headers['X-Fixture-Client-IP']
+            ipaddress.ip_address(remote_addr)
+            assert remote_addr != '198.51.100.83', 'untrusted forwarded address was accepted'
+            for version in ('v1', 'v2'):
+                with patch.dict(os.environ, TESTS_BASE_URL=gateway + '/api/' + version):
+                    result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('TESTS.contracts.test_health.HealthContract'))
+                    assert result.wasSuccessful() and not result.skipped
+                contracts(gateway + '/api/' + version, remote_addr)
+                concurrent_updates(gateway + '/api/' + version)
+            print('Both versioned APIs passed the actual table-preference contracts and races', flush=True)
         subprocess.run(['go', 'test', '-race', '-tags=profiletablesintegration', './internal/service', '-run', '^TestProfileTablesPostgres$', '-v'], cwd=ROOT / 'BE_GO', env={**tool_env, 'ASSOZETA_ACCOUNT_TEST_DSN': f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'}, check=True, timeout=90)
         assert snapshot() == seeded and cache_snapshot() == cache_before
-        return {'profile_tables_http_cases_per_backend': len(cases), 'profile_tables_concurrency_cases_per_backend': 3}
+        return {'profile_tables_http_cases_per_backend': len(cases), 'profile_tables_concurrency_cases_per_backend': 3,
+                'profile_tables_versioned_http_cases_per_backend': len(cases), 'profile_tables_versioned_concurrency_cases_per_backend': 3}
     finally:
         server.should_exit = True; thread.join(timeout=10)
         if api is not None and api.poll() is None:

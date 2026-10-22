@@ -16,6 +16,12 @@ The default stack contains PostgreSQL, Redis, MinIO, the Django API, Celery
 worker and scheduler, the Svelte/Caddy web image, and a private Chromium PDF
 renderer. Only Caddy publishes production ports.
 
+The in-progress Go migration defines fixed proxy routes `/api/v1` (Django) and
+`/api/v2` (Go); `/api` and existing root protocols still use Django. Ordinary
+release/Compose delivery does not yet supply the `api-go` upstream, and backend
+selection is not operationally complete. See the [routing implementation status](../docs/architecture/go-migration/versioned-routing.md)
+before attempting migration testing.
+
 ## Install
 
 From a tagged source checkout or a self-host release bundle:
