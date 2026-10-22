@@ -67,6 +67,13 @@ workers and graceful/forced-stop recovery. Both are required CI checks. Only dai
 email reset is registered; producer, scheduler and installed activation remain
 unfinished. See [process evidence and limits](../../../BE_GO/internal/worker_process.md).
 
+Twenty-nine actual Django scheduler scenarios now characterize effective settings,
+persisted schedules, due/DST semantics and publication state. The 21 declarations
+resolve to one configured fresh entry plus Beat's implicit cleanup; historical
+rows remain a separate authority. Failed publication can persist a reserved
+cursor. This required CI oracle does not implement a Go scheduler or handoff.
+See [scheduler authority and limits](scheduler-authority.md).
+
 `POST /profile/settings/tables` now preserves partial JSONField validation and
 mapped association-owner preferences for collaborators. TDD exposed Django
 full-row saves overwriting concurrent names/passwords and successful responses
