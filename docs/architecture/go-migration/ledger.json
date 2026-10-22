@@ -16539,7 +16539,10 @@
         "BE_GO/internal/domain/occurrence.go",
         "BE_GO/internal/repository/occurrence.go",
         "BE_GO/internal/service/occurrence.go",
-        "BE_GO/migrations/000003_periodic_occurrences.up.sql"
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go"
       ],
       "dependencies": [
         "BE/core/settings.py",
@@ -16567,17 +16570,21 @@
         "TESTS/adapters/go/schedule_due.py",
         "BE_GO/internal/service/occurrence_test.go",
         "BE_GO/internal/repository/occurrence_integration_test.go",
-        "TESTS/adapters/go/occurrence.py"
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py"
       ],
       "evidence": [
         "Pinned Celery5.6.2/Beat2.8.1 actual private-PostgreSQL oracle passes48 scenarios and compares all21 normalized source declarations. Effective fresh configured schedule is bakney-pairing-maintenance; DatabaseScheduler also adds backend_cleanup. Persisted custom/historical rows remain independently authoritative. This declaration is not proof of enabled installed execution or a Go scheduler. See docs/architecture/go-migration/scheduler-authority.md and ignored scheduler-authority/results.json.",
         "Pure persisted timing evaluator: 48 actual Django oracle cases, 23 Go differential matches, 37 unsupported-input and five calendar/precision rejection cases pass under race detection; focused vet passes. Exact daily-reset task, seconds intervals or scalar daily UTC cron, empty args/kwargs/headers and default transport only. Receives explicit clock and immutable snapshot; no enqueue, cursor write, static seeding or activation. Raw NextCheckAfter requires bounded scheduler rechecks. Source hashes/red-green receipts: ignored schedule-due/validation.json. See scheduler-authority.md; complete task/schedule execution and handoff remain unverified.",
         "Exact-row periodic publication: 17 required race/PostgreSQL groups on actual pinned Beat migrations pass, with an independent direct-adapter rerun. Required lifecycle lease spans pending-only restore admission and transaction completion; owner then source/definition locks precede database clock evaluation. Due publication joins fixed daily-reset job, retained source-ID/sequence receipt and Django cursor/date_changed atomically without marker mutation. Tests cover two publishers, reverse editor lock order, owner transitions, every write/deferred-commit fault, count reset/source-ID reuse, cancellation, three-crash exhaustion and handled UPDATE completion. Additive schema 3 preserves preexisting intent/Django history and defaults to Django; native14 and existing queue/executor/ownership/migration38 groups plus full Go vet/race pass. See BE_GO/internal/service/occurrence.md and ignored occurrence/source-manifest.json. No installed scheduler, candidate-selection bounds, Celery producer fencing or handoff is claimed.",
-        "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates."
+        "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
+        "Bounded inert schedule pages: eleven service and nine actual-Beat PostgreSQL/race groups pass. Primary-key seek uses a frozen high-water ID to finish rotations under continuous inserts; metadata discovery requires two statements for a new rotation and one thereafter, with a maximum of 64 rows. Disabled/unrelated rows are skipped, recognized rows are reread under publication locks, and error/cancellation preserves the last attempted cursor. Unforced plans at 100/1000/10000 rows are recorded; sixteen publications use 178 statements before the pending server-fence increment. Cooperative context deadlines stop admission, but required driver cleanup can extend elapsed return. No installed scheduler, production cardinality/backlog guarantee or Celery handoff is claimed. See BE_GO/internal/service/schedule_page.md and ignored schedule-page evidence."
       ],
       "notes": [
         "Current declaration authority is characterized; task-specific scheduling, persisted historical configuration, heap selection, broker durability and Django/Go handoff remain incomplete. The timing component is implementing; no verified status or automatic reseeding of lower-priority static declarations.",
-        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. Candidate scanning, all other task/schedule shapes, production scheduling and installed handoff remain incomplete."
+        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. The selected subset now has bounded candidate pages; all other task/schedule shapes, production scheduling and installed handoff remain incomplete."
       ]
     },
     {
@@ -19017,7 +19024,10 @@
         "BE_GO/internal/domain/occurrence.go",
         "BE_GO/internal/repository/occurrence.go",
         "BE_GO/internal/service/occurrence.go",
-        "BE_GO/migrations/000003_periodic_occurrences.up.sql"
+        "BE_GO/migrations/000003_periodic_occurrences.up.sql",
+        "BE_GO/internal/domain/schedule_page.go",
+        "BE_GO/internal/service/schedule_page.go",
+        "BE_GO/internal/repository/schedule_candidates.go"
       ],
       "dependencies": [
         "BE/communications/models.py",
@@ -19054,7 +19064,10 @@
         "TESTS/adapters/go/schedule_due.py",
         "BE_GO/internal/service/occurrence_test.go",
         "BE_GO/internal/repository/occurrence_integration_test.go",
-        "TESTS/adapters/go/occurrence.py"
+        "TESTS/adapters/go/occurrence.py",
+        "BE_GO/internal/service/schedule_page_test.go",
+        "BE_GO/internal/repository/schedule_candidates_integration_test.go",
+        "TESTS/adapters/go/schedule_page.py"
       ],
       "evidence": [
         "Actual Django task body passes empty/mixed association/NULL/deleted/zero/max-int/repeated reset and one-query cases at 1/16/128/512 rows. Real PostgreSQL trigger failure is caught with None result and no partial update. Go initially fails compilation for missing implementation, then all seven declared PostgreSQL integration groups pass under race detection; Django reads Go-written counters and all unrelated managed models unchanged. Evidence: quality-reports/go-migration/email-balance-reset/.",
@@ -19064,13 +19077,14 @@
         "Normal operational migration lifecycle: fresh install/repeated migration preserves the entire Django migration-history digest and exact pending job including a large JSON integer. Dirty Go history stops both APIs/worker/Beat and retains maintenance. Corrupt backups are rejected; dirty-history post-swap restore rolls back to prior live DB/objects/intent, while valid backup restores exact pre-backup state. Current-controller SIGKILL leaves an actual UID10001/read-only Go migrator blocked in PostgreSQL; recovery refuses the surviving helper, then succeeds after real migration completion. The 139 static self-host checks also pass. See docs/architecture/go-migration/operational-migrations.md and ignored worker-lifecycle-production-final.log, worker-lifecycle-update-green.log and operational-migration/update-recovery.json. This is a current-application disposable fixture, not installed Go background activation or complete historical-data compatibility.",
         "Pure persisted timing evaluator: 48 actual Django oracle cases, 23 Go differential matches, 37 unsupported-input and five calendar/precision rejection cases pass under race detection; focused vet passes. Exact daily-reset task, seconds intervals or scalar daily UTC cron, empty args/kwargs/headers and default transport only. Receives explicit clock and immutable snapshot; no enqueue, cursor write, static seeding or activation. Raw NextCheckAfter requires bounded scheduler rechecks. Source hashes/red-green receipts: ignored schedule-due/validation.json. See scheduler-authority.md; complete task/schedule execution and handoff remain unverified.",
         "Exact-row periodic publication: 17 required race/PostgreSQL groups on actual pinned Beat migrations pass, with an independent direct-adapter rerun. Required lifecycle lease spans pending-only restore admission and transaction completion; owner then source/definition locks precede database clock evaluation. Due publication joins fixed daily-reset job, retained source-ID/sequence receipt and Django cursor/date_changed atomically without marker mutation. Tests cover two publishers, reverse editor lock order, owner transitions, every write/deferred-commit fault, count reset/source-ID reuse, cancellation, three-crash exhaustion and handled UPDATE completion. Additive schema 3 preserves preexisting intent/Django history and defaults to Django; native14 and existing queue/executor/ownership/migration38 groups plus full Go vet/race pass. See BE_GO/internal/service/occurrence.md and ignored occurrence/source-manifest.json. No installed scheduler, candidate-selection bounds, Celery producer fencing or handoff is claimed.",
-        "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates."
+        "Transaction lifetime regression: all 17 explicit repository entrypoints retain a private owned pgx connection through completion and driver/socket cleanup. Eight real PostgreSQL/race groups cover worker, HTTP and snapshot admission plus reuse/concurrent finish/cancelled begin/failed SQL; three representative old-source cases fail before the fix. Caller context/isolation and error classifications remain unchanged. Local socket cleanup does not assert synchronous server disconnect processing or resolve ambiguous commits. See BE_GO/internal/repository/transaction.md and TESTS/adapters/go/transaction_lifetime.py; business parity and installed handoff remain separate gates.",
+        "Bounded inert schedule pages: eleven service and nine actual-Beat PostgreSQL/race groups pass. Primary-key seek uses a frozen high-water ID to finish rotations under continuous inserts; metadata discovery requires two statements for a new rotation and one thereafter, with a maximum of 64 rows. Disabled/unrelated rows are skipped, recognized rows are reread under publication locks, and error/cancellation preserves the last attempted cursor. Unforced plans at 100/1000/10000 rows are recorded; sixteen publications use 178 statements before the pending server-fence increment. Cooperative context deadlines stop admission, but required driver cleanup can extend elapsed return. No installed scheduler, production cardinality/backlog guarantee or Celery handoff is claimed. See BE_GO/internal/service/schedule_page.md and ignored schedule-page evidence."
       ],
       "notes": [
         "Task body is explicitly registered in the packaged native worker; no installed worker service or production ownership activation exists. Generic executor/restore admission has separate thirteen-group evidence; no task-level scheduler, backend switching or historical migration claim. See BE_GO/internal/service/email_balance_reset.md and BE_GO/internal/worker_process.md.",
         "Actual Celery policy captured: acks_late=false, max_retries=3, default_retry_delay=180, no rate/hard/soft limit, result retained, track_started=false, UTC. The task body never retries. Static midnight declaration is absent from initialized beat_schedule and the fresh fixture Beat table; historical persisted schedules/operator overrides remain unresolved. No timer is invented or activated.",
         "The exact-row publisher now supplies retained occurrence keys and a bounded operational-attempt policy; installed scheduling and ownership selection remain open. Existing Django early acknowledgement and swallowed errors are distinct from Go durable operational failure/recovery semantics. Concurrent SMTP accounting, realistic scale and lifecycle gates remain open.",
-        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. Candidate scanning, all other task/schedule shapes, production scheduling and installed handoff remain incomplete."
+        "The inert exact-row publisher now chooses retained per-source sequence keys and three total operational crash-recovery attempts. Generation/name/resettable Django counters are not occurrence identity. This strengthens the failed-send boundary intentionally; receipt retention is mandatory and restoring a backup can rewind history. The selected subset now has bounded candidate pages; all other task/schedule shapes, production scheduling and installed handoff remain incomplete."
       ]
     },
     {

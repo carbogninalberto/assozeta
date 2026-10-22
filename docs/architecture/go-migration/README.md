@@ -96,6 +96,16 @@ lease lifetime. Schema 3 is additive and defaults remain Django-owned. Its
 three-attempt operational crash policy is explicit; no installed scheduler or
 Celery handoff is enabled. See [publication boundaries](../../../BE_GO/internal/service/occurrence.md).
 
+Bounded discovery now supplies one page of source IDs to that publisher. A frozen
+high-water ID gives each rotation a finite end despite continuous inserts; the
+next rotation rereads earlier sources and edits. Eleven service groups and nine
+actual-Beat PostgreSQL/race groups pass, including cancellation, unsupported/busy
+sources, ownership loss and measured query plans at 100/1,000/10,000 rows.
+Discovery uses at most two statements for a new rotation and one thereafter;
+each recognized source still has its own publication transaction. Context budgets
+stop admission but required cleanup can extend elapsed return time. No installed
+scheduler loop or activation is added. See [page behavior and evidence](../../../BE_GO/internal/service/schedule_page.md).
+
 
 Explicit repository transactions now retain their private connection through
 automatic rollback and driver/socket cleanup. Eight real PostgreSQL/race groups
