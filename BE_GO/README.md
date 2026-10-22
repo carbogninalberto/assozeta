@@ -134,8 +134,13 @@ Authenticated `/two-fa/info` preserves the current scoped-account flag and
 collaborator/administrator/impersonation restrictions. Ten portable contracts
 and current-state transitions run against both real HTTP servers; status adds
 no query beyond existing account/identity admission. See
-[the status contract](internal/handler/two_factor_info.md). Setup and update remain
-unimplemented.
+[the status contract](internal/handler/two_factor_info.md).
+
+`POST /two-fa/update` now preserves scoped permissions, OTP behavior and audit
+attribution, with atomic user/audit/index writes in both backends. Shared fixtures
+cover write failures, impersonation, concurrent profile/password changes, duplicate
+updates, query bounds and cancellation. See [the update contract](internal/handler/two_factor_update.md).
+Setup/QR and broader authentication/activation remain incomplete.
 
 The legacy software-billing routes retain their authenticated HTTP 410 responses
 without entitlement or provider work. This does not retire association/course

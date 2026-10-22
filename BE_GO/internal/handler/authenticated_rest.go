@@ -29,7 +29,7 @@ func authenticatedRESTIdentity(c echo.Context, actors *service.ActorAuthenticati
 	var body any
 	var bodyErr error
 	if actor != nil && (r.Header.Get("X-Impersonation-Id") != "" || r.Header.Get("User-Id") != "") {
-		body, bodyErr = readReferenceBody(r)
+		body, bodyErr = readAuthenticatedRESTBody(c)
 	}
 	// IsAuthenticated resolves scope even for an anonymous request. Forged
 	// impersonation therefore retains its denial before missing-credential 401.
@@ -44,4 +44,23 @@ func authenticatedRESTIdentity(c echo.Context, actors *service.ActorAuthenticati
 		return nil, restError(c, &restInputError{Status: 401, Detail: restText(r, "credentials")})
 	}
 	return &identity, nil
+}
+
+// Scoped admission and write handlers share the parsed object/error. Keeping the
+// cache at the transport layer avoids rereading a consumed stream and preserves
+// malformed-input precedence without placing HTTP state in services.
+type authenticatedRESTBody struct {
+	value any
+	err   error
+}
+
+const authenticatedRESTBodyKey = "assozeta.authenticated-rest.body"
+
+func readAuthenticatedRESTBody(c echo.Context) (any, error) {
+	if cached, ok := c.Get(authenticatedRESTBodyKey).(authenticatedRESTBody); ok {
+		return cached.value, cached.err
+	}
+	value, err := readReferenceBody(c.Request())
+	c.Set(authenticatedRESTBodyKey, authenticatedRESTBody{value: value, err: err})
+	return value, err
 }

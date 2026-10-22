@@ -6,14 +6,24 @@ import (
 	"time"
 )
 
+// AuditImpersonation preserves the original actor separately from the selected
+// effective person and association scope on protected request mutations.
+type AuditImpersonation struct {
+	SessionID     string  `json:"impersonation_session"`
+	ActorID       string  `json:"actor_id"`
+	TargetID      string  `json:"target_user_id"`
+	AssociationID *string `json:"association_id"`
+}
+
 // LoginAuditContext comes from trusted request/session admission. Its actor is
 // independent of the account being logged into, and must not come from a body ID.
 type LoginAuditContext struct {
-	ActorID       *string      `json:"actor_id"`
-	ActorEmail    *string      `json:"actor_email"`
-	RemoteAddress *string      `json:"remote_address"`
-	RemotePort    *json.Number `json:"remote_port"`
-	CorrelationID *string      `json:"correlation_id"`
+	AdditionalData *AuditImpersonation `json:"additional_data,omitempty"`
+	ActorID        *string             `json:"actor_id"`
+	ActorEmail     *string             `json:"actor_email"`
+	RemoteAddress  *string             `json:"remote_address"`
+	RemotePort     *json.Number        `json:"remote_port"`
+	CorrelationID  *string             `json:"correlation_id"`
 }
 type LoginChallenge struct {
 	Account
