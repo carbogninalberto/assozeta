@@ -96,6 +96,10 @@ func TestAuditRetentionPostgres(t *testing.T) {
 	if err = db.SelectContext(ctx, &baseIndexes, `SELECT to_jsonb(i)::text FROM application_auditlogindex i ORDER BY log_entry_id`); err != nil || len(baseIndexes) != 4 {
 		t.Fatal("missing indexes", err)
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	var messages bytes.Buffer
 	service := NewAuditRetention(repository.NewAuditRetentions(db), func() time.Time { return fixture.Now.In(time.FixedZone("offset", 14*3600)) }, slog.New(slog.NewTextHandler(&messages, nil)))

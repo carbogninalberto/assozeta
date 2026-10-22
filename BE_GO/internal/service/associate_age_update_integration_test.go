@@ -95,6 +95,10 @@ func TestAssociateAgeUpdatePostgres(t *testing.T) {
 	if err = db.SelectContext(ctx, &baseline, `SELECT to_jsonb(a)::text FROM application_associate a ORDER BY associate_id`); err != nil || len(baseline) != 9 {
 		t.Fatal("missing baseline", err)
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	var messages bytes.Buffer
 	service := NewAssociateAgeUpdate(repository.NewAssociateAgeUpdates(db), func() time.Time { return fixture.Now.In(time.FixedZone("offset", 14*3600)) }, slog.New(slog.NewTextHandler(&messages, nil)))

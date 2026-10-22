@@ -8,6 +8,12 @@ is applied by `migrations.Apply` on a dedicated, single-connection pool. Concurr
 applicants use the migration driver's advisory lock. Connect/statement/lock
 timeouts are bounded; application queries still use their own pool.
 
+Migration 2 adds `public.assozeta_go_job_ownership`, initially Django at generation
+1, and a generation field on existing operational jobs. Old jobs retain their
+intent and leases but have no authorized generation until a fresh Go claim. Both
+down scripts refuse destructive rollback. See
+[`internal/repository/job_ownership.md`](../internal/repository/job_ownership.md).
+
 `Apply` exposes only forward migration. There is no force/baseline operation and
 the down script explicitly refuses deletion, retaining even terminal jobs and
 their deduplication keys during binary rollback. Invoking a third-party down tool

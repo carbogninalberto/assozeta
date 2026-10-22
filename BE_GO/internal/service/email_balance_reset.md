@@ -53,7 +53,7 @@ failure and redacted diagnostics, blocked UPDATE cancellation/pool recovery, and
 bounded query counts. Missing or skipped groups fail the adapter. All fixture
 records are removed, with complete managed-table readback checked afterwards.
 
-The Go success path uses four statements (BEGIN, bulk UPDATE, fenced completion,
+The Go success path uses five statements (BEGIN, ownership fence, bulk UPDATE, fenced completion,
 COMMIT) for 0/1/16/128/512 positive counters within 512 configurations. Its inspected
 UPDATE plan uses a sequential scan, appropriate to the intentional global reset;
 no index or business schema change is introduced. This demonstrates bounded query

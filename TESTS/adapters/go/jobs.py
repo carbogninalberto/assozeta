@@ -91,6 +91,47 @@ def main():
                 expected_execution = {'TestJobExecutorPostgres/' + name.replace(' ', '_') for name in expected_execution}
                 assert execution_passed == expected_execution and not any(event['Action'] == 'skip' for event in execution_events), 'missing or skipped executor scenario'
                 result['executor_scenarios'] = len(execution_passed)
+                # Separate databases preserve each suite's real initial state:
+                # ownership starts with Django, and migration starts at version1.
+                ownership_suites = (
+                    ('ownership', './internal/service', 'TestJobOwnershipPostgres', 'ASSOZETA_JOB_OWNERSHIP_DSN', {
+                        'default Django ownership never claims or spends attempts',
+                        'lost ownership rejects effects renewal failure and completion',
+                        'returning Go ownership cannot revive prior generation',
+                        'handoff before completion rolls back business transaction',
+                        'successful completion holds ownership through commit and rollback',
+                        'claim waits for concurrent handoff and rechecks owner',
+                        'daily reset locks ownership before touching business rows',
+                        'executor heartbeat cancels lost owner and stops intake',
+                        'competing trusted fixture handoffs use generation compare and swap',
+                        'ownership waits never lock job rows before the owner',
+                        'missing owner row denies claims without losing queued work',
+                    }),
+                    ('ownership_migration', './migrations', 'TestOwnershipMigrationPostgres', 'ASSOZETA_JOB_MIGRATION_DSN', {
+                        'additive upgrade preserves pending leased jobs and Django history',
+                        'reapplying does not reset ownership or generation',
+                        'down refusal retains ownership and permanent job keys',
+                        'dirty history fails closed without force or data changes',
+                    }),
+                )
+                for name, package, test, dsn_key, scenarios in ownership_suites:
+                    database = name + '_contracts'
+                    run([binaries / 'createdb', '-h', work, '-U', 'contracts', database])
+                    proof = subprocess.run(['go', 'test', '-race', '-tags=jobsintegration', package, '-run', '^' + test + '$', '-json'],
+                        cwd=ROOT / 'BE_GO', env={**env, dsn_key: f'host={work} user=contracts dbname={database} sslmode=disable'},
+                        capture_output=True, text=True, timeout=120)
+                    (output / (name + '-test.jsonl')).write_text(proof.stdout)
+                    events = [json.loads(line) for line in proof.stdout.splitlines()]
+                    for event in events:
+                        if event.get('Output'):
+                            print(event['Output'], end='')
+                    if proof.stderr:
+                        print(proof.stderr)
+                    proof.check_returncode()
+                    passed_scenarios = {event.get('Test') for event in events if event['Action'] == 'pass' and '/' in event.get('Test', '')}
+                    required = {test + '/' + scenario.replace(' ', '_') for scenario in scenarios}
+                    assert passed_scenarios == required and not any(event['Action'] == 'skip' for event in events), f'missing or skipped {name} scenario'
+                    result[name + '_scenarios'] = len(passed_scenarios)
                 result.update(success=True, private_postgres=True, scenario_groups=len(passed),
                               query_sizes=[1, 16, 128, 512], plan_dataset=4096,
                               business_schema='synthetic transaction/ownership sentinels only')

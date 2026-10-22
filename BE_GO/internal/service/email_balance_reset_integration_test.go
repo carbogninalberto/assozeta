@@ -52,6 +52,10 @@ func TestEmailBalanceResetPostgres(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	var messages bytes.Buffer
 	reset := NewEmailBalanceReset(repository.NewEmailBalanceResets(db), slog.New(slog.NewTextHandler(&messages, nil)))
@@ -246,8 +250,8 @@ func TestEmailBalanceResetPostgres(t *testing.T) {
 			if e := reset.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if got := trace.count.Load(); got != 4 {
-				t.Fatalf("%d positive counters: %d queries, want BEGIN/UPDATE/complete/COMMIT", n, got)
+			if got := trace.count.Load(); got != 5 {
+				t.Fatalf("%d positive counters: %d queries, want BEGIN/ownership fence/UPDATE/complete/COMMIT", n, got)
 			}
 			balances(0)
 		}

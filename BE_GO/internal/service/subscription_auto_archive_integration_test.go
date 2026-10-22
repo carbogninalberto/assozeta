@@ -104,6 +104,10 @@ func TestSubscriptionAutoArchivePostgres(t *testing.T) {
 		}
 		exec(`DELETE FROM assozeta_go_jobs`)
 	}
+	// Trusted private fixture handoff; no production ownership switch is exposed.
+	if _, err = db.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=generation+1 WHERE singleton=1`); err != nil {
+		t.Fatal(err)
+	}
 	queue := repository.NewJobs(db)
 	worker := NewSubscriptionAutoArchive(repository.NewSubscriptionAutoArchives(db), func() time.Time { return fixture.Now }, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	claim := func() domain.Job {

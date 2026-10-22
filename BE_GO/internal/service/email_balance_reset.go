@@ -26,7 +26,7 @@ func (s *EmailBalanceReset) Run(ctx context.Context, job domain.Job) error {
 	if job.AssociationID != uuid.Nil || job.ID == uuid.Nil || job.LeaseToken == uuid.Nil || job.State != "running" || job.Kind != domain.JobResetDailyEmailBalance || job.Version != 1 || len(job.Payload) > 65536 || json.Unmarshal(job.Payload, &payload) != nil || payload == nil || len(payload) != 0 {
 		return domain.ErrJobInvalid
 	}
-	tx, err := s.store.BeginEmailBalanceReset(ctx)
+	tx, err := s.store.BeginEmailBalanceReset(ctx, job)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (s *EmailBalanceReset) Run(ctx context.Context, job domain.Job) error {
 			return rollbackErr
 		}
 		s.logger.WarnContext(ctx, "daily email balance reset failed", "code", "email_balance_reset_failed")
-		completion, beginErr := s.store.BeginEmailBalanceReset(ctx)
+		completion, beginErr := s.store.BeginEmailBalanceReset(ctx, job)
 		if beginErr != nil {
 			return beginErr
 		}

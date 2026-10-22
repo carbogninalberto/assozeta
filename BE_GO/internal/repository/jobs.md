@@ -8,6 +8,11 @@ restore admission. It is not connected to the HTTP root, a production worker
 entrypoint or a scheduler.
 Django retains every existing task and scheduling owner.
 
+The additive runtime ownership fence now defaults to Django and prevents Go
+claims until an authorized Go generation exists. No production handoff API is
+provided. See [ownership and transaction fencing](job_ownership.md) for the
+generation checks, effect boundaries and private fixture-only transitions.
+
 `JobIntent` records a UUID, trusted association scope, kind, argument version,
 JSON payload, stable idempotency key, availability and explicit attempt limit.
 The nil association UUID is reserved for instance-wide work, never a fallback for
