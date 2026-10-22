@@ -79,7 +79,8 @@ def run(work,log,tool_env,address):
         django_base=f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}'
         count=contracts(django_base)
         readback()
-        subprocess.run(['go','build','-o',str(work/'retired-billing-server'),'./cmd/server'],cwd=ROOT/'BE_GO',check=True,timeout=120,env=tool_env,stdout=log,stderr=subprocess.STDOUT)
+        from TESTS.adapters.go.server import build_server
+        build_server(work/'retired-billing-server',log,tool_env)
         with socket.socket() as listener:
             listener.bind(('127.0.0.1',0));http_port=listener.getsockname()[1]
         environment={**tool_env,'DBTYPE':'POSTGRES','DBNAME':'assozeta_contract_accounts','DBUSER':'contracts','DBPASSWORD':'test-only',

@@ -6,7 +6,8 @@ eighteen existing pipelines, including the BMP/DIB, PCX/DCX and JPEG/MPO paths,
 with data-URI decoding and JPEG output. Its registry is **incomplete**: missing
 codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
-Public login remains unwired; no unsupported image is silently accepted as parity.
+The public-login root now composes this processor. Missing formats remain
+explicit errors; no unsupported image is silently accepted as parity.
 
 The current production reference is Python 3.13.16 / Pillow 13.0.0. The full
 accounts adapter and rebuilt non-root shipped-image oracle pass the implemented
@@ -148,7 +149,7 @@ errors return no partial header. Returned metadata does not alias input bytes.
 EXIF fragments are combined, and the last MPF payload/offset and Ultra HDR marker
 presence are retained for `InspectJPEG`, which applies EXIF DPI and MPF
 first-frame admission. The marker reader alone does not perform that admission.
-Neither component is wired into the public login service.
+The public-login root now reaches these components through the shared processor.
 
 `TESTS/adapters/django/login_jpeg_header.py` specifies 1,364 explicit outcomes:
 all 256 marker codes, empty/incomplete payloads, component/precision/quantization

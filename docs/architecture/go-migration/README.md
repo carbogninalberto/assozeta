@@ -7,6 +7,22 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
+The public-login composition now has focused evidence on both real HTTP servers:
+eighteen ordinary portable methods, five rate/session ordering methods, fifteen
+credential/effect scenarios and sixteen concurrent successful logins per backend.
+The first composed run exposed JSON audit writes interpreted as bytea under the
+server's transaction-pooler-safe pgx mode; explicit JSON text fixes those writes.
+Five pre-credential HTTP checks also pass in the actual non-root, read-only,
+networkless Go image. The complete accounts adapter also passes after this change, including the
+existing session/scope/task/image checks. Go race, ordinary/tagged vet, formatting,
+inventory/drift, workflow lint, health/recovery and the rebuilt image codec oracle
+pass. Evidence: `quality-reports/go-migration/login-http/full-accounts-results.json`,
+`full-accounts.log`, `image-http-current.log` and `image-codecs-current.log`.
+The preceding security-baseline reconciliation was committed in `6c2ccb5`.
+Public social-provider HTTP, full image coverage, resource sizing, global
+middleware and activation remain incomplete. See
+[the public-login contract](../../../BE_GO/internal/handler/login.md).
+
 Upstream `main@fddcee3` (PR #22) changed the production reference to Python
 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. The existing Go compatibility
 suites have now been revalidated against that baseline. Earlier full-suite results

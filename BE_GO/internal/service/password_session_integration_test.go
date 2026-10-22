@@ -71,6 +71,7 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	if err != nil {
 		t.Fatal("private database config invalid")
 	}
+	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec // Same mode as cmd/server and transaction poolers.
 	counter := &sessionQueryCounter{}
 	cfg.Tracer = counter
 	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")

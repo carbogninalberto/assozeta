@@ -32,7 +32,7 @@ type imageFormat struct {
 
 // Processor composes implemented file pipelines with one admission/deadline.
 // Missing codecs and unresolved ambiguous headers fail explicitly. It is not yet
-// a complete replacement for Pillow's registry and is not wired into public login.
+// a complete replacement for Pillow's registry; public login propagates its gaps.
 type Processor struct {
 	limits  ProcessorLimits
 	formats []imageFormat

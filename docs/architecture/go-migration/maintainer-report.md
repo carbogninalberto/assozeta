@@ -7,6 +7,22 @@ activation or merge as a backend replacement.** Django retains business-schema,
 worker and scheduler ownership. No production installation, customer data or
 published release has been changed.
 
+The public-login composition now has focused evidence on both real HTTP servers:
+eighteen ordinary portable methods, five rate/session ordering methods, fifteen
+credential/effect scenarios and sixteen concurrent successful logins per backend.
+The first composed run exposed JSON audit writes interpreted as bytea under the
+server's transaction-pooler-safe pgx mode; explicit JSON text fixes those writes.
+Five pre-credential HTTP checks also pass in the actual non-root, read-only,
+networkless Go image. The complete accounts adapter also passes after this change, including the
+existing session/scope/task/image checks. Go race, ordinary/tagged vet, formatting,
+inventory/drift, workflow lint, health/recovery and the rebuilt image codec oracle
+pass. Evidence: `quality-reports/go-migration/login-http/full-accounts-results.json`,
+`full-accounts.log`, `image-http-current.log` and `image-codecs-current.log`.
+The preceding security-baseline reconciliation was committed in `6c2ccb5`.
+Public social-provider HTTP, full image coverage, resource sizing, global
+middleware and activation remain incomplete. See
+[the public-login contract](../../../BE_GO/internal/handler/login.md).
+
 Upstream `main@fddcee3` (PR #22) changed the production reference to Python
 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. The existing Go compatibility
 suites have now been revalidated against that baseline. Earlier full-suite results
@@ -47,7 +63,7 @@ matrix. No ledger entry is promoted to verified.
 
 ## Current result
 
-The Go composition root exposes `/healthz`, `/readyz`, `/oauth2/refresh-token`,
+The Go composition root exposes `/healthz`, `/readyz`, `/oauth2/login`, `/oauth2/refresh-token`,
 `/oauth2/check/email`, `/oauth2/check/username`, `/two-fa/info`, and the two legacy
 software-billing tombstones. Refresh, identifier, 2FA and retired-billing routes
 compose existing-session audit middleware with PostgreSQL/Redis and the configured
@@ -57,8 +73,8 @@ The root now admits CORS preflight before routing/session/authentication using t
 existing environment settings, then takes the shared Django/CLI restore lease
 and applies current Django security response headers. Configured unsafe requests
 also reject globally queued/running restore receipts before session/authentication. Remaining global middleware is still incomplete.
-Login has tested services, providers, transport and rate-admission components but
-is not registered publicly. Most business workflows and every activation gate
+Login now composes credential/response/finalization services, concrete providers,
+the partial image processor, session audit and shared rate admission. Most business workflows and every activation gate
 remain unfinished. There are 514 ledger declarations: 4 deprecated, 15 implementing,
 6 requiring renewed review and 489 uncharacterized; none is verified. Runtime
 discovery resolves 408 HTTP patterns, four WebSocket paths, 42 tasks, 112 models and

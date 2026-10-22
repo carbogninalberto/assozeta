@@ -41,7 +41,8 @@ Unit tests additionally prove the IP rejection does not read the wrapper's body
 or call the next handler; parser tests/fuzzing preserve quoted text and strict
 view-parser behavior. The Redis counter/race/resource checks remain separate.
 
-This route is not registered in the public server yet. Remaining work includes
+The public-login root now composes this middleware, with five additional actual
+application ordering contracts. Remaining work includes
 composition with real login/authentication/audit/session/global middleware,
 malformed Unicode escapes/lone surrogates, exact recursion boundaries, unusual
 transport/length/body-limit responses, aggregate memory/admission budgets and

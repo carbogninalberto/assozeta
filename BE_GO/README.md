@@ -1,11 +1,10 @@
 # Assozeta Go backend — incomplete migration
 
-This module follows the pinned Kuayle architecture. It currently exposes monitoring
-and token refresh, public email/username availability and authenticated 2FA status,
-with credential,
-identity and resource-read components. Login
-and business workflows remain incomplete. It cannot serve the frontend or
-replace Django. See the [compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
+This module follows the pinned Kuayle architecture. The executable exposes
+monitoring, login, refresh, public identifier checks, scoped 2FA status and two
+retired software-billing responses. **The replacement remains incomplete and
+cannot replace Django or serve the complete frontend.** See the
+[compatibility ledger and acceptance matrix](../docs/architecture/go-migration/README.md)
 and the [full requirements](../docs/architecture/go-migration/requirements.md).
 
 Run unit checks:
@@ -16,101 +15,70 @@ go vet ./...
 go test -race ./...
 ```
 
-From the repository root, run the disposable real PostgreSQL/Redis rehearsal:
+From the repository root, the disposable real PostgreSQL/Redis health rehearsal is:
 
 ```sh
 python3 TESTS/adapters/go/health.py
 ```
 
-It builds the Go executable in a temporary directory, creates a private Unix-socket
-PostgreSQL cluster and loopback Redis/API processes, runs portable HTTP contracts,
-forces dependency failures/recovery and removes only its own resources. It requires
-Go, PostgreSQL binaries, `redis-server` and OpenSSL for ephemeral test keys;
-missing dependencies fail the run.
+It builds the server and adjacent native `image-codec`, creates private PostgreSQL
+and Redis/API processes, forces dependency failures/recovery and removes its own
+resources. It requires Go, PostgreSQL binaries, Redis, OpenSSL, a C compiler,
+`pkg-config`, libjpeg, zlib and libwebp/libwebpdemux. Missing dependencies fail.
 
-The bidirectional credential adapter uses the actual Django token service and
-hashers. From the repository root, install
-`TESTS/adapters/django/requirements-credentials.txt` into a disposable Python 3.13.2 (matching `BE/Dockerfile`)
-virtualenv and run `python TESTS/adapters/django/credentials.py`. It generates and
-deletes synthetic keys/tokens/hashes, prohibits database access, and invokes Go
-interop tests. See `pkg/jwt/README.md` and `pkg/crypto/README.md` for the protocol
-and remaining service-level requirements. Refresh is registered; login is not.
+The Django adapters require the exact Python patch version in `BE/Dockerfile`
+(currently 3.13.16), `BE/requirements.txt` and the independent test dependencies.
+`TESTS/adapters/django/credentials.py` checks bidirectional credentials without a
+database. `permissions.py`, `impersonation_cache.py` and `accounts.py` exercise
+current-model account/scope/session state on disposable PostgreSQL/Redis. These
+are compatibility suites, not the complete historical-schema or activation matrix.
 
-Use that Python environment to run `TESTS/adapters/django/permissions.py` for the
-collaborator route gate and `TESTS/adapters/django/accounts.py` for reads of
-Django-created accounts in private PostgreSQL. These prove policy/read primitives;
-actor admission connects tokens to current account rows, and identity selection
-separates actor/effective person/data owner with current impersonation eligibility.
-Association-bound operation and nested-reference admission now runs before
-collaborator grants; see `internal/service/scoped_request.md`. Endpoint resource
-authorization, audit workflows and the remaining login writes remain open. Refresh now uses
-this admission chain; see `internal/handler/refresh.md`. The additional
-`TESTS/adapters/django/impersonation_cache.py` rehearsal verifies the actual Django
-cache record boundary on private Redis; see `internal/repository/impersonation.md`.
+The login root explicitly constructs password/social admission, profiles,
+registration choices, image processing, card configuration and finalization.
+It composes session/audit middleware before the shared Django rate counters and
+REST transport. Actor, authenticated account and effective scope remain separate.
+The JSON audit insert passes text explicitly, preserving jsonb writes with the
+server's transaction-pooler-safe `QueryExecModeExec` connection mode.
 
-The account adapter now also exercises password selection and rehash writes against
-the actual Django login view. The Go credential stage uses transactions and bounded
-pages, but still requires OTP, username/audit normalization and login response/side
-effects; see `internal/service/password_login.md`. A separate second-factor gate
-now matches 47 actual-Django-view cases, including fixed clock boundaries and
-Unicode/multipart inputs; see `internal/service/second_factor.md`. Password admission now composes these stages with transactional username/audit
-normalization; see `internal/service/login_preparation.md`. It still needs image processing and full response/final-write composition before
-it can become a complete login route.
-The base 37-field profile now matches 46 explicit Django-rendered JSON cases with
-bounded reads, setup/onboarding precedence and exact JSON values; see
-`internal/service/login_profile.md`. Optional onboarding query failures now preserve
-the profile with null onboarding, tested using real PostgreSQL permission denial.
-The 50-field association profile adds 23 explicit cases, exact stored decimal text
-and scoped group reads; see `internal/service/association_profile.md`. Complete
-image processing and transaction composition are still required. Membership-card configuration
-lookup/default creation now preserves the Django response and audit/index fields
-inside an explicit transaction; see `internal/service/membership_card_configuration.md`.
-Cross-runtime concurrent creation and Django's partial failure effects remain
-explicit compatibility gaps.
-Final user writes now have 17 actual-Django-view component cases for last_login,
-UTC deletion cancellation and atomic audit/index; see
-`internal/service/login_finalization.md`. The service preserves concurrent
-unrelated user changes. Public login composition and mixed-runtime races remain open.
-The response composer now matches 36 explicit full JSON/outcome cases that require
-no image conversion. It composes profiles and card configuration with role-specific
-keys, instructor metadata and instance registration choices; see
-`internal/service/login_response.md`. Existing association responses use seven
-statements. The complete image processor remains unimplemented; no public login is wired.
-Its pure-Go Base64/size-policy/pixel core now passes 54 exact Pillow vectors,
-ten actual Django decisions and 19,535 Base64 cases; see
-`pkg/storage/loginimage/README.md`. A bounded native libjpeg encoder now matches
-180 exact Pillow JPEG vectors, and all 54 transformed rasters also match as JPEG.
-The non-root Go image delivers the static helper and license notices; its actual
-codec passes the same 180-vector oracle. JPEG pixel decoding now adds 312 exact
-pixel/comment cases and 1,556 invalid streams, checked against the actual Django
-helper and shipped codec. Inherited comments and Pillow's long-comment save
-failure are preserved. A lazy JPEG marker reader adds 1,352 explicit Pillow cases
-and three real Django header-only passthrough checks. EXIF/MPF admission adds
-226 explicit cases; a bounded complete JPEG file pipeline adds 73 size/fallback
-cases and reruns the metadata/decoder vectors. Actual Django and the shipped
-image agree. Other file decoders, admission across formats and login wiring
-remain required.
+The focused public HTTP adapter is:
 
-The PNG pixel primitive now covers all 15 depth/color combinations, five filters
-and Adam7 with 801 explicit Pillow cases. Expected samples are constructed
-independently. The actual Django helper agrees on 478 unchanged-size JPEG outputs,
-300 unsupported-mode fallbacks and 23 invalid-stream fallbacks; the shipped image
-runs the same pixel/JPEG-composition oracle. Exact logical budgets, overflow,
-mid-decode cancellation and 32 concurrent decodes pass. Lazy PNG header/metadata admission now adds 394
-explicit cases, including CRCs,
-text limits, APNG first-frame declarations and metadata collisions. Actual Django
-checks verify 235 valid 200×100 headers return their original URI with zero pixel
-loads; the shipped image passes the same header oracle. Post-pixel metadata/file
-validation, APNG canvas composition, resized mode-1 nearest-neighbour behavior
-and full PNG file/response wiring remain open.
+```sh
+python TESTS/adapters/django/accounts.py --only login-http
+```
+
+Current focused checks pass eighteen portable HTTP methods, five rate/session
+ordering methods, fifteen credential/effect scenarios and sixteen concurrent
+logins per backend. They verify actual Django ASGI and the compiled Go root,
+full response shapes, signed credentials, cookies, OTP, active/deleted accounts,
+username/deletion/audit/index effects, default cards, a converted avatar and
+failure before final token delivery. See [the public-login contract](internal/handler/login.md).
+The complete accounts adapter also passes after this composition change, with
+current-model fixture limits retained.
+
+The composed image processor has eighteen pipelines, with explicitly reported
+missing formats and unresolved admission cases. The current reference is Pillow
+13.0.0; see [image contracts](pkg/storage/loginimage/README.md) for current codec,
+pixel/Base64 evidence and logical resource limits. The server's image limits are
+16 MiB URI, 8 MiB encoded/header/tail, 64 MiB decoded/raster, 128 MiB transform,
+two concurrent operations and a ten-second operation deadline. These provisional
+limits still require supported-data sizing before activation; they are not a
+claim of full Pillow compatibility or a total RSS bound. Historical hash-cost
+limits and mixed-runtime creation races also remain open rollout requirements.
+
+Google/Apple clients are concrete, bounded dependencies with existing protocol
+oracles; end-to-end public HTTP provider evidence remains incomplete. Most
+business workflows, realtime, deployment switching and release delivery are
+still required. Login registration does not close the authentication ledger.
 
 The account adapter also checks association/family/group resource predicates
 against the actual Django managers. Batched lookups use one query for up to 512
 references. See `internal/repository/scoped_resources.md` for preserved historical
 visibility and remaining request-admission requirements.
 
-For a disposable manually configured environment, `go run ./cmd/server` reads the
-process environment. `-env-file PATH` optionally reads the **existing** deployment
+For a disposable manually configured environment, the built `server` reads the
+process environment. Its executable directory must also contain the trusted native
+`image-codec`; missing or non-executable helpers fail startup. The Dockerfile and
+`TESTS/adapters/go/server.py` build this pair together. `-env-file PATH` optionally reads the **existing** deployment
 `.env`; process values win. Never create a second credentials file for Go.
 The existing family/federation/multiple registration flags are supported with
 Django defaults and boolean/literal-dotenv rules. Provider IDs/secrets and JWT
@@ -120,7 +88,7 @@ See `internal/config/README.md` for the 87-case environment comparison, required
 settings and remaining scope. The environment example documents these variables. These flags affect registration UI choices, not authorization.
 The root also composes CORS before routing/session admission using the existing
 CORS settings. See `internal/middleware/cors.md` for 51 isolated HTTP contracts,
-40 URL comparisons, four actual-root contracts and remaining global middleware gaps.
+44 URL comparisons, four actual-root contracts and remaining global middleware gaps.
 Current Django security headers follow CORS, so preflight retains its bypass.
 Six isolated and five actual-root contracts cover defaults, explicit empty fields,
 denials, errors and streaming; see `internal/middleware/security_headers.md`.

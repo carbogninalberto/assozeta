@@ -4,7 +4,7 @@
 `AuthenticationMiddleware` and `AuditlogMiddleware` before a view runs. Its result
 is a `SessionActor`, separate from Bearer authentication, effective identity and
 resource scope. It grants no API permission. The composition root uses this service for the public refresh, identifier, 2FA
-and retired-billing routes; public login remains unregistered.
+and retired-billing routes, and now public login.
 
 ## Observed contract
 
@@ -66,7 +66,7 @@ Their prevalence and required support must be resolved before activation. The
 Vary and request metadata on the shipped ASGI transport. General session saving
 and rotation, complete exception/middleware policy and remaining route wiring
 remain separate work. The public refresh route now uses this resolver through
-`DjangoSessionAudit`; public login is not yet registered. `config.SessionSecret` now reads existing `SECRET_KEY`; its 67-case
+`DjangoSessionAudit`, including the registered public-login route. `config.SessionSecret` now reads existing `SECRET_KEY`; its 67-case
 settings oracle is documented in [configuration](../config/README.md).
 
 ## Executed evidence

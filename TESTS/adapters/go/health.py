@@ -58,7 +58,8 @@ def main():
                     '--dir', str(work)], stdout=log, stderr=subprocess.STDOUT)
 
             try:
-                run(['go', 'build', '-o', work / 'server', './cmd/server'], cwd=ROOT / 'BE_GO')
+                from TESTS.adapters.go.server import build_server
+                build_server(work/'server',log,{k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')})
                 run(['openssl','genpkey','-algorithm','ED25519','-out',work/'key.pem'])
                 run(['openssl','pkey','-in',work/'key.pem','-pubout','-out',work/'public.pem'])
                 run([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust', '-U', 'contracts',

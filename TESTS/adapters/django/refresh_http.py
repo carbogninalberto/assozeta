@@ -121,7 +121,8 @@ def run(work, log, tool_env, cache_address):
             cors_count=cors_contracts(django_base)
             security_count=security_contracts(django_base)
         session_readback();reset_sessions()
-        subprocess.run(['go','build','-o',str(work/'refresh-server'),'./cmd/server'],cwd=ROOT/'BE_GO',check=True,timeout=120,env=tool_env,stdout=log,stderr=subprocess.STDOUT)
+        from TESTS.adapters.go.server import build_server
+        build_server(work/'refresh-server',log,tool_env)
         with socket.socket() as listener:
             listener.bind(('127.0.0.1',0)); port=listener.getsockname()[1]
         redis_host,redis_port=cache_address.rsplit(':',1)

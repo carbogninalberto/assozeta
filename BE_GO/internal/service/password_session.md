@@ -36,11 +36,11 @@ managed tables after restoring declared effects, username/deletion audits and
 association indexes. Eight concurrent repeated logins exercise one shared
 coordinator and check that committed normalization/card effects do not duplicate.
 
-The fixtures have no image that needs conversion. A complete image dispatcher,
-concrete social provider verification, complete transport parsing, rate limits, audit middleware, public HTTP
-registration and backend switching remain open. The Django cookie assertions
-characterize its transport only; they do not prove Go cookie parity. This service
-is not a production-ready public login endpoint.
+These service fixtures have no image that needs conversion and use controlled
+social providers. The public root now has separate password/OTP, real-avatar,
+session/audit and rate-ordering HTTP evidence in `../handler/login.md`. Missing
+image formats, public social-provider HTTP, full middleware, mixed-runtime races
+and backend switching remain open; these service cases do not close those gates.
 
 
 The composed fixture now contains 26 declared cases: 18 password cases and eight

@@ -68,7 +68,8 @@ def run(work,log,tool_env,address):
         django_count=0
         for mode in modes:
             set_mode(mode);django_count+=contracts(base,mode)
-        subprocess.run(['go','build','-o',str(work/'restore-server'),'./cmd/server'],cwd=ROOT/'BE_GO',env=tool_env,check=True,timeout=120,stdout=log,stderr=subprocess.STDOUT)
+        from TESTS.adapters.go.server import build_server
+        build_server(work/'restore-server',log,tool_env)
         go_count=0
         for mode in modes:
             set_mode(mode)
