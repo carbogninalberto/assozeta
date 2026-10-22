@@ -48,7 +48,7 @@ try {
         '--add-host', 'host.docker.internal:host-gateway', '-p', '127.0.0.1::80',
         '-e', 'SITE_ADDRESS=:80', '-v', dist + ':/srv:ro',
         '-v', temporary + ':/run/assozeta-operations:ro',
-        '-v', join(temporary, 'Caddyfile') + ':/etc/caddy/Caddyfile:ro', 'caddy:2.9.1-alpine'],
+        '-v', join(temporary, 'Caddyfile') + ':/etc/caddy/Caddyfile:ro', 'caddy:2.11.7-alpine'],
     {stdio: 'pipe'});
     running = true;
     const port = execFileSync('docker', ['port', container, '80/tcp'], {encoding: 'utf8'}).trim().split(':').at(-1);

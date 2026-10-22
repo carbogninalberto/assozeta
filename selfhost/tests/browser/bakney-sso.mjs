@@ -63,7 +63,7 @@ async function checkProductionProxy() {
     const log=await fs.open(path.join(temp,'caddy.log'),'w');
     const processHandle=spawn(docker,['run','--rm','--name',name,'--network','assozeta-dev_dev','--add-host',`api:${ip}`,
         '-e','SITE_ADDRESS=:80','-p','127.0.0.1:5447:80','-v',`${root}/selfhost/caddy/Caddyfile:/etc/caddy/Caddyfile:ro`,
-        '-v',`${root}/UI/dist/public:/srv:ro`,'caddy:2.9.1-alpine'],{stdio:['ignore',log.fd,log.fd]});
+        '-v',`${root}/UI/dist/public:/srv:ro`,'caddy:2.11.7-alpine'],{stdio:['ignore',log.fd,log.fd]});
     containers.push({name,processHandle});await log.close();
     const read=(url,method='GET')=>new Promise((resolve,reject)=>{
         const req=http.request({host:'127.0.0.1',port:5447,path:url,method,headers:{Host:'club.assozeta.test','Content-Type':'application/json'}},res=>{

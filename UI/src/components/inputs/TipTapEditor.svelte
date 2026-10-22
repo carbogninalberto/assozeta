@@ -46,7 +46,7 @@
     import Dropcursor from '@tiptap/extension-dropcursor';
     import TextAlign from '@tiptap/extension-text-align';
     import Underline from '@tiptap/extension-underline';
-    import TableTipTap from '@tiptap/extension-table';
+    import {Table as TableTipTap} from '@tiptap/extension-table';
     import TableCell from '@tiptap/extension-table-cell';
     import TableHeader from '@tiptap/extension-table-header';
     import TableRow from '@tiptap/extension-table-row';
@@ -100,7 +100,8 @@
         editor = new Editor({
             element: element,
             extensions: [
-                StarterKit,
+                // Tiptap 3 bundles these in StarterKit; the configured instances below are used instead.
+                StarterKit.configure({dropcursor: false, link: false, underline: false}),
                 PageBreak,
                 Underline,
                 TaskList,

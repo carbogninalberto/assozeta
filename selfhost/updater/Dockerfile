@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM docker:27-cli
+FROM docker:29-cli
 RUN apk add --no-cache python3 curl openssl util-linux git
 WORKDIR /runner
 COPY selfhost/updater/*.py ./
