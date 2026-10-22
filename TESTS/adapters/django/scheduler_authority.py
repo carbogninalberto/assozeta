@@ -69,6 +69,7 @@ def observe(fixture):
         ClockedSchedule, SolarSchedule,
     )
     from django_celery_beat.schedulers import ModelEntry
+    from django_celery_beat.tzcrontab import TzAwareCrontab
     from instance.scheduler import InstanceScheduler
     from celery.beat import SchedulingError
     from kombu import Exchange, Queue
@@ -150,7 +151,7 @@ def observe(fixture):
             if not data:
                 continue
             now = timestamp(data['now'])
-            fields = dict(task='contracts.scheduler.capture', last_run_at=timestamp(data['last']),
+            fields = dict(task='contracts.scheduler.capture', last_run_at=timestamp(data['last']) if data['last'] else None,
                           enabled=data.get('enabled', True), one_off=data.get('one_off', False),
                           total_run_count=data.get('count', 0))
             if data['kind'] == 'interval':
@@ -168,7 +169,12 @@ def observe(fixture):
             if 'expire_seconds' in data:
                 fields['expire_seconds'] = data['expire_seconds']
             model = PeriodicTask.objects.create(name=name, **fields)
-            with patch.object(ModelEntry, '_default_now', return_value=now):
+            if 'date_changed' in data:
+                PeriodicTask.objects.filter(pk=model.pk).update(date_changed=timestamp(data['date_changed']))
+                model.refresh_from_db()
+            # due_start_time creates a fresh schedule; freeze that clock too.
+            with patch.object(ModelEntry, '_default_now', return_value=now), \
+                 patch.object(TzAwareCrontab, 'nowfunc', lambda clock: now.astimezone(clock.tz)):
                 entry = ModelEntry(model, app=app)
                 entry.schedule.nowfun = lambda now=now, zone=entry.schedule.tz: now.astimezone(zone)
                 due = entry.is_due()

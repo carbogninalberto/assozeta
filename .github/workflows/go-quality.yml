@@ -76,8 +76,8 @@ jobs:
         run: python TESTS/adapters/django/security_headers.py
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
-      - name: Characterize effective Django scheduler authority
-        run: python TESTS/adapters/django/scheduler_authority.py
+      - name: Verify effective scheduler authority and Go timing
+        run: python TESTS/adapters/go/schedule_due.py
       - name: Verify legacy medical storage keys
         run: python TESTS/adapters/django/document_keys.py
       - name: Verify existing storage environment and backend options
@@ -128,6 +128,7 @@ jobs:
             quality-reports/go-migration/worker-process/
             quality-reports/go-migration/worker-image/
             quality-reports/go-migration/scheduler-authority/
+            quality-reports/go-migration/schedule-due/
             quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/subscription-token-cleanup/
             quality-reports/go-migration/associate-age-update/
