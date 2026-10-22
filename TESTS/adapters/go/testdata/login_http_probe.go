@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	version := flag.String("version", "v0.0.0-contract", "expected image release")
+	flag.Parse()
 	client := &http.Client{Timeout: 2 * time.Second}
 	deadline := time.Now().Add(15 * time.Second)
 	for {
@@ -34,7 +37,7 @@ func main() {
 		expected                 any
 		cookieVary               bool
 	}{
-		{"health", "GET", "/healthz", "", nil, 200, map[string]any{"status": "ok", "version": "v0.0.0-contract"}, false},
+		{"health", "GET", "/healthz", "", nil, 200, map[string]any{"status": "ok", "version": *version}, false},
 		{"table preferences require bearer", "POST", "/profile/settings/tables", "{}", map[string]string{"Accept-Language": "en", "Content-Type": "application/json"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"profile update requires bearer", "PATCH", "/profile/update", "{}", map[string]string{"Accept-Language": "en", "Content-Type": "application/json"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},
 		{"password update requires bearer", "PATCH", "/profile/update/password", "{}", map[string]string{"Accept-Language": "en", "Content-Type": "application/json"}, 401, map[string]any{"detail": "Authentication credentials were not provided."}, true},

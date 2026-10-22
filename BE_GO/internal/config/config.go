@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -69,7 +70,19 @@ func Load(path string) (Config, error) {
 			values[key] = value
 		}
 	}
-	return Parse(values)
+	cfg, err := Parse(values)
+	if err != nil {
+		return Config{}, err
+	}
+	executable, err := os.Executable()
+	if err != nil {
+		return Config{}, errors.New("cannot locate image version")
+	}
+	cfg.Version, err = runningVersion(filepath.Join(filepath.Dir(executable), "VERSION"), cfg.Version)
+	if err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
 }
 
 func Parse(values map[string]string) (Config, error) {

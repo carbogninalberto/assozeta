@@ -17,9 +17,13 @@ RUN cc -std=c11 -O2 -Wall -Wextra -Werror -static /src/jpeg_encode.c /src/jpeg_d
     sed '/^#ifndef ZLIB_H/,$d' /usr/include/zlib.h > /zlib-license
 
 FROM alpine:3.21
+ARG VERSION=v0.0.0
+ARG CODE_REVISION=development
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
 WORKDIR /app
+RUN printf '%s\n' "$VERSION" > /app/VERSION && \
+    printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION
 COPY --from=builder /server /app/server
 COPY --from=codec-builder /image-codec /app/image-codec
 COPY --from=codec-builder /codec-version /app/licenses/libjpeg-turbo-version.txt

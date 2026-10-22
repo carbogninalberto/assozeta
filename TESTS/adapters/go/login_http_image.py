@@ -17,7 +17,10 @@ ROOT=Path(__file__).resolve().parents[3]
 def main():
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
     from cryptography.hazmat.primitives import serialization
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--image',required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--image',required=True)
+    parser.add_argument('--expected-version',default='v0.0.0')
+    args=parser.parse_args()
     architecture=subprocess.check_output(['docker','image','inspect',args.image,'--format','{{.Architecture}}'],text=True).strip()
     assert architecture in ('amd64','arm64'),architecture
     name='az-login-image-'+uuid.uuid4().hex
@@ -42,9 +45,13 @@ def main():
             subprocess.run(['docker','run','--detach','--name',name,'--network','none','--read-only','--env-file',str(environment),
                             '--mount',f'type=bind,source={probe},target=/contract-probe,readonly',args.image],check=True,capture_output=True,timeout=30)
             uid=subprocess.check_output(['docker','exec',name,'id','-u'],text=True,timeout=10).strip();assert uid=='10001'
-            result=subprocess.check_output(['docker','exec',name,'/contract-probe'],text=True,timeout=30)
+            result=subprocess.check_output(['docker','exec',name,'/contract-probe','--version',args.expected_version],text=True,timeout=30)
             record=json.loads(result);assert record['success'] and record['http_cases']==10
-            print(json.dumps({**record,'uid':uid,'read_only':True,'network':'none'}),flush=True)
+            version=subprocess.check_output(['docker','exec',name,'cat','/app/VERSION'],text=True,timeout=10).strip()
+            assert version==args.expected_version,(version,args.expected_version)
+            health=json.loads(subprocess.check_output(['docker','exec',name,'wget','-qO-','http://127.0.0.1:8000/healthz'],text=True,timeout=10))
+            assert health=={'status':'ok','version':args.expected_version},health
+            print(json.dumps({**record,'uid':uid,'read_only':True,'network':'none','image_version':version,'image_version_overrides_environment':True}),flush=True)
         finally:
             subprocess.run(['docker','rm','--force',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)
 
