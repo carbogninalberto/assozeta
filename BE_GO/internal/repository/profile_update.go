@@ -32,7 +32,7 @@ var profileAssociationColumns = []string{"denomination", "tax_code", "address", 
 
 func (t *profileUpdateTransaction) ProfilePersonForUpdate(ctx context.Context, id string) (domain.ProfileUpdatePerson, error) {
 	var result domain.ProfileUpdatePerson
-	err := t.tx.GetContext(ctx, &result, `SELECT user_id,role,first_name,last_name,username,avatar_image FROM bakney_user WHERE user_id=$1 AND NOT deleted FOR UPDATE`, id)
+	err := t.tx.GetContext(ctx, &result, `SELECT user_id,role,connected_user_id,first_name,last_name,username,avatar_image FROM bakney_user WHERE user_id=$1 AND NOT deleted FOR UPDATE`, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return result, domain.ErrAccountNotFound
 	}

@@ -33,6 +33,7 @@ def run(work, log, tool_env, address):
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
     from application.models import User, SportAssociation
+    from application.models.utils import DEFAULT_ADDITIONAL_SECTIONS
     from application.models.audit_models import AuditLogIndex
     from application.impersonation import session_key
     from rest_framework_simplejwt.tokens import AccessToken
@@ -89,6 +90,13 @@ def run(work, log, tool_env, address):
             assoc.update(seed_association or {})
             assoc.update(changed_association)
             profile.update(sport_association=assoc, preview_and_custom_features=[{'name': 'Iscrizione per famiglia', 'description': ''}])
+        if role == 3 and status == 200:
+            assoc = association_profile(uid(80), None, None, None)
+            assoc.pop('membership_card_configuration')
+            assoc.pop('empty_sections')
+            assoc.update(denomination='Identity owner', tax_code='', additional_sections=copy.deepcopy(DEFAULT_ADDITIONAL_SECTIONS), reviewed=True,
+                         groups=[{'label': 'Scope ' + str(n), 'value': uid(n)} for n in (1001, 1002)])
+            profile['sport_association'] = assoc
         token = AccessToken()
         token['user_id'] = uid(actor or n)
         headers = kw.pop('headers', {})
@@ -171,6 +179,8 @@ def run(work, log, tool_env, address):
         else:
             response_avatar = image['expected']
         add('avatar-' + name, person={'avatar_image': image['uri']}, person_values={'avatar_image': image['expected']}, response_avatar=response_avatar)
+    add('collaborator-noop', role=3, grants=['other.settings.read', 'other.settings.update'])
+    add('collaborator-read-only-denied', role=3, grants=['other.settings.read'], person={'first_name': 'Denied'}, status=403, effects=False, response={'detail': 'Missing permission: other.settings.update'})
     path = work / 'profile-update.json'
     path.write_text(json.dumps({'cases': cases}))
     path.chmod(0o600)
@@ -241,8 +251,8 @@ def run(work, log, tool_env, address):
         assert snapshot() == seeded and cache_snapshot() == cache_before, 'profile fixture changed unrelated state'
 
     def concurrent_updates(base):
-        for scenario, count in (('credentials', 1), ('duplicate', 2), ('competing', 2), ('association', 1)):
-            case = cases[5] if scenario == 'association' else cases[0]
+        for scenario, count in (('credentials', 1), ('duplicate', 2), ('competing', 2), ('association', 1), ('connected-owner', 1)):
+            case = cases[5] if scenario == 'association' else next(c for c in cases if c['name'] == 'collaborator-person') if scenario == 'connected-owner' else cases[0]
             identifier = case['target']
             before, before_association, _, _, _ = state[identifier]
             events = set(LogEntry.objects.values_list('pk', flat=True))
@@ -272,12 +282,17 @@ def run(work, log, tool_env, address):
                                 data['sport_association']['denomination'] = 'Concurrent ASD'
                             futures.append(pool.submit(Client(base, case['token']).request, 'PATCH', '/profile/update', {'user_data': data}, {'X-Correlation-ID': 'profile-concurrent-' + scenario}))
                             poll(blocked, lambda n: n == i + 1, timeout=15, interval=.01)
+                        if scenario == 'connected-owner':
+                            User.original_objects.filter(pk=identifier).update(connected_user_id=uid(9))
                         if scenario == 'credentials':
                             User.original_objects.filter(pk=identifier).update(password='!concurrent-credential')
                         if scenario == 'association':
                             SportAssociation.original_objects.filter(user_id=identifier).update(logo='concurrent-logo')
                     results = [future.result(timeout=20) for future in futures]
-                assert all(status == 200 for status, _ in results), (scenario, 'concurrent HTTP failure')
+                if scenario == 'connected-owner':
+                    assert results[0][0] == 500 and 'Identity foreign' not in str(results[0][1]), 'stale admitted tenant must not be replaced by the new tenant'
+                else:
+                    assert all(status == 200 for status, _ in results), (scenario, 'concurrent HTTP failure')
                 user = User.original_objects.get(pk=identifier)
                 assert user.password == ('!concurrent-credential' if scenario == 'credentials' else before['password']), (scenario, 'profile overwrote credentials')
                 actual = list(LogEntry.objects.exclude(pk__in=events).order_by('id'))
@@ -297,11 +312,11 @@ def run(work, log, tool_env, address):
                 assert all(event.cid == 'profile-concurrent-' + scenario and str(event.actor_id) == identifier for event in actual), (scenario, 'concurrent audit attribution')
             finally:
                 LogEntry.objects.exclude(pk__in=events).delete()
-                User.original_objects.filter(pk=identifier).update(first_name=before['first_name'], password=before['password'])
+                User.original_objects.filter(pk=identifier).update(first_name=before['first_name'], password=before['password'], connected_user_id=before['connected_user_id'])
                 if before_association:
                     SportAssociation.original_objects.filter(user_id=identifier).update(logo=before_association['logo'], denomination=before_association['denomination'])
             assert snapshot() == seeded and cache_snapshot() == cache_before, 'concurrency cleanup changed unrelated state'
-        print('Four locked-row profile concurrency scenarios passed', flush=True)
+        print('Five locked-row profile concurrency scenarios passed', flush=True)
 
     server = uvicorn.Server(uvicorn.Config(get_asgi_application(), host='127.0.0.1', port=0, lifespan='off', log_level='critical'))
     thread = threading.Thread(target=server.run, daemon=True)
@@ -315,6 +330,21 @@ def run(work, log, tool_env, address):
         django_base = f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}'
         contracts(django_base)
         concurrent_updates(django_base)
+        # Actual authenticated Django request: a no-op response adds exactly two
+        # association reads and no writes. Related owner is joined, groups once.
+        from django.test.utils import CaptureQueriesContext
+        from rest_framework.test import APIClient
+        case = next(c for c in cases if c['name'] == 'collaborator-noop')
+        with CaptureQueriesContext(connection) as captured:
+            response = APIClient().patch('/profile/update', case['body'], format='json', HTTP_AUTHORIZATION='Bearer ' + case['token'])
+        assert response.status_code == 200, response.status_code
+        sql = [query['sql'].lower() for query in captured]
+        association_reads = [q for q in sql if q.startswith('select') and 'from "application_sportassociation"' in q]
+        group_reads = [q for q in sql if q.startswith('select') and 'from "application_group"' in q]
+        assert len(association_reads) == 1 and 'join "bakney_user"' in association_reads[0] and len(group_reads) == 1, 'collaborator response association query budget'
+        assert not any(q.startswith(('update', 'insert', 'delete')) for q in sql), 'no-op response wrote data'
+        assert snapshot() == seeded and cache_snapshot() == cache_before, 'response projection created settings or other state'
+        print('Django collaborator no-op response: two association SELECTs, zero writes', flush=True)
         from TESTS.adapters.go.server import build_server
         build_server(work / 'profile-update-server', log, tool_env)
         with socket.socket() as sock:
@@ -337,10 +367,10 @@ def run(work, log, tool_env, address):
         poll(ready, bool, timeout=30)
         contracts(base)
         concurrent_updates(base)
-        subprocess.run(['go', 'test', '-race', '-tags=profileupdateintegration', './internal/service', '-run', '^TestProfileUpdatePostgres$', '-v'],
+        subprocess.run(['go', 'test', '-race', '-tags=profileupdateintegration', './internal/service', '-run', '^TestProfileUpdate(Postgres|CollaboratorResponsePostgres)$', '-v'],
                        cwd=ROOT / 'BE_GO', env={**tool_env, 'ASSOZETA_ACCOUNT_TEST_DSN': f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'}, check=True, timeout=90)
         assert snapshot() == seeded and cache_snapshot() == cache_before, 'Go mutation integration left unexpected state'
-        return {'profile_update_http_cases': len(cases), 'profile_update_concurrency_cases_per_backend': 4}
+        return {'profile_update_http_cases': len(cases), 'profile_update_concurrency_cases_per_backend': 5, 'collaborator_response_added_business_selects': 2, 'collaborator_go_response_protocol_selects': 2}
     finally:
         server.should_exit = True
         thread.join(timeout=10)
