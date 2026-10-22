@@ -129,8 +129,27 @@ both database drains completed, but Django initialization and static collection
 delayed arrival at the Go launch gate. Its timing and cleanup evidence remain in
 `update-marker-diagnosis.json` and `update-marker-timeout.log`. The subsequent
 unchanged run passes; no timeout or product behavior was relaxed. These source
-receipts precede main's candidate manual-image preflight (`0ffe9f6`), which requires
-its own combined update validation after alignment.
+receipts precede main's candidate manual-image preflight (`0ffe9f6`).
+
+The combined current-controller rehearsal now passes on clean commit `b042928`,
+including that preflight, the transaction drain, and the packaged scheduler/age
+worker code. Fresh Django, Go and updater images are pinned in
+`quality-reports/go-migration/main-aligned-lifecycle/source-manifest.json`; all
+1,219 tracked build/lifecycle source hashes remain unchanged through execution.
+`update-recovery.json` records the clean commit and immutable derived fixture
+images. The matrix covers owner-authorized update, serialized backup, failed
+downloads, partial migration and health failures, resumed recovery, surviving
+Django and Go migrations, and interruption before the backup exists. Recovery
+refuses to overlap the packaged Go migrator waiting on an actual PostgreSQL lock.
+The final `validation.json` binds the receipts and confirms no fixture containers,
+volumes or networks remain. This run has `browser=false`; it does not repeat the
+separate fresh-install restore matrix or activate Go background ownership.
+
+An independent read-only image comparison also finds all four Go executables and
+the codec byte-identical to the tested age-worker image. Runtime configuration
+matches; filesystem contents differ only in version/revision metadata, while
+layer archives and timestamps differ. `image-equivalence.json` records content
+equivalence, not a new behavioral execution of the worker tests.
 
 Installed backend selection, a Go worker/scheduler service, coordinated queue
 transfer, historical application-schema coverage and a complete restore window

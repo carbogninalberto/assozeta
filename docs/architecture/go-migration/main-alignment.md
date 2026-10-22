@@ -125,6 +125,14 @@ suite passes 198 Python and eleven Node tests; the catalog still records zero
 verified entries. These checks do not substitute for the combined disposable
 update/recovery or fresh manual captures.
 
+The combined update/recovery follow-up now passes on clean `b042928`, with fresh
+Django, Go and updater images and all 1,219 tracked source hashes unchanged.
+Candidate manual validation and transaction draining coexist through the complete
+failure/recovery matrix, including a surviving packaged Go migrator. All owned
+fixture resources are removed. Evidence and precise scope are recorded in
+[operational migrations](operational-migrations.md). All sixty manual captures
+remain prepared for fresh execution; this lifecycle run does not replace them.
+
 ## Publication boundary
 
 Normal verified commits use the configured identity and upstream. Rebasing an
