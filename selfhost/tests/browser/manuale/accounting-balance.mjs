@@ -21,7 +21,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
             .sort((a, b) => a.payment_id.localeCompare(b.payment_id));
         const baselinePayments = await paymentState();
         expect(baselinePayments).toHaveLength(3);
-        const take = async (number, checkpoint, locator) => {
+        const take = async (checkpoint, locator) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(page, checkpoint, locator);
         };
@@ -48,7 +48,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         await navigate('Conti Finanziari', '/accounting/list');
         await expect(page.getByRole('heading', {name: /^Conti finanziari/})).toBeVisible();
         await expect(page.locator('#action-col-' + cash.custom_account_id).locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
-        await take(1, 'baseline-cash-account-and-current-balance', tableFocus(page, ['name', 'current_balance']));
+        await take('baseline-cash-account-and-current-balance', tableFocus(page, ['name', 'current_balance']));
         await page.locator('[data-target="#addAccountModal"]').click();
         const accountModal = page.locator('#addAccountModal');
         await expect(accountModal).toBeVisible();
@@ -57,7 +57,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         await accountModal.locator('[name="account_type"]').selectOption('2');
         await accountModal.locator('[name="initial_balance"]').fill('100,00');
         await accountModal.locator('[name="account_code"]').fill('BANCA-AURORA');
-        await take(2, 'new-bank-account-filled-before-save', accountModal.locator('.modal-content'));
+        await take('new-bank-account-filled-before-save', accountModal.locator('.modal-content'));
         const created = saveRequest('balance-sheet/accounts/add', 'POST');
         await accountModal.getByRole('button', {name: 'Salva', exact: true}).click();
         const createdResponse = await created;
@@ -72,14 +72,14 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         expect(persistedBank.enabled).toBe(true);
         expect(persistedBank.account_code).toBe('BANCA-AURORA');
         expect(Number(persistedBank.current_balance)).toBe(100);
-        await take(3, 'bank-account-created-and-persisted-after-reload', tableFocus(page, ['name', 'current_balance'],
+        await take('bank-account-created-and-persisted-after-reload', tableFocus(page, ['name', 'current_balance'],
             page.locator('[data-row]').filter({hasText: 'BANCA AURORA'})));
         await page.locator('#action-col-' + bank.custom_account_id).locator('button:is([title="Modifica"],[data-original-title="Modifica"])').click();
         const editModal = page.locator('#editAccountModal-' + bank.custom_account_id);
         await expect(editModal).toBeVisible();
         await expect(editModal.locator('[name="account_code"]')).toHaveValue('BANCA-AURORA');
         await editModal.locator('[name="initial_balance"]').fill('125,00');
-        await take(4, 'account-edit-initial-balance-before-save', editModal.locator('.modal-content'));
+        await take('account-edit-initial-balance-before-save', editModal.locator('.modal-content'));
         const edited = saveRequest('balance-sheet/accounts/' + bank.custom_account_id + '/update', 'PATCH');
         await editModal.getByRole('button', {name: 'Salva', exact: true}).click();
         expect((await edited).status()).toBe(200);
@@ -89,7 +89,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         const editedBank = (await accounts()).find(row => row.custom_account_id === bank.custom_account_id);
         expect(Number(editedBank.initial_balance)).toBe(125);
         expect(Number(editedBank.current_balance)).toBe(125);
-        await take(5, 'edited-bank-account-persists-after-reload', tableFocus(page, ['current_balance', 'initial_balance'],
+        await take('edited-bank-account-persists-after-reload', tableFocus(page, ['current_balance', 'initial_balance'],
             page.locator('[data-row]').filter({hasText: 'BANCA AURORA'})));
 
         await navigate('Giroconti', '/accounting-transfer/list');
@@ -101,7 +101,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         await expect(transferModal.locator('[name="custom_account_to"] option[value="' + cash.custom_account_id + '"]')).toHaveCount(0);
         await transferModal.locator('[name="custom_account_to"]').selectOption(bank.custom_account_id);
         await transferModal.locator('[name="amount"]').fill('20,00');
-        await take(6, 'transfer-filled-with-distinct-accounts', transferModal.locator('.modal-content'));
+        await take('transfer-filled-with-distinct-accounts', transferModal.locator('.modal-content'));
         const transferred = saveRequest('balance-sheet/accounts-transfer/add', 'POST');
         await transferModal.getByRole('button', {name: 'Salva', exact: true}).click();
         const transferResponse = await transferred;
@@ -115,7 +115,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         expect(persistedTransfers).toHaveLength(1);
         expect(persistedTransfers[0].custom_account_from.custom_account_id).toBe(cash.custom_account_id);
         expect(persistedTransfers[0].custom_account_to.custom_account_id).toBe(bank.custom_account_id);
-        await take(7, 'transfer-persists-after-reload', tableFocus(page, ['amount', 'date']));
+        await take('transfer-persists-after-reload', tableFocus(page, ['amount', 'date']));
         await navigate('Conti Finanziari', '/accounting/list');
         const movedAccounts = await accounts();
         const cashAfter = Number(movedAccounts.find(row => row.custom_account_id === cash.custom_account_id).current_balance);
@@ -124,7 +124,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         expect(bankAfter).toBe(145);
         expect(cashAfter + bankAfter).toBe(175);
         await expect(page.locator('#action-col-' + bank.custom_account_id).locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
-        await take(8, 'cash-bank-balances-reflect-internal-transfer', tableFocus(page, ['name', 'current_balance']));
+        await take('cash-bank-balances-reflect-internal-transfer', tableFocus(page, ['name', 'current_balance']));
 
         await navigate('Bilancio', '/balance-sheet/list');
         await expect(page.getByRole('heading', {name: /^Rendiconto economico finanziario/})).toBeVisible();
@@ -141,7 +141,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         const years = page.locator('.filter-select-control input[aria-label="Anno sociale"]');
         await years.click();
         await expect(page.locator('.filter-select-control .list-item:visible')).toHaveCount(6);
-        await take(9, 'balance-current-year-six-available-years', focusRegion(years,
+        await take('balance-current-year-six-available-years', focusRegion(years,
             page.locator('.filter-select-control .list-item:visible').first(),
             page.locator('.filter-select-control .list-item:visible').last()));
         await years.press('Escape');
@@ -156,7 +156,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         await numbers.nth(0).fill('15,00');
         await numbers.nth(1).fill('5,00');
         await expect(manualRow.locator('td').last()).toHaveText('20,00 €');
-        await take(10, 'manual-balance-row-description-and-two-amounts', manualRow);
+        await take('manual-balance-row-description-and-two-amounts', manualRow);
         const saved = saveRequest('balance-sheet', 'POST');
         await page.locator('.card-toolbar').getByRole('button', {name: 'Salva', exact: true}).click();
         const savedResponse = await saved;
@@ -179,12 +179,12 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
             .filter({hasText: 'Contributo dimostrativo direttivo'});
         const manualFocus = () => focusRegion(
             page.locator('.balance-sheet-table').first().locator('tr').first(), persistedManualRow());
-        await take(11, 'saved-manual-row-persists-after-reload', manualFocus());
+        await take('saved-manual-row-persists-after-reload', manualFocus());
         await page.getByRole('button', {name: 'Pubblica', exact: true}).click();
         const confirmation = page.locator('.swal2-popup');
         await expect(confirmation).toContainText('Vuoi pubblicare il bilancio?');
         await expect(confirmation).toContainText('Puoi annullare la pubblicazione in qualsiasi momento.');
-        await take(12, 'publication-confirmation-is-reversible', confirmation);
+        await take('publication-confirmation-is-reversible', confirmation);
         const publishedRequest = saveRequest('balance-sheet', 'POST');
         await confirmation.getByRole('button', {name: 'Pubblica', exact: true}).click();
         expect((await publishedRequest).status()).toBe(200);
@@ -195,10 +195,10 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         const published = await balance();
         expect(published.balance_sheet.draft).toBe(false);
         expect(published.balance_sheet.data.incoming.generalIncome.find(row => row.id === savedManual.id)).toEqual(reloadedManual);
-        await take(13, 'published-balance-persists-after-reload', page.locator('.card-toolbar'));
+        await take('published-balance-persists-after-reload', page.locator('.card-toolbar'));
         await page.getByRole('button', {name: 'Annulla pubblicazione', exact: true}).click();
         await expect(confirmation).toContainText('Vuoi annullare la pubblicazione del bilancio?');
-        await take(14, 'unpublish-confirmation', confirmation);
+        await take('unpublish-confirmation', confirmation);
         const unpublishedRequest = saveRequest('balance-sheet', 'POST');
         await confirmation.getByRole('button', {name: 'Annulla pubblicazione', exact: true}).click();
         expect((await unpublishedRequest).status()).toBe(200);
@@ -209,7 +209,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         const unpublished = await balance();
         expect(unpublished.balance_sheet.draft).toBe(true);
         expect(unpublished.balance_sheet.data.incoming.generalIncome.find(row => row.id === savedManual.id)).toEqual(reloadedManual);
-        await take(15, 'draft-and-manual-row-restored-after-unpublish-reload', manualFocus());
+        await take('draft-and-manual-row-restored-after-unpublish-reload', manualFocus());
 
         const reader = await actor('reader');
         const deniedRead = await reader.api('balance-sheet?currentDate=' + input.reference_date);
@@ -224,7 +224,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         await navigate('Giroconti', '/accounting-transfer/list');
         await page.locator('#action-col-' + transfer.custom_account_transfer_id).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
         await expect(confirmation).toContainText('Vuoi eliminare il giroconto?');
-        await take(16, 'transfer-delete-confirmation', confirmation);
+        await take('transfer-delete-confirmation', confirmation);
         await confirmation.getByRole('button', {name: 'Annulla', exact: true}).click();
         await expect(confirmation).not.toBeVisible();
         expect(await transfers()).toEqual(persistedTransfers);
@@ -246,7 +246,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         expect(Number(restored.find(row => row.custom_account_id === bank.custom_account_id).current_balance)).toBe(125);
         await expect(page.locator('[data-row]')).toHaveCount(2);
         await expect(page.locator('[data-row]').filter({hasText:'CASSA AURORA'}).locator('[data-field="current_balance"]')).toContainText('50,00');
-        await take(17, 'deleted-transfer-absent-and-balances-restored', tableFocus(page, ['name', 'current_balance']));
+        await take('deleted-transfer-absent-and-balances-restored', tableFocus(page, ['name', 'current_balance']));
         const bankDelete = page.locator('#action-col-' + bank.custom_account_id).locator('button:is([title="Elimina"],[data-original-title="Elimina"])');
         await expect(bankDelete).toBeEnabled();
         await bankDelete.click();
@@ -263,7 +263,7 @@ await scenario({id: 'accounting-balance-manage', actions: async ({page, api, act
         expect(await paymentState()).toEqual(baselinePayments);
         await expect(page.locator('[data-row]')).toHaveCount(1);
         await expect(page.locator('[data-row]').first()).toContainText('CASSA AURORA');
-        await take(18, 'unused-bank-account-deleted-baseline-restored', tableFocus(page, ['name', 'current_balance']));
+        await take('unused-bank-account-deleted-baseline-restored', tableFocus(page, ['name', 'current_balance']));
         report.accounting_balance_manage = {baseline_cash: Number(cash.current_balance),
             bank_created_initial_balance: Number(bank.initial_balance), bank_saved_initial_balance: Number(editedBank.initial_balance),
             transfer_amount: Number(transfer.amount), cash_after_transfer: cashAfter, bank_after_transfer: bankAfter,

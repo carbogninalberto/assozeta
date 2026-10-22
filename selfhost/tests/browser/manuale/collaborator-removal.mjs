@@ -32,7 +32,7 @@ await scenario({id: 'collaborator-removal', actions: async ({page, api, open, ac
         page.on('request', request => {
             if (new URL(request.url()).pathname === '/api/collaborators/add' && request.method() === 'POST') invitationRequests++;
         });
-        const take = async (number, checkpoint, target = page, locator) => {
+        const take = async (checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(target, checkpoint, locator);
         };
@@ -42,7 +42,7 @@ await scenario({id: 'collaborator-removal', actions: async ({page, api, open, ac
         await expect(row(page, removable.email)).toContainText('PAOLO TESTA');
         await expect(row(page, removable.email)).toContainText('Accettato');
         await expect(row(page, pending.email)).toContainText('In attesa');
-        await take(1, 'removable-accepted-account-and-separate-pending-invite');
+        await take('removable-accepted-account-and-separate-pending-invite');
         const reader = await actor('reader');
         await reader.open('Collaboratori', '/#/connected-collaborators');
         await expect(row(reader.page, removable.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])')).toBeDisabled();
@@ -51,10 +51,10 @@ await scenario({id: 'collaborator-removal', actions: async ({page, api, open, ac
         const deniedInvite = await reader.api(`collaborators/${inviteId}/delete`, {method: 'DELETE'});
         expect(deniedAccount.status()).toBe(403); expect(deniedInvite.status()).toBe(403);
         expect(await list()).toEqual(initial);
-        await take(2, 'reader-cannot-delete-account-or-invite', reader.page);
+        await take('reader-cannot-delete-account-or-invite', reader.page);
         await row(page, removable.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
         await expect(page.getByText('Vuoi eliminare il collaboratore?', {exact: true})).toBeVisible();
-        await take(3, 'account-removal-confirmation-and-cancel', page, page.locator('.swal2-popup'));
+        await take('account-removal-confirmation-and-cancel', page, page.locator('.swal2-popup'));
         await page.getByRole('button', {name: 'Annulla', exact: true}).click();
         expect(await list()).toEqual(initial);
         expect((await json('profile/info', removedSession)).user_data.user_id).toBe(removableId);
@@ -73,7 +73,7 @@ await scenario({id: 'collaborator-removal', actions: async ({page, api, open, ac
         expect(afterAccount.some(item => item.user_id === removableId)).toBe(false);
         expect(afterAccount.find(item => item.collaboration_invite_id === inviteId)).toEqual(pending);
         expect(afterAccount.find(item => item.user_id === input.identities.reader.user_id)).toEqual(baselineReader);
-        await take(4, 'removed-account-absent-after-reload-invite-preserved');
+        await take('removed-account-absent-after-reload-invite-preserved');
         const removedTokenProfile = await removedSession('profile/info');
         const removedTokenMembers = await removedSession('subscription/list');
         expect(removedTokenProfile.status()).toBe(401); expect(removedTokenMembers.status()).toBe(401);
@@ -81,13 +81,13 @@ await scenario({id: 'collaborator-removal', actions: async ({page, api, open, ac
         // Pending invite is a different row and identifier; do not demonstrate accepted-invite deletion.
         await row(page, pending.email).locator('button:is([title="Elimina"],[data-original-title="Elimina"])').click();
         await expect(page.getByText('Vuoi eliminare il collaboratore?', {exact: true})).toBeVisible();
-        await take(5, 'pending-invite-removal-confirmation', page, page.locator('.swal2-popup'));
+        await take('pending-invite-removal-confirmation', page, page.locator('.swal2-popup'));
         await page.getByRole('button', {name: 'Annulla', exact: true}).click();
         expect((await list()).find(item => item.collaboration_invite_id === inviteId)).toEqual(pending);
         await removeThroughUi(pending.email, inviteId);
         const final = await list();
         expect(final).toEqual(initial.filter(item => item.user_id !== removableId && item.collaboration_invite_id !== inviteId));
-        await take(6, 'pending-invite-absent-after-reload-baseline-reader-preserved');
+        await take('pending-invite-absent-after-reload-baseline-reader-preserved');
         expect(await members()).toEqual(originalMembers);
         expect(await payments()).toEqual(originalPayments);
         expect((await json('profile/info')).user_data).toEqual(profileBefore);

@@ -10,7 +10,7 @@ const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(ro
     : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
 
 await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api, open, actor, input, capture, report}) => {
-        const take = async (number, checkpoint, locator) => {
+        const take = async (checkpoint, locator) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(page, checkpoint, locator);
         };
@@ -28,7 +28,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         await open('Attività', '/#/course/instructor/list/');
         await expect(page.getByRole('heading', {name: 'Istruttori', exact: false})).toBeVisible();
         await expect(page.locator('[data-row]')).toHaveCount(0);
-        await take(1, 'empty-instructor-list-and-create-action');
+        await take('empty-instructor-list-and-create-action');
         await page.getByRole('button', {name: 'Istruttore', exact: true}).click();
         await expect(page.getByRole('heading', {name: 'Nuovo Istruttore', exact: true})).toBeVisible();
         const form = page.locator('#instructor_form');
@@ -37,7 +37,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
             address_city: 'Roma', address: 'Via dello Sport', civic_number: '8', address_province: 'RM'}))
             await form.locator(`[name="${name}"]`).fill(value);
         await form.locator('[name="first_name"]').scrollIntoViewIfNeeded();
-        await take(2, 'instructor-required-and-personal-data');
+        await take('instructor-required-and-personal-data');
         await form.locator('[name="stipulated_contract_in"]').fill(input.reference_date);
         await form.locator('[name="study_title"]').fill('Laurea in scienze motorie');
         await form.locator('[name="default_hourly_billing"]').fill('15');
@@ -49,7 +49,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         await defaultRates.scrollIntoViewIfNeeded();
         await expect(form.locator('[name="default_hourly_billing"]')).toBeInViewport({ratio: 1});
         await expect(form.locator('[name="default_percentage_billing"]')).toBeInViewport({ratio: 1});
-        await take(3, 'instructor-contract-default-rates-and-unlinked-account', focusRegion(defaultRates,
+        await take('instructor-contract-default-rates-and-unlinked-account', focusRegion(defaultRates,
             form.getByRole('heading', {name: 'Informazioni contratto (se applicabile)', exact: true})));
         const creation = page.waitForResponse(response => new URL(response.url()).pathname === '/api/instructor/add'
             && response.request().method() === 'POST');
@@ -71,13 +71,13 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         const instructorRow = page.locator('[data-row]').filter({hasText: 'PAOLO RIVA'});
         await expect(instructorRow).toBeVisible();
         await expect(instructorRow).toContainText('nessuno');
-        await take(4, 'created-instructor-persists-after-reload');
+        await take('created-instructor-persists-after-reload');
         await instructorRow.locator('button:is([title="Modifica"],[data-original-title="Modifica"])').click();
         const edit = page.locator(`#editModal-${uid}`);
         await expect(edit).toBeVisible();
         await edit.locator('[name="default_hourly_billing"]').fill('18');
         await edit.locator('[name="default_hourly_billing"]').scrollIntoViewIfNeeded();
-        await take(5, 'edit-instructor-default-hourly-rate');
+        await take('edit-instructor-default-hourly-rate');
         const update = page.waitForResponse(response => new URL(response.url()).pathname === `/api/instructor/${uid}/update`
             && response.request().method() === 'PATCH');
         await edit.getByRole('button', {name: 'Salva', exact: true}).click();
@@ -90,7 +90,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         await expect(page.getByText('Scheda compensi', {exact: true})).toBeVisible();
         await expect(page.locator('[data-row]')).toHaveCount(0);
         await expect(page.locator('.card-widget').filter({hasText: 'ORE LAVORATE'})).toContainText('0,00');
-        await take(6, 'instructor-compensation-card-before-hours');
+        await take('instructor-compensation-card-before-hours');
         await page.getByRole('button', {name: 'Aggiungi', exact: true}).click();
         const hourModal = page.locator(`#modal-${uid}`);
         await expect(hourModal).toBeVisible();
@@ -102,7 +102,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         await hourModal.locator('[name="notes"]').fill('Lezione dimostrativa di ginnastica');
         await expect(hourModal.locator('input[name="amount"]')).toHaveValue('54');
         await expect(hourModal).toContainText('54,00 €');
-        await take(7, 'hourly-hours-default-rate-unpaid-and-calculated-total', hourModal.locator('.modal-content'));
+        await take('hourly-hours-default-rate-unpaid-and-calculated-total', hourModal.locator('.modal-content'));
         const hourCreation = page.waitForResponse(response => new URL(response.url()).pathname === `/api/instructor/${uid}/hours/add`
             && response.request().method() === 'POST');
         await hourModal.getByRole('button', {name: 'Salva', exact: true}).click();
@@ -142,7 +142,7 @@ await scenario({id: 'instructors-create-edit-hours', actions: async ({page, api,
         for (const [label, value] of [['COMPENSO TOTALE', '54,00'], ['COMPENSO DA PAGARE', '54,00'],
             ['COMPENSO PAGATO', '0,00']])
             await expect(page.locator('.card-widget').filter({hasText: label})).toContainText(value);
-        await take(8, 'saved-hours-unpaid-and-summary-persist-after-reload');
+        await take('saved-hours-unpaid-and-summary-persist-after-reload');
         const reader = await actor('reader');
         await reader.open('Attività', '/#/course/instructor/list/');
         await expect(reader.page.getByRole('button', {name: 'Istruttore', exact: true})).toBeDisabled();

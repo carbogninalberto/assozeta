@@ -55,7 +55,7 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
             expect((await saved).status()).toBe(200);
             await expect(page.locator('#bkn_form_password_update_submit')).toBeDisabled();
         };
-        const take = async (number, checkpoint, locator) => {
+        const take = async (checkpoint, locator) => {
             await expect(page.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(page, checkpoint, locator);
         };
@@ -64,7 +64,7 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
         await page.getByText('Informazioni Account', {exact: true}).click();
         await expect(page.getByPlaceholder('Inserisci denominazione...', {exact: true})).toHaveValue(original.denomination);
         await page.getByPlaceholder('Inserisci denominazione...', {exact: true}).scrollIntoViewIfNeeded();
-        await take(1, 'organization-info-original-address-and-owner-controls');
+        await take('organization-info-original-address-and-owner-controls');
         for (const [placeholder, value] of Object.entries(fields))
             await page.getByPlaceholder(placeholder, {exact: true}).fill(value);
         const changedFieldGroups = Object.keys(fields).map(placeholder => page.getByPlaceholder(placeholder,
@@ -72,7 +72,7 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
         const sportGroup = changedFieldGroups.at(-1);
         await sportGroup.scrollIntoViewIfNeeded();
         await expect(page.getByPlaceholder('Inserisci sport...', {exact: true})).toBeInViewport({ratio: 1});
-        await take(2, 'organization-address-website-abbreviation-and-sport-before-save',
+        await take('organization-address-website-abbreviation-and-sport-before-save',
             focusRegion(sportGroup, ...changedFieldGroups.slice(0, -1)));
         await saveInfo();
         const savedProfile = await reloadOrganizationProfile({page, api, context, expect});
@@ -82,17 +82,17 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
         await expect(page.getByPlaceholder('Inserisci indirizzo...', {exact: true})).toHaveValue('Via dello Sport 14');
         await expect(page.getByPlaceholder('Inserisci nome abbreviato...', {exact: true})).toHaveValue('Aurora');
         await page.getByPlaceholder('Inserisci indirizzo...', {exact: true}).scrollIntoViewIfNeeded();
-        await take(3, 'organization-info-persists-after-authenticated-reload');
+        await take('organization-info-persists-after-authenticated-reload');
         await page.getByText('Generali', {exact: true}).click();
         await expect(page.locator('#balance-sheet')).toHaveValue('1');
         await expect(page.locator('#season-start-month')).toHaveValue('9');
-        await take(4, 'general-settings-fiscal-presets-and-separate-season');
+        await take('general-settings-fiscal-presets-and-separate-season');
         await page.locator('#balance-sheet').selectOption('4');
         await page.locator('#balance-sheet-start-month').selectOption('10');
         await page.locator('#balance-sheet-start-day').selectOption('15');
         await expect(page.locator('#balance-sheet').locator('xpath=ancestor::div[contains(@class,"form-group")][1]'))
             .toContainText(/15\s+Ottobre/);
-        await take(5, 'custom-fiscal-year-starts-october-fifteen');
+        await take('custom-fiscal-year-starts-october-fifteen');
         await page.locator('#season-start-month').selectOption('9');
         await page.locator('#season-start-day').selectOption('1');
         await setCheckbox(page.locator('[name="custom_end_date"]'), true);
@@ -104,7 +104,7 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
         await durationBlock('Durata delle iscrizioni').locator('select').selectOption('3');
         await durationBlock('Durata dei tesseramenti').locator('select').first().selectOption('3');
         await page.locator('#season-start-month').scrollIntoViewIfNeeded();
-        await take(6, 'short-sport-season-and-registration-duration-before-save');
+        await take('short-sport-season-and-registration-duration-before-save');
         await saveSettings();
         await page.reload();
         await expect(page.locator('#balance-sheet')).toHaveValue('4');
@@ -119,7 +119,7 @@ await scenario({id: 'organization-settings', actions: async ({page, api, context
             custom_end_date: true, subscription_end_month: 6, subscription_end_day: 30,
             subscription_duration: 3, membership_duration: 3})) expect(saved[key]).toBe(value);
         expect(await registrationState()).toEqual(existingRegistrations);
-        await take(7, 'saved-fiscal-and-season-settings-persist-after-reload');
+        await take('saved-fiscal-and-season-settings-persist-after-reload');
         const reader = await actor('reader');
         await reader.open('Impostazioni', '/#/profile');
         await reader.page.getByText('Generali', {exact: true}).click();

@@ -14,7 +14,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
             expect(response.status()).toBe(200);
             return response.json();
         };
-        const take = async (number, checkpoint, locator, browserPage = page) => {
+        const take = async (checkpoint, locator, browserPage = page) => {
             await expect(browserPage.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(browserPage, checkpoint, locator, {blurEditableFocus: true});
         };
@@ -42,12 +42,12 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await open('Attività', '/#/course/camps-and-retreats/list');
         // The heading includes its explanatory subtitle in the accessible name.
         await expect(page.getByRole('heading', {name: /^Camp e Ritiri\b/})).toBeVisible();
-        await take(1, 'camp-list-empty-and-create-control');
+        await take('camp-list-empty-and-create-control');
         await page.getByRole('button', {name: 'Camp e Ritiri', exact: true}).click();
         const campForm = page.locator('#camps_and_retreats_form');
         await campForm.locator('[name="title"]').fill('Ritiro Aurora 2026');
         await campForm.locator('[name="description"]').fill('Due giornate di allenamento per il gruppo Aurora.');
-        await take(2, 'camp-title-description-before-create', page.locator('#camps-and-retreats .modal-content'));
+        await take('camp-title-description-before-create', page.locator('#camps-and-retreats .modal-content'));
         const created = await save('camps-and-retreats/add', 'POST', campForm.getByRole('button', {name: 'Crea', exact: true}), 201);
         const campId = created.camp_and_retreat.camps_and_retreats_id;
         await expect(page).toHaveURL(new RegExp('/overview/' + campId));
@@ -57,7 +57,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(camp.title).toBe('Ritiro Aurora 2026');
         expect(camp.description).toBe('Due giornate di allenamento per il gruppo Aurora.');
         expect(camp.periods).toEqual([]);
-        await take(3, 'camp-created-and-public-link-visible-after-reload');
+        await take('camp-created-and-public-link-visible-after-reload');
         await page.getByRole('button', {name: 'Periodo', exact: true}).click();
         const periodForm = page.locator('#camps_and_retreats_periods_form');
         await choosePeriod(28, 29);
@@ -65,7 +65,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await periodForm.locator('[name="max_participants"]').fill('20');
         await periodForm.locator('[name="title"]').fill('Due giornate Aurora');
         await periodForm.locator('[name="description"]').fill('Allenamento e preparazione atletica.');
-        await take(4, 'period-selected-range-fee-capacity-before-create', page.locator('#camps-and-retreats-add-modal .modal-content'));
+        await take('period-selected-range-fee-capacity-before-create', page.locator('#camps-and-retreats-add-modal .modal-content'));
         const addedPeriod = await save('camps-and-retreats/periods/add', 'POST', periodForm.getByRole('button', {name: 'Crea', exact: true}), 201);
         const periodId = addedPeriod.period.camps_and_retreats_period_id;
         expect(addedPeriod.period.start_date.slice(0, 10)).toBe('2026-09-28');
@@ -73,7 +73,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await Promise.all([page.waitForResponse(response => new URL(response.url()).pathname === `/api/camps-and-retreats/${campId}/info`), page.reload()]);
         await expect(page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Due giornate Aurora'})).toBeVisible();
         expect((await json(`camps-and-retreats/${campId}/info`)).data.periods).toHaveLength(1);
-        await take(5, 'created-period-and-dates-persist-after-reload');
+        await take('created-period-and-dates-persist-after-reload');
         await page.getByRole('link', {name: 'Dettagli', exact: true}).click();
         await expect(periodForm.locator('[name="title"]')).toHaveValue('Due giornate Aurora');
         await choosePeriod(29, 30);
@@ -81,7 +81,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await periodForm.locator('[name="fee"]').fill('90,00');
         await periodForm.locator('[name="max_participants"]').fill('');
         await periodForm.locator('[name="description"]').fill('Allenamento e preparazione aggiornati.');
-        await take(6, 'period-updated-dates-fee-and-unlimited-capacity-before-save');
+        await take('period-updated-dates-fee-and-unlimited-capacity-before-save');
         await save(`camps-and-retreats/periods/${periodId}/update`, 'PATCH', page.getByRole('button', {name: 'Salva', exact: true}));
         await page.reload();
         const period = (await json(`camps-and-retreats/periods/${periodId}/info`)).data;
@@ -92,25 +92,25 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(period.max_participants).toBeNull();
         await expect(periodForm.locator('[name="title"]')).toHaveValue(period.title);
         await expect(page.locator('#camps_period_range')).toHaveValue('29/09/2026 al 30/09/2026');
-        await take(7, 'updated-period-persists-after-reload');
+        await take('updated-period-persists-after-reload');
         await page.getByRole('button', {name: 'Servizio', exact: true}).click();
         const serviceForm = page.locator('#camps_and_retreats_services_form');
         await serviceForm.locator('[name="fee"]').fill('15,00');
         await serviceForm.locator('[name="payment_category"]').selectOption(input.payment_category_id);
         await serviceForm.locator('[name="title"]').fill('Pranzo');
         await serviceForm.locator('[name="description"]').fill('Pranzo dopo l’allenamento.');
-        await take(8, 'service-title-fee-income-category-before-create', page.locator('#camps-and-retreats-add-modal .modal-content'));
+        await take('service-title-fee-income-category-before-create', page.locator('#camps-and-retreats-add-modal .modal-content'));
         const addedService = await save('camps-and-retreats/periods/services/add', 'POST', serviceForm.getByRole('button', {name: 'Crea', exact: true}), 201);
         const serviceId = addedService.service.camps_and_retreats_period_service_id;
         await page.reload();
         await expect(page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Pranzo'})).toBeVisible();
         expect((await json(`camps-and-retreats/periods/${periodId}/info`)).data.services[0].payment_category).toBe(input.payment_category_id);
         await page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Pranzo'}).scrollIntoViewIfNeeded();
-        await take(9, 'service-created-and-income-category-persists-after-reload');
+        await take('service-created-and-income-category-persists-after-reload');
         await page.getByRole('button', {name: 'Modifica', exact: true}).click();
         await serviceForm.locator('[name="title"]').fill('Pranzo completo');
         await serviceForm.locator('[name="fee"]').fill('18,00');
-        await take(10, 'service-edit-title-cost-and-delete-control', page.locator('#camps-and-retreats-add-modal .modal-content'));
+        await take('service-edit-title-cost-and-delete-control', page.locator('#camps-and-retreats-add-modal .modal-content'));
         await save(`camps-and-retreats/periods/services/${serviceId}/update`, 'PATCH', serviceForm.getByRole('button', {name: 'Salva', exact: true}));
         await page.reload();
         const editedService = (await json(`camps-and-retreats/periods/${periodId}/info`)).data.services[0];
@@ -118,14 +118,14 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(editedService.fee.replace(',', '.')).toBe('18.00');
         await expect(page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Pranzo completo'})).toBeVisible();
         await page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Pranzo completo'}).scrollIntoViewIfNeeded();
-        await take(11, 'edited-service-persists-after-reload');
+        await take('edited-service-persists-after-reload');
         await page.getByRole('button', {name: 'Modifica', exact: true}).click();
         await save(`camps-and-retreats/periods/services/${serviceId}/delete`, 'DELETE', serviceForm.getByRole('button', {name: 'Elimina', exact: true}));
         await page.reload();
         expect((await json(`camps-and-retreats/periods/${periodId}/info`)).data.services).toEqual([]);
         await expect(page.locator('.font-weight-boldest.font-size-h4').filter({hasText: 'Pranzo completo'})).toHaveCount(0);
         await page.getByRole('heading', {name: 'Servizi della settimana', exact: true}).scrollIntoViewIfNeeded();
-        await take(12, 'deleted-service-absent-after-reload');
+        await take('deleted-service-absent-after-reload');
         expect((await json(`camps-and-retreats/${campId}/subscriptions/list`)).data).toEqual([]);
         expect(records((await json('payment/list?pagination[perpage]=100')).data)).toEqual(records(originalPayments));
         const reader = await actor('reader');
@@ -136,7 +136,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await reader.page.getByRole('link', {name: 'Dettagli', exact: true}).click();
         await expect(reader.page.getByRole('button', {name: 'Salva', exact: true})).toHaveCount(0);
         await expect(reader.page.getByRole('button', {name: 'Servizio', exact: true})).toHaveCount(0);
-        await take(13, 'reader-consults-period-without-create-or-save-controls', undefined, reader.page);
+        await take('reader-consults-period-without-create-or-save-controls', undefined, reader.page);
         const deniedCamp = await reader.api(`camps-and-retreats/periods/${periodId}/update`, {method: 'PATCH', data: {title: 'Non salvare'}});
         expect(deniedCamp.status()).toBe(403);
         expect((await json(`camps-and-retreats/periods/${periodId}/info`)).data.title).toBe(period.title);
@@ -144,7 +144,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await expect(page.getByRole('heading', {name: 'Eventi e Promemoria', exact: true})).toBeVisible();
         await expect(page.locator('#general_calendar .ec-toolbar')).toBeVisible();
         await expect(page.getByRole('button', {name: 'lista giorno', exact: true})).toHaveClass(/ec-active/);
-        await take(14, 'general-calendar-default-day-list-and-toolbar');
+        await take('general-calendar-default-day-list-and-toolbar');
         const beforeViews = (await json('calendar/events?get_lesson=false')).data.events;
         await page.getByRole('button', {name: 'mese', exact: true}).click();
         await expect(page.getByRole('button', {name: 'mese', exact: true})).toHaveClass(/ec-active/);
@@ -158,16 +158,16 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await expect(calendarTitle).not.toHaveText(currentMonth);
         await page.getByRole('button', {name: 'Oggi', exact: true}).click();
         await expect(calendarTitle).toHaveText(currentMonth);
-        await take(15, 'general-calendar-month-view-and-navigation');
+        await take('general-calendar-month-view-and-navigation');
         await page.getByRole('button', {name: 'settimana', exact: true}).click();
         await expect(page.getByRole('button', {name: 'settimana', exact: true})).toHaveClass(/ec-active/);
-        await take(16, 'general-calendar-week-view');
+        await take('general-calendar-week-view');
         await page.getByRole('button', {name: 'giorno', exact: true}).click();
         await expect(page.getByRole('button', {name: 'giorno', exact: true})).toHaveClass(/ec-active/);
-        await take(17, 'general-calendar-day-view');
+        await take('general-calendar-day-view');
         await page.getByRole('button', {name: 'lista settimana', exact: true}).click();
         await expect(page.getByRole('button', {name: 'lista settimana', exact: true})).toHaveClass(/ec-active/);
-        await take(18, 'general-calendar-week-list-view');
+        await take('general-calendar-week-list-view');
         await page.getByRole('button', {name: 'lista giorno', exact: true}).click();
         await page.locator('#general_calendar button.ec-prev').click();
         await page.getByRole('button', {name: 'Oggi', exact: true}).click();
@@ -183,7 +183,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
             await modal.locator('[name="description"]').fill(description);
         };
         await fillEvent('Riunione organizzativa Aurora', 'Preparazione del ritiro in segreteria.');
-        await take(19, 'global-event-name-dates-description-without-course-or-reminder', modal.locator('.modal-content'));
+        await take('global-event-name-dates-description-without-course-or-reminder', modal.locator('.modal-content'));
         await save('calendar/events/update', 'POST', modal.getByRole('button', {name: 'Salva', exact: true}));
         await page.reload();
         const events = (await json('calendar/events?get_lesson=false')).data.events;
@@ -192,12 +192,12 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(globalEvent.extendedProps.course).toBeFalsy();
         expect(globalEvent.extendedProps.reminder_enabled).toBe(false);
         await expect(page.locator('#general_calendar .ec-event').filter({hasText: globalEvent.title})).toBeVisible();
-        await take(20, 'global-event-persists-after-reload');
+        await take('global-event-persists-after-reload');
         await page.locator('#general_calendar .ec-event').filter({hasText: globalEvent.title}).click();
         await expect(modal.locator('[name="event_start"]')).toBeDisabled();
         await modal.locator('[name="event_title"]').fill('Riunione Aurora aggiornata');
         await modal.locator('[name="description"]').fill('Controllo del programma e dei materiali.');
-        await take(21, 'global-event-edit-title-description-and-fixed-dates', modal.locator('.modal-content'));
+        await take('global-event-edit-title-description-and-fixed-dates', modal.locator('.modal-content'));
         await save('calendar/events/update', 'POST', modal.getByRole('button', {name: 'Salva', exact: true}));
         await page.reload();
         const updatedGlobal = (await json('calendar/events?get_lesson=false')).data.events.find(event => event.event_id === globalEvent.event_id);
@@ -206,11 +206,11 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(updatedGlobal.start).toBe(globalEvent.start);
         expect(updatedGlobal.end).toBe(globalEvent.end);
         await expect(page.locator('#general_calendar .ec-event').filter({hasText: updatedGlobal.title})).toBeVisible();
-        await take(22, 'updated-global-event-persists-after-reload');
+        await take('updated-global-event-persists-after-reload');
         await fillEvent('Lezione Aurora dal calendario', 'Lezione collegata a Ginnastica per tutti.');
         await modal.getByPlaceholder('Seleziona il corso', {exact: true}).fill('Ginnastica per tutti');
         await modal.getByText('Ginnastica per tutti', {exact: true}).click();
-        await take(23, 'new-event-with-course-selected-before-save', modal.locator('.modal-content'));
+        await take('new-event-with-course-selected-before-save', modal.locator('.modal-content'));
         await save(`course/${input.course_id}/calendar/update`, 'POST', modal.getByRole('button', {name: 'Salva', exact: true}));
         await page.reload();
         const courseCalendar = (await json(`course/${input.course_id}/calendar`)).data;
@@ -220,7 +220,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         const combined = (await json('calendar/events?get_lesson=false')).data.events;
         expect(combined.map(event => event.title)).toEqual(expect.arrayContaining([updatedGlobal.title, courseCalendar.events[0].title]));
         await expect(page.locator('#general_calendar .ec-event').filter({hasText: courseCalendar.events[0].title})).toBeVisible();
-        await take(24, 'global-calendar-shows-persisted-course-lesson-and-global-event');
+        await take('global-calendar-shows-persisted-course-lesson-and-global-event');
         const downloaded = page.waitForEvent('download');
         await page.getByRole('button', {name: 'Esporta', exact: true}).click();
         const download = await downloaded;
@@ -235,11 +235,11 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await expect(page.getByRole('heading', {name: 'Calendario delle lezioni', exact: true})).toBeVisible();
         await page.locator('#course_attendance_calendar').scrollIntoViewIfNeeded();
         await expect(page.locator('#course_attendance_calendar .ec-event').filter({hasText: courseCalendar.events[0].title})).toBeVisible();
-        await take(25, 'course-calendar-contains-lesson-created-from-general-calendar');
+        await take('course-calendar-contains-lesson-created-from-general-calendar');
         await page.getByText('Condividi', {exact: true}).click();
         await expect(page.locator('#share-link')).toBeVisible();
         await expect(page.locator('#share-link textarea.text-left')).toHaveValue(new RegExp('/#/shared-calendar/' + input.course_id));
-        await take(26, 'course-share-modal-direct-link-embed-whatsapp-and-email-controls', page.locator('#share-link .modal-content'));
+        await take('course-share-modal-direct-link-embed-whatsapp-and-email-controls', page.locator('#share-link .modal-content'));
         const anonymous = await api(`course/${input.course_id}/calendar`, {headers: {Authorization: ''}});
         expect(anonymous.status()).toBe(200);
         expect((await anonymous.json()).data.events[0].title).toBe(courseCalendar.events[0].title);
@@ -249,7 +249,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         await reader.page.locator('#general_calendar .ec-event').filter({hasText: updatedGlobal.title}).click();
         await expect(reader.page.locator('#addElement').getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
         await expect(reader.page.locator('#addElement').getByRole('button', {name: 'Elimina', exact: true})).toBeDisabled();
-        await take(27, 'reader-sees-global-event-with-disabled-save-and-delete', reader.page.locator('#addElement .modal-content'), reader.page);
+        await take('reader-sees-global-event-with-disabled-save-and-delete', reader.page.locator('#addElement .modal-content'), reader.page);
         const deniedEvent = await reader.api('calendar/events/update', {method: 'POST', data: {action: 'update', events: [{...updatedGlobal, title: 'Non salvare'}]}});
         expect(deniedEvent.status()).toBe(403);
         expect((await json('calendar/events?get_lesson=false')).data.events.find(event => event.event_id === globalEvent.event_id).title).toBe(updatedGlobal.title);
@@ -263,7 +263,7 @@ await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, 
         expect(afterDelete.some(event => event.event_id === globalEvent.event_id)).toBe(false);
         expect(afterDelete.some(event => event.title === courseCalendar.events[0].title)).toBe(true);
         await expect(page.locator('#general_calendar .ec-event').filter({hasText: updatedGlobal.title})).toHaveCount(0);
-        await take(28, 'deleted-global-event-absent-course-lesson-preserved-after-reload');
+        await take('deleted-global-event-absent-course-lesson-preserved-after-reload');
         report.camps_calendar_manage = {camp_title: 'Ritiro Aurora 2026', camp_persisted_after_reload: true,
             period_initial_start: '2026-09-28', period_initial_end: '2026-09-29',
             period_updated_start: '2026-09-29', period_updated_end: '2026-09-30', period_fee: '90.00',

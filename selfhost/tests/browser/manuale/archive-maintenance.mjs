@@ -25,7 +25,7 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
         expect(await archivedMembers()).toHaveLength(0);
         expect(await payments(true)).toHaveLength(0);
         expect(originalPayments.find(row => row.payment_id === paymentId).paid).toBe(false);
-        const take = async (number, checkpoint, target = page, locator) => {
+        const take = async (checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(target, checkpoint, locator);
         };
@@ -42,10 +42,10 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             await expect(subscriptionRow(page)).toBeVisible();
             await subscriptionRow(page).locator('label.checkbox').click();
             await expect(page.locator('#bkn_datatable_archive_selected')).toBeEnabled();
-            await take(1, 'selected-unpaid-member-before-archiving');
+            await take('selected-unpaid-member-before-archiving');
             await page.locator('#bkn_datatable_archive_selected').click();
             await expect(page.getByText('Vuoi archiviare 1 soci?', {exact: true})).toBeVisible();
-            await take(2, 'member-archive-confirmation-and-cancel', page, page.locator('.swal2-popup'));
+            await take('member-archive-confirmation-and-cancel', page, page.locator('.swal2-popup'));
             await page.getByRole('button', {name: 'Annulla', exact: true}).click();
             expect(await activeMembers()).toEqual(originalMembers);
             expect(await payments(false)).toEqual(originalPayments);
@@ -57,15 +57,15 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             expect((await activeMembers()).some(row => row.subscription_id === subscriptionId)).toBe(false);
             expect((await payments(true)).map(row => row.payment_id)).toEqual([paymentId]);
             expect((await payments(false)).map(row => row.payment_id).sort()).toEqual(input.payment_ids.slice(0, 2).sort());
-            await take(3, 'active-members-after-archive-and-reload');
+            await take('active-members-after-archive-and-reload');
             await page.getByRole('button', {name: 'Archivio', exact: true}).click();
             await page.reload();
             await expect(subscriptionRow(page)).toBeVisible();
             expect((await archivedMembers()).map(row => row.subscription_id)).toEqual([subscriptionId]);
-            await take(4, 'archived-member-and-restore-action-after-reload');
+            await take('archived-member-and-restore-action-after-reload');
             await page.getByRole('textbox', {name:'Cerca nella tabella',exact:true}).fill('Sara');
             await expect(page.locator('[data-row]')).toHaveCount(1);
-            await take(5, 'archive-search-finds-selected-registration');
+            await take('archive-search-finds-selected-registration');
             await page.getByRole('textbox', {name:'Cerca nella tabella',exact:true}).fill('NessunRisultatoManuale');
             await expect(page.locator('[data-row]')).toHaveCount(0);
             await page.getByRole('textbox', {name:'Cerca nella tabella',exact:true}).fill('');
@@ -73,7 +73,7 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             await open('Contabilità', '/#/payment/list');
             await page.getByRole('button', {name: 'Archivio', exact: true}).click();
             await expect(page.locator('[data-row]').filter({hasText: /Sara\s+Conti/i})).toBeVisible();
-            await take(6, 'unpaid-member-payment-in-separate-payment-archive');
+            await take('unpaid-member-payment-in-separate-payment-archive');
             const reader = await actor('reader');
             await reader.open('Organizzazione', '/#/members/list');
             await reader.page.getByRole('button', {name: 'Archivio', exact: true}).click();
@@ -82,12 +82,12 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             const deniedRestore = await reader.api(`subscription/${subscriptionId}/archive`, {method: 'POST'});
             expect(deniedRestore.status()).toBe(403);
             expect((await archivedMembers()).map(row => row.subscription_id)).toEqual([subscriptionId]);
-            await take(7, 'reader-consults-archive-with-disabled-restore', reader.page);
+            await take('reader-consults-archive-with-disabled-restore', reader.page);
             await open('Organizzazione', '/#/members/list');
             await page.getByRole('button', {name: 'Archivio', exact: true}).click();
             await subscriptionRow(page).getByRole('button', {name: "Rimuovi dall'archivio", exact: true}).click();
             await expect(page.getByText("Vuoi spostare l'atleta nel libro soci?", {exact: true})).toBeVisible();
-            await take(8, 'member-restore-confirmation', page, page.locator('.swal2-popup'));
+            await take('member-restore-confirmation', page, page.locator('.swal2-popup'));
             await requestAction(`subscription/${subscriptionId}/archive`, page.getByRole('button', {name: 'Sposta nel libro soci', exact: true}));
             await page.getByRole('button', {name: 'Tesserati', exact: true}).click();
             await page.reload(); await expect(subscriptionRow(page)).toBeVisible();
@@ -97,7 +97,7 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             expect(await activeMembers()).toEqual(originalMembers.map(member => member.subscription_id === subscriptionId
                 ? {...member, all_payments_paid: true, payments_info: {total: 0, to_be_paid: 0}} : member));
             expect((await payments(true)).map(row => row.payment_id)).toEqual([paymentId]);
-            await take(9, 'restored-member-and-payment-still-archived');
+            await take('restored-member-and-payment-still-archived');
             // Restore the affected payment separately through its actual visible control.
             await open('Contabilità', '/#/payment/list');
             await page.getByRole('button', {name: 'Archivio', exact: true}).click();
@@ -111,18 +111,18 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             // Save preference only; this does not invoke Celery or fake its result.
             await open('Impostazioni', '/#/profile'); await page.getByText('Generali', {exact: true}).click();
             await expect(page.locator('#balance-sheet')).toHaveValue(originalSettings.balance_sheet_year);
-            await take(10, 'fiscal-start-before-automatic-archive-preference');
+            await take('fiscal-start-before-automatic-archive-preference');
             await expect(autoArchiveField(page)).not.toBeChecked();
             await setCheckbox(autoArchiveField(page), true);
             await autoArchiveField(page).locator('xpath=ancestor::label[1]').scrollIntoViewIfNeeded();
-            await take(11, 'automatic-archive-enabled-before-save');
+            await take('automatic-archive-enabled-before-save');
             await saveSettings(); await page.reload();
             await expect(autoArchiveField(page)).toBeChecked();
             await autoArchiveField(page).locator('xpath=ancestor::label[1]').scrollIntoViewIfNeeded();
             expect((await json('profile/settings')).settings).toEqual({...originalSettings, auto_archive: true});
             expect(await activeMembers()).toEqual(originalMembers);
             expect(await payments(false)).toEqual(originalPayments);
-            await take(12, 'automatic-archive-preference-persists-after-reload');
+            await take('automatic-archive-preference-persists-after-reload');
             await reader.open('Impostazioni', '/#/profile'); await reader.page.getByText('Generali', {exact: true}).click();
             await expect(autoArchiveField(reader.page)).toBeChecked();
             await expect(autoArchiveField(reader.page)).toBeDisabled();
@@ -130,12 +130,12 @@ await scenario({id: 'archive-maintenance', actions: async ({page, api, open, act
             expect(deniedSetting.status()).toBe(403);
             expect((await json('profile/settings')).settings.auto_archive).toBe(true);
             await autoArchiveField(reader.page).locator('xpath=ancestor::label[1]').scrollIntoViewIfNeeded();
-            await take(13, 'reader-can-consult-automatic-preference-without-changing-it', reader.page);
+            await take('reader-can-consult-automatic-preference-without-changing-it', reader.page);
             await setCheckbox(autoArchiveField(page), false); await saveSettings(); await page.reload();
             await expect(autoArchiveField(page)).not.toBeChecked();
             expect((await json('profile/settings')).settings).toEqual(originalSettings);
             await autoArchiveField(page).locator('xpath=ancestor::label[1]').scrollIntoViewIfNeeded();
-            await take(14, 'automatic-archive-preference-restored-and-baseline-preserved');
+            await take('automatic-archive-preference-restored-and-baseline-preserved');
             report.archive_maintenance_authored_workflow = {
                 archive_cancel_preserved_state: true, member_archived_after_reload: true,
                 archive_search_and_clear_worked: true, separate_unpaid_payment_archived: true,

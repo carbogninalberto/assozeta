@@ -29,7 +29,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         page.on('request', request => {
             if (new URL(request.url()).pathname === '/api/collaborators/add' && request.method() === 'POST') invitationRequests++;
         });
-        const take = async (number, checkpoint, target = page, locator) => {
+        const take = async (checkpoint, target = page, locator) => {
             await expect(target.locator('[data-sonner-toast]:visible')).toHaveCount(0, {timeout: 10000});
             await capture(target, checkpoint, locator);
         };
@@ -39,7 +39,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await expect(row()).toContainText('MARCO NERI');
         await expect(row()).toContainText('Accettato');
         await expect(row()).toContainText('Personalizzato');
-        await take(1, 'existing-accepted-custom-collaborator-and-edit-action', page, focusRegion(
+        await take('existing-accepted-custom-collaborator-and-edit-action', page, focusRegion(
             tableFocus(page, ['accepted', 'role'], row()), row().locator('button:is([title="Modifica"],[data-original-title="Modifica"])')));
         const readOnly = await actor('reader');
         await readOnly.open('Collaboratori', '/#/connected-collaborators');
@@ -49,7 +49,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await readOnly.page.getByText('Informazioni Account', {exact: true}).click();
         await expect(readOnly.page.getByPlaceholder('Inserisci denominazione...', {exact: true})).toBeDisabled();
         await readOnly.page.getByPlaceholder('Inserisci denominazione...', {exact: true}).scrollIntoViewIfNeeded();
-        await take(2, 'custom-reader-profile-shows-disabled-organization-fields', readOnly.page, focusRegion(
+        await take('custom-reader-profile-shows-disabled-organization-fields', readOnly.page, focusRegion(
             readOnly.page.getByRole('heading', {name: 'Organizzazione', exact: true}),
             readOnly.page.getByPlaceholder('Inserisci denominazione...', {exact: true})));
         const readerProfile = (await json('profile/info', readOnly.api)).user_data;
@@ -67,7 +67,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await expect(edit.locator('select[name="collaborator_role"] option')).toHaveText(['Accesso Completo', 'Personalizzato']);
         await edit.locator('input[name="other.settings.update"]').check({force: true});
         await edit.locator('input[name="other.settings.update"]').scrollIntoViewIfNeeded();
-        await take(3, 'owner-adds-only-update-settings-to-existing-custom-permissions', page,
+        await take('owner-adds-only-update-settings-to-existing-custom-permissions', page,
             edit.locator('.form-group.border').filter({has: page.locator('input[name="other.settings.update"]')}));
         const savePermissions = async () => {
             const saved = page.waitForResponse(response => new URL(response.url()).pathname === `/api/collaborators/${readerId}/update`
@@ -95,7 +95,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
             expect((await saved).status()).toBe(200);
         };
         await nameField.scrollIntoViewIfNeeded();
-        await take(4, 'collaborator-current-profile-after-grant-and-own-name-edit', writer.page, focusRegion(
+        await take('collaborator-current-profile-after-grant-and-own-name-edit', writer.page, focusRegion(
             nameField.locator('..').locator('..').locator('label'), nameField));
         await saveOwnName();
         const savedReader = await reloadOrganizationProfile({...writer, expect});
@@ -104,7 +104,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         expect(granted.connected_user).toBe(input.user_id);
         await expect(nameField).toHaveValue('Matteo');
         await nameField.scrollIntoViewIfNeeded();
-        await take(5, 'authorized-own-profile-write-persists-and-owner-organization-is-preserved', writer.page, focusRegion(
+        await take('authorized-own-profile-write-persists-and-owner-organization-is-preserved', writer.page, focusRegion(
             nameField.locator('..').locator('..').locator('label'), nameField));
         const ownerAfter = (await json('profile/info')).user_data;
         expect(ownerAfter.first_name).toBe(originalProfile.first_name);
@@ -126,7 +126,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await revoked.page.getByText('Informazioni Account', {exact: true}).click();
         await expect(revoked.page.getByPlaceholder('Inserisci denominazione...', {exact: true})).toBeDisabled();
         await revoked.page.getByPlaceholder('Inserisci denominazione...', {exact: true}).scrollIntoViewIfNeeded();
-        await take(6, 'revoked-update-permission-restores-reader-disabled-organization-controls', revoked.page, focusRegion(
+        await take('revoked-update-permission-restores-reader-disabled-organization-controls', revoked.page, focusRegion(
             revoked.page.getByRole('heading', {name: 'Organizzazione', exact: true}),
             revoked.page.getByPlaceholder('Inserisci denominazione...', {exact: true})));
         // The already issued token must also be denied after revocation.
@@ -140,7 +140,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await invitation.locator('input[name="email"]').fill('nuovo.collaboratore@example.test');
         await invitation.locator('select[name="collaborator_role"]').selectOption('3');
         await invitation.locator('input[name="other.settings.read"]').check({force: true});
-        await take(7, 'invitation-form-prepared-with-fictitious-email-without-dispatch', page, focusRegion(
+        await take('invitation-form-prepared-with-fictitious-email-without-dispatch', page, focusRegion(
             invitation.locator('input[name="email"]').locator('..'),
             invitation.locator('select[name="collaborator_role"]').locator('..')));
         await invitation.getByRole('button', {name: 'Chiudi', exact: true}).first().click();
@@ -164,7 +164,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         const fullSave = fullActor.page.waitForResponse(res => new URL(res.url()).pathname === '/api/profile/update' && res.request().method() === 'PATCH');
         await fullActor.page.locator('#bkn_form_account_update_submit').click(); expect((await fullSave).status()).toBe(200);
         await reloadOrganizationProfile({...fullActor, expect}); await expect(fullName).toHaveValue('Marino');
-        await fullName.scrollIntoViewIfNeeded(); await take(8, 'full-access-role-persists-and-allows-own-profile-write', fullActor.page, focusRegion(
+        await fullName.scrollIntoViewIfNeeded(); await take('full-access-role-persists-and-allows-own-profile-write', fullActor.page, focusRegion(
             fullName.locator('..').locator('..').locator('label'), fullName));
         expect((await json('profile/info')).user_data.sport_association).toEqual(originalProfile.sport_association);
         await fullName.fill('Marco');
@@ -187,7 +187,7 @@ await scenario({id: 'collaborator-permissions', actions: async ({page, api, open
         await expect(row()).toContainText('MARCO NERI');
         await expect(row()).toContainText('Accettato');
         await expect(row()).toContainText('Personalizzato');
-        await take(9, 'full-access-returned-to-original-custom-permissions', page, tableFocus(page, ['accepted', 'role'], row()));
+        await take('full-access-returned-to-original-custom-permissions', page, tableFocus(page, ['accepted', 'role'], row()));
         report.collaborator_permissions = {existing_actor: true, initial_role: original.collaborator_role,
             final_role: restored.collaborator_role, granted_permission: 'other.settings.update',
             only_requested_permission_added: true, persisted_after_owner_reload: true,
