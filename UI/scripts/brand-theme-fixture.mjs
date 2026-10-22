@@ -94,6 +94,6 @@ const server = await createServer({root, configFile: false, logLevel: 'error',
                 res.statusCode=404;return send({error:req.url});
             });
         },
-    },svelte({configFile:false,compilerOptions:{hmr:false,compatibility:{componentApi:4}}})],server:{host:'127.0.0.1',port:5194,strictPort:true},
+    },svelte({configFile:false})],server:{host:'127.0.0.1',port:5194,strictPort:true},
 });
 await server.listen();

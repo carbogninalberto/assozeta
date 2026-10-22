@@ -178,7 +178,7 @@ try {
         const ui=await snapshot(process.env.ASSOZETA_BAKNEY_UI,'bakney-ui');
         await fs.symlink(path.join(process.env.ASSOZETA_BAKNEY_UI,'node_modules'),path.join(ui,'node_modules'));
         // Compile the actual pairing components/transport and dedicated handoff entry unchanged.
-        await fs.writeFile(path.join(ui,'sso.integration.config.mjs'),`import {defineConfig} from 'vite';import {svelte} from '@sveltejs/vite-plugin-svelte';import path from 'node:path';import {buildConfig} from './endpoints.js';export default defineConfig({plugins:[svelte({compilerOptions:{hmr:false,compatibility:{componentApi:4}}})],resolve:{alias:{utils:path.resolve('src/utils'),store:path.resolve('src/store')}},define:buildConfig(undefined,{name:'Bakney',selfHosted:false}),build:{outDir:'sso-dist',rollupOptions:{input:{harness:'testing/pairing/harness.html',handoff:'handoff.html'}}}});`);
+        await fs.writeFile(path.join(ui,'sso.integration.config.mjs'),`import {defineConfig} from 'vite';import {svelte} from '@sveltejs/vite-plugin-svelte';import path from 'node:path';import {buildConfig} from './endpoints.js';export default defineConfig({plugins:[svelte()],resolve:{alias:{utils:path.resolve('src/utils'),store:path.resolve('src/store')}},define:buildConfig(undefined,{name:'Bakney',selfHosted:false}),build:{outDir:'sso-dist',rollupOptions:{input:{harness:'testing/pairing/harness.html',handoff:'handoff.html'}}}});`);
         command(process.execPath,[path.join(ui,'node_modules/vite/bin/vite.js'),'build','--config','sso.integration.config.mjs'],{cwd:ui,maxBuffer:20*1024*1024});
         bakneyDist=path.join(ui,'sso-dist');
     }

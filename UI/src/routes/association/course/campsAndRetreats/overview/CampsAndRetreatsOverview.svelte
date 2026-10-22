@@ -73,12 +73,9 @@
         </div>
         <button
             class="btn btn-icon btn-sm btn-dark mr-0 mr-md-4 mb-0 mt-4 mt-md-0 font-weight-bolder font-size-lg"
-            on:click={() => {
-                navigator.clipboard.writeText(
-                    `${__bakney.env.DOMAIN}/#/camps-and-retreats/forms/${String(data?.camps_and_retreats_id).toLowerCase()}`
-                );
-                toast.success('Link copiato nella clipboard');
-            }}>
+            onclick="navigator.clipboard.writeText('{__bakney.env.DOMAIN}/#/camps-and-retreats/forms/{String(
+                data?.camps_and_retreats_id
+            ).toLowerCase()}');toast.success('Link copiato nella clipboard')">
             <Clipboard size={18} weight="duotone" />
         </button>
     </div>

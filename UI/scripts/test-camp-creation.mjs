@@ -19,7 +19,7 @@ try {
   b.onResolve({filter:/svelte-sonner$/},()=>({path:'toast',namespace:'fixture'}));
   b.onResolve({filter:/preview-blocks\/index\.js$/},()=>({path:'fields',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},({path:p})=>({contents:({api:`export async function apiFetch(url,options){const r=await fetch(url,options);return {status:r.status,error:!r.ok,response:await r.json()};}`,form:`export const getDataFromForm=e=>Object.fromEntries(new FormData(e.target));`,loading:`export const blockPage=()=>{};export const unblockPage=()=>{};`,toast:`export const toast={success:m=>window.toasts.push(m)};`,fields:`export {default as TextInput} from ${JSON.stringify(source+'/src/components/formBuilder/preview-blocks/text-input.svelte')};export {default as TextArea} from ${JSON.stringify(source+'/src/components/formBuilder/preview-blocks/textarea-input.svelte')};`})[p],resolveDir:ui}));
- }},{name:'svelte',setup(b){b.onLoad({filter:/\.svelte$/},a=>({contents:compile(fs.readFileSync(a.path,'utf8'),{filename:a.path,generate:'client',compatibility:{componentApi:4},css:'injected'}).js.code,resolveDir:path.dirname(a.path)}));}}]});
+ }},{name:'svelte',setup(b){b.onLoad({filter:/\.svelte$/},a=>({contents:compile(fs.readFileSync(a.path,'utf8'),{filename:a.path,generate:'dom',css:'injected'}).js.code,resolveDir:path.dirname(a.path)}));}}]});
  browser=await chromium.launch({headless:true});
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const pending=[];await page.route('https://component.example.test/camps/add',route=>pending.push(route));

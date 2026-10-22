@@ -32,7 +32,7 @@ const server = await createServer({
                 res.setHeader('Content-Type', 'text/html'); res.end(html);
             });
         },
-    }, svelte({configFile: false, compilerOptions: {hmr: false, compatibility: {componentApi: 4}}})],
+    }, svelte({configFile: false})],
 });
 let browser;
 const reports = [];

@@ -2,7 +2,7 @@
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
-    "UI/src/routes/association/Members/detail/sections/Info.svelte": "fc76a3ee2c6eec2df93cdb3680ffc3fc5ca0261010c2ce3ffcd20a0e528eab7b",
+    "UI/src/routes/association/Members/detail/sections/Info.svelte": "720d401c86e498d7efdba75321ce399fe2788033cf453690b3c6bf6869d5cff7",
     "UI/src/routes/association/Members/detail/sections/subcomponents/Tessera.svelte": "47539a823dbdc092996cb671eec8044a6168da923a2b2a62550d438673a86fd7",
     "BE/application/views/subscriptions_views.py": "1f55021d86c1df051b8b02be483fd463aae04462866a783572933740a4aa11d7",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",

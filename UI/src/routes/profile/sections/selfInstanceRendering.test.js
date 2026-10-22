@@ -5,8 +5,6 @@ import {createServer} from 'vite';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 
 let server;
-// Svelte 5 SSR interleaves hydration markers (HTML comments) with the markup.
-const renderHtml = (Component, props) => Component.render(props).html.replace(/<!--[\s\S]*?-->/g, '');
 let originalStorage;
 const cache = new Map();
 
@@ -32,15 +30,13 @@ before(async () => {
                 if (id === 'svelte-spa-router') return '\0test-router';
                 if (id.endsWith('/breakpointStore.js')) return '\0test-breakpoint';
                 if (id === 'phosphor-svelte') return '\0test-icons';
-                if (id === '/@test/icon.svelte') return id;
             },
             load(id) {
                 if (id === '\0test-router') return "import {writable} from 'svelte/store'; export const querystring = writable('page=self-instance');";
                 if (id === '\0test-breakpoint') return "import {writable} from 'svelte/store'; export const isMobile = writable(false);";
-                if (id === '\0test-icons') return "import Icon from '/@test/icon.svelte'; export {Icon as User, Icon as Sliders, Icon as FingerprintSimple, Icon as Password, Icon as StripeLogo, Icon as Plugs, Icon as Database};";
-                if (id === '/@test/icon.svelte') return '';
+                if (id === '\0test-icons') return "import {create_ssr_component} from 'svelte/internal'; const Icon = create_ssr_component(() => ''); export {Icon as User, Icon as Sliders, Icon as FingerprintSimple, Icon as Password, Icon as StripeLogo, Icon as Plugs, Icon as Database};";
             },
-        }, svelte({configFile: false, compilerOptions: {hmr: false, compatibility: {componentApi: 4}}})],
+        }, svelte({configFile: false})],
     });
 });
 
@@ -60,7 +56,7 @@ test('restored profile navigation requires owner capability for every role and v
                 cache.set('subPage', JSON.stringify('self-instance'));
                 cache.set('permissions', JSON.stringify(['other.settings.read']));
                 cache.set('userData', JSON.stringify({first_name: 'Fixture', last_name: 'User', is_superuser: true}));
-                const html = renderHtml(ProfileMenu, {instanceOwner});
+                const {html} = ProfileMenu.render({instanceOwner});
                 assert.equal(html.includes('href="/#/profile?page=self-instance"'), instanceOwner,
                     `${role}, mobile=${mobile}, owner=${instanceOwner}`);
             }
@@ -74,7 +70,7 @@ test('profile navigation renders while user details are still loading', async ()
     cache.set('subPage', JSON.stringify('self-instance'));
     cache.set('permissions', JSON.stringify(['other.settings.read']));
     cache.set('userData', JSON.stringify({}));
-    const html = renderHtml(ProfileMenu, {instanceOwner: true});
+    const {html} = ProfileMenu.render({instanceOwner: true});
     assert.match(html, /href="\/#\/profile\?page=self-instance"/);
 });
 
@@ -87,7 +83,7 @@ test('the release component renders complete Markdown while neutralizing executa
         '[Safe link](https://example.test/notes)',
         'Complete release detail. '.repeat(3000), 'END_OF_COMPLETE_NOTES',
     ].join('\n\n');
-    const html = renderHtml(ReleaseNotes, {expanded: true, release: {
+    const {html} = ReleaseNotes.render({expanded: true, release: {
         id: 1, tag: 'v1.2.3', name: 'Fixture release', published_at: '2026-09-14T00:00:00Z',
         url: 'https://github.com/carbogninalberto/assozeta/releases/tag/v1.2.3', notes,
     }});

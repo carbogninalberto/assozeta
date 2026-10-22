@@ -1,6 +1,5 @@
 <script>
     import moment from 'moment';
-    import {downloadPdf} from 'utils/download.js';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 import {blockPage, unblockPage} from 'store/loadingStore.js';
@@ -558,7 +557,9 @@ import {blockPage, unblockPage} from 'store/loadingStore.js';
                         <button
                             type="button"
                             disabled={!info.document_pdf}
-                            on:click={() => downloadPdf(__bakney.env.API.DOCUMENT.RETRIEVE + '/' + info.document_pdf)}
+                            onClick="javascript:downloadPdf('{__bakney.env.API.DOCUMENT.RETRIEVE +
+                                '/' +
+                                info.document_pdf}')"
                             class="btn btn-xs btn-dark font-weight-bolder m-0 align-items-center py-2 px-4">
                             {#if info.document_pdf}
                                 <FileArrowDown size={18} weight="duotone" class="mr-0 mr-md-1" />

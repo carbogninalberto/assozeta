@@ -29,7 +29,7 @@ const server = await createServer({root:ui, configFile:false, logLevel:'error',
             if (req.url.split('?')[0] !== '/') return next();
             res.setHeader('Content-Type','text/html');res.end(await vite.transformIndexHtml('/', '<html><body><div id="app"></div><script type="module" src="/fixture.js"></script></body></html>'));
         });},
-    },svelte({configFile:false,compilerOptions:{hmr:false,compatibility:{componentApi:4}}})]});
+    },svelte({configFile:false})]});
 let browser;
 try {
     await server.listen();
