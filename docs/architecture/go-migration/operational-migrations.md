@@ -151,6 +151,16 @@ matches; filesystem contents differ only in version/revision metadata, while
 layer archives and timestamps differ. `image-equivalence.json` records content
 equivalence, not a new behavioral execution of the worker tests.
 
+The later Go-manual preflight adds a seventh preparation command: after five
+immutable image pulls and the Django package check, the target Go checker must
+also succeed before any pending snapshot, environment or managed-file mutation.
+CLI admission uses the source Compose capability so historical distributions
+without Go retain their behavior. Go cannot use Django's historical missing-marker
+exemption. Unit/failure tests and the actual image-helper boundary pass; evidence
+is under `quality-reports/go-migration/go-manual-preflight/`. The complete
+`b042928` update receipt above predates this additional gate and does not prove its
+combined update/recovery execution.
+
 Installed backend selection, a Go worker/scheduler service, coordinated queue
 transfer, historical application-schema coverage and a complete restore window
 remain required. This increment does not activate Go background execution or
