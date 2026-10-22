@@ -25,25 +25,33 @@ func ReadPCDHeader(ctx context.Context, b []byte, maxBytes int) (PCDHeader, erro
 	if !pcdSignature(b) {
 		return empty, ErrPCDHeader
 	}
-	n := min(2048, len(b)-2048)
+	n := min(1539, len(b)-2048)
 	if n > maxBytes {
 		return empty, ErrWorkingLimit
 	}
 	if n < 1539 {
 		return empty, ErrPCDHeader
 	}
-	return PCDHeader{768, 512, b[3586] & 3}, nil
+	h := PCDHeader{768, 512, b[3586] & 3}
+	if h.Orientation == 1 || h.Orientation == 3 {
+		h.Width, h.Height = 512, 768
+	}
+	return h, nil
 }
 
 // DecodePCD converts the uncompressed 768x512 two-row PhotoYCC blocks. Pillow
-// 11.1's rotation hook fails for orientations 1/3; preserve that failure so the
-// login helper retains the original URI instead of inventing corrected output.
+// 13 rotates orientations 1/3 by 90/270 degrees. Write directly into the rotated
+// output so the logical budget remains one input plus one RGB raster.
 func DecodePCD(ctx context.Context, h PCDHeader, b []byte, maxBytes int64) (Raster, error) {
 	empty := Raster{}
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
-	if h.Width != 768 || h.Height != 512 || h.Orientation > 3 {
+	width, height := 768, 512
+	if h.Orientation == 1 || h.Orientation == 3 {
+		width, height = 512, 768
+	}
+	if h.Width != width || h.Height != height || h.Orientation > 3 {
 		return empty, ErrPCDDecode
 	}
 	const offset = 96 * 2048
@@ -51,7 +59,7 @@ func DecodePCD(ctx context.Context, h PCDHeader, b []byte, maxBytes int64) (Rast
 	if maxBytes <= 0 || int64(len(b)) > maxBytes || pixels > maxBytes-int64(len(b)) {
 		return empty, ErrWorkingLimit
 	}
-	if len(b) < offset+3*768*256 || h.Orientation == 1 || h.Orientation == 3 {
+	if len(b) < offset+3*768*256 {
 		return empty, ErrPCDDecode
 	}
 	out := make([]byte, pixels)
@@ -74,7 +82,14 @@ func DecodePCD(ctx context.Context, h PCDHeader, b []byte, maxBytes int64) (Rast
 				light := pcdL[block[row*768+x]]
 				cb := block[1536+x/2]
 				cr := block[1920+x/2]
-				pos := ((y+row)*768 + x) * 3
+				dx, dy := x, y+row
+				switch h.Orientation {
+				case 1:
+					dx, dy = y+row, 767-x
+				case 3:
+					dx, dy = 511-y-row, x
+				}
+				pos := (dy*width + dx) * 3
 				out[pos] = clip(light + pcdCR[cr])
 				out[pos+1] = clip(light + pcdGR[cr] + pcdGB[cb])
 				out[pos+2] = clip(light + pcdCB[cb])
@@ -84,5 +99,5 @@ func DecodePCD(ctx context.Context, h PCDHeader, b []byte, maxBytes int64) (Rast
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
-	return Raster{768, 512, "RGB", out}, nil
+	return Raster{width, height, "RGB", out}, nil
 }

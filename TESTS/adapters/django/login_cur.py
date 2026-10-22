@@ -113,7 +113,26 @@ def vectors():
     for bits in (1,8):
         palette=b''.join(bytes([v,v,v,0]) for v in ([0,255] if bits==1 else range(256)))
         raw=b'\x80\0\0\0' if bits==1 else b'\x49\0\0\0'
-        add(f'grayscale {bits}',cur([(bitmap(1,2,bits,raw,dib=True,palette=palette),1,1)]),mode='1' if bits==1 else 'L',pixels=b'\xff' if bits==1 else b'\x49')
+        add(f'grayscale {bits}',cur([(bitmap(1,2,bits,raw,dib=True,palette=palette),1,1)]),mode='LA')
+    # Gray cursors decode both DIB halves: AND transparency over XOR intensity.
+    # The display-order top half is the AND mask, irrespective of row direction.
+    for bits in (1,8):
+        palette=b''.join(bytes([v,v,v,0]) for v in ([0,255] if bits==1 else range(256)))
+        for top in (False,True):
+            for mask in ((0,255) if bits==1 else (0,1,63,127,128,254,255)):
+                xor=255 if bits==1 else 73
+                and_row=bytes([0xff if mask else 0]) if bits==1 else bytes([mask])*3
+                xor_row=b'\xe0' if bits==1 else bytes([xor])*3
+                rows=[and_row.ljust(4,b'\0'),xor_row.ljust(4,b'\0')]
+                raw=b''.join(rows if top else rows[::-1])
+                alpha=255-mask
+                pixels=bytes([(xor*alpha+127)//255,alpha])*3
+                data=cur([(bitmap(3,-2 if top else 2,bits,raw,dib=True,palette=palette),3,1)])
+                add(f'masked gray {bits}/{top}/{mask}',data,w=3,mode='LA',pixels=pixels)
+                # Final row padding is optional; its pixel bytes are required.
+                add(f'masked gray short {bits}/{top}/{mask}',data[:-4],w=3,mode='LA')
+        data=cur([(bitmap(3,3,bits,bytes(12),dib=True,palette=palette),3,1)])
+        add(f'masked odd DIB height {bits}',data,w=3,mode='LA')
     valid=cur([(red,1,1)])
     for count in (2,3,4,5):
         data=bytearray(valid);struct.pack_into('<H',data,4,count)

@@ -5,7 +5,6 @@ package loginimage
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
@@ -28,7 +27,7 @@ func TestCURAgainstPillow(t *testing.T) {
 		}
 		Keep bool
 	}
-	if err := json.Unmarshal(raw, &cases); err != nil || len(cases) != 495 {
+	if err := json.Unmarshal(raw, &cases); err != nil || len(cases) != 533 {
 		t.Fatal("required CUR fixtures", len(cases), err)
 	}
 	l := bmpFileTestLimits()
@@ -64,7 +63,7 @@ func TestCURAgainstPillow(t *testing.T) {
 			t.Errorf("%s: header %+v want %+v err=%v", c.Name, h, c.Header, err)
 			return
 		}
-		r, err := DecodeBMP(context.Background(), h, c.Data, l.MaxDecodeBytes)
+		r, err := DecodeCUR(context.Background(), h, c.Data, l.MaxDecodeBytes)
 		if c.Pixels == nil {
 			if err == nil || r.Pixels != nil {
 				t.Errorf("%s: invalid pixels accepted", c.Name)
@@ -91,8 +90,7 @@ func TestCURAgainstPillow(t *testing.T) {
 }
 
 func TestCURFileStageBudgetsAndCancellation(t *testing.T) {
-	input := curTestFile(1, 1, 8, []byte{0, 0, 0, 0, 42})
-	binary.LittleEndian.PutUint32(input[54:], 1)
+	input := curTestFile(1, 1, 24, []byte{30, 20, 10})
 	path := os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC")
 	for _, stage := range []string{"input", "header", "decode", "transform", "encode"} {
 		l := curFileTestLimits()
@@ -100,7 +98,7 @@ func TestCURFileStageBudgetsAndCancellation(t *testing.T) {
 		case "input":
 			l.Codec.MaxEncodedBytes = len(input) - 1
 		case "header":
-			l.MaxHeaderBytes = 65
+			l.MaxHeaderBytes = 61
 		case "decode":
 			l.MaxDecodeBytes = int64(len(input))
 		case "transform":

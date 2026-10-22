@@ -59,10 +59,8 @@ func (s *SessionAuthentication) Resolve(ctx context.Context, key string) (domain
 	if !known {
 		return domain.SessionIdentity{}, nil
 	}
-	standard := false
 	switch backend {
 	case "django.contrib.auth.backends.ModelBackend":
-		standard = true
 	case "social_core.backends.google.GoogleOAuth2", "social_core.backends.apple.AppleIdAuth", "social_core.backends.orcid.ORCIDOAuth2":
 	default:
 		return domain.SessionIdentity{}, nil
@@ -81,7 +79,9 @@ func (s *SessionAuthentication) Resolve(ctx context.Context, key string) (domain
 	if err != nil {
 		return domain.SessionIdentity{}, err
 	}
-	if standard && !user.Active {
+	// All configured backends reject inactive accounts before hash validation.
+	// social-auth-app-django 6.1 uses its default ACTIVE_USERS_FILTER here.
+	if !user.Active {
 		return domain.SessionIdentity{}, nil
 	}
 	hash := data["_auth_user_hash"]

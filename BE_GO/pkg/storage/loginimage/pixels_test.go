@@ -1,11 +1,30 @@
 package loginimage
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"reflect"
 	"testing"
 )
+
+func TestLanczosPassOrderAccountsForSelectedIntermediate(t *testing.T) {
+	// RGB 7xH -> 3x2: vertical reduction below/equal/above twice the
+	// horizontal reduction. The coefficient storage is included in each limit.
+	for _, tc := range []struct{ height, budget int }{{9, 732}, {10, 778}, {11, 767}} {
+		input := Raster{Width: 7, Height: tc.height, Mode: "RGB", Pixels: bytes.Repeat([]byte{73}, 7*tc.height*3)}
+		for _, limit := range []int{tc.budget - 1, tc.budget} {
+			got, err := Transform(context.Background(), input, 3, 2, int64(limit))
+			if limit < tc.budget {
+				if !errors.Is(err, ErrWorkingLimit) || got.Pixels != nil {
+					t.Fatal("selected intermediate escaped budget", tc, err)
+				}
+			} else if err != nil || !bytes.Equal(got.Pixels, bytes.Repeat([]byte{73}, 18)) {
+				t.Fatal("exact selected-intermediate budget", tc, err)
+			}
+		}
+	}
+}
 
 func TestLoginImageDecision(t *testing.T) {
 	for _, tc := range []struct {
@@ -89,15 +108,33 @@ func (c *cancellingImageContext) Err() error {
 	return c.Context.Err()
 }
 func TestCancellationDuringImageWorkReturnsNoPartialBuffer(t *testing.T) {
-	for _, trigger := range []int{2, 4, 20, 100, 1000, 100000} {
-		base, cancel := context.WithCancel(context.Background())
-		ctx := &cancellingImageContext{Context: base, cancel: cancel, trigger: trigger}
-		input := Raster{Width: 128, Height: 128, Mode: "RGBA", Pixels: make([]byte, 128*128*4)}
-		result, err := Transform(ctx, input, 200, 100, 16*1024*1024)
-		cancel()
-		if !errors.Is(err, context.Canceled) || result.Pixels != nil {
-			t.Fatal("mid-transform cancellation exposed pixels", err)
-		}
+	input := Raster{Width: 128, Height: 128, Mode: "RGBA", Pixels: make([]byte, 128*128*4)}
+	for _, tc := range []struct {
+		name          string
+		width, height int
+	}{
+		{"vertical-first-mixed", 200, 100},
+		{"horizontal-first-mixed", 100, 200},
+		{"vertical-first-reduction", 100, 64},
+		{"horizontal-first-reduction", 64, 64},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// Determine reachable checkpoints for each pass order. A fixed late
+			// trigger may never fire when the first pass reduces the second's work.
+			probe := &cancellingImageContext{Context: context.Background()}
+			if _, err := Transform(probe, input, tc.width, tc.height, 16*1024*1024); err != nil || probe.checks < 1000 {
+				t.Fatal("could not establish transform cancellation checkpoints", probe.checks, err)
+			}
+			for _, trigger := range []int{2, 4, 20, 100, 1000, probe.checks / 2, probe.checks - 1, probe.checks} {
+				base, cancel := context.WithCancel(context.Background())
+				ctx := &cancellingImageContext{Context: base, cancel: cancel, trigger: trigger}
+				result, err := Transform(ctx, input, tc.width, tc.height, 16*1024*1024)
+				cancel()
+				if ctx.checks < trigger || !errors.Is(err, context.Canceled) || result.Pixels != nil {
+					t.Fatal("mid-transform cancellation exposed pixels", trigger, ctx.checks, err)
+				}
+			}
+		})
 	}
 }
 func TestCoefficientBudgetCannotOverflow(t *testing.T) {

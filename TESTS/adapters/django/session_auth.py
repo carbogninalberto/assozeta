@@ -56,8 +56,13 @@ def run(work,log,tool_env,address):
         add('inactive standard backend',data(3),queries=1)
         add('deleted standard backend',data(4),actor=4,queries=1)
         for backend in ('google.GoogleOAuth2','apple.AppleIdAuth','orcid.ORCIDOAuth2'):
-            add('inactive social '+backend,data(3,'social_core.backends.'+backend),actor=3,queries=1)
-        add('deleted social backend',data(4,'social_core.backends.google.GoogleOAuth2'),actor=4,queries=1)
+            payload=data(3,'social_core.backends.'+backend)
+            add('inactive social '+backend,payload,queries=1)
+            add('active social '+backend,data(1,'social_core.backends.'+backend),actor=1,queries=1)
+            add('deleted social '+backend,data(4,'social_core.backends.'+backend),actor=4,queries=1)
+            # Rejection precedes hash conversion/revocation; preserve the cache.
+            add('inactive social wrong hash '+backend,{**payload,'_auth_user_hash':'wrong'},queries=1)
+            add('inactive social oversized hash '+backend,{**payload,'_auth_user_hash':[10**4300]},queries=1)
         add('unknown backend',{**data(),'_auth_user_backend':'unconfigured.backend'})
         add('missing user id',{'_auth_user_backend':standard})
         add('missing backend',{'_auth_user_id':uid(1)})
@@ -86,7 +91,7 @@ def run(work,log,tool_env,address):
             add('oversized integer hash in '+name,{**data(),'_auth_user_hash':value},error=True,queries=1)
         for name,value in [('finite float',1.5),('zero integer',0)]:
             add(name+' hash',{**data(),'_auth_user_hash':value},empty=True,delete=True,queries=1)
-        assert len(cases)==43
+        assert len(cases)==54
         factory=RequestFactory()
         def observe(case):
             request=factory.get('/oauth2/login',HTTP_COOKIE='sessionid='+case['key'])
@@ -118,38 +123,42 @@ def run(work,log,tool_env,address):
         assert snapshot()==before,'Django session reads changed persisted tables'
         # Re-read current database state on the same service/session key. These
         # updates are fixture-only and restored before the full-table comparison.
-        transition_key='session-auth-transition'
-        transition_cache=cache.make_key('django.contrib.sessions.cache'+transition_key)
-        transition={**cases[5],'name':'current account transition','key':transition_key,'cache_key':transition_cache}
-        payloads[transition['name']]=payloads[cases[5]['name']]
-        raw.set(transition_cache,payloads[transition['name']],ex=300)
-        original={field:getattr(users[1],field) for field in ('email','password','is_active','deleted')}
-        try:
-            observe(transition)
-            User.original_objects.filter(pk=uid(1)).update(email='session-changed@example.test')
-            transition['actor_email']='session-changed@example.test';observe(transition)
-            User.original_objects.filter(pk=uid(1)).update(is_active=False)
-            transition.update(actor_id='',actor_email='');observe(transition)
-            User.original_objects.filter(pk=uid(1)).update(is_active=True,deleted=True)
-            transition.update(actor_id=uid(1),actor_email='session-changed@example.test');observe(transition)
-            User.original_objects.filter(pk=uid(1)).update(password='!synthetic-session-password-change')
-            transition.update(actor_id='',actor_email='',empty=True,delete=True);observe(transition)
-        finally:
-            User.original_objects.filter(pk=uid(1)).update(**original)
-        assert raw.get(transition_cache) is None,'Django password change did not revoke session'
-        assert snapshot()==before,'Django transition reset changed persisted tables'
-        raw.set(transition_cache,payloads[transition['name']],ex=300)
+        transition_keys=[]
+        for index,backend in enumerate((standard,'social_core.backends.google.GoogleOAuth2','social_core.backends.apple.AppleIdAuth','social_core.backends.orcid.ORCIDOAuth2')):
+            transition_key='session-auth-transition-'+str(index)
+            transition_cache=cache.make_key('django.contrib.sessions.cache'+transition_key)
+            transition={**cases[5],'name':'current account transition','key':transition_key,'cache_key':transition_cache}
+            payloads[transition['name']]=pickle.dumps(data(1,backend),protocol=5)
+            raw.set(transition_cache,payloads[transition['name']],ex=300)
+            original={field:getattr(users[1],field) for field in ('email','password','is_active','deleted')}
+            try:
+                observe(transition)
+                User.original_objects.filter(pk=uid(1)).update(email='session-changed@example.test')
+                transition['actor_email']='session-changed@example.test';observe(transition)
+                User.original_objects.filter(pk=uid(1)).update(is_active=False)
+                transition.update(actor_id='',actor_email='');observe(transition)
+                User.original_objects.filter(pk=uid(1)).update(is_active=True,deleted=True)
+                transition.update(actor_id=uid(1),actor_email='session-changed@example.test');observe(transition)
+                User.original_objects.filter(pk=uid(1)).update(password='!synthetic-session-password-change')
+                transition.update(actor_id='',actor_email='',empty=True,delete=True);observe(transition)
+            finally:
+                User.original_objects.filter(pk=uid(1)).update(**original)
+            assert raw.get(transition_cache) is None,'Django password change did not revoke session'
+            assert snapshot()==before,'Django transition reset changed persisted tables'
+            raw.set(transition_cache,payloads[transition['name']],ex=300)
+            transition_keys.append(transition_key)
         print(f'Django: {len(cases)} declared session actor/revocation cases passed',flush=True)
-        print('Django: 5 current-account session transitions passed',flush=True)
+        print('Django: 20 current-account session transitions across four backends passed',flush=True)
         path=work/'session-auth.json'
-        path.write_text(json.dumps(dict(secret=secret,address=address,cases=cases,transition_key=transition_key)));path.chmod(0o600)
+        path.write_text(json.dumps(dict(secret=secret,address=address,cases=cases,transition_keys=transition_keys)));path.chmod(0o600)
         subprocess.run(['go','test','-race','-tags=sessionauthintegration','./internal/service','-run','^TestDjangoSessionAuthentication$'],cwd=ROOT/'BE_GO',check=True,timeout=120,
             env={**tool_env,'ASSOZETA_SESSION_AUTH_FIXTURE':str(path),'ASSOZETA_ACCOUNT_TEST_DSN':f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
         for case in cases:
             expected=None if case['delete'] else payloads[case['name']]
             assert raw.get(case['cache_key'])==expected,(case['name'],'Go revocation/readback differs')
             raw.delete(case['cache_key'])
-        assert raw.get(transition_cache) is None,'Go password revocation unreadable from Django cache'
+        for key in transition_keys:
+            assert raw.get(cache.make_key('django.contrib.sessions.cache'+key)) is None,'Go password revocation unreadable from Django cache'
         assert snapshot()==before,'Go session reads changed persisted tables'
         path.unlink()
     raw.close()

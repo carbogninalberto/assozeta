@@ -3,8 +3,8 @@
 `SessionAuthentication.Resolve` reads the identity used by Django's
 `AuthenticationMiddleware` and `AuditlogMiddleware` before a view runs. Its result
 is a `SessionActor`, separate from Bearer authentication, effective identity and
-resource scope. It grants no API permission. The composition root does not yet
-register this service or public login.
+resource scope. It grants no API permission. The composition root uses this service for the public refresh, identifier, 2FA
+and retired-billing routes; public login remains unregistered.
 
 ## Observed contract
 
@@ -20,12 +20,16 @@ The real middleware chain and current database establish these behaviors:
   backends and missing accounts retain the anonymous session without deletion.
 - `User._default_manager` is **`original_objects`**, despite the filtered
   `User.objects` manager used by other authentication operations. Thus an active,
-  soft-deleted user can remain the session audit actor. ModelBackend rejects an
-  inactive user; the Google, Apple and ORCID session backends retain that actor.
+  soft-deleted user can remain the session audit actor. ModelBackend and the Google, Apple and ORCID backends reject inactive users.
+  The latter behavior follows social-auth-app-django 6.1.0: `get_user` now uses
+  `filter_active_users` with the default `is_active=True` filter. Assozeta does
+  not override `SOCIAL_AUTH_ACTIVE_USERS_FILTER`. The earlier 5.4.3 dependency
+  retained inactive social actors; that historical behavior is superseded.
   The separate `SessionAccounts` query deliberately has no deletion predicate.
 - A resolved user's current stored password and Django SECRET_KEY determine the
   SHA-256 session HMAC. Missing/mismatched hashes delete the session. Disabled
-  standard-backend accounts are rejected before hash validation without deletion.
+  accounts in all four backends are rejected before hash validation without
+  deletion, including wrong hashes and oversized integer hashes.
 - Each resolution rereads the current account with at most one parameterized
   SELECT. No account data, result or password hash is cached in the service.
   Session reads preserve serialized bytes and do not renew the TTL.
@@ -67,14 +71,15 @@ settings oracle is documented in [configuration](../config/README.md).
 
 ## Executed evidence
 
-`TESTS/adapters/django/session_auth.py` declares 43 expected actor/error/cache
+`TESTS/adapters/django/session_auth.py` declares 54 expected actor/error/cache
 outcomes before invoking the actual conditional-session/authentication/audit
 middleware on private PostgreSQL and Redis. The same persisted cache bytes are
 then consumed by tagged Go integration tests; Django checks Go's deletion effects.
 Managed-model snapshots must remain equal after explicitly restoring fixture changes.
 
-Five additional same-key transitions assert current email, inactive rejection,
-soft-deletion behavior and password-change revocation in both runtimes. Thirty-two
+Twenty additional same-key observations across all four backends assert current
+email, inactive rejection, reactivation with soft deletion and password-change
+revocation in both runtimes. Thirty-two
 concurrent resolutions perform exactly 32 SELECTs and cache reads, using pools of
 at most four connections. Tests also cover a 2 MiB cache value with a bounded
 response, paused Redis deadlines and pool reuse, precancellation, closed database
@@ -88,10 +93,18 @@ caught erroneous deletion on oversized integer hash conversion. A 15-second code
 completed 525,643 executions. Logs are local under
 `quality-reports/go-migration/session-auth/`.
 
+The Python 3.13.16 / Django 5.2.18 / social-auth-app-django 6.1.0 focused run
+passes all 54 cases, twenty state observations and 27 HTTP contracts per backend.
+HTTP subcases cover active, deleted and inactive Google/Apple/ORCID sessions,
+including wrong and oversized hashes; cache bytes remain unchanged on rejection.
+Nine red Go comparisons preceded the inactive-user guard correction. Evidence:
+`quality-reports/go-migration/security-baseline/session-auth-red.log` and
+`session-auth-current.log`. This does not revalidate the complete accounts suite.
+
 Run the focused component (including its supporting identity fixtures):
 
 ```sh
-quality-reports/go-migration/python/bin/python TESTS/adapters/django/accounts.py --only session-auth
+quality-reports/go-migration/python31316/bin/python TESTS/adapters/django/accounts.py --only session-auth
 ```
 
 Omit `--only` for the complete accounts adapter. Both create a disposable

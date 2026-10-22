@@ -20,11 +20,11 @@ func pcxTestFile(w, h, bits, planes, stride int, pixels []byte) []byte {
 func TestPCXHeaderAndNarrowRGB(t *testing.T) {
 	data := pcxTestFile(1, 1, 8, 3, 2, []byte{10, 1, 20, 2, 30, 3})
 	h, err := ReadPCXHeader(context.Background(), data, 128)
-	if err != nil || h.Mode != "RGB" || h.RawMode != "RGB;L" || h.Stride != 6 || h.DataOffset != 128 || h.HeaderBytes != 128 || h.Frames != 1 || h.Format != "PCX" {
+	if err != nil || h.Mode != "RGB" || h.RawMode != "RGB;L" || h.Stride != 6 || h.DataOffset != 128 || h.HeaderBytes != 68 || h.Frames != 1 || h.Format != "PCX" {
 		t.Fatal(h, err)
 	}
 	got, err := DecodePCX(context.Background(), h, data, 1024)
-	if err != nil || !bytes.Equal(got.Pixels, []byte{10, 1, 20}) {
+	if err != nil || !bytes.Equal(got.Pixels, []byte{10, 20, 30}) {
 		t.Fatal("Pillow narrow padded RGB", got, err)
 	}
 	for _, limit := range []int64{int64(len(data) + 8), int64(len(data) + 9)} {
@@ -37,7 +37,7 @@ func TestPCXHeaderAndNarrowRGB(t *testing.T) {
 			t.Fatal("exact row budget", err)
 		}
 	}
-	if got, err := ReadPCXHeader(context.Background(), data, 127); !errors.Is(err, ErrWorkingLimit) || got.Width != 0 {
+	if got, err := ReadPCXHeader(context.Background(), data, 67); !errors.Is(err, ErrWorkingLimit) || got.Width != 0 {
 		t.Fatal("header budget", err)
 	}
 }
@@ -66,12 +66,12 @@ func TestPCXRunAndDCXOffset(t *testing.T) {
 	prefix = binary.LittleEndian.AppendUint32(prefix, 0)
 	data := append(prefix, pcxTestFile(1, 1, 8, 1, 1, []byte{42})...)
 	h, err := ReadPCXHeader(context.Background(), data, 1024)
-	if err != nil || h.Format != "DCX" || h.DataOffset != 128 || h.HeaderBytes != 281 || h.Frames != 1 {
-		t.Fatal("DCX absolute reset/overlapping reads", h, err)
+	if err != nil || h.Format != "DCX" || h.DataOffset != 140 || h.HeaderBytes != 221 || h.Frames != 1 {
+		t.Fatal("DCX relative offset/overlapping reads", h, err)
 	}
 	got, err := DecodePCX(context.Background(), h, data, 1024)
-	if err != nil || !bytes.Equal(got.Pixels, []byte{0}) {
-		t.Fatal("DCX reads header byte at absolute 128", got, err)
+	if err != nil || !bytes.Equal(got.Pixels, []byte{42}) {
+		t.Fatal("DCX reads pixels relative to first frame", got, err)
 	}
 }
 
@@ -81,13 +81,13 @@ func TestPCXPaletteDirectoryBudgetsAndCancellation(t *testing.T) {
 		palette = append(palette, byte(i), byte(i), byte(i))
 	}
 	data := append(pcxTestFile(1, 1, 8, 1, 1, []byte{42}), palette...)
-	for _, limit := range []int{896, 897, 898} {
+	for _, limit := range []int{836, 837, 838} {
 		h, err := ReadPCXHeader(context.Background(), data, limit)
-		if limit < 897 {
+		if limit < 837 {
 			if !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
 				t.Fatal("palette budget", err)
 			}
-		} else if err != nil || h.HeaderBytes != 897 || h.Mode != "L" || h.DataOffset != 128 {
+		} else if err != nil || h.HeaderBytes != 837 || h.Mode != "L" || h.DataOffset != 128 {
 			t.Fatal("palette boundary", h, err)
 		}
 	}
@@ -96,10 +96,10 @@ func TestPCXPaletteDirectoryBudgetsAndCancellation(t *testing.T) {
 		prefix = binary.LittleEndian.AppendUint32(prefix, 4100)
 	}
 	dcx := append(prefix, pcxTestFile(200, 100, 8, 3, 200, nil)...)
-	if h, err := ReadPCXHeader(context.Background(), dcx, len(dcx)); err != nil || h.Frames != 1024 || h.HeaderBytes != len(dcx) || h.DataOffset != len(dcx) {
+	if h, err := ReadPCXHeader(context.Background(), dcx, len(dcx)); err != nil || h.Frames != 1024 || h.HeaderBytes != len(dcx)-60 || h.DataOffset != len(dcx) {
 		t.Fatal("full directory", h, err)
 	}
-	if h, err := ReadPCXHeader(context.Background(), dcx, len(dcx)-1); !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
+	if h, err := ReadPCXHeader(context.Background(), dcx, len(dcx)-61); !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
 		t.Fatal("directory budget", err)
 	}
 	for _, input := range [][]byte{data, dcx} {

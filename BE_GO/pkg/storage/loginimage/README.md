@@ -8,10 +8,19 @@ codecs and unresolved ambiguous headers return `ErrImageDecoderUnavailable`.
 That error is an implementation gap, not an intentional compatibility correction.
 Public login remains unwired; no unsupported image is silently accepted as parity.
 
+The current production reference is Python 3.13.16 / Pillow 13.0.0. The full
+accounts adapter and rebuilt non-root shipped-image oracle pass the implemented
+pipelines, including 84 pixel transformations, 19,535 Base64 comparisons and 94
+shared URI cases. The new AVIF registry entry remains an explicit unavailable-
+decoder gap alongside TIFF and other unresolved formats. Earlier source links
+identify the original implementation provenance; current corrections are noted
+below. Evidence: `quality-reports/go-migration/security-baseline/`.
+
 `DecodeDataURI` splits at the first comma and treats the header as opaque. It
 matches Python's non-strict Base64 handling, including ignored ASCII garbage,
-leading/excess padding and termination at complete padding. Any non-ASCII payload
-is rejected, even after terminating padding. Incomplete groups return no partial
+leading/excess padding. CPython 3.13.16 ignores padding inside the data and
+validates the final group at EOF; bytes after an apparent padded group still
+participate in decoding. Any non-ASCII payload is rejected. Incomplete groups return no partial
 bytes. Callers must distinguish malformed data (Django returns the original URI)
 from cancellation or resource-budget failures.
 
@@ -35,7 +44,10 @@ retain their channels; the encoder applies their mode-specific packing.
 The separable Lanczos implementation is derived from the pinned
 [Pillow 11.1.0 Resample.c](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/Resample.c):
 three-lobe support, float32 box endpoints, normalized 22-bit fixed-point weights,
-horizontal then vertical passes and 8-bit clipping after each pass. The original
+8-bit clipping after each pass. Pillow 13
+[selects vertical first](https://github.com/python-pillow/Pillow/blob/13.0.0/src/libImaging/Resample.c)
+when the height reduction exceeds twice the width reduction; Go now follows that
+order and budgets the corresponding intermediate raster before allocating. The original
 [MIT-CMU license](LICENSE.pillow) and copyright notices are retained, including in
 the Go image's supporting license files. These pixel stages are pure Go. The JPEG
 codec described below uses a native helper, without Python or Django.
@@ -53,16 +65,22 @@ calculation and pixel passes; no failure returns a partial buffer.
 
 `TESTS/adapters/django/login_image_pixels.py` runs through the private account
 adapter. Ten explicitly expected decisions call the actual Django helper with PNG
-inputs padded to exact file sizes. Fifty-four decoded pixel vectors cover six
-modes, identity, shrink, enlarge and single-axis transformations. Explicit white
+inputs padded to exact file sizes. Eighty-four decoded pixel vectors cover six
+modes, identity, shrink, enlarge, single-axis transformations and both sides of
+the strict pass-order boundary. Independently ordered single-axis transforms
+check the expected pass order. The shipped-image oracle includes this matrix
+and the Base64 comparisons as well as the file codecs. Explicit white
 alpha/constant/identity assertions anchor the oracle; Go output must equal every
 Pillow output byte with **no tolerance**. Another 19,535 short Base64 vectors
-compare against CPython, alongside explicit known padding/Unicode cases. Every
+compare against CPython, alongside explicit known padding/Unicode cases. The
+current padding boundary follows [CPython 3.13.16](https://github.com/python/cpython/blob/v3.13.16/Modules/binascii.c). Every
 managed database table remains unchanged.
 
 Go tests also exercise logical memory limits, overflow prevention, cancellation
 at multiple processing stages and 32 concurrent transformations sharing immutable
-source pixels. There are no image snapshots, real customer images or generated
+source pixels. Cancellation probes cover both pass orders through their final
+reachable checkpoint; a fixed late trigger from the old pass order no longer
+necessarily fires after an earlier reduction shortens the work. There are no image snapshots, real customer images or generated
 fixture payloads committed to the repository.
 
 ## JPEG encoding and process boundary
@@ -96,14 +114,14 @@ This software is based in part on the work of the Independent JPEG Group.
 `TESTS/adapters/django/login_jpeg.py` establishes 180 exact JPEG vectors for five
 modes, four deterministic patterns and nine sizes around sampling/block boundaries.
 Explicit dimensions, color modes, quality tables, sampling, density and metadata
-assertions anchor the byte oracle. All 54 preceding pixel transformations also
+assertions anchor the byte oracle. All 84 preceding pixel transformations also
 compare their encoded JPEG bytes against Pillow. Tests cover exact output limits,
 truncated/extra stdin, unsupported modes, overflow, disappearing executables,
 non-inherited environment, running/queued cancellation, timeout, process failure
 and 32 concurrent encodes. No partial failed output is returned.
 
-The local oracle passes with Pillow 11.1.0/libjpeg-turbo 3.1.0 against system
-libjpeg-turbo 3.2.0. `TESTS/adapters/go/login_jpeg_image.py` runs the same 180-vector
+The current local oracle passes with Pillow 13.0.0/libjpeg-turbo 3.2.0 against
+system libjpeg-turbo 3.2.0. `TESTS/adapters/go/login_jpeg_image.py` runs the same 180-vector
 encoder test and native failure protocol inside the actual read-only, networkless
 image; the inspected Alpine library is 3.0.4 and output also matches exactly.
 CI repeats this check on the image it builds. These are tested vectors and library
@@ -111,14 +129,14 @@ versions, not a blanket claim about every codec version or architecture.
 
 ## Lazy JPEG marker headers
 
-`ReadJPEGMarkerHeader` reads only through the first SOS segment and reports the
+`ReadJPEGMarkerHeader` reads through the first SOS segment or EOF between markers and reports the
 consumed header bytes, dimensions, mode and last comment. It accepts recognizable
 header-only files even when pixel tables or entropy data are absent. This matters
 because Django returns an original URI at the exact 200-pixel bounding size before
 loading pixels. It does not consume trailing entropy data or apply the 1 MiB file
 policy; callers must still use the complete decoded file length for `Decide`.
 
-The parser follows [Pillow 11.1's marker handlers](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/JpegImagePlugin.py),
+The parser follows [Pillow 13's marker handlers](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/JpegImagePlugin.py),
 including fill/escaped markers, ignored junk, repeated frames, component-mode
 selection, quantization payload lengths, JFIF/Adobe truncation, pending ICC checks,
 Photoshop resource truncation and non-positive segment payload lengths. Empty
@@ -132,7 +150,7 @@ presence are retained for `InspectJPEG`, which applies EXIF DPI and MPF
 first-frame admission. The marker reader alone does not perform that admission.
 Neither component is wired into the public login service.
 
-`TESTS/adapters/django/login_jpeg_header.py` specifies 1,352 explicit outcomes:
+`TESTS/adapters/django/login_jpeg_header.py` specifies 1,364 explicit outcomes:
 all 256 marker codes, empty/incomplete payloads, component/precision/quantization
 cases, metadata truncation, comments, size limits, 180 ordinary JPEG headers and
 every prefix of a selected JPEG across its lazy SOS boundary. Pillow supplies
@@ -169,26 +187,26 @@ not a replacement for Pillow's Python header parser or lazy `Image.open` behavio
 `JPEGImage.Comment` preserves the last COM marker before the first scan, including
 empty/binary comments. Later COM markers do not replace it. The caller carries
 this metadata across transformations and uses `EncodeWithComment`; ordinary
-`Encode` emits no inherited comment. The latter preserves Pillow's initial output
-buffer constraint: for narrow images, comments of 65,512 bytes fail for L/RGB and
-65,514 fail for CMYK, while the preceding byte count succeeds. Wider images enlarge
-the buffer. These save failures must remain original-URI fallbacks in the eventual
-image processor, not silently successful conversions.
+`Encode` emits no inherited comment. Pillow 13 accepts comments through the
+JPEG marker limit of 65,533 bytes, including narrow L/RGB/CMYK images. Go and the
+native helper now allow those comments while rejecting longer markers. The former
+Pillow 11 initial-buffer failure boundary is superseded; output-byte limits still
+apply before any encoded output is exposed.
 
-`TESTS/adapters/django/login_jpeg_decode.py` establishes 312 exact decoded-pixel and
-comment cases, including sampling/quality, progressive/optimized coding, RGB
-components, CMYK/YCCK, restart markers, metadata, tolerated damaged streams,
-concatenated files and comment boundaries. Of these, 310 also produce identical
-transformed/re-encoded JPEG bytes and two preserve Pillow's save failure. Another
-1,556 explicitly invalid streams include every incomplete prefix of selected
-baseline/progressive files. The full account adapter calls Django's actual
-`compress_base64` for all 1,868 output/fallback cases. Standalone execution tests
-the codec stages without claiming that Django application check.
+`TESTS/adapters/django/login_jpeg_decode.py` establishes 314 exact decoded-pixel,
+comment and re-encoded JPEG cases, including maximum-size markers. Another 1,556
+explicitly invalid streams include incomplete baseline/progressive prefixes.
+The current-reference focused oracle and actual Django helper pass all 1,870
+cases. Tests cover sampling/quality, progressive/optimized coding, RGB components,
+CMYK/YCCK, restart markers, metadata, tolerated damage and concatenated files.
+`login_jpeg_comment_sanitizer.py` adds 330 exact native-process checks with both
+ordinary and ASan/UBSan builds: five modes, forty valid comments, output-budget
+boundaries, truncated comment/raster input and oversized markers. CI requires it.
 
 Tests also cover native input framing, exact raster budgets, malformed output
 frames, comment lengths, process failures, environment isolation, running/queued
 cancellation, timeout and 32 concurrent decodes. The image adapter runs the same
-1,868 decode cases and both native protocol suites alongside the 180 encoder
+1,870 decode cases and both native protocol suites alongside the 180 encoder
 vectors using the shipped non-root codec. The native decoder is additionally
 checked with AddressSanitizer/UndefinedBehaviorSanitizer using exact exit codes
 and complete frame comparisons, including invalid input; generic error mapping
@@ -199,10 +217,12 @@ cannot hide sanitizer failures.
 `InspectJPEG` interprets EXIF DPI only when a JFIF DPI has not already been set.
 It preserves Pillow's malformed-directory fallback and uncaught scalar-index
 failure. MPF supports the observed TIFF byte orders/types, partial directories,
-first-value count semantics and first-frame MPO adoption. Unreadable MPF normally
-retains the base JPEG; truncated MP records reject it. Unsupported MP formats
+first-value count semantics and first-frame MPO adoption. The first successfully
+read occurrence of each tag wins. Aggregate external tag bytes are limited to
+the metadata stream size; oversized tags are skipped while inline tags continue. Unreadable MPF normally
+retains the base JPEG, including truncated MP records in Pillow 13. Unsupported MP formats
 fall back before later records are read. Ultra HDR suppresses MPO adoption but
-does not bypass malformed-record validation. Subsequent MPO frame seeking is not
+malformed records retain JPEG regardless of that flag. Subsequent MPO frame seeking is not
 needed by `compress_base64` and is not implemented as a general image API.
 
 `NewJPEGFileProcessor` requires positive header, raster, encoded-file/output and
@@ -217,12 +237,12 @@ The authoritative inherited comment comes from the lazy header, including a
 comment before an EOI/SOI tables-only boundary. No orientation/ICC conversion is
 introduced.
 
-`login_jpeg_metadata.py` establishes 226 explicit EXIF/MPF admission outcomes and
+`login_jpeg_metadata.py` establishes 236 explicit EXIF/MPF admission outcomes and
 exact first-frame JPEGs. Tests cover cancellation inside directories/MP records
-and 32 concurrent MPO inspections. `login_jpeg_file.py` adds 73 explicit policy
+and 32 concurrent MPO inspections. `login_jpeg_file.py` adds 97 explicit policy
 cases: three channel modes, exact 1 MiB boundaries, shrink/enlarge, floating-point
 truncation, zero-sized targets, header-only passthrough/failure and tables-only
-comments. The complete file processor also reruns the 226 metadata and 1,868
+comments. The complete file processor also reruns the 236 metadata and 1,870
 decoder cases, returning `ErrNotJPEG` for non-JPEG signatures. Actual Django helper
 calls verify the original URI versus exact encoded output. Tests exercise input,
 header, raster and transform budgets, 32 concurrent resizes, and cancellation of
@@ -304,14 +324,18 @@ Latin-1/UTF-8 interpretation, the 1 MiB inflated-chunk ceiling and 64 MiB cumula
 text-character ceiling. Repeated keys still count toward the cumulative ceiling.
 Only values that influence this image path are retained. Comments become UTF-8;
 an empty text comment is absent in the resulting JPEG, unlike an empty JPEG COM.
-Text keys that affect interlacing, rectangles, disposal or default-image selection
+Text keys that affect interlacing, rectangles or default-image selection
 retain their observable behavior. Inflation limits and consumed input bound
 logical payloads; allocator/zlib overhead and total RSS remain separate.
 
-`login_png_header.py` specifies 394 explicit Pillow outcomes, including malformed
+Pillow 13 requires at least 32 bytes in cHRM and ignores bytes after its first
+eight integers. Frame-zero disposal no longer crops invalid text extents during
+header admission; pixel loading still rejects those extents.
+
+`login_png_header.py` specifies 398 explicit Pillow outcomes, including malformed
 chunks and CRCs, all supported modes, pixel-limit boundaries, truncated metadata,
 compressed-text limits, duplicate headers, APNG declarations/sequences/rectangles,
-metadata collisions and early data chunks. The actual Django helper verifies all 235
+metadata collisions and early data chunks. The actual Django helper verifies all 237
 valid 200×100 fixture headers return the original URI with **zero pixel loads**,
 observed through a delegating loader. Go checks exact header budgets, immutable
 metadata, cancellation during text inflation/conversion, Unicode character
@@ -425,15 +449,15 @@ existing chunk/cumulative limits. RGBA flattening creates a fresh white RGB imag
 in Django and drops its comment; Go preserves that distinction.
 
 First-frame tiles are placed on a zero canvas. Blend/disposal do not combine them
-with a previous frame because none exists. Pillow treats x0=x1=0 as the entire
-image rectangle, while other zero-area extents fail. Its Adam7 decoder also omits
+with a previous frame because none exists. Pillow 13 rejects all zero-area
+tile extents when loading pixels; lazy passthrough remains possible. Its Adam7 decoder also omits
 xoff/yoff while placing pixels: an interlaced partial first frame appears at the
 origin. Go retains that observed behavior, tested across all 15 mode/depth pairs
 with and without acTL, and preserves the original interlace decision if trailing
 text changes the metadata flag. These semantics concern the first frame selected
 by `compress_base64`, not arbitrary animation playback.
 
-`login_png_file.py` specifies 1,466 exact whole-file JPEG/original decisions,
+`login_png_file.py` specifies 1,472 exact whole-file JPEG/original decisions,
 including the prior pixel/chunk and lazy fixtures, threshold cases, malformed
 metadata, cumulative header-plus-tail text limits, comment-save limits, first and
 later fdAT sequences, canvas placement and APNG stop rules. Declared samples and
@@ -453,7 +477,7 @@ activation is inferred from the PNG pipeline evidence.
 
 `ReadBMPHeader`, `DecodeBMP` and `BMPFileProcessor` cover standalone Windows BMP
 and DIB headers (12, 40, 52, 56, 64, 108 and 124 bytes), raw 1/4/8/16/24/32-bit
-samples and the exact bitfield layouts accepted by Pillow 11.1. This follows
+samples and the exact bitfield layouts accepted by Pillow 13. This follows
 `BmpImagePlugin.py` and its raw unpacking behavior; CUR/ICO containers are separate
 formats. Palette indices retain mode P, which Django cannot save as JPEG. Gray
 palettes instead reduce to mode 1 or L, even when their declared bit depth would
@@ -464,7 +488,9 @@ while lazy admission can still succeed. The parser retains that distinction.
 Raw rows preserve bottom-up/top-down order, optional final padding, 5/6-bit channel
 scaling and ignored alpha in ordinary 32-bit BMP. RLE4/RLE8 preserve clipped runs,
 EOL padding, absolute runs spanning rows, absolute file-position alignment, odd
-RLE4 absolute counts and Pillow's double-read delta quirk. The decoder writes into
+RLE4 absolute counts (including their final high nibble) and two-byte deltas.
+Nonzero RLE samples in mode 1 become white; single-entry gray palettes reduce to
+mode 1. OS/2 palette-offset correction uses three bytes per entry. The decoder writes into
 the final bounded raster, without growing an intermediate RLE byte array or
 allocating skipped/overshoot pixels. BMP DPI is not inherited by default JPEG
 encoding. RGBA bitfields flatten against white through the shared transform.
@@ -477,7 +503,7 @@ Positive header/decode/transform limits are mandatory. Header budgets count byte
 actually consumed; pixel budgets count input plus normalized output. These are
 logical stage limits, not an aggregate process RSS cap.
 
-`TESTS/adapters/django/login_bmp.py` supplies 512 declared header/pixel/file cases.
+`TESTS/adapters/django/login_bmp.py` supplies 534 declared header/pixel/file cases.
 Samples determine expected pixels and JPEGs; Pillow's file reader and the actual
 Django helper independently verify those outcomes. The shipped non-root,
 read-only/networkless image runs the same oracle. Tests include exact budgets,
@@ -529,10 +555,10 @@ Other formats, shared format dispatch/admission and public login wiring remain o
 
 ## PCX and the first DCX frame
 
-`ReadPCXHeader`, `DecodePCX` and `PCXFileProcessor` follow Pillow 11.1's
-[PCX plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/PcxImagePlugin.py),
-[DCX plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/DcxImagePlugin.py),
-[RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/PcxDecode.c)
+`ReadPCXHeader`, `DecodePCX` and `PCXFileProcessor` follow Pillow 13's
+[PCX plugin](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/PcxImagePlugin.py),
+[DCX plugin](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/DcxImagePlugin.py),
+[RLE decoder](https://github.com/python-pillow/Pillow/blob/13.0.0/src/libImaging/PcxDecode.c)
 and planar unpackers. The implementation is pure Go and uses the existing JPEG
 encoder. It covers bilevel, two/four bitplanes, 8-bit grayscale/palette and planar
 RGB. Palette mode P retains the original-file JPEG fallback.
@@ -542,15 +568,13 @@ its stride correction, and ignores the encoding flag. The 8-bit palette lookup
 reads up to 769 bytes from the whole file's end; missing/nonlinear palettes can
 change L/P mode. Negative end-relative positions clamp to zero as in Django's
 BytesIO input. DCX reads at most 1,024 directory entries and opens only its first
-frame; unused later offsets may be invalid. The inherited 8-bit PCX path then
-seeks to absolute offset 128, even inside DCX. Other modes retain the first
-frame's actual post-header offset. No arbitrary animation playback is claimed.
+frame; unused later offsets may be invalid. All modes read 68 header bytes and seek to 128 bytes after the first frame
+offset, including the grayscale/palette path after its tail-palette lookup. No arbitrary animation playback is claimed.
 
 RLE consumes zero-length runs, rejects runs that cross a row and requires the
-complete last row including padding. Planar samples retain the native decoder's
-byte-count/pixel-width compaction heuristic: small padded RGB images and indexed
-bitplanes can differ from an idealized plane-padding removal. Explicit fixtures
-anchor those cases. DPI metadata does not change the default JPEG output.
+complete last row including padding. Each RGB channel or indexed bitplane uses its own stride. Padding is discarded
+per plane, matching Pillow 13's corrected unpacking. The previous small-image
+compaction and absolute DCX offset quirks are superseded. DPI metadata does not change the default JPEG output.
 
 The logical header budget counts every consumed read, including overlapping
 header/palette reads and the DCX directory. Decoding reserves input, normalized
@@ -569,10 +593,16 @@ mid-header/RLE cancellation, 32 concurrent pipelines and encoder-stage queueing,
 cancellation, child reaping and admission reuse. Other image formats and public
 login composition remain open; this component does not authorize activation.
 
+Current-reference validation passes all 831 cases with Python 3.13.16/Pillow 13,
+the actual Django helper and the non-root read-only/networkless codec image.
+Red header, plane-padding and DCX comparisons preceded the correction. Evidence:
+`quality-reports/go-migration/security-baseline/pcx-{red,current}.log` and
+`pcx-qoi-image.log`. Full image/application reconciliation remains open.
+
 ## TGA raw and RLE images
 
-`ReadTGAHeader`, `DecodeTGA` and `TGAFileProcessor` follow Pillow 11.1's
-[TGA plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/TgaImagePlugin.py),
+`ReadTGAHeader`, `DecodeTGA` and `TGAFileProcessor` follow Pillow 13's
+[TGA plugin](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/TgaImagePlugin.py),
 [RLE decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/TgaRleDecode.c)
 and [unpackers](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/Unpack.c).
 The pure-Go path supports raw bilevel, gray, gray/alpha, indexed, 16-bit color,
@@ -583,8 +613,8 @@ alpha/interleave bits and origin coordinates do not override reference decoding.
 Header admission retains short ID/palette reads and unsupported type/depth
 combinations with no pixel tile, including their lazy 200x100 passthrough.
 Palette application is a separate load-stage concern: L/LA acquire P/PA core
-modes, while incompatible image modes, oversized palettes and 32-bit palette
-raw modes fail. P/PA/LA cannot be saved as JPEG and retain the original file.
+modes; 32-bit palettes are accepted as RGBA palettes. Incompatible image modes
+and oversized palettes still fail. P/PA/LA cannot be saved as JPEG and retain the original file.
 The header's `InvalidPalette` records an eventual load failure, not rejection
 by the lazy reader. Empty palettes remain meaningful.
 
@@ -592,7 +622,10 @@ Repeated RLE packets cannot cross a row. Literal packets may cross rows or the
 end of the image, but their complete declared payload must be present before
 any samples are accepted. Finite RLE streams with depth one cannot complete
 Pillow's zero-byte sample decoder and fail. Raw rows use packed bilevel bytes
-without external alignment padding. No extension/footer metadata is consumed.
+without external alignment padding. For RGBA, a valid TGA v2 footer with a
+nonzero extension offset and attribute type zero makes all alpha samples opaque.
+Missing/other attributes retain the decoded alpha. This reads only one in-place
+attribute byte and does not allocate an extension buffer.
 
 Header budgets count consumed input; implicit zero palette prefixes are not
 allocated. Pixel budgets count input plus normalized output; RLE writes directly
@@ -601,7 +634,7 @@ one admission/deadline through JPEG encoding. Malformed/save failures retain the
 original, while cancellation, budget errors and unavailable encoders propagate
 without a successful result. These logical budgets do not bound aggregate RSS.
 
-The adapter supplies 1,112 declared header/pixel/file cases, checked with Pillow,
+The adapter supplies 1,150 declared header/pixel/file cases, checked with Pillow,
 the actual Django helper and the shipped non-root/read-only/networkless image.
 Tests also cover exact stage budgets, overflow, input ownership, cancellation
 during header/raw/RLE work, 32 concurrent pipelines, and encoder-stage queueing,
@@ -611,17 +644,17 @@ shared admission, remaining formats and public login composition remain open.
 
 ## QOI admission and pixel commands
 
-`ReadQOIHeader`, `DecodeQOI` and `QOIFileProcessor` follow Pillow 11.1's
-[QOI plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/QoiImagePlugin.py).
+`ReadQOIHeader`, `DecodeQOI` and `QOIFileProcessor` follow Pillow 13's
+[QOI plugin](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/QoiImagePlugin.py).
 Only a channel value of 3 selects RGB; every other byte selects RGBA. The reader
 consumes 13 header bytes and seeks over colorspace to offset 14 without requiring
 that byte to exist. The colorspace value has no effect on output. Pixel limits
 and lazy 200x100 passthrough remain part of admission.
 
 The Go decoder implements RGB/RGBA literals, cache indices, difference/luma
-commands and runs. It seeds cache slot 53 with opaque black, matching the
-reference's initial previous-pixel insertion; missing entries are transparent
-black. Alpha is retained in decoder state and participates in hashing even for
+commands and runs. The initial previous pixel is opaque black, while all cache entries begin
+transparent black. Initial runs do not populate the cache. An empty-index read
+replaces previous alpha, affecting following RGB/run commands. Alpha is retained in decoder state and participates in hashing even for
 RGB output. RGB literals preserve previous alpha and deltas wrap modulo 256.
 Runs can cross rows or exceed the final pixel count; excess pixels are ignored.
 The reference does not require or validate a footer. Truncated command operands
@@ -635,7 +668,7 @@ working-limit failures and unavailable encoders propagate without a successful
 result; malformed files and ordinary image-save failures keep the original.
 Logical budgets are not an aggregate RSS limit.
 
-`TESTS/adapters/django/login_qoi.py` supplies 2,758 declared header/pixel/file
+`TESTS/adapters/django/login_qoi.py` supplies 2,762 declared header/pixel/file
 outcomes. Pillow, the actual Django helper and the shipped non-root,
 read-only/networkless image run them. Coverage includes every channel/colorspace
 byte, every initial cache index and run count, wrapping deltas, luma boundaries,
@@ -647,18 +680,26 @@ encoding to exercise that process lifecycle. Production native codec sources are
 unchanged. Shared format dispatch/admission, other formats and public login
 composition remain open; this evidence does not authorize backend activation.
 
+Current-reference validation passes all 2,762 cases with Python 3.13.16/Pillow 13,
+the actual Django helper and the non-root read-only/networkless codec image.
+Evidence: `quality-reports/go-migration/security-baseline/qoi-{red,current}.log`
+and `pcx-qoi-image.log`; the old seeded-cache behavior is superseded.
+
 ## XBM header and text scanning
 
-`ReadXBMHeader`, `DecodeXBM` and `XBMFileProcessor` follow Pillow 11.1's
-[XBM plugin](https://github.com/python-pillow/Pillow/blob/11.1.0/src/PIL/XbmImagePlugin.py)
-and [text decoder](https://github.com/python-pillow/Pillow/blob/11.1.0/src/libImaging/XbmDecode.c).
-Recognition examines the initial 16 bytes after ASCII whitespace stripping; ten
-leading whitespace bytes already prevent a complete `#define` match. The reader
-then consumes at most 512 bytes and selects the last `_bits[]` marker admitted
-by its greedy width/height pattern. Macro names may differ and contain arbitrary
-bytes other than line feed. Carriage-return greediness, numeric leading zeros,
-strict declaration separators and ignored hotspot declarations are preserved.
-The header budget counts all consumed bytes, including pixel text in the window.
+`ReadXBMHeader`, `DecodeXBM` and `XBMFileProcessor` follow Pillow 13's
+[XBM plugin](https://github.com/python-pillow/Pillow/blob/13.0.0/src/PIL/XbmImagePlugin.py)
+and [text decoder](https://github.com/python-pillow/Pillow/blob/13.0.0/src/libImaging/XbmDecode.c).
+Recognition accepts exact `#define`, newline-plus-`#define`, or block-comment
+prefixes. The reader processes at most 75 bytes per line read, ignores supported
+block comments, and stops at the first line ending in `_bits[] = {`. Width and
+height may be reordered or overwritten; unknown and hotspot defines must still
+contain valid Python-style signed/underscored ASCII integers. Pixel text on the
+same declaration line is rejected. The earlier 512-byte greedy parser is superseded.
+
+The header budget counts consumed lines, including long comments, and ends at the
+selected pixel offset. A checked context accompanies each line read. Numeric
+operands are bounded by the 75-byte line size; width/height must pass pixel limits.
 
 Pixel loading is a lowercase-`x` scanner rather than a C parser. Every `x` starts
 a pair of operand bytes; hexadecimal letters are case insensitive and all other
@@ -675,14 +716,20 @@ admission limit cover parsing through encoding. Malformed/save failures keep the
 original; cancellation, resource limits and unavailable encoders return errors
 without a successful result. These budgets do not cap aggregate RSS.
 
-The adapter defines 1,485 header/pixel/file cases checked against Pillow, the
+The adapter defines 1,509 header/pixel/file cases checked against Pillow, the
 actual Django helper and the shipped non-root/read-only/networkless image.
 Coverage includes all packed byte values, every possible nibble/macro-name byte,
-header/prefix boundaries, greedy markers, row padding, truncated/read-boundary
+75-byte line boundaries, comments, first declarations, signed/underscored integers, row padding, truncated/read-boundary
 operands and size policy. Exact budgets, overflow, ownership, mid-header/pixel/
 long-scan cancellation, 32 concurrent mixed-image pipelines and encoder-stage
 admission/cancellation/reaping/reuse pass. Production native sources are unchanged.
 Other formats, shared format dispatch/admission and public login remain open.
+
+Current-reference validation passes all 1,509 cases locally, through the actual
+Django helper and in the non-root read-only/networkless codec image. Exact logical
+budgets and cancellation also cover an 80 KiB comment prefix. Evidence:
+`quality-reports/go-migration/security-baseline/xbm-{red,current}.log` and
+`xbm-image.log`. Full image/application reconciliation remains open.
 
 ## SGI planar and RLE images
 
@@ -890,7 +937,8 @@ prefix. Lazy passthrough and malformed-file fallback come from the existing file
 pipelines. A formatted JPEG exceeding the URI budget fails before output allocation;
 encoding checks cancellation between bounded chunks.
 
-Registry order follows Pillow 11.1's default `preinit()` followed by `init()`.
+Registry order follows Pillow 13's default `preinit()` followed by `init()`,
+including the AVIF candidate immediately after PNG.
 GBR identification failures now fall through to later QOI/SUN readers; GBR hard
 pixel-limit failures terminate opening and preserve the original. Empty CUR
 containers do not shadow valid TGA files. Known-format overlap is checked before
@@ -904,11 +952,11 @@ ambiguous data that Django preserves may currently fail in Go. TIFF and other mi
 TIFF fixture gap is **not an exhaustive list**. Do not wire this into a deployment
 and claim complete image or public-login compatibility.
 
-`TESTS/adapters/django/login_images.py` asserts 88 whole-URI expectations against
+`TESTS/adapters/django/login_images.py` asserts 94 whole-URI expectations against
 the actual Django helper and the composed Go processor. Eighteen pipelines,
 alpha handling, opaque prefixes, the first comma, permissive Base64, malformed
-files, the 1 MiB size boundary and registry collisions are exercised. A separate
-missing-codec case deliberately reports `complete_image_parity=false`; it is
+files, the 1 MiB size boundary and registry collisions are exercised. Separate TIFF and AVIF
+missing-codec cases deliberately report `complete_image_parity=false`; it is
 never counted as passing parity. The shipped-image test includes both sets.
 
 Race/integration tests mix formats through one processor, enforce a two-child
@@ -1027,7 +1075,7 @@ gaps; that census remains non-exhaustive. Public login and remaining formats sta
 
 ## CUR directory and lazy DIB pipeline
 
-`CURFileProcessor` follows Pillow 11.1.0's `CurImagePlugin` and reuses the existing
+`CURFileProcessor` follows Pillow 13's `CurImagePlugin` and reuses the existing
 DIB parser and raw/RLE sample decoder. Selection replaces the current entry only
 when **both** directory width and height are strictly larger. Directory zeros are
 literal zero values. Hotspots, color-count and declared byte size do not control
@@ -1039,8 +1087,11 @@ CUR halves the DIB height before applying the image pixel ceiling. Odd heights
 truncate; zero final dimensions reject opening. The parser still validates bit
 fields, compression and palette before this final dimension check. For raw 32-bit
 DIB data, only a declared offset of 22 selects BGRA/RGBA; other offsets use BGRX/RGB.
-Unlike ICO, CUR does not reconstruct an AND mask or accept embedded PNG. DIB alpha
-follows row orientation. Pixel loading remains lazy when the login policy returns
+CUR does not accept embedded PNG. For grayscale DIB modes 1/L, `DecodeCUR`
+decodes both halves and applies the top AND mask to the bottom XOR intensity,
+returning LA. Odd masked heights or missing plane bytes fail pixel loading.
+The login JPEG path preserves these LA originals. Other modes keep the existing
+half-height decoding; their trailing mask is ignored. DIB alpha follows row orientation. Pixel loading remains lazy when the login policy returns
 the original file; corrupt pixel payloads can therefore remain unchanged.
 
 `ErrCURRejected` identifies recoverable opening failures such as incomplete
@@ -1053,41 +1104,42 @@ as permission to try TGA. Other formats' unresolved registry exceptions remain o
 One file admission slot and deadline cover directory inspection, DIB decoding,
 transformation and JPEG output. Header budgets charge bytes actually consumed,
 including repeated reads of overlapping data. Decode budgets charge the whole
-input and the normalized raster. Existing transform and JPEG budgets apply before
+input and the normalized raster; masked CUR also charges both source planes. Existing transform and JPEG budgets apply before
 allocation/output. Directory/palette/pixel loops observe cancellation. These are
 logical buffer budgets, not total-process RSS or production sizing guarantees.
 
-`TESTS/adapters/django/login_cur.py` checks 495 independently declared cases against
+`TESTS/adapters/django/login_cur.py` checks 533 independently declared cases against
 Pillow and the actual Django helper: selection, offsets, all raw alpha values,
-core/v1-v5 DIB headers, palettes, RLE, bitfields, orientation, ignored masks, lazy
+core/v1-v5 DIB headers, palettes, RLE, bitfields, orientation, grayscale masks/alpha, ignored non-gray masks, lazy
 passthrough, file-size boundaries and exact opening-failure categories. Separate
 header-only boundary checks validate halving before the pixel ceiling without
 allocating huge rasters. Go checks exact resource boundaries, output ownership,
 pre-cancellation and directory cancellation, 32 concurrent calls, queue deadlines,
-JPEG child reaping and pipeline reuse. The existing 512 BMP and 678 ICO oracle
-cases pass with the shared parser change. The shared dispatcher has 80 URI parity
+JPEG child reaping and pipeline reuse. The existing 534 BMP and 678 ICO oracle
+cases pass with the shared parser change. The shared dispatcher has 88 URI parity
 cases and two separately reported, non-exhaustive gaps. The PostgreSQL fixture
-contains 46 responses, including CUR avatar/logo conversion. Public login and
+contains 48 responses, including CUR avatar/logo conversion. Public login and
 complete image/backend parity remain unverified.
 
 
 ## PCD PhotoYCC pipeline
 
-`PCDFileProcessor` follows Pillow 11.1.0's `PcdImagePlugin` and its PhotoYCC
-unpacker. The header seeks to byte 2048, reads up to 2048 bytes, checks `PCD_`,
-and masks the orientation byte at offset 3586 with 3. The fixed raster is
-768×512 RGB. Pixel blocks start at byte 196608: two 768-byte luma rows followed
+`PCDFileProcessor` follows Pillow 13.0.0's `PcdImagePlugin` and its PhotoYCC
+unpacker. The header seeks to byte 2048, reads up to 1539 bytes, checks `PCD_`,
+and masks the orientation byte at offset 3586 with 3. The source raster is
+768×512 RGB, with 512×768 output for orientations 1 and 3. Pixel blocks start at byte 196608: two 768-byte luma rows followed
 by 384-byte Cb and Cr rows. Each chroma sample applies to a two-by-two cell.
 Five attributed Pillow lookup tables preserve signed rounding and clipped RGB;
 no new native decoder dependency is introduced.
 
-Orientation 2 leaves pixels unchanged. Orientations 1 and 3 trigger a broken
-rotation hook in the pinned Pillow release (`ImagingCore.rotate` is missing).
-The actual Django helper catches that failure and retains the original URI;
-Go preserves that observed result. This deliberately does not correct rotation.
-Files at most 1 MiB convert at 768×512; larger files resize to 200×133. Truncated
-pixels retain the original. Header rejection can fall through to QOI, while an
-accepted PCD with failed pixels must retain the original instead of selecting QOI.
+Orientation 2 leaves pixels unchanged. Orientations 1 and 3 rotate 90 and 270
+degrees respectively, matching Pillow 13's corrected rotation hook. The earlier
+Pillow 11 behavior that retained original files on rotation failure is superseded.
+Go maps each decoded pixel directly into the rotated output without a second RGB
+allocation. Files at most 1 MiB convert at their oriented dimensions; larger files
+resize to 200×133 or 133×200. Truncated pixels retain the original. Header rejection
+can fall through to QOI, while an accepted PCD with failed pixels must retain the
+original instead of selecting QOI.
 
 Header budgets charge bytes read after the seek. Decode budgets cover input plus
 1,179,648 RGB bytes before allocation. Input, transform, encoder and outer URI
@@ -1096,17 +1148,23 @@ pipeline checks cancellation during row-pair decoding and shares one admission
 slot and deadline through JPEG encoding. Cancellation/resource failures expose no
 result; fallback only applies to the declared image/encoding failures.
 
-`TESTS/adapters/django/login_pcd.py` declares 59 cases: seven fixed RGB anchors,
+`TESTS/adapters/django/login_pcd.py` declares 63 cases: seven fixed RGB anchors,
 independent arithmetic luma/chroma sweeps, chroma-cell layout, all masked
 orientations, truncated headers/pixels, bad signatures and exact 1 MiB boundaries.
 Pillow and the unmodified Django helper check those expectations. Go tests cover
 exact budgets, ownership, cancellation, 32 mixed calls and native encoder reuse.
 A fixed-size fault child stops before reading stdin, verifying cancellation and
 reaping while the 1.18 MiB raster writer is blocked. The shared dispatcher has
-84 URI parity cases and one separately reported non-exhaustive TIFF gap. The
-PostgreSQL response fixture adds PCD avatar conversion and failed-rotation logo
-fallback. Public login and complete image coverage remain unfinished.
+94 URI expectations and separately reported, non-exhaustive TIFF and AVIF gaps. The
+PostgreSQL response fixture includes PCD avatar and rotated-logo conversion.
+The current-reference shared dispatcher and 48 response cases pass. Public login
+and complete image coverage remain unfinished.
 
+
+The production-Python 3.13.16 / Pillow 13.0.0 focused oracle passes all 63 cases
+including independently indexed quarter-turn gradient pixels and both resized
+orientations. Red integration and exact-header-budget tests preceded the fix.
+Evidence: `quality-reports/go-migration/security-baseline/pcd-{red,current}.log`.
 
 ## PIXAR raw RGB pipeline
 
@@ -1132,7 +1190,7 @@ Cases include raw refill boundaries, ignored padding/trailing bytes, short reads
 mode/dimension rejection, JPEG dimension limits, lazy missing pixels and exact
 1 MiB thresholds. Unit/integration tests check exact budgets, ownership, forged
 headers, cancellation, native queue/deadline/reaping/reuse and 32 mixed calls.
-Shared dispatch has 88 URI comparisons and one demonstrated non-exhaustive TIFF
-gap. PCD header rejection can expose PIXAR; an accepted PCD with bad pixels must
+Shared dispatch has 94 URI comparisons and separately reported, non-exhaustive
+TIFF and AVIF gaps. PCD header rejection can expose PIXAR; an accepted PCD with bad pixels must
 retain the original instead. The PostgreSQL response fixture adds PIXAR avatar
 conversion and lazy logo passthrough. Full image and public-login parity remain open.

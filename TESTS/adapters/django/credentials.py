@@ -102,7 +102,7 @@ def main():
             django_refreshed = JWTTokenService.refresh_access_token(refresh)
             assert django_refreshed is not None
             django_access = dict(AccessToken(django_refreshed['access_token']).payload)
-            assert django_access['iat'] == NOW - 600 and django_access['exp'] == NOW + 14400
+            assert django_access['iat'] == NOW and django_access['exp'] == NOW + 14400
             assert dict(RefreshToken(django_refreshed['refresh_token']).payload) == dict(original.payload)
 
             passwords = []

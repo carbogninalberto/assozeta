@@ -116,17 +116,37 @@ def vectors():
             add(f'truncated repeat {n}/{flags}',tga(n,2,11,flags=flags)+bytes([127+n,42,127+n]),**kwargs)
     for payload,pixels in [(b'\x83*',None),(b'\3\1\2\3\4',bytes([1,2,3,4])),(b'\5\1\2\3\4',None),(b'\5\1\2\3\4\5\6',bytes([1,2,3,4])),(b'\x81*\x81+\xff',b'**++')]:
         add(f'RLE boundary {payload!r}',tga(2,2,11)+payload,w=2,kind=11,pixels=pixels)
+    # TGA v2 extension attribute zero disables alpha; other values retain it.
+    for depth,source,sample,raw in [(16,b'\0\xfc',b'\xff\0\0\0','BGRA;15Z'),(32,b'\1\2\3\x7f',b'\3\2\1\x7f','BGRA')]:
+        for compressed in (False,True):
+            kind=10 if compressed else 2
+            for attribute in (None,0,1,2,3,4,255):
+                payload=b'\x82'+source+b'\x82'+source if compressed else source*6
+                data=tga(3,2,kind,depth)+payload
+                offset=len(data)
+                extension=bytes(494)+(b'' if attribute is None else bytes([attribute]))
+                data+=extension+struct.pack('<II',offset,0)+b'TRUEVISION-XFILE.\0'
+                pixels=(sample[:3]+b'\xff' if attribute==0 else sample)*6
+                # Missing attributes points into the footer: offset is nonzero,
+                # so its first byte is not zero and alpha is retained.
+                add(f'v2 alpha {depth}/{compressed}/{attribute}',data,kind=kind,depth=depth,mode='RGBA',raw=raw,pixels=pixels)
+            data=tga(3,2,kind,depth)+payload
+            for offset in (0,2**32-1):
+                add(f'v2 alpha missing extension {depth}/{compressed}/{offset}',data+struct.pack('<II',offset,0)+b'TRUEVISION-XFILE.\0',kind=kind,depth=depth,mode='RGBA',raw=raw,pixels=sample*6)
+    for depth,source,raw in [(16,b'\0\xfc','BGRA;15Z'),(32,b'\1\2\3\x7f','BGRA')]:
+        data=tga(1,1,2,depth)+source
+        add(f'RGBA file shorter than footer {depth}',data,w=1,h=1,kind=2,depth=depth,mode='RGBA',raw=raw,pixels=b'\xff\0\0\0' if depth==16 else b'\3\2\1\x7f')
     for mapdepth in (16,24,32):
         unit=mapdepth//8
         for kind,depth,mode,raw,payload in [(1,8,'P','P',bytes(range(6))),(3,8,'L','L',bytes(range(6))),(3,16,'LA','LA',bytes(range(12))),(3,1,'1','1',b'\xa0\x40'),(2,24,'RGB','BGR',bytes(range(18))),(2,32,'RGBA','BGRA',bytes(range(24)))]:
             for start,count in ((0,0),(0,1),(1,2),(255,1),(256,0),(256,1),(65535,0)):
-                bad=start+count>256 or mapdepth==32
+                bad=start+count>256
                 data=tga(3,2,kind,depth,palette=bytes(unit*count),start=start,mapdepth=mapdepth)+payload
                 pixels=payload if mode in ('P','L','LA') and not bad else None
                 add(f'palette {mapdepth}/{kind}/{depth} start={start} count={count}',data,kind=kind,depth=depth,mode=mode,raw=raw,offset=18+unit*count,palette=True,badpalette=bad,pixels=pixels,pixelmode='PA' if mode=='LA' else 'P' if mode=='L' else mode)
         for length in (0,1,unit-1,unit,unit+1):
             data=tga(3,2,1,8,palette=bytes(length),count=2,mapdepth=mapdepth)
-            add(f'short palette {mapdepth}/{length}',data,kind=1,mode='P',raw='P',offset=18+length,palette=True,badpalette=mapdepth==32)
+            add(f'short palette {mapdepth}/{length}',data,kind=1,mode='P',raw='P',offset=18+length,palette=True,badpalette=False)
     for kind,depth in [(k,d) for k in (1,2,3,9,10,11) for d in (1,8,16,24,32)]:
         mode='P' if kind in (1,9) else 'RGB' if kind in (2,10) and depth==24 else 'RGBA' if kind in (2,10) else '1' if depth==1 else 'LA' if depth==16 else 'L'
         raw={(1,8):'P',(2,16):'BGRA;15Z',(2,24):'BGR',(2,32):'BGRA',(3,1):'1',(3,8):'L',(3,16):'LA'}.get((kind&7,depth),'')

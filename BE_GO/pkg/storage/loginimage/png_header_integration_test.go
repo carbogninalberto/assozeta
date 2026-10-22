@@ -28,7 +28,7 @@ func TestPNGHeaderAgainstPillow(t *testing.T) {
 		DataLength                           int    `json:"data_length"`
 		DataKind                             string `json:"data_kind"`
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 394 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 398 {
 		t.Fatal("invalid PNG header fixture", err)
 	}
 	var wg sync.WaitGroup

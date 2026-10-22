@@ -81,7 +81,7 @@ func TestJPEGDecodeAgainstPillow(t *testing.T) {
 			t.Fatal("encoded input mutated")
 		}
 	}
-	if valid != 312 || bad != 1556 {
+	if valid != 314 || bad != 1556 {
 		t.Fatalf("oracle coverage changed: %d valid, %d invalid", valid, bad)
 	}
 	tc := vectors[71]

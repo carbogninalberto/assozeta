@@ -80,9 +80,18 @@ jobs:
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
           go -C BE_GO test -race ./...
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13.2'
+          python-version: ${{ steps.production-python.outputs.version }}
           cache: pip
           cache-dependency-path: |
             BE/requirements.txt
@@ -126,6 +135,8 @@ jobs:
         run: python TESTS/adapters/django/s3_objects.py
       - name: Verify transactional durable jobs and lease recovery
         run: python TESTS/adapters/go/jobs.py
+      - name: Check native JPEG comments with sanitizers
+        run: python TESTS/adapters/go/login_jpeg_comment_sanitizer.py
       - name: Check native PNG decoder with sanitizers
         run: python TESTS/adapters/go/login_png_sanitizer.py
       - name: Check native WebP decoder with sanitizers

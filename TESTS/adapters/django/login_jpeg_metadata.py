@@ -78,12 +78,19 @@ def vectors():
             add(f'JFIF bypass {order} {kind} {raw.hex()}',jpeg(exif=exif,jfif=True))
             add(f'no resolution unit {order} {kind} {raw.hex()}',jpeg(exif=tiff([(0x11a,kind,raw)],order)))
         # Zero/unknown values do not replace a previously read tag. A malformed
-        # external payload stops IFD reading, preserving earlier valid entries.
+        # external payload exceeding the file budget is skipped; a short read
+        # within that budget still stops the directory.
         bad=(0x11a,1,b'H')
         add(f'duplicate empty preserves bad DPI {order}',jpeg(exif=tiff([unit,bad,(0x11a,1,b'',0)],order)),False)
         add(f'duplicate unknown preserves bad DPI {order}',jpeg(exif=tiff([unit,bad,(0x11a,99,b'')],order)),False)
         add(f'partial directory preserves bad DPI {order}',jpeg(exif=tiff([unit,bad,(999,4,b'\0',2**32-1)],order)),False)
-        add(f'early broken field hides DPI {order}',jpeg(exif=tiff([(999,4,b'\0',2**32-1),unit,bad],order)))
+        add(f'oversized field no longer hides DPI {order}',jpeg(exif=tiff([(999,4,b'\0',2**32-1),unit,bad],order)),False)
+        good=(0x11a,3,struct.pack(order+'H',72))
+        add(f'first valid DPI wins {order}',jpeg(exif=tiff([unit,good,bad],order)))
+        add(f'first invalid DPI wins {order}',jpeg(exif=tiff([unit,bad,good],order)),False)
+        add(f'empty first DPI skipped {order}',jpeg(exif=tiff([unit,(0x11a,1,b''),bad],order)),False)
+        add(f'unknown first DPI skipped {order}',jpeg(exif=tiff([unit,(0x11a,99,b''),bad],order)),False)
+        add(f'short external read still hides DPI {order}',jpeg(exif=tiff([(999,4,struct.pack(order+'I',99999),2),unit,bad],order)))
     for raw in (b'',b'garbage',b'II+\0'+bytes(12),b'MM\0+'+bytes(12),b'Exif\0\0'):
         add('unreadable EXIF '+raw.hex(),jpeg(exif=raw))
     def records(order='<',attributes=(0,0)):
@@ -97,12 +104,12 @@ def vectors():
         add(f'MPF {order} missing number',jpeg(mpf=tiff([entries(records(order))],order)))
         add(f'MPF {order} missing entries',jpeg(mpf=tiff([count(2)],order)))
         for length in (1,15,16,17,31):
-            add(f'MPF {order} truncated records {length}',jpeg(mpf=tiff([count(2),entries(records(order)[:length])],order)),False)
+            add(f'MPF {order} truncated records {length}',jpeg(mpf=tiff([count(2),entries(records(order)[:length])],order)))
         add(f'MPF {order} unsupported format',jpeg(mpf=tiff([count(2),entries(records(order,(0x01000000,0)))],order)))
         add(f'MPF {order} unsupported before truncation',jpeg(mpf=tiff([count(2),entries(records(order,(0x01000000,)))],order)))
         add(f'MPF {order} unsupported second',jpeg(mpf=tiff([count(2),entries(records(order,(0,0x01000000)))],order)))
         add(f'MPF {order} HDR suppresses adoption',jpeg(mpf=tiff([count(2),entries(records(order))],order),hdr=True))
-        add(f'MPF {order} HDR does not bypass corrupt entries',jpeg(mpf=tiff([count(2),entries(b'x')],order),hdr=True),False)
+        add(f'MPF {order} HDR corrupt entries retain JPEG',jpeg(mpf=tiff([count(2),entries(b'x')],order),hdr=True))
         add(f'MPF {order} BYTE records',jpeg(mpf=tiff([count(2),entries(records(order),1)],order)),fmt='MPO',frames=2)
         add(f'MPF {order} string records',jpeg(mpf=tiff([count(2),entries(records(order),2)],order)))
         add(f'MPF {order} numeric records',jpeg(mpf=tiff([count(2),entries(struct.pack(order+'I',1),4)],order)))
@@ -112,7 +119,7 @@ def vectors():
                 (13,struct.pack(order+'I',2),True),(16,struct.pack(order+'Q',2),True)]:
             add(f'MPF {order} number type {kind}',jpeg(mpf=tiff([(0xb001,kind,raw),entries(records(order))],order)),fmt='MPO' if integer else 'JPEG',frames=2 if integer else 1)
         add(f'MPF {order} negative count',jpeg(mpf=tiff([(0xb001,9,struct.pack(order+'i',-1)),entries(b'x')],order)))
-        add(f'MPF {order} enormous count',jpeg(mpf=tiff([(0xb001,16,struct.pack(order+'Q',2**64-1)),entries(records(order))],order)),False)
+        add(f'MPF {order} enormous count',jpeg(mpf=tiff([(0xb001,16,struct.pack(order+'Q',2**64-1)),entries(records(order))],order)))
         add(f'MPF {order} array number truncates',jpeg(mpf=tiff([(0xb001,4,struct.pack(order+'II',2,99)),entries(records(order))],order)),fmt='MPO',frames=2)
         add(f'MPF {order} partial trailing directory',jpeg(mpf=tiff([count(2),entries(records(order)),(999,4,b'\0',2**32-1)],order)),fmt='MPO',frames=2)
     for magic,order,entry_order,fmt in [(b'II\0*','<','<','MPO'),(b'MM*\0','>','>','JPEG'),(b'MM*\0','>','<','MPO'),(b'MM\0+','>','<','MPO'),(b'II+\0','<','<','JPEG')]:

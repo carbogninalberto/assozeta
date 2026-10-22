@@ -4,17 +4,46 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` at `f115d1e`. Worktree branch: `codex/go-backend-parity`.
+Baseline: `main` through `fddcee3` (PR #22 security dependencies and PR #20 manual delivery). Worktree branch: `codex/go-backend-parity`.
 The manual-delivery worktree and production installations have not been changed.
 
-Upstream `main@fddcee3` (PR #22) has now changed the production reference to
-Python 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. It is not yet merged
-at this checkpoint. Existing full-suite results below are historical evidence for
-the earlier dependency baseline, not proof against the new production reference.
-The first new-reference probe already fails thirteen image expectation groups;
-reconciliation is required. PIXAR alone additionally passes its 81 cases locally
-and in the shipped image under Python 3.13.16/Pillow 13.0.0. Detailed probe results
-are retained in `quality-reports/go-migration/security-baseline/`.
+Upstream `main@fddcee3` (PR #22) changed the production reference to Python
+3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. The existing Go compatibility
+suites have now been revalidated against that baseline. Earlier full-suite results
+below remain historical evidence.
+CI now derives the exact Python patch version from `BE/Dockerfile`.
+
+Current-reference checks pass 54 session cases, twenty account-state observations,
+27 session HTTP contracts and 37 refresh HTTP contracts per backend. Credential
+exchange passes 76 JWT and 37 password cases from Django to Go, plus two token
+pairs and three passwords in the reverse direction. Focused image proofs pass
+PCD (63), PCX/DCX (831), QOI (2,762), XBM (1,509) and PIXAR (81), including the
+actual Django helper and shipped codec image. JPEG decoding (1,870), PNG headers
+(398) and complete PNG files (1,472) now also pass locally and in the rebuilt
+image, including 237 lazy PNG cases with zero pixel loads. The native comment
+encoder passes 330 checks across ordinary and ASan/UBSan builds. Shared dispatch
+passes 94 URI comparisons with separately reported TIFF and AVIF gaps; the PostgreSQL response
+component passes 48 cases. These component results are also included in the
+passing full accounts-adapter run. Current local proofs pass JPEG headers
+(1,364), metadata (236), whole-file policies (97 plus metadata/decoder vectors),
+BMP/DIB (534), TGA (1,150) and CUR (533). The full accounts adapter and the
+rebuilt non-root, read-only, networkless shipped-image oracle both pass. CORS now passes 44 declared URL comparisons and 51
+portable HTTP methods per backend, including uppercase IPvFuture. The pixel
+oracle passes 84 exact transformations with the corrected Pillow 13 pass order,
+and 19,535 CPython Base64 comparisons with nonterminal padding. This matrix is
+now required by the shipped-image oracle. AVIF admission is now guarded in registry order,
+but its decoder and other unsupported formats remain implementation gaps.
+
+Go race, ordinary/tagged vet, formatting, twelve inventory tests, catalog drift,
+workflow lint, self-host static checks and eighteen supplementary adapter checks
+pass. The resize cancellation test now exercises reachable checkpoints in both
+pass orders, including the final check. Current evidence is retained in
+`quality-reports/go-migration/security-baseline/`, notably `full-accounts-results.json`,
+`accounts-after-resample.log`, `full-image-with-transforms.log`, `go-race-current.log`
+and `supplementary-current.json`. These are existing compatibility suites with
+current-model disposable databases; they do not prove historical migrations,
+frontend switching, complete Django/frontend checks or the release/activation
+matrix. No ledger entry is promoted to verified.
 
 ## Architecture and current-main reconciliation
 
@@ -870,10 +899,12 @@ The environment adapter adds required DEBUG and derived RATELIMIT_ENABLE default
 Actual public login/global middleware, remaining parser/body/resource extremes and
 exceptional counter formats remain open; see `BE_GO/internal/middleware/login_rate.md`.
 
-Cache-session audit identity now has 43 declared Django/Go cases and five
-current-account transitions on private PostgreSQL/Redis. SessionActor is distinct
+Cache-session audit identity now has 54 declared Django/Go cases and twenty
+current-account observations across four backends on private PostgreSQL/Redis. SessionActor is distinct
 from API authentication: Django's unfiltered session manager can retain a deleted
-actor, and its social session backends can retain an inactive actor. Password
+actor, while all four configured backends reject inactive actors on the current
+social-auth-app-django 6.1.0 baseline. Rejection preserves cache data even for
+invalid hashes. Password
 changes revoke shared cache sessions. Thirty-two concurrent resolutions use exactly
 32 SELECTs/cache reads with four-connection pools. Bounded cache reads, deadlines,
 reuse and closed data-only pickle decoding are tested. HTTP cookie/Vary behavior,
@@ -996,7 +1027,8 @@ exclusion and SIGKILL release in both directions. See
 Full replacement/import/recovery, upload limits, worker fencing and coordinated
 backend ownership remain required. No activation or schema change is introduced.
 
-The application oracle now requires Python **3.13.2**, matching `BE/Dockerfile`.
+The historical pre-security-update oracle required Python **3.13.2**, matching
+`BE/Dockerfile` at that revision; the current baseline is recorded above.
 CI on the prior head exposed that local Python 3.12.6 had different bracketed URL
 validation; production also reports different trailing-comma JSON diagnostics.
 The new guard is `TESTS/adapters/django/production_runtime.py`; the existing Docker

@@ -23,6 +23,8 @@ sys.path.insert(0,str(ROOT))
 
 
 def main():
+    from TESTS.adapters.django.production_runtime import require_production_python
+    require_production_python()
     import django
     from django.conf import settings
     from django.core.asgi import get_asgi_application
@@ -65,14 +67,14 @@ def main():
     from TESTS.contracts.cors_origins import CASES
     try:urlsplit('https://]host[::1')
     except ValueError:pass
-    else:raise AssertionError('CORS oracle requires the bracketed-netloc validation shipped by BE/Dockerfile Python 3.13.2; this interpreter is too old')
+    else:raise AssertionError('CORS oracle requires the bracketed-netloc validation shipped by BE/Dockerfile Python 3.13.16; this interpreter is too old')
     for case in CASES:
         try:
             parsed=urlsplit(case['raw'])
         except ValueError:
             assert not case['valid'], 'declared CORS URL unexpectedly rejected'
         else:
-            assert case['valid'] and (parsed.scheme,parsed.netloc)==(case['scheme'],case['netloc']), 'declared CORS URL comparison differs'
+            assert case['valid'] and (parsed.scheme,parsed.netloc)==(case['scheme'],case['netloc']), ('declared CORS URL comparison differs',case['raw'])
     for policy in policies:
         with override_settings(CORS_ORIGIN_ALLOW_ALL=policy['all'],CORS_ALLOWED_ORIGINS=policy['origins']):
             server=uvicorn.Server(uvicorn.Config(get_asgi_application(),host='127.0.0.1',port=0,lifespan='off',log_level='critical'))

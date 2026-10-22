@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"strconv"
 	"strings"
 	"testing"
@@ -71,7 +72,7 @@ func TestIssuePreservesAssozetaClaimsAndLifetimes(t *testing.T) {
 		}
 	}
 }
-func TestRefreshPreservesOriginalIATAndCustomClaimsWithoutRotation(t *testing.T) {
+func TestRefreshUpdatesAccessIATAndPreservesRefreshAndCustomClaims(t *testing.T) {
 	m, key, now := testManager(t)
 	claims := libjwt.MapClaims{"token_type": "refresh", "exp": now.Unix() + 30, "iat": now.Unix() - 600, "jti": "original", "user_id": "user", "role": 3, "custom": map[string]any{"number": 9007199254740993}, "aud": "legacy", "iss": "legacy"}
 	encoded := signed(t, key, claims)
@@ -87,10 +88,10 @@ func TestRefreshPreservesOriginalIATAndCustomClaimsWithoutRotation(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if refresh["jti"] != "original" || refresh["exp"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()+30, 10) {
+	if refresh["iat"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()-600, 10) || refresh["jti"] != "original" || refresh["exp"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()+30, 10) {
 		t.Fatal("refresh was rotated")
 	}
-	if access["iat"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()-600, 10) || access["exp"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()+14400, 10) {
+	if access["iat"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix(), 10) || access["exp"].(interface{ String() string }).String() != strconv.FormatInt(now.Unix()+14400, 10) {
 		t.Fatal("SimpleJWT copy semantics changed")
 	}
 	if access["jti"] == "original" || access["aud"] != "legacy" || access["iss"] != "legacy" {
@@ -185,5 +186,38 @@ func TestConcurrentIssuanceHasIndependentIdentifiers(t *testing.T) {
 			t.Fatal("concurrent token issuance failed or repeated an identifier")
 		}
 		seen[id] = true
+	}
+}
+
+func TestExpiryFailureClassificationAndPrecedence(t *testing.T) {
+	m, key, now := testManager(t)
+	for _, tc := range []struct {
+		name    string
+		changes libjwt.MapClaims
+		expired bool
+	}{
+		{"expiry boundary", nil, true},
+		{"past string expiry", libjwt.MapClaims{"exp": "1"}, true},
+		{"future iat precedes expiry", libjwt.MapClaims{"iat": now.Unix() + 1}, false},
+		{"future nbf precedes expiry", libjwt.MapClaims{"nbf": now.Unix() + 1}, false},
+		{"invalid iat precedes expiry", libjwt.MapClaims{"iat": nil}, false},
+		{"expiry precedes subject type", libjwt.MapClaims{"sub": 42}, true},
+		{"expiry precedes token type", libjwt.MapClaims{"token_type": "refresh"}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			claims := libjwt.MapClaims{"token_type": "access", "exp": now.Unix(), "iat": now.Unix(), "jti": "fixture"}
+			for k, v := range tc.changes {
+				claims[k] = v
+			}
+			_, err := m.Verify(signed(t, key, claims), "access")
+			if !errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrExpiredToken) != tc.expired {
+				t.Fatal("expiry classification differs", err)
+			}
+		})
+	}
+	other, _, _ := testManager(t)
+	_, err := other.Verify(signed(t, key, libjwt.MapClaims{"token_type": "access", "exp": 1, "jti": "fixture"}), "access")
+	if !errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrExpiredToken) {
+		t.Fatal("untrusted expiry exposed before signature validation")
 	}
 }

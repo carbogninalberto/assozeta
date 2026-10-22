@@ -61,7 +61,7 @@ def vectors():
         data=base64.b64decode(case['data'])
         if not case['invalid'] and (case['width'],case['height'])==(200,100) and len(data)<=1024*1024:
             add('lazy '+case['name'],data,None);lazy+=1
-    assert lazy==235,lazy
+    assert lazy==237,lazy
     for case in bilevel()['policy']:add('bilevel '+case['name'],base64.b64decode(case['data']),base64.b64decode(case['jpeg']) if case['jpeg'] else None)
     spec=dict(width=3,height=2,depth=8,color=0,interlace=False)
     pixels=b'\1\2\3\4\5\6';compressed=zlib.compress(b'\0\1\2\3\0\4\5\6')
@@ -91,7 +91,7 @@ def vectors():
     ]:tail(name,chunk(kind,body)+iend,None if invalid else jpeg('L',(3,2),pixels,value),before=chunk(b'tEXt',b'comment\0before'))
     for kind,minimum in [(b'IHDR',13),(b'tRNS',2),(b'gAMA',4),(b'sRGB',1),(b'pHYs',9),(b'acTL',8),(b'fcTL',26)]:
         for n in range(minimum):tail(f'tail short {kind!r} {n}',chunk(kind,bytes(n))+iend,None)
-    for n in range(9):tail(f'tail cHRM {n}',chunk(b'cHRM',bytes(n))+iend,None if n%4 else ordinary)
+    for n in (*range(9),31,32,33,35):tail(f'tail cHRM {n}',chunk(b'cHRM',bytes(n))+iend,None if n<32 else ordinary)
     for kind in (b'PLTE',b'eXIf',b'tEXt',b'iTXt'):
         tail(f'empty tail {kind!r}',chunk(kind,b'')+iend)
     # Later IHDR updates the parser's mode/size, not the already-created image.
@@ -110,7 +110,7 @@ def vectors():
     for kind,body in [(b'zTXt',b'x\0\0'+zlib.compress(blob+b'x')),(b'iCCP',b'p\0\0'+zlib.compress(blob+b'x'))]:tail(f'oversize tail {kind!r}',chunk(kind,body)+iend,None)
     for size in (65511,65512,65533,65534):
         body=b'comment\0'+b'x'*size
-        tail(f'comment save limit {size}',chunk(b'tEXt',body)+iend,jpeg('L',(3,2),pixels,b'x'*size) if size<=65511 else None)
+        tail(f'comment save limit {size}',chunk(b'tEXt',body)+iend,jpeg('L',(3,2),pixels,b'x'*size) if size<=65533 else None)
     # A first frame is placed on a zero canvas; blend/disposal do not composite
     # against another frame because no previous frame exists.
     for mode,color,channels in [('L',0,1),('RGB',2,3),('RGBA',6,4)]:
@@ -125,7 +125,7 @@ def vectors():
         full=sample*3+b'\0'+sample*3
         for w,h,x,y in [(0,0,0,0),(0,1,0,0),(0,1,0,1),(1,0,0,0),(0,0,1,0),(0,1,3,0),(3,0,0,2)]:
             data=base+chunk(b'fcTL',frame(w=w,h=h,x=x,y=y))+chunk(b'IDAT',zlib.compress(b'\0'+full))+iend
-            add(f'zero extent {mode} {w,h,x,y}',data,jpeg(mode,(3,2),sample*6) if w==0 and x==0 else None)
+            add(f'zero extent {mode} {w,h,x,y}',data,None)
     for mode,color,channels in [('L',0,1),('RGB',2,3),('RGBA',6,4)]:
         for size,target in [((200,100),(200,100)),((17,13),(200,152)),((289,100),(199,69)),((1,400),(0,200)),((400,1),(200,0)),((31,17),(200,109)),((257,129),(200,100))]:
             sample=bytes((10,20,30,128)[:channels]);p=sample*(size[0]*size[1]);raw=(b'\0'+sample*size[0])*size[1]
@@ -176,7 +176,7 @@ def vectors():
         canvas=bytearray(6);canvas[0 if interlace else 4]=42
         data=base+chunk(b'fcTL',frame(w=1,h=1,x=1,y=1))+chunk(b'IDAT',zlib.compress(b'\0\x2a'))+chunk(b'tEXt',b'interlace\0'+(b'' if interlace else b'yes'))+iend
         add(f'post-pixel interlace flip {interlace}',data,jpeg('L',(3,2),bytes(canvas)))
-    assert len(cases)==1466,len(cases)
+    assert len(cases)==1472,len(cases)
     return cases
 
 

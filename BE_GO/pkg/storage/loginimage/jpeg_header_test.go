@@ -56,6 +56,21 @@ func TestJPEGMarkerHeaderBoundsAndFailure(t *testing.T) {
 		t.Fatal("cancelled header returned", err)
 	}
 }
+
+func TestJPEGMarkerEOFAdmissionRetainsBudgets(t *testing.T) {
+	frame := jpegHeaderOnly(200, 100, 3)
+	frame = frame[:len(frame)-4]
+	for _, suffix := range [][]byte{nil, {255}, []byte("junk"), {255, 217}} {
+		data := append(bytes.Clone(frame), suffix...)
+		got, err := ReadJPEGMarkerHeader(context.Background(), data, len(data))
+		if err != nil || got.Width != 200 || got.Height != 100 || got.HeaderBytes != len(data) {
+			t.Fatal("EOF between markers rejected", got, err)
+		}
+		if got, err := ReadJPEGMarkerHeader(context.Background(), data, len(data)-1); !errors.Is(err, ErrWorkingLimit) || got.Width != 0 {
+			t.Fatal("EOF admission bypassed budget", err)
+		}
+	}
+}
 func TestJPEGMarkerHeaderCommentAndMetadataOwnership(t *testing.T) {
 	source := jpegHeaderOnly(10, 20, 3)
 	prefix := append(jpegMarker(254, []byte("first")), jpegMarker(254, []byte{0, 255})...)

@@ -74,7 +74,7 @@ func (p *CURFileProcessor) Process(ctx context.Context, input []byte) (CURFileRe
 	if err != nil {
 		return empty, err
 	}
-	decoded, err := DecodeBMP(ctx, h, input, p.limits.MaxDecodeBytes)
+	decoded, err := DecodeCUR(ctx, h, input, p.limits.MaxDecodeBytes)
 	if errors.Is(err, ErrBMPDecode) || errors.Is(err, ErrDimensions) {
 		return original()
 	}

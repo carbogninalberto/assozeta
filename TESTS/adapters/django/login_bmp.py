@@ -131,7 +131,7 @@ def vectors():
     for bits in (1,4,8):
         for count in (1,2,3,16,255,256):
             palette=b''.join(bytes([i if count!=2 else i*255])*3+b'\xff' for i in range(count))
-            mode='1' if count==2 else 'L'; raw=mode
+            mode='1' if count<=2 else 'L'; raw=mode
             add(f'nonstandard gray palette {bits}/{count}',bitmap(3,1,bits,b'\xa5\x23\x45\0',colors=count,palette=palette),w=3,h=1,mode=mode,raw=raw,pixels=bytes([255,0,255]) if mode=='1' else b'\xa5\x23\x45')
     palette=b''.join(bytes([i])*3+b'\0' for i in range(3))
     add('gray palette raw stride too small',bitmap(9,1,4,bytes(12),colors=3,palette=palette),w=9,h=1,mode='L',raw='L')
@@ -144,7 +144,7 @@ def vectors():
         raw='BGR;15' if bits==16 else 'BGRX'
         packed=b'\xff\xff\0\0' if bits==16 else b'\x1e\x14\x0a\xff'
         add(f'raw {bits}',bitmap(1,1,bits,packed),w=1,h=1,raw=raw,pixels=bytes([255]*3) if bits==16 else bytes([10,20,30]))
-    # RLE explicit cases: clipping, empty lines, odd absolute counts, delta bug.
+    # RLE explicit cases: clipping, empty lines, odd absolute counts and corrected two-byte deltas.
     streams=[
         ('encoded',3,2,b'\3\x42\3\x99',None), # x remains full without EOL.
         ('rows',3,2,b'\3\x42\0\0\3\x99',b'\x42'*3+b'\x99'*3),
@@ -157,10 +157,11 @@ def vectors():
         ('absolute over row',3,2,b'\0\6\1\2\3\4\5\6',bytes(range(1,7))),
         ('absolute short enough',3,1,b'\0\5\1\2\3',b'\1\2\3'),
         ('absolute short insufficient',3,1,b'\0\5\1\2',None),
-        ('delta second pair',3,2,b'\1\x42\0\2\x99\x99\1\1\1\x77',b'\x42\0\0\0\0\x77'),
+        ('delta first pair used',3,2,b'\1\x42\0\2\x99\x99\1\1\1\x77',b'\x42'+bytes(5)),
+        ('delta exact pair',3,2,b'\1\x42\0\2\1\1\1\x77',b'\x42\0\0\0\0\x77'),
         ('delta overshoot',3,1,b'\0\2\x99\x99\xff\xff',bytes(3)),
         ('delta first short',3,1,b'\0\2\1',None),
-        ('delta second short',3,1,b'\0\2\1\1\1',None),
+        ('delta needs only first pair',3,1,b'\0\2\1\1\1',bytes(3)),
         ('absolute odd alignment',3,2,b'\0\3\1\2\3\0\0\0\3\4',b'\1\2\3\4\4\4'),
     ]
     gray=b''.join(bytes([i])*3+b'\0' for i in range(256))
@@ -173,9 +174,11 @@ def vectors():
     for name,w,h,stream,expected in [
         ('encoded odd',3,1,b'\3\xab',b'\x0a\x0b\x0a'),
         ('absolute even',4,1,b'\0\4\x12\x34',b'\1\2\3\4'),
-        ('absolute odd loses last',3,1,b'\0\3\x12\0',None),
+        ('absolute odd keeps last',3,1,b'\0\3\x12\0',b'\1\2\0'),
         ('absolute odd EOL pads',3,1,b'\0\3\x12\0\0\0',b'\1\2\0'),
-        ('absolute odd follows encoded',3,1,b'\0\3\x12\0\1\x34',None),
+        ('absolute odd ignores trailing encoded',3,1,b'\0\3\x12\0\1\x34',b'\1\2\0'),
+        ('absolute odd nonzero low nibble',3,1,b'\0\3\x12\x3f',b'\1\2\3'),
+        ('absolute odd followed by row',3,2,b'\0\3\x12\x3f\0\0\3\x45',b'\1\2\3\4\5\4'),
         ('absolute overshoots',3,1,b'\0\4\x12\x34',b'\1\2\3'),
     ]:
         for bits in (4,8):
@@ -186,7 +189,10 @@ def vectors():
             raw={1:'P;1',4:'P;4',8:'P',16:'BGR;15',24:'BGR',32:'BGRX'}[bits]
             add(f'RLE arbitrary depth {bits}/{comp}',bitmap(1,1,bits,b'\1\xab',comp=comp,palette=palette),w=1,h=1,mode='P' if bits<=8 else 'RGB',raw=raw,pixels=bytes([171 if comp==1 else 10]) if bits<=8 else None)
     for comp in (1,2):
-        add(f'RLE mode1 rejected {comp}',bitmap(1,1,1,b'\1\xab',comp=comp,palette=b'\0'*4+b'\xff'*3+b'\0'),w=1,h=1,mode='1',raw='1')
+        add(f'RLE mode1 supported {comp}',bitmap(1,1,1,b'\1\xab',comp=comp,palette=b'\0'*4+b'\xff'*3+b'\0'),w=1,h=1,mode='1',raw='1',pixels=b'\xff')
+        for value in (0,1,15,16,127,128,255):
+            sample=value if comp==1 else value>>4
+            add(f'RLE mode1 value {comp}/{value}',bitmap(1,1,1,bytes([1,value]),comp=comp,palette=b'\0'*4+b'\xff'*3+b'\0'),w=1,h=1,mode='1',raw='1',pixels=bytes([255 if sample else 0]))
     # Header rejection, ignored fields, offsets and admission without pixel reads.
     base=bitmap(3,2,24,b'\0'*24)
     for cut in range(54):add(f'truncated header {cut}',base[:cut],invalid=True)
@@ -213,11 +219,11 @@ def vectors():
         pixels=bytes([0,40,0,3,0,0,0,0,0,0,0,77,0,0,0,0,0,0]) if off==1 else None
         add(f'data offset {off}',bitmap(3,2,24,offset=off),pixels=pixels)
     add('offset gap',bitmap(3,2,24,bytes(24),gap=b'ignored'),pixels=bytes(18))
-    # Offset equal to header end is corrected by 4*colors, even for OS/2.
+    # Offset equal to header end uses the actual palette entry size (OS/2: 3).
     for size in (12,40):
         pal=(b'\0'*3+b'\xff'*3) if size==12 else b'\0'*4+b'\xff'*3+b'\0'
         data=bitmap(3,1,1,b'\xa0\0\0\0',size=size,palette=pal,offset=14+size)
-        add(f'palette offset adjustment {size}',data,w=3,h=1,mode='1',raw='1',pixels=b'\0\0\0' if size==12 else b'\xff\0\xff')
+        add(f'palette offset adjustment {size}',data,w=3,h=1,mode='1',raw='1',pixels=b'\xff\0\xff')
     for dib in (False,True):
         add(f'lazy no pixels dib={dib}',bitmap(200,100,24,dib=dib),w=200,h=100,lazy=True)
     add('pixel warning lazy',bitmap(200,447393,24),w=200,h=447393,pixels=None)

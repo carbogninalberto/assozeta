@@ -59,8 +59,10 @@ def vectors():
     for channels in (3,4):
         c=channels
         for index in range(64):
-            pixel=bytes([0,0,0,255 if index==53 else 0])[:c]
+            pixel=bytes(4)[:c]
             add(f'initial index {channels}/{index}',qoi(1,1,channels)+bytes([index]),channels=channels,pixels=pixel)
+        add(f'initial run does not populate cache {channels}',qoi(2,1,channels)+b'\xc0\x35',w=2,channels=channels,pixels=bytes([0,0,0,255])[:c]+bytes(c))
+        add(f'empty index replaces previous alpha {channels}',qoi(2,1,channels)+b'\x35\xc0',w=2,channels=channels,pixels=bytes(c*2))
         previous=bytes([1,254,255,127]);prefix=b'\xff'+previous
         for op in range(64):
             deltas=((op>>4)-2,((op>>2)&3)-2,(op&3)-2)
@@ -84,7 +86,7 @@ def vectors():
             add(f'RGB preserves alpha {channels}/{alpha}',qoi(2,1,channels)+payload,w=2,channels=channels,pixels=rgba[:c]+last[:c])
             index=(40*3+50*5+60*7+alpha*11)%64
             add(f'alpha participates in cache {channels}/{alpha}',qoi(3,1,channels)+payload+bytes([index]),w=3,channels=channels,pixels=rgba[:c]+last[:c]*2)
-        # 64 red collides with the seeded black's hash. A later RGBA alpha
+        # 64 red and opaque black have the same hash. A later RGBA alpha
         # replacement uses a different slot even when output mode is RGB.
         collision=b'\xfe\x40\0\0\x35\xff\0\0\0\0\x35\0'
         pixels=bytes([64,0,0,255])[:c]*2+bytes(4)[:c]+bytes([64,0,0,255])[:c]+bytes(4)[:c]

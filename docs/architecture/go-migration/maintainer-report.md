@@ -2,19 +2,48 @@
 
 This draft pursues the complete [requested replacement](requirements.md), using an
 isolated worktree and `codex/go-backend-parity`, reconciled through
-`main@06bac65` including PR #20's manual delivery. **It is not ready for production
+`main@fddcee3` including PR #22's security updates and PR #20's manual delivery. **It is not ready for production
 activation or merge as a backend replacement.** Django retains business-schema,
 worker and scheduler ownership. No production installation, customer data or
 published release has been changed.
 
-Upstream `main@fddcee3` (PR #22) has now changed the production reference to
-Python 3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. It is not yet merged
-at this checkpoint. Existing full-suite results below are historical evidence for
-the earlier dependency baseline, not proof against the new production reference.
-The first new-reference probe already fails thirteen image expectation groups;
-reconciliation is required. PIXAR alone additionally passes its 81 cases locally
-and in the shipped image under Python 3.13.16/Pillow 13.0.0. Detailed probe results
-are retained in `quality-reports/go-migration/security-baseline/`.
+Upstream `main@fddcee3` (PR #22) changed the production reference to Python
+3.13.16, Pillow 13.0.0, Django 5.2.18 and DRF 3.17.2. The existing Go compatibility
+suites have now been revalidated against that baseline. Earlier full-suite results
+below remain historical evidence.
+CI now derives the exact Python patch version from `BE/Dockerfile`.
+
+Current-reference checks pass 54 session cases, twenty account-state observations,
+27 session HTTP contracts and 37 refresh HTTP contracts per backend. Credential
+exchange passes 76 JWT and 37 password cases from Django to Go, plus two token
+pairs and three passwords in the reverse direction. Focused image proofs pass
+PCD (63), PCX/DCX (831), QOI (2,762), XBM (1,509) and PIXAR (81), including the
+actual Django helper and shipped codec image. JPEG decoding (1,870), PNG headers
+(398) and complete PNG files (1,472) now also pass locally and in the rebuilt
+image, including 237 lazy PNG cases with zero pixel loads. The native comment
+encoder passes 330 checks across ordinary and ASan/UBSan builds. Shared dispatch
+passes 94 URI comparisons with separately reported TIFF and AVIF gaps; the PostgreSQL response
+component passes 48 cases. These component results are also included in the
+passing full accounts-adapter run. Current local proofs pass JPEG headers
+(1,364), metadata (236), whole-file policies (97 plus metadata/decoder vectors),
+BMP/DIB (534), TGA (1,150) and CUR (533). The full accounts adapter and the
+rebuilt non-root, read-only, networkless shipped-image oracle both pass. CORS now passes 44 declared URL comparisons and 51
+portable HTTP methods per backend, including uppercase IPvFuture. The pixel
+oracle passes 84 exact transformations with the corrected Pillow 13 pass order,
+and 19,535 CPython Base64 comparisons with nonterminal padding. This matrix is
+now required by the shipped-image oracle. AVIF admission is now guarded in registry order,
+but its decoder and other unsupported formats remain implementation gaps.
+
+Go race, ordinary/tagged vet, formatting, twelve inventory tests, catalog drift,
+workflow lint, self-host static checks and eighteen supplementary adapter checks
+pass. The resize cancellation test now exercises reachable checkpoints in both
+pass orders, including the final check. Current evidence is retained in
+`quality-reports/go-migration/security-baseline/`, notably `full-accounts-results.json`,
+`accounts-after-resample.log`, `full-image-with-transforms.log`, `go-race-current.log`
+and `supplementary-current.json`. These are existing compatibility suites with
+current-model disposable databases; they do not prove historical migrations,
+frontend switching, complete Django/frontend checks or the release/activation
+matrix. No ledger entry is promoted to verified.
 
 ## Current result
 
@@ -72,34 +101,34 @@ immutable manual-package boundary delivered by PR #20.
 | Area | Evidence and scope |
 | --- | --- |
 | Environment | 87 declared comparisons execute unchanged selected settings assignments with django-environ 0.12.0, then Go Load. They cover literal files, process precedence, provider/JWT references, required/default/cycle rules, multiline/base64, CSRF/CORS lists, DEBUG, derived rate/CORS flags and required SECRET_KEY. Secret representations and process isolation are checked. Full environment coverage is unfinished. |
-| CORS | 51 portable HTTP methods per backend across five policies, 40 declared URL comparisons and four actual-application-root methods preserve origin policy, preflight bypass, body bytes, Vary, streaming, concurrency and malformed-list error timing. Model/session readback stays unchanged. Five actual Go preflight paths still work with PostgreSQL and Redis unavailable. Complete global middleware and versioned/browser routing remain open. |
+| CORS | 51 portable HTTP methods per backend across five policies, 44 declared URL comparisons and four actual-application-root methods preserve origin policy, preflight bypass, body bytes, Vary, streaming, concurrency and malformed-list error timing. Model/session readback stays unchanged. Five actual Go preflight paths still work with PostgreSQL and Redis unavailable. Complete global middleware and versioned/browser routing remain open. |
 | Security headers | Six portable methods per backend verify current Django defaults, preservation of explicit/empty fields, response errors, streaming, forwarded protocol, concurrency and CORS preflight bypass. Five actual-root methods verify health, missing Bearer, CSRF/method denials, missing route and preflight. Full trusted-host/restore execution/proxy policy remains open. |
 | Restore HTTP admission | 42 portable methods per backend cover six modes on real Django ASGI and the compiled Go root, with unchanged model/cache state. Shared/exclusive flock interoperability, in-flight HTTP, panic release and SIGKILL recovery pass in both process directions. PostgreSQL checks one SELECT per unsafe admission over 1/16/128/512 receipts, no pending SELECT for reads, and 32 concurrent admissions in four connections; EXPLAIN uses the existing partial index. Full restore execution/upload/recovery, stale tasks, worker/scheduler and stream/WS coordination remain open. |
 | Durable job repository | Ten private PostgreSQL scenario groups cover atomic intent/completion, permanent scoped deduplication, renewal/expiry/fencing, bounded attempts/backoff, pending cancellation, 16 publishers, eight consumers, SIGKILL recovery and four-connection query bounds. One claim query across 1/16/128/512 rows; the actual 4,096-job plan uses bounded indexed branches after a failing scan test. Four concurrent migrators preserve a separate additive history. This uses synthetic business/history tables, not historical Django migrations. No application task or production process/schedule is activated. |
 | Job executor | Thirteen real PostgreSQL groups verify service-owned completion, explicit failures/retry, heartbeats, stale-token/blocked-database cancellation, maintenance attempt preservation, stale restores, joined concurrency and cooperative shutdown. Thirteen actual Django `CoordinatedTask`/Go comparisons preserve global receipt and publication rules, eager Retry metadata and unchanged managed model/cache state. This does not migrate task bodies or prove Celery broker interoperability, a production worker command or scheduler ownership. |
 | Rate admission | 14 bidirectional Django/Go Redis counter cases check keys, inclusive windows, thresholds and nonrenewed TTLs. Sixty-four concurrent Go calls admit five and deny 59 using 127 writes and at most four connections. Actual-key expiration races, paused Redis deadlines, no retries and pool reuse pass. |
 | Rate HTTP boundary | 15 portable contracts per backend run actual Django key functions/decorators/handler403 and Go middleware on private Redis. The terminal view is controlled to verify body bytes, not credentials. Keys, representations/casefold, ordering, exact 429, method/disable bypass and nonfinite/integer rules pass. Public/global middleware composition and parser/body extremes remain open. |
-| Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 36 portable refresh methods per backend on actual Django ASGI and the Go executable. Refresh reserializes/signs unchanged claims/JTI/expiry. Denied refresh issues no BKN_AUTH; stale-session deletion may accompany it. Session identity cannot replace Bearer/scope or token identity, and 32 mixed concurrent requests agree. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
+| Credentials and refresh | 76 Django-to-Go JWT vectors, password-hasher interoperability and 37 portable refresh methods per backend on actual Django ASGI and the Go executable. Refresh preserves the refresh claims/JTI/expiry and gives the access token a fresh issue time. Denied refresh issues no BKN_AUTH; stale-session deletion may accompany it. Session identity cannot replace Bearer/scope or token identity, and 32 mixed concurrent requests agree. Nonstandard JWT numbers, lone surrogates and aggregate parser budgets remain open. |
 | Retired software billing | Ten portable methods per backend retain 410 for association scope across legacy plan states, 403 for other roles and all current authentication/impersonation/resource restrictions. Unused checkout bodies remain unparsed; scoped references retain validation. Model/cache readback stays unchanged. PostgreSQL tracing excludes legacy billing queries; 32 mixed calls use 40 admission SELECTs and four test connections. These are compatibility tombstones; association/course payments remain supported scope. |
 | 2FA status | Ten portable HTTP methods per backend verify current scoped-account status, required Bearer, collaborator permissions, administrator/association impersonation, foreign references, methods/negotiation, malformed sessions and 32 concurrent requests. Same credentials observe two flag changes per backend. PostgreSQL checks one/two admission SELECTs and zero extra status queries; 32 mixed reads use 48 SELECTs with four database connections. Setup/update remain open. |
 | Public identifiers | 16 portable contracts per backend on actual Django ASGI and the Go executable cover email/username availability, duplicate UUID ordering, get_user presence/fallback, Unicode limits, REST/session/identity precedence and 32 concurrent requests. Managed tables and malformed-session bytes remain unchanged. PostgreSQL tests preserve one/two SELECT bounds across up to 512 duplicates and 32 concurrent calls in a four-connection test pool. Actual plans show sequential scans; no latency improvement is claimed. |
 | Account/permission services | Real PostgreSQL/Redis comparisons cover actor admission, identity transitions/revocation, collaborator policy and resource predicates, including 132 scoped-request and 67 resource-scope cases with measured batch/concurrent query bounds. This is not endpoint-wide authorization parity. |
-| Cache-session identity | 43 declared cases and five same-account transitions compare actual Django session/authentication/audit middleware with Go on PostgreSQL/Redis. Current state, backend-specific inactive/deleted actors, password revocation, unchanged cache bytes/TTL and managed-model readback agree. Thirty-two concurrent resolutions use 32 SELECTs/cache reads and pools of four. Response bounds, Redis deadlines/reuse and failures are checked. HTTP behavior has separate evidence below; writes/rotation and remaining route wiring stay open; public refresh is composed. |
+| Cache-session identity | 54 declared cases and twenty same-account observations across four backends compare actual Django session/authentication/audit middleware with Go on PostgreSQL/Redis. Current state, inactive rejection and active soft-deleted actors, password revocation, unchanged cache bytes/TTL and managed-model readback agree. Thirty-two concurrent resolutions use 32 SELECTs/cache reads and pools of four. Response bounds, Redis deadlines/reuse and failures are checked. HTTP behavior has separate evidence below; writes/rotation and remaining route wiring stay open; public refresh is composed. |
 | Session HTTP audit | 27 portable contracts per backend use shipped-style ASGI/Uvicorn and concrete Go session repositories around a controlled terminal. Cookie/Vary rules, Latin-1 headers, actor separation, streaming and 32 concurrent mixed-actor/CID requests agree. Sixteen malformed cache/UUID/hash inputs retain exact production HTML 500, Cookie Vary and unchanged cache bytes. Seven rolled-back database cases retain exact audit-port values and column constraints. Session writes/rotation, complete error/global middleware policy and remaining route wiring stay open; public refresh has separate evidence. |
 | Login services | 68 password-selection cases, 47 OTP cases, 20 normalization/audit cases, 33 persisted social-configuration cases, 41 social admissions and 26 composed sessions. Profile/card/response/finalization cases compare durable writes and Django readback. Public login and full image dispatch remain unfinished. |
 | Providers | 89 Apple and 93 Google cases use actual Django libraries, ephemeral HTTPS and real signatures, with declared identity/error/request expectations. Client bounds, cancellation and configuration changes have separate tests. Live-provider and remaining raw-input/transport evidence are open. |
 | Images | Independently declared Pillow/Django comparisons cover implemented pixel, metadata and file pipelines. A concrete domain LoginImageProcessor now composes eighteen pipelines with shared admission, but registry coverage remains incomplete; partial codec evidence is not successful public-login evidence. |
 | Operations | Actual Go health contracts, PostgreSQL/Redis loss/recovery and idle SIGTERM pass. Non-root image and existing Django/self-host/manual rehearsals have scoped evidence. Active-request/task/WebSocket draining, Go release delivery and backend switching remain unverified. |
 
-The application oracle now requires Python **3.13.2**, matching the production
-Dockerfile. The earlier local 3.12.6 interpreter accepted malformed bracketed
+The historical pre-security-update oracle required Python **3.13.2**, matching
+the production Dockerfile at that revision. The earlier local 3.12.6 interpreter accepted malformed bracketed
 origins that CI 3.12.15 rejected; production 3.13.2 also has different array/object
 trailing-comma JSON diagnostics. Explicit expectations and Go parsers were corrected
 after failing comparisons. Forty URL cases also pass in the shipped-style Django
 image. CI pins the production interpreter and checks it against the Dockerfile.
 The preexisting disposable Docker fixture adapter is preserved.
 
-The complete production-interpreter accounts rehearsal passes, including 42
+The historical pre-security-update accounts rehearsal passed, including 42
 restore-admission, 36 refresh, 16 identifier, 10 2FA and 10 billing methods per
 backend; 43 cache-session cases and 27 controlled-terminal session methods;
 four actual-root CORS and five security-header methods; and all existing image,
@@ -108,8 +137,8 @@ login, scope and audit-write checks. Results are retained under
 Fixtures use current-model `migrate --run-syncdb`, not historical migrations or
 real frontend switching.
 
-Full Go race/vet, tagged restore/middleware/config vet, formatting, actionlint,
-12 inventory tests and catalog drift checks pass. The actual-server health
+At that historical revision, full Go race/vet, tagged restore/middleware/config
+vet, formatting, actionlint, 12 inventory tests and catalog drift checks passed. The actual-server health
 rehearsal passes startup, PostgreSQL/Redis loss/recovery, five preflights with both
 dependencies unavailable and idle SIGTERM. The 87 environment declarations pass
 on production Python. Bidirectional credentials, 38 collaborator policy cases,

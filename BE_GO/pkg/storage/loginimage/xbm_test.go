@@ -9,30 +9,26 @@ import (
 )
 
 func xbmTestFile(w, h int, payload []byte) []byte {
-	return append([]byte(fmt.Sprintf("#define im_width %d\n#define im_height %d\nstatic char im_bits[]", w, h)), payload...)
+	return append([]byte(fmt.Sprintf("#define im_width %d\n#define im_height %d\nstatic char im_bits[] = {\n", w, h)), payload...)
 }
-func TestXBMHeaderGreedyMarkerAndBudget(t *testing.T) {
+func TestXBMHeaderFirstDeclarationAndBudget(t *testing.T) {
 	data := xbmTestFile(8, 1, []byte("x80\n_bits[]x01"))
-	h, err := ReadXBMHeader(context.Background(), data, len(data))
-	if err != nil || h.Width != 8 || h.Height != 1 || h.Mode != "1" || h.DataOffset != len(data)-3 || h.HeaderBytes != len(data) {
+	offset := len(xbmTestFile(8, 1, nil))
+	h, err := ReadXBMHeader(context.Background(), data, offset)
+	if err != nil || h.Width != 8 || h.Height != 1 || h.Mode != "1" || h.DataOffset != offset || h.HeaderBytes != offset {
 		t.Fatal(h, err)
 	}
 	got, err := DecodeXBM(context.Background(), h, data, int64(len(data)+8))
-	if err != nil || !bytes.Equal(got.Pixels, []byte{255, 0, 0, 0, 0, 0, 0, 0}) {
+	if err != nil || !bytes.Equal(got.Pixels, []byte{0, 0, 0, 0, 0, 0, 0, 255}) {
 		t.Fatal(got, err)
 	}
-	if h, err := ReadXBMHeader(context.Background(), data, len(data)-1); !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
+	if h, err := ReadXBMHeader(context.Background(), data, offset-1); !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
 		t.Fatal("header budget", err)
 	}
-	for _, n := range []int{9, 10} {
-		input := append(bytes.Repeat([]byte{' '}, n), data...)
-		h, err := ReadXBMHeader(context.Background(), input, 512)
-		if n == 9 {
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else if !errors.Is(err, ErrXBMHeader) || h.Width != 0 {
-			t.Fatal("16 byte prefix", err)
+	for _, prefix := range []string{" ", "\t", "\n\n"} {
+		input := append([]byte(prefix), data...)
+		if h, err := ReadXBMHeader(context.Background(), input, 512); !errors.Is(err, ErrXBMHeader) || h.Width != 0 {
+			t.Fatal("invalid prefix", err)
 		}
 	}
 }
@@ -78,17 +74,18 @@ func TestXBMHexAndRowPadding(t *testing.T) {
 	}
 }
 
-func TestXBMWindowBudgetAndCancellation(t *testing.T) {
+func TestXBMLineBudgetAndCancellation(t *testing.T) {
 	data := xbmTestFile(8, 1, []byte("xff"))
 	data = append(data, bytes.Repeat([]byte{' '}, 600)...)
-	for _, limit := range []int{0, 511, 512, 513} {
+	used := len(xbmTestFile(8, 1, nil))
+	for _, limit := range []int{0, used - 1, used, used + 1} {
 		h, err := ReadXBMHeader(context.Background(), data, limit)
-		if limit < 512 {
+		if limit < used {
 			if !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
-				t.Fatal("window budget", limit, err)
+				t.Fatal("line budget", limit, err)
 			}
-		} else if err != nil || h.HeaderBytes != 512 {
-			t.Fatal("exact window budget", h, err)
+		} else if err != nil || h.HeaderBytes != used {
+			t.Fatal("exact line budget", h, err)
 		}
 	}
 	for _, trigger := range []int{1, 2, 3} {
@@ -156,5 +153,28 @@ func TestXBMPixelLimitsCancellationAndOwnership(t *testing.T) {
 		if got, err := DecodeXBM(context.Background(), x, input, 1024); err == nil || got.Pixels != nil {
 			t.Fatal("invalid spec", field, err)
 		}
+	}
+}
+
+func TestXBMLongCommentResourceBoundary(t *testing.T) {
+	prefix := bytes.Repeat([]byte("/* x */\n"), 10000)
+	header := append(prefix, xbmTestFile(8, 1, nil)...)
+	used := len(header)
+	data := append(header, []byte("xff")...)
+	for _, limit := range []int{1024, used - 1, used} {
+		h, err := ReadXBMHeader(context.Background(), data, limit)
+		if limit < used {
+			if !errors.Is(err, ErrWorkingLimit) || h.Width != 0 {
+				t.Fatal("comment header budget", limit, err)
+			}
+		} else if err != nil || h.HeaderBytes != used || h.DataOffset != used {
+			t.Fatal("exact long header budget", h, err)
+		}
+	}
+	parent, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ctx := &cancellingImageContext{Context: parent, cancel: cancel, trigger: 50}
+	if h, err := ReadXBMHeader(ctx, data, used); !errors.Is(err, context.Canceled) || h.Width != 0 {
+		t.Fatal("long comment cancellation", err)
 	}
 }

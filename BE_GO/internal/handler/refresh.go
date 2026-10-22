@@ -109,7 +109,11 @@ func restError(c echo.Context, err error) error {
 		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="api"`)
 		body := map[string]any{"detail": auth.Detail, "code": auth.Code}
 		if auth.Code == "token_not_valid" && auth.Detail == "Given token not valid for any token type" {
-			body["messages"] = []map[string]string{{"token_class": "AccessToken", "token_type": "access", "message": "Token is invalid or expired"}}
+			message := "Token is invalid"
+			if auth.TokenExpired {
+				message = "Token is expired"
+			}
+			body["messages"] = []map[string]string{{"token_class": "AccessToken", "token_type": "access", "message": message}}
 		}
 		return c.JSON(401, body)
 	case errors.As(err, &denied):

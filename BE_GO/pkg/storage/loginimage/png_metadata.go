@@ -103,8 +103,6 @@ func (s *pngHeaderState) textChunk(ctx context.Context, kind string, body []byte
 		s.hasBBox = true
 		s.header.InvalidTile = true
 		s.header.Tile = PNGRect{}
-	case "disposal":
-		s.disposal = -1
 	}
 	return ctx.Err()
 }

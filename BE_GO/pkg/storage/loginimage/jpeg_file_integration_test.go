@@ -50,12 +50,12 @@ func TestJPEGFileAgainstPillow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cases := jpegFileCases(t, "ASSOZETA_JPEG_FILE_FIXTURE", 73)
-	for _, tc := range jpegFileCases(t, "ASSOZETA_JPEG_METADATA_FIXTURE", 226) {
+	cases := jpegFileCases(t, "ASSOZETA_JPEG_FILE_FIXTURE", 97)
+	for _, tc := range jpegFileCases(t, "ASSOZETA_JPEG_METADATA_FIXTURE", 236) {
 		tc.Keep = tc.Invalid
 		cases = append(cases, tc)
 	}
-	for _, tc := range jpegFileCases(t, "ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE", 1868) {
+	for _, tc := range jpegFileCases(t, "ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE", 1870) {
 		tc.Keep = tc.Invalid || tc.EncodeInvalid
 		tc.Expected = tc.ExpectedJPEG
 		cases = append(cases, tc)
@@ -121,7 +121,7 @@ func TestJPEGFilePipelineCancellation(t *testing.T) {
 		t.Fatal(err)
 	}
 	var input []byte
-	for _, tc := range jpegFileCases(t, "ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE", 1868) {
+	for _, tc := range jpegFileCases(t, "ASSOZETA_LOGIN_JPEG_DECODE_FIXTURE", 1870) {
 		info, e := InspectJPEG(context.Background(), tc.Data, 1<<20)
 		if e == nil && !tc.Invalid && info.Header.Width == 1 && info.Header.Height == 1 && info.Header.Mode == "L" {
 			input = tc.Data

@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ import (
 )
 
 var ErrInvalidToken = errors.New("invalid or expired token")
+var ErrExpiredToken = fmt.Errorf("expired token: %w", ErrInvalidToken)
 var ErrInvalidKey = errors.New("invalid Ed25519 signing or verification key")
 
 const AccessLifetime = 4 * time.Hour
@@ -87,10 +89,26 @@ func (m *Manager) Verify(encoded, kind string) (map[string]any, error) {
 		}
 		return m.public, nil
 	})
-	if err != nil || !token.Valid || claims["token_type"] != kind {
+	if err != nil || !token.Valid {
 		return nil, ErrInvalidToken
 	}
-	if _, ok := claims["jti"].(string); !ok {
+	// PyJWT validates iat and nbf before exp. SimpleJWT 5.5 distinguishes
+	// expiry, but a bad signature or a future iat/nbf must remain invalid.
+	now := m.now().Unix()
+	for _, name := range []string{"iat", "nbf"} {
+		if value, exists := claims[name]; exists {
+			timestamp, ok := IntegerClaim(value)
+			if !ok || timestamp.Cmp(big.NewInt(now)) > 0 {
+				return nil, ErrInvalidToken
+			}
+		}
+	}
+	if expiry, ok := IntegerClaim(claims["exp"]); ok && expiry.Cmp(big.NewInt(now)) <= 0 {
+		return nil, ErrExpiredToken
+	}
+	expiry, ok := epoch(claims["exp"])
+	// SimpleJWT additionally converts exp through Python datetime (year 1..9999).
+	if !ok || expiry < -62135596800 || expiry > 253402300799 {
 		return nil, ErrInvalidToken
 	}
 	if subject, exists := claims["sub"]; exists {
@@ -98,18 +116,11 @@ func (m *Manager) Verify(encoded, kind string) (map[string]any, error) {
 			return nil, ErrInvalidToken
 		}
 	}
-	expiry, ok := epoch(claims["exp"])
-	// SimpleJWT additionally converts exp through Python datetime (year 1..9999).
-	if !ok || expiry < -62135596800 || expiry > 253402300799 || expiry <= m.now().Unix() {
+	if _, ok := claims["jti"].(string); !ok {
 		return nil, ErrInvalidToken
 	}
-	for _, name := range []string{"iat", "nbf"} {
-		if value, exists := claims[name]; exists {
-			timestamp, ok := IntegerClaim(value)
-			if !ok || timestamp.Cmp(big.NewInt(m.now().Unix())) > 0 {
-				return nil, ErrInvalidToken
-			}
-		}
+	if claims["token_type"] != kind {
+		return nil, ErrInvalidToken
 	}
 	return map[string]any(claims), nil
 }
@@ -177,11 +188,11 @@ func (m *Manager) pair(refresh string, claims libjwt.MapClaims, now int64) (Pair
 	}
 	for name, value := range claims {
 		switch name {
-		case "token_type", "exp", "jti":
+		case "token_type", "exp", "jti", "iat":
 			continue
 		}
-		// SimpleJWT 5.3.1 copies iat as well; it stays at the original refresh issue
-		// time while the new access expiry is based on the time of this request.
+		// SimpleJWT 5.5.1 retains custom claims but gives access a fresh iat.
+		// The serialized refresh token keeps its original claims.
 		access[name] = value
 	}
 	encoded, err := m.sign(access)

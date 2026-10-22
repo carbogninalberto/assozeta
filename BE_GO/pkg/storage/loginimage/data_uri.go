@@ -10,7 +10,8 @@ var ErrDataURI = errors.New("invalid login image data URI")
 
 // DecodeDataURI mirrors Python b64decode(validate=False), after the first comma.
 // The header is opaque. ASCII garbage and leading/excess padding are accepted;
-// complete padding terminates decoding, but any non-ASCII payload is invalid.
+// padding inside the data is ignored, and trailing padding completes a final
+// group. Any non-ASCII payload is invalid (CPython 3.13.16).
 // Invalid input never returns partially decoded bytes.
 func DecodeDataURI(ctx context.Context, value string, maxDecodedBytes int) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
@@ -44,15 +45,7 @@ func DecodeDataURI(ctx context.Context, value string, maxDecodedBytes int) ([]by
 		}
 		ch := payload[i]
 		if ch == '=' {
-			if position >= 2 {
-				padding++
-				if position+padding >= 4 {
-					if err := ctx.Err(); err != nil {
-						return nil, err
-					}
-					return output, nil
-				}
-			}
+			padding = min(padding+1, 4)
 			continue
 		}
 		n := byte(0)
@@ -88,7 +81,7 @@ func DecodeDataURI(ctx context.Context, value string, maxDecodedBytes int) ([]by
 		}
 		position = (position + 1) % 4
 	}
-	if position != 0 {
+	if position == 1 || position != 0 && position+padding < 4 {
 		return nil, ErrDataURI
 	}
 	if err := ctx.Err(); err != nil {

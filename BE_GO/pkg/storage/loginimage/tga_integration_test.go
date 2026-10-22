@@ -25,7 +25,7 @@ func TestTGAAgainstPillow(t *testing.T) {
 		Lazy, Keep         bool
 		PixelMode          string
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1112 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1150 {
 		t.Fatal("TGA fixture", len(cases), err)
 	}
 	l := tgaFileTestLimits()

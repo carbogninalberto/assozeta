@@ -83,8 +83,9 @@ def vectors():
         add(f'unknown later mode preserves previous {depth}/{color}',prefix=chunk(b'IHDR',ihdr(17,13,depth,color)),size=(17,13))
     add('later IHDR replaces dimensions/mode',prefix=chunk(b'IHDR',ihdr(17,13,8,0)),size=(17,13),mode='L',color=0)
     add('interlace remains sticky',header=chunk(b'IHDR',ihdr(interlace=1)),prefix=chunk(b'IHDR',ihdr()),interlace=True)
-    for kind,min_len,multiple in [(b'gAMA',4,1),(b'sRGB',1,1),(b'pHYs',9,1),(b'cHRM',0,4),(b'PLTE',0,1),(b'eXIf',0,1),(b'123_',0,1),(b'ZZZZ',0,1)]:
+    for kind,min_len,multiple in [(b'gAMA',4,1),(b'sRGB',1,1),(b'pHYs',9,1),(b'cHRM',32,1),(b'PLTE',0,1),(b'eXIf',0,1),(b'123_',0,1),(b'ZZZZ',0,1)]:
         for n in range(12):add(f'{kind!r} length {n}',prefix=chunk(kind,bytes(n)),valid=n>=min_len and n%multiple==0)
+    for n in (31,32,33,35):add(f'cHRM boundary {n}',prefix=chunk(b'cHRM',bytes(n)),valid=n>=32)
     for color,mode,minimum in [(0,'L',2),(2,'RGB',6),(3,'P',0),(4,'LA',0),(6,'RGBA',0)]:
         for n in range(8):add(f'tRNS color {color} length {n}',header=chunk(b'IHDR',ihdr(color=color)),prefix=chunk(b'tRNS',bytes(n)),mode=mode,color=color,valid=n>=minimum)
     for kind in (b'....',b'a bC',b'\xffabc',b'abc\0'):add('invalid chunk id '+kind.hex(),prefix=chunk(kind),valid=False)
@@ -164,13 +165,13 @@ def vectors():
     add('fdAT bad sequence',prefix=chunk(b'fcTL',frame()),ending=struct.pack('>I',104)+b'fdAT'+struct.pack('>I',2),valid=False)
     for text,flag in [(b'',False),(b'0',True)]:add('text default_image '+text.hex(),prefix=act(2)+chunk(b'fcTL',frame())+chunk(b'tEXt',b'default_image\0'+text),frames=3 if flag else 2,default=flag)
     for disposal in (0,1,2,3,255):
-        add(f'text bbox disposal {disposal}',prefix=act(2)+chunk(b'fcTL',frame(disposal=disposal))+chunk(b'tEXt',b'bbox\0invalid'),frames=2,valid=disposal not in (1,2),invalid_tile=True,tile=(0,0,0,0))
+        add(f'text bbox disposal {disposal}',prefix=act(2)+chunk(b'fcTL',frame(disposal=disposal))+chunk(b'tEXt',b'bbox\0invalid'),frames=2,invalid_tile=True,tile=(0,0,0,0))
     return cases
 
 
 def run(work,log,tool_env,django_helper=None):
     cases=vectors()
-    assert len(cases)==394
+    assert len(cases)==398
     if django_helper is not None:
         from PIL import ImageFile
         from unittest.mock import patch

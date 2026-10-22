@@ -11,7 +11,8 @@ var ErrJPEGHeader = errors.New("invalid login JPEG marker header")
 
 // JPEGMarkerHeader is the lazy marker stage, not completed Image.open admission.
 // EXIF DPI parsing and MPO adoption must still interpret the retained metadata.
-// HeaderBytes ends after the first SOS segment; entropy data is not consumed.
+// HeaderBytes ends after the first SOS segment or at EOF between markers; entropy
+// data is not consumed. An EOF-admitted header need not have decodable pixels.
 type JPEGMarkerHeader struct {
 	Width, Height      int
 	Mode               string
@@ -23,7 +24,7 @@ type JPEGMarkerHeader struct {
 	PixelWarning       bool
 }
 
-// ReadJPEGMarkerHeader preserves Pillow 11.1's marker-level acceptance, including
+// ReadJPEGMarkerHeader preserves Pillow 13's marker-level acceptance, including
 // missing pixel tables, repeated frames, ignored junk and empty SOS payloads.
 // maxHeaderBytes bounds consumed input and retained metadata, not total RSS.
 func ReadJPEGMarkerHeader(ctx context.Context, data []byte, maxHeaderBytes int) (JPEGMarkerHeader, error) {
@@ -40,7 +41,11 @@ func ReadJPEGMarkerHeader(ctx context.Context, data []byte, maxHeaderBytes int) 
 	cursor := jpegHeaderCursor{ctx: ctx, data: data, position: 2, limit: maxHeaderBytes}
 	header := JPEGMarkerHeader{}
 	var minimumICC []byte
+markers:
 	for {
+		if cursor.position == len(data) {
+			break
+		}
 		prefix, err := cursor.take(1)
 		if err != nil {
 			return empty, err
@@ -50,6 +55,9 @@ func ReadJPEGMarkerHeader(ctx context.Context, data []byte, maxHeaderBytes int) 
 		}
 		var marker byte
 		for {
+			if cursor.position == len(data) {
+				break markers
+			}
 			value, err := cursor.take(1)
 			if err != nil {
 				return empty, err
@@ -154,21 +162,22 @@ func ReadJPEGMarkerHeader(ctx context.Context, data []byte, maxHeaderBytes int) 
 			}
 		}
 		if marker == 0xda {
-			if header.Width <= 0 || header.Height <= 0 || header.Mode == "" {
-				return empty, ErrJPEGHeader
-			}
-			pixels := int64(header.Width) * int64(header.Height)
-			if pixels > 2*89478485 {
-				return empty, ErrJPEGHeader
-			}
-			header.PixelWarning = pixels > 89478485
-			header.HeaderBytes = cursor.position
-			if err := ctx.Err(); err != nil {
-				return empty, err
-			}
-			return header, nil
+			break
 		}
 	}
+	if header.Width <= 0 || header.Height <= 0 || header.Mode == "" {
+		return empty, ErrJPEGHeader
+	}
+	pixels := int64(header.Width) * int64(header.Height)
+	if pixels > 2*89478485 {
+		return empty, ErrJPEGHeader
+	}
+	header.PixelWarning = pixels > 89478485
+	header.HeaderBytes = cursor.position
+	if err := ctx.Err(); err != nil {
+		return empty, err
+	}
+	return header, nil
 }
 
 type jpegHeaderCursor struct {

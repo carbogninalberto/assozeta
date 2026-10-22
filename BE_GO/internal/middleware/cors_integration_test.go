@@ -34,7 +34,7 @@ func TestCORSPortableHTTP(t *testing.T) {
 		}
 	}
 	raw, err := os.ReadFile(os.Getenv("ASSOZETA_CORS_FIXTURE"))
-	if err != nil || json.Unmarshal(raw, &fixture) != nil || len(fixture.Policies) != 5 || len(fixture.URLs) != 40 || os.Getenv("ASSOZETA_CONTRACT_PYTHON") == "" {
+	if err != nil || json.Unmarshal(raw, &fixture) != nil || len(fixture.Policies) != 5 || len(fixture.URLs) != 44 || os.Getenv("ASSOZETA_CONTRACT_PYTHON") == "" {
 		t.Fatal("run TESTS/adapters/django/cors.py")
 	}
 	root, err := filepath.Abs("../../..")

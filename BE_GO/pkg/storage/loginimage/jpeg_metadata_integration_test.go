@@ -23,7 +23,7 @@ func TestJPEGMetadataAgainstPillow(t *testing.T) {
 		Data, Expected []byte
 		Invalid        bool
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 226 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 236 {
 		t.Fatal("invalid metadata fixture", err)
 	}
 	decoder, err := NewJPEGDecoder(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), jpegTestLimits())

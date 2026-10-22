@@ -109,8 +109,15 @@ func Transform(ctx context.Context, input Raster, width, height int, maxWorkingB
 			return empty, ErrWorkingLimit
 		}
 	}
+	// Pillow 13 reduces vertically first when the height reduction is strictly
+	// greater than twice the width reduction. Compare without doubling/overflow.
+	verticalFirst := input.Height > height && (input.Width <= width || (input.Height-height-1)/2 >= input.Width-width)
 	if width != input.Width && height != input.Height {
-		n, e := rasterBytes(width, input.Height, outputC)
+		midWidth, midHeight := width, input.Height
+		if verticalFirst {
+			midWidth, midHeight = input.Width, height
+		}
+		n, e := rasterBytes(midWidth, midHeight, outputC)
 		if e != nil || !reserve(n) {
 			return empty, ErrWorkingLimit
 		}
@@ -145,27 +152,47 @@ func Transform(ctx context.Context, input Raster, width, height int, maxWorkingB
 		}
 	}
 	working := prepared
-	if width != input.Width {
-		kernel, err := coefficients(ctx, input.Width, width)
-		if err != nil {
-			return empty, err
+	workingWidth, workingHeight := input.Width, input.Height
+	resizeHorizontal := func() error {
+		if width == workingWidth {
+			return nil
 		}
-		working = make([]byte, width*input.Height*outputC)
-		if err := horizontal(ctx, prepared, working, input.Width, input.Height, width, outputC, kernel); err != nil {
+		kernel, err := coefficients(ctx, workingWidth, width)
+		if err != nil {
+			return err
+		}
+		output := make([]byte, width*workingHeight*outputC)
+		if err := horizontal(ctx, working, output, workingWidth, workingHeight, width, outputC, kernel); err != nil {
+			return err
+		}
+		working, workingWidth = output, width
+		return nil
+	}
+	resizeVertical := func() error {
+		if height == workingHeight {
+			return nil
+		}
+		kernel, err := coefficients(ctx, workingHeight, height)
+		if err != nil {
+			return err
+		}
+		output := make([]byte, workingWidth*height*outputC)
+		if err := vertical(ctx, working, output, workingWidth, height, outputC, kernel); err != nil {
+			return err
+		}
+		working, workingHeight = output, height
+		return nil
+	}
+	passes := [2]func() error{resizeHorizontal, resizeVertical}
+	if verticalFirst {
+		passes[0], passes[1] = passes[1], passes[0]
+	}
+	for _, pass := range passes {
+		if err := pass(); err != nil {
 			return empty, err
 		}
 	}
-	if height != input.Height {
-		kernel, err := coefficients(ctx, input.Height, height)
-		if err != nil {
-			return empty, err
-		}
-		output := make([]byte, width*height*outputC)
-		if err := vertical(ctx, working, output, width, height, outputC, kernel); err != nil {
-			return empty, err
-		}
-		working = output
-	} else if width == input.Width {
+	if width == input.Width && height == input.Height {
 		working = append([]byte(nil), prepared...)
 	}
 	if err := ctx.Err(); err != nil {

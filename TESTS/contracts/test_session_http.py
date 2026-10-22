@@ -11,7 +11,6 @@ from TESTS.http_client import Client
 
 OWNER='00000000-0000-4000-8000-000000000001'
 DELETED='00000000-0000-4000-8000-000000000004'
-INACTIVE='00000000-0000-4000-8000-000000000003'
 DELETE_COOKIE='sessionid=""; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax'
 
 
@@ -32,8 +31,12 @@ class SessionHTTPContracts(unittest.TestCase):
     def test_no_cookie_still_varies(self):self.check(self.request())
     def test_active_session(self):self.check(self.request('sessionid=http-session-active'),actor=OWNER)
     def test_inactive_and_deleted_backend_rules(self):
-        for key,actor in [('inactive',None),('deleted',DELETED),('social-inactive',INACTIVE)]:
+        for key,actor in [('inactive',None),('deleted',DELETED),('social-inactive',None)]:
             with self.subTest(key=key):self.check(self.request('sessionid=http-session-'+key),actor=actor)
+        for provider in ('google','apple','orcid'):
+            for suffix,actor in [('active',OWNER),('deleted',DELETED),('inactive',None),('inactive-wrong',None),('inactive-oversized',None)]:
+                with self.subTest(provider=provider,suffix=suffix):
+                    self.check(self.request('sessionid=http-session-'+provider+'-'+suffix),actor=actor)
     def test_missing_short_empty_and_corrupt_sessions_delete_cookie(self):
         for key in ('','short','http-session-missing','http-session-corrupt','http-session-none'):
             with self.subTest(key=key):self.check(self.request('sessionid='+key),deleted=True)
@@ -125,7 +128,7 @@ class SessionHTTPContracts(unittest.TestCase):
     def test_concurrent_audit_context_is_request_local(self):
         def run(i):
             cid='session-request-'+str(i)
-            key,actor=[('active',OWNER),('deleted',DELETED),('inactive',None),('social-inactive',INACTIVE),(None,None)][i%5]
+            key,actor=[('active',OWNER),('deleted',DELETED),('inactive',None),('social-inactive',None),(None,None)][i%5]
             return cid,actor,self.request('sessionid=http-session-'+key if key else None,headers={'X-Correlation-Id':cid})
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
             for cid,actor,result in pool.map(run,range(32)):self.check(result,actor=actor,cid=cid)

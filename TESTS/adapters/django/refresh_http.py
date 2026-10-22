@@ -39,6 +39,7 @@ def run(work, log, tool_env, cache_address):
     target = User.objects.get(pk=uid(30))
     pair = JWTTokenService.generate_tokens_for_user(target)
     refresh = RefreshToken(pair['refresh_token']); refresh['custom'] = {'contract':'preserved'}
+    refresh['iat']=int(time.time())-600
     expired = RefreshToken(); expired['exp'] = 1
     malformed = AccessToken(); malformed['user_id'] = 'invalid'
     session, _ = begin(User.objects.get(pk=uid(8)), target.pk)
@@ -47,6 +48,13 @@ def run(work, log, tool_env, cache_address):
         'inactive_access':token(3,'access'), 'inactive_refresh':token(3,'refresh'),
         'deleted_refresh':token(4,'refresh'), 'missing_refresh':token(999,'refresh')}
     fixture['malformed_access'] = str(malformed)
+    expired_access=AccessToken();expired_access['exp']=1
+    fixture['expired_access']=str(expired_access)
+    expired_access['iat']=int(time.time())+3600
+    fixture['future_expired_access']=str(expired_access)
+    pieces=fixture['expired_access'].split('.')
+    pieces[2]=('A' if pieces[2][0]!='A' else 'B')+pieces[2][1:]
+    fixture['foreign_expired_access']='.'.join(pieces)
     from cryptography.hazmat.primitives.serialization import load_pem_private_key
     from TESTS.adapters.django.jwt_document import append_cases
     fixture['jwt_documents']=[]

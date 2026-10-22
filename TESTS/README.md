@@ -228,7 +228,7 @@ is explicitly Django-specific and lives under `adapters/django/`.
 The backend-specific adapter checks actual Django/SimpleJWT/hashers against Go,
 then verifies Go-issued tokens and hashes in Django. It does not import either
 implementation into portable contracts, and it does not prove HTTP login or
-permission parity. Use Python 3.13.2 (the exact `BE/Dockerfile` version) and run
+permission parity. Use Python 3.13.16 (the exact `BE/Dockerfile` version) and run
 from the repository root with Go available:
 
 ```sh
@@ -487,9 +487,11 @@ and final session delivery remain open. See `BE_GO/internal/service/login_respon
 ### Login image pixel prerequisites
 
 `adapters/django/login_image_pixels.py` runs ten explicit size/threshold decisions
-through the real Django helper, compares 54 Go pixel transformations byte-for-byte
+through the real Django helper, compares 84 Go pixel transformations byte-for-byte
 with Pillow and checks 19,535 CPython Base64 differential vectors. Explicit
-constant/identity/white-alpha expectations anchor the pixel oracle. The Go tests
+constant/identity/white-alpha expectations and independently ordered single-axis
+resizes anchor the pixel oracle, including the strict vertical-first threshold
+in Pillow 13. The shipped-image oracle requires this same transform/Base64 matrix. The Go tests
 use `imageintegration`; cancellation, logical working-byte limits, overflow and
 32 concurrent transformations are also checked. No generated image fixture or
 customer image is committed, and all managed tables remain unchanged.
@@ -511,27 +513,31 @@ shipped static helper as UID 10001, with a read-only filesystem and no network.
 The same command is required in Go CI after image construction. Library versions
 and notices are inspected; there is no pixel/byte tolerance.
 
-`adapters/django/login_jpeg_decode.py` adds 312 exact JPEG pixel/comment cases
+`adapters/django/login_jpeg_decode.py` adds 314 exact JPEG pixel/comment cases
 and 1,556 explicitly invalid streams. The account suite calls the actual Django
-helper for all 1,868 cases. Of the decoded cases, 310 also produce exact output
-JPEGs and two retain Pillow's long-comment save failure/original URI. Coverage
+helper for all 1,870 cases. All 314 decoded cases produce exact output JPEGs,
+including narrow-image comments through the 65,533-byte marker limit. Coverage
 includes progressive/optimized coding, subsampling, CMYK/YCCK, EXIF/ICC, restart
 markers, tolerated corruption and comment ordering/size boundaries. Process
 failure, native framing, cancellation, timeout, raster limits and 32 concurrent
 decodes are checked. The image command above now runs this decoder suite too.
+`python TESTS/adapters/go/login_jpeg_comment_sanitizer.py` additionally checks
+forty valid comments across five modes, exact output limits, truncated input and
+oversized markers in ordinary and ASan/UBSan builds (330 child-process checks).
+It requires the production Python patch version and runs in Go CI.
 
-`adapters/django/login_jpeg_header.py` adds 1,352 explicit lazy marker-header
+`adapters/django/login_jpeg_header.py` adds 1,364 explicit lazy marker-header
 outcomes, including all marker codes and every prefix of one JPEG across the SOS
-boundary. The account suite verifies three real Django passthrough cases with
+boundary, including EOF after SOF/DHT without a scan. The account suite verifies three real Django passthrough cases with
 recognizable headers but undecodable pixels. Go tests header byte limits,
 cancellation, metadata ownership/ordering/offsets and concurrent readers. The
 image rehearsal includes these header checks as well. This marker phase retains
 EXIF/MPF/Ultra HDR information for later interpretation; it does not certify EXIF
 DPI parsing or MPO adoption.
 
-`adapters/django/login_jpeg_metadata.py` adds 226 explicitly expected EXIF/MPF
+`adapters/django/login_jpeg_metadata.py` adds 236 explicitly expected EXIF/MPF
 outcomes and first-frame bytes, including malformed directories, truncated MP
-entries, JFIF bypass and Ultra HDR. `adapters/django/login_jpeg_file.py` adds 73
+entries, JFIF bypass and Ultra HDR. `adapters/django/login_jpeg_file.py` adds 97
 complete JPEG file-policy cases and reruns the metadata/decoder vectors through
 the composed processor. The account suite calls the actual Django helper; the
 image rehearsal tests the shipped codec. Per-stage budgets, a single pipeline
@@ -547,17 +553,17 @@ compositions, 300 unsupported modes and 23 invalid streams. Exact budgets,
 overflow, cancellation and concurrent decodes are tested, including in the image
 oracle. This does not certify complete PNG file processing.
 
-`adapters/django/login_png_header.py` adds 394 explicit lazy PNG header/metadata
+`adapters/django/login_png_header.py` adds 398 explicit lazy PNG header/metadata
 outcomes: CRCs, malformed/truncated chunks, repeated headers, text inflation and
 memory ceilings, APNG first-frame sequences/rectangles and text-key collisions.
-The account suite verifies zero pixel loads for 235 valid 200×100 passthroughs through
+The account suite verifies zero pixel loads for 237 valid 200×100 passthroughs through
 the actual Django helper. Go tests header budgets, cancellation, metadata
 ownership and 32 concurrent readers; the image rehearsal includes this oracle.
-The composed PNG pipeline now separately verifies 1,466 whole-file decisions,
+The composed PNG pipeline now separately verifies 1,472 whole-file decisions,
 including post-pixel metadata, APNG first-frame placement and resized mode 1.
 Public image/response wiring remains open.
 
-`adapters/django/login_bmp.py` adds 512 BMP/DIB cases with declared header modes,
+`adapters/django/login_bmp.py` adds 534 BMP/DIB cases with declared header modes,
 pixels and whole-file JPEG/original outcomes. It covers all seven header sizes,
 raw depths, accepted bitfield layouts, palette reduction/load failures, RLE4/RLE8
 quirks, partial rows, offsets and size thresholds. The account suite compares the
@@ -582,15 +588,16 @@ checked. Use the pinned image-oracle Python environment for standalone execution
 `adapters/django/login_pcx.py` adds 831 declared PCX/DCX first-frame header,
 pixel and file-policy cases. Coverage includes partial headers, all RLE counts,
 row overrun/padding, indexed bitplanes, padded planar RGB, tail palettes, DCX
-directory/absolute-offset behavior, DPI and file-size thresholds. Accounts calls
+directory/frame-relative offset behavior, DPI and file-size thresholds. Accounts calls
 the actual Django helper; the image rehearsal runs the same oracle. Exact
 header/pixel budgets, overflow, ownership, mid-operation cancellation, concurrent
 pipelines and encoder-stage admission/cancellation/reuse are also checked.
 
 
-`adapters/django/login_tga.py` adds 1,112 declared TGA header/pixel/file cases.
+`adapters/django/login_tga.py` adds 1,150 declared TGA header/pixel/file cases.
 Raw/RLE sample modes, orientation, inverted 16-bit alpha, short metadata reads,
-palette-induced P/PA and load failures, no-tile lazy admission, RLE row/payload
+palette-induced P/PA and load failures, RGBA palettes, v2 extension alpha removal,
+no-tile lazy admission, RLE row/payload
 boundaries and size thresholds are compared with Pillow and the actual Django
 helper. The shipped image runs the same oracle. Exact stage budgets, overflow,
 ownership, mid-operation cancellation, concurrent pipelines and encoder-stage
@@ -598,9 +605,9 @@ admission/cancellation/reaping/reuse are checked. Use the pinned Python environm
 for standalone execution; full format dispatch and public login remain open.
 
 
-`adapters/django/login_qoi.py` adds 2,758 declared QOI header/pixel/file cases.
-It covers every channel/colorspace byte and initial cache index, seeded cache
-state, alpha-dependent hashing, wrapping difference/luma commands, all run
+`adapters/django/login_qoi.py` adds 2,762 declared QOI header/pixel/file cases.
+It covers every channel/colorspace byte and initial cache index, initially transparent cache
+state and opaque previous pixel, alpha-dependent hashing, wrapping difference/luma commands, all run
 lengths, row/end overshoot, truncated operands, ignored footers and size policy.
 Accounts invokes the actual Django helper; the shipped image runs the same
 oracle. Exact stage budgets, overflow, ownership, mid-operation cancellation,
@@ -609,9 +616,9 @@ reaping/reuse are checked. The test-only fault encoder now supports RGB requests
 Use the pinned Python environment for standalone execution.
 
 
-`adapters/django/login_xbm.py` adds 1,485 declared XBM header/pixel/file cases.
-It covers the 16-byte prefix and 512-byte header windows, greedy markers, numeric
-and whitespace grammar, every packed byte and nibble/macro-name byte, row padding,
+`adapters/django/login_xbm.py` adds 1,509 declared XBM header/pixel/file cases.
+It covers 75-byte line reads, first declarations, block comments, signed/underscored
+integers and whitespace grammar, every packed byte and nibble/macro-name byte, row padding,
 scanner operand/read boundaries and size policy. Accounts invokes the actual
 Django helper; the shipped image runs the same oracle. Exact budgets, overflow,
 ownership, mid-operation/long-scan cancellation, 32 concurrent mixed-image
@@ -757,7 +764,7 @@ The CI protocol step runs this adapter before credentials. See the scoped contra
 in `BE_GO/internal/config/README.md`; complete environment/release wiring is open.
 
 `python TESTS/adapters/django/cors.py` runs 51 portable HTTP contracts per backend
-across five policies and checks 40 declared Python URL comparison boundaries.
+across five policies and checks 44 declared Python URL comparison boundaries.
 Actual Django ASGI and Go HTTP servers use controlled terminals for preflight,
 Vary, Latin-1 origin reflection, errors, malformed configuration, streaming and
 concurrent requests. The accounts adapter's refresh rehearsal also runs four
@@ -787,7 +794,7 @@ fixture-only reset endpoint is absent from production. No cases are skipped.
 
 
 `python TESTS/adapters/django/production_runtime.py` verifies that application-wide Django
-oracles use the exact interpreter pinned in `BE/Dockerfile` (currently 3.13.2).
+oracles use the exact interpreter pinned in `BE/Dockerfile` (currently 3.13.16).
 The full accounts adapter enforces this too. Python 3.12.6 differs in bracketed
 origin validation and JSON trailing-comma diagnostics and must not define the
 production HTTP contract. CI uses the same pinned version.
@@ -988,27 +995,28 @@ includes static libwebp with its license, patent grant and verified binary/packa
 version. Its full codec oracle includes WebP. Shared URI parity is now 72 cases
 with two demonstrated, non-exhaustive gaps; the response fixture has 45 cases.
 
-`adapters/django/login_cur.py` adds 495 declared CUR header/pixel/file cases, checked
+`adapters/django/login_cur.py` adds 533 declared CUR header/pixel/file cases, checked
 against Pillow and the actual Django helper. These distinguish strict two-dimension
 directory selection, literal zero dimensions, offset-dependent alpha, lazy DIB
-loading and recoverable versus terminal opening errors. It also checks bounded
+loading, grayscale AND/XOR masks with LA output, and recoverable versus terminal
+opening errors. Masked decode budgets include input, both source planes and output. It also checks bounded
 stages, 32 concurrent requests, queue expiry, native JPEG reaping and reuse.
 The shared dispatcher has 80 passing URI comparisons plus two non-exhaustive gaps;
 the response fixture has 46 cases including CUR avatar/logo conversion. The accounts
-and shipped-image adapters require these cases. BMP (512 cases) and ICO (678 cases)
+and shipped-image adapters require these cases. BMP (534 cases) and ICO (678 cases)
 regressions verify that the shared DIB parser still preserves their behavior.
 
 
-`adapters/django/login_pcd.py` adds 59 authored PCD header/pixel/file cases against
-Pillow 11.1 and the actual Django helper. Independent PhotoYCC arithmetic checks
-fixed anchors, luma/chroma sweeps and two-by-two chroma cells. Orientation masks,
-truncated headers/pixels and exact file-size thresholds are explicit. Pillow's
-rotation failure for orientations 1/3 retains the original URI. Resource limits,
-cancellation during blocked native stdin, queue deadlines, child reaping/reuse
-and 32 mixed calls are checked. The shared dispatcher has 84 passing URI cases
-plus one demonstrated, non-exhaustive TIFF gap. The 47 PostgreSQL response cases
-include eleven image scenarios. The accounts suite and shipped-image oracle run
-the new PCD cases; public HTTP login and complete image parity remain open.
+`adapters/django/login_pcd.py` declares 63 authored PCD header/pixel/file cases
+against Pillow 13 and the actual Django helper. Independent PhotoYCC arithmetic
+checks fixed anchors, luma/chroma sweeps and two-by-two chroma cells. Quarter-turn
+rotation is checked with independent pixel indexes in both directions, including
+resized output. Orientation masks, truncated headers/pixels and exact file-size
+thresholds are explicit. Resource limits, cancellation during blocked native stdin,
+queue deadlines, child reaping/reuse and 32 mixed calls are checked. The focused
+Python 3.13.16 oracle passes. Shared dispatcher and PostgreSQL response expectations
+now include rotated PCD conversion and pass their focused current-reference checks. Public HTTP login and complete image parity remain
+open. Historical 59-case Pillow 11 results are not current-reference evidence.
 
 
 `adapters/django/login_pixar.py` adds 81 independently authored PIXAR cases for
@@ -1016,7 +1024,7 @@ raw RGB pixels, header/mode/dimension errors, ignored fields, raw refill boundar
 lazy missing-pixel passthrough and file-size/JPEG-dimension limits. Actual Pillow
 and Django check every declared expectation. Go checks logical budgets, ownership,
 cancellation, native admission/deadline/reaping/reuse and mixed concurrency.
-The shared dispatcher has 88 URI comparisons, including PCD/PIXAR precedence,
-plus one demonstrated non-exhaustive TIFF gap. The response fixture has 48 cases
+The shared dispatcher has 94 URI comparisons, including PCD/PIXAR precedence,
+plus separately reported, non-exhaustive TIFF and AVIF gaps. The response fixture has 48 cases
 with twelve concrete image scenarios. Accounts and shipped-image checks include
 PIXAR; complete image-registry and public-login parity remain unfinished.

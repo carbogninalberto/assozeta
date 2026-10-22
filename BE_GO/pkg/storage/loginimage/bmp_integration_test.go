@@ -25,7 +25,7 @@ func TestBMPAgainstPillow(t *testing.T) {
 		Header             *BMPHeader
 		Lazy, Keep         bool
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 512 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 534 {
 		t.Fatal("BMP fixture", len(cases), err)
 	}
 	limits := bmpFileTestLimits()

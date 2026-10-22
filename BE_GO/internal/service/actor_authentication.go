@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/google/uuid"
 )
 
@@ -43,7 +44,7 @@ func (s *ActorAuthentication) Authenticate(ctx context.Context, authorization st
 	}
 	claims, err := s.tokens.Verify(parts[1], "access")
 	if err != nil {
-		return nil, &domain.AuthenticationFailure{Code: "token_not_valid", Detail: "Given token not valid for any token type"}
+		return nil, &domain.AuthenticationFailure{Code: "token_not_valid", Detail: "Given token not valid for any token type", TokenExpired: errors.Is(err, jwt.ErrExpiredToken)}
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 
 var ErrQOIDecode = errors.New("login QOI pixel decoding failed")
 
-// DecodeQOI preserves Pillow's seeded color cache, wrapping deltas, clipped runs
+// DecodeQOI preserves Pillow 13's initially empty color cache, wrapping deltas, clipped runs
 // and ignored end marker. The logical budget counts input plus normalized output;
 // the fixed 64-entry cache and parser state are outside that buffer accounting.
 func DecodeQOI(ctx context.Context, h QOIHeader, data []byte, maxBytes int64) (Raster, error) {
@@ -36,7 +36,6 @@ func DecodeQOI(ctx context.Context, h QOIHeader, data []byte, maxBytes int64) (R
 	out := make([]byte, int(size))
 	var cache [64][4]byte
 	previous := [4]byte{0, 0, 0, 255}
-	cache[53] = previous
 	pos := h.DataOffset
 	for written := 0; written < len(out); {
 		if err := ctx.Err(); err != nil {

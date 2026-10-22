@@ -24,7 +24,7 @@ func TestJPEGMarkerAgainstPillow(t *testing.T) {
 		Warning, Invalid bool
 		HeaderBytes      int `json:"header_bytes"`
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1352 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1364 {
 		t.Fatal("invalid marker fixture", err)
 	}
 	for _, tc := range cases {

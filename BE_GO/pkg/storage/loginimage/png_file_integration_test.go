@@ -23,7 +23,7 @@ func TestPNGFileAgainstPillow(t *testing.T) {
 		Data, JPEG []byte
 		Keep       bool
 	}
-	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1466 {
+	if err := json.Unmarshal(data, &cases); err != nil || len(cases) != 1472 {
 		t.Fatal("invalid PNG file fixture", err, len(cases))
 	}
 	limits := pngFileTestLimits()
