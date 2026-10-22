@@ -1,3 +1,5 @@
+// 2FA source re-reviewed: OTP confirmation, QR setup, and successful enable/disable
+// remain unchanged after atomic user/audit writes and concurrent-profile protection.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
@@ -5,7 +7,7 @@ const reviewed = {
   "BE/application/views/billing_views.py": "28ee7ec15b5bc759546d5df4aaaf4558fe577cbedc8ab60a5256f7dcda06a4c8",
   "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
   "BE/core/authentication.py": "4ea4b9041f1c19aef3105fa9518edb3fb880d1deddef46be7dff701c7a3da3d2",
-  "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
+  "BE/application/views/two_fa_views.py": "256cbbaa52dca083c83fce3145b36d562ba97be2c70b4fbb134046bd20c373b1",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
   "BE/instance/restore/views.py": "90de3a76030be2dc67d06e5a369c2c9faf17214a25927a308ea333d3f5e64b5a",
   "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c"

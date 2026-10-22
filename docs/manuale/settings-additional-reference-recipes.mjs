@@ -1,3 +1,5 @@
+// 2FA source re-reviewed: OTP confirmation, QR setup, and successful enable/disable
+// remain unchanged after atomic user/audit writes and concurrent-profile protection.
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 export const settingsAdditionalReviewedSources = Object.freeze({
   "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
@@ -19,7 +21,7 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/utils/subscriptions_utils.py": "ab922f87b8b1dd491bba41dd86eaabdefd1127c08bdaeb7be4f990657effd22a",
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
-  "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e"
+  "BE/application/views/two_fa_views.py": "256cbbaa52dca083c83fce3145b36d562ba97be2c70b4fbb134046bd20c373b1"
 });
 const contracts = {
   "menu": [
