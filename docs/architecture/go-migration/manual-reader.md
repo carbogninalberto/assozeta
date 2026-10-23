@@ -148,8 +148,32 @@ the Go evaluation-order correction. Cancellation, integer conversion, nested
 result isolation and 32 concurrent owner/public calls have separate Go tests.
 CI runs the complete differential and portable result comparison. The adapter
 records the exact Go source hashes and checks that Go leaves fixture files intact.
-Go database authority, service composition, MCP transport, agent dispatch and
-provider behavior remain open; this library evidence does not establish them.
+This library evidence does not establish transport or service authority.
+
+The separate `--tools --backend go` adapter composes the Go service, repository
+and loader against the same private PostgreSQL rows as Django. All 67 complete
+results match, with one SQL statement for each valid call and no SQL for invalid
+search queries. This includes increasing the public corpus from 2 to 16 and 128
+sections. The statement selects only instance, primary-association and active
+effective-user facts from the existing schema, including `bakney_user`; it loads
+no credentials. The service grants maintainer access only to that live primary
+owner in the matching association. Actor and tenant-owner identities cannot
+replace the effective user, and extra tool arguments cannot supply identity,
+features or source configuration. An explicitly supplied zero identity gives
+public knowledge access.
+
+A long-lived service with a stale in-memory identity observes account disabling,
+soft deletion, self-hosted-mode changes and primary-association changes. Each
+mutation is restored and the complete fixture database/file snapshot is compared.
+Thirty-two concurrent owner/public calls use a four-connection pool and one query
+each. A real PostgreSQL table-lock wait is canceled; subsequent reads recover.
+Unit tests also require cancellation between context resolution and source loading
+to stop further work, and propagate database failures instead of presenting them
+as verified evidence. CI requires the service differential and portable report.
+The service accepts already admitted identity/association values; JWT/WebSocket
+admission, impersonation revocation, MCP/agent dispatch, restore coordination and
+provider behavior remain separate unverified boundaries. No production transport
+is switched to this service by these component tests.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser
