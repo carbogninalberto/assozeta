@@ -9,8 +9,10 @@ has been changed.
 
 The manual knowledge library now implements search, section reads, owner evidence
 and coverage diagnostics. All 67 authored function cases compare complete Django
-results with Go under fixture-supplied trusted context. Go database authority and
-MCP/agent dispatch remain open. The unchanged manual reader browser passes on both
+results with Go under fixture-supplied trusted context. The separate Go service
+also matches all 67 cases using live PostgreSQL owner resolution, with one query
+per valid call, 32 concurrent calls and blocked-query cancellation/recovery.
+JWT/WebSocket admission and MCP/agent dispatch remain open. The unchanged manual reader browser passes on both
 backends, while the separate full manual capture remains incomplete at 55/60
 workflows. See [manual evidence and limitations](manual-reader.md).
 

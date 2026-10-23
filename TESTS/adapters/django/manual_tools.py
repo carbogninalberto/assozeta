@@ -85,7 +85,7 @@ def fingerprints(root):
             for path in root.rglob('*') if path.is_file()}
 
 
-def measure_tools(work, fixture, observed, go_source=False, log=None):
+def measure_tools(work, fixture, observed, go_source=False, log=None, go_service=False):
     from django.db import connection
     from django.test import override_settings
     from auditlog.context import disable_auditlog
@@ -95,11 +95,13 @@ def measure_tools(work, fixture, observed, go_source=False, log=None):
     from application.manuale.tools import MANUAL_TOOL_FUNCTIONS
     from instance.models import InstanceConfiguration
     from TESTS.contracts.test_manual_tools import validate_report
-    if go_source:
+    if go_source or go_service:
         from TESTS.adapters.django.manual_reader_http import ROOT
-        subprocess.run(['go', 'test', '-race', '-c', '-tags', 'manualtoolintegration',
-                        '-o', str(work/'tool-oracle'), './pkg/manual'], cwd=ROOT/'BE_GO',
+        subprocess.run(['go', 'test', '-race', '-c', '-tags', 'manualtoolserviceintegration' if go_service else 'manualtoolintegration',
+                        '-o', str(work/'tool-oracle'), './internal/service' if go_service else './pkg/manual'], cwd=ROOT/'BE_GO',
                        check=True, timeout=180, stdout=log, stderr=subprocess.STDOUT)
+    service_env = {**os.environ, 'ASSOZETA_MANUAL_TOOL_SERVICE_DSN':
+                   f'host={work} port=5432 user=contracts dbname=assozeta_contract_manual_http sslmode=disable'}
     users = {}
     with disable_auditlog():
         for name in ('owner', 'administrator', 'collaborator', 'foreign', 'inactive', 'deleted'):
@@ -147,7 +149,7 @@ def measure_tools(work, fixture, observed, go_source=False, log=None):
         observed[name] = item
         validate_report({'schema_version': 1, 'cases': {name: item}}, {'cases': {name: spec}})
         print('PASS manual tool: '+name, flush=True)
-        if go_source:
+        if go_source or go_service:
             # Fixture-supplied trusted context exercises only the Go library.
             # Django above still resolves authority from the actual database.
             maintainer = (spec.get('actor')=='owner' and setup.get('config', True)
@@ -161,11 +163,33 @@ def measure_tools(work, fixture, observed, go_source=False, log=None):
             manifest = {'Settings': {fields[k]:v for k,v in settings.items()},
                         'Context': {'Maintainer': maintainer, 'Features': ['self_hosted'] if setup.get('config', True) and setup.get('self_hosted', True) else []},
                         'Name': spec['tool'], 'Arguments': args, 'Expected': result}
+            if go_service:
+                # The service receives trusted identity IDs, not role/owner
+                # flags. It must resolve authority against these actual rows.
+                manifest.update(UserID=str(users[spec['actor']].pk) if spec.get('actor') else '',
+                                AssociationID=association_id, OwnerID=str(users['owner'].pk), OtherAssociationID=str(other.pk))
             path = work/'tool-case.json'; path.write_text(json.dumps(manifest))
-            subprocess.run([str(work/'tool-oracle'), '-test.run', '^TestManualToolOracle$', '-test.v'],
-                           env={**os.environ, 'ASSOZETA_MANUAL_TOOL_FIXTURE': str(path)},
+            env = {**service_env, 'ASSOZETA_MANUAL_TOOL_SERVICE_FIXTURE':str(path)} if go_service else {**os.environ, 'ASSOZETA_MANUAL_TOOL_FIXTURE': str(path)}
+            subprocess.run([str(work/'tool-oracle'), '-test.run', '^TestManualToolServiceOracle$' if go_service else '^TestManualToolOracle$', '-test.v'],
+                           env=env,
                            check=True, timeout=45, stdout=log, stderr=subprocess.STDOUT)
-            assert fingerprints(base)==files_before, 'Go library mutated fixture files'
-            item['go_library_result'] = json.loads(path.with_name(path.name+'.result.json').read_text())
-            item['go_library_files_unchanged'] = True
-            print('PASS Go manual tool library: '+name, flush=True)
+            assert fingerprints(base)==files_before, 'Go mutated fixture files'
+            assert snapshot()==before, 'Go mutated fixture database'
+            actual = json.loads(path.with_name(path.name+'.result.json').read_text())
+            if go_service:
+                item.update(go_service_result=actual['result'], go_service_selects=actual['selects'],
+                            go_service_files_unchanged=True, go_service_database_unchanged=True)
+            else:
+                item.update(go_library_result=actual, go_library_files_unchanged=True)
+            print('PASS Go manual tool '+('service' if go_service else 'library')+': '+name, flush=True)
+    if go_service:
+        base=work/'service-live'; settings,_=prepare(base,{})
+        manifest['Settings']={fields[k]:v for k,v in settings.items()}
+        manifest['AssociationID']=str(association.pk)
+        path.write_text(json.dumps(manifest))
+        before=snapshot(); files_before=fingerprints(base)
+        subprocess.run([str(work/'tool-oracle'),'-test.run','^TestManualToolServiceLiveAuthority$','-test.v'],
+                       env=env,check=True,timeout=45,stdout=log,stderr=subprocess.STDOUT)
+        assert snapshot()==before and fingerprints(base)==files_before, 'Live service tests did not restore owned fixture state'
+        result=json.loads(path.with_name(path.name+'.live.json').read_text())
+        return {**result,'database_unchanged':True,'files_unchanged':True}
