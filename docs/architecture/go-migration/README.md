@@ -1515,10 +1515,13 @@ see [the task contract](../../../BE_GO/internal/service/associate_age_update.md)
 ### Audit retention
 
 The concrete service deletes expired logs and association indexes with atomic fenced
-completion. Ten PostgreSQL groups include an actual Django/Go concurrent-index race:
-a definite deferred-FK rollback becomes the legacy handled NULL result, while other
-commit errors propagate. Exact duration, replay, cancellation, heartbeat and query
-plans are covered; production scheduling/ownership remain open. See
+completion. Twelve PostgreSQL groups include early ownership/lease admission and
+an actual Django/Go concurrent-index race. A definite deferred-FK rollback becomes
+the legacy handled NULL result only if authority still permits the fallback
+transaction; owner/token loss after failed COMMIT rejects that completion. Other
+commit errors propagate. Exact duration, late lease-loss rollback, replay,
+cancellation, heartbeat and query plans are covered with a six-statement body
+budget; production registration and scheduling/ownership remain open. See
 [the task contract](../../../BE_GO/internal/service/audit_retention.md).
 
 ### Subscription date defaults

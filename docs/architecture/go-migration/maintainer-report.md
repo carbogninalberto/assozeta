@@ -30,6 +30,11 @@ race detection, including stale admission, exact audit rollback and crash recove
 Django remains the execution owner; packaged token checks, task rate policy and
 installed handoff are still open. See [token worker scope](token-worker-process.md).
 
+Audit retention also rejects stale admission before deletion or handled completion.
+Its twelve PostgreSQL groups include owner/token loss after a real deferred-FK
+COMMIT rejection, preserving all audit/index records and recoverable job state.
+Native registration and scheduler activation remain open.
+
 Scheduler authority now has 48 explicit observations against the pinned actual
 Django runtime and private PostgreSQL. It distinguishes 21 source declarations
 from the single effective configured fresh entry, implicit cleanup and persisted

@@ -27,16 +27,29 @@ import (
 )
 
 type retentionQueries struct {
-	count, active, peak atomic.Int64
-	mu                  sync.Mutex
-	command             string
-	args                []any
+	count, active, peak           atomic.Int64
+	business, fences, completions atomic.Int64
+	mu                            sync.Mutex
+	command                       string
+	args                          []any
+	afterBusiness                 func()
+	afterRollback                 func()
+	afterCommit                   func(error)
 }
 type retentionTraceKey struct{}
+type retentionSQLTraceKey struct{}
 
 func (q *retentionQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
 	q.count.Add(1)
+	ctx = context.WithValue(ctx, retentionSQLTraceKey{}, d.SQL)
+	if strings.Contains(d.SQL, "SELECT o.generation FROM ownership o JOIN") {
+		q.fences.Add(1)
+	}
+	if strings.Contains(d.SQL, "UPDATE public.assozeta_go_jobs j SET state='completed'") {
+		q.completions.Add(1)
+	}
 	if strings.HasPrefix(d.SQL, "WITH expired_audits AS") {
+		q.business.Add(1)
 		q.mu.Lock()
 		q.command = d.SQL
 		q.args = append([]any(nil), d.Args...)
@@ -51,9 +64,21 @@ func (q *retentionQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d p
 	}
 	return ctx
 }
-func (q *retentionQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryEndData) {
+func (q *retentionQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
+	q.mu.Lock()
+	afterBusiness, afterRollback, afterCommit := q.afterBusiness, q.afterRollback, q.afterCommit
+	q.mu.Unlock()
 	if ctx.Value(retentionTraceKey{}) != nil {
 		q.active.Add(-1)
+		if data.Err == nil && afterBusiness != nil {
+			afterBusiness()
+		}
+	}
+	if sql, _ := ctx.Value(retentionSQLTraceKey{}).(string); strings.EqualFold(sql, "commit") && afterCommit != nil {
+		afterCommit(data.Err)
+	}
+	if sql, _ := ctx.Value(retentionSQLTraceKey{}).(string); strings.EqualFold(sql, "rollback") && data.Err == nil && afterRollback != nil {
+		afterRollback()
 	}
 }
 
@@ -224,6 +249,75 @@ func TestAuditRetentionPostgres(t *testing.T) {
 		}
 		counts(t, 7, 4)
 	})
+	t.Run("stale admission sends no business SQL", func(t *testing.T) {
+		for _, defect := range []string{"owner", "generation", "token", "expired"} {
+			reset(t, baseLogs, baseIndexes)
+			job := claim(t)
+			switch defect {
+			case "owner":
+				exec(t, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+			case "generation":
+				exec(t, `UPDATE assozeta_go_job_ownership SET generation=generation+1 WHERE singleton=1`)
+			case "token":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+			case "expired":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, job.ID)
+			}
+			trace.business.Store(0)
+			trace.fences.Store(0)
+			err := service.Run(ctx, job)
+			// Fixture-only restoration; no production ownership transition is exposed.
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if !errors.Is(err, domain.ErrJobLeaseLost) || trace.fences.Load() != 1 || trace.business.Load() != 0 {
+				t.Errorf("%s: fences/business %d/%d, error %v", defect, trace.fences.Load(), trace.business.Load(), err)
+			}
+			counts(t, 7, 4)
+			if state(t, job).State != "running" {
+				t.Fatal("rejected attempt changed job state")
+			}
+		}
+	})
+	t.Run("handled failure fences completion-only transaction", func(t *testing.T) {
+		for _, loss := range []string{"none", "owner", "token"} {
+			reset(t, baseLogs, baseIndexes)
+			job := claim(t)
+			exec(t, `CREATE FUNCTION contract_retention_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'private retention failure'; END $$`)
+			exec(t, `CREATE TRIGGER contract_retention_failure BEFORE DELETE ON auditlog_logentry FOR EACH STATEMENT EXECUTE FUNCTION contract_retention_failure()`)
+			trace.fences.Store(0)
+			trace.completions.Store(0)
+			var changed atomic.Bool
+			var transitionErr error
+			trace.mu.Lock()
+			trace.afterRollback = func() {
+				if loss != "none" && changed.CompareAndSwap(false, true) {
+					if loss == "owner" {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+					} else {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+					}
+				}
+			}
+			trace.mu.Unlock()
+			err := service.Run(ctx, job)
+			trace.mu.Lock()
+			trace.afterRollback = nil
+			trace.mu.Unlock()
+			exec(t, `DROP TRIGGER contract_retention_failure ON auditlog_logentry`)
+			exec(t, `DROP FUNCTION contract_retention_failure()`)
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if transitionErr != nil || trace.fences.Load() != 2 {
+				t.Errorf("both transactions require effect admission: fences=%d transition=%v", trace.fences.Load(), transitionErr)
+			}
+			if loss != "none" {
+				if !changed.Load() || !errors.Is(err, domain.ErrJobLeaseLost) || trace.completions.Load() != 0 || state(t, job).State != "running" {
+					t.Errorf("completion-only transaction ignored ownership loss: %v, completions=%d", err, trace.completions.Load())
+				}
+			} else if err != nil || trace.completions.Load() != 1 || state(t, job).State != "completed" {
+				t.Errorf("handled failure did not complete once: %v", err)
+			}
+			counts(t, 7, 4)
+		}
+	})
 	t.Run("both deletion failures roll back", func(t *testing.T) {
 		for _, table := range []string{"auditlog_logentry", "application_auditlogindex"} {
 			reset(t, baseLogs, baseIndexes)
@@ -247,15 +341,35 @@ func TestAuditRetentionPostgres(t *testing.T) {
 		}
 	})
 	t.Run("stale completion and replay preserve later records", func(t *testing.T) {
+		for _, loss := range []string{"token", "expired"} {
+			reset(t, baseLogs, baseIndexes)
+			job := claim(t)
+			trace.business.Store(0)
+			trace.completions.Store(0)
+			var transitionErr error
+			trace.mu.Lock()
+			trace.afterBusiness = func() {
+				if loss == "token" {
+					_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+				} else {
+					_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, job.ID)
+				}
+			}
+			trace.mu.Unlock()
+			err := service.Run(ctx, job)
+			trace.mu.Lock()
+			trace.afterBusiness = nil
+			trace.mu.Unlock()
+			if transitionErr != nil || trace.business.Load() != 1 || trace.completions.Load() != 1 || !errors.Is(err, domain.ErrJobLeaseLost) {
+				t.Fatalf("%s loss after effects: business/completions %d/%d, transition %v, error %v", loss, trace.business.Load(), trace.completions.Load(), transitionErr, err)
+			}
+			counts(t, 7, 4)
+			if state(t, job).State != "running" {
+				t.Fatal("late lease loss persisted completion")
+			}
+		}
 		reset(t, baseLogs, baseIndexes)
 		job := claim(t)
-		exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
-		if e := service.Run(ctx, job); !errors.Is(e, domain.ErrJobLeaseLost) {
-			t.Fatal("stale completion", e)
-		}
-		counts(t, 7, 4)
-		reset(t, baseLogs, baseIndexes)
-		job = claim(t)
 		if e := service.Run(ctx, job); e != nil {
 			t.Fatal(e)
 		}
@@ -292,70 +406,104 @@ func TestAuditRetentionPostgres(t *testing.T) {
 		counts(t, 4, 2)
 	})
 	t.Run("concurrent index insertion cannot leave an orphan", func(t *testing.T) {
-		reset(t, baseLogs, baseIndexes)
-		job := claim(t)
-		writer, e := db.BeginTxx(ctx, nil)
-		if e != nil {
-			t.Fatal(e)
+		for _, loss := range []string{"none", "owner", "token"} {
+			func() {
+				reset(t, baseLogs, baseIndexes)
+				job := claim(t)
+				trace.fences.Store(0)
+				trace.completions.Store(0)
+				var failedCommit atomic.Bool
+				var transitionErr error
+				trace.mu.Lock()
+				trace.afterCommit = func(commitErr error) {
+					var constraint *pgconn.PgError
+					if errors.As(commitErr, &constraint) && constraint.Code == "23503" && failedCommit.CompareAndSwap(false, true) {
+						// PostgreSQL has rejected COMMIT and rolled back the actual FK
+						// race. Change authority before fallback transaction admission.
+						if loss == "owner" {
+							_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+						} else if loss == "token" {
+							_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+						}
+					}
+				}
+				trace.mu.Unlock()
+				defer func() { trace.mu.Lock(); trace.afterCommit = nil; trace.mu.Unlock() }()
+				writer, e := db.BeginTxx(ctx, nil)
+				if e != nil {
+					t.Fatal(e)
+				}
+				defer writer.Rollback()
+				// The second old log has no index. Hold its parent-key lock until a
+				// newly inserted index commits, after retention takes its snapshot.
+				var id int
+				if e = writer.GetContext(ctx, &id, `SELECT id FROM auditlog_logentry WHERE id=$1 FOR KEY SHARE`, fixture.Rows[1].ID); e != nil {
+					t.Fatal(e)
+				}
+				row := clone(t, baseIndexes[0], map[string]any{"audit_log_index_id": uuid.NewString(), "log_entry_id": id})
+				if _, e = writer.ExecContext(ctx, `INSERT INTO application_auditlogindex SELECT * FROM jsonb_populate_record(NULL::application_auditlogindex,$1::jsonb)`, row); e != nil {
+					t.Fatal(e)
+				}
+				runCtx, stop := context.WithTimeout(ctx, 5*time.Second)
+				result := make(chan error, 1)
+				finished := false
+				defer func() {
+					stop()
+					writer.Rollback()
+					if !finished {
+						<-result
+					}
+				}()
+				go func() { result <- service.Run(runCtx, job) }()
+				deadline := time.Now().Add(2 * time.Second)
+				for {
+					var waiting bool
+					if e = db.GetContext(ctx, &waiting, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE 'WITH expired_audits AS%')`); e != nil {
+						t.Fatal(e)
+					}
+					if waiting {
+						break
+					}
+					if time.Now().After(deadline) {
+						t.Fatal("retention did not wait on the index writer")
+					}
+					time.Sleep(5 * time.Millisecond)
+				}
+				if e = writer.Commit(); e != nil {
+					t.Fatal(e)
+				}
+				e = <-result
+				finished = true
+				trace.mu.Lock()
+				trace.afterCommit = nil
+				trace.mu.Unlock()
+				exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+				if transitionErr != nil || !failedCommit.Load() || trace.fences.Load() != 2 {
+					t.Fatalf("%s: failed COMMIT/fallback not exercised: observed=%v fences=%d transition=%v", loss, failedCommit.Load(), trace.fences.Load(), transitionErr)
+				}
+				counts(t, 7, 5)
+				if loss == "none" {
+					if e != nil || trace.completions.Load() != 2 {
+						t.Fatalf("Django handles the deferred FK failure as None: %v; completions=%d", e, trace.completions.Load())
+					}
+					if j := state(t, job); j.State != "completed" || j.Result != nil {
+						t.Fatal("handled commit failure did not complete with NULL")
+					}
+					if e = service.Run(ctx, job); !errors.Is(e, domain.ErrJobLeaseLost) {
+						t.Fatal("completed occurrence reopened", e)
+					}
+				} else if !errors.Is(e, domain.ErrJobLeaseLost) || trace.completions.Load() != 1 || state(t, job).State != "running" {
+					t.Fatalf("%s: fallback ignored authority loss: %v; completions=%d", loss, e, trace.completions.Load())
+				}
+				counts(t, 7, 5)
+				// A later scheduled occurrence sees the new child and completes retention.
+				next := claim(t)
+				if e = service.Run(ctx, next); e != nil {
+					t.Fatal("next occurrence after child race", e)
+				}
+				counts(t, 4, 2)
+			}()
 		}
-		defer writer.Rollback()
-		// The second old log has no index. Hold its parent-key lock until a
-		// newly inserted index commits, after retention takes its snapshot.
-		var id int
-		if e = writer.GetContext(ctx, &id, `SELECT id FROM auditlog_logentry WHERE id=$1 FOR KEY SHARE`, fixture.Rows[1].ID); e != nil {
-			t.Fatal(e)
-		}
-		row := clone(t, baseIndexes[0], map[string]any{"audit_log_index_id": uuid.NewString(), "log_entry_id": id})
-		if _, e = writer.ExecContext(ctx, `INSERT INTO application_auditlogindex SELECT * FROM jsonb_populate_record(NULL::application_auditlogindex,$1::jsonb)`, row); e != nil {
-			t.Fatal(e)
-		}
-		runCtx, stop := context.WithTimeout(ctx, 5*time.Second)
-		result := make(chan error, 1)
-		finished := false
-		defer func() {
-			stop()
-			writer.Rollback()
-			if !finished {
-				<-result
-			}
-		}()
-		go func() { result <- service.Run(runCtx, job) }()
-		deadline := time.Now().Add(2 * time.Second)
-		for {
-			var waiting bool
-			if e = db.GetContext(ctx, &waiting, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE 'WITH expired_audits AS%')`); e != nil {
-				t.Fatal(e)
-			}
-			if waiting {
-				break
-			}
-			if time.Now().After(deadline) {
-				t.Fatal("retention did not wait on the index writer")
-			}
-			time.Sleep(5 * time.Millisecond)
-		}
-		if e = writer.Commit(); e != nil {
-			t.Fatal(e)
-		}
-		e = <-result
-		finished = true
-		if e != nil {
-			t.Fatalf("Django handles the deferred FK failure as None: %v", e)
-		}
-		counts(t, 7, 5)
-		if j := state(t, job); j.State != "completed" || j.Result != nil {
-			t.Fatal("handled commit failure did not complete with NULL")
-		}
-		if e = service.Run(ctx, job); !errors.Is(e, domain.ErrJobLeaseLost) {
-			t.Fatal("completed occurrence reopened", e)
-		}
-		counts(t, 7, 5)
-		// A later scheduled occurrence sees the new child and completes retention.
-		next := claim(t)
-		if e = service.Run(ctx, next); e != nil {
-			t.Fatal("next occurrence after child race", e)
-		}
-		counts(t, 4, 2)
 	})
 	t.Run("unrelated commit failures are not swallowed", func(t *testing.T) {
 		reset(t, baseLogs, baseIndexes)
@@ -428,7 +576,7 @@ func TestAuditRetentionPostgres(t *testing.T) {
 			if e := service.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			if trace.count.Load() != 5 {
+			if trace.count.Load() != 6 {
 				t.Fatalf("%d logs: %d statements", n, trace.count.Load())
 			}
 			counts(t, 0, 0)
