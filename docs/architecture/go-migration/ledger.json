@@ -7087,14 +7087,19 @@
         "BE_GO/pkg/manual/refresh_test.go",
         "BE_GO/internal/service/manual_reader_test.go",
         "BE_GO/pkg/manual/sections_test.go",
-        "BE_GO/internal/handler/manual_encoding_test.go"
+        "BE_GO/internal/handler/manual_encoding_test.go",
+        "TESTS/adapters/django/manual_refresh_lock.py",
+        "BE_GO/pkg/manual/refresh_process_integration_test.go",
+        "TESTS/adapters/go/manual_cache_image.py",
+        "selfhost/tests/test_go_lifecycle.py"
       ],
       "evidence": [
         "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
-        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes."
+        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes.",
+        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact."
       ],
       "notes": [
-        "HTTP routes implemented; installed cache-volume permissions, actual reader browser workflows, MCP/assistant integration and required-release package delivery remain unverified."
+        "HTTP routes implemented; actual reader browser workflows, packaged HTTP refresh, MCP/assistant integration and required-release package delivery remain unverified."
       ]
     },
     {
@@ -7162,14 +7167,19 @@
         "BE_GO/pkg/manual/refresh_test.go",
         "BE_GO/internal/service/manual_reader_test.go",
         "BE_GO/pkg/manual/sections_test.go",
-        "BE_GO/internal/handler/manual_encoding_test.go"
+        "BE_GO/internal/handler/manual_encoding_test.go",
+        "TESTS/adapters/django/manual_refresh_lock.py",
+        "BE_GO/pkg/manual/refresh_process_integration_test.go",
+        "TESTS/adapters/go/manual_cache_image.py",
+        "selfhost/tests/test_go_lifecycle.py"
       ],
       "evidence": [
         "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
-        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes."
+        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes.",
+        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact."
       ],
       "notes": [
-        "HTTP routes implemented; installed cache-volume permissions, actual reader browser workflows, MCP/assistant integration and required-release package delivery remain unverified."
+        "HTTP routes implemented; actual reader browser workflows, packaged HTTP refresh, MCP/assistant integration and required-release package delivery remain unverified."
       ]
     },
     {
