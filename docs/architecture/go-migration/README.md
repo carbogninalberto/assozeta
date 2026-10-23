@@ -47,7 +47,8 @@ repeating wide-row conversion per column while retaining count/query assertions.
 The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass.
 All four split Go jobs pass at `11c2310`; accounts takes 17m31s and foundation
 18m12s, preserving the checks that previously exceeded the combined 30-minute
-limit. The complete quality workflow still awaits its legacy upgrade job.
+limit. The complete hosted quality run `40030007996` at `11c2310` is successful,
+including the legacy upgrade/browser rehearsal and aggregate gate.
 The category job passes in 7m29s including Caddy disconnects and the packaged
 image; the browser network correction passes both versioned workflows on Linux.
 The external manual recipe-binding failure remains.

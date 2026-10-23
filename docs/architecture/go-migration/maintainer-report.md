@@ -246,8 +246,10 @@ Local verification also corrects two test-harness failures: development Silk wri
 are removed from the category fixture without dropping managed-table assertions,
 and the bootstrap large-row seed evaluates each conversion once with explicit
 row counts and separate setup/read deadlines. All 13 integrity tests and bootstrap's
-86 HTTP/four PostgreSQL checks pass. Current-head hosted CI is still a separate
-gate, and the known external manual recipe-binding failure remains.
+86 HTTP/four PostgreSQL checks pass. The full hosted quality run `40030007996`
+at `11c2310` passes, including all four split Go jobs and the legacy upgrade.
+Subsequent changes still require their own hosted run; the known external manual
+recipe-binding failure remains.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
