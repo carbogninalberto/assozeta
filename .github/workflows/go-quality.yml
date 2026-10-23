@@ -83,7 +83,14 @@ jobs:
           python TESTS/adapters/django/manual_retrieval.py
           python TESTS/adapters/django/manual_reader_http.py --go-source
           python TESTS/adapters/django/manual_refresh_lock.py
-          TESTS_MANUAL_READER_HTTP_REPORT=quality-reports/go-migration/manual-reader-http/results.json python -m unittest TESTS.contracts.test_manual_reader_http
+          python TESTS/adapters/django/manual_reader_http.py --backend go
+          python TESTS/adapters/django/manual_reader_http.py --versioned
+          python TESTS/adapters/django/manual_reader_http.py --backend go --versioned
+          TESTS_MANUAL_READER_HTTP_REPORT=quality-reports/go-migration/manual-reader-http/results.json \
+          TESTS_MANUAL_READER_GO_REPORT=quality-reports/go-migration/manual-reader-http-go/results.json \
+          TESTS_MANUAL_READER_V1_REPORT=quality-reports/go-migration/manual-reader-http-versioned/results.json \
+          TESTS_MANUAL_READER_V2_REPORT=quality-reports/go-migration/manual-reader-http-go-versioned/results.json \
+          python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go
       - name: Verify shared accounts, identities and scoped resources
@@ -158,6 +165,9 @@ jobs:
             quality-reports/go-migration/manual-reader/
             quality-reports/go-migration/manual-retrieval/
             quality-reports/go-migration/manual-reader-http/
+            quality-reports/go-migration/manual-reader-http-go/
+            quality-reports/go-migration/manual-reader-http-versioned/
+            quality-reports/go-migration/manual-reader-http-go-versioned/
             quality-reports/go-migration/manual-refresh-lock/
             quality-reports/go-migration/manual-image/
             quality-reports/go-migration/environment/

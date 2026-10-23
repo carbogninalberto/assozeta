@@ -29,7 +29,7 @@ corpus and deduplicated images before atomic promotion, and retains the previous
 corpus after failure. Downloads have byte limits, timeouts and redirect validation;
 inactive content-addressed assets retain the existing retirement grace period.
 
-`TESTS/adapters/django/manual_reader_http.py --go-source` observes 58 real Django
+`TESTS/adapters/django/manual_reader_http.py --go-source` observes 69 real Django
 HTTP cases on private PostgreSQL and an ASGI server, including identity, methods,
 headers, restore admission and bounded SQL. It separately runs 32 Go library
 source comparisons with independent fixture directories. The local HTTP publisher
@@ -49,9 +49,41 @@ different lock filename fails these checks, then the unchanged shared-lock code
 passes. This tests native-process interoperability, not installed container
 volume permissions.
 
-The Go HTTP reader is not activated. The Django HTTP observations establish its
-contract; they are not evidence of Go HTTP authentication or transport parity.
-Remaining work includes full HTTP composition, preview query projection,
-writable installed-cache permissions,
-MCP, assistant behavior and a verified required-release package. Historical
-manual artifacts retain their original revision and verification scope.
+The Go composition root now registers `/manuale/sections` and
+`/manuale/assets/*`. Handlers resolve the existing actor/effective/scope identity;
+the service enforces query admission and public-only source selection. A dedicated
+repository reads only the live `self_hosted` flag, with no provider secrets or
+maintainer privileges. Preview selection precedes the instance lookup. Preview
+queries preserve Unicode case folding, whitespace splitting, title-hit ranking,
+stable ties and the ten-result limit. Responses copy nested source data.
+
+The same 69 contracts pass against the actual Go server with PostgreSQL and Redis,
+and against both APIs through the shipped Caddy configuration using `--versioned`
+with `--backend django` or `--backend go`. The portable suite compares full JSON,
+selected headers, exact publisher requests, verified asset bytes and unchanged
+business/audit/cache records. Ordinary reads stay at two SQL statements for owners
+and three for collaborators at 16 and 128 sections; live feature context is one
+statement. Go may use fewer identity statements than Django during impersonation.
+No required case is skipped. These are native API processes behind real Caddy,
+not newly built installed Go images.
+
+Differential normalization is limited to header method/token ordering and each
+fixture's verified corpus identity, which includes its ephemeral publisher port.
+Every returned identity is first checked against an actual fixture source. Gzip
+responses are decompressed before comparison; Go preserves Django's size threshold,
+streaming-asset behavior, `Vary`, quality-token handling and randomized gzip header.
+Existing Italian messages, missing-source responses and denial precedence remain
+unchanged. The initial missing-route 404 and missing encoding-header failures are
+retained under `quality-reports/go-migration/manual-source-integration/`.
+
+The whole untagged Go race suite and vet pass. Installed writable-cache permissions,
+real reader browser workflows, MCP, assistant behavior and a verified
+required-release package remain open. Historical manual artifacts retain their
+original revision and verification scope.
+
+The separate full Django manual capture at `d3165cf` completed with 47 of 60
+workflows passing. Twelve failures involved unavailable/timed-out HTTP reads;
+the dashboard-list denial assertion also observed asynchronously populated
+document fields. Their causes require investigation; no failures are waived.
+All owned services, volumes and networks were removed. The failed batch never
+reached generation, verification, indexing, evaluation or release-package export.

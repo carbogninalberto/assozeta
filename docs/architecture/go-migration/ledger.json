@@ -7043,7 +7043,13 @@
       "go": [
         "BE_GO/pkg/manual/reader.go",
         "BE_GO/pkg/manual/source.go",
-        "BE_GO/pkg/manual/refresh.go"
+        "BE_GO/pkg/manual/refresh.go",
+        "BE_GO/pkg/manual/sections.go",
+        "BE_GO/internal/dto/manual_reader.go",
+        "BE_GO/internal/service/manual_reader.go",
+        "BE_GO/internal/repository/manual_reader.go",
+        "BE_GO/internal/handler/manual_reader.go",
+        "BE_GO/internal/handler/manual_encoding.go"
       ],
       "dependencies": [
         "BE/application/manuale/views.py",
@@ -7063,11 +7069,11 @@
           "/api/v2/manuale/assets/<path:asset_path>"
         ],
         "request": null,
-        "response": "Explicit Django statuses, IDs, messages, assets and selected headers in TESTS/fixtures/manual-reader-http.json; Go HTTP not yet implemented.",
-        "errors": null,
-        "authentication": "Django authenticated actor/effective identity required; Go HTTP composition pending.",
+        "response": "Complete public sections/preview projection or digest-verified PNG bytes; exact method/format/error and selected header contracts in TESTS/fixtures/manual-reader-http.json. Gzip decodes to identical response content.",
+        "errors": "Missing source returns sanitized Italian no_evidence; missing/private/corrupt assets 404; oversized query 400; auth/scope/method/restore precedence preserved.",
+        "authentication": "Existing authenticated actor/effective/scope resolver; JWT, impersonation, forged target and revoked-session cases run against both HTTP backends.",
         "permissions": "Public manual applicability; feature visibility from live instance configuration. See explicit actor, impersonation and forged-scope cases.",
-        "resource_scope": null,
+        "resource_scope": "Ordinary public manual only, including for administrators; self_hosted applicability from one live instance flag query. No request or actor parameter grants maintainer evidence.",
         "side_effects": "No business/audit/cache-record writes. Remote cache refresh validates corpus/assets before atomic promotion; failed refresh retains prior corpus.",
         "transaction": null,
         "execution_owner": "django"
@@ -7078,13 +7084,17 @@
         "TESTS/fixtures/manual-reader-http.json",
         "BE_GO/pkg/manual/source_oracle_integration_test.go",
         "BE_GO/pkg/manual/source_test.go",
-        "BE_GO/pkg/manual/refresh_test.go"
+        "BE_GO/pkg/manual/refresh_test.go",
+        "BE_GO/internal/service/manual_reader_test.go",
+        "BE_GO/pkg/manual/sections_test.go",
+        "BE_GO/internal/handler/manual_encoding_test.go"
       ],
       "evidence": [
-        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md."
+        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
+        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes."
       ],
       "notes": [
-        "Go HTTP route remains unimplemented. Library evidence does not verify HTTP identity/headers, installed cache permissions, MCP, assistant behavior or required-release package delivery."
+        "HTTP routes implemented; installed cache-volume permissions, actual reader browser workflows, MCP/assistant integration and required-release package delivery remain unverified."
       ]
     },
     {
@@ -7108,7 +7118,13 @@
         "BE_GO/pkg/manual/source.go",
         "BE_GO/pkg/manual/refresh.go",
         "BE_GO/pkg/manual/retrieval.go",
-        "BE_GO/pkg/manual/projection.go"
+        "BE_GO/pkg/manual/projection.go",
+        "BE_GO/pkg/manual/sections.go",
+        "BE_GO/internal/dto/manual_reader.go",
+        "BE_GO/internal/service/manual_reader.go",
+        "BE_GO/internal/repository/manual_reader.go",
+        "BE_GO/internal/handler/manual_reader.go",
+        "BE_GO/internal/handler/manual_encoding.go"
       ],
       "dependencies": [
         "BE/application/manuale/views.py",
@@ -7128,11 +7144,11 @@
           "/api/v2/manuale/sections"
         ],
         "request": null,
-        "response": "Explicit Django statuses, IDs, messages, assets and selected headers in TESTS/fixtures/manual-reader-http.json; Go HTTP not yet implemented.",
-        "errors": null,
-        "authentication": "Django authenticated actor/effective identity required; Go HTTP composition pending.",
+        "response": "Complete public sections/preview projection or digest-verified PNG bytes; exact method/format/error and selected header contracts in TESTS/fixtures/manual-reader-http.json. Gzip decodes to identical response content.",
+        "errors": "Missing source returns sanitized Italian no_evidence; missing/private/corrupt assets 404; oversized query 400; auth/scope/method/restore precedence preserved.",
+        "authentication": "Existing authenticated actor/effective/scope resolver; JWT, impersonation, forged target and revoked-session cases run against both HTTP backends.",
         "permissions": "Public manual applicability; feature visibility from live instance configuration. See explicit actor, impersonation and forged-scope cases.",
-        "resource_scope": null,
+        "resource_scope": "Ordinary public manual only, including for administrators; self_hosted applicability from one live instance flag query. No request or actor parameter grants maintainer evidence.",
         "side_effects": "No business/audit/cache-record writes. Remote cache refresh validates corpus/assets before atomic promotion; failed refresh retains prior corpus.",
         "transaction": null,
         "execution_owner": "django"
@@ -7143,13 +7159,17 @@
         "TESTS/fixtures/manual-reader-http.json",
         "BE_GO/pkg/manual/source_oracle_integration_test.go",
         "BE_GO/pkg/manual/source_test.go",
-        "BE_GO/pkg/manual/refresh_test.go"
+        "BE_GO/pkg/manual/refresh_test.go",
+        "BE_GO/internal/service/manual_reader_test.go",
+        "BE_GO/pkg/manual/sections_test.go",
+        "BE_GO/internal/handler/manual_encoding_test.go"
       ],
       "evidence": [
-        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md."
+        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
+        "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes."
       ],
       "notes": [
-        "Go HTTP route remains unimplemented. Library evidence does not verify HTTP identity/headers, installed cache permissions, MCP, assistant behavior or required-release package delivery."
+        "HTTP routes implemented; installed cache-volume permissions, actual reader browser workflows, MCP/assistant integration and required-release package delivery remain unverified."
       ]
     },
     {
