@@ -27,6 +27,7 @@ ARG REQUIRE_MANUAL=false
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
 WORKDIR /app
+RUN mkdir -p /app/manuale && chown 10001:10001 /app/manuale && chmod 0750 /app/manuale
 COPY --chown=0:0 release-manual/ /app/release-manual/
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION && \
