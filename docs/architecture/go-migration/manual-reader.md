@@ -175,6 +175,39 @@ admission, impersonation revocation, MCP/agent dispatch, restore coordination an
 provider behavior remain separate unverified boundaries. No production transport
 is switched to this service by these component tests.
 
+The `--mcp` oracle exercises the actual Django `run_mcp_server` management command
+over independent subprocess stdin/stdout pipes. Thirty-five authored requests
+cover the four manual tools, exact schemas, public-only authority, malformed
+arguments, unknown methods/tools and corrupted source ordering. It retains all
+fifteen tool declarations, but does not execute the eleven business tools.
+The transport validates JSON Schema before invoking functions: additional
+identity/scope arguments, nulls, boolean/fractional limits and out-of-range limits
+are rejected as MCP tool errors; an integral JSON float remains accepted. These
+are distinct from direct function-call coercion. Valid knowledge calls issue one
+instance-context SELECT; schema/protocol errors and invalid search queries issue
+none. Total SELECT counts are recorded independently, so extra reads from other
+tables also fail the budget. Database and fixture-file snapshots remain unchanged.
+Django's exact `SELECT set_config('TimeZone', 'UTC', false)` connection setup is
+counted separately (at most once per request); it remains in the total SQL count.
+
+Three real processes verify current and older protocol negotiation, unsupported
+version fallback and clean exit on EOF, rejecting premature exits and trailing
+stdout. The suite also checks two pipelined calls,
+the exact error notification after malformed JSON, subsequent ping recovery, and
+request cancellation after observing a real child SQL lock wait. Cancellation
+here proves the MCP response and subsequent ping, not termination of underlying
+Django ORM work or restore coordination. The polling fixture clears PostgreSQL's
+transaction-local statistics snapshot before observing the wait. No timeout or
+failure is waived.
+
+The recorded environment uses Python 3.13.16, MCP 1.30.0, jsonschema 4.26.0 and
+pydantic 2.14.1. A read-only, network-disabled probe of the retained Django image
+`dd4e5b854f00` confirms the same four versions. Critical MCP source hashes are
+retained with the report; this is evidence for that dependency set, not every
+version permitted by Django's dependency range. CI requires the portable stdio
+contracts. Go MCP command/transport, business-tool execution and assistant
+dispatch remain open; the service/library checks do not establish those boundaries.
+
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser
 timeouts, missing UI elements or unsettled UI state;

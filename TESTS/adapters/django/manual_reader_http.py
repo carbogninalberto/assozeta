@@ -224,7 +224,8 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     from TESTS.contracts.test_manual_reader_http import validate_report
     require_production_python()
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');parser.add_argument('--backend',choices=['django','go'],default='django');parser.add_argument('--versioned',action='store_true');parser.add_argument('--tools',action='store_true',help='Characterize actual manual tool functions with real database context; not MCP transport');options=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');parser.add_argument('--backend',choices=['django','go'],default='django');parser.add_argument('--versioned',action='store_true');parser.add_argument('--tools',action='store_true',help='Characterize actual manual tool functions with real database context; not MCP transport');parser.add_argument('--mcp',action='store_true',help='Exercise actual Django MCP management command over stdio');options=parser.parse_args()
+    if options.mcp and (options.tools or options.go_source or options.backend!='django' or options.versioned):parser.error('--mcp currently requires the independent Django stdio oracle')
     if options.tools and (options.versioned or options.backend=='go' and options.go_source):parser.error('--tools accepts either --go-source for library or --backend go for live service comparison, without --versioned')
     if options.backend=='go':OUTPUT=ROOT/'quality-reports/go-migration/manual-reader-http-go'
     if options.versioned:OUTPUT=Path(str(OUTPUT)+'-versioned')
@@ -235,6 +236,10 @@ def main():
         if options.backend=='go':OUTPUT=ROOT/'quality-reports/go-migration/manual-tools-go-service'
         fixture_path=ROOT/'TESTS/fixtures/manual-tools.json'
         from TESTS.contracts.test_manual_tools import validate_report
+    if options.mcp:
+        OUTPUT=ROOT/'quality-reports/go-migration/manual-mcp-django'
+        fixture_path=ROOT/'TESTS/fixtures/manual-mcp.json'
+        from TESTS.contracts.test_manual_mcp import validate_report
     fixture=json.loads(fixture_path.read_text());OUTPUT.mkdir(parents=True,exist_ok=True)
     report={'schema_version':1,'success':False,'cases':{},'scope':__doc__,
             'fixture_sha256':hashlib.sha256(fixture_path.read_bytes()).hexdigest()}
@@ -251,6 +256,10 @@ def main():
             paths=[*sorted((ROOT/'BE_GO/pkg/manual').glob('*.go')),ROOT/'TESTS/contracts/test_manual_tools_go.py']
             if options.backend=='go':paths += [ROOT/'BE_GO/internal/domain/manual.go',ROOT/'TESTS/contracts/test_manual_tools_service.py',*sorted((ROOT/'BE_GO/internal/service').glob('manual_tools*.go')),*sorted((ROOT/'BE_GO/internal/repository').glob('manual_tools*.go'))]
             report['source_hashes'].update({str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in paths})
+    if options.mcp:
+        report['scope']='Actual Django management command, MCP SDK and manual tools over stdio pipes with real PostgreSQL and sealed files. No Go MCP, business-tool execution or assistant dispatch claim.'
+        paths=['BE/application/mcp_server/server.py','BE/application/management/commands/run_mcp_server.py','BE/application/manuale/tools.py','TESTS/mcp_client.py','TESTS/adapters/django/manual_reader_http.py','TESTS/adapters/django/manual_mcp.py','TESTS/adapters/django/manual_mcp_settings.py','TESTS/adapters/django/manual_tools.py','TESTS/contracts/test_manual_mcp.py','TESTS/contracts/test_manual_tools.py','TESTS/fixtures/manual-tools.json']
+        report['source_hashes']={path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in paths}
     postgres=shutil.which('postgres')
     if not postgres:
         candidates=sorted(Path('/opt/homebrew/opt').glob('postgresql*/bin/postgres'));postgres=str(candidates[-1]) if candidates else None
@@ -287,7 +296,10 @@ def main():
             setup_audit_resolvers()
             from TESTS.adapters.django.manual_reader_runtime import GoManualRuntime
             with GoManualRuntime(work,log,tool_env,options.versioned) if options.backend=='go' and not options.tools else contextlib.nullcontext(None) as go_runtime:
-                if options.tools:
+                if options.mcp:
+                    from TESTS.adapters.django.manual_mcp import measure_mcp
+                    measure_mcp(work,fixture,report,log)
+                elif options.tools:
                     from TESTS.adapters.django.manual_tools import measure_tools
                     lifecycle=measure_tools(work,fixture,report['cases'],options.go_source,log,options.backend=='go')
                     if options.backend=='go':report['service_lifecycle']=lifecycle
@@ -310,7 +322,7 @@ def main():
                     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     report.update(success=True,versioned=options.versioned,source_differential_cases=list(fixture['cases']) if options.tools and options.go_source else fixture['source_cases'] if options.go_source else [],private_services_stopped=True,scenario_count=len(report['cases']),runtime={'backend':options.backend,'python':sys.version.split()[0],'django':django.get_version()})
     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-    print(f'PASS {len(report["cases"])} actual {options.backend} manual {"tool" if options.tools else "HTTP"} cases',flush=True)
+    print(f'PASS {len(report["cases"])} actual {options.backend} manual {"MCP" if options.mcp else "tool" if options.tools else "HTTP"} cases',flush=True)
 
 
 if __name__=='__main__':

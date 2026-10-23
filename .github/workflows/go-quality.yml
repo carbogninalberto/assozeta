@@ -89,6 +89,9 @@ jobs:
           python TESTS/adapters/django/manual_reader_http.py --tools --backend go
           TESTS_MANUAL_TOOL_SERVICE_REPORT=quality-reports/go-migration/manual-tools-go-service/results.json \
           python -m unittest TESTS.contracts.test_manual_tools_service
+          python TESTS/adapters/django/manual_reader_http.py --mcp
+          TESTS_MANUAL_MCP_REPORT=quality-reports/go-migration/manual-mcp-django/results.json \
+          python -m unittest TESTS.test_mcp_client TESTS.contracts.test_manual_mcp
           python TESTS/adapters/django/manual_reader_http.py --go-source
           python TESTS/adapters/django/manual_refresh_lock.py
           python TESTS/adapters/django/manual_reader_http.py --backend go
@@ -175,6 +178,7 @@ jobs:
             quality-reports/go-migration/manual-tools/
             quality-reports/go-migration/manual-tools-go-library/
             quality-reports/go-migration/manual-tools-go-service/
+            quality-reports/go-migration/manual-mcp-django/
             quality-reports/go-migration/manual-reader-http/
             quality-reports/go-migration/manual-reader-http-go/
             quality-reports/go-migration/manual-reader-http-versioned/

@@ -438,25 +438,36 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "JSON-RPC 2.0 over stdio; --association-id supplies deployment scope. Exact manual schemas and 15-name tool registry retained.",
+        "response": "MCP initialize/list/call/ping envelopes; manual results are JSON text content. Full business-tool results remain uncharacterized.",
+        "errors": "Schema failures use isError=true text content; unknown tools return application error content; malformed method/params use -32602; malformed JSON emits error notification; cancellation uses code 0.",
+        "authentication": "Stdio manual tools have public knowledge access; request arguments cannot provide trusted user identity.",
+        "permissions": "Technical manual evidence and gaps denied to stdio clients. Business-tool permissions remain separate.",
+        "resource_scope": "Manual context from live instance settings; CLI association ID does not grant owner authority.",
+        "side_effects": "35 requests preserve all fixture database rows/files; one instance-context SELECT for valid calls, none for invalid queries/schema/protocol errors.",
+        "transaction": "No mutation tested. Cancellation response after a real SQL wait is verified; underlying ORM cancellation and restore coordination are not established.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py",
+        "TESTS/adapters/django/manual_reader_http.py"
+      ],
+      "evidence": [
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
+      ],
+      "notes": [
+        "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified."
+      ]
     },
     {
       "id": "command:BE/application/management/commands/seed_manuale.py:seed_manuale",
@@ -615,12 +626,18 @@
         "TESTS/contracts/test_manual_tools_go.py",
         "BE_GO/internal/service/manual_tools_test.go",
         "BE_GO/internal/service/manual_tools_integration_test.go",
-        "TESTS/contracts/test_manual_tools_service.py"
+        "TESTS/contracts/test_manual_tools_service.py",
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py"
       ],
       "evidence": [
         "67 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md.",
         "Complete results for all 67 cases match the Go library under fixture-supplied trusted context; portable differential requires every case. Race tests cover 32 concurrent owner/public calls, nested result isolation and cancellation. Invalid-limit/empty-model evaluation order has explicit negative and passing evidence. CI runs the adapter; source hashes are retained in quality-reports/go-migration/manual-tools-go-library/results.json.",
-        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md."
+        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md.",
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
       ],
       "notes": [
         "Go knowledge operations and live database authority service implemented; production transport composition, JWT/WebSocket admission and impersonation revocation, MCP/agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified. No completion claim."
@@ -678,12 +695,18 @@
         "TESTS/contracts/test_manual_tools_go.py",
         "BE_GO/internal/service/manual_tools_test.go",
         "BE_GO/internal/service/manual_tools_integration_test.go",
-        "TESTS/contracts/test_manual_tools_service.py"
+        "TESTS/contracts/test_manual_tools_service.py",
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py"
       ],
       "evidence": [
         "67 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md.",
         "Complete results for all 67 cases match the Go library under fixture-supplied trusted context; portable differential requires every case. Race tests cover 32 concurrent owner/public calls, nested result isolation and cancellation. Invalid-limit/empty-model evaluation order has explicit negative and passing evidence. CI runs the adapter; source hashes are retained in quality-reports/go-migration/manual-tools-go-library/results.json.",
-        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md."
+        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md.",
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
       ],
       "notes": [
         "Go knowledge operations and live database authority service implemented; production transport composition, JWT/WebSocket admission and impersonation revocation, MCP/agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified. No completion claim."
@@ -741,12 +764,18 @@
         "TESTS/contracts/test_manual_tools_go.py",
         "BE_GO/internal/service/manual_tools_test.go",
         "BE_GO/internal/service/manual_tools_integration_test.go",
-        "TESTS/contracts/test_manual_tools_service.py"
+        "TESTS/contracts/test_manual_tools_service.py",
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py"
       ],
       "evidence": [
         "67 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md.",
         "Complete results for all 67 cases match the Go library under fixture-supplied trusted context; portable differential requires every case. Race tests cover 32 concurrent owner/public calls, nested result isolation and cancellation. Invalid-limit/empty-model evaluation order has explicit negative and passing evidence. CI runs the adapter; source hashes are retained in quality-reports/go-migration/manual-tools-go-library/results.json.",
-        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md."
+        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md.",
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
       ],
       "notes": [
         "Go knowledge operations and live database authority service implemented; production transport composition, JWT/WebSocket admission and impersonation revocation, MCP/agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified. No completion claim."
@@ -804,12 +833,18 @@
         "TESTS/contracts/test_manual_tools_go.py",
         "BE_GO/internal/service/manual_tools_test.go",
         "BE_GO/internal/service/manual_tools_integration_test.go",
-        "TESTS/contracts/test_manual_tools_service.py"
+        "TESTS/contracts/test_manual_tools_service.py",
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py"
       ],
       "evidence": [
         "67 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md.",
         "Complete results for all 67 cases match the Go library under fixture-supplied trusted context; portable differential requires every case. Race tests cover 32 concurrent owner/public calls, nested result isolation and cancellation. Invalid-limit/empty-model evaluation order has explicit negative and passing evidence. CI runs the adapter; source hashes are retained in quality-reports/go-migration/manual-tools-go-library/results.json.",
-        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md."
+        "Actual Go service/repository/loader matches all 67 Django function results on the same PostgreSQL rows, with one query at 2/16/128 public sections. Long-lived service observes disabled/deleted owner and changed instance/association; 32 concurrent reads use four pooled connections; actual blocked SQL cancellation recovers. Full fixture snapshots unchanged. See quality-reports/go-migration/manual-tools-go-service/results.json and manual-reader.md.",
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
       ],
       "notes": [
         "Go knowledge operations and live database authority service implemented; production transport composition, JWT/WebSocket admission and impersonation revocation, MCP/agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified. No completion claim."
@@ -1203,25 +1238,36 @@
         "arguments": "name: str, arguments: dict",
         "decorator": "server.call_tool()"
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "JSON-RPC 2.0 over stdio; --association-id supplies deployment scope. Exact manual schemas and 15-name tool registry retained.",
+        "response": "MCP initialize/list/call/ping envelopes; manual results are JSON text content. Full business-tool results remain uncharacterized.",
+        "errors": "Schema failures use isError=true text content; unknown tools return application error content; malformed method/params use -32602; malformed JSON emits error notification; cancellation uses code 0.",
+        "authentication": "Stdio manual tools have public knowledge access; request arguments cannot provide trusted user identity.",
+        "permissions": "Technical manual evidence and gaps denied to stdio clients. Business-tool permissions remain separate.",
+        "resource_scope": "Manual context from live instance settings; CLI association ID does not grant owner authority.",
+        "side_effects": "35 requests preserve all fixture database rows/files; one instance-context SELECT for valid calls, none for invalid queries/schema/protocol errors.",
+        "transaction": "No mutation tested. Cancellation response after a real SQL wait is verified; underlying ORM cancellation and restore coordination are not established.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py",
+        "TESTS/adapters/django/manual_reader_http.py"
+      ],
+      "evidence": [
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
+      ],
+      "notes": [
+        "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified."
+      ]
     },
     {
       "id": "mcp_tool:BE/application/mcp_server/server.py:list_tools",
@@ -1237,25 +1283,36 @@
         "arguments": "",
         "decorator": "server.list_tools()"
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "JSON-RPC 2.0 over stdio; --association-id supplies deployment scope. Exact manual schemas and 15-name tool registry retained.",
+        "response": "MCP initialize/list/call/ping envelopes; manual results are JSON text content. Full business-tool results remain uncharacterized.",
+        "errors": "Schema failures use isError=true text content; unknown tools return application error content; malformed method/params use -32602; malformed JSON emits error notification; cancellation uses code 0.",
+        "authentication": "Stdio manual tools have public knowledge access; request arguments cannot provide trusted user identity.",
+        "permissions": "Technical manual evidence and gaps denied to stdio clients. Business-tool permissions remain separate.",
+        "resource_scope": "Manual context from live instance settings; CLI association ID does not grant owner authority.",
+        "side_effects": "35 requests preserve all fixture database rows/files; one instance-context SELECT for valid calls, none for invalid queries/schema/protocol errors.",
+        "transaction": "No mutation tested. Cancellation response after a real SQL wait is verified; underlying ORM cancellation and restore coordination are not established.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/manual-mcp.json",
+        "TESTS/contracts/test_manual_mcp.py",
+        "TESTS/mcp_client.py",
+        "TESTS/adapters/django/manual_mcp.py",
+        "TESTS/adapters/django/manual_mcp_settings.py",
+        "TESTS/adapters/django/manual_reader_http.py"
+      ],
+      "evidence": [
+        "35 actual Django MCP stdio requests pass through the management command and SDK with real PostgreSQL and sealed files. All 15 tool declarations are retained; only four manual tools execute. Protocol negotiation across three processes, pipeline correlation, malformed-line notification/recovery, observed SQL-wait request cancellation and EOF cleanup pass. Native and retained Django image dependency versions match (Python 3.13.16/MCP 1.30.0/jsonschema 4.26.0/pydantic 2.14.1). See manual-reader.md and quality-reports/go-migration/manual-mcp-django/results.json."
+      ],
+      "notes": [
+        "Actual Django stdio protocol and manual subset characterized; no Go MCP transport/command or business-tool completion claim. SSE option and other management argument cases remain unverified."
+      ]
     },
     {
       "id": "model_hook:BE/application/models/courses_models.py:Course.save",
