@@ -20,6 +20,8 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.
+    // Category/VAT dependencies of exported soft-deleted payments remain retained;
+    // association scope and the pending full-export workflow are unchanged.
     "BE/application/services/export_service.py": "d0fcd5140e8054d66dc50083d943a9020ad7f40592c96ddf9206dcf78d842238",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
     "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
