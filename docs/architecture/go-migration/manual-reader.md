@@ -38,9 +38,20 @@ verified asset promotion. Go tests also exercise concurrent refresh, cancellatio
 atomic publication and pruning. These fixtures use current models rather than
 historical migrations.
 
+`TESTS/adapters/django/manual_refresh_lock.py` starts actual Django and Go
+synchronizers in separate processes against one private cache and an HTTP
+publisher that holds its first response. Three cases verify Django blocking Go
+until cancellation, Django handing the lease to Go, and Go handing it to Django.
+The competing runtime cannot download or promote while the lease is held;
+after release both runtimes read the same corpus and reuse the verified asset.
+All processes and private files are removed. A negative control that gives Go a
+different lock filename fails these checks, then the unchanged shared-lock code
+passes. This tests native-process interoperability, not installed container
+volume permissions.
+
 The Go HTTP reader is not activated. The Django HTTP observations establish its
 contract; they are not evidence of Go HTTP authentication or transport parity.
-Remaining work includes full HTTP composition, preview query projection, actual
-Django/Go cross-process lock contention, writable installed-cache permissions,
+Remaining work includes full HTTP composition, preview query projection,
+writable installed-cache permissions,
 MCP, assistant behavior and a verified required-release package. Historical
 manual artifacts retain their original revision and verification scope.

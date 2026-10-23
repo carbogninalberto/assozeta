@@ -82,6 +82,7 @@ jobs:
           python TESTS/adapters/django/manual_reader_library.py
           python TESTS/adapters/django/manual_retrieval.py
           python TESTS/adapters/django/manual_reader_http.py --go-source
+          python TESTS/adapters/django/manual_refresh_lock.py
           TESTS_MANUAL_READER_HTTP_REPORT=quality-reports/go-migration/manual-reader-http/results.json python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go
@@ -157,6 +158,7 @@ jobs:
             quality-reports/go-migration/manual-reader/
             quality-reports/go-migration/manual-retrieval/
             quality-reports/go-migration/manual-reader-http/
+            quality-reports/go-migration/manual-refresh-lock/
             quality-reports/go-migration/manual-image/
             quality-reports/go-migration/environment/
             quality-reports/go-migration/restore-admission/
