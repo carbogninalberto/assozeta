@@ -83,7 +83,14 @@ original revision and verification scope.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve failures involved unavailable/timed-out HTTP reads;
-the dashboard-list denial assertion also observed asynchronously populated
-document fields. Their causes require investigation; no failures are waived.
+the dashboard-list final baseline comparison also observed asynchronously
+populated document fields after member-detail navigation. Its denial assertions
+passed. The scenario now waits for and reads the real baseline PDF before taking
+the initial snapshot; the full final equality assertion is retained. Focused
+validation passed against an isolated working-tree snapshot of `f08f716` plus
+this scenario correction: one workflow, with real PDF generation and download,
+and successful cleanup of its services, volumes and network. This focused run
+does not establish a complete capture or release package. HTTP availability
+failures still require investigation; no failures are waived.
 All owned services, volumes and networks were removed. The failed batch never
 reached generation, verification, indexing, evaluation or release-package export.
