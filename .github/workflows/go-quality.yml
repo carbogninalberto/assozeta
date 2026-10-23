@@ -162,6 +162,7 @@ jobs:
           python TESTS/adapters/go/worker_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/scheduler_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/age_worker_image.py --image assozeta-go-foundation:test
+          python TESTS/adapters/go/token_worker_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -200,6 +201,7 @@ jobs:
             quality-reports/go-migration/worker-image/
             quality-reports/go-migration/age-worker-process/
             quality-reports/go-migration/token-worker-process/
+            quality-reports/go-migration/token-worker-image/
             quality-reports/go-migration/age-worker-image/
             quality-reports/go-migration/scheduler-process/
             quality-reports/go-migration/scheduler-image/

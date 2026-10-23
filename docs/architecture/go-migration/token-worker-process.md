@@ -54,10 +54,11 @@ cancellation and pool recovery; heartbeat renewal; and the existing 4,096-token
 plan. PostgreSQL can materialize intermediate rows, so statement count is not a
 constant-database-work or latency claim.
 
-This native rehearsal does not establish packaged-image behavior, PgBouncer
+This native rehearsal does not itself establish packaged-image behavior; the
+separate [image rehearsal](token-worker-image.md) covers that slice. PgBouncer
 deployment parity, production process supervision, rate limiting, installed
 ownership activation, scheduler reconciliation, mixed-runtime races, historical
-migrations, restore/rollback coordination or release delivery. A successful
+migrations, restore/rollback coordination and release delivery remain open. A successful
 report covers only the scenarios listed in the adapter. Parent execution passes
 all nine native groups and all twelve Django/Go PostgreSQL body groups under race
 detection. Removing the early admission check reproduces stale attempts reaching
