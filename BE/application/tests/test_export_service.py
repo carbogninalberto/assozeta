@@ -17,10 +17,12 @@ from unittest.mock import patch
 from django.contrib.auth.hashers import get_hasher, make_password
 from django.test import TestCase, override_settings
 
+from application.models.payment_models import Payment, PaymentCategory, VatManagement
 from application.models.user_models import User
 from application.services.export_service import AssociationExportService
 from application.models.subscriptions_models import Signature
 from application.tests.fixtures.factories import (
+    create_test_payment,
     create_test_sport_association,
     create_test_subscription,
     create_test_user,
@@ -192,3 +194,28 @@ class AssociationExportPasswordTests(TestCase):
             model for model in manifest['models_exported'] if model['name'] == 'User'
         )
         self.assertEqual(user_manifest['file'], 'data/02_users.json')
+
+
+class AssociationExportSharedCategoryTests(TestCase):
+    """Shared categories of exported payments are exported too, soft-deleted payments included."""
+
+    def setUp(self):
+        self.association = create_test_sport_association()
+        self.service = AssociationExportService(self.association.sport_association_id)
+
+    def exported_ids(self, model_class):
+        qs = self.service.get_queryset_for_model(model_class)
+        return set(qs.values_list(model_class._meta.pk.name, flat=True))
+
+    def test_shared_category_used_only_by_deleted_payment_is_exported(self):
+        vat = VatManagement.objects.create(vat=VatManagement.IVA_ESENTE)
+        shared = PaymentCategory.objects.create(name='Compensi e Rimborsi Spese', expense=True, vat_management=vat)
+        unused = PaymentCategory.objects.create(name='Unused shared category')
+        payment = create_test_payment(sport_association=self.association, payment_category=shared)
+        Payment._base_manager.filter(pk=payment.pk).update(deleted=True)
+
+        self.assertIn(payment.pk, self.exported_ids(Payment))
+        categories = self.exported_ids(PaymentCategory)
+        self.assertIn(shared.pk, categories)
+        self.assertNotIn(unused.pk, categories)
+        self.assertIn(vat.pk, self.exported_ids(VatManagement))
