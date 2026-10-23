@@ -23,12 +23,19 @@ JWT/WebSocket admission and agent dispatch remain open.
 The unchanged manual reader browser passes on both
 backends, while the separate full manual capture remains incomplete at 55/60
 workflows. See [manual evidence and limitations](manual-reader.md).
+The corrected source mappings pass 168 Python and 79 Node checks locally and in
+CI. Remote manual workflows then stop before captures: companion `9d9cffd` has
+277 stale recipe bindings across eleven modules. A private supported editorial
+review updates only those bindings, preserving all 44 Italian MDX files and zero
+verified sections. Companion publication and the five historical capture failures
+remain unresolved.
 
 The native worker now registers expired membership-card token cleanup. Twelve
 Django/Go PostgreSQL contract groups and nine native process scenarios pass under
 race detection, including stale admission, exact audit rollback and crash recovery.
-Django remains the execution owner; packaged token checks, task rate policy and
-installed handoff are still open. See [token worker scope](token-worker-process.md).
+Seven packaged token scenarios also pass on the pinned `14919ba` image, including
+actual Django readback and signal recovery. Django remains the execution owner;
+task rate policy and installed handoff are still open. See [token worker scope](token-worker-process.md).
 
 Audit retention also rejects stale admission before deletion or handled completion.
 Its twelve PostgreSQL groups include owner/token loss after a real deferred-FK

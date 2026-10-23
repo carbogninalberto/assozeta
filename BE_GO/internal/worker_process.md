@@ -8,7 +8,8 @@ its default entrypoint and HTTP readiness check remain the server.
 The worker registers version-1 daily email balance reset, associate age update and
 expired subscription token cleanup. Age update has separate
 [native and packaged evidence](../../docs/architecture/go-migration/age-worker-process.md);
-token cleanup has [native process evidence](../../docs/architecture/go-migration/token-worker-process.md).
+token cleanup has [native](../../docs/architecture/go-migration/token-worker-process.md)
+and [packaged evidence](../../docs/architecture/go-migration/token-worker-image.md).
 It does not publish work,
 schedule occurrences or change ownership. There is no installed worker service
 or operator activation command yet; Django remains the execution owner.
