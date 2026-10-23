@@ -1,0 +1,1291 @@
+{
+  "schema_version": 1,
+  "scope": "Authored tool-function expectations; MCP transport and agent dispatch are separate contracts.",
+  "cases": {
+    "public-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3,
+      "max_selects": 1
+    },
+    "owner-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#private",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "search_population": 4
+    },
+    "administrator-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "administrator",
+      "search_population": 3
+    },
+    "collaborator-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "collaborator",
+      "search_population": 3
+    },
+    "foreign-association-owner": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "foreign_association": true
+      },
+      "search_population": 3
+    },
+    "inactive-primary-owner": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "inactive_owner": true
+      },
+      "search_population": 3
+    },
+    "deleted-primary-owner": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "deleted_owner": true
+      },
+      "search_population": 3
+    },
+    "not-self-hosted-owner": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "self_hosted": false
+      },
+      "search_population": 2
+    },
+    "missing-config": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "config": false
+      },
+      "search_population": 2
+    },
+    "no-primary-owner": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "primary": false
+      },
+      "search_population": 3
+    },
+    "forged-tool-context": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "maintainer": true,
+        "revision": "forged",
+        "features": [
+          "private"
+        ],
+        "code_root": "/not-a-fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "query-empty": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": ""
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "max_selects": 0
+    },
+    "query-whitespace": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": " \u001c\t"
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "max_selects": 0
+    },
+    "query-null": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": null
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "max_selects": 0
+    },
+    "query-numeric": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": 17
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "max_selects": 0
+    },
+    "query-array": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": []
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "max_selects": 0
+    },
+    "query-too-long": {
+      "tool": "search_manual",
+      "arguments": {},
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "message": "Specifica una domanda sul manuale.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "long_query": 2001,
+      "max_selects": 0
+    },
+    "no-match": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "xyznotfound"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "message": "Non ho trovato istruzioni verificate per questa domanda.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      }
+    },
+    "limit-zero": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": 0
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "limit-negative": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": -4
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "limit-boolean": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": true
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "limit-numeric-string": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": "2"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "limit-float": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": 2.8
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "search_population": 3
+    },
+    "limit-null": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": null
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      }
+    },
+    "limit-invalid-string": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": "bad"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      }
+    },
+    "limit-array": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": []
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      }
+    },
+    "default-limit-16": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01",
+          "guide#public02",
+          "guide#public03"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "setup": {
+        "copies": 16
+      },
+      "search_population": 17,
+      "max_selects": 1
+    },
+    "bounded-limit-128": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": 1000
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01",
+          "guide#public02",
+          "guide#public03",
+          "guide#public04",
+          "guide#public05",
+          "guide#public06",
+          "guide#public07",
+          "guide#public08"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "setup": {
+        "copies": 128
+      },
+      "search_population": 129,
+      "max_selects": 1
+    },
+    "section-public": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#public00"
+        ],
+        "keys": [
+          "section",
+          "status"
+        ]
+      }
+    },
+    "section-private-public": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#private"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "section",
+          "status"
+        ],
+        "section": null
+      }
+    },
+    "section-private-owner": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#private"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#private"
+        ],
+        "keys": [
+          "section",
+          "status"
+        ]
+      },
+      "actor": "owner"
+    },
+    "section-missing": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#missing"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "section",
+          "status"
+        ],
+        "section": null
+      },
+      "actor": "owner"
+    },
+    "section-null": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": null
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "section",
+          "status"
+        ],
+        "section": null
+      }
+    },
+    "evidence-denied-None": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le evidenze tecniche sono riservate al proprietario dell’istanza."
+      }
+    },
+    "evidence-denied-administrator": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le evidenze tecniche sono riservate al proprietario dell’istanza."
+      },
+      "actor": "administrator"
+    },
+    "evidence-denied-collaborator": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le evidenze tecniche sono riservate al proprietario dell’istanza."
+      },
+      "actor": "collaborator"
+    },
+    "evidence-denied-foreign": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le evidenze tecniche sono riservate al proprietario dell’istanza."
+      },
+      "actor": "foreign"
+    },
+    "evidence-owner": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#private"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#private"
+        ],
+        "keys": [
+          "capture_provenance",
+          "evidence",
+          "provenance",
+          "scenario_ids",
+          "section",
+          "status"
+        ],
+        "scenario_ids": [
+          "fixture"
+        ],
+        "capture_provenance": [
+          {
+            "scenario": "fixture",
+            "status": "passed"
+          }
+        ],
+        "evidence": [
+          {
+            "path": "BE/manual_fixture.py",
+            "sha256": "9504a11eefd7b6418952a84e23b8f6b975a3f23d84565039ce3a08ee1b71d605",
+            "excerpt": "SOURCE_EVIDENCE"
+          }
+        ],
+        "provenance": {
+          "application_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "release": "manual-tool-fixture",
+          "publication_status": "release-bundled",
+          "code_state": "committed",
+          "manual_revision": "cccccccccccccccccccccccccccccccccccccccc",
+          "manual_state": "generated-from-committed",
+          "verification": {
+            "corpus_identity": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          }
+        }
+      },
+      "actor": "owner"
+    },
+    "evidence-missing-section": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "unknown"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "status"
+        ]
+      },
+      "actor": "owner"
+    },
+    "evidence-corrupt-before-denial": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "setup": {
+        "corrupt": true
+      }
+    },
+    "gaps-denied-None": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "../secret",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le lacune del manuale sono riservate al proprietario dell’istanza."
+      },
+      "setup": {
+        "missing": true
+      }
+    },
+    "gaps-denied-administrator": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "../secret",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le lacune del manuale sono riservate al proprietario dell’istanza."
+      },
+      "actor": "administrator",
+      "setup": {
+        "missing": true
+      }
+    },
+    "gaps-denied-collaborator": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "../secret",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le lacune del manuale sono riservate al proprietario dell’istanza."
+      },
+      "actor": "collaborator",
+      "setup": {
+        "missing": true
+      }
+    },
+    "gaps-denied-foreign": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "../secret",
+        "maintainer": true
+      },
+      "expected": {
+        "status": "forbidden",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Le lacune del manuale sono riservate al proprietario dell’istanza."
+      },
+      "actor": "foreign",
+      "setup": {
+        "missing": true
+      }
+    },
+    "gaps-invalid-path": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "../secret"
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Specifica il percorso di una pagina del manuale."
+      },
+      "actor": "owner"
+    },
+    "gaps-invalid-extension": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "docs/fixture"
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Specifica il percorso di una pagina del manuale."
+      },
+      "actor": "owner"
+    },
+    "gaps-invalid-array": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": []
+      },
+      "expected": {
+        "status": "invalid_query",
+        "ids": [],
+        "keys": [
+          "message",
+          "status"
+        ],
+        "message": "Specifica il percorso di una pagina del manuale."
+      },
+      "actor": "owner"
+    },
+    "gaps-owner": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "section_gaps_only",
+        "snapshot_status": "not_checked",
+        "version_status": "compatible",
+        "stale_sources": [],
+        "summary": {
+          "verified_sections": 4,
+          "pending_sections": 1
+        },
+        "gaps": [
+          {
+            "page": "docs/fixture.mdx",
+            "section": "pending",
+            "status": "pending"
+          }
+        ]
+      },
+      "actor": "owner"
+    },
+    "gaps-no-catalog-unknown-page": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "docs/unknown.mdx"
+      },
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "section_gaps_only",
+        "snapshot_status": "not_checked",
+        "version_status": "compatible",
+        "stale_sources": [],
+        "gaps": [],
+        "pages": [],
+        "domains": {}
+      },
+      "actor": "owner"
+    },
+    "gaps-catalog": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "docs/fixture.mdx"
+      },
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "complete_inventory",
+        "snapshot_status": "checked",
+        "version_status": "compatible",
+        "stale_sources": [],
+        "summary": {
+          "navigation_pages": 1,
+          "verified_sections": 4,
+          "pending_sections": 1
+        },
+        "domains": {
+          "fixture": {
+            "status": "review_target"
+          }
+        },
+        "screenshot_backlog": [
+          {
+            "page": "docs/fixture.mdx",
+            "status": "review_target"
+          }
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "catalog": true,
+        "code_root": true
+      }
+    },
+    "gaps-catalog-unknown-page": {
+      "tool": "get_manual_gaps",
+      "arguments": {
+        "page": "docs/unknown.mdx"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "message": "La pagina non è presente nel catalogo verificato.",
+        "keys": [
+          "message",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "catalog": true
+      }
+    },
+    "gaps-stale": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "complete_inventory",
+        "snapshot_status": "stale",
+        "version_status": "compatible",
+        "stale_sources": [
+          "BE/manual_fixture.py"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "catalog": true,
+        "code_root": true,
+        "stale": true
+      }
+    },
+    "search-stale": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "message": "Non ho trovato istruzioni verificate per questa domanda.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "code_root": true,
+        "stale": true
+      }
+    },
+    "gaps-deleted": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "complete_inventory",
+        "snapshot_status": "stale",
+        "version_status": "compatible",
+        "stale_sources": [
+          "BE/manual_fixture.py"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "catalog": true,
+        "code_root": true,
+        "deleted": true
+      }
+    },
+    "search-deleted": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "message": "Non ho trovato istruzioni verificate per questa domanda.",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "code_root": true,
+        "deleted": true
+      }
+    },
+    "gaps-runtime-wrong-version": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "section_gaps_only",
+        "snapshot_status": "stale",
+        "version_status": "incompatible",
+        "stale_sources": []
+      },
+      "actor": "owner",
+      "setup": {
+        "source": "runtime",
+        "wrong_version": true
+      }
+    },
+    "search_manual-wrong-bundle-version": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "wrong_version": true
+      }
+    },
+    "get_manual_section-wrong-bundle-version": {
+      "tool": "get_manual_section",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "wrong_version": true
+      }
+    },
+    "get_manual_evidence-wrong-bundle-version": {
+      "tool": "get_manual_evidence",
+      "arguments": {
+        "section_id": "guide#public00"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "wrong_version": true
+      }
+    },
+    "get_manual_gaps-wrong-bundle-version": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "wrong_version": true
+      }
+    },
+    "development-ignores-preview": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "verified",
+        "ids": [
+          "guide#host",
+          "guide#public00",
+          "guide#public01"
+        ],
+        "message": "",
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ]
+      },
+      "setup": {
+        "source": "development"
+      },
+      "search_population": 3
+    },
+    "development-reappeared-search": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture"
+      },
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      },
+      "actor": "owner",
+      "setup": {
+        "source": "development",
+        "reappeared": true
+      }
+    },
+    "development-reappeared-gaps": {
+      "tool": "get_manual_gaps",
+      "arguments": {},
+      "expected": {
+        "status": "diagnostic",
+        "ids": [],
+        "coverage_status": "section_gaps_only",
+        "snapshot_status": "stale",
+        "version_status": "compatible",
+        "stale_sources": [
+          "BE/manual_fixture.py"
+        ]
+      },
+      "actor": "owner",
+      "setup": {
+        "source": "development",
+        "reappeared": true
+      }
+    }
+  }
+}

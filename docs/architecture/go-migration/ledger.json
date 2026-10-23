@@ -579,24 +579,37 @@
       },
       "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/bundle.py",
+        "BE/application/manuale/development.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Authored function arguments and trusted user/association context in TESTS/fixtures/manual-tools.json; public MCP arguments are a separate transport boundary.",
+        "response": "Complete actual function result retained; explicit shapes, IDs, projection keys, independently derived search scores, owner evidence/provenance and diagnostic fields asserted.",
+        "errors": "Exact invalid_query, no_evidence and forbidden response shapes/messages; ordering differs for evidence and gap tools and is explicitly tested.",
+        "authentication": "Function oracle supplies trusted caller context; MCP and agent argument filtering remain unverified by this suite.",
+        "permissions": "Maintainer authority requires active undeleted self-hosted primary owner and matching association, without superuser bypass.",
+        "resource_scope": "Live instance features; public callers exclude maintainer sections. Only trusted owner context can expose technical provenance and gaps.",
+        "side_effects": "63 cases retain all observed database rows and fixture files; zero SQL writes.",
+        "transaction": "Read-only function calls; transport lifecycle admission remains separate.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/manual-tools.json",
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/adapters/django/manual_tools.py",
+        "TESTS/contracts/test_manual_tools.py"
+      ],
+      "evidence": [
+        "63 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md."
+      ],
       "notes": [
-        "Main reconciliation 06bac65: Manual retrieval now prefers the immutable, provenance-checked release bundle before downloaded runtime indexes; Go runtime and release lifecycle parity remain unimplemented."
+        "Django tool function behavior is characterized. Go tool service, MCP transport, agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified; no completion claim."
       ]
     },
     {
@@ -615,24 +628,37 @@
       },
       "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/bundle.py",
+        "BE/application/manuale/development.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Authored function arguments and trusted user/association context in TESTS/fixtures/manual-tools.json; public MCP arguments are a separate transport boundary.",
+        "response": "Complete actual function result retained; explicit shapes, IDs, projection keys, independently derived search scores, owner evidence/provenance and diagnostic fields asserted.",
+        "errors": "Exact invalid_query, no_evidence and forbidden response shapes/messages; ordering differs for evidence and gap tools and is explicitly tested.",
+        "authentication": "Function oracle supplies trusted caller context; MCP and agent argument filtering remain unverified by this suite.",
+        "permissions": "Maintainer authority requires active undeleted self-hosted primary owner and matching association, without superuser bypass.",
+        "resource_scope": "Live instance features; public callers exclude maintainer sections. Only trusted owner context can expose technical provenance and gaps.",
+        "side_effects": "63 cases retain all observed database rows and fixture files; zero SQL writes.",
+        "transaction": "Read-only function calls; transport lifecycle admission remains separate.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/manual-tools.json",
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/adapters/django/manual_tools.py",
+        "TESTS/contracts/test_manual_tools.py"
+      ],
+      "evidence": [
+        "63 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md."
+      ],
       "notes": [
-        "Main reconciliation 06bac65: Manual retrieval now prefers the immutable, provenance-checked release bundle before downloaded runtime indexes; Go runtime and release lifecycle parity remain unimplemented."
+        "Django tool function behavior is characterized. Go tool service, MCP transport, agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified; no completion claim."
       ]
     },
     {
@@ -651,24 +677,37 @@
       },
       "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/bundle.py",
+        "BE/application/manuale/development.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Authored function arguments and trusted user/association context in TESTS/fixtures/manual-tools.json; public MCP arguments are a separate transport boundary.",
+        "response": "Complete actual function result retained; explicit shapes, IDs, projection keys, independently derived search scores, owner evidence/provenance and diagnostic fields asserted.",
+        "errors": "Exact invalid_query, no_evidence and forbidden response shapes/messages; ordering differs for evidence and gap tools and is explicitly tested.",
+        "authentication": "Function oracle supplies trusted caller context; MCP and agent argument filtering remain unverified by this suite.",
+        "permissions": "Maintainer authority requires active undeleted self-hosted primary owner and matching association, without superuser bypass.",
+        "resource_scope": "Live instance features; public callers exclude maintainer sections. Only trusted owner context can expose technical provenance and gaps.",
+        "side_effects": "63 cases retain all observed database rows and fixture files; zero SQL writes.",
+        "transaction": "Read-only function calls; transport lifecycle admission remains separate.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/manual-tools.json",
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/adapters/django/manual_tools.py",
+        "TESTS/contracts/test_manual_tools.py"
+      ],
+      "evidence": [
+        "63 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md."
+      ],
       "notes": [
-        "Main reconciliation 06bac65: Manual retrieval now prefers the immutable, provenance-checked release bundle before downloaded runtime indexes; Go runtime and release lifecycle parity remain unimplemented."
+        "Django tool function behavior is characterized. Go tool service, MCP transport, agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified; no completion claim."
       ]
     },
     {
@@ -687,24 +726,37 @@
       },
       "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/bundle.py",
+        "BE/application/manuale/development.py",
+        "BE/instance/permissions.py",
+        "BE/instance/models.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "request": "Authored function arguments and trusted user/association context in TESTS/fixtures/manual-tools.json; public MCP arguments are a separate transport boundary.",
+        "response": "Complete actual function result retained; explicit shapes, IDs, projection keys, independently derived search scores, owner evidence/provenance and diagnostic fields asserted.",
+        "errors": "Exact invalid_query, no_evidence and forbidden response shapes/messages; ordering differs for evidence and gap tools and is explicitly tested.",
+        "authentication": "Function oracle supplies trusted caller context; MCP and agent argument filtering remain unverified by this suite.",
+        "permissions": "Maintainer authority requires active undeleted self-hosted primary owner and matching association, without superuser bypass.",
+        "resource_scope": "Live instance features; public callers exclude maintainer sections. Only trusted owner context can expose technical provenance and gaps.",
+        "side_effects": "63 cases retain all observed database rows and fixture files; zero SQL writes.",
+        "transaction": "Read-only function calls; transport lifecycle admission remains separate.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/manual-tools.json",
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/adapters/django/manual_tools.py",
+        "TESTS/contracts/test_manual_tools.py"
+      ],
+      "evidence": [
+        "63 actual Django function cases pass on private PostgreSQL with real loaders and context decisions; portable expected shapes, full projection keys, independently derived scores and exact owner provenance pass. Public searches at 2/16/128 sections use one SQL statement; owner context three and owner gap diagnostics six. See docs/architecture/go-migration/manual-reader.md."
+      ],
       "notes": [
-        "Main reconciliation 06bac65: Manual retrieval now prefers the immutable, provenance-checked release bundle before downloaded runtime indexes; Go runtime and release lifecycle parity remain unimplemented."
+        "Django tool function behavior is characterized. Go tool service, MCP transport, agent dispatch, provider and restore-interoperability parity remain unimplemented or unverified; no completion claim."
       ]
     },
     {
