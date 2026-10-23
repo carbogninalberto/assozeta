@@ -176,14 +176,17 @@ provider behavior remain separate unverified boundaries. No production transport
 is switched to this service by these component tests.
 
 The `--mcp` oracle exercises the actual Django `run_mcp_server` management command
-over independent subprocess stdin/stdout pipes. Thirty-five authored requests
+over independent subprocess stdin/stdout pipes. Thirty-eight authored requests
 cover the four manual tools, exact schemas, public-only authority, malformed
 arguments, unknown methods/tools and corrupted source ordering. It retains all
 fifteen tool declarations, but does not execute the eleven business tools.
 The transport validates JSON Schema before invoking functions: additional
 identity/scope arguments, nulls, boolean/fractional limits and out-of-range limits
 are rejected as MCP tool errors; an integral JSON float remains accepted. These
-are distinct from direct function-call coercion. Valid knowledge calls issue one
+are distinct from direct function-call coercion. Three multi-error requests
+prove that missing required and unexpected top-level properties take precedence
+over property-value errors; independent review caught an incorrect Go test
+expectation before accepting that implementation. Valid knowledge calls issue one
 instance-context SELECT; schema/protocol errors and invalid search queries issue
 none. Total SELECT counts are recorded independently, so extra reads from other
 tables also fail the budget. Database and fixture-file snapshots remain unchanged.
