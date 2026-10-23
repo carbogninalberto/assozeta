@@ -106,7 +106,7 @@ jobs:
           TESTS_MANUAL_READER_V2_REPORT=quality-reports/go-migration/manual-reader-http-go-versioned/results.json \
           python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
-          python TESTS/adapters/django/instance_bootstrap.py --backend go
+          python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -470,6 +470,16 @@ jobs:
             --ui-dir quality-reports/go-migration/payment-category-browser-ui/artifact \
             --ui-provenance quality-reports/go-migration/payment-category-browser-ui/provenance.json \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
+      - name: Verify unchanged checkout summaries and disabled-payment rejection
+        run: |
+          python TESTS/adapters/django/payment_info_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/payment-info-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-info-browser-ui/provenance.json
+          python TESTS/adapters/django/payment_info_browser.py \
+            --ui-dir quality-reports/go-migration/payment-info-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-info-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -479,3 +489,8 @@ jobs:
             quality-reports/go-migration/profile-browser-ui/provenance.json
             quality-reports/go-migration/payment-category-browser/
             quality-reports/go-migration/payment-category-browser-ui/provenance.json
+            quality-reports/go-migration/payment-info-browser/results.json
+            quality-reports/go-migration/payment-info-browser/v*/browser.json
+            quality-reports/go-migration/payment-info-browser/v*/validation.json
+            quality-reports/go-migration/payment-info-browser/v*/*.png
+            quality-reports/go-migration/payment-info-browser-ui/provenance.json

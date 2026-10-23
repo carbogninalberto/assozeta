@@ -5,7 +5,8 @@ public Django checkout read. Parent and independent runs each pass **137 authore
 HTTP cases against native Django, native Go and shipped Caddy v1/v2**: 548 request
 executions per complete run. Expected responses come from explicit fixture inputs,
 not captured output. The ledger remains `needs_review`; public disclosure policy,
-browser, historical-data and installed lifecycle acceptance remain unfinished.
+enabled checkout, historical-data and installed lifecycle acceptance remain unfinished;
+the bounded browser rendering/rejection proof is described below.
 
 ## Implementation and established contract
 
@@ -97,7 +98,8 @@ infrastructure probes verify failure receipts and cleanup after connection-close
 setup/oracle and source-drift failures; these probes are not HTTP or Docker proof.
 
 These are current-schema packaged reads, not installed switching, historical
-migration, provider checkout, browser or complete payment-info acceptance.
+migration, provider checkout or complete payment-info acceptance. The separate
+browser proof below has its own narrower scope.
 Parent receipt: `quality-reports/go-migration/payment-info-image-parent/parent-acceptance.json`.
 
 ## PostgreSQL write-guard correction
@@ -126,6 +128,64 @@ operational table outside the public schema, same-name table replacement,
 statistics reset and an undrained client. The runner uses its own socket-only
 cluster, verifies cleanup and is a mandatory CI step. The parent reran it on
 production Python and reran all four HTTP workloads and six repository groups.
+
+## Unchanged browser rendering and disabled-payment rejection
+
+The parent and independent implementation/review runs pass the shipped checkout
+UI against both API versions. Four authored payment types—OTHER with ordered,
+duplicated metadata, subscription, direct course and carnet—are opened and
+revisited, giving **eight summary checks and eight real Stripe409 responses per
+version**. Expected totals, names, tax code, associations, category order and
+additional text are authored from fixture inputs. The UI artifact is unchanged;
+nine relevant source-map modules match repository bytes and the complete extracted
+artifact is hash-bound to its immutable image.
+
+The real UI requests payment info, then starts a Stripe POST before leaving its
+loading state. A private transparent ASGI gate pauses that POST so the actual
+rendered summary can be inspected, then releases it unchanged to Django's actual
+`Online payments are not configured.` response. Payments are disabled and no
+provider credential/state is used. The real anonymous flow ends at `#/404` after
+its protected payment-list navigation is rejected. Assertions and screenshots
+explicitly retain the loading overlay, disabled interaction and absent payment
+widget; this is not enabled or successful checkout, and revisit is not reload.
+
+Payment-info and instance bootstrap reads traverse the shipped v1/v2 routes.
+Stripe, manifest/logo and health WebSocket traffic remain explicitly declared
+Django coexistence in this browser fixture. An independent ASGI observer sees 16
+selected requests for v1 and zero for v2. A deliberately misrouted v2 request
+returns HTTP200 with a misleading Go header but fails observation. Unknown API
+paths return502 without falling through to Django. A separate ignored route
+overlay produces actual Go404 against the unchanged HTTP200 expectation.
+
+Every browser case and fixture cleanup compare **all 128 managed models including
+auto-created many-to-many tables**; exact audit state is retained. Owned Go, ASGI,
+Redis, PostgreSQL and Caddy resources stop. Final source hashes are checked.
+Independent infrastructure-only probes cover Python connection/Redis cleanup and
+JavaScript context/browser/observation/receipt failure paths; they are not browser
+or provider acceptance. Django's existing CourseSubscription cleanup logs an
+invalid `id` lookup, while explicit owned payment cleanup still restores every
+model exactly; no new product fix is claimed for that logged baseline issue.
+
+Parent receipt and screenshots: `quality-reports/go-migration/payment-info-browser-parent/`;
+source-bound acceptance: `payment-info-browser-parent-review/acceptance.json`.
+CI runs this workflow with its existing immutable UI build and exports named
+reports/screenshots, not the private synchronization fixture. Enabled provider
+checkout, installment-specific browser UI, historical/installed behavior and
+public disclosure policy remain unresolved.
+
+## Hosted quality boundary
+
+Published `77adbc7` passed all 15 jobs in quality run `40039675776`. Safe artifact
+`12538892982` confirms seven statistics regressions, native four-by-137 workloads
+and six PostgreSQL groups, packaged four-by-137 workloads, and category transaction
+failure/recovery checks. Hosted PostgreSQL diagnostics directly attribute its
+114/145/1 catalog delta to `pg_statistic` and its TOAST table while all 128 user
+tables remain unchanged. The Linux amd64 image ran as UID 10001 with a read-only
+root and explicitly separate native repository evidence. Later manifest and
+checkout-browser changes are not covered by this older hosted revision.
+
+Both separate manual runs at that head still fail the known recipe-binding gate;
+this is not full manual or release acceptance.
 
 ## Intentional scope correction and unresolved policy
 

@@ -6,9 +6,24 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 37 implementing,
-468 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 38 implementing,
+467 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
+
+Hosted quality `40039675776` passes all 15 jobs at published `77adbc7`, including
+the corrected write guard and packaged payment-info checks. The newer manifest
+and browser work below has separate local evidence and needs its own hosted run.
+The two manual workflows still stop at the existing recipe-binding gate.
+
+The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
+service and five-column repository projection. Actual Django/Go pass 42 new
+manifest cases within 128 bootstrap cases, including defaults, Unicode branding,
+ignored authentication headers, sessions and restore/negotiation behavior.
+One-query read-only PostgreSQL projections remain bounded through 10,000 rows;
+actual blocked-query cancellation releases the reader before its blocker.
+All 42 manifest cases also pass through each shipped Caddy prefix, with observed
+upstream identity, fallback rejection and actual gzip/header checks. Manifest
+image/PWA-browser/installed acceptance remains separate.
 
 The [public payment-info implementation](payment-info.md) passes 137 authored
 cases on native Django/Go and both shipped Caddy routes, with exact managed state,
@@ -19,12 +34,20 @@ release before blocker removal. JSONField fractions and NaN errors retain the
 measured Django wire behavior. The corrected nested installment association
 boundary retains its TDD evidence and 190 existing Django regressions. Public
 disclosure, malformed group fail-open and unscoped metadata remain review gaps;
-browser/history/installed acceptance remains open and the ledger stays needs_review.
+enabled checkout/history/installed acceptance remains open and the ledger stays needs_review.
 The revision-bound non-root/read-only Go image also passes all four 137-case
 workloads. Native and image reports remain separate. The corrected write guard
 checks all 128 user tables and has seven actual PostgreSQL negative/control
 cases; catalog maintenance remains diagnostic. See the linked evidence for the
 locally reproduced hosted counter failure and its complete catalog attribution.
+
+The unchanged checkout UI separately passes eight authored loading-summary and
+revisit checks per API version, followed by eight real disabled-Stripe409 responses
+each. Runtime observation rejects false Go routing, all 128 managed models
+including auto-created M2M tables remain unchanged, and owned cleanup passes.
+Stripe and manifest/logo/health traffic retain explicit Django coexistence in
+this browser fixture. This proves rendering and disabled-payment rejection;
+enabled provider checkout and approved public-access policy remain open.
 
 The [payment-category slice](payment-categories.md) implements list/create/update/
 soft-delete in Go against the corrected Django integrity baseline. Actual native
@@ -582,7 +605,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 37 implementing, 4 needing review and 469
+The ledger currently has 4 deprecated, 38 implementing, 4 needing review and 469
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

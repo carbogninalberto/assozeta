@@ -9173,23 +9173,27 @@
         "BE_GO/internal/repository/payment_info_integration_test.go",
         "TESTS/adapters/django/payment_info_stats.py",
         "TESTS/adapters/django/payment_info_stats_check.py",
-        "TESTS/adapters/go/payment_info_image.py"
+        "TESTS/adapters/go/payment_info_image.py",
+        "TESTS/adapters/django/payment_info_browser.py",
+        "TESTS/browser/payment-info.mjs"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-info.md",
         "quality-reports/go-migration/payment-info/results.json",
         "quality-reports/go-migration/payment-info/http-results.json",
         "quality-reports/go-migration/payment-info-parent-review/parent-final-acceptance.json",
-        "quality-reports/go-migration/payment-info-image-parent/parent-acceptance.json"
+        "quality-reports/go-migration/payment-info-image-parent/parent-acceptance.json",
+        "quality-reports/go-migration/payment-info-browser-parent-review/acceptance.json"
       ],
       "notes": [
-        "Status remains needs_review despite implementation: public UUID-wide disclosure, malformed group fail-open and unscoped category metadata are explicitly unapproved baseline concerns. Browser, historical and installed lifecycle acceptance remain open; complete_payment_info_parity=false.",
+        "Status remains needs_review despite implementation: public UUID-wide disclosure, malformed group fail-open and unscoped category metadata are explicitly unapproved baseline concerns. Enabled checkout, historical and installed lifecycle acceptance remain open; complete_payment_info_parity=false.",
         "Parent independently passes final 4x137 authored HTTP cases, all six actual PostgreSQL groups under race detection, exact managed state and cleanup, v1 Django observer 137/v2 zero and deliberate HTTP200 fallback rejection. User-table PostgreSQL DML deltas are zero; catalog counters are diagnostic. Full Go race/vet and tagged vets pass; six pure contracts and independent 669-case UUID differential checks pass. See payment-info.md and source-bound parent acceptance.",
         "Complete service reads trace one SQL with zero metadata and two at 1/8/32/128 distinct mixed/global/foreign/deleted category IDs, including 256 duplicate entries. Preserve exact money, integers and entry ordering. Both actual blocked readers release their query/transaction/wait and pool connection before blockers are released.",
         "Initial Go 404, actual NaN JSON500 mismatch, Unicode repr discrepancy and nested-scope overlay failures are retained as red evidence. JSONB fractional rounding/underflow/overflow matches actual Django; Decimal money and JSON integer values remain separate. These results do not approve disclosure policy or establish complete runtime parity.",
         "Intentional scoped installment correction retains Django-red, Go-red and final green scope evidence plus 190 existing Django regressions. Five manual recipe dependency bindings still need review.",
         "Parent packaged image c742cd2 / sha256:6ce77683d8f3f0f0b958faf2646df34781b298b22f806ef6d48d9f3d0047538c passes 4x137 HTTP cases with actual PostgreSQL/Redis, UID10001, read-only root, no mounted executable, runtime observer and fallback rejection, exact state and cleanup. Six native repository groups are explicitly not run in image mode and remain a separate mandatory gate. Old-image actual route404 is retained as red evidence. Native receipts are preserved by isolated image output.",
-        "Hosted c742 quality failed the former whole-database counter after HTTP/repository cases passed. Parent reproduction attributes exact114/145/1 to pg_statistic108/145/0 and its TOAST6/0/1, with128 user tables unchanged. New guard samples every user schema/relation after client drain, rejects relation replacement/statistics reset and retains system diagnostics. Seven actual private-PostgreSQL regression cases pass, including committed and rolled-back business/operational writes and held-client rejection. New hosted acceptance remains pending; no verified promotion."
+        "Hosted c742 quality failed the former whole-database counter after HTTP/repository cases passed. Parent reproduction attributes exact114/145/1 to pg_statistic108/145/0 and its TOAST6/0/1, with128 user tables unchanged. New guard samples every user schema/relation after client drain, rejects relation replacement/statistics reset and retains system diagnostics. Seven actual private-PostgreSQL regression cases pass, including committed and rolled-back business/operational writes and held-client rejection. New hosted acceptance remains pending; no verified promotion.",
+        "Parent independently passes unchanged browser four authored OTHER/meta/subscription/course/carnet summaries plus revisits (eight checks/version),16 actual disabledStripe409 responses and final anonymous#/404 navigation. A transparent request gate exposes real loading-state rendering without mocking business responses. Independent Django observer16/0, actual200 misroute rejection and unknownroute502/no-fallback checks pass. All128 managed models including auto-created M2M tables, exact audits, source/artifact hashes and four ownedcleanup flags pass. No enabled checkout, literal reload, provider, installed or approved-policy claim; explicit Django Stripe/manifest/logo/health coexistence retained. See payment-info.md and parent source-bound acceptance."
       ]
     },
     {
@@ -16496,25 +16500,62 @@
         "target": "InstanceManifestView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instance_manifest.go",
+        "BE_GO/internal/dto/instance_manifest.go",
+        "BE_GO/internal/repository/instance_manifest.go",
+        "BE_GO/internal/service/instance_manifest.go",
+        "BE_GO/internal/handler/instance_manifest.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "instance.InstanceConfiguration first-primary-key branding",
+        "Global locale/CORS/session/security/restore admission",
+        "Stored logo URL and configured compatibility API alias"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/manifest.json",
+          "/api/v2/instance/manifest.json",
+          "/api/instance/manifest.json"
+        ],
+        "request": "Public read; optional format query and Accept/Accept-Language headers. HEAD follows GET; OPTIONS returns class metadata.",
+        "response": "Exact default/configured PWA manifest; first-PK row, two icon sizes, Unicode12-code-point short-name fallback, exact case-sensitive logo suffix inference, stored URLs unchanged.",
+        "errors": "Unsupported method405; unacceptable media406; unsupported format404 before Accept; restore lock503. Database failures remain HTML500 through existing error handling.",
+        "authentication": "Django class explicitly disables authentication: Bearer, impersonation and group headers ignored. Global session handling is retained, including stale cookie expiry.",
+        "permissions": "AllowAny; branding is public.",
+        "resource_scope": "First instance configuration by existing primary key; only five public branding fields are selected.",
+        "side_effects": "No intended mutation. Authored HTTP cases verify selected database and Redis preservation, no DML SQL and no secret-canary disclosure; stale session deletion is expected.",
+        "transaction": "One bounded SELECT. Real PostgreSQL read-only transaction and blocked-query cancellation/recovery checks; no new production transaction/isolation claim.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instance-bootstrap.json",
+        "TESTS/contracts/test_instance_bootstrap.py",
+        "TESTS/adapters/django/instance_bootstrap.py",
+        "BE_GO/internal/service/instance_manifest_test.go",
+        "BE_GO/internal/handler/instance_manifest_test.go",
+        "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
+        "BE_GO/internal/repository/instance_manifest_integration_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-manifest.md",
+        "quality-reports/go-migration/instance-manifest-parent/native-acceptance.json",
+        "quality-reports/go-migration/instance-manifest-parent/go-missing-route-red-results.json",
+        "quality-reports/go-migration/instance-manifest-parent/final-acceptance.json"
+      ],
+      "notes": [
+        "Native Django and Go each pass128 authored bootstrap cases including42 manifest cases. Genuine preimplementation Go404 is retained; initial Italian405 expectation punctuation was corrected against pinned Django before implementation.",
+        "Successful no-cookie GET/HEAD each uses one SELECT. Read-only PostgreSQL tests at100/1000/10000 rows preserve first-PK ordering, one-query bound and bounded indexed plans. Actual blocked manifest reader cancellation releases backend/transaction/pool before blocker release and recovers.",
+        "Status remains implementing. Image/browser/installed PWA proof and logo serving are separate acceptance work. Existing stored URLs and public defaults are preserved; no production/provider configuration changed.",
+        "Parent final versioned run passes all42 manifest cases on both prefixes with observer42/0, deliberate actualHTTP200 Django fallback rejection, SQL/state/cache/header checks and cleanup. Compression red led to reused Django encoding middleware; exact decoded bodies and all Vary tokens pass, including explicit same-for-both-upstreams uppercaseGZIP Caddy behavior. Native Django/Go each pass128 total bootstrap cases. Final acceptance: quality-reports/go-migration/instance-manifest-parent/final-acceptance.json."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:reconfigure -> InstanceReconfigureView.as_view()",
