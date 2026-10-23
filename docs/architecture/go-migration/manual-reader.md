@@ -111,6 +111,31 @@ HTTP refresh and a verified required-release package with its full browser check
 remain open. Historical manual artifacts retain their original revision and
 verification scope.
 
+The manual-tool function oracle is separate from reader HTTP and browser tests.
+`manual_reader_http.py --tools` runs 63 authored cases through the actual Django
+functions, live PostgreSQL context resolution and real source loaders. It covers
+all four tools: search, section reads, technical evidence and gap diagnostics.
+No context resolver, loader or permission decision is replaced. Portable contracts
+check result shapes, complete public projection keys, independently derived search
+scores, exact owner evidence/provenance, denial messages, database/file retention
+and SQL bounds. Public search uses one query at 2, 16 and 128 public sections;
+ordinary owner context uses three, and owner diagnostics currently use six because
+the context is resolved twice.
+
+Unlike ordinary HTTP reading, trusted owner tool calls can retrieve maintainer
+sections. That authority requires the active, undeleted primary owner of the
+self-hosted instance and the same association; administrator status alone is
+insufficient. Public technical-evidence calls load the corpus before denying
+access, while public gap calls deny before loading it. Invalid queries precede
+source access. Runtime gap diagnostics may report an incompatible version, while
+an incompatible installed bundle fails its strict loader. Development tools ignore
+preview knowledge, and owner diagnostics report reappeared deleted sources even
+when ordinary retrieval rejects them. These differences are explicit contracts.
+The oracle treats `user_id` and association as trusted call context; MCP/agent
+argument filtering and their transports still need their own tests. The Go tool
+service and transport implementation remain open; these cases establish Django
+behavior, not Go parity.
+
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser
 timeouts, missing UI elements or unsettled UI state;
