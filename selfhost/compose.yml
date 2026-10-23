@@ -180,7 +180,7 @@ services:
     init: true
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
-      - manuale_data:/app/manuale:ro
+      - manuale_data:/app/manuale
     networks:
       - internal
     depends_on:

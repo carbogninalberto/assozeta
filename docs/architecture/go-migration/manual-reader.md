@@ -46,8 +46,18 @@ The competing runtime cannot download or promote while the lease is held;
 after release both runtimes read the same corpus and reuse the verified asset.
 All processes and private files are removed. A negative control that gives Go a
 different lock filename fails these checks, then the unchanged shared-lock code
-passes. This tests native-process interoperability, not installed container
-volume permissions.
+passes. This tests native-process interoperability.
+
+The normal Compose services share a writable `/app/manuale` volume while retaining
+read-only root filesystems. The Go image initializes the cache directory as UID/GID
+10001 so either image may create the volume first. The immutable release bundle
+remains separate. `TESTS/adapters/go/manual_cache_image.py` runs both initialization
+orders against actual Go and Django images, checking restricted-file reuse, atomic
+replacement, asset deletion and writes denied outside the cache. The previous Go
+image fails the Go-first case; the corrected image passes both orders and removes
+all owned containers and volumes. The self-host release workflow runs this check.
+These filesystem probes complement the native refresh tests; they do not prove
+HTTP refresh inside an installed image or a verified required release package.
 
 The Go composition root now registers `/manuale/sections` and
 `/manuale/assets/*`. Handlers resolve the existing actor/effective/scope identity;
@@ -76,13 +86,14 @@ Existing Italian messages, missing-source responses and denial precedence remain
 unchanged. The initial missing-route 404 and missing encoding-header failures are
 retained under `quality-reports/go-migration/manual-source-integration/`.
 
-The whole untagged Go race suite and vet pass. Installed writable-cache permissions,
-real reader browser workflows, MCP, assistant behavior and a verified
+The whole untagged Go race suite and vet pass. Real reader browser workflows,
+MCP, assistant behavior and a verified
 required-release package remain open. Historical manual artifacts retain their
 original revision and verification scope.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
-workflows passing. Twelve failures involved unavailable/timed-out HTTP reads;
+workflows passing. Twelve workflows failed with HTTP, Docker or browser
+timeouts, missing UI elements or unsettled UI state;
 the dashboard-list final baseline comparison also observed asynchronously
 populated document fields after member-detail navigation. Its denial assertions
 passed. The scenario now waits for and reads the real baseline PDF before taking
@@ -90,7 +101,7 @@ the initial snapshot; the full final equality assertion is retained. Focused
 validation passed against an isolated working-tree snapshot of `f08f716` plus
 this scenario correction: one workflow, with real PDF generation and download,
 and successful cleanup of its services, volumes and network. This focused run
-does not establish a complete capture or release package. HTTP availability
-failures still require investigation; no failures are waived.
+does not establish a complete capture or release package. The other failures
+still require investigation; no failures are waived.
 All owned services, volumes and networks were removed. The failed batch never
 reached generation, verification, indexing, evaluation or release-package export.

@@ -225,6 +225,12 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha,scope=quality-backend-go
           cache-to: type=gha,mode=max,scope=quality-backend-go
+      - name: Verify shared manual-cache permissions in both initialization orders
+        run: >-
+          python3 TESTS/adapters/go/manual_cache_image.py
+          --go-image assozeta-backend-go:goal-test
+          --django-image assozeta-backend:goal-test
+          --output quality-reports/manual-cache-image.json
       - name: Build web test image
         uses: docker/build-push-action@v6
         with:

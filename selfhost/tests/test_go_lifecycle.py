@@ -33,6 +33,11 @@ class GoComposeTests(unittest.TestCase):
             self.assertEqual(golang['image'], 'ghcr.io/carbogninalberto/assozeta-backend-go:latest')
             self.assertEqual(golang['user'], '10001:10001')
             self.assertTrue(golang['read_only'])
+            django_manual = next(mount for mount in django['volumes'] if mount['target'] == '/app/manuale')
+            go_manual = next(mount for mount in golang['volumes'] if mount['target'] == '/app/manuale')
+            self.assertEqual(go_manual['source'], django_manual['source'])
+            self.assertFalse(go_manual.get('read_only', False), 'Go must refresh the same manual cache under its shared file lease')
+            self.assertEqual(golang['environment']['MANUAL_INDEX_PATH'], '/app/manuale/index.json')
             self.assertEqual(golang['environment']['DATA_RESTORE_LOCK_PATH'],
                              django['environment']['DATA_RESTORE_LOCK_PATH'])
             for key in ('DBHOST', 'DBNAME', 'DBUSER', 'DBPASSWORD', 'REDIS_HOST',
