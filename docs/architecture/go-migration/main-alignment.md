@@ -141,3 +141,20 @@ requires explicit approval for that action. Use an exact expected upstream
 revision with `--force-with-lease`, and stop if the remote moved. A local backup
 does not authorize overwriting another writer's work. Publishing companion
 changes in the separate manual repository remains a distinct approval boundary.
+
+## October 23: canonical cache and publication questions
+
+The branch is rebased onto `9ed9b22`, including `bb43979`. Publication how-to
+questions now reach the manual answer classifier while direct business commands
+remain outside it. Capture reuse accepts canonical reports with an empty list of
+human-readable check labels, while still requiring passed status, screenshots,
+sealed tooling and exact source hashes. Both changes remain present unchanged.
+
+The pre-rebase branch is retained at `codex/go-before-9ed-alignment-20261023`.
+Rebased `0bc1425` exactly matches an independent merge tree
+`846800346d0039f4ba3e3aebc92dfd8f2b12f36d`. All 168 manual Python tests,
+Go vet and the complete untagged Go race suite pass; inventory drift checks pass.
+This preserves source changes and scoped evidence, not complete parity. Existing
+three subagents could not reassess this increment because their service usage
+limit was reached; the root agent performed this review. The previous aligned
+lifecycle source and image receipts remain pinned to `f2993b0`.

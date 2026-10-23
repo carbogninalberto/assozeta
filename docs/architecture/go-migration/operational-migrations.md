@@ -161,6 +161,23 @@ is under `quality-reports/go-migration/go-manual-preflight/`. The complete
 `b042928` update receipt above predates this additional gate and does not prove its
 combined update/recovery execution.
 
+The aligned `f2993b0` rehearsal now passes the complete update/recovery matrix
+with browser checks and the seventh Go package preflight. It covers backup and
+image-download failures, partial migration and public health failures, runner
+replacement, interruptions during both Django and Go migrations, pre-snapshot
+interruption, recovery admission, repeated recovery and preserved data. Its exact
+receipt is `quality-reports/go-migration/aligned-lifecycle/retry-browser/` in the
+frozen alignment worktree. All disposable update containers, volumes and networks
+were removed. The receipt SHA-256 is
+`0f2acb7d5589fafc5c6ddb5788712d4b59cad4f48390ec08a2f1f648556f63fb`.
+
+The first attempt failed during the browser phase with proxy/backend connection
+errors before exercising the update matrix. That failure remains recorded; no
+root cause is claimed. The retry used unchanged source, images and assertions
+after other owned Docker rehearsals finished. Both attempts used the explicit
+optional manual fixture, so this does not verify a genuine required-release
+manual artifact or Go execution-owner activation.
+
 Installed backend selection, a Go worker/scheduler service, coordinated queue
 transfer, historical application-schema coverage and a complete restore window
 remain required. This increment does not activate Go background execution or

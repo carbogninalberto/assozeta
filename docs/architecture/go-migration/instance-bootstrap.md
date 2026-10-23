@@ -85,7 +85,8 @@ also preserves rejection when the caller uses a shell conditional, which disable
 implicit `errexit` handling inside the function. Three actual image-helper cases
 verify optional success, wrong-release rejection and required-package absence;
 the derived invalid fixture image is removed. The full update/recovery matrix
-must still be rerun with this additional Go gate after main alignment.
+with browser checks and this additional gate now passes at `f2993b0`; see
+[operational migration evidence](operational-migrations.md).
 
 
 The installed-bundle reader library additionally checks public applicability and
