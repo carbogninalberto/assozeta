@@ -225,12 +225,13 @@ def main():
     from TESTS.contracts.test_manual_reader_http import validate_report
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');parser.add_argument('--backend',choices=['django','go'],default='django');parser.add_argument('--versioned',action='store_true');parser.add_argument('--tools',action='store_true',help='Characterize actual manual tool functions with real database context; not MCP transport');options=parser.parse_args()
-    if options.tools and (options.go_source or options.backend!='django' or options.versioned):parser.error('--tools currently requires the Django function oracle')
+    if options.tools and (options.backend!='django' or options.versioned):parser.error('--tools requires the Django function oracle; --go-source adds the Go library comparison')
     if options.backend=='go':OUTPUT=ROOT/'quality-reports/go-migration/manual-reader-http-go'
     if options.versioned:OUTPUT=Path(str(OUTPUT)+'-versioned')
     fixture_path=FIXTURE
     if options.tools:
         OUTPUT=ROOT/'quality-reports/go-migration/manual-tools'
+        if options.go_source:OUTPUT=ROOT/'quality-reports/go-migration/manual-tools-go-library'
         fixture_path=ROOT/'TESTS/fixtures/manual-tools.json'
         from TESTS.contracts.test_manual_tools import validate_report
     fixture=json.loads(fixture_path.read_text());OUTPUT.mkdir(parents=True,exist_ok=True)
@@ -238,11 +239,15 @@ def main():
             'fixture_sha256':hashlib.sha256(fixture_path.read_bytes()).hexdigest()}
     if options.tools:
         report['scope']='Actual Django manual tool functions and live PostgreSQL context; no MCP transport, agent dispatch or Go implementation claim.'
+        if options.go_source:report['scope']='Actual Django functions and PostgreSQL authority compared with Go knowledge library using fixture-supplied trusted context; no Go authority, MCP transport or agent dispatch claim.'
         report['source_hashes']={path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in (
             'BE/application/manuale/tools.py','BE/application/manuale/index.py','BE/application/manuale/bundle.py',
             'BE/application/manuale/development.py','BE/instance/permissions.py','BE/instance/models.py',
             'TESTS/adapters/django/manual_reader_http.py','TESTS/adapters/django/manual_tools.py',
             'TESTS/contracts/test_manual_tools.py')}
+        if options.go_source:
+            paths=[*sorted((ROOT/'BE_GO/pkg/manual').glob('*.go')),ROOT/'TESTS/contracts/test_manual_tools_go.py']
+            report['source_hashes'].update({str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in paths})
     postgres=shutil.which('postgres')
     if not postgres:
         candidates=sorted(Path('/opt/homebrew/opt').glob('postgresql*/bin/postgres'));postgres=str(candidates[-1]) if candidates else None
@@ -281,7 +286,7 @@ def main():
             with GoManualRuntime(work,log,tool_env,options.versioned) if options.backend=='go' else contextlib.nullcontext(None) as go_runtime:
                 if options.tools:
                     from TESTS.adapters.django.manual_tools import measure_tools
-                    measure_tools(work,fixture,report['cases'])
+                    measure_tools(work,fixture,report['cases'],options.go_source,log)
                 else:measure(work,log,fixture,report['cases'],options.go_source,go_runtime,options.versioned)
             validate_report(report,fixture)
 
@@ -299,7 +304,7 @@ def main():
                 finally:
                     if (work/'postgres.log').exists():shutil.copyfile(work/'postgres.log',OUTPUT/'postgres.log')
                     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-    report.update(success=True,versioned=options.versioned,source_differential_cases=fixture['source_cases'] if options.go_source else [],private_services_stopped=True,scenario_count=len(report['cases']),runtime={'backend':options.backend,'python':sys.version.split()[0],'django':django.get_version()})
+    report.update(success=True,versioned=options.versioned,source_differential_cases=list(fixture['cases']) if options.tools and options.go_source else fixture['source_cases'] if options.go_source else [],private_services_stopped=True,scenario_count=len(report['cases']),runtime={'backend':options.backend,'python':sys.version.split()[0],'django':django.get_version()})
     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     print(f'PASS {len(report["cases"])} actual {options.backend} manual {"tool" if options.tools else "HTTP"} cases',flush=True)
 

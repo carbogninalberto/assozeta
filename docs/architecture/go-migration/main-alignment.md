@@ -158,3 +158,22 @@ This preserves source changes and scoped evidence, not complete parity. Existing
 three subagents could not reassess this increment because their service usage
 limit was reached; the root agent performed this review. The previous aligned
 lifecycle source and image receipts remain pinned to `f2993b0`.
+
+## October 23: historical manual appliance setup
+
+The next fetch advances main to `0a96aa5`. It restores the published historical
+image's `seed_selfhost` command before initializing its association in the manual
+upgrade rehearsal, documents the actual manual branch default and dispatch
+branches, and clarifies command descriptions. These changes apply unchanged.
+The prior head `6cef94d` is retained on
+`codex/go-before-0a96-alignment-20261023`; rebased `177326c` exactly matches the
+independent merge tree `42a91a93ce7f30aa450a1e4b3f51919deeaa3e8a`.
+
+All 174 self-host unit tests, inventory checks, Go vet and the untagged Go race
+suite pass. The first manual test invocation used a system Python without NumPy;
+rerunning with the production Python environment passes all 168 tests with no
+skips. This does not constitute a new historical-appliance rehearsal. The earlier
+agent usage limit still prevents independent subagent reassessment; root reviewed
+the incoming diff and tree preservation. The full manual capture at `1832b9c`
+remains pinned to its source and records 55/60 workflows passing, with five
+unresolved failures and successful cleanup.

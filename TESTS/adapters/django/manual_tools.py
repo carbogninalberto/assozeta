@@ -5,6 +5,8 @@ No function, context resolver, loader or permission decision is replaced.
 """
 import hashlib
 import json
+import os
+import subprocess
 
 SOURCE = 'def fixture(): return "captured"\n'
 SOURCE_PATH = 'BE/manual_fixture.py'
@@ -42,6 +44,8 @@ def prepare(base, spec):
             screenshot_backlog=[{'page': 'docs/fixture.mdx', 'status': 'review_target'}],
             files={SOURCE_PATH: {'sha256': digest(SOURCE)}})
     bundle = base/'bundle'; bundle.mkdir()
+    if spec.get('missing_model'):value.pop('semantics')
+    if spec.get('empty_model'):value['semantics'] = {'vocabulary': []}
     runtime = base/'runtime.json'
     source = spec.get('source', 'bundle')
     if source == 'runtime':value['metadata']['publication_status'] = 'published'
@@ -81,7 +85,7 @@ def fingerprints(root):
             for path in root.rglob('*') if path.is_file()}
 
 
-def measure_tools(work, fixture, observed):
+def measure_tools(work, fixture, observed, go_source=False, log=None):
     from django.db import connection
     from django.test import override_settings
     from auditlog.context import disable_auditlog
@@ -91,6 +95,11 @@ def measure_tools(work, fixture, observed):
     from application.manuale.tools import MANUAL_TOOL_FUNCTIONS
     from instance.models import InstanceConfiguration
     from TESTS.contracts.test_manual_tools import validate_report
+    if go_source:
+        from TESTS.adapters.django.manual_reader_http import ROOT
+        subprocess.run(['go', 'test', '-race', '-c', '-tags', 'manualtoolintegration',
+                        '-o', str(work/'tool-oracle'), './pkg/manual'], cwd=ROOT/'BE_GO',
+                       check=True, timeout=180, stdout=log, stderr=subprocess.STDOUT)
     users = {}
     with disable_auditlog():
         for name in ('owner', 'administrator', 'collaborator', 'foreign', 'inactive', 'deleted'):
@@ -138,3 +147,25 @@ def measure_tools(work, fixture, observed):
         observed[name] = item
         validate_report({'schema_version': 1, 'cases': {name: item}}, {'cases': {name: spec}})
         print('PASS manual tool: '+name, flush=True)
+        if go_source:
+            # Fixture-supplied trusted context exercises only the Go library.
+            # Django above still resolves authority from the actual database.
+            maintainer = (spec.get('actor')=='owner' and setup.get('config', True)
+                          and setup.get('self_hosted', True) and setup.get('primary', True)
+                          and not any(setup.get(k) for k in ('foreign_association', 'inactive_owner', 'deleted_owner')))
+            fields = {'MANUAL_BUNDLE_PATH':'BundlePath','MANUAL_BUNDLE_REQUIRED':'BundleRequired',
+                      'MANUAL_INDEX_PATH':'IndexPath','MANUAL_ASSET_ROOT':'AssetRoot','MANUAL_SOURCE_ROOT':'SourceRoot',
+                      'MANUAL_CORPUS_BASE_URL':'CorpusBaseURL','MANUAL_APPLICATION_REVISION':'ApplicationRevision',
+                      'RUNNING_VERSION':'Release','MANUAL_RUN_ID':'RunID','MANUAL_DEVELOPMENT_ROOT':'DevelopmentRoot',
+                      'ASSOZETA_DEPLOYMENT_MODE':'DeploymentMode'}
+            manifest = {'Settings': {fields[k]:v for k,v in settings.items()},
+                        'Context': {'Maintainer': maintainer, 'Features': ['self_hosted'] if setup.get('config', True) and setup.get('self_hosted', True) else []},
+                        'Name': spec['tool'], 'Arguments': args, 'Expected': result}
+            path = work/'tool-case.json'; path.write_text(json.dumps(manifest))
+            subprocess.run([str(work/'tool-oracle'), '-test.run', '^TestManualToolOracle$', '-test.v'],
+                           env={**os.environ, 'ASSOZETA_MANUAL_TOOL_FIXTURE': str(path)},
+                           check=True, timeout=45, stdout=log, stderr=subprocess.STDOUT)
+            assert fingerprints(base)==files_before, 'Go library mutated fixture files'
+            item['go_library_result'] = json.loads(path.with_name(path.name+'.result.json').read_text())
+            item['go_library_files_unchanged'] = True
+            print('PASS Go manual tool library: '+name, flush=True)
