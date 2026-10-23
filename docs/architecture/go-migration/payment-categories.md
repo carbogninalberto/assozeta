@@ -185,9 +185,19 @@ The initial shared cancellation expectation produced a preserved red receipt.
 The final probes assert these two explicit existing runtime behaviors, rather
 than changing Django production code or treating the difference as parity.
 Reports retain `disconnect_semantics_match: false` and
-`complete_payment_category_parity: false`. The lifecycle probes use direct native
-HTTP URLs; the ordinary Caddy workloads do not establish disconnect behavior
-through the proxy.
+`complete_payment_category_parity: false`. The nine-probe suites retain separate native receipts. A further actual socket
+probe through each shipped Caddy route, independently rerun by the parent,
+establishes the same distinct outcomes: v1 commits after lock release; v2 rolls
+back before release. Each probe observes the actual blocked category SQL request,
+then verifies complete managed state, exact audit/index changes and recovery.
+An observer inside Django sees the v1 DELETE and no v2 traffic; a separate
+intentionally misrouted v2 Caddy must be rejected specifically for an upstream
+mismatch, with fixture cleanup still exact. The negative-control receipt correctly
+has `success: false`; its enclosing expected-rejection check passes.
+
+This does not prove identical interruption semantics, actual process shutdown,
+installed switching or safe automatic retries after an ambiguous response. A lost
+connection cannot tell the caller whether Django committed.
 
 The oracle now accepts an owned server-context factory. Its default native factory
 uses Django's private restore-lock path and drains the Go process before fixture
@@ -218,7 +228,13 @@ An independent Django ASGI observer records 48 selected requests for v1 and zero
 for v2; each workflow also makes 26 real Django coexistence requests. A deliberate
 v2-to-Django misroute is rejected even though the response is HTTP 200 with an
 outer `go-v2` header. This supplies runtime routing evidence beyond proxy labels.
-Both workflows and owned private cleanup pass.
+Both workflows and owned private cleanup pass. Hosted Linux CI at `21015e9`
+failed at the first chained-proxy assertion. Source review identified a Linux
+container-to-host-loopback reachability problem in that topology. The browser
+fixture now connects its gateway to shipped Caddy through an owned Docker network
+alias instead of a host-loopback published port. The parent rerun passes both
+workflows, the routing negative control and network removal; hosted Linux
+confirmation of this correction remains pending.
 
 Archive/unarchive uses authenticated PATCH followed by UI reload because the
 unchanged category UI exposes no archive controls. Payment selection and
@@ -254,7 +270,9 @@ Review evidence is retained locally under:
 - `quality-reports/go-migration/payment-categories/results.json`, `lifecycle-{go,django}.json`, and `quality-reports/go-migration/category-acceptance/lifecycle-parent.log` (independent parent lifecycle/native/versioned pass).
 - `quality-reports/go-migration/category-acceptance/image-green2/results.json` and `image-green2.log` (parent packaged-image pass); `image-route-red/results.json` and its log retain the older-image category 404 rejection.
 - `quality-reports/go-migration/category-acceptance/browser-parent-final/results.json`, `routing-negative-control.json`, and `v1`/`v2` browser/validation reports (strengthened independent browser acceptance).
-- `quality-reports/go-migration/category-acceptance/final-acceptance.json` (parent source-bound acceptance summary).
+- `quality-reports/go-migration/category-acceptance/final-acceptance.json` (earlier parent source-bound acceptance summary).
+- `quality-reports/go-migration/payment-categories/lifecycle-caddy-{v1,v2,negative-control}.json` and `quality-reports/go-migration/category-caddy-parent.log` (parent Caddy disconnect proof and expected misroute rejection).
+- `quality-reports/go-migration/category-browser-network/results.json` and `routing-negative-control.json` (parent browser pass with an owned proxy network, including removal).
 
 The portable contract and runner sources are
 `TESTS/contracts/test_payment_categories.py` and
@@ -273,7 +291,10 @@ packaged image**, has a 30-minute timeout and runs the versioned/lifecycle HTTP
 oracle, the six-group real-schema PostgreSQL runner and the revision-bound image adapter. It retains their receipts.
 The existing `profile-browser` job also runs the category browser adapter against
 the extracted immutable frontend image and retains browser/provenance artifacts.
-The workflow has passed local actionlint; no new hosted job success is claimed.
+The workflow has passed local actionlint. The dedicated category job at
+`21015e9` passed on hosted Linux in 7m23s, including native/versioned contracts,
+nine native lifecycle probes per runtime, PostgreSQL groups and the packaged
+image. The additional Caddy disconnect probes still need hosted confirmation.
 Local full Go race/vet, tagged vet, formatting and six repository groups pass. Hosted current-head
 CI is a separate gate; these results do not claim a new green hosted workflow.
 The known external manual recipe-binding failure remains unresolved.
@@ -298,8 +319,8 @@ including the 10,000-row bound. Neither correction changes production behavior.
   in each rollback assertion.
 - Reconcile the demonstrated HTTP-disconnect semantic difference before claiming
   runtime protocol parity or activation readiness. Current probes establish each
-  native runtime's behavior, not a shared outcome, proxy-disconnect semantics,
-  every interleaving or client-side ambiguous-commit recovery.
+  runtime's behavior natively and through Caddy, not a shared outcome, process
+  shutdown, every interleaving or client-side ambiguous-commit recovery.
 
 No category ledger entry is `verified`. Other payment operations and the wider
 business/API/background/MCP/WebSocket migration remain unfinished.

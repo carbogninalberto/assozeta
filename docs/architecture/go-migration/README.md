@@ -19,7 +19,9 @@ queries at 1/8/32/128 distinct VATs and observed blocked-query cancellation/reco
 Nine native lifecycle probes per runtime also pass: profile/category lock overlap,
 owner deactivation/deletion denial and audited recovery. Actual HTTP disconnect
 exposes an explicit gap: Go rolls back before the blocker is released; Django
-completes its admitted synchronous deletion once after release. The packaged
+completes its admitted synchronous deletion once after release. Separate native
+and shipped-Caddy socket probes reproduce the difference, with actual blocked
+SQL, independent Django observation and an expected misrouting rejection. The packaged
 non-root, read-only image passes the same four 188/43/18 workloads with immutable
 image identity and revision/version/health checks. The unchanged category browser
 passes six checks, five writes, seven denials and five exact audits per version; an
@@ -33,7 +35,9 @@ repairs two test-harness issues: development Silk profiling no longer contaminat
 category rollback snapshots, and the 10,000-row instance-bootstrap fixture avoids
 repeating wide-row conversion per column while retaining count/query assertions.
 The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass. No new
-hosted-CI success is claimed; the external manual recipe-binding failure remains.
+full hosted-workflow success is claimed; the dedicated category job at
+`21015e9` passed in 7m23s, but the browser fixture needed the network correction
+and its new Linux result is pending. The external manual recipe-binding failure remains.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful

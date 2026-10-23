@@ -2397,8 +2397,27 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
         if failures:
             raise AssertionError(f'payment-category mutation invariants failed: {failures}')
 
+    django_application = get_asgi_application()
+    observed_lifecycle_requests = {}
+    observation_lock = threading.Lock()
+
+    async def observed_django_application(scope, receive, send):
+        if scope['type'] == 'http':
+            cid = next((value.decode('latin1') for key, value in scope.get('headers', [])
+                        if key.lower() == b'x-correlation-id'), '')
+            if cid.startswith('payment-category-lifecycle-'):
+                with observation_lock:
+                    observed_lifecycle_requests.setdefault(cid, []).append({
+                        'method': scope['method'], 'path': scope['path'],
+                    })
+        await django_application(scope, receive, send)
+
+    def django_requests(cid):
+        with observation_lock:
+            return list(observed_lifecycle_requests.get(cid, []))
+
     server = uvicorn.Server(uvicorn.Config(
-        get_asgi_application(), host='0.0.0.0' if versioned else '127.0.0.1',
+        observed_django_application, host='0.0.0.0' if versioned else '127.0.0.1',
         port=0, lifespan='off', log_level='critical',
     ))
     thread = threading.Thread(target=server.run, daemon=True)
@@ -2553,6 +2572,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                 lifecycle_results[backend] = run_lifecycle(
                     base, backend, owner_id=owner.pk, association_id=own_association.pk,
                     token=tokens[160000], snapshot=managed_snapshot,
+                    django_requests=django_requests,
                     evidence_path=ROOT / f'quality-reports/go-migration/payment-categories/lifecycle-{backend.lower()}.json',
                 )
             fixture['oracle']['lifecycle'] = lifecycle_results
@@ -2603,7 +2623,40 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                         'managed_delta': proxy_delta, 'fault_probes': proxy_faults,
                         'concurrency_probe': proxy_concurrency,
                     }
+                    if lifecycle:
+                        proxy_lifecycle = run_lifecycle(
+                            proxy_base, backend, owner_id=owner.pk, association_id=own_association.pk,
+                            token=tokens[160000], snapshot=managed_snapshot,
+                            evidence_path=ROOT / f'quality-reports/go-migration/payment-categories/lifecycle-caddy-{route.rsplit("/", 1)[1]}.json',
+                            transport='caddy-' + route.rsplit('/', 1)[1], disconnect_only=True,
+                            django_requests=django_requests, expected_remote_addr=measured_remote,
+                        )
+                        versioned_results['routes'][route]['disconnect'] = proxy_lifecycle
+                        assert proxy_lifecycle['success'], ('Caddy disconnect invariant failed', proxy_lifecycle)
                     print(f'{backend} through shipped Caddy {route}: {len(cases)} HTTP cases and {len(proxy_audit)} exact audit rows passed', flush=True)
+                if lifecycle:
+                    # Deliberately route v2 to Django in a separate disposable
+                    # Caddy. The observer must reject it even though Django can
+                    # perform the same category mutation. No production routing
+                    # or response headers are changed for the actual workloads.
+                    django_upstream = f'host.docker.internal:{django_port}'
+                    with proxy(django_upstream, django_upstream, log,
+                               network=go_runtime.get('network')) as (wrong_gateway, _):
+                        negative_control = run_lifecycle(
+                            wrong_gateway + '/api/v2', 'Go', owner_id=owner.pk,
+                            association_id=own_association.pk, token=tokens[160000], snapshot=managed_snapshot,
+                            evidence_path=ROOT / 'quality-reports/go-migration/payment-categories/lifecycle-caddy-negative-control.json',
+                            transport='caddy-v2-negative-control', disconnect_only=True,
+                            django_requests=django_requests,
+                        )
+                    assert not negative_control['success'] and negative_control['cleanup_verified'], negative_control
+                    assert len(negative_control['cases']) == 1, negative_control
+                    assert negative_control['cases'][0].get('failure_kind') == 'upstream_mismatch', negative_control
+                    versioned_results['disconnect_routing_negative_control'] = {
+                        'success': True, 'expected_rejection': 'upstream_mismatch',
+                        'observed': negative_control,
+                    }
+                    print('Caddy v2 disconnect routing negative control: PASS (actual Django fallback rejected)', flush=True)
                 fixture['oracle']['versioned'] = versioned_results
         return _jsonable({
             'success': True,

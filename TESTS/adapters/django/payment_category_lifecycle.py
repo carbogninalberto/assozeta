@@ -23,7 +23,9 @@ ASSOCIATION_FIELDS = (
 )
 
 
-def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_path):
+def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_path,
+        transport='native', disconnect_only=False, django_requests=None,
+        expected_remote_addr='127.0.0.1'):
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
     from django.db import connection, transaction
@@ -31,10 +33,16 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
     from application.models.audit_models import AuditLogIndex
 
     owner_id, association_id = str(owner_id), str(association_id)
-    prefix = 'payment-category-lifecycle-' + backend.lower()
+    assert transport in ('native', 'caddy-v1', 'caddy-v2', 'caddy-v2-negative-control'), transport
+    assert transport == 'native' or disconnect_only, 'proxy slice only covers disconnect'
+    assert transport == 'native' or django_requests is not None, 'proxy requires independent Django observation'
+    prefix = 'payment-category-lifecycle-' + transport + '-' + backend.lower()
     client = Client(base, token, timeout=25)
+    initial_snapshot = snapshot()
+    started = time.monotonic()
     evidence = {
-        'backend': backend, 'cases': [], 'success': False,
+        'backend': backend, 'transport': transport, 'cases': [], 'success': False,
+        'cleanup_verified': False,
         'disconnect_semantics_match': False,
         'complete_payment_category_parity': False,
         'remaining_parity_gap': 'Go cancels a blocked mutation on client disconnect; admitted Django sync requests continue and may commit.',
@@ -54,9 +62,10 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
         with connection.cursor() as cursor:
             cursor.execute('SELECT pg_stat_clear_snapshot()')
             cursor.execute("""SELECT pid, pg_blocking_pids(pid), state, wait_event_type,
-                xact_start IS NOT NULL FROM pg_stat_activity
+                xact_start IS NOT NULL, position('application_paymentcategory' in query) > 0
+                FROM pg_stat_activity
                 WHERE datname=current_database() AND pid <> pg_backend_pid()""")
-            return [dict(zip(('pid', 'blockers', 'state', 'wait', 'transaction'), row)) for row in cursor.fetchall()]
+            return [dict(zip(('pid', 'blockers', 'state', 'wait', 'transaction', 'category_query'), row)) for row in cursor.fetchall()]
 
     def wait_chain(blocker, minimum):
         deadline = time.monotonic() + 10
@@ -114,8 +123,27 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
             assert str(event.actor_id) == owner_id, ('wrong actor', event.cid, event.actor_id)
             assert event.action == 1, ('wrong action', event.cid, event.action)
             assert event.additional_data is None, ('unexpected impersonation', event.cid)
+            assert event.actor_email == User.original_objects.get(pk=owner_id).email, ('actor email', event.cid)
+            assert event.remote_addr == expected_remote_addr, ('remote address', event.cid, event.remote_addr, expected_remote_addr)
             indexes = list(AuditLogIndex.objects.filter(log_entry=event))
             assert len(indexes) == 1 and str(indexes[0].sport_association_id) == association_id, ('audit index scope', event.cid)
+            if event.content_type.model == 'paymentcategory':
+                assert indexes[0].resolution_path == 'direct', ('category audit index resolution', event.cid)
+
+    def assert_category_effects(before, category_id, fields, cid):
+        after = snapshot()
+        for model, prior in before.items():
+            if model == 'application.PaymentCategory':
+                expected = [dict(record) for record in prior]
+                for record in expected:
+                    if str(record['payment_category_id']) == category_id:
+                        record.update(fields)
+                assert after[model] == expected, ('unexpected category fields', fields)
+            elif model in ('auditlog.LogEntry', 'application.AuditLogIndex'):
+                assert len(after[model]) == len(prior) + len(audit_rows(cid)), ('extra audit/index rows', model)
+                assert all(record in after[model] for record in prior), ('prior audit/index changed', model)
+            else:
+                assert after[model] == prior, ('unrelated managed state changed', model)
 
     def overlap(profile_first, number, category_method='PATCH'):
         label = 'profile-first' if profile_first else 'category-first'
@@ -219,6 +247,10 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
                     waiting = wait_chain(blocker, 1)
                     assert len(waiting) == 1, waiting
                     waiter = waiting[0]
+                    blocked_activity = [row for row in activity() if row['pid'] == waiter]
+                    assert len(blocked_activity) == 1 and blocked_activity[0]['category_query'], blocked_activity
+                    assert blocked_activity[0]['transaction'] and blocker in blocked_activity[0]['blockers'], blocked_activity
+                    observed_django = django_requests(cid + '-abandoned') if django_requests else None
                     transport.shutdown(socket.SHUT_RDWR)
                     transport.close()
                     ended, final_activity = transaction_ended(waiter, 3)
@@ -227,11 +259,23 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
                 assert drained, ('disconnected request did not drain after barrier release', after_release_activity)
                 row = PaymentCategory._base_manager.get(pk=category_id)
                 observed = {'name': label, 'blocked_backend': waiter,
+                            'activity_before_disconnect': blocked_activity,
+                            'independent_django_requests': observed_django,
                             'transaction_ended_before_blocker_release': ended,
                             'activity_before_release': final_activity,
                             'unchanged_before_release': before_release_unchanged,
                             'deleted_after_release': row.deleted,
                             'abandoned_audits': [event.changes_dict for event in audit_rows(cid)]}
+                # This observer runs inside the actual Django ASGI application;
+                # it does not trust Caddy response headers. Together with the
+                # private database waiter it identifies the selected runtime.
+                if django_requests is not None:
+                    expected_requests = ([{'method': 'DELETE', 'path': f'/payment/category/{category_id}/delete'}]
+                                         if backend == 'Django' else [])
+                    if observed_django != expected_requests:
+                        observed.update(success=False, failure_kind='upstream_mismatch',
+                                        failure='wrong upstream runtime', expected_django_requests=expected_requests)
+                        return observed
                 if backend == 'Django':
                     # An admitted synchronous Django view is not canceled with
                     # its ASGI caller. Characterize that existing behavior; do
@@ -260,6 +304,8 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
                         (cid + '-recovery', 'paymentcategory', category_id,
                          {'name': ['Lifecycle original', 'Recovered after committed disconnect']}),
                     ])
+                    assert_category_effects(before, category_id,
+                                            {'deleted': True, 'name': 'Recovered after committed disconnect'}, cid)
                     observed.update(success=True, audited_recovery=True, disconnect_semantics_match=False,
                                     expected_outcome='admitted_sync_request_commits_once_after_barrier_release')
                     return observed
@@ -273,6 +319,7 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
                 assert PaymentCategory._base_manager.get(pk=category_id).deleted
                 assert_audit(audit_rows(cid), [(cid + '-recovery', 'paymentcategory', category_id,
                                                {'deleted': ['False', 'True']})])
+                assert_category_effects(before, category_id, {'deleted': True}, cid)
                 observed.update(success=True, audited_recovery=True, disconnect_semantics_match=False,
                                 expected_outcome='request_context_cancels_and_rolls_back_before_barrier_release')
                 return observed
@@ -290,6 +337,8 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
         ('owner-soft-deletion-delete', lambda: owner_state('deleted', True, 9, 'DELETE')),
         ('http-disconnect-blocked-delete', lambda: disconnect(5)),
     )
+    if disconnect_only:
+        probes = probes[-1:]
     for name, probe in probes:
         try:
             result = probe()
@@ -298,7 +347,9 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
         evidence['cases'].append(result)
         save_evidence()
         distinction = ' (runtime-specific expectation; disconnect parity remains open)' if name == 'http-disconnect-blocked-delete' else ''
-        print(f'{backend} lifecycle {name}: {"PASS" if result["success"] else "FAIL"}{distinction}', flush=True)
-    evidence['success'] = all(case['success'] for case in evidence['cases'])
+        print(f'{backend} {transport} lifecycle {name}: {"PASS" if result["success"] else "FAIL"}{distinction}', flush=True)
+    evidence['cleanup_verified'] = snapshot() == initial_snapshot
+    evidence['success'] = evidence['cleanup_verified'] and all(case['success'] for case in evidence['cases'])
+    evidence['elapsed_seconds'] = round(time.monotonic() - started, 3)
     save_evidence()
     return evidence
