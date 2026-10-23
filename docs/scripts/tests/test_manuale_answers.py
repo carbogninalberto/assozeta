@@ -39,6 +39,14 @@ class ManualAnswerTests(unittest.TestCase):
         result = {'status': 'forbidden', 'message': 'Accesso riservato.', 'gaps': [{'reason': 'private source'}]}
         self.assertEqual(answers.manual_diagnostic_answer(result), 'Accesso riservato.')
 
+    def test_publication_how_to_routes_without_intercepting_business_requests(self):
+        for question in ('Come pubblicare il bilancio e annullare la pubblicazione?',
+                         'Come pubblico il bilancio?', 'Dove posso annullare la pubblicazione?'):
+            self.assertTrue(answers.is_manual_question(question), question)
+        for question in ('Pubblica il bilancio', 'Annulla la pubblicazione',
+                         'Quali bilanci sono pubblicati?'):
+            self.assertFalse(answers.is_manual_question(question), question)
+
     def test_payment_and_receipt_how_to_questions_route_to_manual_without_capturing_data_queries(self):
         for question in ('Come posso incassare un pagamento?', 'Come approvo un pagamento?',
                          'Dove posso scaricare una ricevuta?',

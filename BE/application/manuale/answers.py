@@ -61,6 +61,7 @@ def is_manual_question(message):
                              r'(creare|creo|crea|aggiungere|aggiungo|aggiunge|assegnare|assegno|assegna|modificare|modifico|modifica|configurare|configuro|configura|'
                              r'importare|importo|esportare|esporto|registrare|registro|abilitare|abilito|eliminare|elimino|'
                              r'incassare|incasso|incassa|approvare|approvo|approva|scaricare|scarico|scarica|'
+                             r'pubblicare|pubblico|pubblica|annullare|annullo|annulla|'
                              r'gestire|gestisco|trovare|trovo|cercare|cerco|cerca|svuotare|svuoto|svuota|cancellare|cancello|'
                              r'archiviare|archivio|archivia|ripristinare|ripristino|ripristina|'
                              r'correggere|correggo|corregge|copiare|copio|copia|controllare|controllo|controlla|'
