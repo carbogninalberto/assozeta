@@ -209,7 +209,7 @@ jobs:
             quality-reports/go-migration/accounts/
 
   profile-browser:
-    name: Unchanged frontend personal profile on Django and Go
+    name: Unchanged frontend profile and manual on Django and Go
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -253,6 +253,7 @@ jobs:
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
           python TESTS/adapters/django/production_runtime.py
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
           npm ci --prefix selfhost/tests/browser
           npm exec --prefix selfhost/tests/browser -- playwright install --with-deps --only-shell chromium
       - uses: docker/setup-buildx-action@v3
@@ -277,14 +278,16 @@ jobs:
           subprocess.run(['docker', 'pull', image], check=True)
           PY
           python TESTS/adapters/django/profile_browser.py \
+            --manual-reader \
             --prepare-ui-image assozeta-profile-web:ci \
             --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
             --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json
-      - name: Verify fresh login, personal edit and reload on both API versions
+      - name: Verify profile and manual reader with each selected backend
         # Current-model fixture and private canonical /api selection only.
         # Root WebSockets/manifest/logo/export denial retain real Django service.
         run: |
           python TESTS/adapters/django/profile_browser.py \
+            --manual-reader \
             --ui-dir quality-reports/go-migration/profile-browser-ui/artifact \
             --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \

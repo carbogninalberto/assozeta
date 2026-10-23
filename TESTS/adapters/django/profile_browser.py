@@ -38,7 +38,7 @@ WORKFLOW_SOURCES = (
 )
 
 
-def prepare_ui(image, artifact, receipt):
+def prepare_ui(image, artifact, receipt, workflow_sources=WORKFLOW_SOURCES):
     """Extract one existing image without starting it; verify scoped source maps."""
     assert not artifact.exists(), 'Use a new artifact directory; never replace an existing frontend'
     assert not receipt.exists(), 'Use a new provenance receipt'
@@ -62,11 +62,11 @@ def prepare_ui(image, artifact, receipt):
         artifact.mkdir()
         docker('cp', name+':/srv/.', artifact)
         assert (artifact/'index.html').is_file()
-        matches = {source: [] for source in WORKFLOW_SOURCES}
+        matches = {source: [] for source in workflow_sources}
         for source_map in sorted(artifact.rglob('*.map')):
             data = json.loads(source_map.read_text())
             for source, content in zip(data.get('sources', []), data.get('sourcesContent', [])):
-                for expected in WORKFLOW_SOURCES:
+                for expected in workflow_sources:
                     if source.endswith('/'+expected) or source == expected:
                         assert isinstance(content, str), 'Required embedded workflow source missing'
                         actual = (ROOT/'UI'/expected).read_bytes()
@@ -101,7 +101,7 @@ def fingerprints(directory):
 
 
 @contextlib.contextmanager
-def gateway(work, log, ui, django_port, go_port, version):
+def gateway(work, log, ui, django_port, go_port, version, selected_routes=SELECTED_ROUTES):
     """Exact allowlist routing; unknown API paths fail instead of falling back."""
     image = re.search(r'^FROM (caddy:\S+) AS production$', (ROOT / 'UI/Dockerfile').read_text(), re.M).group(1)
     name = 'az-profile-browser-' + uuid.uuid4().hex
@@ -145,7 +145,7 @@ def gateway(work, log, ui, django_port, go_port, version):
   }
  }
 }
-'''.replace('SELECTED', ' '.join('/api/' + p for p in SELECTED_ROUTES)).replace('COEXISTENCE',
+'''.replace('SELECTED', ' '.join('/api/' + p for p in selected_routes)).replace('COEXISTENCE',
     ' '.join('/api/' + p for p in COEXISTENCE_ROUTES)).replace('LABEL', label).replace('TARGET', str(target)).replace('DJANGO', str(django_port))
     path = work / (version + '.Caddyfile'); path.write_text(config)
     def docker(*args, check=True):
@@ -205,6 +205,11 @@ def exercise(work, output, log, options, tool_env):
         MANUAL_BUNDLE_PATH=str(work/'absent-manual'), MANUAL_BUNDLE_REQUIRED=False,
         MANUAL_INDEX_PATH=str(work/'absent-index.json'), MANUAL_DEVELOPMENT_ROOT=str(work/'absent-development'),
         FAMILY_REGISTRATION_ENABLED=True, FEDERATION_REGISTRATION_ENABLED=False, MULTIPLE_REGISTRATION_ENABLED=False)
+    manual_fixture = None
+    if options.manual_reader:
+        from TESTS.adapters.django.manual_browser_fixture import prepare_manual
+        manual_settings, manual_fixture = prepare_manual(work)
+        runtime.update(manual_settings)
     caches = {'default': {'BACKEND': 'django_redis.cache.RedisCache', 'LOCATION': f'redis://127.0.0.1:{cache_port}/1',
                          'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient', 'PASSWORD': 'private-profile-browser-cache'}}}
     layers = {'default': {'BACKEND': 'channels_redis.core.RedisChannelLayer', 'CONFIG': {
@@ -269,7 +274,8 @@ def exercise(work, output, log, options, tool_env):
                 owner_before = User.original_objects.filter(pk=owner.pk).values().get()
                 association_before = SportAssociation.original_objects.filter(pk=association.pk).values().get()
                 audit_before = set(LogEntry.objects.values_list('pk', flat=True))
-                with gateway(work, log, options.ui_dir, django_port, go_port, version) as (origin, routing):
+                routes = SELECTED_ROUTES + (('manuale/sections', 'manuale/assets/*') if options.manual_reader else ())
+                with gateway(work, log, options.ui_dir, django_port, go_port, version, routes) as (origin, routing):
                     target = output/version; target.mkdir(exist_ok=True)
                     for stale in ('browser.json', 'validation.json'): (target/stale).unlink(missing_ok=True)
                     fixture = dict(origin=origin, version=version, username=actor.username, password=password, user_id=str(actor.pk),
@@ -297,6 +303,18 @@ def exercise(work, output, log, options, tool_env):
                     reports[version] = {'success': True, 'routing': routing, 'real_password_login': True,
                         'database_and_exact_audit_readback': True, 'owner_and_association_unchanged': True,
                         'no_collaborator_association_index': True, 'browser_report': str((target/'browser.json').relative_to(output))}
+                    if options.manual_reader:
+                        fixture.update(manual=manual_fixture)
+                        fixture_path.write_text(json.dumps(fixture)); fixture_path.chmod(0o600)
+                        try:
+                            subprocess.run(['node', str(ROOT/'TESTS/browser/manual-reader.mjs')], cwd=ROOT,
+                                env={**tool_env, 'TESTS_FIXTURE': str(fixture_path), 'TESTS_OUTPUT': str(target)},
+                                stdout=log, stderr=subprocess.STDOUT, check=True, timeout=180)
+                        finally:
+                            fixture_path.unlink(missing_ok=True)
+                        manual_report = json.loads((target/'manual-browser.json').read_text())
+                        assert manual_report['success'], 'Manual browser did not complete'
+                        reports[version]['manual_reader'] = manual_report
                     (target/'validation.json').write_text(json.dumps(reports[version], indent=2)+'\n')
                     print('PASS: ' + version + ' fresh login, personal edit, reload and database audit readback', flush=True)
     finally:
@@ -324,12 +342,17 @@ def main():
     parser.add_argument('--ui-dir', type=Path, required=True, help='Existing unmodified built UI dist/public directory')
     parser.add_argument('--ui-provenance', type=Path, required=True, help='Immutable-image artifact hash manifest')
     parser.add_argument('--prepare-ui-image', help='Preparation only: extract /srv from an existing image, verify workflow source maps and write provenance')
+    parser.add_argument('--manual-reader', action='store_true', help='Also verify the unchanged manual reader against an authored synthetic installed corpus; no assistant or full-UI parity claim')
     parser.add_argument('--go-source-root', type=Path, default=ROOT/'BE_GO', help='Explicit Go module source tree; supports a pinned pre-bootstrap RED')
     parser.add_argument('--output', type=Path, default=ROOT/'quality-reports/go-migration/profile-browser')
     parser.add_argument('--playwright-module', type=Path, default=ROOT/'selfhost/tests/browser/node_modules/@playwright/test/index.mjs')
     options = parser.parse_args(); options.ui_dir = options.ui_dir.resolve(); options.playwright_module = options.playwright_module.resolve()
     if options.prepare_ui_image:
-        prepare_ui(options.prepare_ui_image, options.ui_dir, options.ui_provenance.resolve())
+        sources = WORKFLOW_SOURCES
+        if options.manual_reader:
+            from TESTS.adapters.django.manual_browser_fixture import WORKFLOW_SOURCES as manual_sources
+            sources += manual_sources
+        prepare_ui(options.prepare_ui_image, options.ui_dir, options.ui_provenance.resolve(), sources)
         return
     require_production_python()
     options.go_source_root = options.go_source_root.resolve()
@@ -342,6 +365,12 @@ def main():
     assert provenance['success'] and provenance['extraction_container_never_started'] and provenance['extraction_container_removed']
     assert provenance['files'] == ui_hashes, 'Frontend does not match its reviewed immutable artifact'
     assert re.fullmatch(r'sha256:[0-9a-f]{64}', provenance['image_id']), 'Immutable frontend image required'
+    if options.manual_reader:
+        from TESTS.adapters.django.manual_browser_fixture import WORKFLOW_SOURCES as manual_sources
+        for source in manual_sources:
+            matches = provenance['workflow_source_maps'].get(source)
+            assert matches, 'Manual workflow source provenance missing: '+source
+            assert all(item['embedded_sha256'] == hashlib.sha256((ROOT/'UI'/source).read_bytes()).hexdigest() for item in matches)
     result = {'success': False, 'scope': __doc__.strip(), 'ui_artifact_hashes': ui_hashes,
         'ui_image_id': provenance['image_id'], 'ui_provenance_sha256': hashlib.sha256(provenance_bytes).hexdigest(),
         'go_source_root': str(options.go_source_root), 'go_source_hashes': fingerprints(options.go_source_root)}
@@ -397,7 +426,8 @@ def main():
     assert fingerprints(options.go_source_root) == result['go_source_hashes'], 'Selected Go source changed during proof'
     result.update(success=True, private_services_stopped=True, current_model_schema_only=True,
         source_hashes={p: hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in (
-            'TESTS/adapters/django/profile_browser.py', 'TESTS/browser/profile-personal.mjs')})
+            'TESTS/adapters/django/profile_browser.py', 'TESTS/browser/profile-personal.mjs',
+            *(['TESTS/adapters/django/manual_browser_fixture.py', 'TESTS/browser/manual-reader.mjs'] if options.manual_reader else []))})
     report.write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps({'success': True, 'versions': list(result['versions']), 'private_services_stopped': True}))
 
