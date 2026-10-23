@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Explicit expected current-Django HTTP contract; three bootstrap reads only, no configuration writes or manual reader.",
+  "scope": "Explicit expected current-Django HTTP contract; three bootstrap reads only, no configuration writes or manual reader. Includes public PWA manifest branding and transport.",
   "cases": {
     "missing-status": {
       "request": {
@@ -3503,6 +3503,1915 @@
           "WWW-Authenticate": null,
           "Retry-After": null
         }
+      }
+    },
+    "manifest-unconfigured": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": null
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Bakney Sport",
+          "short_name": "Bakney",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-default": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-first-row": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "second": true
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-unicode-abbreviation": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "name": "😀é漢字abcdefghijklm",
+          "abbreviation": ""
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "😀é漢字abcdefghijklm",
+          "short_name": "😀é漢字abcdefgh",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-empty-name": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "name": "",
+          "abbreviation": "",
+          "primary_color": ""
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "",
+          "short_name": "",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": ""
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-custom-branding": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "name": "Club",
+          "abbreviation": "LONG ABBREVIATION",
+          "meta_description": "Test <em>description</em>",
+          "primary_color": "#abcdef",
+          "meta_title": "Ignored title"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Club",
+          "short_name": "LONG ABBREVIATION",
+          "description": "Test <em>description</em>",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#abcdef"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-png": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/api/instance/logo.png"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/api/instance/logo.png",
+              "sizes": "192x192",
+              "type": "image/png"
+            },
+            {
+              "src": "/api/instance/logo.png",
+              "sizes": "512x512",
+              "type": "image/png"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-svg": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.svg"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/icon.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-jpg": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "https://example.test/a.jpg"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "https://example.test/a.jpg",
+              "sizes": "192x192",
+              "type": "image/jpeg"
+            },
+            {
+              "src": "https://example.test/a.jpg",
+              "sizes": "512x512",
+              "type": "image/jpeg"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-jpeg": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.jpeg"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.jpeg",
+              "sizes": "192x192",
+              "type": "image/jpeg"
+            },
+            {
+              "src": "/icon.jpeg",
+              "sizes": "512x512",
+              "type": "image/jpeg"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-webp": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.webp"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.webp",
+              "sizes": "192x192",
+              "type": "image/webp"
+            },
+            {
+              "src": "/icon.webp",
+              "sizes": "512x512",
+              "type": "image/webp"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-uppercase": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.SVG"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.SVG",
+              "sizes": "192x192",
+              "type": "image/png"
+            },
+            {
+              "src": "/icon.SVG",
+              "sizes": "512x512",
+              "type": "image/png"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-query": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.svg?v=2"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.svg?v=2",
+              "sizes": "192x192",
+              "type": "image/png"
+            },
+            {
+              "src": "/icon.svg?v=2",
+              "sizes": "512x512",
+              "type": "image/png"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-icon-unknown": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "logo_path": "/icon.ico"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/icon.ico",
+              "sizes": "192x192",
+              "type": "image/png"
+            },
+            {
+              "src": "/icon.ico",
+              "sizes": "512x512",
+              "type": "image/png"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-malformed-unused-settings": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "config": {
+          "integration_settings": {
+            "stripe": {
+              "settings": null
+            },
+            "google": [
+              "private-stripe-canary"
+            ]
+          },
+          "display_settings": "invalid"
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-malformed-bearer-ignored": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Authorization": "Bearer malformed",
+          "X-Impersonation-Id": "forged",
+          "User-Id": "forged",
+          "X-Group-Id": "bad"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-expired-token-ignored": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "token": "expired"
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-inactive-actor-ignored": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "owner",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "actor_state": {
+          "is_active": false
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-valid-session": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "cookie": "valid"
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-stale-session": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "cookie": "stale"
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-head": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-options": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Instance Manifest",
+          "description": "GET /instance/manifest.json\nDynamic PWA manifest.",
+          "renders": [
+            "application/json"
+          ],
+          "parses": [
+            "application/json",
+            "application/x-www-form-urlencoded",
+            "multipart/form-data"
+          ]
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-method-post": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"POST\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-method-put": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "PUT",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"PUT\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-method-patch": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "PATCH",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"PATCH\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-method-delete": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "DELETE",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"DELETE\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-format-json": {
+      "request": {
+        "path": "/instance/manifest.json?format=json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-format-blank": {
+      "request": {
+        "path": "/instance/manifest.json?format=",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-format-last-blank": {
+      "request": {
+        "path": "/instance/manifest.json?format=xml&format=",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-format-xml": {
+      "request": {
+        "path": "/instance/manifest.json?format=xml",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 404,
+        "body": {
+          "detail": "Not found."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-format-before-accept": {
+      "request": {
+        "path": "/instance/manifest.json?format=xml",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "text/html"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 404,
+        "body": {
+          "detail": "Not found."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-accept-denied": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "text/html"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 406,
+        "body": {
+          "detail": "Could not satisfy the request Accept header."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-accept-json-zero-q": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept": "application/json;q=0"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Gestionale per associazioni sportive",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-italian-method": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "it"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Metodo \"POST\" non consentito"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "it",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-restore-read-denied": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en"
+        }
+      },
+      "setup": {
+        "lock": true
+      },
+      "expected": {
+        "status": 503,
+        "body": {
+          "error": "Un’altra operazione sui dati è in corso. Riprova tra poco."
+        },
+        "headers": {
+          "Allow": null,
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": "10"
+        },
+        "vary_tokens": [
+          "accept-language",
+          "origin"
+        ]
+      }
+    },
+    "manifest-cors-preflight": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "OPTIONS",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Origin": "https://allowed.example.test",
+          "Access-Control-Request-Method": "GET",
+          "X-Impersonation-Id": "forged"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": null,
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "origin"
+        ]
+      }
+    },
+    "manifest-gzip": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "gzip"
+        }
+      },
+      "setup": {
+        "config": {
+          "meta_description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. "
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. ",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": "gzip"
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-gzip-zero-q": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "gzip;q=0"
+        }
+      },
+      "setup": {
+        "config": {
+          "meta_description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. "
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. ",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": "gzip"
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-gzip-uppercase": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "GZIP"
+        }
+      },
+      "setup": {
+        "config": {
+          "meta_description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. "
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. ",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      },
+      "versioned_expected": {
+        "headers": {
+          "Content-Encoding": "gzip"
+        }
+      },
+      "note": "Shipped Caddy accepts uppercase GZIP and compresses this large response; native Django and Go use the existing case-sensitive gzip token rule."
+    },
+    "manifest-other-encoding": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "GET",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "br"
+        }
+      },
+      "setup": {
+        "config": {
+          "meta_description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. "
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "name": "Fixture à ASD",
+          "short_name": "Fà",
+          "description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. ",
+          "icons": [
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "192x192",
+              "type": "image/svg+xml"
+            },
+            {
+              "src": "/oem/assozeta/brand/logo.svg",
+              "sizes": "512x512",
+              "type": "image/svg+xml"
+            }
+          ],
+          "start_url": "/",
+          "display": "standalone",
+          "background_color": "#ffffff",
+          "theme_color": "#351DC2"
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": null
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-gzip-head": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "HEAD",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "gzip"
+        }
+      },
+      "setup": {
+        "config": {
+          "meta_description": "Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. Readable branding. "
+        }
+      },
+      "expected": {
+        "status": 200,
+        "body": "",
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": "gzip"
+        },
+        "selects": 1,
+        "vary_tokens": [
+          "accept-encoding",
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
+      }
+    },
+    "manifest-gzip-short-error": {
+      "request": {
+        "path": "/instance/manifest.json",
+        "method": "POST",
+        "actor": "anonymous",
+        "headers": {
+          "Accept-Language": "en",
+          "Accept-Encoding": "gzip"
+        }
+      },
+      "setup": {},
+      "expected": {
+        "status": 405,
+        "body": {
+          "detail": "Method \"POST\" not allowed."
+        },
+        "headers": {
+          "Allow": "GET, HEAD, OPTIONS",
+          "Content-Type": "application/json",
+          "Content-Language": "en",
+          "WWW-Authenticate": null,
+          "Retry-After": null,
+          "Content-Encoding": null
+        },
+        "vary_tokens": [
+          "accept-language",
+          "cookie",
+          "origin"
+        ]
       }
     }
   }

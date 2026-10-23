@@ -4,6 +4,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -163,6 +164,37 @@ func TestInstanceBootstrapPostgresBounds(t *testing.T) {
 				t.Fatal("unexpected projection buffer cost", root["Shared Hit Blocks"])
 			}
 			reports[fmt.Sprint(size)] = raw
+			// The manifest reads only five branding columns and must not inherit
+			// bootstrap provider parsing, joins or secret fields. Exercise the
+			// actual query in a PostgreSQL-enforced read-only transaction.
+			tx, err := db.BeginTxx(queryCtx, &sql.TxOptions{ReadOnly: true})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tx.Rollback()
+			trace.reset()
+			branding, err := NewInstanceManifest(tx).FirstManifestBranding(queryCtx)
+			if err != nil || branding == nil || branding.Name != "Fixture à ASD" || branding.Abbreviation != "Fà" || trace.selects() != 1 {
+				t.Fatal("manifest first-PK/read-only/query bound", branding, err, trace.selects())
+			}
+			if err := tx.GetContext(queryCtx, &raw, "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+instanceManifestSQL); err != nil {
+				t.Fatal(err)
+			}
+			if err := json.Unmarshal(raw, &plans); err != nil {
+				t.Fatal(err)
+			}
+			manifestPlan := plans[0]["Plan"].(map[string]any)
+			if manifestPlan["Actual Rows"] != float64(1) {
+				t.Fatal("manifest result row bound")
+			}
+			inspect(manifestPlan)
+			if size >= 1000 && manifestPlan["Shared Hit Blocks"].(float64) > 64 {
+				t.Fatal("manifest buffer bound", manifestPlan["Shared Hit Blocks"])
+			}
+			reports[fmt.Sprintf("manifest-%d", size)] = raw
+			if err := tx.Rollback(); err != nil {
+				t.Fatal(err)
+			}
 			prior = size
 		})
 	}
