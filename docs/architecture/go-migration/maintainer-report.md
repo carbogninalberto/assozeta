@@ -3,7 +3,7 @@
 This draft retains all fourteen [accepted requirements](requirements.md).
 **It is not ready for production activation or merge as a backend replacement.**
 Work is isolated on `codex/go-backend-parity`, reconciled through
-`main@0a96aa5`. Django retains production API selection, business-schema,
+`main@79a9460`. Django retains production API selection, business-schema,
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
 

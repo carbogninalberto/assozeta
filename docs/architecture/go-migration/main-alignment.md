@@ -177,3 +177,29 @@ agent usage limit still prevents independent subagent reassessment; root reviewe
 the incoming diff and tree preservation. The full manual capture at `1832b9c`
 remains pinned to its source and records 55/60 workflows passing, with five
 unresolved failures and successful cleanup.
+
+## October 23: deleted-payment export references
+
+Main advances to `79a9460`, retaining shared payment categories and VAT records
+referenced by soft-deleted payments. Both changed Django files are preserved
+exactly. The prior head `03e11eb` is retained on
+`codex/go-before-79a946-alignment-20261023`; replayed `6a45e19` matches the
+independent merge tree recorded in
+`quality-reports/go-migration/main-alignment-79a946/after.json`.
+Every replayed commit retains its original author. New agent commits use the
+session's explicitly authorized `carbninai` identity.
+
+A separate DeepSeek Flash review at high reasoning effort confirms the narrow
+export fix and identifies additional category-reference closure concerns for
+future characterization. Its report is retained as `independent-review.md` in
+the same evidence directory. Those concerns are not reported as verified Go
+behavior or as permission to retire supported records.
+
+All 32 existing Django export, export-query-count, import-identity/media and
+legacy-backup-policy tests pass using a freshly migrated private PostgreSQL
+database; private PostgreSQL and Redis are stopped afterward. Go vet, the full
+untagged Go race suite, 21 inventory tests and catalog drift checks also pass.
+This preserves the incoming fix and current component evidence. It does not
+establish Go association export/import, historical restore parity, or a new
+release/image rehearsal. The incomplete full manual capture remains pinned to
+its own source and evidence.
