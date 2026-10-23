@@ -317,7 +317,9 @@ def check_report(state, recipe, report, origin):
     for key, value in expected.items():
         if report.get(key) != value:
             raise ReuseError('capture-settings-changed: ' + key)
-    if not report.get('checks') or not report.get('source_hashes') or not report.get('screenshots'):
+    # Checks are optional human-readable labels. Authored workflows also record
+    # structured outcomes, validated by the canonical generator before indexing.
+    if not isinstance(report.get('checks'), list) or not report.get('source_hashes') or not report.get('screenshots'):
         raise ReuseError('incomplete-original-report')
     prefix = recipe.get('capture_prefix', '')
     if not prefix.startswith('images/') or not prefix.endswith('/'):
@@ -331,7 +333,8 @@ def check_report(state, recipe, report, origin):
         owned(state['run'], frame.get('master', {}).get('path', ''))
         verify_capture_frame(state['run'], frame)
     for relative, expected_hash in report['source_hashes'].items():
-        if not relative.startswith(('BE/', 'UI/')) or file_hash(state['application'], relative) != expected_hash:
+        if (not relative.startswith(('BE/', 'UI/')) and state['tooling_hashes'].get(relative) != expected_hash
+                or file_hash(state['application'], relative) != expected_hash):
             raise ReuseError('captured-source-changed: ' + relative)
 
 

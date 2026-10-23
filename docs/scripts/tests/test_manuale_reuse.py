@@ -152,6 +152,28 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['reused_recipes'], [])
         self.assertIn(expected, plan['rejected'][0]['reasons'][0])
 
+    def test_report_accepts_empty_descriptive_check_labels(self):
+        report = {**self.report, 'checks': []}
+        origin = {'application_revision': self.revision, 'capture_id': 'unit-capture'}
+        reuse.check_report(self.old, self.recipe, report, origin)
+        for changed in ({'checks': None}, {'status': 'failed'}, {'screenshots': []}):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                reuse.check_report(self.old, self.recipe, {**report, **changed}, origin)
+
+    def test_captured_tooling_must_be_sealed_and_byte_identical(self):
+        relative = 'selfhost/tests/browser/manuale/unit-helper.mjs'
+        report = {**self.report, 'source_hashes': {
+            **self.report['source_hashes'], relative: reuse.file_hash(self.old_code, relative)}}
+        origin = {'application_revision': self.revision, 'capture_id': 'unit-capture'}
+        reuse.check_report(self.old, self.recipe, report, origin)
+        unsealed = {**self.old, 'tooling_hashes': {key: value for key, value in self.old['tooling_hashes'].items()
+                                                if key != relative}}
+        with self.assertRaisesRegex(ValueError, 'captured-source-changed'):
+            reuse.check_report(unsealed, self.recipe, report, origin)
+        write(self.old_code, relative, 'export const fixture = false;\n')
+        with self.assertRaisesRegex(ValueError, 'captured-source-changed'):
+            reuse.check_report(self.old, self.recipe, report, origin)
+
     def test_automatic_cache_finds_a_complete_baseline_and_preserves_capture_bytes(self):
         repository = str(self.root / 'manual-source')
         self.old['manual_repository'] = self.state['manual_repository'] = repository

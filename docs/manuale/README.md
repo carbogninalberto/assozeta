@@ -206,20 +206,21 @@ Per documentare intenzionalmente le modifiche locali non ancora committate, aggi
 
 Il runner stampa la directory del risultato. I comandi `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export` e `cleanup` accettano `--run DIRECTORY` per eseguire una fase su quel risultato. `verify` usa il renderer Mintlify `mint@4.2.955` in una copia temporanea: l'eventuale migrazione da `mint.json` a `docs.json` resta in quella copia. `cleanup` rimuove esclusivamente i servizi e i volumi del progetto registrato, lasciando i worktree e i rapporti. Le credenziali browser sono private e vengono eliminate al termine della pulizia.
 
-La modalità incrementale seleziona le ricette dichiarate in [`recipes.json`](./recipes.json):
+Per aggiornare le catture interessate da modifiche al comportamento, usare la
+selezione incrementale e poi costruire il manuale completo:
 
 ```sh
-python3 docs/scripts/manuale.py run --manual-repo ../manuale --changed-since COMMIT_PRECEDENTE
-python3 docs/scripts/manuale.py run --manual-repo ../manuale --manual-changed-since COMMIT_MANUALE_PRECEDENTE
+python3 docs/scripts/manuale.py capture --manual-repo ../manuale --changed-since COMMIT_PRECEDENTE
+python3 docs/scripts/manuale.py build --manual-repo ../manuale
 ```
 
-Le dipendenze comuni, i cambiamenti di permessi e le dipendenze applicative sconosciute selezionano tutte le ricette. Anche i file eliminati sono registrati. Per conservare le guide invariate durante un aggiornamento, indicare un run precedente:
+Le dipendenze comuni, i cambiamenti di permessi e le dipendenze applicative sconosciute selezionano tutte le ricette. Anche i file eliminati sono registrati. Le prove compatibili vengono scoperte automaticamente; solo per scegliere una baseline specifica, indicare un run precedente:
 
 ```sh
-python3 docs/scripts/manuale.py run --manual-repo PERCORSO_MANUALE_REVISIONATO --changed-since COMMIT_PRECEDENTE --reuse-evidence DIRECTORY_RUN_PRECEDENTE
+python3 docs/scripts/manuale.py capture --manual-repo PERCORSO_MANUALE_REVISIONATO --changed-since COMMIT_PRECEDENTE --reuse-evidence DIRECTORY_RUN_PRECEDENTE
 ```
 
-Il nuovo corpus unisce le catture fresche ai risultati compatibili conservati. Il riuso richiede gli stessi input applicativi, configurazione, fixture, checkpoint e testo editoriale della singola ricetta; aggiunte, eliminazioni e cambiamenti delle dipendenze lo invalidano. `evidence-reuse.json` registra le decisioni e i rifiuti. Report, revisioni originali, identificativi di cattura e PNG conservano i propri byte. Il corpus risultante è legato alla revisione corrente: i controlli di versione in produzione restano esatti. Senza `--reuse-evidence`, la modalità incrementale include solo i flussi selezionati. Il run completo rimane disponibile.
+Il nuovo corpus unisce le catture fresche ai risultati compatibili conservati. Il riuso richiede gli stessi input applicativi, configurazione, fixture, checkpoint e testo editoriale della singola ricetta, oppure una revisione esplicita di sola formulazione; aggiunte, eliminazioni e cambiamenti delle dipendenze lo invalidano. `evidence-reuse.json` registra le decisioni e i rifiuti. Report, revisioni originali, identificativi di cattura e PNG conservano i propri byte. Il corpus risultante è legato alla revisione corrente: i controlli di versione in produzione restano esatti. Una cattura parziale può essere conservata, ma `build` rifiuta un manuale incompleto e indica i workflow ancora necessari. Il comando `run` rimane disponibile per la verifica completa senza confezionamento; `verify-release` aggiunge pacchetto e prova appliance.
 
 Usando `--reuse-evidence` senza filtri incrementali, il runner controlla tutte le
 ricette: conserva soltanto le catture compatibili e riesegue quelle rifiutate.
@@ -380,7 +381,11 @@ I nuovi strumenti `search_manual`, `get_manual_section`, `get_manual_evidence` e
 
 La ricerca combina BM25 e similarità semantica LSA sul corpus italiano verificato. LSA usa NumPy, già presente nell'ambiente backend tramite pandas; non richiede credenziali esterne. Il vocabolario dipende dal corpus e non equivale alla comprensione generale di un modello linguistico. Le domande prive di parole pertinenti non producono una procedura.
 
-Configurare nel backend:
+### Configurazione avanzata del corpus esterno
+
+Le appliance installabili usano automaticamente `/app/release-manual`: non
+configurare variabili del manuale per installarle o aggiornarle. Il blocco seguente
+riguarda soltanto il percorso opzionale di corpus esterno e gli ambienti di sviluppo:
 
 ```dotenv
 MANUAL_URL=https://manuale.bakney.com/docs/introduzione
@@ -394,7 +399,12 @@ MANUAL_CORPUS_BASE_URL=https://raw.githubusercontent.com/Bakney/manuale/main/ass
 
 `MANUAL_CORPUS_BASE_URL` è facoltativo e disabilitato per impostazione predefinita. Senza un’origine configurata o un pacchetto locale compatibile, la navigazione del manuale e l’assistente solo manuale restano nascosti. Un provider AI configurato mantiene disponibile il proprio assistente. Gli endpoint di configurazione verificano la disponibilità locale senza scaricare il corpus; dopo una modifica ricaricare l’applicazione. Se configurato, la ricerca tenta un aggiornamento al massimo ogni cinque minuti per processo da `BASE/COMMIT_APPLICAZIONE/VERSIONE.json`. Accetta soltanto un corpus pubblicato, committato e compatibile; un download fallito o corrotto conserva l'indice precedente, che deve comunque superare i controlli di applicabilità. Per aggiornare subito usare `python manage.py sync_manuale_corpus`. Nessun argomento MCP può scegliere l'origine o la versione. Gli asset di rilascio nel repository pubblico e la loro promozione dopo la distribuzione del sito richiedono ancora il completamento della pubblicazione coordinata.
 
-### Installazione in produzione e aggiornamenti
+### Compatibilità con la sincronizzazione esterna preesistente
+
+Questa procedura resta disponibile per installazioni che usano deliberatamente
+un corpus esterno pubblicato. Per le release con manuale incluso usare il normale
+aggiornamento dell'applicazione descritto all'inizio: il pacchetto nell'immagine
+ha precedenza anche su un volume di download vuoto o contenente una vecchia versione.
 
 Il Compose di produzione conserva indice e schermate nel volume `manuale_data`,
 montato in `/app/manuale` su API e servizi backend. L'immagine crea questa directory
@@ -435,7 +445,7 @@ sul volume serializza download, promozione e pulizia tra processi API e CLI.
 Un errore di download non avvia la pulizia; un errore di pulizia dopo la promozione
 viene segnalato nei log e ritentato alla prossima sincronizzazione riuscita.
 
-Per una release successiva: aggiornare soltanto le guide interessate, eseguire la
+Per un successivo aggiornamento del corpus esterno: aggiornare soltanto le guide interessate, eseguire la
 verifica sul commit applicativo definitivo con `--reuse-evidence`, committare il
 risultato esatto nel repository manuale, preparare il pacchetto, pubblicare e
 verificarne la disponibilità, promuovere il corpus per quella revisione/versione
@@ -577,8 +587,8 @@ simbolici; invocare `$assozeta-manuale` e riavviare Codex se non compare.
 [Documentazione ufficiale della scoperta delle skill](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills).
 Queste sono istruzioni di installazione: il runner non modifica configurazioni
 personali né installa credenziali.
-Il goal e i criteri di consegna sono in
-[`MANUALE_AUTOMATION_AND_MCP_RAG_GOAL.md`](../goal-prompts/MANUALE_AUTOMATION_AND_MCP_RAG_GOAL.md).
+Il goal e i criteri di consegna correnti sono in
+[`MANUALE_SIMPLIFICATION_AND_APPLIANCE_DELIVERY_GOAL.md`](../goal-prompts/MANUALE_SIMPLIFICATION_AND_APPLIANCE_DELIVERY_GOAL.md).
 Il modello CI del repository manuale è
 [`ci/notify-assozeta.yml`](./ci/notify-assozeta.yml); token, esecuzione GitHub e
 pubblicazione del sito richiedono ancora l’integrazione prevista.
@@ -596,7 +606,12 @@ Il workflow ricevente deve essere disponibile sul ramo predefinito per il dispat
 come indicato negli [eventi GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#repository_dispatch).
 Configurazione, installazione del workflow e invio remoto restano da completare.
 
-## Preparazione di un rilascio
+## Pubblicazione opzionale del sito e del corpus esterno
+
+Questo flusso storico prepara contenuti per la distribuzione esterna. Per il
+manuale incluso nelle immagini usare `manuale.py verify-release`: non occorre
+committare gli MDX materializzati o pubblicare il sito per rendere installabile
+il pacchetto nell'appliance.
 
 Dopo un run valutato e il commit del suo esatto risultato nel repository manuale:
 
