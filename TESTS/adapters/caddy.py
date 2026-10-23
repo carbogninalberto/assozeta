@@ -53,4 +53,4 @@ def proxy(django, golang, log, *, operations=None):
             yield base, image
         finally:
             subprocess.run(['docker', 'logs', name], stdout=log, stderr=log, timeout=15)
-            subprocess.run(['docker', 'rm', '-f', name], stdout=log, stderr=log, timeout=30)
+            subprocess.run(['docker', 'rm', '-f', name], stdout=log, stderr=log, timeout=30, check=True)

@@ -99,6 +99,9 @@ func (h *InstanceBootstrapHandler) read(c echo.Context, endpoint string) error {
 func InstanceBootstrapLocale() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			if c.Request().URL.Path == "/manuale/sections" || strings.HasPrefix(c.Request().URL.Path, "/manuale/assets/") {
+				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
+			}
 			switch c.Request().URL.Path {
 			case "/instance/status", "/instance/config", "/instance/access":
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}

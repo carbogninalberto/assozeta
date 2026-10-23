@@ -18,7 +18,7 @@ cases. The unchanged-frontend personal-profile workflow now passes against both
 API versions, including fresh login, collaborator edit and ordinary reload after
 the [profile-response correction](profile-response.md). Candidate checks validate
 both backend manual packages before lifecycle changes. A genuine externally
-reviewed required-release manual image, reader/search/assets HTTP delivery and
+reviewed required-release manual image, installed cache permissions and
 backend activation remain open. These scoped checks do not establish complete
 frontend or backend parity.
 
@@ -29,12 +29,15 @@ explicit recipe bindings are refreshed while all 44 authored MDX files remain
 unchanged. It is unpublished and grants no new screenshot evidence. Earlier
 receipts and the separate `b042582` capture retain their original source scope.
 
-The [manual reader libraries](manual-reader.md) pass 36 installed-bundle cases,
+The [manual reader](manual-reader.md) passes 36 installed-bundle cases,
 33 retrieval/projection cases and 32 source-loading comparisons against Django.
-The HTTP oracle additionally characterizes 58 Django cases; Go HTTP composition
-is still pending. Source loading covers preview, development, installed bundles
-and remote refresh with atomic corpus promotion. Installed-cache permissions,
-MCP, assistant behavior and a genuine required-release package remain unverified.
+All 69 HTTP contracts pass against both actual backends, directly and through
+the shipped versioned Caddy routes, including complete responses, gzip, denial,
+query limits and bounded SQL at 16/128 sections. Source loading covers preview,
+development, installed bundles and atomic remote refresh, with three actual
+Django/Go cross-process lock scenarios. Installed-cache permissions, full reader
+browser workflows, MCP, assistant behavior and a genuine required-release package
+remain unverified.
 
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
 routes before the existing Django alias. Real Caddy transport checks cover exact

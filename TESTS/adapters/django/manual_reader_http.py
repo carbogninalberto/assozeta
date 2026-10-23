@@ -8,10 +8,12 @@ import argparse
 import contextlib
 import copy
 import fcntl
+import gzip
 import hashlib
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import socket
@@ -55,8 +57,14 @@ def prepare(base,spec,publisher):
   chunks.append(dict(id='guide#'+ident,page='guide',section=ident,title='Manual '+ident,text='Fixture instructions',status='verified',url='https://manual.example.test/guide',
    screenshots=[dict(path=f'images/{ident}.png',sha256=digest(PNG),url=publisher+'/image.png')],scenario_ids=['fixture'],page_title='Fixture page',language='it',intent='read',
    audience=audience,features=features,evidence=[],runtime_dependencies={},private_secret='private-source-canary'))
+ if spec.get('copies'):
+  public=chunks[0];rows=[]
+  for i in range(spec['copies']):
+   row=copy.deepcopy(public);row['id']=f'guide#public-{i:03d}';rows.append(row)
+  chunks=rows+chunks[1:]
  def corpus(publication='published',code='committed'):
   return dict(format=1,embedding='italian-tfidf-lsa-v5',dependencies={},chunks=copy.deepcopy(chunks),content_identity='d'*64,
+   semantics={'vocabulary':['fixture'],'idf':[1.0],'basis':[[1.0]],'vectors':[[1.0] for _ in chunks]},
    metadata=dict(application_revision=REVISION,release='release-fixture',publication_status=publication,code_state=code,manual_revision='c'*40,manual_state='committed',verification={'corpus_identity':'d'*64}))
  def seal(value):value['identity']=digest(canonical(value));return value
  def write_index(path,value):path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(seal(value),ensure_ascii=False));return value
@@ -91,7 +99,7 @@ def prepare(base,spec,publisher):
  if 'readonly' in mode:cache.chmod(0o555)
  return settings,cache
 
-def measure(work,log,fixture,observed,go_source=False):
+def measure(work,log,fixture,observed,go_source=False,go_runtime=None,versioned=False):
  from django.conf import settings
  from django.core.asgi import get_asgi_application
  from django.db import connections
@@ -118,9 +126,16 @@ def measure(work,log,fixture,observed,go_source=False):
  publisher=ThreadingHTTPServer(('127.0.0.1',0),Publisher);publisher.daemon_threads=True;pt=threading.Thread(target=publisher.serve_forever,daemon=True);pt.start()
  server=thread=None
  try:
-  with override_settings(MIDDLEWARE=['TESTS.adapters.django.manual_reader_http.ObserveQueries',*settings.MIDDLEWARE]):
-   server=uvicorn.Server(uvicorn.Config(get_asgi_application(),host='127.0.0.1',port=0,lifespan='off',log_level='critical'));thread=threading.Thread(target=server.run,daemon=True);thread.start();poll(lambda:server.started,bool,timeout=20,interval=.01)
+  with override_settings(MIDDLEWARE=['TESTS.adapters.django.manual_reader_http.ObserveQueries',*settings.MIDDLEWARE]),contextlib.ExitStack() as resources:
+   server=uvicorn.Server(uvicorn.Config(get_asgi_application(),host='0.0.0.0' if versioned else '127.0.0.1',port=0,lifespan='off',log_level='critical'));thread=threading.Thread(target=server.run,daemon=True);thread.start();poll(lambda:server.started,bool,timeout=20,interval=.01)
    client=Client(f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}')
+   gateway=None
+   if versioned:
+    from TESTS.adapters.caddy import proxy
+    port=server.servers[0].sockets[0].getsockname()[1]
+    gateway,_=resources.enter_context(proxy(f'host.docker.internal:{port}',f'host.docker.internal:{go_runtime.listen if go_runtime else 9}',log))
+    gateway+='/api/v2' if go_runtime else '/api/v1'
+    client=Client(gateway)
    for name,spec in fixture['cases'].items():
     setup=spec['setup'];request=spec['request'];manual,cache=prepare(work/name,setup,f'http://127.0.0.1:{publisher.server_port}')
     with disable_auditlog():
@@ -139,22 +154,36 @@ def measure(work,log,fixture,observed,go_source=False):
      if not setup.get('revoked'):django_cache.set(session_key(session),dict(actor_id=str(actor.pk),target_id=str(target.pk),association_id=None if actor.is_superuser else str(association.pk)),300)
      headers['X-Impersonation-Id']=session;headers['User-Id']=str(users['owner'].pk if setup.get('wrong_target') else target.pk)
     if setup.get('forged_target'):headers['User-Id']=str(users['athlete'].pk)
-    before=snapshot();cache_before=dict(django_cache._cache);index_before=(cache/'index.json').read_bytes() if (cache/'index.json').exists() else None
+    cache_snapshot=go_runtime.cache_snapshot if go_runtime else lambda:dict(django_cache._cache)
+    if go_runtime:client=go_runtime.start(manual,work/name)
+    if gateway:client=Client(gateway)
+    before=snapshot();cache_before=cache_snapshot();index_before=(cache/'index.json').read_bytes() if (cache/'index.json').exists() else None
+    sql_offset=(work/'postgres.log').stat().st_size
     try:
      with override_settings(**manual),contextlib.ExitStack() as stack:
       if setup.get('lock'):
        lease=stack.enter_context(open(settings.DATA_RESTORE_LOCK_PATH,'a'));fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
       status,data,response_headers=client.request(request['method'],request['path'],headers=headers,raw=True,include_headers=True)
+     if response_headers.get('Content-Encoding')=='gzip':data=gzip.decompress(data)
      try:body=json.loads(data)
      except (ValueError,UnicodeDecodeError):body={}
-     assert dict(django_cache._cache)==cache_before,'manual HTTP changed application cache records'
+     sql=go_runtime.queries(sql_offset) if go_runtime else QUERIES.pop(name)
+     assert cache_snapshot()==cache_before,'manual HTTP changed application cache records'
      if 'failure' in setup['mode'] or 'readonly' in setup['mode']:
       assert ((cache/'index.json').read_bytes() if (cache/'index.json').exists() else None)==index_before,'failed refresh changed active corpus'
-     sql=QUERIES.pop(name);asset=response_headers.get('Content-Type')=='image/png'
-     item=dict(status=status,kind='asset' if asset else 'json',result=body.get('status'),ids=[x['id'] for x in body.get('results',[])],message=body.get('message'),
+     asset=response_headers.get('Content-Type')=='image/png'
+     item=dict(status=status,kind='asset' if asset else 'json',body=body,result=body.get('status'),ids=[x['id'] for x in body.get('results',[])],scores=[x.get('score') for x in body.get('results',[])],message=body.get('message'),
       database_unchanged=snapshot()==before,writes=sum(not s.lstrip().upper().startswith(('SELECT','SHOW','BEGIN','COMMIT','ROLLBACK','SAVEPOINT','RELEASE')) for s in sql),
-      secret_free=b'private-source-canary' not in data,selects=sum(s.lstrip().upper().startswith('SELECT') for s in sql),context_selects=sum('FROM "instance_instanceconfiguration"' in s for s in sql),
-      headers={k:response_headers.get(k) for k in ['Allow','Content-Type','Content-Language','Cache-Control','X-Content-Type-Options','WWW-Authenticate','Vary','Retry-After']},publisher_requests=list(Publisher.requests))
+      secret_free=b'private-source-canary' not in data,selects=sum(s.lstrip().upper().startswith('SELECT') for s in sql),context_selects=sum(bool(re.search(r'FROM\s+"?instance_instanceconfiguration"?',s,re.I)) for s in sql),
+      headers={k:response_headers.get(k) for k in ['Allow','Content-Type','Content-Encoding','Content-Language','Cache-Control','X-Content-Type-Options','WWW-Authenticate','Retry-After']},publisher_requests=list(Publisher.requests))
+     item['headers']['Vary']=', '.join(sorted({token.strip().lower() for value in response_headers.get_all('Vary',[]) for token in value.split(',')})) or None
+     for section in body.get('results',[]):
+      if 'corpus_identity' in section:
+       # The publisher port is fixture-generated and is sealed into corpus
+       # identity. Verify that identity before the portable differential masks it.
+       indexes=list((work/name).rglob('index.json'))
+       identities={json.loads(p.read_text()).get('identity') for p in indexes}
+       assert section['corpus_identity'] in identities,'response corpus identity is not a fixture source'
      if asset:item['asset']='fixture_png' if data==PNG else 'unexpected_bytes'
      if setup['mode']=='remote-success':assert (cache/'index.json').exists() and len(Publisher.requests)==2,'refresh must fetch corpus and deduplicated image before publication'
      if 'readonly' in setup['mode']:assert not Publisher.requests,'readonly cache must fail before network'
@@ -191,10 +220,13 @@ def measure(work,log,fixture,observed,go_source=False):
 
 
 def main():
+    global OUTPUT
     from TESTS.adapters.django.production_runtime import require_production_python
     from TESTS.contracts.test_manual_reader_http import validate_report
     require_production_python()
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');options=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');parser.add_argument('--backend',choices=['django','go'],default='django');parser.add_argument('--versioned',action='store_true');options=parser.parse_args()
+    if options.backend=='go':OUTPUT=ROOT/'quality-reports/go-migration/manual-reader-http-go'
+    if options.versioned:OUTPUT=Path(str(OUTPUT)+'-versioned')
     fixture=json.loads(FIXTURE.read_text());OUTPUT.mkdir(parents=True,exist_ok=True)
     report={'schema_version':1,'success':False,'cases':{},'scope':__doc__}
     postgres=shutil.which('postgres')
@@ -231,7 +263,9 @@ def main():
             call_command('migrate',interactive=False,verbosity=0,run_syncdb=True,stdout=log,stderr=log)
             from application.audit_resolvers import setup_audit_resolvers
             setup_audit_resolvers()
-            measure(work,log,fixture,report['cases'],options.go_source)
+            from TESTS.adapters.django.manual_reader_runtime import GoManualRuntime
+            with GoManualRuntime(work,log,tool_env,options.versioned) if options.backend=='go' else contextlib.nullcontext(None) as go_runtime:
+                measure(work,log,fixture,report['cases'],options.go_source,go_runtime,options.versioned)
             validate_report(report,fixture)
 
         finally:
@@ -248,9 +282,9 @@ def main():
                 finally:
                     if (work/'postgres.log').exists():shutil.copyfile(work/'postgres.log',OUTPUT/'postgres.log')
                     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-    report.update(success=True,source_differential_cases=fixture['source_cases'] if options.go_source else [],private_services_stopped=True,scenario_count=len(report['cases']),runtime={'backend':'django','python':sys.version.split()[0],'django':django.get_version()})
+    report.update(success=True,versioned=options.versioned,source_differential_cases=fixture['source_cases'] if options.go_source else [],private_services_stopped=True,scenario_count=len(report['cases']),runtime={'backend':options.backend,'python':sys.version.split()[0],'django':django.get_version()})
     (OUTPUT/'results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
-    print(f'PASS {len(report["cases"])} actual Django manual HTTP cases',flush=True)
+    print(f'PASS {len(report["cases"])} actual {options.backend} manual HTTP cases',flush=True)
 
 
 if __name__=='__main__':
