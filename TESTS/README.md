@@ -1189,4 +1189,7 @@ payment operations and their dependencies remain explicitly allowlisted real
 Django coexistence. Archive/unarchive has no existing UI control, so its separate
 browser check uses authenticated PATCH followed by visible reload and readback.
 The category CI job runs HTTP, lifecycle, PostgreSQL and image checks independently
-of the foundation job; the frontend job reuses its one built UI image.
+of the foundation job; the frontend job reuses its one built UI image. The full
+account suite also runs unchanged in its own mandatory job, preserving sequential
+fixture dependencies while giving its 10–16 minute hosted workload a separate
+30-minute budget. All reusable workflow jobs contribute to the PR quality gate.
