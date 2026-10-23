@@ -12,11 +12,14 @@ and coverage diagnostics. All 67 authored function cases compare complete Django
 results with Go under fixture-supplied trusted context. The separate Go service
 also matches all 67 cases using live PostgreSQL owner resolution, with one query
 per valid call, 32 concurrent calls and blocked-query cancellation/recovery.
-The independent Django stdio oracle now passes 38 MCP requests through the actual
+The independent Django stdio oracle now passes 40 MCP requests through the actual
 management command and SDK, with protocol negotiation, pipelining, request
 cancellation, database query budgets and clean EOF checks. Six regression checks
 also reject extra database reads, premature process exits and trailing stdout.
-Go MCP transport, JWT/WebSocket admission and agent dispatch remain open.
+The Go stdio component passes the same forty requests with live PostgreSQL and
+sealed manual files, plus observed SQL cancellation and one-query recovery. It
+exposes four manual tools only; a production MCP command, eleven business tools,
+JWT/WebSocket admission and agent dispatch remain open.
 The unchanged manual reader browser passes on both
 backends, while the separate full manual capture remains incomplete at 55/60
 workflows. See [manual evidence and limitations](manual-reader.md).

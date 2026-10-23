@@ -176,7 +176,7 @@ provider behavior remain separate unverified boundaries. No production transport
 is switched to this service by these component tests.
 
 The `--mcp` oracle exercises the actual Django `run_mcp_server` management command
-over independent subprocess stdin/stdout pipes. Thirty-eight authored requests
+over independent subprocess stdin/stdout pipes. Forty authored requests
 cover the four manual tools, exact schemas, public-only authority, malformed
 arguments, unknown methods/tools and corrupted source ordering. It retains all
 fifteen tool declarations, but does not execute the eleven business tools.
@@ -186,7 +186,8 @@ are rejected as MCP tool errors; an integral JSON float remains accepted. These
 are distinct from direct function-call coercion. Three multi-error requests
 prove that missing required and unexpected top-level properties take precedence
 over property-value errors; independent review caught an incorrect Go test
-expectation before accepting that implementation. Valid knowledge calls issue one
+expectation before accepting that implementation. Nested object/array type errors
+also preserve input key order and Python-style text. Valid knowledge calls issue one
 instance-context SELECT; schema/protocol errors and invalid search queries issue
 none. Total SELECT counts are recorded independently, so extra reads from other
 tables also fail the budget. Database and fixture-file snapshots remain unchanged.
@@ -208,8 +209,41 @@ pydantic 2.14.1. A read-only, network-disabled probe of the retained Django imag
 `dd4e5b854f00` confirms the same four versions. Critical MCP source hashes are
 retained with the report; this is evidence for that dependency set, not every
 version permitted by Django's dependency range. CI requires the portable stdio
-contracts. Go MCP command/transport, business-tool execution and assistant
-dispatch remain open; the service/library checks do not establish those boundaries.
+contracts. The Go component below does not provide a production command, business
+tool execution or assistant dispatch.
+
+The `--mcp --backend go` adapter now composes the Go stdio handler, four authored
+manual schemas, live PostgreSQL authority service and actual source loader in a
+race-instrumented subprocess. All forty request results pass the same portable
+expectations as Django, including invalid arguments, extra identity fields,
+corrupt-source ordering and exact error precedence. Raw argument validation keeps
+nested object insertion order. The fixture exposes exactly four manual tools;
+it does not advertise eleven unimplemented business tools. Database and fixture
+files remain unchanged, and valid knowledge calls retain one context SELECT.
+The exact pgx comment-only `-- ping` health probe is counted separately and
+bounded to one per request; it is not a business write.
+
+The Go process verifies pipelined replies, malformed-line recovery and clean EOF.
+After acknowledging cancellation of an observed blocked SQL request, the fixture
+keeps the table lock held and clears PostgreSQL statistics snapshots until the
+child's lock wait disappears. Only then does it release the lock and require a
+successful recovery call with one context read. The original test released the
+lock too soon and counted both the canceled and recovery SELECTs; its failing
+receipt is retained. This is evidence for this direct PostgreSQL read, not every
+driver, transaction, provider or restore workflow.
+
+Transport unit/race tests cover bounded workers and pending requests, overload
+responses, cancellation under saturation, immutable declarations and interrupted
+I/O. Numeric-ID and protocol-version cases are checked against the installed
+MCP/Pydantic parsers, including negative zero and the 4300-digit integer bound.
+The default transport frame limit is 8 MiB, with explicit `Server busy` tool
+errors when its bounded queue fills; these are deliberate resource policies.
+Blocking output must support write deadlines or `CloseWithError` to be interrupted;
+the backpressure unit test uses an `io.Pipe`. Native EOF evidence closes input
+after replies are drained. These checks do not prove arbitrary writer shutdown
+or a packaged production MCP process. Strict JSON decoding does not yet reproduce
+Python extensions such as NaN/Infinity or lone-surrogate strings. Full protocol,
+eleven business tools, the production command and assistant dispatch remain open.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser
