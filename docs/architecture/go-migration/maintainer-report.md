@@ -201,22 +201,26 @@ updated private patch preserves the same 507-binding/44-unchanged-MDX boundary.
 
 ## Implementation and architecture
 
-The root exposes 24 upstream paths: health/readiness, login/refresh/identifier
+The root exposes 25 upstream paths: health/readiness, login/refresh/identifier
 checks, instance bootstrap, manual sections/assets, profile information/updates/
 password/table preferences, 2FA setup/status/updates, two retired software-billing
-responses and four payment-category routes. CORS, restore admission and security
+responses, four payment-category routes and public payment information. CORS, restore admission and security
 headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
 4 deprecated, 37 implementing, 5 requiring review and 468 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 
-The [public payment-info baseline](payment-info.md) passes 109 authored Django
-HTTP cases with exact read-only state and cleanup; Go still returns 404. A confirmed
-nested installment/course association leak is corrected in both scope implementations,
-with Django-red, Go-red and final green evidence plus 190 existing Django regressions.
-Public disclosure, malformed group fail-open and unscoped metadata remain explicit
-review gaps. Metadata query growth is measured and must be batched in Go.
+The [public payment-info implementation](payment-info.md) passes 137 authored
+cases on native Django/Go and both shipped Caddy routes, with exact managed state,
+zero PostgreSQL writes and cleanup. Independent runtime observation rejects a
+deliberate v2 fallback. Six real PostgreSQL groups prove one hydration query plus
+one metadata batch through 128 distinct IDs, exact money/integers and cancellation
+release before blocker removal. JSONField fractions and NaN errors retain the
+measured Django wire behavior. The corrected nested installment association
+boundary retains its TDD evidence and 190 existing Django regressions. Public
+disclosure, malformed group fail-open and unscoped metadata remain review gaps;
+image/browser/installed acceptance remains open and the ledger stays needs_review.
 
 The [payment-category slice](payment-categories.md) implements all four Go routes
 against the repaired Django identity/association and atomic-audit baseline.
@@ -246,9 +250,10 @@ Local verification also corrects two test-harness failures: development Silk wri
 are removed from the category fixture without dropping managed-table assertions,
 and the bootstrap large-row seed evaluates each conversion once with explicit
 row counts and separate setup/read deadlines. All 13 integrity tests and bootstrap's
-86 HTTP/four PostgreSQL checks pass. The full hosted quality run `40030007996`
-at `11c2310` passes, including all four split Go jobs and the legacy upgrade.
-Subsequent changes still require their own hosted run; the known external manual
+86 HTTP/four PostgreSQL checks pass. All 15 jobs in hosted quality run
+`40033677362` at `f2e4957` pass, including the four split Go jobs and legacy
+upgrade. That revision includes the 109-case Django payment-info baseline; the
+new Go implementation still needs its own hosted run. The external manual
 recipe-binding failure remains.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
@@ -282,6 +287,7 @@ those differences remain explicit activation gaps.
 | Password changes | 67 HTTP/effect cases, three locked scenarios per backend, four Django/Go profile/password writer combinations and four cross-runtime login flows. Credential-only writes preserve other columns; full frontend/lifecycle parity remains open. |
 | 2FA writes | 50 HTTP/effect and two locked-row concurrency scenarios per backend; atomic failure rollback, correct impersonation audit, query/pool bounds and cancellation. Setup has separate evidence below; full frontend activation remains open. |
 | 2FA provisioning | 31 HTTP scenarios, 62 concurrent requests per backend, 512 decoded symbols, four cross-runtime update flows and four fresh-login flows. No setup persistence; entropy/encoder failures and cancellation covered. Full browser/phone interaction remains unverified. |
+| Public payment information | 137 authored cases each on native Django/Go and Caddy v1/v2; exact state, zero DML, runtime observer and fallback rejection. Six PostgreSQL groups prove one/two service queries through 128 distinct categories and blocked-reader release before blocker removal. Integer/Decimal and fractional JSONField semantics are distinguished; NaN errors match. Public disclosure policy, image/browser/history/installed acceptance remain open. See [payment-info evidence](payment-info.md). |
 | Payment categories | 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios each for native Django/Go and Caddy v1/v2; exact durable/reference preservation and observed-blocking PATCH/PATCH-DELETE histories. Six real-schema PostgreSQL groups; two repository LIST queries at 1/8/32/128 VATs and blocked-query cancellation. Parser: 113 golden cases and 15,992 pinned-runtime comparisons. Nine native lifecycle probes per runtime pass owner/profile races and audited recovery; actual HTTP disconnect cancels Go but allows Django admitted sync completion, so protocol parity stays open. The immutable non-root/read-only image passes four 188/43/18 workloads. Both unchanged browser workflows pass six checks/five writes/seven denials/five audits each, with independent Django observation and a routing negative control. Installed category backup/restore passes actual post-swap rollback and valid restoration with four references retained; historical data, pre-SQL index and activation gaps remain. See [category evidence](payment-categories.md). |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 103 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |
 | Query and concurrency bounds | Real PostgreSQL/Redis tests measure batched lookups, fixed connection pools, concurrent identities and query counts across growing datasets. Critical job claiming uses measured indexed plans. No representative whole-application performance improvement is claimed. |

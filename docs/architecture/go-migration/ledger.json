@@ -9123,12 +9123,24 @@
         "syntax": "path"
       },
       "status": "needs_review",
-      "go": [],
+      "go": [
+        "BE_GO/internal/domain/payment_info.go",
+        "BE_GO/internal/repository/payment_info.go",
+        "BE_GO/internal/service/payment_info.go",
+        "BE_GO/internal/service/payment_info_uuid.go",
+        "BE_GO/internal/handler/payment_info.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "BE/application/views/payment_views.py",
         "BE/application/impersonation_scope.py",
         "BE/application/mixin.py",
-        "UI/src/routes.js"
+        "UI/src/routes.js",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/models/payment_models.py",
+        "BE/application/models/courses_models.py",
+        "BE/application/models/carnet_models.py",
+        "Existing actor, identity, permission, session and request middleware"
       ],
       "contract": {
         "methods": [
@@ -9137,28 +9149,41 @@
         ],
         "external_paths": [
           "/api/payment/<str:uid>/info",
-          "/api/v1/payment/<str:uid>/info"
+          "/api/v1/payment/<str:uid>/info",
+          "/api/v2/payment/<str:uid>/info"
         ],
-        "request": "UUID payment path; public checkout GET, ignored query/body; optional JWT, impersonation and group headers. Native transport is characterized.",
-        "response": "109 authored native Django HTTP cases cover exact money/date/null projections, OTHER/SUBSCRIPTION/COURSE and direct/installment/carnet precedence. See payment-info.md.",
-        "errors": "Characterized 401/403/404/405/406 and existing HTML500 malformed/absent relation cases; no Go route yet.",
+        "request": "Public checkout GET and OPTIONS; optional JWT, impersonation and group headers. Pinned UUID integer grammar and error repr; format selection precedes Accept and authentication; blank formats retain baseline.",
+        "response": "137 authored cases each on native Django/Go and Caddy v1/v2: data envelope with user/associate/nulls, subject, exact Decimal amount, association UUID, UTC time, stored JSON and subject-specific info. Direct-course fees are strings; carnet fee is a JSON number and category enrichment is omitted. Integer JSON remains exact; fractional JSONField tokens retain Django binary64 transport behavior.",
+        "errors": "Exact characterized 400/401/403/404/405/406 and HTML500 malformed/missing-relation, fractional overflow and NaN carnet-fee behavior. Scoped foreign relation payloads excluded.",
         "authentication": "Public checkout AllowAny after real JWT admission; inactive/deleted users rejected. Existing disclosure policy remains under review.",
         "permissions": "Restricted authenticated collaborators require bookeeping.payments.read; FULL collaborators pass; administrator impersonation required; association-athlete view denied before family lookup.",
         "resource_scope": "Ordinary UUID-wide access and malformed group fail-open remain concerns. Scoped installment now also requires nested course association. Direct/meta category scope and ordinary foreign relations need review.",
-        "side_effects": "No observed INSERT/UPDATE/DELETE; complete managed-table snapshots unchanged after every authored request and cleanup.",
-        "transaction": "Read-only Django characterization; Go implementation missing.",
+        "side_effects": "Complete managed-table snapshots unchanged after every request and cleanup; aggregate PostgreSQL INSERT/UPDATE/DELETE deltas are zero across native Go and both proxies after server drain. Decimal NaN uses lossless typed tuple encoding for equality.",
+        "transaction": "Read-only projection: one hydration query plus one optional batched metadata query, excluding authentication/session SQL. Repository tests use PostgreSQL-enforced read-only transactions; blocked reads release query/transaction/pool before blocker release. Production service does not introduce a new transaction or isolation guarantee.",
         "execution_owner": "django"
       },
       "tests": [
         "TESTS/contracts/test_payment_info.py",
+        "TESTS/contracts/test_payment_info_json.py",
         "TESTS/adapters/django/payment_info.py",
-        "TESTS/adapters/django/scoped_resources.py"
+        "TESTS/adapters/django/scoped_resources.py",
+        "BE_GO/internal/handler/payment_info_test.go",
+        "BE_GO/internal/service/payment_info_test.go",
+        "BE_GO/internal/service/payment_info_uuid_test.go",
+        "BE_GO/internal/repository/payment_info_integration_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/payment-info.md",
+        "quality-reports/go-migration/payment-info/results.json",
+        "quality-reports/go-migration/payment-info/http-results.json",
+        "quality-reports/go-migration/payment-info-parent-review/parent-final-acceptance.json"
+      ],
       "notes": [
-        "109 authored Django cases pass with exact read-only state and cleanup. Optional shared Go absence probe fails expected HTTP200 with actual404; no Go parity is claimed. See payment-info.md and ignored payment-info/results.json, http-results.json and payment-info-parent-final.log. Recursive JSON kinds and full HTML bodies are checked; five pure regressions pass.",
-        "Metadata 0/1/8/32 entries cost 1/2/9/33 category SELECTs (6/7/14/38 total HTTP statements); Go must batch instead of preserving N+1.",
-        "Intentional scoped installment correction has preserved Django-red, Go-red and final green scope evidence, plus 190 existing Django regressions and full Go race/vet checks. Five manual recipe dependency bindings still need review."
+        "Status remains needs_review despite implementation: public UUID-wide disclosure, malformed group fail-open and unscoped category metadata are explicitly unapproved baseline concerns. Packaged-image, browser, historical and installed lifecycle acceptance remain open; complete_payment_info_parity=false.",
+        "Parent independently passes final 4x137 authored HTTP cases, all six actual PostgreSQL groups under race detection, exact managed state and cleanup, v1 Django observer 137/v2 zero and deliberate HTTP200 fallback rejection. Aggregate PostgreSQL DML deltas are zero. Full Go race/vet and tagged vets pass; six pure contracts and independent 669-case UUID differential checks pass. See payment-info.md and source-bound parent acceptance.",
+        "Complete service reads trace one SQL with zero metadata and two at 1/8/32/128 distinct mixed/global/foreign/deleted category IDs, including 256 duplicate entries. Preserve exact money, integers and entry ordering. Both actual blocked readers release their query/transaction/wait and pool connection before blockers are released.",
+        "Initial Go 404, actual NaN JSON500 mismatch, Unicode repr discrepancy and nested-scope overlay failures are retained as red evidence. JSONB fractional rounding/underflow/overflow matches actual Django; Decimal money and JSON integer values remain separate. These results do not approve disclosure policy or establish complete runtime parity.",
+        "Intentional scoped installment correction retains Django-red, Go-red and final green scope evidence plus 190 existing Django regressions. Five manual recipe dependency bindings still need review."
       ]
     },
     {

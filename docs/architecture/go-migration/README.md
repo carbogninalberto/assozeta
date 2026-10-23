@@ -10,12 +10,16 @@ export correction and earlier manual-delivery changes. Worktree branch:
 468 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
-The [public payment-info baseline](payment-info.md) passes 109 authored Django
-HTTP cases with exact read-only state and cleanup; Go still returns 404. A confirmed
-nested installment/course association leak is corrected in both scope implementations,
-with Django-red, Go-red and final green evidence plus 190 existing Django regressions.
-Public disclosure, malformed group fail-open and unscoped metadata remain explicit
-review gaps. Metadata query growth is measured and must be batched in Go.
+The [public payment-info implementation](payment-info.md) passes 137 authored
+cases on native Django/Go and both shipped Caddy routes, with exact managed state,
+zero PostgreSQL writes and cleanup. Independent runtime observation rejects a
+deliberate v2 fallback. Six real PostgreSQL groups prove one hydration query plus
+one metadata batch through 128 distinct IDs, exact money/integers and cancellation
+release before blocker removal. JSONField fractions and NaN errors retain the
+measured Django wire behavior. The corrected nested installment association
+boundary retains its TDD evidence and 190 existing Django regressions. Public
+disclosure, malformed group fail-open and unscoped metadata remain review gaps;
+image/browser/installed acceptance remains open and the ledger stays needs_review.
 
 The [payment-category slice](payment-categories.md) implements list/create/update/
 soft-delete in Go against the corrected Django integrity baseline. Actual native
@@ -45,13 +49,12 @@ repairs two test-harness issues: development Silk profiling no longer contaminat
 category rollback snapshots, and the 10,000-row instance-bootstrap fixture avoids
 repeating wide-row conversion per column while retaining count/query assertions.
 The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass.
-All four split Go jobs pass at `11c2310`; accounts takes 17m31s and foundation
-18m12s, preserving the checks that previously exceeded the combined 30-minute
-limit. The complete hosted quality run `40030007996` at `11c2310` is successful,
-including the legacy upgrade/browser rehearsal and aggregate gate.
-The category job passes in 7m29s including Caddy disconnects and the packaged
-image; the browser network correction passes both versioned workflows on Linux.
-The external manual recipe-binding failure remains.
+All 15 jobs pass in hosted quality run `40033677362` at published revision
+`f2e4957`, including the legacy upgrade/browser rehearsal. Split job times are
+accounts 17m28, foundation 15m16, category 7m43 and browser 3m28. That revision
+includes the 109-case Django payment-info baseline; the new 137-case Go/Caddy
+implementation still requires its own hosted run. The external manual
+recipe-binding failure remains.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful
