@@ -7039,25 +7039,53 @@
         "target": "manual_asset",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/pkg/manual/reader.go",
+        "BE_GO/pkg/manual/source.go",
+        "BE_GO/pkg/manual/refresh.go"
+      ],
+      "dependencies": [
+        "BE/application/manuale/views.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/sync.py",
+        "BE/application/manuale/preview.py",
+        "BE/application/manuale/development.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/manuale/assets/<path:asset_path>",
+          "/api/v2/manuale/assets/<path:asset_path>"
+        ],
         "request": null,
-        "response": null,
+        "response": "Explicit Django statuses, IDs, messages, assets and selected headers in TESTS/fixtures/manual-reader-http.json; Go HTTP not yet implemented.",
         "errors": null,
-        "authentication": null,
-        "permissions": null,
+        "authentication": "Django authenticated actor/effective identity required; Go HTTP composition pending.",
+        "permissions": "Public manual applicability; feature visibility from live instance configuration. See explicit actor, impersonation and forged-scope cases.",
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "No business/audit/cache-record writes. Remote cache refresh validates corpus/assets before atomic promotion; failed refresh retains prior corpus.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/contracts/test_manual_reader_http.py",
+        "TESTS/fixtures/manual-reader-http.json",
+        "BE_GO/pkg/manual/source_oracle_integration_test.go",
+        "BE_GO/pkg/manual/source_test.go",
+        "BE_GO/pkg/manual/refresh_test.go"
+      ],
+      "evidence": [
+        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md."
+      ],
+      "notes": [
+        "Go HTTP route remains unimplemented. Library evidence does not verify HTTP identity/headers, installed cache permissions, MCP, assistant behavior or required-release package delivery."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:manuale/sections -> manual_sections",
@@ -7074,25 +7102,55 @@
         "target": "manual_sections",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/pkg/manual/reader.go",
+        "BE_GO/pkg/manual/source.go",
+        "BE_GO/pkg/manual/refresh.go",
+        "BE_GO/pkg/manual/retrieval.go",
+        "BE_GO/pkg/manual/projection.go"
+      ],
+      "dependencies": [
+        "BE/application/manuale/views.py",
+        "BE/application/manuale/tools.py",
+        "BE/application/manuale/index.py",
+        "BE/application/manuale/sync.py",
+        "BE/application/manuale/preview.py",
+        "BE/application/manuale/development.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/manuale/sections",
+          "/api/v2/manuale/sections"
+        ],
         "request": null,
-        "response": null,
+        "response": "Explicit Django statuses, IDs, messages, assets and selected headers in TESTS/fixtures/manual-reader-http.json; Go HTTP not yet implemented.",
         "errors": null,
-        "authentication": null,
-        "permissions": null,
+        "authentication": "Django authenticated actor/effective identity required; Go HTTP composition pending.",
+        "permissions": "Public manual applicability; feature visibility from live instance configuration. See explicit actor, impersonation and forged-scope cases.",
         "resource_scope": null,
-        "side_effects": null,
+        "side_effects": "No business/audit/cache-record writes. Remote cache refresh validates corpus/assets before atomic promotion; failed refresh retains prior corpus.",
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/adapters/django/manual_reader_http.py",
+        "TESTS/contracts/test_manual_reader_http.py",
+        "TESTS/fixtures/manual-reader-http.json",
+        "BE_GO/pkg/manual/source_oracle_integration_test.go",
+        "BE_GO/pkg/manual/source_test.go",
+        "BE_GO/pkg/manual/refresh_test.go"
+      ],
+      "evidence": [
+        "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md."
+      ],
+      "notes": [
+        "Go HTTP route remains unimplemented. Library evidence does not verify HTTP identity/headers, installed cache permissions, MCP, assistant behavior or required-release package delivery."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:modules/<str:custom_link>/info -> modules_custom_link_info",

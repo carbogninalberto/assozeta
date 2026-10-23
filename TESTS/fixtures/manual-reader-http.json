@@ -1,0 +1,1240 @@
+{
+  "schema_version": 1,
+  "scope": "Actual authenticated HTTP and source-mode behavior; public retrieval ranking is a separate oracle.",
+  "cases": {
+    "get-owner": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "get-athlete": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "athlete",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "get-collaborator": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "collaborator",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "get-administrator": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "administrator",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "anonymous": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "anonymous",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "malformed-token": {
+      "setup": {
+        "mode": "bundle",
+        "token": "malformed"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "expired-token": {
+      "setup": {
+        "mode": "bundle",
+        "token": "expired"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "inactive-token": {
+      "setup": {
+        "mode": "bundle",
+        "inactive": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "deleted-token": {
+      "setup": {
+        "mode": "bundle",
+        "deleted": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "broken-collaborator": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "broken-collaborator",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 403,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "owner-post": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "POST",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 405,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "owner-head": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "HEAD",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 405,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "owner-options": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "OPTIONS",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": null,
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "collaborator-post": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "collaborator",
+        "method": "POST",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 403,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "unsupported-accept": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {
+          "Accept": "application/xml"
+        }
+      },
+      "expected": {
+        "status": 406,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "anonymous-unsupported-accept": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "anonymous",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {
+          "Accept": "application/xml"
+        }
+      },
+      "expected": {
+        "status": 406,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "query-too-long": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections?query=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "headers": {}
+      },
+      "expected": {
+        "status": 400,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "self-hosted-feature": {
+      "setup": {
+        "mode": "bundle",
+        "self_hosted": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public",
+          "guide#host"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "missing-config": {
+      "setup": {
+        "mode": "bundle",
+        "config": false
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "absent": {
+      "setup": {
+        "mode": "absent"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "corrupt-bundle": {
+      "setup": {
+        "mode": "corrupt-bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "required-absent": {
+      "setup": {
+        "mode": "required-absent"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "wrong-version": {
+      "setup": {
+        "mode": "wrong-version"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "runtime-working": {
+      "setup": {
+        "mode": "runtime-working"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "runtime-unpublished": {
+      "setup": {
+        "mode": "runtime-unpublished"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "development-invalid": {
+      "setup": {
+        "mode": "development-invalid"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "preview-invalid": {
+      "setup": {
+        "mode": "preview-invalid"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "runtime": {
+      "setup": {
+        "mode": "runtime"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "runtime-addressed": {
+      "setup": {
+        "mode": "runtime-addressed"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "bundle-before-remote": {
+      "setup": {
+        "mode": "bundle-before-remote"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "development": {
+      "setup": {
+        "mode": "development"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "development-before-bundle": {
+      "setup": {
+        "mode": "development-before-bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "preview": {
+      "setup": {
+        "mode": "preview"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "development_preview",
+        "ids": [
+          "preview#one"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "preview-before-invalid-bundle": {
+      "setup": {
+        "mode": "preview-before-invalid-bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "development_preview",
+        "ids": [
+          "preview#one"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "preview-query-no-match": {
+      "setup": {
+        "mode": "preview"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections?query=unmatched",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "development_preview",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "asset-bundle": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "asset-runtime": {
+      "setup": {
+        "mode": "runtime"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "asset-runtime-addressed": {
+      "setup": {
+        "mode": "runtime-addressed"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "asset-development": {
+      "setup": {
+        "mode": "development"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "asset-preview": {
+      "setup": {
+        "mode": "preview"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/preview/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "asset",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "asset": "fixture_png",
+        "headers": {
+          "Content-Type": "image/png",
+          "Cache-Control": "private, no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      }
+    },
+    "asset-private": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/private.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "asset-feature-hidden": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/host.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "asset-unknown": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/unknown.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "asset-corrupt": {
+      "setup": {
+        "mode": "bundle",
+        "corrupt_asset": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 404,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "asset-anonymous": {
+      "setup": {
+        "mode": "bundle"
+      },
+      "request": {
+        "actor": "anonymous",
+        "method": "GET",
+        "path": "/manuale/assets/images/public.png",
+        "headers": {}
+      },
+      "expected": {
+        "status": 401,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "restore-file-lock": {
+      "setup": {
+        "mode": "bundle",
+        "lock": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 503,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "restore-pending": {
+      "setup": {
+        "mode": "bundle",
+        "pending": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true,
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ]
+      }
+    },
+    "remote-success": {
+      "setup": {
+        "mode": "remote-success"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "remote-failure-old": {
+      "setup": {
+        "mode": "remote-failure-old"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "remote-failure-empty": {
+      "setup": {
+        "mode": "remote-failure-empty"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "remote-readonly-old": {
+      "setup": {
+        "mode": "remote-readonly-old"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "remote-readonly-empty": {
+      "setup": {
+        "mode": "remote-readonly-empty"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "no_evidence",
+        "ids": [],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "owner-impersonated-collaborator": {
+      "setup": {
+        "mode": "bundle",
+        "impersonation": "collaborator"
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "admin-impersonated-athlete": {
+      "setup": {
+        "mode": "bundle",
+        "impersonation": "athlete"
+      },
+      "request": {
+        "actor": "administrator",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 200,
+        "kind": "json",
+        "result": "verified",
+        "ids": [
+          "guide#public"
+        ],
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "forged-target": {
+      "setup": {
+        "mode": "bundle",
+        "forged_target": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 403,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "revoked-impersonation": {
+      "setup": {
+        "mode": "bundle",
+        "impersonation": "collaborator",
+        "revoked": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 403,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "mismatched-impersonation": {
+      "setup": {
+        "mode": "bundle",
+        "impersonation": "collaborator",
+        "wrong_target": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "GET",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 403,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    },
+    "restore-pending-post": {
+      "setup": {
+        "mode": "bundle",
+        "pending": true
+      },
+      "request": {
+        "actor": "owner",
+        "method": "POST",
+        "path": "/manuale/sections",
+        "headers": {}
+      },
+      "expected": {
+        "status": 503,
+        "kind": "json",
+        "database_unchanged": true,
+        "writes": 0,
+        "secret_free": true
+      }
+    }
+  },
+  "notes": [
+    "GET/HEAD acquire the shared operations file lease, but do not consult queued/running restore rows; writes consult both. Source: instance/restore/locking.py.",
+    "No source-mode expectation is derived from an observed response. Search/public projection has its own independent sealed-model oracle."
+  ],
+  "source_cases": [
+    "get-owner",
+    "self-hosted-feature",
+    "missing-config",
+    "absent",
+    "corrupt-bundle",
+    "required-absent",
+    "wrong-version",
+    "runtime-working",
+    "runtime-unpublished",
+    "development-invalid",
+    "preview-invalid",
+    "runtime",
+    "runtime-addressed",
+    "bundle-before-remote",
+    "development",
+    "development-before-bundle",
+    "preview",
+    "preview-before-invalid-bundle",
+    "asset-bundle",
+    "asset-runtime",
+    "asset-runtime-addressed",
+    "asset-development",
+    "asset-preview",
+    "asset-private",
+    "asset-feature-hidden",
+    "asset-unknown",
+    "asset-corrupt",
+    "remote-success",
+    "remote-failure-old",
+    "remote-failure-empty",
+    "remote-readonly-old",
+    "remote-readonly-empty"
+  ]
+}

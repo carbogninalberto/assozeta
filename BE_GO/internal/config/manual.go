@@ -17,6 +17,7 @@ func parseManual(values map[string]string) (manual.Settings, error) {
 		target        *string
 	}{
 		{"MANUAL_INDEX_PATH", "manuale/index.json", &settings.IndexPath},
+		{"MANUAL_ASSET_ROOT", "", &settings.AssetRoot},
 		{"MANUAL_CORPUS_BASE_URL", "", &settings.CorpusBaseURL},
 		{"MANUAL_APPLICATION_REVISION", "", &settings.ApplicationRevision},
 		{"MANUAL_SOURCE_ROOT", "", &settings.SourceRoot},

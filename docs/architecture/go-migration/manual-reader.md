@@ -21,9 +21,26 @@ Five Go groups check nested copies, concurrent requests, model immutability and
 cancellation. The oracle uses the pinned offline NumPy version and forbids network
 access and model training. It creates and removes only private fixture files.
 
-These checks cover installed-bundle and retrieval libraries. They do not activate
-HTTP routes or prove authentication, preview/development source selection, remote
-refresh, installed cache permissions, MCP, assistant behavior or a verified
-required-release package. Source loading and full HTTP composition require their
-own contracts and live evidence before the reader can be exposed. Historical
+The source loader follows the reader's separate preview, development, installed
+bundle and runtime-cache precedence. It preserves `MANUAL_ASSET_ROOT`, verifies
+source freshness before filtering public sections, and limits preview assets to
+the preview path. Remote refresh holds the shared `.sync.lock`, validates the
+corpus and deduplicated images before atomic promotion, and retains the previous
+corpus after failure. Downloads have byte limits, timeouts and redirect validation;
+inactive content-addressed assets retain the existing retirement grace period.
+
+`TESTS/adapters/django/manual_reader_http.py --go-source` observes 58 real Django
+HTTP cases on private PostgreSQL and an ASGI server, including identity, methods,
+headers, restore admission and bounded SQL. It separately runs 32 Go library
+source comparisons with independent fixture directories. The local HTTP publisher
+checks download requests, installed-bundle precedence, failure retention and
+verified asset promotion. Go tests also exercise concurrent refresh, cancellation,
+atomic publication and pruning. These fixtures use current models rather than
+historical migrations.
+
+The Go HTTP reader is not activated. The Django HTTP observations establish its
+contract; they are not evidence of Go HTTP authentication or transport parity.
+Remaining work includes full HTTP composition, preview query projection, actual
+Django/Go cross-process lock contention, writable installed-cache permissions,
+MCP, assistant behavior and a verified required-release package. Historical
 manual artifacts retain their original revision and verification scope.

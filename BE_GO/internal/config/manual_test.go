@@ -103,3 +103,20 @@ func TestManualConfigurationProxyErrorsDoNotExposeValues(t *testing.T) {
 		t.Fatal("metadata failure must be redacted")
 	}
 }
+
+func TestManualAssetRootRetainsExplicitPathAndDefault(t *testing.T) {
+	for _, value := range []string{"", "relative/images", " /private/fixture/images "} {
+		env := environment()
+		if value != "" {
+			env["MANUAL_ASSET_ROOT"] = value
+		}
+		cfg, err := Parse(env)
+		if err != nil || cfg.Manual.AssetRoot != value {
+			t.Fatal("manual asset-root setting changed", err)
+		}
+		got, err := manualImageSettings(t.TempDir(), cfg.Manual, env)
+		if err != nil || got.AssetRoot != value {
+			t.Fatal("image defaults changed explicit asset root", err)
+		}
+	}
+}
