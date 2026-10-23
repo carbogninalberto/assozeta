@@ -45,10 +45,10 @@ func run(arguments []string) error {
 	poll := flags.Duration("poll-interval", time.Second, "idle claim interval")
 	maintenance := flags.Duration("maintenance-interval", 15*time.Second, "restore deferral interval")
 	drain := flags.Duration("drain-timeout", 25*time.Second, "grace before cancelling admitted jobs")
-	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered email reset and associate age task deadline")
+	taskTimeout := flags.Duration("task-timeout", time.Minute, "registered email reset, associate age and token cleanup task deadline")
 	if err := flags.Parse(arguments); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset and associate age promotion. Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
+			fmt.Println("Go worker: --env-file PATH; registered tasks: daily email reset, associate age promotion and expired subscription token cleanup. Bounded --concurrency, --lease, --renew-interval, --store-timeout, --poll-interval, --maintenance-interval, --drain-timeout and --task-timeout. Requires prior explicit migration and coordinated ownership; does not activate Go ownership or schedule jobs.")
 			return nil
 		}
 		return errors.New("invalid worker arguments")
@@ -79,13 +79,15 @@ func run(arguments []string) error {
 	logger := slog.Default()
 	reset := service.NewEmailBalanceReset(repository.NewEmailBalanceResets(db), logger)
 	ages := service.NewAssociateAgeUpdate(repository.NewAssociateAgeUpdates(db), time.Now, logger)
+	tokens := service.NewSubscriptionTokenCleanup(repository.NewSubscriptionTokenCleanups(db), time.Now, logger)
 	admission := service.NewJobRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath),
 		repository.NewRestoreStates(db), cfg.RestoreLockPath != "")
 	jobs := repository.NewJobs(db)
 	executor, err := service.NewJobExecutor(jobs, admission,
 		map[string]service.JobDefinition{
-			domain.JobResetDailyEmailBalance: {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
-			domain.JobUpdateAssociateAge:     {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
+			domain.JobResetDailyEmailBalance:         {Version: 1, Timeout: *taskTimeout, Run: reset.Run},
+			domain.JobUpdateAssociateAge:             {Version: 1, Timeout: *taskTimeout, Run: ages.Run},
+			domain.JobClearExpiredSubscriptionTokens: {Version: 1, Timeout: *taskTimeout, Run: tokens.Run},
 		},
 		service.JobExecutorOptions{Owner: "worker-" + uuid.NewString(), Concurrency: *concurrency,
 			Lease: *lease, RenewInterval: *renew, StoreTimeout: *storeTimeout, PollInterval: *poll,

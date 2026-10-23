@@ -164,7 +164,9 @@ def run(work, log, tool_env):
                  'audit failure rolls back every deletion', 'stale completion rolls back tokens and audits',
                  'replay cannot delete a later token or duplicate audits', 'concurrent cleanup audits each deleted token once',
                  'blocked read cancellation preserves recoverable work', 'single command delete and audit across increasing sizes',
-                 'heartbeat can renew during atomic cleanup', 'actual delete and audit query plan'}
+                 'heartbeat can renew during atomic cleanup', 'actual delete and audit query plan',
+                 'stale ownership generation expired lease and token send no business SQL',
+                 'handled failure fences completion-only transaction'}
         expected = {'TestSubscriptionTokenCleanupPostgres/' + name.replace(' ', '_') for name in names}
         passed = {e.get('Test') for e in events if e['Action'] == 'pass' and '/' in e.get('Test', '')}
         assert passed == expected and not any(e['Action'] == 'skip' for e in events), 'missing or skipped token cleanup scenario'

@@ -24,6 +24,12 @@ The unchanged manual reader browser passes on both
 backends, while the separate full manual capture remains incomplete at 55/60
 workflows. See [manual evidence and limitations](manual-reader.md).
 
+The native worker now registers expired membership-card token cleanup. Twelve
+Django/Go PostgreSQL contract groups and nine native process scenarios pass under
+race detection, including stale admission, exact audit rollback and crash recovery.
+Django remains the execution owner; packaged token checks, task rate policy and
+installed handoff are still open. See [token worker scope](token-worker-process.md).
+
 Scheduler authority now has 48 explicit observations against the pinned actual
 Django runtime and private PostgreSQL. It distinguishes 21 source declarations
 from the single effective configured fresh entry, implicit cleanup and persisted
@@ -94,7 +100,7 @@ The Go image also packages explicit native worker and forward-only operational
 migration commands. Fourteen race-instrumented process scenarios and seven actual
 image scenarios pass. Startup fails on missing/dirty/unknown operational schema;
 migrations connect directly to PostgreSQL while the worker retains runtime
-pooler routing. The worker registers daily email reset and associate age update,
+pooler routing. The worker registers daily email reset, associate age update and token cleanup,
 honors maintenance and drains or recovers unfinished work. The age body now checks
 owner/generation/live lease before business SQL in both transaction paths; eleven
 body groups, nine native cases and five image cases pass. The existing seven-case

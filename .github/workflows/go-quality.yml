@@ -141,6 +141,8 @@ jobs:
         run: python TESTS/adapters/go/worker_process.py
       - name: Verify native age worker against current Django models
         run: python TESTS/adapters/go/age_worker_process.py
+      - name: Verify native token cleanup against current Django models
+        run: python TESTS/adapters/go/token_worker_process.py
       - name: Check native JPEG comments with sanitizers
         run: python TESTS/adapters/go/login_jpeg_comment_sanitizer.py
       - name: Check native PNG decoder with sanitizers
@@ -197,6 +199,7 @@ jobs:
             quality-reports/go-migration/worker-process/
             quality-reports/go-migration/worker-image/
             quality-reports/go-migration/age-worker-process/
+            quality-reports/go-migration/token-worker-process/
             quality-reports/go-migration/age-worker-image/
             quality-reports/go-migration/scheduler-process/
             quality-reports/go-migration/scheduler-image/

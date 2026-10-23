@@ -5,8 +5,10 @@ composition roots alongside `cmd/server`. These are extensions of the specified
 Kuayle layout. The single image contains `/app/server`, `/app/worker`,
 `/app/migrate` and the separately documented [scheduler](../../docs/architecture/go-migration/scheduler-process.md);
 its default entrypoint and HTTP readiness check remain the server.
-The worker registers daily email balance reset and version-1 associate age update.
-The latter has separate [native and packaged evidence](../../docs/architecture/go-migration/age-worker-process.md).
+The worker registers version-1 daily email balance reset, associate age update and
+expired subscription token cleanup. Age update has separate
+[native and packaged evidence](../../docs/architecture/go-migration/age-worker-process.md);
+token cleanup has [native process evidence](../../docs/architecture/go-migration/token-worker-process.md).
 It does not publish work,
 schedule occurrences or change ownership. There is no installed worker service
 or operator activation command yet; Django remains the execution owner.
@@ -42,7 +44,7 @@ credential values.
 
 Defaults are two execution slots, a 30-second lease, renewal every ten seconds,
 five-second queue deadlines, one-second idle polling, 15-second maintenance
-deferral, 25-second shutdown drain and a one-minute daily-reset deadline. These
+deferral, 25-second shutdown drain and a one-minute registered-task deadline. These
 are bounded command options, not established per-task parity for every Celery
 task. The connection pool allows two connections per slot plus two, so effect
 transactions do not consume heartbeat capacity. SIGTERM stops intake and drains
