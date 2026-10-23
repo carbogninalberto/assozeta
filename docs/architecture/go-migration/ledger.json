@@ -9299,7 +9299,12 @@
       },
       "status": "uncharacterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -9313,9 +9318,15 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/application/tests/test_payment_category_integrity.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-categories.md"
+      ],
+      "notes": [
+        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/category/<str:uid>/update -> payment_category_update",
@@ -9334,7 +9345,12 @@
       },
       "status": "uncharacterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -9348,9 +9364,15 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/application/tests/test_payment_category_integrity.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-categories.md"
+      ],
+      "notes": [
+        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/category/add -> payment_category_add",
@@ -9369,7 +9391,12 @@
       },
       "status": "uncharacterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -9383,9 +9410,15 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/application/tests/test_payment_category_integrity.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-categories.md"
+      ],
+      "notes": [
+        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/category/list -> payment_category_list",
@@ -9404,7 +9437,12 @@
       },
       "status": "uncharacterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
+      ],
       "contract": {
         "methods": null,
         "external_paths": null,
@@ -9418,9 +9456,15 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/application/tests/test_payment_category_integrity.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-categories.md"
+      ],
+      "notes": [
+        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/list -> payment_list",
@@ -17736,7 +17780,7 @@
         "file": "BE/application/serializers/payment_serializers.py",
         "line": 62,
         "symbol": "PaymentEntrySerializer.save",
-        "sha256": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f"
+        "sha256": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa"
       },
       "source_present": true,
       "declaration": {
@@ -17769,7 +17813,7 @@
         "file": "BE/application/serializers/payment_serializers.py",
         "line": 28,
         "symbol": "SupplierSerializer.save",
-        "sha256": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f"
+        "sha256": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa"
       },
       "source_present": true,
       "declaration": {

@@ -29,7 +29,10 @@ export function workflowRegistry() {
             // Shared mutation helpers participate in both capture and reuse invalidation.
             const sources = [...spec.sources];
             const inputs = [...(spec.dependencies || []), ...sources];
-            if (["BE/application/views/profile_views.py", "BE/application/views/two_fa_views.py"]
+            // payment_views also contains unrelated, non-atomic workflows;
+            // only category mutations use the strict audit helper there.
+            const categoryMutation = ["payment-categories-manage", "payment-classification-local"].includes(id);
+            if (categoryMutation || ["BE/application/views/profile_views.py", "BE/application/views/two_fa_views.py"]
                 .some(path => inputs.some(prefix => path.startsWith(prefix))))
                 sources.push("BE/application/audit_context.py", "BE/application/signals.py");
             const captureSources = [...new Set(sources)];

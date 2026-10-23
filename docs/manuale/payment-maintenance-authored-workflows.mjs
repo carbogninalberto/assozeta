@@ -104,6 +104,8 @@ export const paymentMaintenanceAuthoredWorkflows = Object.freeze({
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py"
@@ -122,6 +124,8 @@ export const paymentMaintenanceAuthoredWorkflows = Object.freeze({
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py",

@@ -205,9 +205,16 @@ The root exposes fifteen upstream paths: health/readiness, login, refresh, email
 username availability, scoped profile information/profile and password changes, table preferences and 2FA setup/status/updates, and two retired software-billing
 responses. CORS, restore admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 25 implementing, 6 requiring review and 479 uncharacterized; none
+4 deprecated, 33 implementing, 4 requiring review and 473 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
+
+The [payment-category baseline correction](payment-categories.md) fixes confirmed
+Django identity/association reassignment, missing-association global writes and
+partial VAT/audit commits. Nineteen focused and 188 existing Django regressions
+pass on disposable services, including concurrency and SQL-failure injection.
+The Go handlers and portable HTTP oracle are still under independent review;
+neither is accepted as endpoint parity.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
