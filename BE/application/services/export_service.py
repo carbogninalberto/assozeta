@@ -362,6 +362,16 @@ class AssociationExportService:
         # Filter by association
         return self._filter_by_association(model_class, qs)
 
+    def _payment_category_ids(self) -> models.QuerySet:
+        """Category IDs used by this association's payments, soft-deleted ones included.
+
+        Payments are exported with soft-deleted rows, so their categories must be too.
+        """
+        return Payment._base_manager.filter(
+            sport_association=self.sport_association,
+            payment_category__isnull=False
+        ).values_list('payment_category_id', flat=True).distinct()
+
     def _filter_by_association(self, model_class: type, qs: models.QuerySet) -> models.QuerySet:
         """Filter queryset by association based on model relationships."""
         model_name = model_class.__name__
@@ -401,10 +411,7 @@ class AssociationExportService:
         # Must be BEFORE generic sport_association filter
         if model_name == 'PaymentCategory':
             # Get category IDs referenced by this association's payments
-            payment_cat_ids = Payment.objects.filter(
-                sport_association=self.sport_association,
-                payment_category__isnull=False
-            ).values_list('payment_category_id', flat=True).distinct()
+            payment_cat_ids = self._payment_category_ids()
             return qs.filter(
                 models.Q(sport_association=self.sport_association) |
                 models.Q(payment_category_id__in=payment_cat_ids)
@@ -497,10 +504,7 @@ class AssociationExportService:
         # VatManagement - export records referenced by PaymentCategories used by this association
         if model_name == 'VatManagement':
             # Get category IDs referenced by this association's payments (including shared categories)
-            payment_cat_ids = Payment.objects.filter(
-                sport_association=self.sport_association,
-                payment_category__isnull=False
-            ).values_list('payment_category_id', flat=True).distinct()
+            payment_cat_ids = self._payment_category_ids()
             # Get VAT IDs from association's categories AND shared categories used by payments
             vat_ids = PaymentCategory.objects.filter(
                 models.Q(sport_association=self.sport_association) |
