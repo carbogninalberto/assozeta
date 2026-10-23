@@ -423,6 +423,39 @@
       },
       "function_case": "gaps-denied-None",
       "corrupt": true
+    },
+    "missing-query-with-invalid-limit": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "limit": 0
+        }
+      },
+      "validation_error": "Input validation error: 'query' is a required property"
+    },
+    "invalid-limit-with-forged-user": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": "fixture",
+          "limit": 0,
+          "user_id": "forged"
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('user_id' was unexpected)"
+    },
+    "null-query-with-extra": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": null,
+          "x": 1
+        }
+      },
+      "validation_error": "Input validation error: Additional properties are not allowed ('x' was unexpected)"
     }
   }
 }

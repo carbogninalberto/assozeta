@@ -12,7 +12,7 @@ and coverage diagnostics. All 67 authored function cases compare complete Django
 results with Go under fixture-supplied trusted context. The separate Go service
 also matches all 67 cases using live PostgreSQL owner resolution, with one query
 per valid call, 32 concurrent calls and blocked-query cancellation/recovery.
-The independent Django stdio oracle now passes 35 MCP requests through the actual
+The independent Django stdio oracle now passes 38 MCP requests through the actual
 management command and SDK, with protocol negotiation, pipelining, request
 cancellation, database query budgets and clean EOF checks. Six regression checks
 also reject extra database reads, premature process exits and trailing stdout.
