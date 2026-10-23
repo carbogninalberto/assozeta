@@ -3,9 +3,10 @@
 All four category routes are implemented in the Go composition root and remain
 `implementing` in the compatibility ledger. Actual Django/Go HTTP responses,
 durable state, audit records and selected failure/concurrency behavior have been
-compared directly and through the shipped Caddy versioned routes. Category browser
-workflows, installed lifecycle acceptance and the remaining review gaps below are
-open. This slice does not complete the production Django-to-Go migration or permit
+compared directly and through the shipped Caddy versioned routes. Native lifecycle
+races, the packaged image and the unchanged category browser workflows now have
+independently rerun evidence. Installed lifecycle acceptance and the remaining
+review gaps below stay open. This slice does not complete the production Django-to-Go migration or permit
 activation; Django remains the production execution owner.
 
 | Operation | Method | Upstream route |
@@ -160,10 +161,78 @@ and surrogate-separator checks, and 15,992 differential comparisons against Pyth
 3.13.16/Django 5.2.18. Focused race/vet checks and 244,946 fuzz executions pass.
 Component parser evidence does not replace endpoint HTTP validation.
 
+## Native lifecycle races and disconnect behavior
+
+The optional [lifecycle helper](../../../TESTS/adapters/django/payment_category_lifecycle.py)
+passes **nine probes per native runtime**, including an independent parent rerun. Profile-first and category-first
+overlap exercise both PATCH admission and actual DELETE mutation paths, with two
+PostgreSQL backends observed in the held lock chain before release. Exact user,
+association and category changes, actor attribution and audit indexes are checked.
+Owner deactivation and soft deletion after authentication but before the owner
+lock is acquired produce 403 without mutation for both PATCH and DELETE; restoring
+the owner permits an independently audited recovery. Complete managed-state
+snapshots verify owned cleanup and preservation of unrelated rows.
+
+An actual HTTP client disconnect while DELETE is blocked establishes a deliberate
+evidence distinction. Go cancels the request context, ends the database transaction
+before the category blocker is released, leaves no mutation or audit, and recovers
+with one audited request. Django's admitted synchronous view stays blocked and
+then commits its deletion exactly once after release; its audit is retained,
+the transaction drains, and a later request succeeds with its own audit. Client
+disconnect therefore does not prove that Django did not commit.
+
+The initial shared cancellation expectation produced a preserved red receipt.
+The final probes assert these two explicit existing runtime behaviors, rather
+than changing Django production code or treating the difference as parity.
+Reports retain `disconnect_semantics_match: false` and
+`complete_payment_category_parity: false`. The lifecycle probes use direct native
+HTTP URLs; the ordinary Caddy workloads do not establish disconnect behavior
+through the proxy.
+
+The oracle now accepts an owned server-context factory. Its default native factory
+uses Django's private restore-lock path and drains the Go process before fixture
+cleanup. The packaged-image adapter uses the same authored HTTP, audit, persistence
+and fault oracle. The parent independently passed all four 188/43/18 workloads
+against immutable image `54eb9199ce83`, built from clean revision `9e51842`.
+The image ran as UID 10001 with a read-only filesystem, actual disposable Docker
+PostgreSQL/Redis, loopback-only exposed ports and no mounted executable.
+`CODE_REVISION`, version and health identity were verified, with owned cleanup
+confirmed. An older image produced an actual category-route 404 red; a separate
+wrong expected revision was only a metadata rejection. A first new-image run
+exposed Caddy upstream substitution corruption, corrected before the passing run.
+The image factory does not establish interoperability with the host's file-based
+restore lock, installed backend switching or worker handoff.
+
+## Category browser workflow evidence
+
+The unchanged category UI passes against both versioned APIs, including an
+independent parent rerun: **six checks, five successful category writes, seven
+denied writes and five exact new category audits per version**. These cover
+create/edit/reload, permission and association isolation, payment selection and
+persistence, delete cancellation/confirmation, and database/audit readback.
+All initial VAT values and defaults, original VAT preservation after replacement,
+the complete 12-field CREATE audit map, every new category audit, and all prior
+audit/index contents are asserted.
+
+An independent Django ASGI observer records 48 selected requests for v1 and zero
+for v2; each workflow also makes 26 real Django coexistence requests. A deliberate
+v2-to-Django misroute is rejected even though the response is HTTP 200 with an
+outer `go-v2` header. This supplies runtime routing evidence beyond proxy labels.
+Both workflows and owned private cleanup pass.
+
+Archive/unarchive uses authenticated PATCH followed by UI reload because the
+unchanged category UI exposes no archive controls. Payment selection and
+foreign-key persistence use real Django payment coexistence; this does not mean
+Go owns the broader payment workflow. The private canonical alias and extracted
+frontend are not an installed deployment or activation acceptance.
+
+## Reproducible checks and evidence
+
 Reproducible entrypoints, using the pinned production interpreter:
 
 ```sh
 LC_ALL=C LANG=C TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 \
+  TESTS_PAYMENT_CATEGORIES_LIFECYCLE=1 \
   python TESTS/adapters/django/accounts.py --only payment-categories
 python TESTS/adapters/go/payment_category_repository.py
 cd BE_GO
@@ -180,6 +249,12 @@ Review evidence is retained locally under:
 - `quality-reports/go-migration/payment-category-repository/results.json` and `go-tests.jsonl`.
 - `quality-reports/go-migration/payment-category-parallel/go-final-independent-review.md`.
 - `quality-reports/go-migration/payment-category-parallel/datetime-independent-differential.json`.
+- `quality-reports/go-migration/payment-category-parallel/lifecycle-run1-{go,django}.json` and `lifecycle-run1.log` (initial shared-cancellation red evidence).
+- `quality-reports/go-migration/payment-category-parallel/lifecycle-final-results.json`, `lifecycle-final-{go,django}.json`, and `lifecycle-versioned-run.log` (nine distinct-runtime probes each; existing four 188/43/18 workloads remain green).
+- `quality-reports/go-migration/payment-categories/results.json`, `lifecycle-{go,django}.json`, and `quality-reports/go-migration/category-acceptance/lifecycle-parent.log` (independent parent lifecycle/native/versioned pass).
+- `quality-reports/go-migration/category-acceptance/image-green2/results.json` and `image-green2.log` (parent packaged-image pass); `image-route-red/results.json` and its log retain the older-image category 404 rejection.
+- `quality-reports/go-migration/category-acceptance/browser-parent-final/results.json`, `routing-negative-control.json`, and `v1`/`v2` browser/validation reports (strengthened independent browser acceptance).
+- `quality-reports/go-migration/category-acceptance/final-acceptance.json` (parent source-bound acceptance summary).
 
 The portable contract and runner sources are
 `TESTS/contracts/test_payment_categories.py` and
@@ -193,9 +268,13 @@ payment/camp-service/user-reference preservation proof described above.
 
 ## Quality workflow and test-harness corrections
 
-The Go quality workflow now invokes the versioned category HTTP oracle and the
-six-group real-schema PostgreSQL runner and retains their receipts. Local full Go
-race/vet, tagged vet, formatting and six repository groups pass. Hosted current-head
+The dedicated `payment-categories` job, named **Category HTTP, concurrency and
+packaged image**, has a 30-minute timeout and runs the versioned/lifecycle HTTP
+oracle, the six-group real-schema PostgreSQL runner and the revision-bound image adapter. It retains their receipts.
+The existing `profile-browser` job also runs the category browser adapter against
+the extracted immutable frontend image and retains browser/provenance artifacts.
+The workflow has passed local actionlint; no new hosted job success is claimed.
+Local full Go race/vet, tagged vet, formatting and six repository groups pass. Hosted current-head
 CI is a separate gate; these results do not claim a new green hosted workflow.
 The known external manual recipe-binding failure remains unresolved.
 
@@ -210,22 +289,17 @@ including the 10,000-row bound. Neither correction changes production behavior.
 
 ## Remaining acceptance work
 
-- Run unchanged category frontend workflows against both versions, including
-  category selection from payment flows and reload/readback. Existing manual and
-  profile browser success does not establish category browser acceptance.
-- Exercise the category slice in installed images and normal install/update,
+- Exercise the category slice in normal installation/update,
   backup/restore, backend-selection and coordinated activation/rollback paths.
   Current-model disposable databases do not prove historical schema/data parity.
 - Add black-box Go coverage for pre-SQL audit-index failure. Corrected Django
   baseline tests cover that exception path, while the 18 SQL fault scenarios do
   not inject a failure before SQL execution. Continue preserving unrelated rows
   in each rollback assertion.
-- Add deterministic cross-workflow profile/category lock overlap and owner-status
-  change races. Existing category concurrency and cancellation checks have bounded
-  scope; they do not prove every interleaving or ambiguous-commit recovery.
-- Exercise cancellation caused by an actual HTTP client disconnect. The real
-  blocked-query repository cancellation test establishes driver/transaction
-  cleanup, not the complete HTTP disconnect path.
+- Reconcile the demonstrated HTTP-disconnect semantic difference before claiming
+  runtime protocol parity or activation readiness. Current probes establish each
+  native runtime's behavior, not a shared outcome, proxy-disconnect semantics,
+  every interleaving or client-side ambiguous-commit recovery.
 
 No category ledger entry is `verified`. Other payment operations and the wider
 business/API/background/MCP/WebSocket migration remain unfinished.

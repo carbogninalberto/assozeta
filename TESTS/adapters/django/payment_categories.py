@@ -7,6 +7,7 @@ and partial VAT/category writes are deliberately probed as defects rather than
 accepted as parity.
 """
 import argparse
+from contextlib import ExitStack
 from decimal import Decimal
 import ipaddress
 from concurrent.futures import ThreadPoolExecutor
@@ -15,8 +16,6 @@ import json
 import os
 from pathlib import Path
 import re
-import socket
-import subprocess
 import sys
 import threading
 import time
@@ -187,7 +186,7 @@ def metadata():
     }
 
 
-def run(work, log, tool_env, address):
+def run(work, log, tool_env, address, *, go_server_factory=None):
     from django.apps import apps
     from django.conf import settings
     from django.core.asgi import get_asgi_application
@@ -214,6 +213,7 @@ def run(work, log, tool_env, address):
         raise RuntimeError('Payment-category Redis address must be host:port')
     run_go = os.environ.get('TESTS_PAYMENT_CATEGORIES_GO') == '1'
     versioned = os.environ.get('TESTS_PAYMENT_CATEGORIES_VERSIONED') == '1'
+    lifecycle = os.environ.get('TESTS_PAYMENT_CATEGORIES_LIFECYCLE') == '1'
     if versioned and not run_go:
         raise RuntimeError('Versioned payment-category contracts require both native backends first')
 
@@ -2403,7 +2403,8 @@ def run(work, log, tool_env, address):
     ))
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
-    go_process = None
+    runtimes = ExitStack()
+    go_runtime = None
     try:
         deadline = time.monotonic() + 10
         while not server.started:
@@ -2481,42 +2482,13 @@ def run(work, log, tool_env, address):
         if run_go:
             reset_fixture_for_replay()
             assert managed_snapshot() == before_cases, 'Django fixture reset is not exact'
-            from TESTS.adapters.go.server import build_server
-            build_server(work / 'payment-categories-server', log, tool_env)
-            with socket.socket() as listener:
-                listener.bind(('127.0.0.1', 0))
-                http_port = listener.getsockname()[1]
-            host, port = address.rsplit(':', 1)
-            environment = {
-                **tool_env,
-                'DBTYPE': 'POSTGRES', 'DBNAME': 'assozeta_contract_accounts', 'DBUSER': 'contracts',
-                'DBPASSWORD': 'test-only', 'DBHOST': str(work), 'DBPORT': '5432',
-                'REDIS_HOST': host, 'REDIS_PORT': port, 'REDIS_USERNAME': 'default',
-                'REDIS_PASSWORD': 'synthetic-identity-only',
-                'GO_LISTEN_ADDR': f'{"0.0.0.0" if versioned else "127.0.0.1"}:{http_port}',
-                'DEBUG': 'False', 'RATELIMIT_ENABLE': 'False',
-                **{name: getattr(settings, name) for name in (
-                    'SECRET_KEY', 'JWT_SECRET_KEY', 'JWT_PUBLIC_KEY',
-                    'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_STORAGE_BUCKET_NAME',
-                    'AWS_S3_REGION_NAME', 'AWS_S3_ENDPOINT_URL', 'AWS_LOCATION',
-                    'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET',
-                )},
-            }
-            go_process = subprocess.Popen(
-                [str(work / 'payment-categories-server')], cwd=work, env=environment,
-                stdout=log, stderr=subprocess.STDOUT,
-            )
-            go_base = f'http://127.0.0.1:{http_port}'
-
-            def ready():
-                if go_process.poll() is not None:
-                    raise RuntimeError('Go payment-category server exited')
-                try:
-                    return Client(go_base).request('GET', '/readyz')[0] == 200
-                except OSError:
-                    return False
-
-            poll(ready, bool, timeout=30)
+            if go_server_factory is None:
+                from TESTS.adapters.go.payment_category_server import native_server
+                go_server_factory = native_server
+            go_runtime = runtimes.enter_context(go_server_factory(
+                work, log, tool_env, address, versioned=versioned,
+            ))
+            go_base = go_runtime['base_url']
             execute_declared_cases(go_base)
             go_audit = verify_persistence()
             go_delta = managed_delta(before_cases)
@@ -2555,6 +2527,7 @@ def run(work, log, tool_env, address):
             go_defects = list(defects[len(django_defects):])
             go_result = {
                 'backend': 'Go',
+                'runtime': go_runtime['metadata'],
                 'http_cases': len(cases),
                 'audit_rows': len(go_audit),
                 'audit_evidence': go_audit_evidence,
@@ -2571,11 +2544,33 @@ def run(work, log, tool_env, address):
             fixture['oracle']['all_defects'] = list(defects)
             persist_fixture()
             require_mutation_invariants()
+        lifecycle_results = None
+        if lifecycle:
+            from TESTS.adapters.django.payment_category_lifecycle import run as run_lifecycle
+            lifecycle_results = {}
+            backends = ([('Go', go_base)] if run_go else []) + [('Django', django_base)]
+            for backend, base in backends:
+                lifecycle_results[backend] = run_lifecycle(
+                    base, backend, owner_id=owner.pk, association_id=own_association.pk,
+                    token=tokens[160000], snapshot=managed_snapshot,
+                    evidence_path=ROOT / f'quality-reports/go-migration/payment-categories/lifecycle-{backend.lower()}.json',
+                )
+            fixture['oracle']['lifecycle'] = lifecycle_results
+            fixture['oracle']['disconnect_semantics_match'] = False
+            fixture['oracle']['lifecycle_remaining_parity_gaps'] = [
+                'Go cancels blocked HTTP mutations on disconnect; admitted Django synchronous requests may complete and commit.',
+            ]
+            assert all(result['success'] for result in lifecycle_results.values()), (
+                'payment-category lifecycle invariants failed; see lifecycle-{go,django}.json',
+                {backend: [case for case in result['cases'] if not case['success']]
+                 for backend, result in lifecycle_results.items()},
+            )
         versioned_results = None
         if versioned:
             from TESTS.adapters.caddy import proxy
             django_port = server.servers[0].sockets[0].getsockname()[1]
-            with proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{http_port}', log) as (gateway, caddy_image):
+            with proxy(f'host.docker.internal:{django_port}', go_runtime['proxy_upstream'], log,
+                       network=go_runtime.get('network')) as (gateway, caddy_image):
                 health_status, _, health_headers = Client(gateway).request('GET', '/healthz', include_headers=True)
                 assert health_status == 200
                 measured_remote = health_headers.get('X-Fixture-Client-IP')
@@ -2622,18 +2617,14 @@ def run(work, log, tool_env, address):
             'django_only': not run_go,
             'go': go_result,
             'versioned': versioned_results,
+            'lifecycle': lifecycle_results,
+            'disconnect_semantics_match': False if lifecycle else None,
             'fixture': str(persistent_fixture),
         })
     finally:
         server.should_exit = True
         thread.join(timeout=10)
-        if go_process is not None and go_process.poll() is None:
-            go_process.terminate()
-            try:
-                go_process.wait(timeout=20)
-            except subprocess.TimeoutExpired:
-                go_process.kill()
-                go_process.wait(timeout=5)
+        runtimes.close()
         for session in sessions:
             cache.delete(session_key(session))
         with disable_auditlog():
