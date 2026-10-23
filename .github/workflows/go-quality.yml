@@ -81,9 +81,11 @@ jobs:
           python TESTS/adapters/django/manual_bundle.py
           python TESTS/adapters/django/manual_reader_library.py
           python TESTS/adapters/django/manual_retrieval.py
-          python TESTS/adapters/django/manual_reader_http.py --tools
-          TESTS_MANUAL_TOOL_REPORT=quality-reports/go-migration/manual-tools/results.json \
+          python TESTS/adapters/django/manual_reader_http.py --tools --go-source
+          TESTS_MANUAL_TOOL_REPORT=quality-reports/go-migration/manual-tools-go-library/results.json \
           python -m unittest TESTS.contracts.test_manual_tools
+          TESTS_MANUAL_TOOL_LIBRARY_REPORT=quality-reports/go-migration/manual-tools-go-library/results.json \
+          python -m unittest TESTS.contracts.test_manual_tools_go
           python TESTS/adapters/django/manual_reader_http.py --go-source
           python TESTS/adapters/django/manual_refresh_lock.py
           python TESTS/adapters/django/manual_reader_http.py --backend go
@@ -168,6 +170,7 @@ jobs:
             quality-reports/go-migration/manual-reader/
             quality-reports/go-migration/manual-retrieval/
             quality-reports/go-migration/manual-tools/
+            quality-reports/go-migration/manual-tools-go-library/
             quality-reports/go-migration/manual-reader-http/
             quality-reports/go-migration/manual-reader-http-go/
             quality-reports/go-migration/manual-reader-http-versioned/

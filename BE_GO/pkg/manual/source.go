@@ -16,6 +16,7 @@ type ReaderSnapshot struct {
 	assetRoot        string
 	contentAddressed bool
 	preview          map[string]any
+	revision         string
 }
 
 func (s *ReaderSnapshot) IsPreview() bool { return s != nil && s.preview != nil }
@@ -107,6 +108,9 @@ func (l *Loader) loadPreview(ctx context.Context) (*ReaderSnapshot, error) {
 	return &ReaderSnapshot{preview: value, assetRoot: root}, nil
 }
 func (l *Loader) loadReader(ctx context.Context, features []string) (*ReaderSnapshot, error) {
+	return l.loadKnowledge(ctx, features, false, true)
+}
+func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintainer, validate bool) (*ReaderSnapshot, error) {
 	s := l.settings
 	result := &ReaderSnapshot{}
 	revision := s.ApplicationRevision
@@ -139,7 +143,7 @@ func (l *Loader) loadReader(ctx context.Context, features []string) (*ReaderSnap
 			if result.index["identity"] != id || meta["publication_status"] != "development-local" || !hex64.MatchString(text(meta["verified_corpus_identity"])) {
 				return nil, errEvidence
 			}
-			if raw, present := meta["development_deleted_files"]; present {
+			if raw, present := meta["development_deleted_files"]; present && validate {
 				files, ok := raw.([]any)
 				if !ok {
 					return nil, errEvidence
@@ -206,16 +210,22 @@ func (l *Loader) loadReader(ctx context.Context, features []string) (*ReaderSnap
 	}
 	check := s
 	check.ApplicationRevision = revision
-	if !version(meta, check) {
+	result.revision = revision
+	if validate && !version(meta, check) {
 		return nil, errEvidence
 	}
-	result.applicable, err = readerApplicable(ctx, result.index, features, s.SourceRoot)
-	if err != nil {
-		return nil, err
+	if validate {
+		result.applicable, err = knowledgeApplicable(ctx, result.index, features, s.SourceRoot, maintainer)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return result, nil
 }
 func readerApplicable(ctx context.Context, index map[string]any, features []string, source string) ([]map[string]any, error) {
+	return knowledgeApplicable(ctx, index, features, source, false)
+}
+func knowledgeApplicable(ctx context.Context, index map[string]any, features []string, source string, maintainer bool) ([]map[string]any, error) {
 	chunks, ok := index["chunks"].([]any)
 	if !ok {
 		return nil, errEvidence
@@ -248,7 +258,7 @@ func readerApplicable(ctx context.Context, index map[string]any, features []stri
 		if !present {
 			return nil, errEvidence
 		}
-		if audience != "public" {
+		if audience != "public" && !maintainer {
 			continue
 		}
 		id, ok := m["id"].(string)

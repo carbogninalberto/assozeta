@@ -3,9 +3,16 @@
 This draft retains all fourteen [accepted requirements](requirements.md).
 **It is not ready for production activation or merge as a backend replacement.**
 Work is isolated on `codex/go-backend-parity`, reconciled through
-`main@0ffe9f6`. Django retains production API selection, business-schema,
+`main@0a96aa5`. Django retains production API selection, business-schema,
 worker and scheduler ownership. No production/customer data or published release
 has been changed.
+
+The manual knowledge library now implements search, section reads, owner evidence
+and coverage diagnostics. All 67 authored function cases compare complete Django
+results with Go under fixture-supplied trusted context. Go database authority and
+MCP/agent dispatch remain open. The unchanged manual reader browser passes on both
+backends, while the separate full manual capture remains incomplete at 55/60
+workflows. See [manual evidence and limitations](manual-reader.md).
 
 Scheduler authority now has 48 explicit observations against the pinned actual
 Django runtime and private PostgreSQL. It distinguishes 21 source declarations

@@ -1286,6 +1286,86 @@
         "source": "development",
         "reappeared": true
       }
+    },
+    "stopword-null-limit": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "come fare",
+        "limit": null
+      },
+      "setup": {},
+      "max_selects": 1,
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Non ho trovato istruzioni verificate per questa domanda."
+      }
+    },
+    "stopword-without-model": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "come fare",
+        "limit": null
+      },
+      "setup": {
+        "missing_model": true
+      },
+      "max_selects": 1,
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Non ho trovato istruzioni verificate per questa domanda."
+      }
+    },
+    "empty-model-null-limit": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "fixture",
+        "limit": null
+      },
+      "setup": {
+        "empty_model": true
+      },
+      "max_selects": 1,
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Non ho trovato istruzioni verificate per questa domanda."
+      }
+    },
+    "no-match-null-limit": {
+      "tool": "search_manual",
+      "arguments": {
+        "query": "zzzzzzzzzz",
+        "limit": null
+      },
+      "setup": {},
+      "max_selects": 1,
+      "expected": {
+        "status": "no_evidence",
+        "ids": [],
+        "keys": [
+          "message",
+          "results",
+          "status"
+        ],
+        "message": "Il manuale verificato non è disponibile per questa versione o deve essere aggiornato."
+      }
     }
   }
 }

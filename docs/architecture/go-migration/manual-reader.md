@@ -112,7 +112,7 @@ remain open. Historical manual artifacts retain their original revision and
 verification scope.
 
 The manual-tool function oracle is separate from reader HTTP and browser tests.
-`manual_reader_http.py --tools` runs 63 authored cases through the actual Django
+`manual_reader_http.py --tools` runs 67 authored cases through the actual Django
 functions, live PostgreSQL context resolution and real source loaders. It covers
 all four tools: search, section reads, technical evidence and gap diagnostics.
 No context resolver, loader or permission decision is replaced. Portable contracts
@@ -132,9 +132,24 @@ an incompatible installed bundle fails its strict loader. Development tools igno
 preview knowledge, and owner diagnostics report reappeared deleted sources even
 when ordinary retrieval rejects them. These differences are explicit contracts.
 The oracle treats `user_id` and association as trusted call context; MCP/agent
-argument filtering and their transports still need their own tests. The Go tool
-service and transport implementation remain open; these cases establish Django
-behavior, not Go parity.
+argument filtering and their transports still need their own tests.
+
+Adding `--go-source` compares all 67 complete results with `pkg/manual.ExecuteTool`
+using the same sealed files and fixture-supplied trusted context. The Go library
+implements all four knowledge operations, preserves the original external citation
+URL alongside the embedded reader URL, and does not accept authority or source
+configuration from tool arguments. Diagnostic loading can inspect incompatible
+runtime versions and reappeared development sources, while installed bundles
+retain strict version validation. Ordinary HTTP selection remains public-only.
+The four extra cases establish that stopword-only queries bypass limit conversion
+and model access, empty models bypass limit conversion, and a normal query with
+no matches still rejects an invalid limit. The missing-model case failed before
+the Go evaluation-order correction. Cancellation, integer conversion, nested
+result isolation and 32 concurrent owner/public calls have separate Go tests.
+CI runs the complete differential and portable result comparison. The adapter
+records the exact Go source hashes and checks that Go leaves fixture files intact.
+Go database authority, service composition, MCP transport, agent dispatch and
+provider behavior remain open; this library evidence does not establish them.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser
@@ -148,5 +163,16 @@ this scenario correction: one workflow, with real PDF generation and download,
 and successful cleanup of its services, volumes and network. This focused run
 does not establish a complete capture or release package. The other failures
 still require investigation; no failures are waived.
+
+The subsequent fresh full capture from committed `1832b9c` completed with 55 of
+60 workflows passing, with successful owned-resource cleanup. The five failures
+were dashboard-list layout restoration, dashboard personalization, fiscal-year
+settings, instructor compensation and instructor maintenance. Three were HTTP
+timeouts and two were UI visibility failures; dashboard-list failure was a
+restoration POST timeout, not a repeat of the PDF baseline mismatch. During the
+run the renderer cgroup reported four OOM kills and Docker reported it running
+and healthy, with no container restart. These observations do not establish a
+causal relationship with the individual failures. The failed batch was retained;
+generation, package verification and release export were not counted as passing.
 All owned services, volumes and networks were removed. The failed batch never
 reached generation, verification, indexing, evaluation or release-package export.
