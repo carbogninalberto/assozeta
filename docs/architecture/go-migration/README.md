@@ -1488,11 +1488,16 @@ see [the task contract](../../../BE_GO/internal/service/email_balance_reset.md).
 
 The concrete cleanup service preserves UTC-midnight selection and exact Django
 deletion audit data. Its single SQL command derives logs from rows actually deleted,
-fixing a confirmed duplicate-audit race in concurrent Django collectors. Ten required
-PostgreSQL groups include heartbeat overlap, transactional rollback, replay and an
-executed 4,096-token plan. The ledger is `implementing`; production rate limiting,
+fixing a confirmed duplicate-audit race in concurrent Django collectors. Twelve required
+PostgreSQL groups include early ownership/lease checks before business SQL, handled
+completion fencing, heartbeat overlap, transactional rollback, replay and an
+executed 4,096-token plan. The successful body uses six SQL statements regardless
+of affected-row count. Native registration passes nine current-Django-model process
+scenarios, including crash recovery, graceful cancellation and handled audit failure.
+The ledger is `implementing`; packaged token execution, production rate limiting,
 scheduling and lifecycle ownership remain open. See
-[the task contract](../../../BE_GO/internal/service/subscription_token_cleanup.md).
+[the task contract](../../../BE_GO/internal/service/subscription_token_cleanup.md) and
+[native process evidence](token-worker-process.md).
 
 ### Associate age update
 

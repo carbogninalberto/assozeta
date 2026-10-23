@@ -26,17 +26,30 @@ import (
 )
 
 type tokenCleanupQueries struct {
-	count   atomic.Int64
-	active  atomic.Int64
-	peak    atomic.Int64
-	mu      sync.Mutex
-	command string
-	args    []any
+	count         atomic.Int64
+	active        atomic.Int64
+	peak          atomic.Int64
+	business      atomic.Int64
+	fences        atomic.Int64
+	completions   atomic.Int64
+	mu            sync.Mutex
+	command       string
+	args          []any
+	afterRollback func()
+	afterBusiness func()
 }
 
 func (q *tokenCleanupQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
 	q.count.Add(1)
+	ctx = context.WithValue(ctx, cleanupSQLTraceKey{}, d.SQL)
+	if strings.Contains(d.SQL, "SELECT o.generation FROM ownership o JOIN") {
+		q.fences.Add(1)
+	}
+	if strings.Contains(d.SQL, "UPDATE public.assozeta_go_jobs j SET state='completed'") {
+		q.completions.Add(1)
+	}
 	if strings.HasPrefix(d.SQL, "WITH removed AS") {
+		q.business.Add(1)
 		q.mu.Lock()
 		q.command = d.SQL
 		q.args = append([]any(nil), d.Args...)
@@ -53,10 +66,22 @@ func (q *tokenCleanupQueries) TraceQueryStart(ctx context.Context, _ *pgx.Conn, 
 }
 
 type cleanupTraceKey struct{}
+type cleanupSQLTraceKey struct{}
 
-func (q *tokenCleanupQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryEndData) {
+func (q *tokenCleanupQueries) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
+	q.mu.Lock()
+	afterRollback := q.afterRollback
+	afterBusiness := q.afterBusiness
+	q.mu.Unlock()
 	if ctx.Value(cleanupTraceKey{}) != nil {
 		q.active.Add(-1)
+	}
+	sql, _ := ctx.Value(cleanupSQLTraceKey{}).(string)
+	if strings.HasPrefix(sql, "WITH removed AS") && data.Err == nil && afterBusiness != nil {
+		afterBusiness()
+	}
+	if strings.EqualFold(sql, "rollback") && data.Err == nil && afterRollback != nil {
+		afterRollback()
 	}
 }
 
@@ -249,14 +274,107 @@ func TestSubscriptionTokenCleanupPostgres(t *testing.T) {
 			t.Fatal("unsafe/missing diagnostic")
 		}
 	})
-	t.Run("stale completion rolls back tokens and audits", func(t *testing.T) {
-		seed(t, fixture.Tokens)
-		job := claim(t)
-		exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
-		if e := cleanup.Run(ctx, job); !errors.Is(e, domain.ErrJobLeaseLost) {
-			t.Fatal("stale attempt committed", e)
+	t.Run("stale ownership generation expired lease and token send no business SQL", func(t *testing.T) {
+		for _, defect := range []string{"token", "expired", "generation", "django"} {
+			seed(t, fixture.Tokens)
+			job := claim(t)
+			switch defect {
+			case "token":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+			case "expired":
+				exec(t, `UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, job.ID)
+			case "generation":
+				exec(t, `UPDATE assozeta_go_job_ownership SET generation=generation+1 WHERE singleton=1`)
+			case "django":
+				exec(t, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+			}
+			trace.business.Store(0)
+			err := cleanup.Run(ctx, job)
+			// Fixture-only restoration; no production transition API is involved.
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if !errors.Is(err, domain.ErrJobLeaseLost) || trace.business.Load() != 0 {
+				t.Errorf("%s: stale admission sent %d business commands, error %v", defect, trace.business.Load(), err)
+			}
+			counts(t, 7, 0)
+			if state(t, job).State != "running" {
+				t.Fatal("rejected attempt changed job state")
+			}
 		}
-		counts(t, 7, 0)
+	})
+	t.Run("handled failure fences completion-only transaction", func(t *testing.T) {
+		for _, loss := range []string{"none", "owner", "token"} {
+			seed(t, fixture.Tokens)
+			job := claim(t)
+			exec(t, `CREATE FUNCTION contract_token_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'private token failure'; END $$`)
+			exec(t, `CREATE TRIGGER contract_token_failure BEFORE INSERT ON auditlog_logentry FOR EACH STATEMENT EXECUTE FUNCTION contract_token_failure()`)
+			trace.fences.Store(0)
+			trace.completions.Store(0)
+			var changed atomic.Bool
+			var transitionErr error
+			trace.mu.Lock()
+			trace.afterRollback = func() {
+				if loss != "none" && changed.CompareAndSwap(false, true) {
+					if loss == "owner" {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_job_ownership SET runtime='django',generation=generation+1 WHERE singleton=1`)
+					} else {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+					}
+				}
+			}
+			trace.mu.Unlock()
+			err := cleanup.Run(ctx, job)
+			trace.mu.Lock()
+			trace.afterRollback = nil
+			trace.mu.Unlock()
+			exec(t, `DROP TRIGGER contract_token_failure ON auditlog_logentry`)
+			exec(t, `DROP FUNCTION contract_token_failure()`)
+			exec(t, `UPDATE assozeta_go_job_ownership SET runtime='go' WHERE singleton=1`)
+			if transitionErr != nil || trace.fences.Load() != 2 {
+				t.Errorf("both transactions require effect admission: fences=%d transition=%v", trace.fences.Load(), transitionErr)
+			}
+			if loss != "none" {
+				if !changed.Load() || !errors.Is(err, domain.ErrJobLeaseLost) || trace.completions.Load() != 0 || state(t, job).State != "running" {
+					t.Errorf("completion-only transaction ignored ownership loss: %v, completions=%d", err, trace.completions.Load())
+				}
+			} else if err != nil || trace.completions.Load() != 1 || state(t, job).State != "completed" {
+				t.Errorf("handled failure did not complete once: %v", err)
+			}
+			counts(t, 7, 0)
+		}
+	})
+	t.Run("stale completion rolls back tokens and audits", func(t *testing.T) {
+		for _, loss := range []string{"token", "expired"} {
+			seed(t, fixture.Tokens)
+			job := claim(t)
+			trace.business.Store(0)
+			trace.completions.Store(0)
+			var transitionErr error
+			var changed atomic.Bool
+			trace.mu.Lock()
+			trace.afterBusiness = func() {
+				// The real DELETE/audit command has succeeded inside the open
+				// transaction. Lose the lease before completion, not admission.
+				if changed.CompareAndSwap(false, true) {
+					if loss == "token" {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_token=$2 WHERE id=$1`, job.ID, uuid.New())
+					} else {
+						_, transitionErr = db.ExecContext(ctx, `UPDATE assozeta_go_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1`, job.ID)
+					}
+				}
+			}
+			trace.mu.Unlock()
+			err := cleanup.Run(ctx, job)
+			trace.mu.Lock()
+			trace.afterBusiness = nil
+			trace.mu.Unlock()
+			if transitionErr != nil || !changed.Load() || trace.business.Load() != 1 || trace.completions.Load() != 1 {
+				t.Fatalf("%s: completion race not exercised: business=%d completion=%d transition=%v", loss, trace.business.Load(), trace.completions.Load(), transitionErr)
+			}
+			if !errors.Is(err, domain.ErrJobLeaseLost) || state(t, job).State != "running" {
+				t.Fatalf("%s: stale attempt committed: %v", loss, err)
+			}
+			counts(t, 7, 0)
+		}
 	})
 	t.Run("replay cannot delete a later token or duplicate audits", func(t *testing.T) {
 		seed(t, fixture.Tokens)
@@ -351,13 +469,13 @@ func TestSubscriptionTokenCleanupPostgres(t *testing.T) {
 			if e := cleanup.Run(ctx, job); e != nil {
 				t.Fatal(e)
 			}
-			want := int64(5)
+			want := int64(6)
 			if got := trace.count.Load(); got != want {
 				t.Fatalf("%d tokens: %d statements, want %d", n, got, want)
 			}
 			counts(t, 0, n)
 		}
-		t.Log("Five statements: BEGIN, shared server fence, DELETE RETURNING with audit INSERT, fenced completion and COMMIT; no token rows materialized in Go")
+		t.Log("Six statements: BEGIN, shared server fence, early ownership/lease admission, DELETE RETURNING with audit INSERT, fenced completion and COMMIT; no token rows materialized in Go")
 	})
 	t.Run("heartbeat can renew during atomic cleanup", func(t *testing.T) {
 		seed(t, fixture.Tokens)

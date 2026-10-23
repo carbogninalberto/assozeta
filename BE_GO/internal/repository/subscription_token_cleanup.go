@@ -16,10 +16,16 @@ type SubscriptionTokenCleanups struct{ db *sqlx.DB }
 func NewSubscriptionTokenCleanups(db *sqlx.DB) *SubscriptionTokenCleanups {
 	return &SubscriptionTokenCleanups{db: db}
 }
-func (r *SubscriptionTokenCleanups) BeginSubscriptionTokenCleanup(ctx context.Context) (domain.SubscriptionTokenCleanupTransaction, error) {
+func (r *SubscriptionTokenCleanups) BeginSubscriptionTokenCleanup(ctx context.Context, job domain.Job) (domain.SubscriptionTokenCleanupTransaction, error) {
 	// Completion must see the current lease after concurrent heartbeat updates.
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
+		return nil, err
+	}
+	// Keep ownership stable before any business row is touched. Completion
+	// checks the live lease again without preventing independent heartbeats.
+	if err = fenceJobEffects(ctx, tx.tx, job.ID, job.LeaseToken); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 	return &subscriptionTokenCleanupTransaction{ownedTransaction: tx}, nil

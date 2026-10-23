@@ -10,7 +10,7 @@ import (
 const JobClearExpiredSubscriptionTokens = "clear_expired_subscription_tokens"
 
 type SubscriptionTokenCleanupStore interface {
-	BeginSubscriptionTokenCleanup(context.Context) (SubscriptionTokenCleanupTransaction, error)
+	BeginSubscriptionTokenCleanup(context.Context, Job) (SubscriptionTokenCleanupTransaction, error)
 }
 
 type SubscriptionTokenCleanupTransaction interface {
