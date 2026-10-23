@@ -1,5 +1,5 @@
-// Package manual discovers the existing offline evidence packages. It neither
-// downloads a corpus nor implements reader visibility, retrieval or asset serving.
+// Package manual validates existing evidence packages and provides installed
+// asset reads and sealed-model retrieval. HTTP admission is composed separately.
 package manual
 
 import (
