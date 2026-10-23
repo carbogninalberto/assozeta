@@ -408,6 +408,8 @@ write_db_sentinel before-backup
 write_object_sentinel before-backup
 phase "verify shipped Go mutation and Django readback before backup"
 go_probe write --checkpoint before-backup --receipt "$TEMPORARY/go-before-backup.json"
+phase "verify category checkpoint is complete before backing it up"
+go_probe verify --receipt "$TEMPORARY/go-before-backup.json"
 
 phase "create and validate backup"
 ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" backup "$TEMPORARY/backups"
@@ -443,7 +445,10 @@ db_sql "UPDATE public.assozeta_go_jobs SET payload=' {\"checkpoint\":\"after-bac
 go_after_backup=$(go_intent_digest)
 [ "$go_after_backup" != "$go_before_backup" ]
 phase "write a later Go preference and indexed audit"
-go_probe write --checkpoint after-backup --receipt "$TEMPORARY/go-after-backup.json"
+go_probe write --checkpoint after-backup --receipt "$TEMPORARY/go-after-backup.json" \
+    --prior-receipt "$TEMPORARY/go-before-backup.json"
+phase "verify later category/VAT state and retained references before restore failures"
+go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 assert_db_sentinel after-backup
 assert_object_sentinel after-backup
 
@@ -474,10 +479,26 @@ go_probe verify --receipt "$TEMPORARY/go-after-backup.json"
 assert_go_intent "$go_after_backup"
 
 phase "roll back live data after restored Go history rejects migration"
-if ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$dirty_history_archive" --yes; then
+dirty_history_restore_log="$TEMPORARY/dirty-history-restore.log"
+(umask 077; : > "$dirty_history_restore_log")
+if ASSOZETA_ENV_FILE="$ENV_FILE" "$CLI" restore "$dirty_history_archive" --yes > "$dirty_history_restore_log" 2>&1; then
+    cat "$dirty_history_restore_log"
     printf 'Expected restored dirty Go operational history to reject migration.\n' >&2
     exit 1
 fi
+cat "$dirty_history_restore_log"
+# A storage/preflight failure also returns nonzero while preserving live state.
+# Require the injected post-swap migration failure and both actual rollbacks.
+for restore_marker in \
+    'Go operational migration failed' \
+    'restore failed; rolling back live database/object data' \
+    'rolling back PostgreSQL' \
+    'rolling back object storage'; do
+    if ! grep -F "$restore_marker" "$dirty_history_restore_log" >/dev/null; then
+        printf 'Expected dirty-history restore evidence was not observed: %s\n' "$restore_marker" >&2
+        exit 1
+    fi
+done
 curl_ready
 assert_db_sentinel after-backup
 assert_object_sentinel after-backup
