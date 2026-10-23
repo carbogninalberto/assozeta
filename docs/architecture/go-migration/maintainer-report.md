@@ -223,13 +223,15 @@ stay `implementing`. Nine native lifecycle probes per runtime now cover profile/
 category overlap, owner deactivation/deletion denial and recovery. A real HTTP
 disconnect rolls Go back before lock release, while Django completes the admitted
 synchronous deletion once after release: the distinct expectations pass, but
-`disconnect_semantics_match` and complete category parity remain false. The
+`disconnect_semantics_match` and complete category parity remain false. Independent
+parent Caddy socket probes retain the same distinction, observe actual blocked
+SQL and reject deliberate v2-to-Django misrouting. The
 non-root, read-only packaged image passes the same four 188/43/18 workloads with
 immutable identity and revision/version/health checks. The independently rerun
 unchanged category browser passes six checks, five writes, seven denials and five
 exact audits per version, including Django traffic observation and a deliberately
 misrouted v2 negative control. Installed lifecycle/history, pre-SQL
-index faults, proxy disconnect behavior and activation remain open.
+index faults, process shutdown, ambiguous-response recovery and activation remain open.
 Local verification also corrects two test-harness failures: development Silk writes
 are removed from the category fixture without dropping managed-table assertions,
 and the bootstrap large-row seed evaluates each conversion once with explicit
