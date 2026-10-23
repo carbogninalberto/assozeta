@@ -86,10 +86,30 @@ Existing Italian messages, missing-source responses and denial precedence remain
 unchanged. The initial missing-route 404 and missing encoding-header failures are
 retained under `quality-reports/go-migration/manual-source-integration/`.
 
-The whole untagged Go race suite and vet pass. Real reader browser workflows,
-MCP, assistant behavior and a verified
-required-release package remain open. Historical manual artifacts retain their
-original revision and verification scope.
+`TESTS/adapters/django/profile_browser.py --manual-reader` additionally verifies
+the unchanged built frontend with real password login, public chapter navigation,
+deep-link reload, search and no-evidence results, authenticated PNGs and zoom,
+mobile navigation without horizontal overflow, anonymous denial and private-image
+denial. Both native backends pass with the same authored synthetic corpus and a
+640x360 PNG pattern. The test hashes the exact image Blob consumed by the reader
+and checks decoded dimensions. Chromium's debugger returned empty streamed image
+bodies in the first test attempt; inspecting the consumed Blob preserves the exact
+byte assertion. Desktop and mobile screenshots were inspected. The same workflow
+fails with a real manual-sections 404 against pre-route Go revision `f2993b0`.
+
+This browser check extends the existing profile workflow and its source-map and
+compiled-artifact checks. A private Caddy selects the named backend for canonical
+`/api` calls; root WebSockets and the documented logo/manifest/export-denial routes
+still use Django. This complements the separate actual `/api/v1` and `/api/v2`
+HTTP contracts; it does not prove installed alias switching, assistant behavior,
+Go WebSockets, a production manual corpus or packaged HTTP refresh. The existing
+fresh-login/profile-edit/audit checks also pass with the manual enabled. CI runs
+the combined workflow and retains its reports and screenshots.
+
+The whole untagged Go race suite and vet pass. MCP, assistant behavior, packaged
+HTTP refresh and a verified required-release package with its full browser checks
+remain open. Historical manual artifacts retain their original revision and
+verification scope.
 
 The separate full Django manual capture at `d3165cf` completed with 47 of 60
 workflows passing. Twelve workflows failed with HTTP, Docker or browser

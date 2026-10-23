@@ -7091,15 +7091,19 @@
         "TESTS/adapters/django/manual_refresh_lock.py",
         "BE_GO/pkg/manual/refresh_process_integration_test.go",
         "TESTS/adapters/go/manual_cache_image.py",
-        "selfhost/tests/test_go_lifecycle.py"
+        "selfhost/tests/test_go_lifecycle.py",
+        "TESTS/adapters/django/profile_browser.py",
+        "TESTS/adapters/django/manual_browser_fixture.py",
+        "TESTS/browser/manual-reader.mjs"
       ],
       "evidence": [
         "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
         "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes.",
-        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact."
+        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact.",
+        "Unchanged built frontend passes real password login and manual navigation/search/reload/authenticated-image/mobile/denial checks with Django and Go, using the same authored synthetic corpus and 640x360 PNG. Exact consumed image Blob hashes and dimensions are checked; screenshots inspected. Pinned pre-route Go f2993b0 fails with an actual manual-sections 404. Private canonical API proxy only; root WebSockets remain Django. Existing profile/audit checks also pass. See docs/architecture/go-migration/manual-reader.md for scope."
       ],
       "notes": [
-        "HTTP routes implemented; actual reader browser workflows, packaged HTTP refresh, MCP/assistant integration and required-release package delivery remain unverified."
+        "HTTP routes and scoped synthetic-corpus reader browser workflows implemented; packaged HTTP refresh, MCP/assistant integration and genuine required-release corpus delivery with full browser verification remain unverified."
       ]
     },
     {
@@ -7171,15 +7175,19 @@
         "TESTS/adapters/django/manual_refresh_lock.py",
         "BE_GO/pkg/manual/refresh_process_integration_test.go",
         "TESTS/adapters/go/manual_cache_image.py",
-        "selfhost/tests/test_go_lifecycle.py"
+        "selfhost/tests/test_go_lifecycle.py",
+        "TESTS/adapters/django/profile_browser.py",
+        "TESTS/adapters/django/manual_browser_fixture.py",
+        "TESTS/browser/manual-reader.mjs"
       ],
       "evidence": [
         "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
         "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes.",
-        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact."
+        "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact.",
+        "Unchanged built frontend passes real password login and manual navigation/search/reload/authenticated-image/mobile/denial checks with Django and Go, using the same authored synthetic corpus and 640x360 PNG. Exact consumed image Blob hashes and dimensions are checked; screenshots inspected. Pinned pre-route Go f2993b0 fails with an actual manual-sections 404. Private canonical API proxy only; root WebSockets remain Django. Existing profile/audit checks also pass. See docs/architecture/go-migration/manual-reader.md for scope."
       ],
       "notes": [
-        "HTTP routes implemented; actual reader browser workflows, packaged HTTP refresh, MCP/assistant integration and required-release package delivery remain unverified."
+        "HTTP routes and scoped synthetic-corpus reader browser workflows implemented; packaged HTTP refresh, MCP/assistant integration and genuine required-release corpus delivery with full browser verification remain unverified."
       ]
     },
     {
