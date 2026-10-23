@@ -108,7 +108,10 @@ def prepare(work):
         ('invoice', m.Invoice, [r[0] for r in invoices], [4010,4011,4012,4014,4015,4016], [4010,4011,4015,4016], [4010,4011], [4010,4011,4012,4014,4016]),
         ('course', m.Course, [r[0] for r in courses], [5010,5011], [5010,5011], [5010], [5010]),
         ('course_subscription', m.CourseSubscription, [r[0] for r in course_subscriptions], [6010,6011,6012,6016,6017,6019], [6010,6011,6016,6017,6019], [6010,6011,6016,6017], [6010,6011,6012,6016,6017,6019]),
-        ('course_subscription_installment', m.CourseSubscriptionInstallment, [r[0] for r in installments], [7010,7011,7012,7014,7015,7016,7018], [7010,7011,7014,7015,7016,7018], [7010,7011,7014,7015], [7010,7011,7012,7014,7015,7018]),
+        # 7014 links an owned subscription to a foreign course: both tenant
+        # boundaries apply, just as for direct course subscriptions. 7015 still
+        # preserves the separately supported deleted-parent FK behavior.
+        ('course_subscription_installment', m.CourseSubscriptionInstallment, [r[0] for r in installments], [7010,7011,7012,7015,7016,7018], [7010,7011,7015,7016,7018], [7010,7011,7015], [7010,7011,7012,7015,7018]),
         ('carnet', m.Carnet, [8010,8011], [8010], [8010], [8010], [8010]),
         ('carnet_subscription', CarnetSubscription, [r[0] for r in carnets], [8110,8111,8112,8116,8117], [8110,8111,8116,8117], [8110,8111,8117], [8110,8111,8112,8116,8117]),
         ('attendance_registry', m.AttendanceRegistry, [9010,9011,9012,9013], [9010,9011,9012], [9010,9011,9012], [9010,9011,9012], [9010,9011,9012]),
