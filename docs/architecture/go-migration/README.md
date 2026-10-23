@@ -7,8 +7,15 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
 `codex/go-backend-parity`. The ledger retains all 514 declarations: 37 implementing,
-469 uncharacterized, 4 needing review, 4 deprecated and **0 verified**. Production
+468 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
+
+The [public payment-info baseline](payment-info.md) passes 109 authored Django
+HTTP cases with exact read-only state and cleanup; Go still returns 404. A confirmed
+nested installment/course association leak is corrected in both scope implementations,
+with Django-red, Go-red and final green evidence plus 190 existing Django regressions.
+Public disclosure, malformed group fail-open and unscoped metadata remain explicit
+review gaps. Metadata query growth is measured and must be batched in Go.
 
 The [payment-category slice](payment-categories.md) implements list/create/update/
 soft-delete in Go against the corrected Django integrity baseline. Actual native
@@ -25,19 +32,25 @@ SQL, independent Django observation and an expected misrouting rejection. The pa
 non-root, read-only image passes the same four 188/43/18 workloads with immutable
 image identity and revision/version/health checks. The unchanged category browser
 passes six checks, five writes, seven denials and five exact audits per version; an
-independent Django observer and a misroute negative control establish v2 routing. The four routes remain `implementing`: installed
-lifecycle/history, pre-SQL index failure and disconnect protocol parity remain
-acceptance work. The 19 focused and 188 existing Django
+independent Django observer and a misroute negative control establish v2 routing.
+A fresh installed rehearsal now proves category/VAT/audit/reference preservation
+through corrupt-archive rejection, actual post-swap rollback and valid restore;
+a stopped-Go control proves v2 has no Django fallback. The four routes remain
+`implementing`: historical data, activation, pre-SQL index failure and disconnect
+protocol parity remain acceptance work. The 19 focused and 188 existing Django
 baseline regressions remain scoped evidence; no endpoint is promoted to verified.
 The dedicated category quality job runs the versioned/lifecycle HTTP oracle,
 real-schema repository groups and revision-bound packaged-image adapter. Local verification also
 repairs two test-harness issues: development Silk profiling no longer contaminates
 category rollback snapshots, and the 10,000-row instance-bootstrap fixture avoids
 repeating wide-row conversion per column while retaining count/query assertions.
-The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass. No new
-full hosted-workflow success is claimed; the dedicated category job at
-`21015e9` passed in 7m23s, but the browser fixture needed the network correction
-and its new Linux result is pending. The external manual recipe-binding failure remains.
+The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass.
+All four split Go jobs pass at `11c2310`; accounts takes 17m31s and foundation
+18m12s, preserving the checks that previously exceeded the combined 30-minute
+limit. The complete quality workflow still awaits its legacy upgrade job.
+The category job passes in 7m29s including Caddy disconnects and the packaged
+image; the browser network correction passes both versioned workflows on Linux.
+The external manual recipe-binding failure remains.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful

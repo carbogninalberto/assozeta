@@ -9122,25 +9122,44 @@
         "target": "payment_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/views/payment_views.py",
+        "BE/application/impersonation_scope.py",
+        "BE/application/mixin.py",
+        "UI/src/routes.js"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/payment/<str:uid>/info",
+          "/api/v1/payment/<str:uid>/info"
+        ],
+        "request": "UUID payment path; public checkout GET, ignored query/body; optional JWT, impersonation and group headers. Native transport is characterized.",
+        "response": "109 authored native Django HTTP cases cover exact money/date/null projections, OTHER/SUBSCRIPTION/COURSE and direct/installment/carnet precedence. See payment-info.md.",
+        "errors": "Characterized 401/403/404/405/406 and existing HTML500 malformed/absent relation cases; no Go route yet.",
+        "authentication": "Public checkout AllowAny after real JWT admission; inactive/deleted users rejected. Existing disclosure policy remains under review.",
+        "permissions": "Restricted authenticated collaborators require bookeeping.payments.read; FULL collaborators pass; administrator impersonation required; association-athlete view denied before family lookup.",
+        "resource_scope": "Ordinary UUID-wide access and malformed group fail-open remain concerns. Scoped installment now also requires nested course association. Direct/meta category scope and ordinary foreign relations need review.",
+        "side_effects": "No observed INSERT/UPDATE/DELETE; complete managed-table snapshots unchanged after every authored request and cleanup.",
+        "transaction": "Read-only Django characterization; Go implementation missing.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/contracts/test_payment_info.py",
+        "TESTS/adapters/django/payment_info.py",
+        "TESTS/adapters/django/scoped_resources.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "109 authored Django cases pass with exact read-only state and cleanup. Optional shared Go absence probe fails expected HTTP200 with actual404; no Go parity is claimed. See payment-info.md and ignored payment-info/results.json, http-results.json and payment-info-parent-final.log. Recursive JSON kinds and full HTML bodies are checked; five pure regressions pass.",
+        "Metadata 0/1/8/32 entries cost 1/2/9/33 category SELECTs (6/7/14/38 total HTTP statements); Go must batch instead of preserving N+1.",
+        "Intentional scoped installment correction has preserved Django-red, Go-red and final green scope evidence, plus 190 existing Django regressions and full Go race/vet checks. Five manual recipe dependency bindings still need review."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/request -> payment_request",
@@ -9355,7 +9374,9 @@
         "TESTS/adapters/go/payment_category_server.py",
         "TESTS/adapters/go/payment_category_image.py",
         "TESTS/adapters/django/payment_category_browser.py",
-        "TESTS/browser/payment-categories.mjs"
+        "TESTS/browser/payment-categories.mjs",
+        "selfhost/tests/go-production-probe.py",
+        "selfhost/tests/production-smoke.sh"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9369,7 +9390,8 @@
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed lifecycle/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json."
+        "Status remains implementing. Installed activation/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
     {
@@ -9445,7 +9467,9 @@
         "TESTS/adapters/go/payment_category_server.py",
         "TESTS/adapters/go/payment_category_image.py",
         "TESTS/adapters/django/payment_category_browser.py",
-        "TESTS/browser/payment-categories.mjs"
+        "TESTS/browser/payment-categories.mjs",
+        "selfhost/tests/go-production-probe.py",
+        "selfhost/tests/production-smoke.sh"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9459,7 +9483,8 @@
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed lifecycle/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json."
+        "Status remains implementing. Installed activation/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
     {
@@ -9535,7 +9560,9 @@
         "TESTS/adapters/go/payment_category_server.py",
         "TESTS/adapters/go/payment_category_image.py",
         "TESTS/adapters/django/payment_category_browser.py",
-        "TESTS/browser/payment-categories.mjs"
+        "TESTS/browser/payment-categories.mjs",
+        "selfhost/tests/go-production-probe.py",
+        "selfhost/tests/production-smoke.sh"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9549,7 +9576,8 @@
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed lifecycle/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json."
+        "Status remains implementing. Installed activation/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
     {
@@ -9625,7 +9653,9 @@
         "TESTS/adapters/go/payment_category_server.py",
         "TESTS/adapters/go/payment_category_image.py",
         "TESTS/adapters/django/payment_category_browser.py",
-        "TESTS/browser/payment-categories.mjs"
+        "TESTS/browser/payment-categories.mjs",
+        "selfhost/tests/go-production-probe.py",
+        "selfhost/tests/production-smoke.sh"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9639,7 +9669,8 @@
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed lifecycle/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json."
+        "Status remains implementing. Installed activation/history, black-box Go pre-SQL index failure, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Source-bound parent summary: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
     {

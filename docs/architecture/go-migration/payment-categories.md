@@ -5,8 +5,9 @@ All four category routes are implemented in the Go composition root and remain
 durable state, audit records and selected failure/concurrency behavior have been
 compared directly and through the shipped Caddy versioned routes. Native lifecycle
 races, the packaged image and the unchanged category browser workflows now have
-independently rerun evidence. Installed lifecycle acceptance and the remaining
-review gaps below stay open. This slice does not complete the production Django-to-Go migration or permit
+independently rerun evidence. A disposable installed backup/restore rehearsal
+also passes; activation, historical compatibility and the remaining review gaps
+below stay open. This slice does not complete the production Django-to-Go migration or permit
 activation; Django remains the production execution owner.
 
 | Operation | Method | Upstream route |
@@ -225,22 +226,66 @@ the complete 12-field CREATE audit map, every new category audit, and all prior
 audit/index contents are asserted.
 
 An independent Django ASGI observer records 48 selected requests for v1 and zero
-for v2; each workflow also makes 26 real Django coexistence requests. A deliberate
+for v2; the parent local workflows also make 26 real Django coexistence requests each.
+The hosted Linux fixture records 25 coexistence requests per version. A deliberate
 v2-to-Django misroute is rejected even though the response is HTTP 200 with an
 outer `go-v2` header. This supplies runtime routing evidence beyond proxy labels.
-Both workflows and owned private cleanup pass. Hosted Linux CI at `21015e9`
+Both workflows and owned private cleanup pass. Earlier hosted Linux CI at `21015e9`
 failed at the first chained-proxy assertion. Source review identified a Linux
 container-to-host-loopback reachability problem in that topology. The browser
 fixture now connects its gateway to shipped Caddy through an owned Docker network
 alias instead of a host-loopback published port. The parent rerun passes both
-workflows, the routing negative control and network removal; hosted Linux
-confirmation of this correction remains pending.
+workflows, the routing negative control and network removal. Hosted Linux run
+`40030007996` at `11c2310` independently passes both workflows and the negative
+control, with owned services stopped and the private network removed.
 
 Archive/unarchive uses authenticated PATCH followed by UI reload because the
 unchanged category UI exposes no archive controls. Payment selection and
 foreign-key persistence use real Django payment coexistence; this does not mean
 Go owns the broader payment workflow. The private canonical alias and extracted
 frontend are not an installed deployment or activation acceptance.
+
+## Installed category backup and restore
+
+The parent independently passes the full `selfhost/tests/production-smoke.sh`
+with fresh Django/Go images built from `8f26968`, version `test`. The immutable
+Go image is `sha256:c3c3f59e88b37cd541dd64e4c30433d8c70a875b4a105ca042d5a1558ca759f0`;
+Django is `sha256:b584da0f80aec0a0a61782cb3b683822a617bb162ffdbbf8a8b96833be41cb22`.
+Both contain the expected revision/version files. These are Linux arm64 images
+on the local Docker host, with optional empty manual packages, not proof of a
+required-release manual artifact.
+
+The shipped Go API creates a category and VAT before backup. Both versioned APIs
+read the exact expected category. Django fixture preparation adds a payment,
+camp service and both owner default-category foreign keys. After backup, Go
+changes the category name/type/tax/archive fields, creates replacement VAT and
+soft-deletes the category. Repeated DELETE adds no audit. The original VAT and
+all four category references survive unchanged.
+
+Receipts compare full selected category, VAT, payment, camp, period and service
+tables, all category/VAT audit and index rows, and both owner defaults. This is
+not a snapshot of every managed model. Category/VAT audit rows increase from two
+to five, indexes from two to five, and VAT rows from one to two; all existing
+selected rows remain exact. Corrupt database/object archives are rejected while
+preserving the later state. An actual dirty operational migration after the live
+data swap triggers both PostgreSQL and object-storage rollback, restoring the
+later receipt exactly. A valid backup then restores the earlier receipt exactly.
+The smoke script requires the injected migration-failure and both rollback log
+markers, so an unrelated preflight/storage failure cannot count as this proof.
+
+Stopping only the disposable Go upstream makes category v2 return 502 while v1
+continues returning 200. The same Go container restarts healthy with database and
+Redis ready; the Django container is unchanged. This proves no fallback to Django
+for the tested versioned route, not in-flight request draining.
+
+The completed parent run has no owned containers, volumes or networks left and
+restores both temporary test-image tags. Evidence is in ignored
+`quality-reports/go-migration/category-installed-parent/`: `final-execution.json`,
+`final-{before,after}-backup.json`, `source-hashes.json`, `images.json` and
+`final.log`. The final source also passes 66 static Go self-host tests. The local
+macOS `flock` shim does not establish cross-kernel host/container lock exclusion.
+Historical backup fixtures, coordinated backend activation, worker handoff,
+active-request draining and update acceptance for this slice remain open.
 
 ## Reproducible checks and evidence
 
@@ -294,9 +339,16 @@ the extracted immutable frontend image and retains browser/provenance artifacts.
 The workflow has passed local actionlint. The dedicated category job at
 `21015e9` passed on hosted Linux in 7m23s, including native/versioned contracts,
 nine native lifecycle probes per runtime, PostgreSQL groups and the packaged
-image. The additional Caddy disconnect probes still need hosted confirmation.
-Local full Go race/vet, tagged vet, formatting and six repository groups pass. Hosted current-head
-CI is a separate gate; these results do not claim a new green hosted workflow.
+image. Run `40030007996` at `11c2310` also passes the Caddy disconnect probes
+and deliberate misroute rejection on Linux. Its packaged image is
+`sha256:90f7d8e500ecb586dbcdd11766e855d95ecb0961c5ad4fde89a38fda7dde7706`,
+built at GitHub PR merge revision `dc526a23cc88a77a2749ad1df7b2886dd02f6f25`,
+not the branch head. Neither the image adapter nor this hosted result claims
+installed lifecycle disconnect behavior.
+Local full Go race/vet, tagged vet, formatting and six repository groups pass.
+All four split Go jobs at `11c2310` are green: accounts takes 17m31s and foundation
+18m12s with their checks preserved. The full quality workflow still awaits its
+legacy upgrade job; these results do not claim complete release acceptance.
 The known external manual recipe-binding failure remains unresolved.
 
 Two test-harness fixes preserve the assertions rather than weaken them. The
@@ -310,9 +362,9 @@ including the 10,000-row bound. Neither correction changes production behavior.
 
 ## Remaining acceptance work
 
-- Exercise the category slice in normal installation/update,
-  backup/restore, backend-selection and coordinated activation/rollback paths.
-  Current-model disposable databases do not prove historical schema/data parity.
+- Extend the disposable installed backup/restore proof to normal updates,
+  backend selection and coordinated activation/rollback. The current application
+  fixture does not prove historical schema/data parity or active-request draining.
 - Add black-box Go coverage for pre-SQL audit-index failure. Corrected Django
   baseline tests cover that exception path, while the 18 SQL fault scenarios do
   not inject a failure before SQL execution. Continue preserving unrelated rows
