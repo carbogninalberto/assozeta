@@ -107,8 +107,6 @@ jobs:
           python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go
-      - name: Verify shared accounts, identities and scoped resources
-        run: python TESTS/adapters/django/accounts.py
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -193,7 +191,6 @@ jobs:
             quality-reports/go-migration/manual-refresh-lock/
             quality-reports/go-migration/manual-image/
             quality-reports/go-migration/environment/
-            quality-reports/go-migration/restore-admission/
             quality-reports/go-migration/runtime.json
             quality-reports/go-migration/jobs/
             quality-reports/go-migration/job-executor/
@@ -213,6 +210,66 @@ jobs:
             quality-reports/go-migration/server-fence/
             quality-reports/go-migration/restore-drain-pooler/
             quality-reports/go-migration/restore-server-barrier/
+            quality-reports/go-migration/document-keys/
+            quality-reports/go-migration/s3-objects/
+            quality-reports/go-migration/storage-configuration/
+            quality-reports/go-migration/storage-credentials/
+            quality-reports/go-migration/storage-roles/
+            quality-reports/go-migration/storage-web-identity/
+
+  accounts:
+    name: Shared accounts, identities and scoped resources
+    runs-on: ubuntu-24.04
+    # The complete account suite alone takes 10–16 minutes on hosted runners.
+    # Keep its unchanged sequential fixture semantics in an independent job.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install pinned account dependencies
+        run: |
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/production_runtime.py
+      - name: Install disposable integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Verify shared accounts, identities and scoped resources
+        run: python TESTS/adapters/django/accounts.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-account-evidence
+          path: |
+            quality-reports/go-migration/accounts/
+            quality-reports/go-migration/credential-concurrency/
+            quality-reports/go-migration/restore-admission/
             quality-reports/go-migration/email-balance-reset/
             quality-reports/go-migration/subscription-token-cleanup/
             quality-reports/go-migration/associate-age-update/
@@ -223,14 +280,9 @@ jobs:
             quality-reports/go-migration/payment-save-inputs/
             quality-reports/go-migration/subscription-auto-archive/
             quality-reports/go-migration/medical-orphan-cleanup/
-            quality-reports/go-migration/document-keys/
-            quality-reports/go-migration/s3-objects/
-            quality-reports/go-migration/storage-configuration/
-            quality-reports/go-migration/storage-credentials/
-            quality-reports/go-migration/storage-roles/
-            quality-reports/go-migration/storage-web-identity/
-            quality-reports/go-migration/credential-concurrency/
-            quality-reports/go-migration/accounts/
+            quality-reports/go-migration/cors/public-results.json
+            quality-reports/go-migration/security-headers/public-results.json
+            quality-reports/go-migration/runtime.json
 
   payment-categories:
     name: Category HTTP, concurrency and packaged image
