@@ -1123,3 +1123,29 @@ including chunked uploads, streamed responses, WebSocket frames, maintenance and
 Go outage isolation, using synthetic upstreams. See
 [`versioned-routing.md`](../docs/architecture/go-migration/versioned-routing.md)
 for evidence, fixture boundaries and remaining delivery/switching requirements.
+
+## Payment-category parity
+
+With the production-pinned Python dependencies, PostgreSQL, Redis, Go and Docker
+available, run the independently specified category cases against native Django,
+native Go and both shipped Caddy routes in fresh private fixtures:
+
+```sh
+TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 \
+  python TESTS/adapters/django/accounts.py --only payment-categories
+python TESTS/adapters/go/payment_category_repository.py
+```
+
+The HTTP adapter checks responses, complete category/VAT/reference state, audit
+contents, denied-request immutability, SQL fault rollback and concurrent writes.
+The separate repository runner checks real-schema transactions, bounded reads
+and blocked-query cancellation with race detection. Neither establishes browser,
+installed upgrade or migration-history parity. Required dependencies and failed
+assertions are errors; these runners do not silently skip cases.
+
+Receipts live under ignored `quality-reports/go-migration/payment-categories/`
+and `payment-category-repository/`. The generated HTTP fixture contains temporary
+credentials and stays local; CI uploads only the category receipt and service log.
+Do not replay mutation cases against their final state: the adapter resets the
+private seed before each backend. The portable contract remains independent of
+application imports in `TESTS/contracts/test_payment_categories.py`.

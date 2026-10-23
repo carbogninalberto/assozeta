@@ -9297,35 +9297,70 @@
         "target": "payment_category_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/payment_categories.go",
+        "BE_GO/internal/dto/payment_categories.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/service/payment_categories.go",
+        "BE_GO/internal/repository/payment_categories.go",
+        "BE_GO/internal/service/payment_categories_validation.go",
+        "BE_GO/internal/dto/payment_category_datetime.go"
+      ],
       "dependencies": [
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/audit_context.py",
-        "BE/application/signals.py"
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "Existing actor/effective/scope and session/impersonation admission",
+        "PostgreSQL application_paymentcategory, application_vatmanagement, auditlog_logentry and application_auditlogindex",
+        "BE_GO/internal/repository/transaction.go"
       ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/payment/category/{uid}/delete",
+          "/api/v1/payment/category/{uid}/delete",
+          "/api/v2/payment/category/{uid}/delete"
+        ],
+        "request": "DELETE scoped path UUID; ordinary request body remains unused.",
+        "response": "200 {msg: payment category deleted}; repeated deletion retains the same response.",
+        "errors": "Exact role/scope/target precedence, field validation and OPTIONS/method/negotiation/media responses. Known legacy malformed UUID paths and non-object CREATE bodies retain asserted HTML 500 behavior without mutation.",
+        "authentication": "Existing authenticated Bearer actor, effective identity and scoped owner; signed-JWT collaborator and impersonation scenarios retain existing admission.",
+        "permissions": "bookeeping.payments.update; scope owner must be an association account.",
+        "resource_scope": "LIST includes owned and global categories, including archived/deleted rows. Mutations require the current active scoped association and never mutate foreign/global targets; category ID and association are immutable on UPDATE.",
+        "side_effects": "Sets deleted=true while preserving the category row and all other fields; changed deletion emits one direct category audit/index, unchanged repetition emits none.",
+        "transaction": "One owned transaction locks current owner User, scoped association and category before UPDATE/audit/index; repeated DELETE retains SQL save failures; errors/cancellation roll back.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_payment_category_integrity.py"
+        "BE/application/tests/test_payment_category_integrity.py",
+        "TESTS/contracts/test_payment_categories.py",
+        "TESTS/adapters/django/payment_categories.py",
+        "TESTS/adapters/go/payment_category_repository.py",
+        "BE_GO/internal/dto/payment_categories_test.go",
+        "BE_GO/internal/dto/payment_categories_wire_test.go",
+        "BE_GO/internal/dto/payment_category_datetime_test.go",
+        "BE_GO/internal/handler/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_validation_test.go",
+        "BE_GO/internal/service/payment_categories_integration_test.go",
+        "BE_GO/internal/service/payment_category_queries_integration_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-categories.md"
+        "docs/architecture/go-migration/payment-categories.md",
+        "Actual native Django, native Go, shipped Caddy /api/v1 and /api/v2 each pass 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios with exact managed-state rollback (752 HTTP and 72 fault executions total). Shared assertions include complete responses and Set-Cookie; seeded payment/camp-service/user-default references survive soft deletion. Observed PostgreSQL blocking chains establish PATCH/PATCH and PATCH/DELETE exact final state/audit histories. Exact fixture cleanup passes. See payment-categories.md and ignored review-oracle-final-results.json / review-oracle-versioned3.log. The parent independently reran the same final source with all four workloads passing; root receipt quality-reports/go-migration/payment-categories/results.json still declares complete_payment_category_parity=false.",
+        "Six real-current-schema PostgreSQL Go groups pass under race detection without skips. Joined list uses two repository SQL statements at 1/8/32/128 distinct VAT records; blocked-backend cancellation while the blocker remains held proves rollback, cleanup and recovery. See TESTS/adapters/go/payment_category_repository.py.",
+        "Datetime parser: 113 fixed pinned-runtime inputs, 15,992 Python/Django differential comparisons and 244,946 fuzz executions; focused race/vet checks pass. Component evidence does not certify whole HTTP or production parity."
       ],
       "notes": [
-        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+        "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
+        "Status remains implementing. Unchanged category frontend, installed lifecycle/history, black-box Go pre-SQL index failure, actual HTTP disconnect and live owner-deactivation/profile-category overlap remain acceptance work; no production owner or activation change."
       ]
     },
     {
@@ -9343,35 +9378,70 @@
         "target": "payment_category_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/payment_categories.go",
+        "BE_GO/internal/dto/payment_categories.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/service/payment_categories.go",
+        "BE_GO/internal/repository/payment_categories.go",
+        "BE_GO/internal/service/payment_categories_validation.go",
+        "BE_GO/internal/dto/payment_category_datetime.go"
+      ],
       "dependencies": [
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/audit_context.py",
-        "BE/application/signals.py"
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "Existing actor/effective/scope and session/impersonation admission",
+        "PostgreSQL application_paymentcategory, application_vatmanagement, auditlog_logentry and application_auditlogindex",
+        "BE_GO/internal/repository/transaction.go"
       ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/payment/category/{uid}/update",
+          "/api/v1/payment/category/{uid}/update",
+          "/api/v2/payment/category/{uid}/update"
+        ],
+        "request": "Partial writable serializer fields; omitted/empty nested VAT is unchanged, null/duplicate VAT IDs rejected; current ID/association accepted, replacements rejected. JSON/form/multipart presence, Python scalar/Unicode/date coercion and aggregated database/scalar validation are characterized.",
+        "response": "200 {data: category, msg: payment category updated}; complete nested VAT and UTC microsecond fields.",
+        "errors": "Exact role/scope/target precedence, field validation and OPTIONS/method/negotiation/media responses. Known legacy malformed UUID paths and non-object CREATE bodies retain asserted HTML 500 behavior without mutation.",
+        "authentication": "Existing authenticated Bearer actor, effective identity and scoped owner; signed-JWT collaborator and impersonation scenarios retain existing admission.",
+        "permissions": "bookeeping.payments.update; scope owner must be an association account.",
+        "resource_scope": "LIST includes owned and global categories, including archived/deleted rows. Mutations require the current active scoped association and never mutate foreign/global targets; category ID and association are immutable on UPDATE.",
+        "side_effects": "Category and optional new VAT with exact field-change audits; initiating actor/impersonation metadata preserved, category direct index and existing VAT actor-association fallback.",
+        "transaction": "One owned transaction locks current owner User, active scoped association and existing category before changes; VAT/category/audit/index effects commit atomically and cancellation joins rollback cleanup.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_payment_category_integrity.py"
+        "BE/application/tests/test_payment_category_integrity.py",
+        "TESTS/contracts/test_payment_categories.py",
+        "TESTS/adapters/django/payment_categories.py",
+        "TESTS/adapters/go/payment_category_repository.py",
+        "BE_GO/internal/dto/payment_categories_test.go",
+        "BE_GO/internal/dto/payment_categories_wire_test.go",
+        "BE_GO/internal/dto/payment_category_datetime_test.go",
+        "BE_GO/internal/handler/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_validation_test.go",
+        "BE_GO/internal/service/payment_categories_integration_test.go",
+        "BE_GO/internal/service/payment_category_queries_integration_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-categories.md"
+        "docs/architecture/go-migration/payment-categories.md",
+        "Actual native Django, native Go, shipped Caddy /api/v1 and /api/v2 each pass 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios with exact managed-state rollback (752 HTTP and 72 fault executions total). Shared assertions include complete responses and Set-Cookie; seeded payment/camp-service/user-default references survive soft deletion. Observed PostgreSQL blocking chains establish PATCH/PATCH and PATCH/DELETE exact final state/audit histories. Exact fixture cleanup passes. See payment-categories.md and ignored review-oracle-final-results.json / review-oracle-versioned3.log. The parent independently reran the same final source with all four workloads passing; root receipt quality-reports/go-migration/payment-categories/results.json still declares complete_payment_category_parity=false.",
+        "Six real-current-schema PostgreSQL Go groups pass under race detection without skips. Joined list uses two repository SQL statements at 1/8/32/128 distinct VAT records; blocked-backend cancellation while the blocker remains held proves rollback, cleanup and recovery. See TESTS/adapters/go/payment_category_repository.py.",
+        "Datetime parser: 113 fixed pinned-runtime inputs, 15,992 Python/Django differential comparisons and 244,946 fuzz executions; focused race/vet checks pass. Component evidence does not certify whole HTTP or production parity."
       ],
       "notes": [
-        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+        "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
+        "Status remains implementing. Unchanged category frontend, installed lifecycle/history, black-box Go pre-SQL index failure, actual HTTP disconnect and live owner-deactivation/profile-category overlap remain acceptance work; no production owner or activation change."
       ]
     },
     {
@@ -9389,35 +9459,70 @@
         "target": "payment_category_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/payment_categories.go",
+        "BE_GO/internal/dto/payment_categories.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/service/payment_categories.go",
+        "BE_GO/internal/repository/payment_categories.go",
+        "BE_GO/internal/service/payment_categories_validation.go",
+        "BE_GO/internal/dto/payment_category_datetime.go"
+      ],
       "dependencies": [
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/audit_context.py",
-        "BE/application/signals.py"
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "Existing actor/effective/scope and session/impersonation admission",
+        "PostgreSQL application_paymentcategory, application_vatmanagement, auditlog_logentry and application_auditlogindex",
+        "BE_GO/internal/repository/transaction.go"
       ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/payment/category/add",
+          "/api/v1/payment/category/add",
+          "/api/v2/payment/category/add"
+        ],
+        "request": "Required name and nested VAT on CREATE; forces current association, allows explicit new category/VAT UUIDs subject to uniqueness. JSON/form/multipart presence, Python scalar/Unicode/date coercion and aggregated database/scalar validation are characterized.",
+        "response": "200 {data: category, msg: payment category created}; complete nested VAT and UTC microsecond fields.",
+        "errors": "Exact role/scope/target precedence, field validation and OPTIONS/method/negotiation/media responses. Known legacy malformed UUID paths and non-object CREATE bodies retain asserted HTML 500 behavior without mutation.",
+        "authentication": "Existing authenticated Bearer actor, effective identity and scoped owner; signed-JWT collaborator and impersonation scenarios retain existing admission.",
+        "permissions": "bookeeping.payments.update; scope owner must be an association account.",
+        "resource_scope": "LIST includes owned and global categories, including archived/deleted rows. Mutations require the current active scoped association and never mutate foreign/global targets; category ID and association are immutable on UPDATE.",
+        "side_effects": "Category and optional new VAT with exact field-change audits; initiating actor/impersonation metadata preserved, category direct index and existing VAT actor-association fallback.",
+        "transaction": "One owned transaction locks current owner User, active scoped association and existing category before changes; VAT/category/audit/index effects commit atomically and cancellation joins rollback cleanup.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_payment_category_integrity.py"
+        "BE/application/tests/test_payment_category_integrity.py",
+        "TESTS/contracts/test_payment_categories.py",
+        "TESTS/adapters/django/payment_categories.py",
+        "TESTS/adapters/go/payment_category_repository.py",
+        "BE_GO/internal/dto/payment_categories_test.go",
+        "BE_GO/internal/dto/payment_categories_wire_test.go",
+        "BE_GO/internal/dto/payment_category_datetime_test.go",
+        "BE_GO/internal/handler/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_validation_test.go",
+        "BE_GO/internal/service/payment_categories_integration_test.go",
+        "BE_GO/internal/service/payment_category_queries_integration_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-categories.md"
+        "docs/architecture/go-migration/payment-categories.md",
+        "Actual native Django, native Go, shipped Caddy /api/v1 and /api/v2 each pass 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios with exact managed-state rollback (752 HTTP and 72 fault executions total). Shared assertions include complete responses and Set-Cookie; seeded payment/camp-service/user-default references survive soft deletion. Observed PostgreSQL blocking chains establish PATCH/PATCH and PATCH/DELETE exact final state/audit histories. Exact fixture cleanup passes. See payment-categories.md and ignored review-oracle-final-results.json / review-oracle-versioned3.log. The parent independently reran the same final source with all four workloads passing; root receipt quality-reports/go-migration/payment-categories/results.json still declares complete_payment_category_parity=false.",
+        "Six real-current-schema PostgreSQL Go groups pass under race detection without skips. Joined list uses two repository SQL statements at 1/8/32/128 distinct VAT records; blocked-backend cancellation while the blocker remains held proves rollback, cleanup and recovery. See TESTS/adapters/go/payment_category_repository.py.",
+        "Datetime parser: 113 fixed pinned-runtime inputs, 15,992 Python/Django differential comparisons and 244,946 fuzz executions; focused race/vet checks pass. Component evidence does not certify whole HTTP or production parity."
       ],
       "notes": [
-        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+        "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
+        "Status remains implementing. Unchanged category frontend, installed lifecycle/history, black-box Go pre-SQL index failure, actual HTTP disconnect and live owner-deactivation/profile-category overlap remain acceptance work; no production owner or activation change."
       ]
     },
     {
@@ -9435,35 +9540,70 @@
         "target": "payment_category_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/payment_categories.go",
+        "BE_GO/internal/dto/payment_categories.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/internal/service/payment_categories.go",
+        "BE_GO/internal/repository/payment_categories.go",
+        "BE_GO/internal/service/payment_categories_validation.go",
+        "BE_GO/internal/dto/payment_category_datetime.go"
+      ],
       "dependencies": [
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/audit_context.py",
-        "BE/application/signals.py"
+        "BE/application/signals.py",
+        "BE/application/permissions_registry.py",
+        "Existing actor/effective/scope and session/impersonation admission",
+        "PostgreSQL application_paymentcategory, application_vatmanagement, auditlog_logentry and application_auditlogindex",
+        "BE_GO/internal/repository/transaction.go"
       ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/payment/category/list",
+          "/api/v1/payment/category/list",
+          "/api/v2/payment/category/list"
+        ],
+        "request": "GET with existing authenticated/scoped admission; no category write body.",
+        "response": "200 {data: categories}, full nested VAT or null, nullable association, UTC microseconds, descending creation date; no equal-date tie guarantee.",
+        "errors": "Exact role/scope/target precedence, field validation and OPTIONS/method/negotiation/media responses. Known legacy malformed UUID paths and non-object CREATE bodies retain asserted HTML 500 behavior without mutation.",
+        "authentication": "Existing authenticated Bearer actor, effective identity and scoped owner; signed-JWT collaborator and impersonation scenarios retain existing admission.",
+        "permissions": "bookeeping.payments.read; scope owner must be an association account.",
+        "resource_scope": "LIST includes owned and global categories, including archived/deleted rows. Mutations require the current active scoped association and never mutate foreign/global targets; category ID and association are immutable on UPDATE.",
+        "side_effects": "No category/VAT/audit/index writes.",
+        "transaction": "Repository list uses two bounded SELECTs with one joined VAT projection; no mutation transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_payment_category_integrity.py"
+        "BE/application/tests/test_payment_category_integrity.py",
+        "TESTS/contracts/test_payment_categories.py",
+        "TESTS/adapters/django/payment_categories.py",
+        "TESTS/adapters/go/payment_category_repository.py",
+        "BE_GO/internal/dto/payment_categories_test.go",
+        "BE_GO/internal/dto/payment_categories_wire_test.go",
+        "BE_GO/internal/dto/payment_category_datetime_test.go",
+        "BE_GO/internal/handler/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_test.go",
+        "BE_GO/internal/service/payment_categories_validation_test.go",
+        "BE_GO/internal/service/payment_categories_integration_test.go",
+        "BE_GO/internal/service/payment_category_queries_integration_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/payment-categories.md"
+        "docs/architecture/go-migration/payment-categories.md",
+        "Actual native Django, native Go, shipped Caddy /api/v1 and /api/v2 each pass 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios with exact managed-state rollback (752 HTTP and 72 fault executions total). Shared assertions include complete responses and Set-Cookie; seeded payment/camp-service/user-default references survive soft deletion. Observed PostgreSQL blocking chains establish PATCH/PATCH and PATCH/DELETE exact final state/audit histories. Exact fixture cleanup passes. See payment-categories.md and ignored review-oracle-final-results.json / review-oracle-versioned3.log. The parent independently reran the same final source with all four workloads passing; root receipt quality-reports/go-migration/payment-categories/results.json still declares complete_payment_category_parity=false.",
+        "Six real-current-schema PostgreSQL Go groups pass under race detection without skips. Joined list uses two repository SQL statements at 1/8/32/128 distinct VAT records; blocked-backend cancellation while the blocker remains held proves rollback, cleanup and recovery. See TESTS/adapters/go/payment_category_repository.py.",
+        "Datetime parser: 113 fixed pinned-runtime inputs, 15,992 Python/Django differential comparisons and 244,946 fuzz executions; focused race/vet checks pass. Component evidence does not certify whole HTTP or production parity."
       ],
       "notes": [
-        "Django integrity baseline corrected and tested: immutable category identity/association, missing-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Full HTTP characterization and Go parity remain open; this is not verified endpoint parity."
+        "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
+        "Status remains implementing. Unchanged category frontend, installed lifecycle/history, black-box Go pre-SQL index failure, actual HTTP disconnect and live owner-deactivation/profile-category overlap remain acceptance work; no production owner or activation change."
       ]
     },
     {
