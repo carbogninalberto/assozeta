@@ -456,6 +456,38 @@
         }
       },
       "validation_error": "Input validation error: Additional properties are not allowed ('x' was unexpected)"
+    },
+    "object-query-order": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": {
+            "z": 1,
+            "a": 2
+          }
+        }
+      },
+      "validation_error": "Input validation error: {'z': 1, 'a': 2} is not of type 'string'"
+    },
+    "nested-query-order": {
+      "method": "tools/call",
+      "params": {
+        "name": "search_manual",
+        "arguments": {
+          "query": [
+            {
+              "z": 1,
+              "a": [
+                null,
+                true
+              ]
+            },
+            "l'apice"
+          ]
+        }
+      },
+      "validation_error": "Input validation error: [{'z': 1, 'a': [None, True]}, \"l'apice\"] is not of type 'string'"
     }
   }
 }

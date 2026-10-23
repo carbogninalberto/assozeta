@@ -4,10 +4,10 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `9ed9b22` (including the consolidated manual registry,
-canonical capture-cache reports and publication-question routing). Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 27 implementing,
-476 uncharacterized, 7 needing review, 4 deprecated and **0 verified**. Production
+Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
+export correction and earlier manual-delivery changes. Worktree branch:
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 33 implementing,
+473 uncharacterized, 4 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
@@ -18,7 +18,7 @@ cases. The unchanged-frontend personal-profile workflow now passes against both
 API versions, including fresh login, collaborator edit and ordinary reload after
 the [profile-response correction](profile-response.md). Candidate checks validate
 both backend manual packages before lifecycle changes. A genuine externally
-reviewed required-release manual image, installed cache permissions and
+reviewed required-release manual image and
 backend activation remain open. These scoped checks do not establish complete
 frontend or backend parity.
 

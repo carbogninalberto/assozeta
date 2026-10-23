@@ -225,7 +225,7 @@ def main():
     from TESTS.contracts.test_manual_reader_http import validate_report
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--go-source',action='store_true');parser.add_argument('--backend',choices=['django','go'],default='django');parser.add_argument('--versioned',action='store_true');parser.add_argument('--tools',action='store_true',help='Characterize actual manual tool functions with real database context; not MCP transport');parser.add_argument('--mcp',action='store_true',help='Exercise actual Django MCP management command over stdio');options=parser.parse_args()
-    if options.mcp and (options.tools or options.go_source or options.backend!='django' or options.versioned):parser.error('--mcp currently requires the independent Django stdio oracle')
+    if options.mcp and (options.tools or options.go_source or options.versioned):parser.error('--mcp accepts --backend django or go without HTTP/source modes')
     if options.tools and (options.versioned or options.backend=='go' and options.go_source):parser.error('--tools accepts either --go-source for library or --backend go for live service comparison, without --versioned')
     if options.backend=='go':OUTPUT=ROOT/'quality-reports/go-migration/manual-reader-http-go'
     if options.versioned:OUTPUT=Path(str(OUTPUT)+'-versioned')
@@ -237,9 +237,11 @@ def main():
         fixture_path=ROOT/'TESTS/fixtures/manual-tools.json'
         from TESTS.contracts.test_manual_tools import validate_report
     if options.mcp:
-        OUTPUT=ROOT/'quality-reports/go-migration/manual-mcp-django'
+        OUTPUT=ROOT/f'quality-reports/go-migration/manual-mcp-{options.backend}'
         fixture_path=ROOT/'TESTS/fixtures/manual-mcp.json'
         from TESTS.contracts.test_manual_mcp import validate_report
+        if options.backend=='go':
+            from TESTS.contracts.test_manual_mcp_go import validate_report
     fixture=json.loads(fixture_path.read_text());OUTPUT.mkdir(parents=True,exist_ok=True)
     report={'schema_version':1,'success':False,'cases':{},'scope':__doc__,
             'fixture_sha256':hashlib.sha256(fixture_path.read_bytes()).hexdigest()}
@@ -260,6 +262,12 @@ def main():
         report['scope']='Actual Django management command, MCP SDK and manual tools over stdio pipes with real PostgreSQL and sealed files. No Go MCP, business-tool execution or assistant dispatch claim.'
         paths=['BE/application/mcp_server/server.py','BE/application/management/commands/run_mcp_server.py','BE/application/manuale/tools.py','TESTS/mcp_client.py','TESTS/adapters/django/manual_reader_http.py','TESTS/adapters/django/manual_mcp.py','TESTS/adapters/django/manual_mcp_settings.py','TESTS/adapters/django/manual_tools.py','TESTS/contracts/test_manual_mcp.py','TESTS/contracts/test_manual_tools.py','TESTS/fixtures/manual-tools.json']
         report['source_hashes']={path:hashlib.sha256((ROOT/path).read_bytes()).hexdigest() for path in paths}
+        if options.backend=='go':
+            report['scope']='Go stdio component with four manual tools, real PostgreSQL service and sealed files. No production MCP command, eleven business tools, full MCP registry, JWT admission or agent dispatch claim.'
+            paths=[ROOT/'TESTS/adapters/django/manual_mcp_go.py',ROOT/'TESTS/contracts/test_manual_mcp_go.py',ROOT/'BE_GO/internal/domain/manual.go',
+                *sorted((ROOT/'BE_GO/internal/handler/mcpstdio').glob('*.go')),*sorted((ROOT/'BE_GO/internal/handler/manualmcp').glob('*.go')),
+                *sorted((ROOT/'BE_GO/internal/service').glob('manual_tools*.go')),*sorted((ROOT/'BE_GO/internal/repository').glob('manual_tools*.go')),*sorted((ROOT/'BE_GO/pkg/manual').glob('*.go'))]
+            report['source_hashes'].update({str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in paths})
     postgres=shutil.which('postgres')
     if not postgres:
         candidates=sorted(Path('/opt/homebrew/opt').glob('postgresql*/bin/postgres'));postgres=str(candidates[-1]) if candidates else None
@@ -295,9 +303,12 @@ def main():
             from application.audit_resolvers import setup_audit_resolvers
             setup_audit_resolvers()
             from TESTS.adapters.django.manual_reader_runtime import GoManualRuntime
-            with GoManualRuntime(work,log,tool_env,options.versioned) if options.backend=='go' and not options.tools else contextlib.nullcontext(None) as go_runtime:
+            with GoManualRuntime(work,log,tool_env,options.versioned) if options.backend=='go' and not (options.tools or options.mcp) else contextlib.nullcontext(None) as go_runtime:
                 if options.mcp:
-                    from TESTS.adapters.django.manual_mcp import measure_mcp
+                    if options.backend=='go':
+                        from TESTS.adapters.django.manual_mcp_go import measure_go_mcp as measure_mcp
+                    else:
+                        from TESTS.adapters.django.manual_mcp import measure_mcp
                     measure_mcp(work,fixture,report,log)
                 elif options.tools:
                     from TESTS.adapters.django.manual_tools import measure_tools
