@@ -134,7 +134,8 @@ def run(work, log, tool_env):
         completed.check_returncode()
         names={'exact cutoff and dependent index cleanup','invalid envelope before SQL','both deletion failures roll back',
                'stale completion and replay preserve later records','concurrent retention settles once','concurrent index insertion cannot leave an orphan','unrelated commit failures are not swallowed','blocked SQL cancellation and pool recovery',
-               'constant statement count and actual query plan','heartbeat during retention'}
+               'constant statement count and actual query plan','heartbeat during retention','stale admission sends no business SQL',
+               'handled failure fences completion-only transaction'}
         wanted={'TestAuditRetentionPostgres/'+n.replace(' ','_') for n in names}
         passed={e.get('Test') for e in events if e['Action']=='pass' and '/' in e.get('Test','')}
         assert passed==wanted and not any(e['Action']=='skip' for e in events),'missing or skipped retention scenario'

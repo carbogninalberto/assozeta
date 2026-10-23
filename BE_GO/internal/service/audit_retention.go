@@ -32,7 +32,7 @@ func (s *AuditRetention) Run(ctx context.Context, job domain.Job) error {
 	// equality and preserve the exact instant across leap years and offsets.
 	cutoff := s.now().UTC().Add(-365 * 24 * time.Hour)
 
-	tx, err := s.store.BeginAuditRetention(ctx)
+	tx, err := s.store.BeginAuditRetention(ctx, job)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (s *AuditRetention) completeHandledFailure(ctx context.Context, job domain.
 		return err
 	}
 	s.logger.WarnContext(ctx, "audit retention failed", "code", "audit_retention_failed")
-	completion, err := s.store.BeginAuditRetention(ctx)
+	completion, err := s.store.BeginAuditRetention(ctx, job)
 	if err != nil {
 		return err
 	}

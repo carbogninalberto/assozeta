@@ -15,7 +15,7 @@ var ErrAuditRetentionConflict = errors.New("audit retention concurrent index con
 const JobDeleteOldAuditLogs = "delete_old_audit_logs"
 
 type AuditRetentionStore interface {
-	BeginAuditRetention(context.Context) (AuditRetentionTransaction, error)
+	BeginAuditRetention(context.Context, Job) (AuditRetentionTransaction, error)
 }
 
 type AuditRetentionTransaction interface {

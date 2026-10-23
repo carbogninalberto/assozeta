@@ -15,9 +15,15 @@ import (
 type AuditRetentions struct{ db *sqlx.DB }
 
 func NewAuditRetentions(db *sqlx.DB) *AuditRetentions { return &AuditRetentions{db: db} }
-func (r *AuditRetentions) BeginAuditRetention(ctx context.Context) (domain.AuditRetentionTransaction, error) {
+func (r *AuditRetentions) BeginAuditRetention(ctx context.Context, job domain.Job) (domain.AuditRetentionTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
+		return nil, err
+	}
+	// Lock ownership and check the live lease before deletion can start.
+	// The job row remains available to heartbeats; completion rechecks the lease.
+	if err = fenceJobEffects(ctx, tx.tx, job.ID, job.LeaseToken); err != nil {
+		_ = tx.Rollback()
 		return nil, err
 	}
 	return &auditRetentionTransaction{ownedTransaction: tx}, nil
