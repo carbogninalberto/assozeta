@@ -347,8 +347,9 @@ not the branch head. Neither the image adapter nor this hosted result claims
 installed lifecycle disconnect behavior.
 Local full Go race/vet, tagged vet, formatting and six repository groups pass.
 All four split Go jobs at `11c2310` are green: accounts takes 17m31s and foundation
-18m12s with their checks preserved. The full quality workflow still awaits its
-legacy upgrade job; these results do not claim complete release acceptance.
+18m12s with their checks preserved. The complete hosted quality run
+`40030007996` at `11c2310` also passes the legacy upgrade/browser rehearsal and
+aggregate gate. This is prior-head evidence, not complete release acceptance.
 The known external manual recipe-binding failure remains unresolved.
 
 Two test-harness fixes preserve the assertions rather than weaken them. The
