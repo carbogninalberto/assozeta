@@ -24,6 +24,7 @@ type Settings struct {
 	BundlePath          string
 	BundleRequired      bool
 	IndexPath           string
+	AssetRoot           string
 	CorpusBaseURL       string
 	DeploymentMode      string
 	ApplicationRevision string

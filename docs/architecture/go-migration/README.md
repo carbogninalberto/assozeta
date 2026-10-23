@@ -6,8 +6,8 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `a86c9d9` (including the consolidated manual registry,
 editorial reuse checks and capture-helper cleanup). Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 25 implementing,
-478 uncharacterized, 7 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 27 implementing,
+476 uncharacterized, 7 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
@@ -29,10 +29,12 @@ explicit recipe bindings are refreshed while all 44 authored MDX files remain
 unchanged. It is unpublished and grants no new screenshot evidence. Earlier
 receipts and the separate `b042582` capture retain their original source scope.
 
-The installed-bundle manual library passes 36 actual Django/Go applicability
-and asset cases plus five race groups. It returns immutable request-local
-section IDs and digest-checked asset bytes; it does not implement HTTP reader
-routes, search, preview/development/remote modes, MCP or assistant behavior.
+The [manual reader libraries](manual-reader.md) pass 36 installed-bundle cases,
+33 retrieval/projection cases and 32 source-loading comparisons against Django.
+The HTTP oracle additionally characterizes 58 Django cases; Go HTTP composition
+is still pending. Source loading covers preview, development, installed bundles
+and remote refresh with atomic corpus promotion. Installed-cache permissions,
+MCP, assistant behavior and a genuine required-release package remain unverified.
 
 The self-host proxy now defines fixed `/api/v1` → Django and `/api/v2` → Go
 routes before the existing Django alias. Real Caddy transport checks cover exact
