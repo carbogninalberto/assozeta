@@ -316,6 +316,10 @@ def main():
                 command(compose('down', '-v', '--remove-orphans'), env=env)
                 set_env({'ASSOZETA_VERSION': args.previous_release})
                 command([cli, 'start'], env=env); ready()
+                # The historical Compose migration job also seeded its required
+                # billing reference data. Current Compose no longer needs that
+                # bootstrap, so reproduce it with the published image's command.
+                command(compose('exec', '-T', 'api', 'python', 'manage.py', 'seed_selfhost'), env=env)
                 owner, association_id = initialize_association()
                 if public.request('GET', '/instance/status')[1].get('manual_enabled', False):
                     raise RuntimeError('Historical transition expects a release without a manual')

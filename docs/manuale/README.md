@@ -322,7 +322,7 @@ In CI `workflow_dispatch.edit_content` è disattivato per impostazione
 predefinita. `MANUAL_AUTO_EDIT=true` abilita l’opzione solo per push o esecuzioni
 programmate sul ramo predefinito dell’applicazione. Un dispatch editoriale deve
 usare quel ramo e omettere `manual_ref` oppure scegliere esattamente il valore
-fidato di `MANUAL_REF` (in sua assenza, `main`). Pull request e
+fidato di `MANUAL_REF` (in sua assenza, `add/manuale-release`). Pull request e
 `repository_dispatch` eseguono soltanto la verifica, senza modello o chiave
 editoriale, anche quando la variabile automatica è attiva.
 
@@ -601,7 +601,7 @@ Il secret `ASSOZETA_DISPATCH_TOKEN` appartiene al repository manuale: per il
 dispatch verso Assozeta, usare un token fine-grained limitato al repository
 destinatario con permesso **Contents: write**, come richiede l’
 [endpoint GitHub repository dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event).
-Il template osserva anche i binding di revisione, sul ramo `main` e `add/manuale`.
+Il template osserva anche i binding di revisione, sui rami `main`, `add/manuale` e `add/manuale-release`.
 Il workflow ricevente deve essere disponibile sul ramo predefinito per il dispatch,
 come indicato negli [eventi GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#repository_dispatch).
 Configurazione, installazione del workflow e invio remoto restano da completare.

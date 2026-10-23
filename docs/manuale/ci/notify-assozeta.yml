@@ -4,7 +4,7 @@ name: Reconcile manual changes with Assozeta
 
 on:
   push:
-    branches: [main, add/manuale]
+    branches: [main, add/manuale, add/manuale-release]
     paths: ['**/*.mdx', 'images/**', 'mint.json', 'docs.json', 'SCREENSHOTS-NEEDED.md', '.manuale-evidence.json', '.manuale-authoring.json', '.github/workflows/notify-assozeta.yml']
   workflow_dispatch:
 

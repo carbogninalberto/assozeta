@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Run-owned worktrees and real application captures. No shell interpolation."""
+"""Build, capture and verify the Italian manual.
+
+build: compile reviewed MDX and compatible evidence without Docker or browsers.
+capture: run selected or affected workflows in an owned demonstration environment.
+verify-release: verify the complete target, package it and rehearse appliance updates.
+
+Compatible evidence and frontend builds are discovered automatically. The other
+commands expose individual phases for diagnosis and recovery; see docs/manuale/README.md.
+"""
 import argparse
 import hashlib
 import importlib.util
