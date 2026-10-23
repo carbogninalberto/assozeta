@@ -219,8 +219,17 @@ state, seeded references and observed-blocking concurrency histories. Six real-s
 repository queries through 128 distinct VATs and blocked-query cancellation joins
 rollback before recovery. Nineteen focused and 188 existing Django baseline
 regressions remain evidence for the intentional correction. All four ledger rows
-stay `implementing`; unchanged category browser workflows, installed lifecycle/
-history, pre-SQL index faults, HTTP disconnects and owner/profile races remain open.
+stay `implementing`. Nine native lifecycle probes per runtime now cover profile/
+category overlap, owner deactivation/deletion denial and recovery. A real HTTP
+disconnect rolls Go back before lock release, while Django completes the admitted
+synchronous deletion once after release: the distinct expectations pass, but
+`disconnect_semantics_match` and complete category parity remain false. The
+non-root, read-only packaged image passes the same four 188/43/18 workloads with
+immutable identity and revision/version/health checks. The independently rerun
+unchanged category browser passes six checks, five writes, seven denials and five
+exact audits per version, including Django traffic observation and a deliberately
+misrouted v2 negative control. Installed lifecycle/history, pre-SQL
+index faults, proxy disconnect behavior and activation remain open.
 Local verification also corrects two test-harness failures: development Silk writes
 are removed from the category fixture without dropping managed-table assertions,
 and the bootstrap large-row seed evaluates each conversion once with explicit
@@ -259,7 +268,7 @@ those differences remain explicit activation gaps.
 | Password changes | 67 HTTP/effect cases, three locked scenarios per backend, four Django/Go profile/password writer combinations and four cross-runtime login flows. Credential-only writes preserve other columns; full frontend/lifecycle parity remains open. |
 | 2FA writes | 50 HTTP/effect and two locked-row concurrency scenarios per backend; atomic failure rollback, correct impersonation audit, query/pool bounds and cancellation. Setup has separate evidence below; full frontend activation remains open. |
 | 2FA provisioning | 31 HTTP scenarios, 62 concurrent requests per backend, 512 decoded symbols, four cross-runtime update flows and four fresh-login flows. No setup persistence; entropy/encoder failures and cancellation covered. Full browser/phone interaction remains unverified. |
-| Payment categories | 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios each for native Django/Go and Caddy v1/v2; exact durable/reference preservation and observed-blocking PATCH/PATCH-DELETE histories. Six real-schema PostgreSQL groups; two repository LIST queries at 1/8/32/128 VATs and blocked-query cancellation. Parser: 113 golden cases and 15,992 pinned-runtime comparisons. Browser/installed acceptance, pre-SQL index failure, HTTP disconnect and owner/profile races remain open; see [category evidence](payment-categories.md). |
+| Payment categories | 188 HTTP cases, 43 exact audit rows and 18 SQL fault scenarios each for native Django/Go and Caddy v1/v2; exact durable/reference preservation and observed-blocking PATCH/PATCH-DELETE histories. Six real-schema PostgreSQL groups; two repository LIST queries at 1/8/32/128 VATs and blocked-query cancellation. Parser: 113 golden cases and 15,992 pinned-runtime comparisons. Nine native lifecycle probes per runtime pass owner/profile races and audited recovery; actual HTTP disconnect cancels Go but allows Django admitted sync completion, so protocol parity stays open. The immutable non-root/read-only image passes four 188/43/18 workloads. Both unchanged browser workflows pass six checks/five writes/seven denials/five audits each, with independent Django observation and a routing negative control. Installed/history, pre-SQL index and activation gaps remain. See [category evidence](payment-categories.md). |
 | Providers and environment | 89 Apple and 93 Google component HTTPS/signature cases, supplemented by the public root fixture. 103 environment comparisons use actual Django settings and requests CA precedence. Trust directories/rotation, default roots, full proxy/JWK-platform policy and live browser/provider flows remain open. |
 | Query and concurrency bounds | Real PostgreSQL/Redis tests measure batched lookups, fixed connection pools, concurrent identities and query counts across growing datasets. Critical job claiming uses measured indexed plans. No representative whole-application performance improvement is claimed. |
 | Jobs | Transactional intent, deduplication, leases, crash recovery and executor drain have private PostgreSQL evidence. The durable runtime owner defaults to Django and fences Go claims/outcomes by generation; daily reset and age update lock ownership before writes. Thirty-eight queue/executor/ownership/migration groups and the five task bodies' 51 groups pass. Worker/scheduler commands are packaged with scoped process/image evidence; installed activation, remaining tasks and coordinated handoff/restore remain unfinished. |

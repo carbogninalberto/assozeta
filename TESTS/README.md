@@ -1132,6 +1132,7 @@ native Go and both shipped Caddy routes in fresh private fixtures:
 
 ```sh
 TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 \
+  TESTS_PAYMENT_CATEGORIES_LIFECYCLE=1 \
   python TESTS/adapters/django/accounts.py --only payment-categories
 python TESTS/adapters/go/payment_category_repository.py
 ```
@@ -1149,3 +1150,43 @@ credentials and stays local; CI uploads only the category receipt and service lo
 Do not replay mutation cases against their final state: the adapter resets the
 private seed before each backend. The portable contract remains independent of
 application imports in `TESTS/contracts/test_payment_categories.py`.
+
+The optional lifecycle flag adds deterministic profile/category and owner-state
+races, plus actual socket-disconnect checks. It records an explicit difference:
+Go cancels the blocked mutation; an admitted Django synchronous request may still
+commit after the client disconnects. Passing each runtime's declared expectation
+does not claim identical disconnect semantics.
+
+To exercise an existing packaged Go image, supply its actual build revision:
+
+```sh
+python TESTS/adapters/go/payment_category_image.py \
+  --image YOUR_LOCAL_GO_IMAGE --expected-revision ITS_FULL_CODE_REVISION
+```
+
+This runner owns private Docker PostgreSQL/Redis/server instances and loopback
+fixture ports. It checks non-root execution, read-only root, immutable image and
+binary identity, packaged version/health, and the shared native/versioned HTTP,
+audit and rollback contracts. It never mounts a replacement server binary or
+publishes a release. Installed lifecycle and historical migration acceptance stay
+separate. An older image without category routes fails the first required list.
+
+The unchanged category browser workflow uses the same frontend artifact for both
+backends, real password login and real database/audit readback:
+
+```sh
+python TESTS/adapters/django/payment_category_browser.py \
+  --prepare-ui-image YOUR_LOCAL_UI_IMAGE \
+  --ui-dir /tmp/category-ui --ui-provenance /tmp/category-ui-provenance.json
+python TESTS/adapters/django/payment_category_browser.py \
+  --ui-dir /tmp/category-ui --ui-provenance /tmp/category-ui-provenance.json \
+  --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
+```
+
+Preparation requires fresh paths and verifies the scoped source maps against the
+checkout. Category operations use the selected versioned API; unimplemented
+payment operations and their dependencies remain explicitly allowlisted real
+Django coexistence. Archive/unarchive has no existing UI control, so its separate
+browser check uses authenticated PATCH followed by visible reload and readback.
+The category CI job runs HTTP, lifecycle, PostgreSQL and image checks independently
+of the foundation job; the frontend job reuses its one built UI image.

@@ -16,11 +16,19 @@ Django/Go and shipped Caddy `/api/v1` and `/api/v2` each pass 188 HTTP cases,
 43 exact audit rows and 18 SQL-failure rollback scenarios, with complete response,
 durable-state, seeded-reference and concurrent-mutation assertions. Six real-schema PostgreSQL groups pass, with two repository LIST
 queries at 1/8/32/128 distinct VATs and observed blocked-query cancellation/recovery.
-The four routes remain `implementing`: unchanged category browser workflows,
-installed lifecycle/history, pre-SQL index failure, HTTP disconnect and owner/profile
-race coverage are separate acceptance work. The 19 focused and 188 existing Django
+Nine native lifecycle probes per runtime also pass: profile/category lock overlap,
+owner deactivation/deletion denial and audited recovery. Actual HTTP disconnect
+exposes an explicit gap: Go rolls back before the blocker is released; Django
+completes its admitted synchronous deletion once after release. The packaged
+non-root, read-only image passes the same four 188/43/18 workloads with immutable
+image identity and revision/version/health checks. The unchanged category browser
+passes six checks, five writes, seven denials and five exact audits per version; an
+independent Django observer and a misroute negative control establish v2 routing. The four routes remain `implementing`: installed
+lifecycle/history, pre-SQL index failure and disconnect protocol parity remain
+acceptance work. The 19 focused and 188 existing Django
 baseline regressions remain scoped evidence; no endpoint is promoted to verified.
-The quality workflow now includes both category runners. Local verification also
+The dedicated category quality job runs the versioned/lifecycle HTTP oracle,
+real-schema repository groups and revision-bound packaged-image adapter. Local verification also
 repairs two test-harness issues: development Silk profiling no longer contaminates
 category rollback snapshots, and the 10,000-row instance-bootstrap fixture avoids
 repeating wide-row conversion per column while retaining count/query assertions.

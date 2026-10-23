@@ -12,7 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 @contextlib.contextmanager
-def proxy(django, golang, log, *, operations=None):
+def proxy(django, golang, log, *, operations=None, network=None):
     image = re.search(r'^FROM (caddy:\S+) AS production$',
                       (ROOT / 'UI/Dockerfile').read_text(), re.M).group(1)
     name = 'assozeta-routing-' + uuid.uuid4().hex[:12]
@@ -24,7 +24,10 @@ def proxy(django, golang, log, *, operations=None):
         (work / 'site/index.html').write_text('fixture frontend')
         (work / 'site/maintenance.html').write_text('fixture maintenance')
         configuration = (ROOT / 'selfhost/caddy/Caddyfile').read_text()
-        configuration = configuration.replace('api-go:8000', golang).replace('api:8000', django)
+        # Substitute both original upstreams once: an injected alias such as
+        # category-api:8000 must not be rewritten as the Django upstream.
+        configuration = re.sub(r'api-go:8000|api:8000',
+            lambda match: golang if match[0] == 'api-go:8000' else django, configuration)
         # Observe the container's client address independently of application
         # audit rows. Only this disposable proxy's own health response is extended;
         # upstream headers, admission and application routes remain unchanged.
@@ -36,6 +39,7 @@ def proxy(django, golang, log, *, operations=None):
                                   stderr=log, timeout=120).stdout.decode().strip()
         try:
             docker('run', '--rm', '-d', '--name', name,
+                   *(['--network', network] if network else []),
                    '--add-host', 'host.docker.internal:host-gateway',
                    '-p', '127.0.0.1::80', '-e', 'SITE_ADDRESS=:80',
                    '-v', f'{work}/Caddyfile:/etc/caddy/Caddyfile:ro',

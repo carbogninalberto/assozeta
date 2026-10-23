@@ -109,13 +109,6 @@ jobs:
           python TESTS/adapters/django/instance_bootstrap.py --backend go
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
-      - name: Verify payment category HTTP and durable parity through both API versions
-        env:
-          TESTS_PAYMENT_CATEGORIES_GO: '1'
-          TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
-        run: python TESTS/adapters/django/accounts.py --only payment-categories
-      - name: Verify payment category transactions, bounded reads and cancellation
-        run: python TESTS/adapters/go/payment_category_repository.py
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -178,9 +171,6 @@ jobs:
             quality-reports/go-migration/go-health/
             quality-reports/go-migration/credentials.json
             quality-reports/go-migration/permissions.json
-            quality-reports/go-migration/payment-category-repository/
-            quality-reports/go-migration/payment-categories/results.json
-            quality-reports/go-migration/payment-categories/services.log
             quality-reports/go-migration/impersonation-cache/
             quality-reports/go-migration/login-rate/
             quality-reports/go-migration/cors/
@@ -242,8 +232,83 @@ jobs:
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/accounts/
 
+  payment-categories:
+    name: Category HTTP, concurrency and packaged image
+    runs-on: ubuntu-24.04
+    # Keep this growing real-service family independent of the foundation job.
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      LANG: C
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PYVERSION'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PYVERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+      - name: Install disposable category dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/production_runtime.py
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python - <<'PYIMAGE'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PYIMAGE
+      - name: Verify native and versioned category contracts and live races
+        env:
+          TESTS_PAYMENT_CATEGORIES_GO: '1'
+          TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
+          TESTS_PAYMENT_CATEGORIES_LIFECYCLE: '1'
+        run: python TESTS/adapters/django/accounts.py --only payment-categories
+      - name: Verify transactions, bounded reads and cancellation
+        run: python TESTS/adapters/go/payment_category_repository.py
+      - name: Verify the packaged non-root category server
+        run: |
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-category:test BE_GO
+          python TESTS/adapters/go/payment_category_image.py --image assozeta-go-category:test --expected-revision "${{ github.sha }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-payment-category-evidence
+          path: |
+            quality-reports/go-migration/payment-category-repository/
+            quality-reports/go-migration/payment-categories/results.json
+            quality-reports/go-migration/payment-categories/services.log
+            quality-reports/go-migration/payment-categories/lifecycle-*.json
+            quality-reports/go-migration/payment-category-image/
+
   profile-browser:
-    name: Unchanged frontend profile and manual on Django and Go
+    name: Unchanged frontend profile, manual and categories on Django and Go
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -326,6 +391,16 @@ jobs:
             --ui-provenance quality-reports/go-migration/profile-browser-ui/provenance.json \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
             --output quality-reports/go-migration/profile-browser
+      - name: Verify unchanged category and payment-selection workflows
+        run: |
+          python TESTS/adapters/django/payment_category_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/payment-category-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-category-browser-ui/provenance.json
+          python TESTS/adapters/django/payment_category_browser.py \
+            --ui-dir quality-reports/go-migration/payment-category-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/payment-category-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -333,3 +408,5 @@ jobs:
           path: |
             quality-reports/go-migration/profile-browser/
             quality-reports/go-migration/profile-browser-ui/provenance.json
+            quality-reports/go-migration/payment-category-browser/
+            quality-reports/go-migration/payment-category-browser-ui/provenance.json
