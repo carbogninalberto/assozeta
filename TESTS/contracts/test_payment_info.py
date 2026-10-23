@@ -11,6 +11,30 @@ import unittest
 
 from TESTS.http_client import Client
 
+MATRIX_VERSION = 'payment-info-137-v1'
+MATRIX_CASE_COUNT = 137
+MATRIX_SENTINELS = frozenset({
+    'payment-info-anonymous', 'payment-info-format-before-accept-and-token',
+    'payment-info-meta-distinct-mixed-128', 'payment-info-meta-integer-uuid',
+    'payment-info-carnet-nullable-offering', 'payment-info-uuid-integer-grammar-unicode-digits',
+    'payment-info-scoped-collaborator-installment-foreign-course-denied',
+    'payment-info-scoped-collaborator-legitimate-carnet-fallback',
+    'payment-info-course-json-number-types', 'payment-info-meta-json-fraction-overflow',
+    'payment-info-empty-format',
+    'payment-info-carnet-nan-fee',
+})
+
+
+def validate_fixture(testcase, fixture):
+    """A portable replay must not silently accept a partial generated matrix."""
+    testcase.assertEqual(fixture.get('matrix_version'), MATRIX_VERSION)
+    cases = fixture['cases']
+    testcase.assertEqual(len(cases), MATRIX_CASE_COUNT)
+    names = {case['name'] for case in cases}
+    testcase.assertEqual(len(names), MATRIX_CASE_COUNT)
+    testcase.assertTrue(MATRIX_SENTINELS <= names, 'required authored coverage is missing')
+    return cases
+
 
 def decode_response(content):
     """Retain the complete body so exclusion assertions cannot miss a suffix."""
@@ -85,9 +109,7 @@ class PaymentInfoContracts(unittest.TestCase):
         self.assertTrue(path, 'TESTS_PAYMENT_INFO_FIXTURE is required; no skips')
         self.assertTrue(base, 'TESTS_BASE_URL is required; no skips')
         fixture = json.loads(Path(path).read_text())
-        cases = fixture['cases']
-        self.assertTrue(cases)
-        self.assertEqual(len(cases), len({case['name'] for case in cases}))
+        cases = validate_fixture(self, fixture)
         for case in cases:
             with self.subTest(case=case['name']):
                 assert_case(self, base, case)

@@ -342,7 +342,10 @@ jobs:
           TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
           TESTS_PAYMENT_CATEGORIES_LIFECYCLE: '1'
         run: python TESTS/adapters/django/accounts.py --only payment-categories
-      - name: Verify public payment-info Django baseline
+      - name: Verify native and versioned payment-info contracts and live PostgreSQL checks
+        env:
+          TESTS_PAYMENT_INFO_GO: '1'
+          TESTS_PAYMENT_INFO_VERSIONED: '1'
         run: |
           python -m unittest TESTS.contracts.test_payment_info_json -v
           python TESTS/adapters/django/accounts.py --only payment-info

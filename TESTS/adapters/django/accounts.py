@@ -37,7 +37,8 @@ def main():
     tool_env = {name: value for name, value in os.environ.items()
                 if name in ('PATH', 'HOME', 'TMPDIR', 'GOCACHE', 'GOMODCACHE', 'GOTOOLCHAIN',
                             'TESTS_PAYMENT_CATEGORIES_GO', 'TESTS_PAYMENT_CATEGORIES_VERSIONED',
-                            'TESTS_PAYMENT_CATEGORIES_LIFECYCLE', 'TESTS_PAYMENT_INFO_GO')}
+                            'TESTS_PAYMENT_CATEGORIES_LIFECYCLE', 'TESTS_PAYMENT_INFO_GO',
+                            'TESTS_PAYMENT_INFO_REPOSITORY_OVERLAY', 'TESTS_PAYMENT_INFO_VERSIONED')}
     with tempfile.TemporaryDirectory(prefix='az-accounts-', dir='/tmp') as directory:
         work = Path(directory)
         started = False

@@ -1,10 +1,23 @@
 """JSON comparison regressions; no live runtime or fixture is required."""
 import unittest
 
-from TESTS.contracts.test_payment_info import assert_json_equal, decode_response
+from TESTS.contracts.test_payment_info import (assert_json_equal, decode_response, validate_fixture,
+                                              MATRIX_VERSION, MATRIX_CASE_COUNT, MATRIX_SENTINELS)
 
 
 class PaymentInfoJSONTests(unittest.TestCase):
+    def test_portable_matrix_rejects_truncation_duplicates_and_wrong_version(self):
+        cases = [{'name': name} for name in sorted(MATRIX_SENTINELS)]
+        cases += [{'name': f'authored-case-{i}'} for i in range(MATRIX_CASE_COUNT - len(cases))]
+        fixture = {'matrix_version': MATRIX_VERSION, 'cases': cases}
+        self.assertIs(validate_fixture(self, fixture), cases)
+        for invalid in ({**fixture, 'cases': cases[:-1]},
+                        {**fixture, 'cases': [cases[1], *cases[1:]]},
+                        {**fixture, 'matrix_version': 'old-matrix'},
+                        {**fixture, 'cases': [{'name': f'wrong-{i}'} for i in range(MATRIX_CASE_COUNT)]}):
+            with self.assertRaises(AssertionError):
+                validate_fixture(self, invalid)
+
     def test_html_suffix_after_1000_bytes_is_available_to_exclusions(self):
         content = b'<html>Server Error' + b' ' * 1200 + b'Foreign course</html>'
         decoded = decode_response(content)

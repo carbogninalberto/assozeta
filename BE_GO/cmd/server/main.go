@@ -133,6 +133,7 @@ func run() error {
 	manualSource := manual.New(cfg.Manual)
 	manualHandler := handler.NewManualReaderHandler(service.NewManualReader(repository.NewManualFeatures(db), manualSource), service.NewActorAuthentication(accounts, tokens), identities)
 	paymentCategoriesHandler := handler.NewPaymentCategoriesHandler(service.NewPaymentCategories(repository.NewPaymentCategories(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
+	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	instanceService := service.NewInstanceBootstrap(repository.NewInstanceBootstrap(db), manualSource, service.InstanceBootstrapOptions{
 		Version: cfg.Version, AIEnabled: cfg.AIEnabled, StripeEnabled: cfg.StripeEnabled, StripePublicKey: cfg.StripePublicKey,
 		GoogleClientID: cfg.GoogleClientID, AppleClientID: cfg.AppleClientID, FamilyRegistration: cfg.FamilyRegistrationEnabled,
@@ -173,6 +174,7 @@ func run() error {
 	e.Any("/payment/category/add", paymentCategoriesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/category/:uid/update", paymentCategoriesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/payment/category/:uid/delete", paymentCategoriesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/payment/:uid/info", paymentInfoHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	server := &http.Server{Addr: cfg.ListenAddress, Handler: e, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

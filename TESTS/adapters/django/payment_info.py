@@ -10,9 +10,13 @@ from decimal import Decimal
 import copy
 import json
 import os
+import re
+import subprocess
 from pathlib import Path
 import threading
 import unittest
+from urllib.parse import quote
+from uuid import UUID
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -23,6 +27,9 @@ def uid(number):
 
 
 def run(work, log, tool_env, address):
+    versioned = os.environ.get('TESTS_PAYMENT_INFO_VERSIONED') == '1'
+    if versioned and os.environ.get('TESTS_PAYMENT_INFO_GO') != '1':
+        raise RuntimeError('Versioned payment-info requires TESTS_PAYMENT_INFO_GO=1')
     from django.apps import apps
     from django.core.asgi import get_asgi_application
     from django.core.cache import cache
@@ -34,7 +41,7 @@ def run(work, log, tool_env, address):
     from application.models.carnet_models import Carnet, CarnetSubscription
     from application.impersonation import session_key
     from rest_framework_simplejwt.tokens import AccessToken
-    from TESTS.contracts.test_payment_info import assert_case
+    from TESTS.contracts.test_payment_info import assert_case, validate_fixture, MATRIX_VERSION
     from TESTS.http_client import Client, poll
     import uvicorn
 
@@ -42,8 +49,13 @@ def run(work, log, tool_env, address):
     output.mkdir(parents=True, exist_ok=True)
     result_path = output / 'http-results.json'
     result_path.write_text('{"success":false,"stage":"fixture"}\n')
+    def stable_row(row):
+        # NaN is unequal to itself. This lossless typed encoding retains its
+        # sign, payload and NaN kind rather than normalizing or omitting state.
+        return {key: ('Decimal', value.as_tuple()) if isinstance(value, Decimal) and value.is_nan() else value
+                for key, value in row.items()}
     def snapshot():
-        return {m._meta.label: list(m._base_manager.order_by('pk').values())
+        return {m._meta.label: [stable_row(row) for row in m._base_manager.order_by('pk').values()]
                 for m in apps.get_models() if m._meta.managed and not m._meta.proxy}
     original = snapshot()
     created, sessions, cases, failures, observations = [], [], [], [], []
@@ -51,7 +63,7 @@ def run(work, log, tool_env, address):
     test.maxDiff = None
     fixed = datetime(2026, 10, 23, 8, 9, 10, 123456, tzinfo=timezone.utc)
     sql_cid = ContextVar('payment_info_fixture_cid', default=None)
-    sql_counts, sql_lock = {}, threading.Lock()
+    sql_counts, sql_lock, django_requests = {}, threading.Lock(), []
     def count_sql(execute, sql, params, many, context):
         cid = sql_cid.get()
         if cid:
@@ -67,12 +79,15 @@ def run(work, log, tool_env, address):
     application = get_asgi_application()
     async def traced_application(scope, receive, send):
         cid = dict(scope.get('headers', [])).get(b'x-correlation-id', b'').decode('latin1')
+        if scope['type'] == 'http' and cid.startswith('payment-info-'):
+            with sql_lock:
+                django_requests.append({'case': cid, 'method': scope['method'], 'path': scope['path']})
         marker = sql_cid.set(cid if cid.startswith('payment-info-') else None)
         try:
             await application(scope, receive, send)
         finally:
             sql_cid.reset(marker)
-    server = uvicorn.Server(uvicorn.Config(traced_application, host='127.0.0.1', port=0,
+    server = uvicorn.Server(uvicorn.Config(traced_application, host='0.0.0.0' if versioned else '127.0.0.1', port=0,
                                           lifespan='off', log_level='critical'))
     thread = None
     def seed(model, number, **values):
@@ -106,9 +121,55 @@ def run(work, log, tool_env, address):
             case['body'] = body
         cases.append(case)
 
-    report = {'success': False, 'scope': 'Django public payment-info HTTP characterization; no approved security policy or Go parity',
+    report = {'success': False, 'scope': 'Public payment-info authored HTTP characterization; no approved security policy or complete backend parity',
+              'matrix_version': MATRIX_VERSION,
               'complete_payment_info_parity': False, 'cases': observations,
               'security_semantics_approved': False, 'cleanup_verified': False}
+
+    def assert_upstream(observed, case, expect_django):
+        expected = [case['name']] if expect_django else []
+        actual = [request['case'] for request in observed]
+        assert actual == expected, ('upstream_mismatch', case['name'], expected, actual)
+
+    def replay(base, label, destination, *, expect_django):
+        for case in cases:
+            before, received = snapshot(), []
+            with sql_lock:
+                observation_start = len(django_requests)
+                counts_before = dict(sql_counts.get(case['name'], {'total': 0, 'categories': 0, 'writes': 0}))
+            try:
+                assert_case(test, base, case, observe=lambda result: received.append(result))
+                with sql_lock:
+                    observed = django_requests[observation_start:]
+                    counts_after = dict(sql_counts.get(case['name'], counts_before))
+                assert_upstream(observed, case, expect_django)
+                counts = {key: counts_after[key] - counts_before[key] for key in counts_before}
+                assert counts['writes'] == 0, counts
+                if expect_django and 'expected_category_queries' in case:
+                    assert counts['categories'] == case['expected_category_queries'], (case['name'], counts)
+                assert snapshot() == before, case['name'] + ': read changed managed state'
+                row = {'name': case['name'], 'success': True, 'status': received[0][0],
+                       'django_requests': observed, 'managed_state_unchanged': True}
+                if expect_django:
+                    row['queries'] = counts
+                destination.append(row)
+            except Exception as error:
+                failures.append(label + ':' + case['name'])
+                destination.append({'name': case['name'], 'success': False, 'failure': str(error),
+                                    'actual_status': received[0][0] if received else None,
+                                    'actual_response': received[0][1] if received else None})
+            result_path.write_text(json.dumps(report, indent=2) + '\n')
+
+    def database_writes():
+        # Unlike the Django execute wrapper, these PostgreSQL counters also
+        # include Go and rolled-back DML. Sample after the Go pool is closed so
+        # its backend statistics are flushed; fixture PG tests run beforehand.
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT pg_stat_force_next_flush()')
+            cursor.execute('SELECT pg_stat_clear_snapshot()')
+            cursor.execute('SELECT tup_inserted,tup_updated,tup_deleted FROM pg_stat_database WHERE datname=current_database()')
+            return dict(zip(('inserted', 'updated', 'deleted'), cursor.fetchone()))
     try:
         owner = user(220000, 1, first_name='Owner', last_name='One')
         foreign = user(220001, 1, first_name='Foreign', last_name='Two')
@@ -199,10 +260,25 @@ def run(work, log, tool_env, address):
         add('negotiation-before-token', p.pk, {'detail': 'Could not satisfy the request Accept header.'},
             status=406, actor='not-a-jwt', headers={'Accept': 'text/html'})
         add('unsupported-format', p.pk, {'detail': 'Not found.'}, status=404, suffix='?format=xml')
+        add('empty-format', p.pk, expected, suffix='?format=')
+        add('last-empty-format', p.pk, expected, suffix='?format=xml&format=')
+        add('format-before-accept-and-token', p.pk, {'detail': 'Not found.'}, status=404,
+            suffix='?format=xml', headers={'Accept': 'text/plain'}, actor='not-a-jwt')
         add('query-ignored', p.pk, expected, suffix='?one_fee_payment=true&unknown=x')
         add('get-json-body-ignored', p.pk, expected, body={'payment_id': uid(229999)})
         add('missing', uid(229999), {'msg': 'Pagamento non trovato'}, status=404)
         add('malformed-uuid', 'not-a-uuid', ['badly formed hexadecimal UUID string'], status=400)
+        add('malformed-uuid-nonhex32', 'g' * 32,
+            ["invalid literal for int() with base 16: 'gggggggggggggggggggggggggggggggg'"], status=400)
+        for label, value in [('plus', '+' + 'f' * 31), ('leading-space', ' ' + 'f' * 31),
+                             ('trailing-space', 'f' * 31 + ' '), ('underscore', 'f_' + 'f' * 30),
+                             ('unicode-digits', '０' * 32), ('hex-prefix', '0x' + 'f' * 30),
+                             ('hex-prefix-underscore', '0x_' + 'f' * 29)]:
+            add('uuid-integer-grammar-' + label, quote(value, safe=''), {'msg': 'Pagamento non trovato'}, status=404)
+        add('uuid-invalid-quote', quote("'" + 'g' * 31, safe=''),
+            ['invalid literal for int() with base 16: "\'ggggggggggggggggggggggggggggggg"'], status=400)
+        add('uuid-invalid-backslash', quote('\\' + 'g' * 31, safe=''),
+            ["invalid literal for int() with base 16: '\\\\ggggggggggggggggggggggggggggggg'"], status=400)
         add('method-before-uuid', 'not-a-uuid', {'detail': 'Method "POST" not allowed.'}, method='POST', status=405)
         add('uuid-compact', str(p.pk).replace('-', ''), expected)
         add('uuid-uppercase', str(p.pk).upper(), expected)
@@ -227,12 +303,60 @@ def run(work, log, tool_env, address):
             row = payment(number, **values)
             add(label, row.pk, {'msg': 'Pagamento non trovato'} if label == 'deleted-payment' else None,
                 status=404 if label == 'deleted-payment' else 500)
+        # SQL seeds keep fractional JSON tokens intact before PostgreSQL JSONB
+        # normalization and Django's JSON decoder. Python float fixture values
+        # would round before storage and could not detect this wire difference.
+        from django.db import connection
+        raw_numbers = '{"integer":9007199254740993,"fraction":9007199254740993.0,"tiny":1e-400}'
+        expected_numbers = {'integer': 9007199254740993, 'fraction': 9007199254740992.0, 'tiny': 0.0}
+        raw_overflow = '{"fraction":' + '1' + '0' * 400 + '.0}'
+        for index, (label, raw, value, status) in enumerate([
+            ('number-types', raw_numbers, expected_numbers, 200),
+            ('exponent-integer', '{"value":1e400}', {'value': 10 ** 400}, 200),
+            ('fraction-overflow', raw_overflow, None, 500),
+        ]):
+            row = payment(226800 + index)
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE application_payment SET course=%s::jsonb WHERE payment_id=%s', [raw, str(row.pk)])
+            add('course-json-' + label, row.pk, payload(course=value) if status == 200 else None, status=status)
+            meta_row = payment(226810 + index)
+            raw_meta = '[{"payment_category_id":"' + str(foreign_category.pk) + '","value":' + raw + '}]'
+            with connection.cursor() as cursor:
+                cursor.execute('UPDATE application_payment SET meta_payment_categories=%s::jsonb WHERE payment_id=%s', [raw_meta, str(meta_row.pk)])
+            meta_value = [{'payment_category_id': str(foreign_category.pk), 'value': value, 'payment_category_name': 'Foreign category'}]
+            add('meta-json-' + label, meta_row.pk, payload(meta=meta_value) if status == 200 else None,
+                status=status, categories=2 if status == 200 else None)
         for count in (0, 1, 8, 32):
             meta = [{'payment_category_id': uid(225001), 'amount': '2.50', 'subject': 0, 'extra': i} for i in range(count)]
             row = payment(226020 + count, meta_payment_categories=meta)
             described = [{**value, 'payment_category_name': 'Foreign category'} for value in meta]
             add(f'meta-{count}', row.pk, payload(meta=described), categories=count + 1,
                 concern='Meta-category lookup is unscoped and repeats one SELECT per entry.')
+        distinct_categories = []
+        for index in range(128):
+            name = f'Mixed category {index}'
+            row = seed(PaymentCategory, 225100 + index, name=name,
+                       sport_association=(own, other, None)[index % 3],
+                       deleted=index % 4 == 0, archived=index % 5 == 0)
+            distinct_categories.append((str(row.pk), name))
+        for count in (0, 1, 8, 32, 128):
+            selected = distinct_categories[:count]
+            # Retain duplicated entries, type distinctions and integers above
+            # binary64 precision while independently deduplicating SQL lookups.
+            if selected:
+                selected = [*selected, selected[0], selected[-1]]
+            meta = [{'payment_category_id': ident, 'large_integer': 900719925474099312345 + index,
+                     'mixed': [False, 0, None, '0'], 'payment_category_name': 'stale'}
+                    for index, (ident, name) in enumerate(selected)]
+            described = [{**value, 'payment_category_name': selected[index][1]} for index, value in enumerate(meta)]
+            row = payment(226500 + count, meta_payment_categories=meta)
+            add(f'meta-distinct-mixed-{count}', row.pk, payload(meta=described), categories=len(meta) + 1)
+        integer_meta = [{'payment_category_id': UUID(str(foreign_category.pk)).int, 'amount': '1.25'}]
+        integer_meta_payment = payment(226700, meta_payment_categories=integer_meta)
+        add('meta-integer-uuid', integer_meta_payment.pk,
+            payload(meta=[{**integer_meta[0], 'payment_category_name': 'Foreign category'}]), categories=2)
+        add('group-integer-uuid', p.pk, {'msg': 'Pagamento non trovato'}, status=404,
+            headers={'X-Group-Id': '+' + '0' * 31})
         for i, meta in enumerate(({'payment_category_id': uid(225000)}, [{}], [{'payment_category_id': uid(229999)}],
                                   [{'payment_category_id': 'bad'}], [{'payment_category_id': None}], 'bad', [None])):
             row = payment(226100 + i, meta_payment_categories=meta)
@@ -325,6 +449,18 @@ def run(work, log, tool_env, address):
         add('ordinary-installment-before-own-carnet', fallback_payment.pk,
             payload(subject=2, info=foreign_course_info),
             concern='Ordinary public lookup retains installment-before-carnet precedence across associations.')
+        nullable_carnet = seed(Carnet, 227302, title=None, description=None, fee=Decimal('0.00'), sport_association=None)
+        nullable_carnet_payment = payment(226313, subject=2)
+        seed(CarnetSubscription, 227405, carnet_id=nullable_carnet, subscription=subscription, payment=nullable_carnet_payment)
+        add('carnet-nullable-offering', nullable_carnet_payment.pk,
+            payload(subject=2, info={'title': 'Carnet (None)', 'description': None, 'fee': 0,
+                                    'sport_association': {'denomination': '', 'tax_code': '', 'checkout_info': ''}}, carnet=True))
+        nan_carnet = seed(Carnet, 227303, title='Legacy non-finite fee', fee=Decimal('0.00'), sport_association=own)
+        nan_carnet_payment = payment(226314, subject=2)
+        seed(CarnetSubscription, 227406, carnet_id=nan_carnet, subscription=subscription, payment=nan_carnet_payment)
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE application_carnet SET fee='NaN'::numeric WHERE carnet_id=%s", [str(nan_carnet.pk)])
+        add('carnet-nan-fee', nan_carnet_payment.pk, status=500)
 
         family_payment = payment(226400, user=None, associate=family)
         outsider_payment = payment(226401, user=stranger, associate=outsider)
@@ -372,51 +508,87 @@ def run(work, log, tool_env, address):
                                    'extra': 0, 'payment_category_name': 'Foreign category'}]),
                     actor=token(actor), headers=headers,
                     concern='Scoped payment access does not scope its direct category or meta-category lookup.')
-        assert len(cases) == 109 and len(cases) == len({case['name'] for case in cases})
-        fixture = {'scope': 'public payment-info characterization, not approved security semantics', 'cases': cases}
+        assert len(cases) == 137 and len(cases) == len({case['name'] for case in cases})
+        fixture = {'matrix_version': MATRIX_VERSION,
+                   'scope': 'public payment-info characterization, not approved security semantics', 'cases': cases}
+        validate_fixture(test, fixture)
         fixture_path = output / 'fixture.json'
         fixture_path.write_text(json.dumps(fixture, indent=2) + '\n'); fixture_path.chmod(0o600)
         thread = threading.Thread(target=server.run, daemon=True); thread.start()
         poll(lambda: server.started, bool, timeout=10)
         base = f'http://127.0.0.1:{server.servers[0].sockets[0].getsockname()[1]}'
-        for case in cases:
-            before = snapshot()
-            received = []
-            try:
-                assert_case(test, base, case, observe=lambda result: received.append(result))
-                counts = sql_counts.get(case['name'], {'total': 0, 'categories': 0, 'writes': 0})
-                assert counts['writes'] == 0, counts
-                if 'expected_category_queries' in case:
-                    assert counts['categories'] == case['expected_category_queries'], (case['name'], counts)
-                assert snapshot() == before, case['name'] + ': read changed managed state'
-                observations.append({'name': case['name'], 'success': True, 'status': received[0][0], 'queries': counts})
-            except Exception as error:
-                failures.append(case['name'])
-                observations.append({'name': case['name'], 'success': False, 'failure': str(error),
-                                     'actual_status': received[0][0] if received else None,
-                                     'actual_response': received[0][1] if received else None})
-            result_path.write_text(json.dumps(report, indent=2) + '\n')
+        replay(base, 'django-native', observations, expect_django=True)
         report['http_cases'] = len(cases)
         report['baseline_concerns'] = sorted({case['baseline_concern'] for case in cases if case.get('baseline_concern')})
         report['intentional_corrections'] = [case['intentional_correction'] for case in cases if case.get('intentional_correction')]
         if failures:
             raise AssertionError(f'payment-info explicit expectations failed: {failures}; see {result_path}')
+        if os.environ.get('TESTS_PAYMENT_INFO_GO') in ('1', 'repository'):
+            from django.conf import settings
+            database = settings.DATABASES['default']
+            dsn = (f"host={database['HOST']} port={database['PORT']} dbname={database['NAME']} "
+                   f"user={database['USER']} password={database['PASSWORD']} sslmode=disable")
+            overlay = os.environ.get('TESTS_PAYMENT_INFO_REPOSITORY_OVERLAY')
+            extra = ['-overlay', overlay] if overlay else []
+            result = subprocess.run(['go', 'test', *extra, '-race', '-tags=paymentinfointegration', './internal/repository',
+                            '-run', '^TestPaymentInfo', '-count=1', '-v'], cwd=ROOT / 'BE_GO',
+                           env={**tool_env, 'ASSOZETA_PAYMENT_INFO_DSN': dsn},
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=180)
+            log.write(result.stdout); log.flush()
+            result.check_returncode()
+            expected_groups = {'TestPaymentInfoHydrationReadOnlyLive', 'TestPaymentInfoScopeAndRelationsLive',
+                               'TestPaymentInfoRawJSONLive', 'TestPaymentInfoFirstRelationAfterScopeLive',
+                               'TestPaymentInfoMetadataQueriesBoundedLive', 'TestPaymentInfoBlockedQueryCancellationLive'}
+            passed_groups = set(re.findall(r'^--- PASS: (TestPaymentInfo\w+) \(', result.stdout, re.MULTILINE))
+            assert passed_groups == expected_groups, ('repository integration group coverage', passed_groups)
+            report['go_repository_integration'] = True
+            report['go_repository_groups'] = sorted(passed_groups)
         if os.environ.get('TESTS_PAYMENT_INFO_GO') == '1':
             from TESTS.adapters.go.payment_category_server import native_server
-            with native_server(work, log, tool_env, address) as runtime:
-                go_before, received = snapshot(), []
-                try:
-                    assert_case(test, runtime['base_url'], cases[0], observe=lambda result: received.append(result))
-                except AssertionError as mismatch:
-                    contract_failure = str(mismatch)
-                else:
-                    raise AssertionError('Go payment-info route is now implemented; replace the expected-red absence probe with full replay')
-                go_result = received[0][:2]
-                report['go_route_probe'] = {'status': go_result[0], 'body': go_result[1],
-                                            'expected_django_status': 200, 'parity': False,
-                                            'portable_contract_failure': contract_failure}
-                assert go_result == (404, {'message': 'Not Found'}), go_result
-                assert snapshot() == go_before, 'unimplemented Go read changed managed state'
+            report['go_cases'] = []
+            writes_before = database_writes()
+            with native_server(work, log, tool_env, address, versioned=versioned) as runtime:
+                replay(runtime['base_url'], 'go-native', report['go_cases'], expect_django=False)
+                if versioned:
+                    from TESTS.adapters.caddy import proxy
+                    django_upstream = f'host.docker.internal:{server.servers[0].sockets[0].getsockname()[1]}'
+                    report['versioned'] = {'v1': [], 'v2': []}
+                    with proxy(django_upstream, runtime['proxy_upstream'], log, network=runtime.get('network')) as (gateway, image):
+                        replay(gateway + '/api/v1', 'caddy-v1', report['versioned']['v1'], expect_django=True)
+                        replay(gateway + '/api/v2', 'caddy-v2', report['versioned']['v2'], expect_django=False)
+                        report['versioned_caddy_image'] = image
+                    # A successful response on /api/v2 is insufficient runtime
+                    # evidence. Deliberately point it at Django and require our
+                    # transparent ASGI observer to reject the false-positive.
+                    before = snapshot()
+                    with sql_lock:
+                        observation_start = len(django_requests)
+                    with proxy(django_upstream, django_upstream, log) as (gateway, _):
+                        response = assert_case(test, gateway + '/api/v2', cases[0])
+                    with sql_lock:
+                        observed = django_requests[observation_start:]
+                    rejected = False
+                    try:
+                        assert_upstream(observed, cases[0], False)
+                    except AssertionError as error:
+                        rejected = 'upstream_mismatch' in str(error)
+                    assert rejected and len(observed) == 1 and response[0] == 200, ('negative control failed', observed)
+                    assert snapshot() == before, 'routing negative control changed managed state'
+                    report['routing_negative_control'] = {'success': True, 'status': response[0],
+                        'deliberate_v2_upstream': 'Django', 'rejected_reason': 'upstream_mismatch',
+                        'django_requests': observed, 'managed_state_unchanged': True}
+                    report['proxy_cleanup_verified'] = True
+                    report['versioned_http_cases'] = {name: len(rows) for name, rows in report['versioned'].items()}
+                    report['versioned_django_request_counts'] = {
+                        name: sum(len(row.get('django_requests', [])) for row in rows)
+                        for name, rows in report['versioned'].items()}
+            writes_after = database_writes()
+            report['go_and_proxy_database_writes'] = {key: writes_after[key] - writes_before[key] for key in writes_before}
+            assert all(count == 0 for count in report['go_and_proxy_database_writes'].values()), report['go_and_proxy_database_writes']
+            report['go_http_cases'] = len(cases)
+            if failures:
+                raise AssertionError(f'Go payment-info explicit expectations failed: {failures}; see {result_path}')
+            report['authored_http_parity'] = True
         report['success'] = True
     finally:
         server.should_exit = True
@@ -433,5 +605,6 @@ def run(work, log, tool_env, address):
         report['success'] = bool(report['success'] and report['cleanup_verified'])
         result_path.write_text(json.dumps(report, indent=2) + '\n')
         assert report['cleanup_verified'], 'payment-info cleanup changed unrelated managed records'
-    print(f'Django: {len(cases)} authored payment-info HTTP cases passed; exact read-only state and cleanup', flush=True)
+    backends = 'Django and Go' if report.get('authored_http_parity') else 'Django'
+    print(f'{backends}: {len(cases)} authored payment-info HTTP cases per backend passed; exact read-only state and cleanup', flush=True)
     return report
