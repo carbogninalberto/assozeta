@@ -1,4 +1,4 @@
-"""Offline source contracts: atomic profile evidence includes its audit implementation."""
+"""Offline source contracts bind atomic profile/category evidence to its audit implementation."""
 import hashlib
 import importlib.util
 import json
@@ -9,6 +9,9 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 AUDIT = ('BE/application/audit_context.py', 'BE/application/signals.py')
 VIEWS = ('BE/application/views/profile_views.py', 'BE/application/views/two_fa_views.py')
+CATEGORY_WORKFLOWS = {'payment-categories-manage', 'payment-classification-local'}
+CATEGORY_SECTIONS = {'causali-di-pagamento', 'tipologie-di-causali', 'creare-una-causale',
+                     'modificare-una-causale', 'causali-aggiuntive-nei-pagamenti', 'causali-detraibili-730'}
 
 
 class ManualAuditDependenciesTests(unittest.TestCase):
@@ -17,7 +20,7 @@ class ManualAuditDependenciesTests(unittest.TestCase):
         runner = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(runner)
         registry = runner.recipe_registry()
-        affected = [recipe['id'] for recipe in registry['recipes'] if any(
+        affected = [recipe['id'] for recipe in registry['recipes'] if recipe['id'] in CATEGORY_WORKFLOWS or any(
             path.startswith(prefix) for path in VIEWS for prefix in recipe['dependencies'])]
         self.assertTrue(affected)
         self.assertLess(len(affected), len(registry['recipes']))
@@ -31,6 +34,59 @@ class ManualAuditDependenciesTests(unittest.TestCase):
                 else:
                     # Existing workflow recipes also consume other signals in this file.
                     self.assertTrue(set(affected).issubset(selected))
+
+    def test_category_contracts_cover_scope_serializers_and_atomic_delete_without_expanding_other_sections(self):
+        script = """
+import {accountingBalanceEditorialContracts} from './docs/manuale/accounting-balance-recipes.mjs';
+console.log(JSON.stringify(accountingBalanceEditorialContracts()));
+"""
+        sections = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', script], cwd=ROOT))
+        self.assertEqual({section['id'] for section in sections if section['id'] in CATEGORY_SECTIONS}, CATEGORY_SECTIONS)
+        required = {
+            'def payment_category_add(request):': ('def payment_category_update(', 'def payment_category_delete(',
+                'payment_category.save()', "return Response({'msg': 'payment category deleted'}"),
+            'def payment_category_list(request):': ('Q(sport_association=None)', "return Response({'data': data}"),
+            'class VatManagementSerializer(': ('def validate_payment_category_id(', 'def validate_sport_association(',
+                'def create(', 'def update(', "fields = '__all__'"),
+            'def _locked_payment_category_association(': ('User.objects.select_for_update()', 'not user.is_active',
+                'scoped_queryset(request, SportAssociation.objects).select_for_update()'),
+            '_strict_audit_indexes = ContextVar(': ('def audit_index_errors_are_fatal():',
+                'with transaction.atomic():', '_strict_audit_indexes.reset(token)'),
+            'def create_audit_log_index(': ('AuditLogIndex.objects.create(', 'if audit_index_errors_are_fatal():',
+                '                raise'),
+        }
+        for section in sections:
+            contracts = section['source_contracts']
+            if section['id'] not in CATEGORY_SECTIONS:
+                self.assertFalse(any(contract['path'] in AUDIT or
+                                     contract['symbol'] == 'def _locked_payment_category_association('
+                                     for contract in contracts), section['id'])
+                continue
+            for symbol, expected in required.items():
+                with self.subTest(section=section['id'], symbol=symbol):
+                    matches = [contract for contract in contracts if contract['symbol'] == symbol]
+                    self.assertEqual(len(matches), 1)
+                    contract = matches[0]
+                    path = ROOT / contract['path']
+                    self.assertEqual(contract['reviewed_sha256'], hashlib.sha256(path.read_bytes()).hexdigest())
+                    lines = path.read_text().splitlines()
+                    start = next(index for index, line in enumerate(lines) if symbol in line)
+                    excerpt = '\n'.join(lines[start:start + contract['length']])
+                    for text in expected:
+                        self.assertIn(text, excerpt)
+
+    def test_category_authored_capture_sources_include_audit_dependencies(self):
+        script = """
+import {paymentMaintenanceAuthoredWorkflows} from './docs/manuale/payment-maintenance-authored-workflows.mjs';
+import {paymentClassificationAuthoredWorkflows} from './docs/manuale/payment-classification-authored-workflows.mjs';
+console.log(JSON.stringify({...paymentMaintenanceAuthoredWorkflows, ...paymentClassificationAuthoredWorkflows}));
+"""
+        workflows = json.loads(subprocess.check_output(['node', '--input-type=module', '-e', script], cwd=ROOT))
+        for identifier in CATEGORY_WORKFLOWS:
+            for relative in AUDIT:
+                with self.subTest(workflow=identifier, source=relative):
+                    self.assertIn(relative, workflows[identifier]['sources'])
+                    self.assertIn(relative, workflows[identifier]['dependencies'])
 
     def test_reviewed_atomic_sections_bind_helper_and_index_hashes(self):
         script = """

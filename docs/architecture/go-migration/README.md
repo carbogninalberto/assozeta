@@ -10,6 +10,12 @@ export correction and earlier manual-delivery changes. Worktree branch:
 473 uncharacterized, 4 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
+The [payment-category baseline correction](payment-categories.md) prevents
+identity/association reassignment and ownerless global mutations, and commits
+VAT, category and audit effects atomically. Its 19 focused tests and 188 existing
+Django regressions pass on private services. The Go endpoint family and portable
+HTTP oracle remain in progress; these baseline checks do not establish Go parity.
+
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful
 manual availability. Release wiring now supplies the same verified manual artifact

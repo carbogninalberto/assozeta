@@ -7180,6 +7180,7 @@
         "docs/contabilita-avanzata.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/models/balance_sheet_models.py",
         "BE/application/models/invoices_models.py",
@@ -7188,6 +7189,7 @@
         "BE/application/serializers/balance_sheet.py",
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/api_utils.py",
         "BE/application/utils/balance_sheet_utils.py",
@@ -7241,6 +7243,8 @@
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py",
@@ -7420,6 +7424,7 @@
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py",
@@ -7481,8 +7486,7 @@
         "BE/application/utils/excel_utils.py",
         "BE/application/management/commands/seed_manuale.py",
         "UI/src/utils/Functions.js",
-        "UI/src/components/formBuilder/preview-blocks/currency-input.svelte",
-        "BE/application/audit_context.py"
+        "UI/src/components/formBuilder/preview-blocks/currency-input.svelte"
       ],
       "checkpoints": [
         {
