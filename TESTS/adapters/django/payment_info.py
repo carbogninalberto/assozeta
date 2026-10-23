@@ -26,7 +26,29 @@ def uid(number):
     return f'a1000000-0000-4000-8000-{number:012d}'
 
 
-def run(work, log, tool_env, address):
+def run_native_repository_checks(log, tool_env):
+    """Mandatory Unix-socket fixture groups for the native accounts runner."""
+    from django.conf import settings
+    database = settings.DATABASES['default']
+    dsn = (f"host={database['HOST']} port={database['PORT']} dbname={database['NAME']} "
+           f"user={database['USER']} password={database['PASSWORD']} sslmode=disable")
+    overlay = os.environ.get('TESTS_PAYMENT_INFO_REPOSITORY_OVERLAY')
+    extra = ['-overlay', overlay] if overlay else []
+    result = subprocess.run(['go', 'test', *extra, '-race', '-tags=paymentinfointegration', './internal/repository',
+                    '-run', '^TestPaymentInfo', '-count=1', '-v'], cwd=ROOT / 'BE_GO',
+                   env={**tool_env, 'ASSOZETA_PAYMENT_INFO_DSN': dsn},
+                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=180)
+    log.write(result.stdout); log.flush()
+    result.check_returncode()
+    expected_groups = {'TestPaymentInfoHydrationReadOnlyLive', 'TestPaymentInfoScopeAndRelationsLive',
+                       'TestPaymentInfoRawJSONLive', 'TestPaymentInfoFirstRelationAfterScopeLive',
+                       'TestPaymentInfoMetadataQueriesBoundedLive', 'TestPaymentInfoBlockedQueryCancellationLive'}
+    passed_groups = set(re.findall(r'^--- PASS: (TestPaymentInfo\w+) \(', result.stdout, re.MULTILINE))
+    assert passed_groups == expected_groups, ('repository integration group coverage', passed_groups)
+    return sorted(passed_groups)
+
+
+def run(work, log, tool_env, address, *, go_server_factory=None, output=None):
     versioned = os.environ.get('TESTS_PAYMENT_INFO_VERSIONED') == '1'
     if versioned and os.environ.get('TESTS_PAYMENT_INFO_GO') != '1':
         raise RuntimeError('Versioned payment-info requires TESTS_PAYMENT_INFO_GO=1')
@@ -45,7 +67,7 @@ def run(work, log, tool_env, address):
     from TESTS.http_client import Client, poll
     import uvicorn
 
-    output = ROOT / 'quality-reports/go-migration/payment-info'
+    output = ROOT / 'quality-reports/go-migration/payment-info' if output is None else Path(output)
     output.mkdir(parents=True, exist_ok=True)
     result_path = output / 'http-results.json'
     result_path.write_text('{"success":false,"stage":"fixture"}\n')
@@ -160,16 +182,6 @@ def run(work, log, tool_env, address):
                                     'actual_response': received[0][1] if received else None})
             result_path.write_text(json.dumps(report, indent=2) + '\n')
 
-    def database_writes():
-        # Unlike the Django execute wrapper, these PostgreSQL counters also
-        # include Go and rolled-back DML. Sample after the Go pool is closed so
-        # its backend statistics are flushed; fixture PG tests run beforehand.
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT pg_stat_force_next_flush()')
-            cursor.execute('SELECT pg_stat_clear_snapshot()')
-            cursor.execute('SELECT tup_inserted,tup_updated,tup_deleted FROM pg_stat_database WHERE datname=current_database()')
-            return dict(zip(('inserted', 'updated', 'deleted'), cursor.fetchone()))
     try:
         owner = user(220000, 1, first_name='Owner', last_name='One')
         foreign = user(220001, 1, first_name='Foreign', last_name='Two')
@@ -524,30 +536,26 @@ def run(work, log, tool_env, address):
         if failures:
             raise AssertionError(f'payment-info explicit expectations failed: {failures}; see {result_path}')
         if os.environ.get('TESTS_PAYMENT_INFO_GO') in ('1', 'repository'):
-            from django.conf import settings
-            database = settings.DATABASES['default']
-            dsn = (f"host={database['HOST']} port={database['PORT']} dbname={database['NAME']} "
-                   f"user={database['USER']} password={database['PASSWORD']} sslmode=disable")
-            overlay = os.environ.get('TESTS_PAYMENT_INFO_REPOSITORY_OVERLAY')
-            extra = ['-overlay', overlay] if overlay else []
-            result = subprocess.run(['go', 'test', *extra, '-race', '-tags=paymentinfointegration', './internal/repository',
-                            '-run', '^TestPaymentInfo', '-count=1', '-v'], cwd=ROOT / 'BE_GO',
-                           env={**tool_env, 'ASSOZETA_PAYMENT_INFO_DSN': dsn},
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=180)
-            log.write(result.stdout); log.flush()
-            result.check_returncode()
-            expected_groups = {'TestPaymentInfoHydrationReadOnlyLive', 'TestPaymentInfoScopeAndRelationsLive',
-                               'TestPaymentInfoRawJSONLive', 'TestPaymentInfoFirstRelationAfterScopeLive',
-                               'TestPaymentInfoMetadataQueriesBoundedLive', 'TestPaymentInfoBlockedQueryCancellationLive'}
-            passed_groups = set(re.findall(r'^--- PASS: (TestPaymentInfo\w+) \(', result.stdout, re.MULTILINE))
-            assert passed_groups == expected_groups, ('repository integration group coverage', passed_groups)
-            report['go_repository_integration'] = True
-            report['go_repository_groups'] = sorted(passed_groups)
+            if go_server_factory is None:
+                report['go_repository_groups'] = run_native_repository_checks(log, tool_env)
+                report['go_repository_integration'] = True
+                report['go_repository_scope'] = {'status': 'passed', 'fixture': 'native Unix socket'}
+            else:
+                report['go_repository_integration'] = False
+                report['go_repository_groups'] = []
+                report['go_repository_scope'] = {
+                    'status': 'not_run', 'required_separately': True,
+                    'reason': 'The six native Unix-socket fixture groups are a separate mandatory gate; this injected-server run proves HTTP behavior only.'}
         if os.environ.get('TESTS_PAYMENT_INFO_GO') == '1':
-            from TESTS.adapters.go.payment_category_server import native_server
+            if go_server_factory is None:
+                from TESTS.adapters.go.payment_category_server import native_server
+                go_server_factory = native_server
             report['go_cases'] = []
-            writes_before = database_writes()
-            with native_server(work, log, tool_env, address, versioned=versioned) as runtime:
+            from django.db import connection
+            from TESTS.adapters.django.payment_info_stats import capture, compare, require_no_user_writes
+            writes_before = capture(connection)
+            with go_server_factory(work, log, tool_env, address, versioned=versioned) as runtime:
+                report['go_runtime'] = runtime.get('metadata', {})
                 replay(runtime['base_url'], 'go-native', report['go_cases'], expect_django=False)
                 if versioned:
                     from TESTS.adapters.caddy import proxy
@@ -582,9 +590,10 @@ def run(work, log, tool_env, address):
                     report['versioned_django_request_counts'] = {
                         name: sum(len(row.get('django_requests', [])) for row in rows)
                         for name, rows in report['versioned'].items()}
-            writes_after = database_writes()
-            report['go_and_proxy_database_writes'] = {key: writes_after[key] - writes_before[key] for key in writes_before}
-            assert all(count == 0 for count in report['go_and_proxy_database_writes'].values()), report['go_and_proxy_database_writes']
+            write_evidence = compare(writes_before, capture(connection))
+            report['go_and_proxy_database_writes'] = write_evidence['user_totals_delta']
+            report['go_and_proxy_database_write_guard'] = write_evidence
+            require_no_user_writes(write_evidence)
             report['go_http_cases'] = len(cases)
             if failures:
                 raise AssertionError(f'Go payment-info explicit expectations failed: {failures}; see {result_path}')

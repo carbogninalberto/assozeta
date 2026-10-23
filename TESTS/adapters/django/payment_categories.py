@@ -2405,7 +2405,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
         if scope['type'] == 'http':
             cid = next((value.decode('latin1') for key, value in scope.get('headers', [])
                         if key.lower() == b'x-correlation-id'), '')
-            if cid.startswith('payment-category-lifecycle-'):
+            if cid.startswith(('payment-category-lifecycle-', 'payment-category-transaction-')):
                 with observation_lock:
                     observed_lifecycle_requests.setdefault(cid, []).append({
                         'method': scope['method'], 'path': scope['path'],
@@ -2520,6 +2520,13 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                 'Go full persisted category/VAT/reference state differs from Django'
             )
             go_faults = fault_probes(go_base)
+            from TESTS.adapters.django.payment_category_transaction_failures import run as transaction_failures
+            go_transaction_failures = transaction_failures(
+                go_base, owner_id=owner.pk, association_id=own_association.pk,
+                token=tokens[160000], snapshot=managed_snapshot, django_requests=django_requests,
+                transport='native-go',
+                evidence_path=ROOT / 'quality-reports/go-migration/payment-categories/transaction-failures-native-go.json',
+            )
             go_concurrency = concurrency_probe(go_base)
             go_tenant = tenant_bug_probes(go_base)
             go_no_association = no_association_probe(go_base)
@@ -2553,6 +2560,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                 'final_records': go_persistence,
                 'managed_delta': go_delta,
                 'fault_probes': go_faults,
+                'transaction_failure_probes': go_transaction_failures,
                 'concurrency_probe': go_concurrency,
                 'tenant_probes': go_tenant,
                 'owner_no_association_probe': go_no_association,
@@ -2623,6 +2631,13 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                         'managed_delta': proxy_delta, 'fault_probes': proxy_faults,
                         'concurrency_probe': proxy_concurrency,
                     }
+                    if backend == 'Go':
+                        versioned_results['routes'][route]['transaction_failure_probes'] = transaction_failures(
+                            proxy_base, owner_id=owner.pk, association_id=own_association.pk,
+                            token=tokens[160000], snapshot=managed_snapshot, django_requests=django_requests,
+                            transport='caddy-v2', expected_remote_addr=measured_remote,
+                            evidence_path=ROOT / 'quality-reports/go-migration/payment-categories/transaction-failures-caddy-v2.json',
+                        )
                     if lifecycle:
                         proxy_lifecycle = run_lifecycle(
                             proxy_base, backend, owner_id=owner.pk, association_id=own_association.pk,

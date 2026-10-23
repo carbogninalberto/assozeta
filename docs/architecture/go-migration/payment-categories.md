@@ -162,6 +162,45 @@ and surrogate-separator checks, and 15,992 differential comparisons against Pyth
 3.13.16/Django 5.2.18. Focused race/vet checks and 244,946 fuzz executions pass.
 Component parser evidence does not replace endpoint HTTP validation.
 
+## Application errors and actual COMMIT failures
+
+The original four 188/43/18 workloads remain unchanged. A separate helper adds
+**six faults and six successful recoveries for native Go and for Caddy v2**:
+POST, PATCH with replacement VAT, and DELETE each exercise two failure classes.
+Parent and independent runs verify exact managed-row rollback, preservation of
+unrelated rows, complete recovery audits/indexes and owned fixture cleanup.
+
+For an application-driven failure, the private fixture temporarily renames only
+the category content-type model label, preserving its ID and all existing audit
+references. The audit INSERT/SELECT returns zero rows without a PostgreSQL error.
+Go's explicit missing-content-type error must still roll back the earlier
+category/VAT/audit/index work and return HTML500. An ignored build overlay that
+incorrectly accepts this error produces HTTP200 and partially committed state;
+the new assertion rejects it and fixture cleanup remains exact.
+
+For a COMMIT failure, a real constraint trigger is verified as DEFERRABLE and
+INITIALLY DEFERRED. It waits on an owned advisory lock; PostgreSQL must show the
+request's actual `COMMIT` blocked before the fixture releases it and raises the
+exception. HTTP must return HTML500, all managed changes must roll back, and the
+backend must leave its transaction before the successful recovery. A second
+ignored overlay that discards the COMMIT error returns HTTP200 despite database
+rollback and is rejected. The final proof uses unchanged production code.
+
+This reconciles, rather than reproduces, Django's injected pre-SQL index error.
+The Django integrity test patches `AuditLogIndex.objects.create` to throw before
+its SQL, not the resolver. Go carries the category association explicitly, uses
+closed string-only audit payloads and inserts the index directly. There is no
+request-reachable ORM constructor at that exact point. Its real healthy-transaction
+application error and actual deferred COMMIT error now have black-box coverage.
+Randomness/infrastructure failure or process panic is not established by these
+stimuli; process shutdown, ambiguous responses and activation remain separate.
+
+Sources: `TESTS/adapters/django/payment_category_transaction_failures.py` and its
+two oracle call sites. Parent receipts are in ignored
+`quality-reports/go-migration/category-transaction-parent/`, with final source
+hashes, `parent-final.log` and acceptance receipt. The two per-transport reports
+under `payment-categories/transaction-failures-*.json` are retained in CI.
+
 ## Native lifecycle races and disconnect behavior
 
 The optional [lifecycle helper](../../../TESTS/adapters/django/payment_category_lifecycle.py)
@@ -366,10 +405,9 @@ including the 10,000-row bound. Neither correction changes production behavior.
 - Extend the disposable installed backup/restore proof to normal updates,
   backend selection and coordinated activation/rollback. The current application
   fixture does not prove historical schema/data parity or active-request draining.
-- Add black-box Go coverage for pre-SQL audit-index failure. Corrected Django
-  baseline tests cover that exception path, while the 18 SQL fault scenarios do
-  not inject a failure before SQL execution. Continue preserving unrelated rows
-  in each rollback assertion.
+- Preserve the explicit distinction between Django's injected ORM-constructor
+  exception and Go's application-error/deferred-COMMIT proof. These tests do not
+  establish arbitrary infrastructure/panic failures or process shutdown.
 - Reconcile the demonstrated HTTP-disconnect semantic difference before claiming
   runtime protocol parity or activation readiness. Current probes establish each
   runtime's behavior natively and through Caddy, not a shared outcome, process
