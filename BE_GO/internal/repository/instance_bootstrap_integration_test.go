@@ -54,23 +54,37 @@ func TestInstanceBootstrapPostgresBounds(t *testing.T) {
 	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(2)
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	setupCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	exec := func(query string, args ...any) {
+	exec := func(t *testing.T, query string, args ...any) int64 {
 		t.Helper()
-		if _, err := db.ExecContext(ctx, query, args...); err != nil {
+		result, err := db.ExecContext(setupCtx, query, args...)
+		if err != nil {
 			t.Fatal(err)
+		}
+		rows, err := result.RowsAffected()
+		if err != nil {
+			t.Fatal(err)
+		}
+		return rows
+	}
+	seed := func(t *testing.T, expected int, query string, args ...any) {
+		t.Helper()
+		if rows := exec(t, query, args...); rows != int64(expected) {
+			t.Fatalf("fixture inserted %d rows, expected %d", rows, expected)
 		}
 	}
 	var firstID int64
-	if err := db.GetContext(ctx, &firstID, "SELECT min(id) FROM instance_instanceconfiguration"); err != nil {
+	if err := db.GetContext(setupCtx, &firstID, "SELECT min(id) FROM instance_instanceconfiguration"); err != nil {
 		t.Fatal(err)
 	}
-	exec(`UPDATE instance_instanceconfiguration SET primary_association_id='00000000-0000-4000-8000-000000820001',
+	exec(t, `UPDATE instance_instanceconfiguration SET primary_association_id='00000000-0000-4000-8000-000000820001',
  integration_settings='{"ai":{"settings":{"enabled":true,"api_key":"private-api-canary"}},"stripe":{"settings":{"enabled":true,"public_key":"pk_public","secret_key":"private-stripe-canary"}}}'::jsonb WHERE id=$1`, firstID)
 	if !t.Run("pair array secrets projected before snapshot", func(t *testing.T) {
-		exec(`UPDATE instance_instanceconfiguration SET integration_settings='{"ai":{"settings":[["enabled",true],["api_key","private-array-canary"]]}}'::jsonb WHERE id=$1`, firstID)
-		value, err := NewInstanceBootstrap(db).FirstInstance(ctx)
+		exec(t, `UPDATE instance_instanceconfiguration SET integration_settings='{"ai":{"settings":[["enabled",true],["api_key","private-array-canary"]]}}'::jsonb WHERE id=$1`, firstID)
+		queryCtx, queryCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer queryCancel()
+		value, err := NewInstanceBootstrap(db).FirstInstance(queryCtx)
 		if err != nil || value == nil {
 			t.Fatal(err)
 		}
@@ -80,7 +94,7 @@ func TestInstanceBootstrapPostgresBounds(t *testing.T) {
 	}) {
 		return
 	}
-	exec(`UPDATE instance_instanceconfiguration SET integration_settings='{"ai":{"settings":{"enabled":true,"api_key":"private-api-canary"}},"stripe":{"settings":{"enabled":true,"public_key":"pk_public","secret_key":"private-stripe-canary"}}}'::jsonb WHERE id=$1`, firstID)
+	exec(t, `UPDATE instance_instanceconfiguration SET integration_settings='{"ai":{"settings":{"enabled":true,"api_key":"private-api-canary"}},"stripe":{"settings":{"enabled":true,"public_key":"pk_public","secret_key":"private-stripe-canary"}}}'::jsonb WHERE id=$1`, firstID)
 	reports := map[string]json.RawMessage{}
 	prior := 1
 	for _, size := range []int{100, 1000, 10000} {
@@ -88,19 +102,30 @@ func TestInstanceBootstrapPostgresBounds(t *testing.T) {
 			// Clone fully populated current-model rows; only trusted fixture identifiers
 			// change. This deliberately bypasses singleton save(), as historical bulk
 			// rows can. It does not propose supported multiple-instance administration.
-			exec(`INSERT INTO bakney_user SELECT (jsonb_populate_record(NULL::bakney_user,to_jsonb(u)||jsonb_build_object(
-    'user_id',('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'username','BOUND-'||n,'email','bound-'||n||'@example.test'))).*
-    FROM bakney_user u CROSS JOIN generate_series($1::int,$2::int) n WHERE u.user_id='00000000-0000-4000-8000-000000810000'`, prior+1, size)
-			exec(`INSERT INTO application_sportassociation SELECT (jsonb_populate_record(NULL::application_sportassociation,to_jsonb(a)||jsonb_build_object(
-    'sport_association_id',('20000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'user_id',('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid))).*
-    FROM application_sportassociation a CROSS JOIN generate_series($1::int,$2::int) n WHERE a.sport_association_id='00000000-0000-4000-8000-000000820001'`, prior+1, size)
-			exec(`INSERT INTO instance_instanceconfiguration SELECT (jsonb_populate_record(NULL::instance_instanceconfiguration,to_jsonb(c)||jsonb_build_object(
-    'id',$3::bigint+n,'domain','bound-'||n||'.example.test','name','Later row','primary_association_id',('20000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid))).*
-    FROM instance_instanceconfiguration c CROSS JOIN generate_series($1::int,$2::int) n WHERE c.id=$3`, prior+1, size, firstID)
-			exec("ANALYZE instance_instanceconfiguration")
-			exec("ANALYZE application_sportassociation")
+			// Expanding (jsonb_populate_record(...)).* directly evaluates the
+			// conversion once per wide table column. A lateral function result
+			// evaluates it once per seeded row; fixture cost is not the read bound.
+			seed(t, size-prior, `INSERT INTO bakney_user SELECT cloned.*
+    FROM bakney_user u CROSS JOIN generate_series($1::int,$2::int) n
+    CROSS JOIN LATERAL jsonb_populate_record(NULL::bakney_user,to_jsonb(u)||jsonb_build_object(
+    'user_id',('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'username','BOUND-'||n,'email','bound-'||n||'@example.test')) AS cloned
+    WHERE u.user_id='00000000-0000-4000-8000-000000810000'`, prior+1, size)
+			seed(t, size-prior, `INSERT INTO application_sportassociation SELECT cloned.*
+    FROM application_sportassociation a CROSS JOIN generate_series($1::int,$2::int) n
+    CROSS JOIN LATERAL jsonb_populate_record(NULL::application_sportassociation,to_jsonb(a)||jsonb_build_object(
+    'sport_association_id',('20000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'user_id',('10000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid)) AS cloned
+    WHERE a.sport_association_id='00000000-0000-4000-8000-000000820001'`, prior+1, size)
+			seed(t, size-prior, `INSERT INTO instance_instanceconfiguration SELECT cloned.*
+    FROM instance_instanceconfiguration c CROSS JOIN generate_series($1::int,$2::int) n
+    CROSS JOIN LATERAL jsonb_populate_record(NULL::instance_instanceconfiguration,to_jsonb(c)||jsonb_build_object(
+    'id',$3::bigint+n,'domain','bound-'||n||'.example.test','name','Later row','primary_association_id',('20000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid)) AS cloned
+    WHERE c.id=$3`, prior+1, size, firstID)
+			exec(t, "ANALYZE instance_instanceconfiguration")
+			exec(t, "ANALYZE application_sportassociation")
 			trace.reset()
-			value, err := NewInstanceBootstrap(db).FirstInstance(ctx)
+			queryCtx, queryCancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer queryCancel()
+			value, err := NewInstanceBootstrap(db).FirstInstance(queryCtx)
 			if err != nil || value == nil || value.Name != "Fixture à ASD" || value.AssociationID == nil || *value.AssociationID != "00000000-0000-4000-8000-000000820001" {
 				t.Fatal("first PK projection changed", err)
 			}
@@ -111,7 +136,7 @@ func TestInstanceBootstrapPostgresBounds(t *testing.T) {
 				t.Fatal("encrypted integration field selected")
 			}
 			var raw []byte
-			if err := db.GetContext(ctx, &raw, "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+instanceBootstrapSQL); err != nil {
+			if err := db.GetContext(queryCtx, &raw, "EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) "+instanceBootstrapSQL); err != nil {
 				t.Fatal(err)
 			}
 			var plans []map[string]any

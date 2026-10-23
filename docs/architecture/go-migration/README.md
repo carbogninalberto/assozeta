@@ -6,15 +6,26 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 33 implementing,
-473 uncharacterized, 4 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 37 implementing,
+469 uncharacterized, 4 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
-The [payment-category baseline correction](payment-categories.md) prevents
-identity/association reassignment and ownerless global mutations, and commits
-VAT, category and audit effects atomically. Its 19 focused tests and 188 existing
-Django regressions pass on private services. The Go endpoint family and portable
-HTTP oracle remain in progress; these baseline checks do not establish Go parity.
+The [payment-category slice](payment-categories.md) implements list/create/update/
+soft-delete in Go against the corrected Django integrity baseline. Actual native
+Django/Go and shipped Caddy `/api/v1` and `/api/v2` each pass 188 HTTP cases,
+43 exact audit rows and 18 SQL-failure rollback scenarios, with complete response,
+durable-state, seeded-reference and concurrent-mutation assertions. Six real-schema PostgreSQL groups pass, with two repository LIST
+queries at 1/8/32/128 distinct VATs and observed blocked-query cancellation/recovery.
+The four routes remain `implementing`: unchanged category browser workflows,
+installed lifecycle/history, pre-SQL index failure, HTTP disconnect and owner/profile
+race coverage are separate acceptance work. The 19 focused and 188 existing Django
+baseline regressions remain scoped evidence; no endpoint is promoted to verified.
+The quality workflow now includes both category runners. Local verification also
+repairs two test-harness issues: development Silk profiling no longer contaminates
+category rollback snapshots, and the 10,000-row instance-bootstrap fixture avoids
+repeating wide-row conversion per column while retaining count/query assertions.
+The 13 integrity tests and bootstrap's 86 HTTP/four PostgreSQL checks pass. No new
+hosted-CI success is claimed; the external manual recipe-binding failure remains.
 
 The [instance bootstrap increment](instance-bootstrap.md) adds status/config/access
 with 86 actual Django/Go cases, bounded public configuration reads and truthful
@@ -528,7 +539,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 25 implementing, 6 needing review and 479
+The ledger currently has 4 deprecated, 37 implementing, 4 needing review and 469
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional
@@ -538,9 +549,12 @@ installations, full schemas, side effects and failure behavior remain work.
 
 `BE_GO/cmd/server/main.go` constructs config, bounded database/cache pools,
 repositories, services and handlers explicitly. Business code does not import
-Echo contexts. The root registers twelve upstream paths, including health/readiness,
-login, refresh, identifier checks, profile information, 2FA setup/status/updates and retired billing responses.
-Login and 2FA mutations use explicit service transactions. Startup performs no
+Echo contexts. The root registers 24 upstream paths: health/readiness,
+login/refresh/identifier checks, instance bootstrap, manual sections/assets,
+profile information/updates/password/table preferences, 2FA setup/status/updates,
+retired billing responses and the four payment-category routes. Category writes
+join existing login/profile/table/2FA mutations in explicit service transactions.
+Startup performs no
 business-schema migration; health probes and idle SIGTERM draining are tested.
 
 Configuration reuses the existing DB/Redis variables and optional deployment

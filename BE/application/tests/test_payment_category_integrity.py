@@ -11,7 +11,7 @@ from auditlog.models import LogEntry
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, connections, transaction
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, modify_settings
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -20,6 +20,10 @@ from application.models import PaymentCategory, SportAssociation, User, VatManag
 from application.models.audit_models import AuditLogIndex
 
 
+# Request profiling writes its own rows after middleware returns, outside the
+# category transaction. Disable only that development instrumentation; keep every
+# managed table in snapshot() so unrelated business/audit changes remain visible.
+@modify_settings(MIDDLEWARE={'remove': ['silk.middleware.SilkyMiddleware']})
 class PaymentCategoryIntegrityTests(TransactionTestCase):
     def setUp(self):
         setup_audit_resolvers()

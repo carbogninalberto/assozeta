@@ -109,6 +109,13 @@ jobs:
           python TESTS/adapters/django/instance_bootstrap.py --backend go
       - name: Verify shared accounts, identities and scoped resources
         run: python TESTS/adapters/django/accounts.py
+      - name: Verify payment category HTTP and durable parity through both API versions
+        env:
+          TESTS_PAYMENT_CATEGORIES_GO: '1'
+          TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
+        run: python TESTS/adapters/django/accounts.py --only payment-categories
+      - name: Verify payment category transactions, bounded reads and cancellation
+        run: python TESTS/adapters/go/payment_category_repository.py
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -171,6 +178,9 @@ jobs:
             quality-reports/go-migration/go-health/
             quality-reports/go-migration/credentials.json
             quality-reports/go-migration/permissions.json
+            quality-reports/go-migration/payment-category-repository/
+            quality-reports/go-migration/payment-categories/results.json
+            quality-reports/go-migration/payment-categories/services.log
             quality-reports/go-migration/impersonation-cache/
             quality-reports/go-migration/login-rate/
             quality-reports/go-migration/cors/
