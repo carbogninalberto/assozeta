@@ -92,11 +92,28 @@ class DjangoTrafficObserver:
 
 
 @contextlib.contextmanager
-def gateway(work, log, ui, django_port, versioned_origin, version, selected_routes=SELECTED_ROUTES):
+def proxy_network():
+    """Keep the container-to-container hop off host loopback on Linux and macOS."""
+    name = 'az-category-browser-net-' + uuid.uuid4().hex
+    label = 'org.assozeta.category-browser-network=' + name
+    def docker(*args):
+        return subprocess.run(['docker', *args], check=True, capture_output=True,
+                              text=True, timeout=60).stdout
+    docker('network', 'create', '--label', label, name)
+    try:
+        yield name
+    finally:
+        info = json.loads(docker('network', 'inspect', name))[0]
+        assert info.get('Labels', {}).get('org.assozeta.category-browser-network') == name
+        docker('network', 'rm', name)
+        assert not docker('network', 'ls', '--quiet', '--filter', 'label=' + label).strip(), 'Private proxy network remains'
+
+
+@contextlib.contextmanager
+def gateway(work, log, ui, django_port, versioned_upstream, version, *, network, selected_routes=SELECTED_ROUTES):
     """Exact allowlist routing; unknown API paths fail instead of falling back."""
     image = re.search(r'^FROM (caddy:\S+) AS production$', (ROOT / 'UI/Dockerfile').read_text(), re.M).group(1)
     name = 'az-category-browser-' + uuid.uuid4().hex
-    target = int(versioned_origin.rsplit(':', 1)[1])
     label = 'django-v1' if version == 'v1' else 'go-v2'
     config = '''{
  admin off
@@ -111,7 +128,7 @@ def gateway(work, log, ui, django_port, versioned_origin, version, selected_rout
   handle @selected {
    header X-Fixture-Backend LABEL
    uri replace /api/ /api/VERSION/ 1
-   reverse_proxy host.docker.internal:TARGET
+   reverse_proxy TARGET
   }
   @coexistence path COEXISTENCE
   handle @coexistence {
@@ -137,7 +154,7 @@ def gateway(work, log, ui, django_port, versioned_origin, version, selected_rout
  }
 }
 '''.replace('SELECTED', ' '.join('/api/' + p for p in selected_routes)).replace('COEXISTENCE',
-    ' '.join('/api/' + p for p in COEXISTENCE_ROUTES)).replace('LABEL', label).replace('VERSION', version).replace('TARGET', str(target)).replace('DJANGO', str(django_port))
+    ' '.join('/api/' + p for p in COEXISTENCE_ROUTES)).replace('LABEL', label).replace('VERSION', version).replace('TARGET', versioned_upstream).replace('DJANGO', str(django_port))
     path = work / (version + '.Caddyfile'); path.write_text(config)
     def docker(*args, check=True):
         return subprocess.run(['docker', *map(str, args)], check=check, capture_output=True, text=True, timeout=60)
@@ -145,7 +162,7 @@ def gateway(work, log, ui, django_port, versioned_origin, version, selected_rout
     image_id = json.loads(docker('image', 'inspect', image).stdout)[0]['Id']
     try:
         docker('run', '--detach', '--name', name, '--label', 'org.assozeta.category-browser=true',
-               '--add-host', 'host.docker.internal:host-gateway', '--publish', '127.0.0.1::80',
+               '--network', network, '--add-host', 'host.docker.internal:host-gateway', '--publish', '127.0.0.1::80',
                '--mount', f'type=bind,source={path},target=/etc/caddy/Caddyfile,readonly',
                '--mount', f'type=bind,source={ui},target=/srv,readonly', image_id)
         port = int(docker('port', name, '80/tcp').stdout.strip().rsplit(':', 1)[1])
@@ -157,7 +174,8 @@ def gateway(work, log, ui, django_port, versioned_origin, version, selected_rout
         poll(ready, bool, timeout=30)
         docker('exec', name, 'caddy', 'validate', '--config', '/etc/caddy/Caddyfile')
         yield origin, {'image_id': image_id, 'configuration_sha256': hashlib.sha256(config.encode()).hexdigest(),
-                       'selected_backend': label, 'canonical_api_alias_is_private_test_routing': True, 'selected_versioned_prefix': '/api/'+version, 'selected_routes': list(selected_routes), 'django_coexistence_routes': list(COEXISTENCE_ROUTES)}
+                       'selected_backend': label, 'versioned_upstream': versioned_upstream,
+                       'container_hop': 'owned Docker network alias', 'canonical_api_alias_is_private_test_routing': True, 'selected_versioned_prefix': '/api/'+version, 'selected_routes': list(selected_routes), 'django_coexistence_routes': list(COEXISTENCE_ROUTES)}
     finally:
         # No access log is enabled: URLs containing JWT query parameters and
         # Authorization/cookie headers must not enter persistent proof output.
@@ -165,7 +183,7 @@ def gateway(work, log, ui, django_port, versioned_origin, version, selected_rout
         remaining = docker('container', 'ls', '--all', '--format', '{{.Names}}', '--filter', 'name=' + name).stdout.splitlines()
         assert name not in remaining, 'Private proxy cleanup failed'
 
-def exercise(work, output, log, options, tool_env):
+def exercise(work, output, log, options, tool_env, network):
     import redis
     import uvicorn
     from django.conf import settings
@@ -279,10 +297,13 @@ def exercise(work, output, log, options, tool_env):
             # must independently reject this false-positive routing condition.
             observer.begin('v2-fallback-negative-control')
             from TESTS.http_client import Client
-            with versioned_proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{django_port}', log) as (wrong_origin, _):
-                with gateway(work, log, options.ui_dir, django_port, wrong_origin, 'v2') as (origin, _):
+            with versioned_proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{django_port}', log,
+                                 network=network, network_alias='category-versioned'):
+                with gateway(work, log, options.ui_dir, django_port, 'category-versioned:80', 'v2', network=network) as (origin, _):
                     status, _, headers = Client(origin).request('GET', '/api/instance/status', include_headers=True)
-                    assert status == 200 and headers.get('X-Fixture-Backend') == 'go-v2'
+                    assert status == 200 and headers.get('X-Fixture-Backend') == 'go-v2', {
+                        'status': status, 'fixture_backend': headers.get('X-Fixture-Backend'),
+                        'expected_status': 200, 'expected_backend': 'go-v2'}
             detected = False
             try:
                 observer.assert_no_selected('v2-fallback-negative-control')
@@ -295,7 +316,8 @@ def exercise(work, output, log, options, tool_env):
                 'django_observer': observer.snapshot('v2-fallback-negative-control')}
             assert negative_control['django_observer']['selected_requests'] == 1
             (output/'routing-negative-control.json').write_text(json.dumps(negative_control, indent=2)+'\n')
-            with versioned_proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{go_port}', log) as (versioned_origin, image):
+            with versioned_proxy(f'host.docker.internal:{django_port}', f'host.docker.internal:{go_port}', log,
+                                 network=network, network_alias='category-versioned') as (_, image):
                 for version in ('v1', 'v2'):
                     baseline_categories = list(PaymentCategory.objects.values().order_by('pk'))
                     baseline_payments = list(Payment._base_manager.values().order_by('pk'))
@@ -305,7 +327,7 @@ def exercise(work, output, log, options, tool_env):
                     audit_before = {row['id'] for row in audit_baseline}
                     index_baseline = list(AuditLogIndex.objects.values().order_by('pk'))
                     observer.begin(version)
-                    with gateway(work, log, options.ui_dir, django_port, versioned_origin, version) as (origin, routing):
+                    with gateway(work, log, options.ui_dir, django_port, 'category-versioned:80', version, network=network) as (origin, routing):
                         target = output/version; target.mkdir(exist_ok=True)
                         for stale in ('browser.json', 'validation.json'): (target/stale).unlink(missing_ok=True)
                         fixture = dict(origin=origin, version=version, username=writer.username, password=password,
@@ -468,7 +490,9 @@ def main():
             call_command('migrate', interactive=False, verbosity=0, run_syncdb=True, stdout=log, stderr=log)
             from application.audit_resolvers import setup_audit_resolvers
             setup_audit_resolvers()
-            result['versions'], result['routing_negative_control'] = exercise(work, output, log, options, tool_env)
+            with proxy_network() as network:
+                result['versions'], result['routing_negative_control'] = exercise(work, output, log, options, tool_env, network)
+            result['private_proxy_network_removed'] = True
         finally:
             try:
                 if 'django.db' in sys.modules:

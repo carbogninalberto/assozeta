@@ -1188,6 +1188,10 @@ checkout. Category operations use the selected versioned API; unimplemented
 payment operations and their dependencies remain explicitly allowlisted real
 Django coexistence. Archive/unarchive has no existing UI control, so its separate
 browser check uses authenticated PATCH followed by visible reload and readback.
+The category browser adapter connects its private gateway to the shipped Caddy
+container through an owned Docker network alias. Browser ports remain bound to
+host loopback; the container hop does not rely on Docker Desktop host networking.
+Both containers and the labeled network must be removed before success.
 The category CI job runs HTTP, lifecycle, PostgreSQL and image checks independently
 of the foundation job; the frontend job reuses its one built UI image. The full
 account suite also runs unchanged in its own mandatory job, preserving sequential

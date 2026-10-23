@@ -12,7 +12,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 @contextlib.contextmanager
-def proxy(django, golang, log, *, operations=None, network=None):
+def proxy(django, golang, log, *, operations=None, network=None, network_alias=None):
+    if network_alias and not network:
+        raise ValueError('A proxy network alias requires an owned Docker network')
     image = re.search(r'^FROM (caddy:\S+) AS production$',
                       (ROOT / 'UI/Dockerfile').read_text(), re.M).group(1)
     name = 'assozeta-routing-' + uuid.uuid4().hex[:12]
@@ -40,6 +42,7 @@ def proxy(django, golang, log, *, operations=None, network=None):
         try:
             docker('run', '--rm', '-d', '--name', name,
                    *(['--network', network] if network else []),
+                   *(['--network-alias', network_alias] if network_alias else []),
                    '--add-host', 'host.docker.internal:host-gateway',
                    '-p', '127.0.0.1::80', '-e', 'SITE_ADDRESS=:80',
                    '-v', f'{work}/Caddyfile:/etc/caddy/Caddyfile:ro',
