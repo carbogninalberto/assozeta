@@ -10,6 +10,21 @@ await scenario({id,actions:async({page,api,actor,input,capture,report})=>{
     const widget=async(name,key,request=api)=>(await read('statistic/dashboard?widget='+name,request)).data[key];
     const profile=()=>read('profile/info');
     const originalLayout=(await profile()).user_data.dashboard_layout;
+    // The later carnet link opens this baseline member's details. That real
+    // GET enqueues a missing registration PDF; settle it before recording the
+    // baseline so its legitimate asynchronous completion cannot look like a
+    // forbidden mutation or an incomplete owned-fixture cleanup.
+    const baselineMember=input.subscription_ids[0];
+    await read(`subscription/${baselineMember}/info`);
+    let baselineDocument;
+    await expect.poll(async()=>{
+        baselineDocument=Object.values((await read('subscription/list?pagination[perpage]=100')).data)
+            .find(row=>row.subscription_id===baselineMember);
+        return Boolean(baselineDocument?.document&&baselineDocument?.document_token);
+    },{timeout:120000,intervals:[250,500,1000]}).toBe(true);
+    const baselinePdf=await api(`document/retrieve/${baselineDocument.document}?download=true&token=${baselineDocument.document_token}`);
+    expect(baselinePdf.status()).toBe(200);
+    expect((await baselinePdf.body()).subarray(0,5).toString()).toBe('%PDF-');
     const originalSubscriptions=(await read('subscription/list?pagination[perpage]=100')).data;
     const originalPayments=(await read('payment/list?pagination[perpage]=100')).data;
     const layout={rows:[['todaylessons','expiringcarnets','subscriptionstoapprove','expiringmedicalcertificates',
