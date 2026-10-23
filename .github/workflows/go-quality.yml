@@ -285,7 +285,7 @@ jobs:
             quality-reports/go-migration/runtime.json
 
   payment-categories:
-    name: Category HTTP, concurrency and packaged image
+    name: Payment HTTP, concurrency and packaged image
     runs-on: ubuntu-24.04
     # Keep this growing real-service family independent of the foundation job.
     timeout-minutes: 30
@@ -348,6 +348,7 @@ jobs:
           TESTS_PAYMENT_INFO_VERSIONED: '1'
         run: |
           python -m unittest TESTS.contracts.test_payment_info_json -v
+          python TESTS/adapters/django/payment_info_stats_check.py
           python TESTS/adapters/django/accounts.py --only payment-info
       - name: Verify transactions, bounded reads and cancellation
         run: python TESTS/adapters/go/payment_category_repository.py
@@ -355,18 +356,24 @@ jobs:
         run: |
           docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-category:test BE_GO
           python TESTS/adapters/go/payment_category_image.py --image assozeta-go-category:test --expected-revision "${{ github.sha }}"
+      - name: Verify packaged payment-info HTTP on native and versioned routes
+        run: python TESTS/adapters/go/payment_info_image.py --image assozeta-go-category:test --expected-revision "${{ github.sha }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: go-payment-category-evidence
-          # The payment-info fixture contains JWTs; allow only its two reports.
+          # Payment-info fixtures contain JWTs; allow only named result reports.
           path: |
             quality-reports/go-migration/payment-category-repository/
             quality-reports/go-migration/payment-categories/results.json
             quality-reports/go-migration/payment-categories/services.log
             quality-reports/go-migration/payment-categories/lifecycle-*.json
+            quality-reports/go-migration/payment-categories/transaction-failures-*.json
             quality-reports/go-migration/payment-info/results.json
             quality-reports/go-migration/payment-info/http-results.json
+            quality-reports/go-migration/payment-info-image/results.json
+            quality-reports/go-migration/payment-info-image/http-results.json
+            quality-reports/go-migration/payment-info-stats/results.json
             quality-reports/go-migration/payment-category-image/
 
   profile-browser:

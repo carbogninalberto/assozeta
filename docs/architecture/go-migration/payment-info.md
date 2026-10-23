@@ -5,7 +5,7 @@ public Django checkout read. Parent and independent runs each pass **137 authore
 HTTP cases against native Django, native Go and shipped Caddy v1/v2**: 548 request
 executions per complete run. Expected responses come from explicit fixture inputs,
 not captured output. The ledger remains `needs_review`; public disclosure policy,
-packaged-image, browser and installed lifecycle acceptance remain unfinished.
+browser, historical-data and installed lifecycle acceptance remain unfinished.
 
 ## Implementation and established contract
 
@@ -57,8 +57,8 @@ Both hydration and metadata reads are observed blocked in PostgreSQL. Cancellati
 then releases the reader's query, transaction, blocking wait and pool connection
 while the blocker is still held. Recovery succeeds after release. Read projection
 checks execute inside a PostgreSQL-enforced read-only transaction; production
-HTTP readback separately verifies unchanged managed rows and zero aggregate
-PostgreSQL INSERT/UPDATE/DELETE counters after server connection cleanup.
+HTTP readback separately verifies unchanged managed rows and zero user-table
+INSERT/UPDATE/DELETE deltas after server connection cleanup.
 
 Every HTTP workload checks complete responses, JSON kinds, selected headers and
 full managed-table state. An independent Django ASGI observer sees all 137 v1
@@ -72,6 +72,60 @@ a UUID error-quoting correction. Exhaustive scalar classification identifies the
 627 printable additions between Go's Unicode 15.0 and Python's Unicode 15.1;
 the local quote helper includes those verified ranges. This is component evidence,
 not a claim of every possible transport or Unicode input.
+
+## Packaged HTTP proof
+
+The parent and independent reviewer each pass the same four 137-case workloads
+using the immutable Go image built from `c742cd2`. The parent image ID is
+`sha256:6ce77683d8f3f0f0b958faf2646df34781b298b22f806ef6d48d9f3d0047538c`,
+Linux arm64, UID 10001, read-only root and no mounted executable. Actual Docker
+PostgreSQL and Redis, binary revision/version and health metadata are checked.
+The parent run finishes in 128.69 seconds with unchanged managed state, zero DML
+across 128 user tables, 137 Django-observed v1 requests, zero v2 requests,
+deliberate HTTP200 fallback rejection and complete owned resource cleanup.
+An older revision-bound image reaches the route and fails with actual HTTP404;
+its separate cleanup passes.
+
+The image adapter injects only the server lifetime into the existing oracle.
+Its report explicitly records the six native repository groups as **not run;
+required separately**. CI retains those mandatory groups and runs the packaged
+HTTP check using the image already built for categories. The image oracle uses
+a fresh private directory so native receipts survive and stale success cannot
+be copied after an early failure. Only named safe JSON reports are uploaded;
+JWT fixtures and private environment files are excluded. Independent mocked
+infrastructure probes verify failure receipts and cleanup after connection-close,
+setup/oracle and source-drift failures; these probes are not HTTP or Docker proof.
+
+These are current-schema packaged reads, not installed switching, historical
+migration, provider checkout, browser or complete payment-info acceptance.
+Parent receipt: `quality-reports/go-migration/payment-info-image-parent/parent-acceptance.json`.
+
+## PostgreSQL write-guard correction
+
+Hosted quality run `40037197739` at `c742cd2` passed the four HTTP workloads and
+six repository groups but failed the former whole-database write counter. Every
+other substantive quality job passed; the aggregate correctly remained failed.
+The parent reproduced the exact **114 inserts, 145 updates and one delete**
+locally: `pg_catalog.pg_statistic` accounted for 108/145/0 and its TOAST table for
+6/0/1. All **128 user tables** retained zero deltas. These are local per-table
+diagnostics; the original hosted receipt did not capture table attribution.
+
+The guard now requires every other client backend in the disposable database to
+exit before both samples, flushes the remaining fixture connection and checks
+every `pg_stat_user_tables` relation across all user schemas. It checks each
+counter and OID/schema/name identity, and rejects relation replacement or a
+statistics reset. Whole-database and system-table counters remain diagnostics.
+It never resets counters to obtain a pass. This measures tuple writes, including
+rolled-back DML, alongside the unchanged per-request managed-row snapshots and
+Django SQL observer; it does not claim to detect every attempted SQL statement
+or temporary-table operation.
+
+Seven actual PostgreSQL regression cases accept catalog-only ANALYZE and reject
+committed business writes, rolled-back business writes, rolled-back writes to an
+operational table outside the public schema, same-name table replacement,
+statistics reset and an undrained client. The runner uses its own socket-only
+cluster, verifies cleanup and is a mandatory CI step. The parent reran it on
+production Python and reran all four HTTP workloads and six repository groups.
 
 ## Intentional scope correction and unresolved policy
 
@@ -113,6 +167,10 @@ review and have not been silently refreshed or published.
 LC_ALL=C LANG=C TESTS_PAYMENT_INFO_GO=1 TESTS_PAYMENT_INFO_VERSIONED=1 \
   python TESTS/adapters/django/accounts.py --only payment-info
 python -m unittest TESTS.contracts.test_payment_info_json
+python TESTS/adapters/django/payment_info_stats_check.py
+# Use an already built immutable image and its full embedded source revision:
+python TESTS/adapters/go/payment_info_image.py --image "$GO_TEST_IMAGE" \
+  --expected-revision "$GO_TEST_REVISION"
 cd BE_GO
 go vet ./...
 go test -race ./...
@@ -120,8 +178,9 @@ go vet -tags=paymentinfointegration ./...
 ```
 
 The adapter requires all six PostgreSQL group names; a successful zero-test run
-cannot pass. CI runs the native/versioned oracle and uploads only its two reports,
-excluding the token-bearing fixture. Baseline-only execution remains available
+cannot pass. CI runs the native/versioned oracle, seven write-guard regressions and packaged
+HTTP adapter, uploading only named result reports and excluding token-bearing
+fixtures. Baseline-only execution remains available
 without the two flags. Sources are `TESTS/adapters/django/payment_info.py`,
 `TESTS/contracts/test_payment_info.py` and the dedicated Go `payment_info` files.
 
