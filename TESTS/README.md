@@ -298,6 +298,7 @@ This adapter proves the cache record boundary, not target eligibility or audits.
 The separate management acceptance uses the production Python environment:
 
 ```sh
+TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY=1 \
 TESTS_IMPERSONATION_MANAGEMENT_GO=1 \
 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 \
 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 \
@@ -308,7 +309,10 @@ It runs the same 264 authored cases on Django, native Go and both shipped Caddy
 prefixes, with exact durable audit/cache effects, live eligibility, actual SQL and
 Redis failures, shortened-TTL no-renewal checks and cross-runtime session rounds.
 Five PostgreSQL integration groups separately check bounded reads, cancellation,
-eligibility and audit projection. `TESTS.test_impersonation_contract` supplies
+eligibility and audit projection. The explicit concurrency flag adds 24 direct
+native scenarios across same/mixed runtimes, with observed SQL barriers, exact
+partial effects, 16 shortened-TTL reads and a real failure-cleanup control. These
+races do not run through Caddy or the packaged image. `TESTS.test_impersonation_contract` supplies
 strict JSON and retained-state negative controls. The packaged runner
 `TESTS/adapters/go/impersonation_management_image.py` requires an immutable image,
 full expected revision and a source-bound build receipt; CI builds that receipt

@@ -149,11 +149,57 @@ and then verifies exact managed state and cache preservation. Source/build hashe
 remain stable; Django, Go, Caddy, owned Docker resources and temporary directories
 are cleaned up. Earlier receipts remain separate from this strengthened proof.
 
+Hosted quality run `40061247470` passes all 17 jobs, including impersonation job
+`120775075723` at published `b225276`; artifact `12547443852` retains the native
+matrix, five PostgreSQL groups, six native and twenty container Redis controls,
+and packaged acceptance. The Linux/amd64 image embeds PR merge `0f23a2f8c907d0b32fa3e47093940243ab2152c3`
+and completes its replay in 129.262 seconds. Independent parent checks match all
+826 build-context files and 1,096 oracle source hashes to published `b225276`, with
+24 shortened-TTL proofs per native/image run and exact cleanup. This establishes
+committed-image acceptance for this slice. The native race increment below is
+subsequent local evidence; complete migration acceptance remains open.
+
+## Overlapping operations and revocation
+
+A separate opt-in native matrix now passes six authored scenarios on each of
+Django/Django, Go/Go, Django/Go and Go/Django: 24 scenarios using owner/athlete
+fixtures. Temporary audit triggers hold real INSERTs on per-request advisory
+locks; independent PostgreSQL activity and blocker checks establish the boundary.
+The read/revoke case observes an ungranted lock on the exact membership table,
+which remains reliable when Django's long query text is truncated.
+
+The measured behavior is deliberately preserved:
+
+- Two DELETEs that have both read the session return 204 and create two ended
+  audits. Concurrent replacements can both return 201 and leave two distinct new
+  sessions; replacement plus DELETE leaves the new session usable.
+- Persistent real Redis DEL denial makes both parked DELETEs return 500, retaining
+  the original cache record and both ended audits. ACL restoration, a successful
+  read and explicit recovery DELETE are required.
+- A start admitted before membership revocation completes with 201; a fresh read
+  then denies eligibility. A read that has already fetched its cache record can
+  complete after DELETE revokes it; the next fresh read is denied.
+
+These are observed legacy semantics, not exactly-once, single-session or linear
+revocation guarantees. Intermediate and final audit/index rows, all 128 managed
+models and exact Redis bytes are checked. Sixteen shortened 60-second live reads
+prove no TTL renewal. A separate deliberate harness exception while an actual
+INSERT waits proves lock release, trigger/function removal, HTTP worker drainage
+and exact state cleanup; it is not counted as a parity scenario.
+
+The independently repeated parent run also passes the ordinary four 264-case
+native/Caddy workloads, four sequential cross-runtime rounds and five PostgreSQL
+groups. The **24 races use direct native URLs**, even when versioned suites run
+alongside them. Packaged-image and Caddy races are not claimed. Receipts are in
+`quality-reports/go-migration/impersonation-concurrency/{results.json,parent-audit.json}`;
+the combined source-bound oracle remains in `impersonation-management/results.json`.
+CI requests the concurrency flag explicitly and retains both safe JSON receipts.
+
 ## Remaining acceptance
 
-Final committed-image proof and unchanged browser session management remain
-separate work. Concurrent replacement/revocation
-and eligibility races, cache expiration during active requests, mutating-request
+Unchanged browser session management remains separate work. Additional race
+coverage for administrator/collaborator operations, cache expiration during active
+requests, mutating-request
 disconnect/shutdown outcomes, historical installed data and backend switch/rollback
 acceptance are not established by the current-schema matrix. No route is promoted
 to verified, and operators should not activate the incomplete replacement backend

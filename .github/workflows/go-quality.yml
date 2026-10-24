@@ -445,8 +445,9 @@ jobs:
         run: python -m unittest TESTS.test_impersonation_contract -v
       - name: Verify real Redis command faults and exact ACL restoration
         run: python TESTS/adapters/redis_faults.py --output quality-reports/go-migration/impersonation-redis-fault-controls
-      - name: Verify native and versioned impersonation contracts and live PostgreSQL checks
+      - name: Verify native and versioned impersonation contracts, races and live PostgreSQL checks
         env:
+          TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY: '1'
           TESTS_IMPERSONATION_MANAGEMENT_GO: '1'
           TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY: '1'
           TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
@@ -505,6 +506,7 @@ jobs:
           # Fixtures and service logs may contain synthetic credentials/session data.
           path: |
             quality-reports/go-migration/impersonation-management/results.json
+            quality-reports/go-migration/impersonation-concurrency/results.json
             quality-reports/go-migration/impersonation-redis-fault-controls/results.json
             quality-reports/go-migration/impersonation-container-redis-fault-controls/results.json
             quality-reports/go-migration/impersonation-management-image/build/results.json
