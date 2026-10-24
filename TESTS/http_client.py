@@ -12,7 +12,7 @@ class Client:
         self.token = token
         self.timeout = timeout
 
-    def request(self, method, path, data=None, headers=None, raw=False):
+    def request(self, method, path, data=None, headers=None, raw=False, include_headers=False):
         headers = dict(headers or {})
         if self.token:
             headers['Authorization'] = f'Bearer {self.token}'
@@ -25,14 +25,17 @@ class Client:
         except urllib.error.HTTPError as error:
             response = error
         with response:
+            response_headers = response.headers
             content = response.read()
             if raw:
-                return response.status, content
+                result = (response.status, content)
+                return (*result, response_headers) if include_headers else result
             try:
                 content = json.loads(content)
             except (ValueError, UnicodeDecodeError):
                 content = content.decode(errors='replace')[:1000]
-            return response.status, content
+            result = (response.status, content)
+            return (*result, response_headers) if include_headers else result
 
     def login(self, account):
         status, response = self.request('POST', '/oauth2/login', account)

@@ -1,5 +1,6 @@
 from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
+from application.audit_context import atomic_audit_mutation
 """
 @ copyright: Bakney SRL
 """
@@ -2076,17 +2077,19 @@ def payment_category_add(request):
         logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = PaymentCategorySerializer(data=request.data)
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # set the sport association of the payment category
-    serializer.initial_data['sport_association'] = sport_association.sport_association_id
+        serializer = PaymentCategorySerializer(data=request.data)
+        # New categories always belong to the current association.
+        serializer.initial_data['sport_association'] = sport_association.sport_association_id
 
-    if serializer.is_valid():
-        serializer.save()
-        logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
-        return Response({'data': serializer.data, 'msg': 'payment category created'}, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
+            return Response({'data': serializer.data, 'msg': 'payment category created'}, status=status.HTTP_200_OK)
 
     logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2103,24 +2106,26 @@ def payment_category_update(request, uid):
         logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # check that the payment category is of the sport association
-    payment_category = PaymentCategory.objects.filter(
-        payment_category_id=uid,
-        sport_association=sport_association
-    ).first()
+        # Validate and audit current values after concurrent mutations finish.
+        payment_category = PaymentCategory.objects.select_for_update().filter(
+            payment_category_id=uid,
+            sport_association=sport_association
+        ).first()
 
-    if not payment_category:
-        logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
+        if payment_category is None:
+            logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
+            return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = PaymentCategorySerializer(payment_category, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
-        return Response({'data': serializer.data, 'msg': 'payment category updated'}, status=status.HTTP_200_OK)
+        serializer = PaymentCategorySerializer(payment_category, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
+            return Response({'data': serializer.data, 'msg': 'payment category updated'}, status=status.HTTP_200_OK)
 
     logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2137,22 +2142,33 @@ def payment_category_delete(request, uid):
         logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user). first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # check that the payment category sport association is the same of the user
-    payment_category = PaymentCategory.objects.filter(
-        payment_category_id=uid,
-        sport_association=sport_association
-    ).first()
+        payment_category = PaymentCategory.objects.select_for_update().filter(
+            payment_category_id=uid,
+            sport_association=sport_association
+        ).first()
 
-    if payment_category is None:
-        logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
+        if payment_category is None:
+            logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
+            return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    payment_category.deleted = True
-    payment_category.save()
+        payment_category.deleted = True
+        payment_category.save()
 
     logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
 
     return Response({'msg': 'payment category deleted'}, status=status.HTTP_200_OK)
+
+
+def _locked_payment_category_association(request):
+    # Match profile_update's user -> association lock order before locking a
+    # category. Audit writes also reference the user and association, so taking
+    # their locks first avoids reversing that order during FK checks.
+    user = User.objects.select_for_update().filter(pk=request.user.pk).first()
+    if user is None or not user.is_active or user.role != User.ASSOCIATION:
+        return None
+    return scoped_queryset(request, SportAssociation.objects).select_for_update().filter(user=user).first()

@@ -22,8 +22,10 @@ const reviewed = {
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
   "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
   "UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte": "f308dd00d75f43f09aa620da3aea449bfa3a3fc42f60e037c6d72ac670a50602",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
-  "BE/application/serializers/payment_serializers.py": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f",
+  "BE/application/views/payment_views.py": "23bc385b80772d57f9eb32739860ed287fbe7106c0168a9e584221ca13beeb71",
+  "BE/application/serializers/payment_serializers.py": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa",
+  "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
+  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e",
   "BE/application/views/supplier_views.py": "a332d25f18ba6b713cf75785aa58194bdf1165e313f8c3981efd33f3d3628321",
   "UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte": "05845d83a87bccabdf06c33a7cef340d146030056e6209f629da5f3ed9f92d0f",
   "UI/src/routes/accounting/suppliers-and-customers/detail/sections/Info.svelte": "424373aefff1e91347540e0c6f6236fd0a8bafc7e1859e559c3d3420b88602e6",
@@ -63,7 +65,7 @@ const contracts = [
   ["UI/src/routes/accounting/payment/category/Categories.svelte","async function create(data)",434],
   ["UI/src/routes/accounting/payment/category/modals/EditModal.svelte","async function update(data)",253],
   ["UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte","function addMetaPaymentCategory(",149],
-  ["BE/application/views/payment_views.py","def payment_category_add(request):",87],
+  ["BE/application/views/payment_views.py","def payment_category_add(request):",94],
   ["BE/application/serializers/payment_serializers.py","class SupplierSerializer(",23],
   ["BE/application/views/supplier_views.py","def supplier_add(request):",135],
   ["UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte","function initForm()",380],
@@ -76,7 +78,12 @@ const contracts = [
   ["BE/application/views/invoice_views.py","def invoice_suppliers_add(request):",133],
   ["BE/application/views/invoice_views.py","def invoice_customers_add(request):",103],
   ["BE/application/serializers/invoice_serializers.py","class CustomerInvoiceSerializer(",67],
-  ["BE/application/models/invoices_models.py","class CustomerInvoice(",159]
+  ["BE/application/models/invoices_models.py","class CustomerInvoice(",159],
+  ["BE/application/serializers/payment_serializers.py","class VatManagementSerializer(",71],
+  ["BE/application/views/payment_views.py","def _locked_payment_category_association(",8],
+  ["BE/application/audit_context.py","_strict_audit_indexes = ContextVar(",20],
+  ["BE/application/signals.py","def create_audit_log_index(",37],
+  ["BE/application/views/payment_views.py","def payment_category_list(request):",18]
 ];
 const sections = [
   {
@@ -245,7 +252,7 @@ const sections = [
     "title": "Causali di pagamento",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -253,7 +260,7 @@ const sections = [
     "title": "Tipologie di causali",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -261,7 +268,7 @@ const sections = [
     "title": "Creare una causale",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -269,7 +276,7 @@ const sections = [
     "title": "Modificare una causale",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -277,7 +284,7 @@ const sections = [
     "title": "Causali aggiuntive nei pagamenti",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -285,7 +292,7 @@ const sections = [
     "title": "Causali detraibili 730",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/bilancio.mdx",

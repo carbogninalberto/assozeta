@@ -6,6 +6,7 @@ The private HTTP runner deliberately exposes no recovery or path-taking API.
 import json
 from pathlib import Path
 import shlex
+import subprocess
 import sys
 import tarfile
 
@@ -43,6 +44,11 @@ def restore_files(root, archive):
     root = Path(root).resolve()
     record = validate(root, archive)
     path, _ = transaction(root)
+    # Source Compose may omit this target-only service after a previous recovery
+    # attempt. Project/service labels still identify every replica before files
+    # or database state are replaced. Stop failures must leave recovery pending.
+    if record.get('target_go_backend_ref'):
+        stop_go_api_for_restore(root, record['environment'])
     # Keep a working entry point even if restoring the source distribution
     # replaces bin/assozeta with a release that has no recovery command.
     cli = root / '.updater/recovery-cli' / record['backup']['sha256'] / 'assozeta'
@@ -55,6 +61,17 @@ def restore_files(root, archive):
     write_json(path, record)
     # Keep the transaction until the data restore and running-version checks pass.
     rollback(root, keep_pending=True)
+
+
+def stop_go_api_for_restore(root, env_file):
+    project = read_env(env_file).get('COMPOSE_PROJECT_NAME') or 'assozeta'
+    containers = subprocess.check_output([
+        'docker', 'ps', '-aq', '--filter', f'label=com.docker.compose.project={project}',
+        '--filter', 'label=com.docker.compose.service=api-go',
+    ], text=True).split()
+    if containers:
+        subprocess.run(['docker', 'stop', '--time', '30', *containers], check=True)
+        subprocess.run(['docker', 'rm', *containers], check=True)
 
 
 def finish(root, env_file):

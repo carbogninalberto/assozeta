@@ -47,19 +47,20 @@ elif name == 'docker' and args[:2] == ['image', 'inspect']:
             return result, [json.loads(line) for line in calls.read_text().splitlines()]
 
     def test_prepared_images_still_run_each_full_browser_scenario(self):
-        for scenario in ('legacy', 'recovery'):
+        for scenario in ('legacy', 'legacy-controller', 'recovery'):
             with self.subTest(scenario=scenario):
                 result, calls = self.run_quality_script(scenario, '--prepared-images')
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(len([call for call in calls if call[:3] == ['docker', 'image', 'inspect']]), 4)
+                self.assertEqual(len([call for call in calls if call[:3] == ['docker', 'image', 'inspect']]), 5)
                 self.assertFalse(any(call[:2] == ['docker', 'build'] for call in calls))
                 execution = next(call for call in calls if call[0] == 'python3')
                 self.assertIn('--browser', execution)
                 self.assertEqual('--legacy' in execution, scenario == 'legacy')
+                self.assertEqual('--legacy-controller' in execution, scenario == 'legacy-controller')
                 self.assertNotIn('--operations-only', execution)
 
     def test_prepared_images_reject_missing_or_stale_images_before_tests(self):
-        for image in ('assozeta-backend:goal-test', 'assozeta-web:goal-test', 'assozeta-renderer:test', 'assozeta-updater:goal-test'):
+        for image in ('assozeta-backend:goal-test', 'assozeta-backend-go:goal-test', 'assozeta-web:goal-test', 'assozeta-renderer:test', 'assozeta-updater:goal-test'):
             for problem in ('stale_image', 'missing_image'):
                 with self.subTest(image=image, problem=problem):
                     result, calls = self.run_quality_script('recovery', '--prepared-images', **{problem: image})
@@ -69,7 +70,7 @@ elif name == 'docker' and args[:2] == ['image', 'inspect']:
     def test_local_quality_command_still_builds_all_images(self):
         result, calls = self.run_quality_script('recovery')
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(len([call for call in calls if call[:2] == ['docker', 'build']]), 4)
+        self.assertEqual(len([call for call in calls if call[:2] == ['docker', 'build']]), 5)
         self.assertTrue(any(call[0] == 'python3' for call in calls))
 
     def test_readiness_rejects_a_server_that_accepts_but_never_responds(self):

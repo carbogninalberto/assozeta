@@ -89,6 +89,23 @@ Safe JSON reports and reviewed screenshots are retained locally under
 containers and browser databases were removed. No browser trace or persisted
 browser credentials are retained.
 
+## Initial-page failure evidence
+
+The browser harness now observes only the initial pairing-page navigation and
+button action. If that stage fails, it writes `initial-pairing-failure.json`
+before closing the browser. CI retains the file through its existing JSON
+artifact rule. It records fixed route/message identifiers, button state, the
+last HTTP status for an allowlist of instance endpoints, bounded request-failure
+counts and JavaScript error categories. It never records response bodies,
+credentials, arbitrary URLs, callback queries, exception messages or DOM text.
+The observer is detached before the harness reads a generated pairing secret.
+
+Run `node --test selfhost/tests/browser/sso-initial-diagnostics.test.mjs` for the
+redaction, counter bounds and listener-cleanup checks. The CI SSO job runs these
+checks before preparing its browser fixtures. Original assertions and the
+30-second button timeout remain unchanged; diagnostic output does not turn a
+failure into success.
+
 ## Remaining deployment steps
 
 Deploy the matching receiver migration, UI, Caddy, API, worker and beat together with Bakney's pairing backend
@@ -96,3 +113,24 @@ and frontend including `handoff.html`. Configure the canonical public HTTPS
 origin and deployment-controlled Bakney API/UI addresses. Regenerate any pairing
 created using PR #15's earlier draft protocol. This verification does not claim a
 production rollout or full Bakney dashboard regression coverage.
+
+
+The raw-credential head's SSO job failed before application requests at
+`page.goto: net::ERR_NETWORK_CHANGED` for `/fixture-blank.html`
+(run 39589950373, job 119188587950). The retained bounded diagnostic contained no
+API responses, messages or page errors. `openSSOFixture` now retries that empty,
+idempotent fixture navigation once after 250 ms only for this exact Chromium
+network error. The second failure propagates; timeout, DNS, refused connection
+and closed-page errors are not retried. Pairing operations and callback navigation
+remain outside this helper. Five Node cases cover this policy, and a real local
+Chromium rehearsal injects the first error then checks successful navigation and
+same-origin storage. This is not a passing full SSO protocol rehearsal; the next
+HTTPS CI run remains required.
+
+The following full HTTPS SSO job passed on `83a58b4`:
+[run 39592376583, job 119196682388](https://github.com/carbogninalberto/assozeta/actions/runs/39592376583/job/119196682388).
+It exercises pairing and login across the two isolated HTTPS sites with the
+fixture-navigation fix present. This closes the pending SSO rehearsal above; it
+does not establish the complete Go migration or the independent manual release
+verification. The completed job log is retained locally under
+`quality-reports/go-migration/social-admission/sso-green.log`.

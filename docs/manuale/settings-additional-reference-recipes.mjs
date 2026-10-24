@@ -1,14 +1,22 @@
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
+// 2FA source re-reviewed: OTP confirmation, QR setup and successful enable/disable
+// remain unchanged. Any audit-index exception rolls back the selected user mutation;
+// locked reads and selected columns preserve concurrent profile changes.
 // Prose belongs to authored MDX; this module only records reviewed implementation evidence.
 export const settingsAdditionalReviewedSources = Object.freeze({
+  "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
+  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e",
   "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
   "UI/src/routes/profile/sections/Account.svelte": "d1ca0c771a8044a47daaad294ba07ead7618e8cda9c1123ea6dd9c3a9791c200",
-  "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+  "BE/application/views/profile_views.py": "2aa3a223244222df909cb3a77eea10e4a93a5fea7f8b4533b977eb33d87d40d4",
   "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "BE/application/services/invoice_service.py": "98ba3acf0950b310fb5e47abbd8ba57cc9737b757fa461e5c2989ab18af95519",
   "BE/docmanager/views/printing_views.py": "f9127869836c46408d9e5f48fc16733c6fce66efedb2e2fa7f96344095e01753",
-  "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+  "BE/application/views/payment_views.py": "23bc385b80772d57f9eb32739860ed287fbe7106c0168a9e584221ca13beeb71",
   "UI/src/routes/subscribe/wizard/Step1.svelte": "50bbcd39de0d80293f59f6a0953a2498efd488ebf062582ae6b964c4b9a4c4f5",
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/routes/subscribe/wizard/Step0.svelte": "3350b71dd2dd2b3cfe1790f9e91ca4d2bf5e70bd94247c5ab59b49965a9d1edf",
@@ -19,9 +27,11 @@ export const settingsAdditionalReviewedSources = Object.freeze({
   "BE/application/utils/subscriptions_utils.py": "ab922f87b8b1dd491bba41dd86eaabdefd1127c08bdaeb7be4f990657effd22a",
   "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
   "UI/src/routes/profile/sections/TwoFactor.svelte": "45f92360b4bd393d80d06c7f890ca290f172d7166eb8527eb586aa8802cd2a39",
-  "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e"
+  "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3"
 });
 const contracts = {
+  "atomic_audit_context": ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
+  "audit_index_write": ["BE/application/signals.py", "def create_audit_log_index(", 37],
   "menu": [
     "UI/src/routes/profile/ProfileMenu.svelte",
     "const pages = profilePages;",
@@ -45,7 +55,7 @@ const contracts = {
   "profile_update": [
     "BE/application/views/profile_views.py",
     "def profile_update(request):",
-    125
+    179
   ],
   "settings_api": [
     "BE/application/views/profile_views.py",
@@ -243,7 +253,9 @@ const sections = [
         "intent": "settings.firma.del.presidente.e.timbro",
         "contracts": [
             "signature",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -256,7 +268,9 @@ const sections = [
         "contracts": [
             "print_text",
             "profile_update",
-            "printed_invoice"
+            "printed_invoice",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -334,7 +348,9 @@ const sections = [
         "intent": "settings.modelli.documenti",
         "contracts": [
             "models",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -347,7 +363,9 @@ const sections = [
         "contracts": [
             "print_text",
             "extra",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -373,7 +391,9 @@ const sections = [
             "mandatory",
             "public_fields",
             "public_signature",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -411,7 +431,9 @@ const sections = [
         "intent": "settings.checkout",
         "contracts": [
             "checkout",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -529,7 +551,9 @@ const sections = [
         "contracts": [
             "stripe",
             "stripe_methods",
-            "profile_update"
+            "profile_update",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     },
     {
@@ -542,7 +566,9 @@ const sections = [
         "contracts": [
             "2fa",
             "2fa_backend",
-            "menu"
+            "menu",
+            "atomic_audit_context",
+            "audit_index_write"
         ]
     }
 ];

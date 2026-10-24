@@ -1,3 +1,6 @@
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const organizationAdditionalReviewedSources = Object.freeze({
@@ -10,12 +13,14 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/Members/shared/ExportData.svelte": "119330667e35cbc6b316abb6c45f484ef4a8aae2ea5951d477f21c32ca9f7307",
     "UI/src/components/modals/CurrentViewPrintingModal.svelte": "89cd17ec6bc9c60c50579a72a88ce83ef716dbd4ffa2719f5c0d3bd064b9be7a",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-    "BE/application/views/payment_views.py": "4f45b99318afaa7189177f73cf82863f6f281dc8a2992b15dcf299b11f8e8c34",
+    "BE/application/views/payment_views.py": "23bc385b80772d57f9eb32739860ed287fbe7106c0168a9e584221ca13beeb71",
     "UI/src/routes/profile/sections/DataManagement.svelte": "61580c5f7d859db52d040771236952ecb61ac4cf1b22b37951103a9337682395",
     "BE/application/views/export_views.py": "1620991baa696f9ea410edc33fe11a612c8dd9d7d9d5ef8ceb9b0b3cce55544a",
     "BE/application/tasks.py": "ee7d03286be8cc3e6fec84861496020ac40d2dfe56ec02102fb75c0170d35ebc",
     "UI/src/routes/profile/ProfileMenu.svelte": "160192309bf2770c1bcbc88045b1f68963dd6df947ba3a56d0c01a85266dc57d",
-    "BE/application/services/export_service.py": "b79dac9f6dcd3a4960dd0afa57c998601619df55a170a89b9c3fbe330617fc6a",
+    // main@79a9460 retains category/VAT dependencies of exported soft-deleted payments.
+    // Association scope and the pending full-export workflow remain unchanged.
+    "BE/application/services/export_service.py": "b2813077d60ce66bd3da3bfffa684d18c5a9ac6a88c4eaa1d1ce7c987eb757fc",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
     "BE/application/models/user_models.py": "fa9e0b76b80640aedc0e070505c93a75ee5f8c6220a62c07d6fb2e047626c2f6",
     "UI/src/routes/association/course/instructor/add/sections/Section1.svelte": "991fbfebdbf28eb862ce140436ee8444b3ec16dd2c187bad61cce31600b23a28",
@@ -36,7 +41,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/PaymentListArchive.svelte": "6d6a23a9476b388069d43efafa3d8446fd8cb3f493f949d96d13f937b97cf07b",
     "UI/src/routes/accounting/receipts/ReceiptList.svelte": "69b7c0c6188590a5be6db126e497cc1e7aa9dabf5ef91e2e07f05499928b7e51",
     "UI/src/routes/association/archive/Archive.svelte": "dc000f87fcd9fe66213b4b753049d0b9e254e907092ce12f6e4759fbb63d9a24",
-    "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+    "BE/application/views/profile_views.py": "2aa3a223244222df909cb3a77eea10e4a93a5fea7f8b4533b977eb33d87d40d4",
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
     "BE/application/views/collaborator_views.py": "ffa954fe33b662b6cf580c8e19474ca8a24d19b517af83f92fdf392263f48c4d",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",

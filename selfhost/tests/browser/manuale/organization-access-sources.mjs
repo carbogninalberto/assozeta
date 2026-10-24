@@ -1,11 +1,13 @@
 // Reviewed implementation targets; this module never starts a browser.
 const common = [
+    ["BE/application/audit_context.py", "_strict_audit_indexes = ContextVar(", 20],
+    ["BE/application/signals.py", "def create_audit_log_index(", 37],
     ['UI/src/components/Sidebar.svelte', 'href="/#/profile"', 35],
     ['UI/src/routes.js', "'/connected-collaborators':", 46],
     ['UI/src/utils/Permissions.js', 'export const setPermissions', 58],
     ['UI/src/routes/profile/ProfileMenu.svelte', 'Informazioni Account', 63],
     ['UI/src/routes/profile/sections/Account.svelte', 'const updateAccountInformation', 107],
-    ['BE/application/views/profile_views.py', 'def profile_update(request):', 138],
+    ['BE/application/views/profile_views.py', 'def profile_update(request):', 166],
     ['BE/application/views/profile_views.py', 'def profile_info(request):', 49],
     ['BE/application/serializers/auth_serializers.py', 'class UserAuthUpdateSerializer(', 21],
     ['BE/application/models/user_models.py', 'class User(AbstractUser):', 139],

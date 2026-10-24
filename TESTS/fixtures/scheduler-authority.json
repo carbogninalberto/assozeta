@@ -1,0 +1,954 @@
+{
+  "schema_version": 1,
+  "scope": "Pinned Django scheduler authority characterization; not Go scheduler, broker delivery, business-task parity or handoff acceptance",
+  "runtime": {
+    "celery": "5.6.2",
+    "django-celery-beat": "2.8.1"
+  },
+  "cases": {
+    "configuration_authority": {
+      "expected": {
+        "declared_count": 21,
+        "effective_names": [
+          "bakney-pairing-maintenance"
+        ],
+        "effective_task": "instance.sso.tasks.maintain_bakney_pairings",
+        "effective_interval_seconds": 60,
+        "timezone": "UTC",
+        "enable_utc": true,
+        "rate_annotations": {
+          "send_reminders": "60/m",
+          "clear_expired_subscription_tokens": "60/m",
+          "generate_coupon_if_not_exists": "4/m",
+          "change_type_of_stripe_payments": "30/m",
+          "mark_as_paid_payments_checking_stripe": "3/m",
+          "auto_mark_attendance": "4/m",
+          "renew_memberships_payments": "1/m",
+          "association_quote_assign": "1/m"
+        },
+        "declarations": {
+          "cleanup-data-restores": {
+            "source": "BE/core/celery.py",
+            "task": "instance.restore.cleanup",
+            "schedule": {
+              "kind": "interval",
+              "seconds": 3600
+            },
+            "args": []
+          },
+          "renew-memberships-payments": {
+            "source": "BE/core/celery.py",
+            "task": "renew_memberships_payments",
+            "schedule": {
+              "kind": "cron",
+              "minute": "10",
+              "hour": "0",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "clear-expired-subscription-tokens": {
+            "source": "BE/core/celery.py",
+            "task": "clear_expired_subscription_tokens",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "reset-communication-daily-email-balance": {
+            "source": "BE/core/celery.py",
+            "task": "reset_communication_daily_email_balance",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "0",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "delete-users-with-request": {
+            "source": "BE/core/celery.py",
+            "task": "delete_users_with_request",
+            "schedule": {
+              "kind": "cron",
+              "minute": "30",
+              "hour": "7",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "association-quote-assign": {
+            "source": "BE/core/celery.py",
+            "task": "association_quote_assign",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "3",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "send-reminders": {
+            "source": "BE/core/celery.py",
+            "task": "send_reminders",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "update-age-of-associates": {
+            "source": "BE/core/celery.py",
+            "task": "update_age_of_associates",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "0",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "generate-coupon-if-not-exists": {
+            "source": "BE/core/celery.py",
+            "task": "generate_coupon_if_not_exists",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*/15",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "change-type-of-stripe-payments": {
+            "source": "BE/core/celery.py",
+            "task": "change_type_of_stripe_payments",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*/45",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "mark-as-paid-payments-checking-stripe": {
+            "source": "BE/core/celery.py",
+            "task": "mark_as_paid_payments_checking_stripe",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*/20",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "clear-deleted-subscription": {
+            "source": "BE/core/celery.py",
+            "task": "clear_deleted_subscription",
+            "schedule": {
+              "kind": "cron",
+              "minute": "15",
+              "hour": "0",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "auto-archive-subscription": {
+            "source": "BE/core/celery.py",
+            "task": "auto_archive_subscription",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "1",
+              "day_of_week": "*",
+              "day_of_month": "1-4",
+              "month_of_year": "1,6,9"
+            },
+            "args": []
+          },
+          "auto-mark-attendance": {
+            "source": "BE/core/celery.py",
+            "task": "auto_mark_attendance",
+            "schedule": {
+              "kind": "cron",
+              "minute": "*/15",
+              "hour": "*",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "auto-delete-orphan-medical-certificate": {
+            "source": "BE/core/celery.py",
+            "task": "auto_delete_orphan_medical_certificate",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "3",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "send-expiring-certificate-email": {
+            "source": "BE/core/celery.py",
+            "task": "send_expiring_certificate_email",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "6",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "send-expired-certificate-email": {
+            "source": "BE/core/celery.py",
+            "task": "send_expired_certificate_email",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "7",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "send-user-partial-registration-email": {
+            "source": "BE/core/celery.py",
+            "task": "send_user_partial_registration_email",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "8",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "delete-old-audit-logs": {
+            "source": "BE/core/celery.py",
+            "task": "delete_old_audit_logs",
+            "schedule": {
+              "kind": "cron",
+              "minute": "0",
+              "hour": "0",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "cleanup-old-exports": {
+            "source": "BE/core/celery.py",
+            "task": "cleanup_old_exports",
+            "schedule": {
+              "kind": "cron",
+              "minute": "30",
+              "hour": "2",
+              "day_of_week": "*",
+              "day_of_month": "*",
+              "month_of_year": "*"
+            },
+            "args": []
+          },
+          "bakney-pairing-maintenance": {
+            "source": "BE/core/settings.py",
+            "task": "instance.sso.tasks.maintain_bakney_pairings",
+            "schedule": {
+              "kind": "interval",
+              "seconds": 60
+            },
+            "args": []
+          }
+        }
+      }
+    },
+    "cold_bootstrap": {
+      "expected": {
+        "names": [
+          "bakney-pairing-maintenance",
+          "celery.backend_cleanup"
+        ],
+        "cleanup_hour": "4",
+        "cleanup_minute": "0",
+        "cleanup_expire_seconds": 43200
+      }
+    },
+    "persisted_reconciliation": {
+      "expected": {
+        "custom_retained": true,
+        "historical_business_retained": true,
+        "configured_task": "instance.sso.tasks.maintain_bakney_pairings",
+        "configured_interval_seconds": 60,
+        "enabled": false,
+        "last_run_at": null,
+        "total_run_count": 7,
+        "one_off": true,
+        "start_time": "2026-10-23T12:00:00+00:00",
+        "args": [],
+        "kwargs": {},
+        "queue": null
+      }
+    },
+    "interval_wait": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_missed_slots": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": "2026-10-22T11:50:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 60,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "cron_step_is_field_not_interval": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/45",
+        "last": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:45:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 900,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "cron_missed_slots": {
+      "input": {
+        "kind": "cron",
+        "minute": "*/45",
+        "last": "2026-10-22T10:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 2700,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "disabled": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "enabled": false,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 5,
+        "enabled": false,
+        "count": 0
+      }
+    },
+    "future_start_ceiling": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "start": "2026-10-22T12:01:01.500000+00:00",
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 62,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "absolute_expiry": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "expires": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 100000000,
+        "enabled": false,
+        "count": 0
+      }
+    },
+    "relative_expiry_is_message_ttl": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "expire_seconds": 5,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 60,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "one_off_completed": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "one_off": true,
+        "count": 1,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 100000000,
+        "enabled": false,
+        "count": 0
+      }
+    },
+    "clocked_wait": {
+      "input": {
+        "kind": "clocked",
+        "clocked": "2026-10-22T12:00:20+00:00",
+        "one_off": true,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 20,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "clocked_due": {
+      "input": {
+        "kind": "clocked",
+        "clocked": "2026-10-22T11:00:00+00:00",
+        "one_off": true,
+        "last": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 100000000,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "spring_gap_before": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "2",
+        "timezone": "Europe/Rome",
+        "last": "2026-03-28T01:30:00+00:00",
+        "now": "2026-03-29T01:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "spring_gap_due": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "2",
+        "timezone": "Europe/Rome",
+        "last": "2026-03-28T01:30:00+00:00",
+        "now": "2026-03-29T01:30:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 82800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "fall_first_fold": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "2",
+        "timezone": "Europe/Rome",
+        "last": "2026-10-24T00:30:00+00:00",
+        "now": "2026-10-25T00:30:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 90000,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "fall_second_fold_after_dispatch": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "2",
+        "timezone": "Europe/Rome",
+        "last": "2026-10-25T00:30:00+00:00",
+        "now": "2026-10-25T01:30:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "initial_cursor": {
+      "expected": {
+        "uses_date_changed": true,
+        "start_shifts_days": 10950
+      }
+    },
+    "malformed_rows": {
+      "expected": {
+        "bad_args_enabled": false,
+        "bad_headers_enabled": true,
+        "bad_headers_in_schedule": false
+      }
+    },
+    "solar_dependency": {
+      "expected": {
+        "model_available": true,
+        "schedule_error": "ModuleNotFoundError",
+        "missing_module": "ephem"
+      }
+    },
+    "clocked_validation": {
+      "expected": {
+        "requires_one_off": true
+      }
+    },
+    "publication_failure": {
+      "expected": {
+        "error": "SchedulingError",
+        "persisted_count": 1,
+        "persisted_last": "2026-10-22T12:00:00+00:00",
+        "successful_publications": 0
+      }
+    },
+    "publication_routing": {
+      "expected": {
+        "task": "contracts.scheduler.capture",
+        "args": [
+          "fixture",
+          3
+        ],
+        "kwargs": {
+          "flag": true
+        },
+        "exchange": "scheduler-proof",
+        "routing_key": "scheduler.proof",
+        "priority": 4,
+        "header": "kept",
+        "periodic_task_name": "routing",
+        "published_at_present": true,
+        "expiration": "45000",
+        "count": 1
+      }
+    },
+    "database_change_reload": {
+      "expected": {
+        "before": 60,
+        "after": 120
+      }
+    },
+    "retired_aliases_only": {
+      "expected": {
+        "retired_disabled": 4,
+        "business_enabled": true,
+        "custom_enabled": true,
+        "marker_changed": true
+      }
+    },
+    "dispatch_cursor_no_catchup": {
+      "expected": {
+        "count": 1,
+        "last": "2026-10-22T12:00:00+00:00",
+        "due_after_dispatch": false,
+        "next_seconds": 60
+      }
+    },
+    "tick_publication_failure": {
+      "expected": {
+        "returned": 0,
+        "persisted_count": 1,
+        "persisted_last": "2026-10-22T12:00:00+00:00",
+        "publication_attempts": 1,
+        "successful_publications": 0,
+        "heartbeat_called": true
+      }
+    },
+    "cron_day_fields_intersect": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "0",
+        "day_of_month": "1",
+        "day_of_week": "1",
+        "last": "2026-10-31T00:00:00+00:00",
+        "now": "2026-11-01T00:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 7948800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_before_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T11:59:59.500000+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 0.5,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_at_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_after_boundary": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "now": "2026-10-22T12:00:01+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86399,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_already_dispatched": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_future_cursor": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": "2026-10-22T12:01:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 120,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_future_cursor": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-23T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 172800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T11:59:00+00:00",
+        "now": "2026-10-22T11:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 3600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T11:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 90000,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_reached": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_initial_cursor": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 30,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "interval_initial_started": {
+      "input": {
+        "kind": "interval",
+        "every": 60,
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "start": "2026-10-22T11:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 60,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_initial_before_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": null,
+        "date_changed": "2026-10-22T11:59:30+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_initial_at_slot": {
+      "input": {
+        "kind": "cron",
+        "minute": "0",
+        "hour": "12",
+        "last": null,
+        "date_changed": "2026-10-22T12:00:00+00:00",
+        "now": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_previous_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_future_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-23T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 174600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_same_date_before_minute": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 1800,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_previous_date_at_due_minute": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:30:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00"
+      },
+      "expected": {
+        "due": true,
+        "next_seconds": 86400,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_future_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T12:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-23T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 174600,
+        "enabled": true,
+        "count": 0
+      }
+    },
+    "utc_daily_start_same_date_same_hour": {
+      "input": {
+        "kind": "cron",
+        "minute": "30",
+        "hour": "12",
+        "now": "2026-10-22T11:00:00+00:00",
+        "last": "2026-10-21T12:00:00+00:00",
+        "start": "2026-10-22T12:00:00+00:00"
+      },
+      "expected": {
+        "due": false,
+        "next_seconds": 5400,
+        "enabled": true,
+        "count": 0
+      }
+    }
+  },
+  "gaps": [
+    "No production scheduler or ownership selector is activated",
+    "Database heap numeric-hour filtering is not yet a portable scheduling contract",
+    "No broker persistence, crash recovery, restore or Django/Go handoff proof",
+    "Static declaration authority needs an explicit product decision before restoring twenty schedules",
+    "Solar rows exist but ephem is absent in the pinned runtime",
+    "Workflow ETA commands, task retries and worker rate limits need separate transport and ownership contracts"
+  ]
+}

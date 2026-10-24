@@ -164,6 +164,67 @@ services:
       start_period: 30s
       retries: 12
 
+  # Both APIs are delivered together. Django still owns worker and Beat execution.
+  api-go: &backend-go
+    image: ${ASSOZETA_BACKEND_GO_REF:-${ASSOZETA_BACKEND_GO_IMAGE:-ghcr.io/carbogninalberto/assozeta-backend-go}:${ASSOZETA_VERSION:-latest}}
+    env_file:
+      - ${ASSOZETA_ENV_FILE:-.env}
+    environment:
+      DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
+      ASSOZETA_DEPLOYMENT_MODE: production
+      MANUAL_INDEX_PATH: /app/manuale/index.json
+      GO_LOGO_SPOOL_DIR: /var/cache/assozeta-logo
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    init: true
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - manuale_data:/app/manuale
+      # Anonymous disk-backed preparation space, never authoritative logo data.
+      - /var/cache/assozeta-logo
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/readyz"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+    security_opt:
+      - no-new-privileges:true
+    logging: *default-logging
+
+  # Explicit operational migrations run under the lifecycle caller's exclusive
+  # lease. The service is also the capability boundary for historical recovery.
+  migrate-go:
+    <<: *backend-go
+    environment:
+      DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
+      ASSOZETA_DEPLOYMENT_MODE: production
+      MANUAL_INDEX_PATH: /app/manuale/index.json
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - manuale_data:/app/manuale
+    profiles: [tools]
+    entrypoint: ["/app/migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    healthcheck:
+      disable: true
+
   worker:
     <<: *backend
     command: ["celery", "-A", "core", "worker", "--loglevel=info", "--max-tasks-per-child=50", "--concurrency=${CELERY_CONCURRENCY:-2}", "--prefetch-multiplier=2"]
@@ -211,6 +272,8 @@ services:
       - internal
     depends_on:
       api:
+        condition: service_healthy
+      api-go:
         condition: service_healthy
     restart: unless-stopped
     security_opt:

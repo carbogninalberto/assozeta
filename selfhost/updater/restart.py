@@ -134,6 +134,9 @@ class Restart:
             state = current['State']
             if current['Image'] != original['Image']:
                 raise RuntimeError('Container image changed during restart')
+            service = original.get('Config', {}).get('Labels', {}).get('com.docker.compose.service')
+            if service == 'api-go' and 'Health' not in state:
+                raise RuntimeError('Go service has no readiness check')
             if (state['Running'] and state['StartedAt'] != original['State']['StartedAt'] and
                     state.get('Health', {}).get('Status', 'healthy') == 'healthy'):
                 return
@@ -190,7 +193,10 @@ class Restart:
             app_url = read_env(self.env_file).get('APP_URL', '').rstrip('/')
             if not app_url.startswith(('http://', 'https://')):
                 raise RuntimeError('Missing installation URL')
-            for endpoint in ('/healthz', '/api/readyz'):
+            endpoints = ['/healthz', '/api/readyz']
+            if any(item['Config']['Labels']['com.docker.compose.service'] == 'api-go' for item in application):
+                endpoints.extend(('/api/v1/readyz', '/api/v2/readyz'))
+            for endpoint in endpoints:
                 while True:
                     try:
                         self.run(['curl', '--fail', '--silent', '--show-error', '--connect-timeout', '5',

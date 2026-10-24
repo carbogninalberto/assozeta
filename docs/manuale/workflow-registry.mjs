@@ -25,12 +25,23 @@ export const sharedDependencies = [
 
 export function workflowRegistry() {
     return {format: 1, shared_dependencies: sharedDependencies,
-        recipes: Object.entries(authoredWorkflows).sort(([a], [b]) => a.localeCompare(b)).map(([id, spec]) => ({
+        recipes: Object.entries(authoredWorkflows).sort(([a], [b]) => a.localeCompare(b)).map(([id, spec]) => {
+            // Shared mutation helpers participate in both capture and reuse invalidation.
+            const sources = [...spec.sources];
+            const inputs = [...(spec.dependencies || []), ...sources];
+            // payment_views also contains unrelated, non-atomic workflows;
+            // only category mutations use the strict audit helper there.
+            const categoryMutation = ["payment-categories-manage", "payment-classification-local"].includes(id);
+            if (categoryMutation || ["BE/application/views/profile_views.py", "BE/application/views/two_fa_views.py"]
+                .some(path => inputs.some(prefix => path.startsWith(prefix))))
+                sources.push("BE/application/audit_context.py", "BE/application/signals.py");
+            const captureSources = [...new Set(sources)];
+            return ({
             id, version: spec.capture_version || spec.version, script: spec.script,
             pages: [...new Set([...spec.pages, ...spec.sections.map(section => section.path)])],
-            dependencies: [...new Set([...spec.dependencies, ...spec.sources, spec.script])].sort(),
-            capture_prefix: spec.prefix, sources: spec.sources, checkpoints: spec.checkpoints,
+            dependencies: [...new Set([...spec.dependencies, ...captureSources, spec.script])].sort(),
+            capture_prefix: spec.prefix, sources: captureSources, checkpoints: spec.checkpoints,
             publication_sections: spec.sections.map(section => section.path + '#' + section.id),
             ...(spec.fixture_profile ? {fixture: spec.fixture_profile} : {}),
-        }))};
+        });})};
 }

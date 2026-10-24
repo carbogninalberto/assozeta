@@ -17,6 +17,7 @@ from .archive import Archive, RestoreError, digest
 from .replacement import require_single, replace, deletion_plan
 from .locking import operation_lock, Busy
 from .progress import RestoreProgress
+from .server_barrier import drain_go_transactions
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,10 @@ def execute(operation_id):
     # OS ownership is released on process death. Redelivery can safely retry a
     # rolled-back attempt; duplicate deliveries cannot overlap or repeat a commit.
     with operation_lock(exclusive=True, required=True):
+        # The file lease excludes newly admitted work; the server barrier also
+        # drains transactions whose client disconnected during COMMIT. Keep it
+        # before operation reads, attempts, and the fresh recovery snapshot.
+        drain_go_transactions()
         op = DataRestore.objects.get(pk=operation_id)
         if op.state not in DataRestore.ACTIVE:
             if op.state in ('completed', 'failed', 'cancelled'):
