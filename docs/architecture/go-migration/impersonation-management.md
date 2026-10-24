@@ -156,8 +156,12 @@ and packaged acceptance. The Linux/amd64 image embeds PR merge `0f23a2f8c907d0b3
 and completes its replay in 129.262 seconds. Independent parent checks match all
 826 build-context files and 1,096 oracle source hashes to published `b225276`, with
 24 shortened-TTL proofs per native/image run and exact cleanup. This establishes
-committed-image acceptance for this slice. The native race increment below is
-subsequent local evidence; complete migration acceptance remains open.
+committed-image acceptance for this slice. Subsequent hosted job `120779815977`
+in run `40062822323` also passes the native 24-race increment at `4c912c6`, plus
+the sequential packaged matrix. Parent artifact inspection matches 1,253 distinct
+source paths to that commit, including all 826 build-context files; cleanup passes.
+The image embeds PR merge `eb3286816cfa6a36350de0976a2336674bf72f83`.
+Complete migration acceptance remains open.
 
 ## Overlapping operations and revocation
 
@@ -195,10 +199,48 @@ alongside them. Packaged-image and Caddy races are not claimed. Receipts are in
 the combined source-bound oracle remains in `impersonation-management/results.json`.
 CI requests the concurrency flag explicitly and retains both safe JSON receipts.
 
+## Unchanged frontend acceptance
+
+`TESTS/adapters/django/impersonation_browser.py` and
+`TESTS/browser/impersonation.mjs` exercise the unchanged compiled frontend against
+Django/v1 and an immutable Go/v2 image built from committed `b225276`. Its full
+826-file Go context still matches the later `4c912c6` checkout. UI provenance
+checks all compiled bytes and 23 workflow source-map modules; it does not claim
+to authenticate every build dependency or the browser executable itself.
+
+Each version passes 17 independently required checkpoints and 12 ACCESS events:
+real owner/admin password login, target selection, reload, replacement with a
+restricted collaborator, visible menu permissions, stop and real Redis expiry
+followed by frontend recovery. Seven picker checks assert exact eligible IDs and
+visible rows; an owner search excludes a foreign athlete. Both actor credentials
+remain unchanged. The parent independently repeats the complete run, including
+an explicitly nondefault Chromium cache, with three harness controls passing.
+
+At each checkpoint, all 128 managed models are compared, allowing only the
+expected audit/index additions and each actor's actual login timestamp. An
+unrelated audit/index sentinel remains exact. Redis DB1 values are preserved
+apart from session changes and excluded readiness keys. This is not a zero-SQL
+claim, a DB2 WebSocket queue comparison, or exact TTL equality. New audit network
+metadata and index timestamps are not asserted as exact authored values.
+
+The parent observes 93 selected Django requests on v1 and zero on v2; request
+counts can vary with asynchronous frontend reads. A real 200 Django fallback is
+rejected while saved state/cache remain intact. The same final browser source
+fails against the preserved pre-management image at the picker GET's real 404,
+after successful login/profile. All browser contexts, Django, owned containers,
+networks and private directories are cleaned up. Parent receipts are under
+`quality-reports/go-migration/impersonation-browser-parent/`.
+
+This fixture explicitly retains Django for enumerated dashboard, search,
+association-detail, logo/export and WebSocket dependencies. Unknown API routes
+fail. It proves the selected workflow through the shipped versioned proxy;
+installed backend selection and complete frontend parity remain separate. CI
+reuses the existing profile-browser UI and Go builds and uploads only safe
+receipts/screenshots.
+
 ## Remaining acceptance
 
-Unchanged browser session management remains separate work. Additional race
-coverage for administrator/collaborator operations, cache expiration during active
+Additional race coverage for administrator/collaborator operations, cache expiration during active
 requests, mutating-request
 disconnect/shutdown outcomes, historical installed data and backend switch/rollback
 acceptance are not established by the current-schema matrix. No route is promoted
