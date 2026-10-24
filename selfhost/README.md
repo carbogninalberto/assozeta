@@ -32,6 +32,24 @@ without the service remain recoverable. Compose does not start a Go worker or
 scheduler. These commands are not a backend-switch procedure; see
 [migration lifecycle and recovery](../docs/architecture/go-migration/operational-migrations.md).
 
+The Go API prepares S3 logo responses in a private, disk-backed anonymous Docker
+volume at `/var/cache/assozeta-logo`. Compose supplies `GO_LOGO_SPOOL_DIR`; no
+operator setting or additional service is required. The image directory belongs
+to UID 10001 with mode 0700. Its root filesystem remains read-only and other
+temporary work retains the 64 MiB `/tmp` tmpfs. Historical logo reads have no
+upload-size cap, so this preparation space uses available Docker-host disk rather
+than the upload limit or the smaller tmpfs. Four responses can hold prepared
+files concurrently; disk capacity remains an operational resource requirement.
+
+Each S3 spool is unlinked before payload bytes are written and stays open only
+for its response. Closing or terminating the process releases its storage, with
+no private payload filename left for the next process. These transient files are
+not included in PostgreSQL/MinIO backups and do not need restoration. The
+`migrate-go` tool does not mount this space. Normal `compose down` can leave an
+empty anonymous volume object; this does not contain retained logo payloads.
+The existing destructive `uninstall --volumes` option removes attached volumes
+along with application data, so it must not be used merely to clean spool space.
+
 ## Install
 
 From a tagged source checkout or a self-host release bundle:

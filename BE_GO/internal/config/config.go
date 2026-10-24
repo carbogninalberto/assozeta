@@ -24,6 +24,7 @@ type Config struct {
 	WhitelabelName                string
 	EmailHostSupport              *string         `json:"-"`
 	Storage                       StorageSettings `json:"-"`
+	LogoSpoolDirectory            string          `json:"-"`
 	ProviderCABundle              string          `json:"-"`
 	SessionSecret                 string          `json:"-"`
 	Debug                         bool
@@ -211,6 +212,10 @@ func Parse(values map[string]string) (Config, error) {
 	if value, exists := values["EMAIL_HOST_SUPPORT"]; exists {
 		supportEmail = &value
 	}
+	logoSpoolDirectory, err := environmentString(values, "GO_LOGO_SPOOL_DIR", "", false)
+	if err != nil {
+		return Config{}, err
+	}
 	storage, err := parseStorage(values)
 	if err != nil {
 		return Config{}, err
@@ -231,7 +236,7 @@ func Parse(values map[string]string) (Config, error) {
 			return Config{}, err
 		}
 	}
-	return Config{Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, SessionSecret: sessionSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),

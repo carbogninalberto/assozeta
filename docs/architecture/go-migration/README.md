@@ -6,16 +6,24 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 38 implementing,
-467 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 39 implementing,
+466 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
-Hosted quality `40043636123` passes all 15 jobs at published `1539245`, including
-the packaged manifest, native bounds/cancellation, payment and unchanged checkout
-browser checks. Its independently audited foundation artifact is `12540946983`;
-the packaged Linux/amd64 image records PR merge `9725e9cf3a28d8694edf5dbf99fe28039d47ba6f`.
-Both separate manual workflows (`40043635989`, `40043636014`) stop at the existing
-recipe-binding gate. These successes do not complete backend parity.
+Hosted quality `40046002650` passes all 15 jobs at published `2715eed`, including
+the strict bootstrap validator, packaged manifest, native bounds/cancellation,
+payment and unchanged checkout browser checks. Its independently audited
+foundation artifact is `12541833237`; the packaged Linux/amd64 image records PR
+merge `9eb3ec45e00c4276fa42f356a1bb31f19d4bb0c4`. Both separate manual workflows
+(`40046002082`, `40046002042`) stop at the recipe-binding gate. This evidence
+precedes the new logo implementation and does not complete backend parity.
+
+The [public logo implementation](instance-logo.md) adds canonical S3 reads,
+explicit candidate fallback and bounded response preparation. Actual native and
+versioned tests pass 76 S3 cases per runtime; both filesystem adapters pass 64.
+Independent packaged tests cover 65 MiB bodies, four concurrent 20 MiB responses,
+cancellation and SIGKILL/restart cleanup. Private-CA credential/transport
+compatibility, logo upload, final PWA and installed acceptance remain unfinished.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new
@@ -615,7 +623,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 38 implementing, 4 needing review and 469
+The ledger currently has 4 deprecated, 39 implementing, 5 needing review and 466
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

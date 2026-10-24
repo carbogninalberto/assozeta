@@ -16465,25 +16465,70 @@
         "target": "InstanceLogoServeView.as_view()",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/instance_logo.go",
+        "BE_GO/internal/domain/instance_logo.go",
+        "BE_GO/internal/service/instance_logo.go",
+        "BE_GO/internal/handler/instance_logo.go",
+        "BE_GO/pkg/storage/instancelogo/s3.go",
+        "BE_GO/pkg/storage/instancelogo/resource.go"
+      ],
+      "dependencies": [
+        "Existing configured S3 default storage and credentials",
+        "Global session/locale/CORS/security/restore admission",
+        "Private bounded-admission disk-backed response preparation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instance/logo.png",
+          "/api/v2/instance/logo.png",
+          "/api/instance/logo.png"
+        ],
+        "request": "Canonical public logo read; format and Accept negotiation precede method handling. Query paths cannot select storage objects.",
+        "response": "First readable PNG/JPG/SVG/WebP candidate; exact bytes and selected filename/type, no-cache, streaming gzip including tiny bodies and HEAD.",
+        "errors": "Existence errors abort; preparation errors fall through; all missing/unreadable candidates404. Unsupported method405, media406, format404, unsafe storage location400, restore admission503.",
+        "authentication": "View authentication disabled; global session handling preserved.",
+        "permissions": "AllowAny public branding.",
+        "resource_scope": "Fixed instance/logo.* keys under configured S3 location; no arbitrary client-selected object path.",
+        "side_effects": "No intended business/object mutation; response preparation owns a transient unlinked file and bounded admission slot. Stale session behavior remains global.",
+        "transaction": "No logo repository or business transaction; storage and response resource ownership is explicit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_instance_logo.py",
+        "TESTS/adapters/django/instance_logo.py",
+        "TESTS/adapters/go/instance_logo_spool.py",
+        "BE_GO/internal/service/instance_logo_test.go",
+        "BE_GO/internal/config/instance_logo_test.go",
+        "BE_GO/pkg/storage/instancelogo/storage_test.go",
+        "BE_GO/pkg/storage/instancelogo/unlink_test.go",
+        "BE_GO/pkg/storage/instancelogo/resource_limit_test.go",
+        "BE_GO/pkg/storage/instancelogo/unlink_denied_linux_test.go",
+        "TESTS/adapters/go/instance_logo_unlink.py",
+        "BE_GO/internal/handler/instance_logo_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instance-logo.md",
+        "quality-reports/go-migration/instance-logo-parent/spool/results.json",
+        "quality-reports/go-migration/instance-logo-parent/initial/results.json",
+        "quality-reports/go-migration/instance-logo-parent/unlink/results.json",
+        "quality-reports/go-migration/instance-logo-parent/tls-review/results.json",
+        "quality-reports/go-migration/instance-logo-parent/final76/results.json",
+        "quality-reports/go-migration/instance-logo-parent/final-disk/results.json"
+      ],
+      "notes": [
+        "Implementation and acceptance in progress; no complete logo/provider/PWA/installed parity claim. Upload route remains separate.",
+        "Go releases canceled downloads while observed synchronous Django can continue until provider release; this difference remains explicit.",
+        "Parent resource replay passes65MiB and4x20MiB exact bodies, cancellation, zero-link allocated-inode SIGKILL/same-volume restart,128-model preservation and owned cleanup. Local immutableimage c61280a7 binds599 Go/module hashes; embedded2715 is base only, not a clean revision build. Initial parent HTTP run passes58 disk and70 per Django/Go/v1/v2 S3 but fails slow-client synchronization after proxy buffering; that overall failure is retained, not counted as complete acceptance.",
+        "Confirmed unresolved private-CA gap: pinned Django S3Storage accepts AWS_CA_BUNDLE/shared ca_bundle/REQUESTS_CA_BUNDLE fallback. Current Go static-credential object transport ignores these; production s3credentials.New also fails AWS/shared CA initialization because SDK custom-bundle resolution rejects its boundedHTTP wrapper. Same private server succeeds with explicit trusted transport. Component probe is not endpoint parity; fix requires both credential and object transport paths. No Linux SSL_CERT_FILE claim.",
+        "Final parent replay passes64 Django filesystem cases and76 S3cases per Django/nativeGo/v1/v2 in135.909s; separate Go filesystem64 passes. All128managed models, expected object/cache state, no-write/query bounds, actual200fallback rejection, source hashes and four cleanup gates pass. Real native/v2 slowclient retains exact65MiB zero-link FD after headers then releases it on disconnect; blocked preparation closes before provider release. Scoped repeated Accept/Accept-Encoding fixes include finite OPTIONS with explicit randomized optionalgzip and exact decoded/size-benefit checks. Full race/vet, workflowlint, kernelunlink probe and make selfhost-test pass. PrivateCA, cancellation semantics, upload, final PWA and installed acceptance remain open."
+      ]
     },
     {
       "id": "route:BE/instance/urls.py:manifest.json -> InstanceManifestView.as_view()",

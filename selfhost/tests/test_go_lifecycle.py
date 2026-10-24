@@ -65,8 +65,18 @@ class GoComposeTests(unittest.TestCase):
             services = json.loads(result.stdout)['services']
             self.assertIn('migrate-go', services)
             migration, api = services['migrate-go'], services['api-go']
-            for field in ('image', 'environment', 'user', 'read_only', 'volumes', 'security_opt'):
+            for field in ('image', 'user', 'read_only', 'security_opt'):
                 self.assertEqual(migration[field], api[field], field)
+            self.assertEqual(api['environment']['GO_LOGO_SPOOL_DIR'], '/var/cache/assozeta-logo')
+            self.assertEqual(migration['environment'], {
+                name: value for name, value in api['environment'].items()
+                if name != 'GO_LOGO_SPOOL_DIR'})
+            self.assertEqual(migration['volumes'], [
+                volume for volume in api['volumes'] if volume['target'] != '/var/cache/assozeta-logo'])
+            spool = [volume for volume in api['volumes'] if volume['target'] == '/var/cache/assozeta-logo']
+            self.assertEqual(len(spool), 1)
+            self.assertEqual(spool[0]['type'], 'volume')
+            self.assertNotIn('source', spool[0])
             self.assertEqual(migration['entrypoint'], ['/app/migrate'])
             self.assertEqual(migration['profiles'], ['tools'])
             self.assertEqual(migration['restart'], 'no')
