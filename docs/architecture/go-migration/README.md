@@ -10,6 +10,15 @@ export correction and earlier manual-delivery changes. Worktree branch:
 466 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
+At published `2ed5591`, hosted quality run `40056270692` passes all 16 jobs,
+including the separate storage job. Artifact `12546211090` contains 34 Django/Go TLS component cases,
+34 native/packaged HTTP cases, packaged manifest and Linux/amd64 spool/unlink
+acceptance. The corrected spool fixture completes in 10.686 seconds with its
+resource, state, source and cleanup assertions intact. Foundation finishes in
+21 minutes 28 seconds; its artifact `12546082869` retains bootstrap, manifest,
+logo and disk regression evidence. Separate manual release/MCP workflows still
+stop at companion recipe binding. Main remains `79a9460`.
+
 Hosted quality `40046002650` passes all 15 jobs at published `2715eed`, including
 the strict bootstrap validator, packaged manifest, native bounds/cancellation,
 payment and unchanged checkout browser checks. Its independently audited

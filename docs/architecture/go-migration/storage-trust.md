@@ -4,6 +4,15 @@ This work covers the owned credential-provider transport and public-logo S3
 transport. The migration remains incomplete. It does not establish every
 provider operation, storage upload, proxy feature or backend activation path.
 
+Hosted quality run `40056270692` at published `2ed5591` passes the dedicated
+storage job. Artifact `12546211090` retains the 34-by-two component and
+34-native/34-packaged HTTPS results, packaged manifest, corrected spool and
+kernel unlink checks. The Linux/amd64 spool scenario completes in 10.686 seconds;
+its exact resource assertions, 128-model state, source binding and cleanup pass.
+The image embeds tested PR merge `2e45c38d1afaa4b8c2e4fd5e67718afa716457dd`.
+The aggregate quality run also passes all 16 jobs; separate companion manual
+workflows remain blocked by the documented recipe-binding mismatch.
+
 ## Selected trust and initialization
 
 The pinned Django S3Storage oracle distinguishes an absent setting from an
