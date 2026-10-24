@@ -4617,25 +4617,61 @@
         "target": "collaborators_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/collaborator_list.go",
+        "BE_GO/internal/dto/collaborator_list.go",
+        "BE_GO/internal/repository/collaborator_list.go",
+        "BE_GO/internal/service/collaborator_list.go",
+        "BE_GO/internal/handler/collaborator_list.go",
+        "BE_GO/internal/handler/collaborator_list_locale.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "BE/application/views/collaborator_views.py",
+        "BE/application/serializers/collaborators_serializers.py",
+        "BE/application/models/user_models.py",
+        "BE/application/permissions_registry.py",
+        "BE/application/impersonation_scope.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/collaborators/list",
+          "/api/v1/collaborators/list",
+          "/api/v2/collaborators/list"
+        ],
+        "request": "Optional user_id with current Django UUID grammar and last-value semantics. Unknown pagination/search/role/group filters do not change list scope. At most 1000 raw query fields, including duplicate/empty fields, before format/Accept/auth/method admission.",
+        "response": "Unpaginated users followed by invitations, with no within-kind ordering guarantee. Nine user fields plus is_invite:false on list; seven invite fields plus is_invite:true, preserving accepted/expired invitations and tokens. Missing/foreign/deleted detail returns the nine-field serializer initial/default object, not 404. Nullable phone and arbitrary typed JSONField values preserve integer/fractional distinction.",
+        "errors": "Authored 401/403/404/405/406/415 and UUID 400 bodies, query-overflow HTML 400, negotiation/method precedence and gzip. Route-local language evidence covers English/Italian/French including weighted selection, cookies and scoped 415; other Django catalogs remain open.",
+        "authentication": "Existing actor authentication and separate trusted effective/scope identity resolution; Django-issued JWT, inactive/deleted actor and impersonation denials characterized.",
+        "permissions": "Existing collaborators_list registry key other.users.collaborators.read, FULL/ACCOUNTING/CUSTOM role behavior and IsAssociationUser admission; no invented owner authority from caller IDs.",
+        "resource_scope": "Repository filters connected_user_id or invitation user_id by resolved request user. Soft-deleted connected users excluded, inactive and non-collaborator connected users retained. User manager has no group filter.",
+        "side_effects": "Read-only: all 128 managed models including M2M and Redis DB1 keys/bytes checked; readiness keys excluded, exact TTL equality not claimed. All 128 user-table tuple-write counters remain 0.",
+        "transaction": "No new write transaction. Two list SELECTs or one detail SELECT, excluding auth/middleware; actual cancellation releases reader transaction/pool while blocker stays held.",
+        "execution_owner": "Django remains default; explicit Go versioned route registered, activation and full migration remain incomplete."
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_collaborator_list.py",
+        "TESTS/adapters/django/collaborator_list.py",
+        "BE_GO/internal/dto/collaborator_list_test.go",
+        "BE_GO/internal/handler/collaborator_list_test.go",
+        "BE_GO/internal/handler/collaborator_list_locale_test.go",
+        "BE_GO/internal/service/collaborator_list_test.go",
+        "BE_GO/internal/repository/collaborator_list_integration_test.go",
+        "TESTS/adapters/go/collaborator_list_image.py"
+      ],
+      "evidence": [
+        "Independent parent replay passes 115 authored cases each on Django, Go, Caddy v1 and v2. ASGI attribution 115/0/115/0; real Django 200 fallback rejected after durable checks. All 128 managed models, DB1 values, all 128 user-table counters, source 1114 hashes and cleanup pass. Required actual-PG groups cover 0/1/32/128 cardinalities, two/one service SELECTs, foreign/deleted exclusion, observed lock cancellation and pool recovery. Full source-matched Go race and ordinary/tagged vet pass. See collaborator-list.md and ignored collaborator-list/parent-audit.json.",
+        "Actual reds retained for missing route 404, nullable JSON scan, fractional 1.0 encoding, 1001 query fields, weighted locale, French scoped 415 and duplicate language-cookie order. Existing Django output is not learned into expected responses.",
+        "Packaged immutable Linux image d1b1dfe237fa81927a2641f4757a45553fdf7cc1b2e41d9f3ed61837252e1ce0 passes 4 × 115 in 110.687 seconds: Django attribution 115/0/115/0, all 128 managed models/DB1 values preserved, zero user-table DML, real 200 fallback rejected and exact cleanup. Parent independently matches 837 Go build-context files to integrated source and runs 4 negative-control tests. Genuine old committed-image 404 red preserved. Embedded b225 revision is explicitly a base plus uncommitted source; committed-image/hosted acceptance remains pending. Native repository groups are separate. See collaborator-list/parent-image-audit.json."
+      ],
+      "notes": [
+        "Implementing only. Existing unpaginated response size and invitation token/accepted/expired disclosure remain explicit baseline behavior, not new privacy approval. Broader locales, collaborator mutations, complete frontend/history/installed/operator-selection/performance acceptance remain open."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course-installment/<str:uid>/make-payment -> course_installment_make_payment",

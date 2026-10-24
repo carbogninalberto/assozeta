@@ -201,16 +201,32 @@ updated private patch preserves the same 507-binding/44-unchanged-MDX boundary.
 
 ## Implementation and architecture
 
-The root exposes 31 upstream paths: health/readiness, login/refresh/identifier
+The root exposes 32 upstream paths: health/readiness, login/refresh/identifier
 checks, instance bootstrap, manual sections/assets, profile information/updates/
 password/table preferences, 2FA setup/status/updates, two retired software-billing
 responses, four payment-category routes, public payment information and the
-canonical public logo and four impersonation-management routes. CORS, restore
+canonical public logo, four impersonation-management routes and collaborator
+listing. CORS, restore
 admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 43 implementing, 5 requiring review and 462 uncharacterized; none
+4 deprecated, 44 implementing, 5 requiring review and 461 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
+
+The [collaborator-list implementation](collaborator-list.md) preserves scoped
+connected users, existing invitations and the missing-detail default object.
+The parent independently passes 115 authored cases on each native runtime and
+Caddy prefix, including permission denials, typed JSON, query-field limits and
+characterized English/Italian/French negotiation. Two mandatory PostgreSQL groups
+prove two/one service queries through 128 rows and blocked-read cancellation.
+All 128 managed models, Redis DB1 values and 128 user-table write counters remain
+unchanged; real Django fallback is rejected and cleanup passes. Broader language,
+mutation, frontend, history and installed acceptance remain open.
+The immutable Linux image also passes all four 115-case workloads in 110.687
+seconds. Parent inspection matches all 837 Go build files to the integrated
+source; it embeds base `b225276` with explicitly recorded uncommitted changes.
+Native PostgreSQL groups remain separate. The expanded CI job will produce
+committed-image evidence; this local image does not establish that gate.
 
 The [impersonation-management slice](impersonation-management.md) implements the
 four owner/admin routes, shared sessions and exact ACCESS audit/cache ordering.
@@ -426,7 +442,8 @@ A subsequent disposable replay with a verified host-directory registry passes
 Django's three installed contracts and real browser/MCP checks. Go passes two
 contracts, but the existing exact-release contract stops at the unsupported
 `/collaborators/list` route (404 instead of 200). That full gate remains unchanged;
-collaborator listing is being implemented. Historical upgrade/rollback is not
+collaborator listing is now implemented, with a new installed replay pending.
+Historical upgrade/rollback is not
 reached. The corrected registry cleanup removes its exact owned storage; an
 independently found partial-container-start cleanup edge is repaired and covered
 by an actual occupied-port failure control. The final source-bound replay takes
