@@ -3,8 +3,8 @@
 `GET`, `HEAD` and `OPTIONS /instance/manifest.json` now have explicit Go wiring.
 The route reads existing instance branding without authentication, matching
 Django's `InstanceManifestView`. The ledger is `implementing`; this does not
-complete instance administration, logo serving, installed activation or PWA
-browser acceptance.
+complete instance administration or installed activation. Public logo serving
+and [browser consumer acceptance](instance-pwa.md) have separate evidence.
 
 ## Contract and implementation
 
@@ -113,7 +113,9 @@ source hashes, managed-row restoration, ASGI shutdown and proxy/container/networ
 cleanup pass. CI now requires this runner on its freshly built image and exports
 only `instance-manifest-image/results.json`. These are current-schema packaged
 HTTP checks: native PostgreSQL bounds/cancellation remain mandatory separately,
-and PWA browser, historical data and installed switching remain open.
+and historical data and installed switching remain open. Separate browser
+consumer acceptance now passes manifest parsing and logo rendering on the
+committed Go image; it does not prove installed PWA or offline behavior.
 
 The bootstrap validator now rejects JSON boolean/number aliases and non-integer
 write counters. Pure regressions reproduce the former false positives before

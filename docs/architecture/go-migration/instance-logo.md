@@ -87,16 +87,16 @@ wrapper. Both credential initialization and object transport require a tested
 fix. These component probes do not establish endpoint or complete provider
 parity, and this route remains `implementing`.
 
-The parent independently passes the packaged resource runner on immutable image
-`sha256:c61280a71226c4b50d5cb50d3e6cf0c33c078b9aa4b898b1afa020bebab40378`.
-Its receipt binds all 599 Go/module source hashes and the Dockerfile, plus server
-digest `34bfd7c66d32df00704f4245b762b892758c4d0241fae8017d3d767d59cddfce`.
-The embedded revision is the base `2715eed`; this was an explicitly recorded
-uncommitted-source build, not a claim that clean `2715eed` contains logo support.
+The packaged resource runner passes on the clean committed `9188744` image
+`sha256:4b71e59340e965d08dfbceb9a38f75342226689e3d857d22d176e89fb6e66e5b`.
+Its receipt binds all 601 Go/module source hashes and the Dockerfile, plus server
+digest `6ec26660c4b173519cf24a6b573c90ffe124ac734c2fafd1332b83c22f19e743`.
+The runner verifies the exact clean checkout, packaged revision and executable;
+this supersedes the earlier explicitly recorded uncommitted-source image proof.
 
 That replay serves exact 65 MiB bytes and four concurrent 20 MiB responses,
 cancels a fifth admission waiter, and releases spools on response and storage
-disconnects. Observed resident growth is 4,034,560 bytes; this is a bounded
+disconnects. Observed resident growth is 3,723,264 bytes; this is a bounded
 workload observation, not a general performance claim. Actual SIGKILL probes
 observe a prepared 20 MiB inode and a partial 64 KiB inode with zero links and
 allocated blocks, then process exit, an empty retained volume, successful restart
@@ -105,7 +105,7 @@ zero-link inode lifetime; it is not inferred from noisy host free-space changes.
 All 128 managed models remain unchanged and the synthetic source receives only
 HEAD/GET. Source hashes and owned service/network/volume cleanup pass. The parent
 also passes all 66 existing self-host Go tests. Receipts are under ignored
-`quality-reports/go-migration/instance-logo-parent/spool/`.
+`quality-reports/go-migration/instance-logo-parent/committed-spool/`.
 
 The parent also passes `make selfhost-test`, the full Go race suite, `go vet`,
 workflow lint and the real-kernel unlink-denial runner. Seccomp returns EPERM for
@@ -126,8 +126,9 @@ Managed-state and object preservation and owned-resource cleanup are mandatory.
 The filesystem run is a separate test-only composition boundary. Packaged spool
 acceptance uses deterministic opaque bytes with `image/png` content type; it
 proves exact large-body delivery and resource behavior, not image decoding.
-Browser rendering and native manifest parsing require the separate unchanged-UI
-PWA acceptance. Installed backend selection, worker ownership, historical import
+Browser rendering and native manifest parsing pass in the separate
+[unchanged-UI PWA acceptance](instance-pwa.md). Installed backend selection,
+worker ownership, historical import
 and complete provider behavior remain open. No ledger entry is verified by this
 slice.
 

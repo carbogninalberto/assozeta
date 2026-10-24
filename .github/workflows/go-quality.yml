@@ -110,6 +110,11 @@ jobs:
           python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
       - name: Verify public logo storage contracts through both API versions
         run: |
+          python - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          subprocess.run(['docker', 'pull', IMAGE], check=True)
+          PY
           python -m unittest TESTS.contracts.test_instance_logo -v
           python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/instance-logo
           python TESTS/adapters/django/instance_logo.py --backend go --disk-injection --output quality-reports/go-migration/instance-logo-disk
@@ -502,6 +507,26 @@ jobs:
             --ui-dir quality-reports/go-migration/payment-info-browser-ui/artifact \
             --ui-provenance quality-reports/go-migration/payment-info-browser-ui/provenance.json \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs
+      - name: Verify unchanged browser manifest and logo consumers on the packaged server
+        run: |
+          python -m unittest TESTS.adapters.django.test_instance_pwa_browser -v
+          python - <<'PY'
+          import subprocess
+          from TESTS.adapters.django.s3_objects import IMAGE
+          for image in ('postgres:16-alpine', 'redis:7-alpine', IMAGE):
+              subprocess.run(['docker', 'pull', image], check=True)
+          PY
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-pwa:test BE_GO
+          python TESTS/adapters/django/instance_pwa_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/instance-pwa-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/instance-pwa-browser-ui/provenance.json
+          python TESTS/adapters/django/instance_pwa_browser.py \
+            --ui-dir quality-reports/go-migration/instance-pwa-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/instance-pwa-browser-ui/provenance.json \
+            --image assozeta-go-pwa:test --expected-revision "${{ github.sha }}" --with-go \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/instance-pwa-browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -516,3 +541,8 @@ jobs:
             quality-reports/go-migration/payment-info-browser/v*/validation.json
             quality-reports/go-migration/payment-info-browser/v*/*.png
             quality-reports/go-migration/payment-info-browser-ui/provenance.json
+            quality-reports/go-migration/instance-pwa-browser/results.json
+            quality-reports/go-migration/instance-pwa-browser/*/browser.json
+            quality-reports/go-migration/instance-pwa-browser/*/validation.json
+            quality-reports/go-migration/instance-pwa-browser/*/*.png
+            quality-reports/go-migration/instance-pwa-browser-ui/provenance.json

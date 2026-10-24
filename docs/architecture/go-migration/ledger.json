@@ -16511,7 +16511,10 @@
         "BE_GO/pkg/storage/instancelogo/resource_limit_test.go",
         "BE_GO/pkg/storage/instancelogo/unlink_denied_linux_test.go",
         "TESTS/adapters/go/instance_logo_unlink.py",
-        "BE_GO/internal/handler/instance_logo_test.go"
+        "BE_GO/internal/handler/instance_logo_test.go",
+        "TESTS/adapters/django/instance_pwa_browser.py",
+        "TESTS/adapters/django/test_instance_pwa_browser.py",
+        "TESTS/browser/instance-pwa.mjs"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-logo.md",
@@ -16520,14 +16523,19 @@
         "quality-reports/go-migration/instance-logo-parent/unlink/results.json",
         "quality-reports/go-migration/instance-logo-parent/tls-review/results.json",
         "quality-reports/go-migration/instance-logo-parent/final76/results.json",
-        "quality-reports/go-migration/instance-logo-parent/final-disk/results.json"
+        "quality-reports/go-migration/instance-logo-parent/final-disk/results.json",
+        "docs/architecture/go-migration/instance-pwa.md",
+        "quality-reports/go-migration/instance-pwa-parent/final-hardened/results.json",
+        "quality-reports/go-migration/instance-logo-parent/committed-spool/results.json"
       ],
       "notes": [
         "Implementation and acceptance in progress; no complete logo/provider/PWA/installed parity claim. Upload route remains separate.",
         "Go releases canceled downloads while observed synchronous Django can continue until provider release; this difference remains explicit.",
         "Parent resource replay passes65MiB and4x20MiB exact bodies, cancellation, zero-link allocated-inode SIGKILL/same-volume restart,128-model preservation and owned cleanup. Local immutableimage c61280a7 binds599 Go/module hashes; embedded2715 is base only, not a clean revision build. Initial parent HTTP run passes58 disk and70 per Django/Go/v1/v2 S3 but fails slow-client synchronization after proxy buffering; that overall failure is retained, not counted as complete acceptance.",
         "Confirmed unresolved private-CA gap: pinned Django S3Storage accepts AWS_CA_BUNDLE/shared ca_bundle/REQUESTS_CA_BUNDLE fallback. Current Go static-credential object transport ignores these; production s3credentials.New also fails AWS/shared CA initialization because SDK custom-bundle resolution rejects its boundedHTTP wrapper. Same private server succeeds with explicit trusted transport. Component probe is not endpoint parity; fix requires both credential and object transport paths. No Linux SSL_CERT_FILE claim.",
-        "Final parent replay passes64 Django filesystem cases and76 S3cases per Django/nativeGo/v1/v2 in135.909s; separate Go filesystem64 passes. All128managed models, expected object/cache state, no-write/query bounds, actual200fallback rejection, source hashes and four cleanup gates pass. Real native/v2 slowclient retains exact65MiB zero-link FD after headers then releases it on disconnect; blocked preparation closes before provider release. Scoped repeated Accept/Accept-Encoding fixes include finite OPTIONS with explicit randomized optionalgzip and exact decoded/size-benefit checks. Full race/vet, workflowlint, kernelunlink probe and make selfhost-test pass. PrivateCA, cancellation semantics, upload, final PWA and installed acceptance remain open."
+        "Final parent replay passes64 Django filesystem cases and76 S3cases per Django/nativeGo/v1/v2 in135.909s; separate Go filesystem64 passes. All128managed models, expected object/cache state, no-write/query bounds, actual200fallback rejection, source hashes and four cleanup gates pass. Real native/v2 slowclient retains exact65MiB zero-link FD after headers then releases it on disconnect; blocked preparation closes before provider release. Scoped repeated Accept/Accept-Encoding fixes include finite OPTIONS with explicit randomized optionalgzip and exact decoded/size-benefit checks. Full race/vet, workflowlint, kernelunlink probe and make selfhost-test pass. PrivateCA, cancellation semantics, upload, final PWA and installed acceptance remain open.",
+        "Committed 9188744 image 4b71e593 passes unchanged browser stock/v1/v2 open and real reload, native Chromium manifest parsing and a visible 512x512 logo with exact bytes. Actual Django observer totals are 8/8/0; separate manifest/logo misroutes each return 200 and are rejected by the same upstream validator. All 128 managed models including M2M, complete owned S3 objects/tags/sentinel and exact Redis state remain unchanged across five workloads; source hashes and cleanup pass. Pure controls reject false Go routing and redact Docker timeout commands and exception context. Installed PWA, OS icons, offline behavior, runtime operator selection and private CA remain open; status unchanged.",
+        "Final clean committed 9188744 resource image 4b71e593/server 6ec26660 binds 601 Go/module sources and passes 65 MiB/four 20 MiB responses, cancellation, two SIGKILL/same-volume restart probes, preservation of 128 models and cleanup. This supersedes the earlier explicitly uncommitted 599-source resource image proof."
       ]
     },
     {
@@ -16588,7 +16596,10 @@
         "BE_GO/internal/service/instance_manifest_test.go",
         "BE_GO/internal/handler/instance_manifest_test.go",
         "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
-        "BE_GO/internal/repository/instance_manifest_integration_test.go"
+        "BE_GO/internal/repository/instance_manifest_integration_test.go",
+        "TESTS/adapters/django/instance_pwa_browser.py",
+        "TESTS/adapters/django/test_instance_pwa_browser.py",
+        "TESTS/browser/instance-pwa.mjs"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-manifest.md",
@@ -16596,14 +16607,17 @@
         "quality-reports/go-migration/instance-manifest-parent/go-missing-route-red-results.json",
         "quality-reports/go-migration/instance-manifest-parent/final-acceptance.json",
         "quality-reports/go-migration/instance-manifest-image-parent/final/results.json",
-        "quality-reports/go-migration/instance-manifest-image-parent/missing-route-red/results.json"
+        "quality-reports/go-migration/instance-manifest-image-parent/missing-route-red/results.json",
+        "docs/architecture/go-migration/instance-pwa.md",
+        "quality-reports/go-migration/instance-pwa-parent/final-hardened/results.json"
       ],
       "notes": [
         "Native Django and Go each pass128 authored bootstrap cases including42 manifest cases. Genuine preimplementation Go404 is retained; initial Italian405 expectation punctuation was corrected against pinned Django before implementation.",
         "Successful no-cookie GET/HEAD each uses one SELECT. Read-only PostgreSQL tests at100/1000/10000 rows preserve first-PK ordering, one-query bound and bounded indexed plans. Actual blocked manifest reader cancellation releases backend/transaction/pool before blocker release and recovers.",
         "Status remains implementing. Browser/installed PWA proof and logo serving are separate acceptance work. Existing stored URLs and public defaults are preserved; no production/provider configuration changed.",
         "Parent final versioned run passes all42 manifest cases on both prefixes with observer42/0, deliberate actualHTTP200 Django fallback rejection, SQL/state/cache/header checks and cleanup. Compression red led to reused Django encoding middleware; exact decoded bodies and all Vary tokens pass, including explicit same-for-both-upstreams uppercaseGZIP Caddy behavior. Native Django/Go each pass128 total bootstrap cases. Final acceptance: quality-reports/go-migration/instance-manifest-parent/final-acceptance.json.",
-        "Packaged image ca4cc6971d5f at revision324d374 independently passes42 cases on each Django/image/v1/v2 workload, observer42/0/42/0, all128 managed models including auto-created joins, SQL/session/header/secret checks and full cleanup. Real SELECT and rolled-back INSERT controls validate SQL observation; periodic image healthcheck is disabled only during this measurement with explicit startup readiness/health preserved. Older c742 image fails actual404 with cleanup. Real restore locks are held separately on host/container, not cross-kernel sharing proof. CI requires image runner and exports safe results only. Native PG bounds/cancellation remain required separately; no installed/PWA completion claim."
+        "Packaged image ca4cc6971d5f at revision324d374 independently passes42 cases on each Django/image/v1/v2 workload, observer42/0/42/0, all128 managed models including auto-created joins, SQL/session/header/secret checks and full cleanup. Real SELECT and rolled-back INSERT controls validate SQL observation; periodic image healthcheck is disabled only during this measurement with explicit startup readiness/health preserved. Older c742 image fails actual404 with cleanup. Real restore locks are held separately on host/container, not cross-kernel sharing proof. CI requires image runner and exports safe results only. Native PG bounds/cancellation remain required separately; no installed/PWA completion claim.",
+        "Committed 9188744 image 4b71e593 passes unchanged browser stock/v1/v2 open and real reload, native Chromium manifest parsing and a visible 512x512 logo with exact bytes. Actual Django observer totals are 8/8/0; separate manifest/logo misroutes each return 200 and are rejected by the same upstream validator. All 128 managed models including M2M, complete owned S3 objects/tags/sentinel and exact Redis state remain unchanged across five workloads; source hashes and cleanup pass. Pure controls reject false Go routing and redact Docker timeout commands and exception context. Installed PWA, OS icons, offline behavior, runtime operator selection and private CA remain open; status unchanged."
       ]
     },
     {

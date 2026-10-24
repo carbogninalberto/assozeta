@@ -18,12 +18,18 @@ merge `9eb3ec45e00c4276fa42f356a1bb31f19d4bb0c4`. Both separate manual workflows
 (`40046002082`, `40046002042`) stop at the recipe-binding gate. This evidence
 precedes the new logo implementation and does not complete backend parity.
 
+Hosted `9188744` foundation stopped before its new logo HTTP step because the
+pinned MinIO image had not been pulled. Its native bootstrap/manifest checks
+passed; later packaged checks were skipped. The workflow now explicitly pulls
+that dependency before the first logo invocation. Local committed-image spool
+and browser acceptance pass separately; this is not a hosted-success claim.
+
 The [public logo implementation](instance-logo.md) adds canonical S3 reads,
 explicit candidate fallback and bounded response preparation. Actual native and
 versioned tests pass 76 S3 cases per runtime; both filesystem adapters pass 64.
 Independent packaged tests cover 65 MiB bodies, four concurrent 20 MiB responses,
 cancellation and SIGKILL/restart cleanup. Private-CA credential/transport
-compatibility, logo upload, final PWA and installed acceptance remain unfinished.
+compatibility, logo upload and installed acceptance remain unfinished.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new
@@ -35,7 +41,11 @@ All 42 manifest cases also pass through each shipped Caddy prefix, with observed
 upstream identity, fallback rejection and actual gzip/header checks. The packaged
 manifest separately passes 42 cases on each Django/image/v1/v2 workload, with
 all 128 managed models, SQL observer controls, session behavior and full cleanup.
-PWA browser and installed acceptance remain open.
+The [unchanged browser consumer checks](instance-pwa.md) now pass stock/v1/v2
+open/reload, native Chromium manifest parsing, visible decoded logos and separate
+manifest/logo fallback rejection on the committed image. All 128 managed models,
+S3 objects and Redis remain unchanged. Installed PWA, offline and operator
+selection acceptance remain open.
 
 Bootstrap validation now distinguishes JSON booleans from numbers and requires
 an integer zero for the write counter. Pure regressions reproduce the former

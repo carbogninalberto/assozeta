@@ -220,7 +220,7 @@ storage tests pass exact 65 MiB and four concurrent 20 MiB bodies, cancellation,
 SIGKILL and same-volume restart. Native/versioned S3 contracts pass 76 cases per
 runtime, and both filesystem adapters pass 64. Real kernel unlink denial is
 tested before payload consumption. Private-CA credential/transport compatibility,
-unchanged-UI acceptance and installed selection remain separate open boundaries;
+installed PWA behavior and operator selection remain separate open boundaries;
 no full-parity claim is made.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
@@ -236,8 +236,16 @@ Go image and both prefixes, checking all 128 managed models, SQL, sessions and
 cleanup. A preimplementation image fails with actual404; a rolled-back INSERT
 control proves the SQL observer detects non-durable writes. The fixture holds
 real restore locks separately in each runtime; cross-kernel sharing is not
-claimed. PWA browser and installed acceptance remain open, and native PostgreSQL
-tests remain a separate required gate.
+claimed. Native PostgreSQL tests remain a separate required gate.
+
+The [unchanged browser consumer workflow](instance-pwa.md) passes stock/v1/v2
+open and actual reload against committed image `9188744`, including Chromium's
+native manifest parser and a visible decoded 512-by-512 logo. Separate manifest
+and logo misroutes return real HTTP 200 but fail the same upstream validator used
+by positive workloads. All 128 managed models, full owned S3 state and Redis are
+preserved; source hashes and cleanup pass. Timeout regressions also prevent
+private Docker fixture arguments from appearing in exception tracebacks. Installed
+PWA, OS icons, offline behavior and runtime operator selection remain open.
 
 The [public payment-info implementation](payment-info.md) passes 137 authored
 cases on native Django/Go and both shipped Caddy routes, with exact managed state,
@@ -333,6 +341,14 @@ snapshots and cleanup pass. Its Linux/amd64 image revision is PR merge
 `9eb3ec45e00c4276fa42f356a1bb31f19d4bb0c4`. This excludes later logo work.
 Manual release `40046002082` and MCP `40046002042` separately fail the reviewed
 content-recipe binding gate.
+
+The later `9188744` foundation run stops before logo HTTP execution because its
+pinned MinIO image was not pulled on the fresh runner. Native bootstrap/manifest
+checks pass; packaged manifest, spool and kernel checks are skipped. The workflow
+fix pulls the exact pinned dependency before the logo step. Separate local tests
+of the clean committed image pass the full spool and browser checks; this does
+not convert the failed hosted run into a success. Its manual runs `40049170440`
+and `40049170500` also fail the recipe-binding gate.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
