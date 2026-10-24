@@ -42,8 +42,13 @@ class ImageFixture:
 
     @staticmethod
     def docker(*args, check=True, timeout=90):
-        result = subprocess.run(['docker', *map(str, args)], capture_output=True,
-                                text=True, timeout=timeout)
+        try:
+            result = subprocess.run(['docker', *map(str, args)], capture_output=True,
+                                    text=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # Docker arguments can contain private fixture credentials. Neither
+            # the exception message nor its chained traceback may export them.
+            raise RuntimeError('Private Docker fixture operation timed out') from None
         if check and result.returncode:
             # Never include environment files or private signing keys in errors.
             raise RuntimeError('Docker category fixture operation failed: ' + str(args[0]))
