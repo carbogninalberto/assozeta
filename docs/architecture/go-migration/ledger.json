@@ -1929,25 +1929,64 @@
         "target": "impersonation_session",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/impersonation_management.go",
+        "BE_GO/internal/dto/impersonation_management.go",
+        "BE_GO/internal/handler/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_management.go",
+        "BE_GO/internal/repository/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_list.go"
+      ],
+      "dependencies": [
+        "BE/application/views/admin_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/signals.py",
+        "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/administration/impersonation",
+          "/api/v1/administration/impersonation",
+          "/api/v2/administration/impersonation"
+        ],
+        "request": "POST exact target_user_id; GET/DELETE optional X-Impersonation-Id. Shared cache session identifier, not a new credential.",
+        "response": "GET nullable target; POST 201 session_id/target/expires_in=3600/actor_role/association; DELETE 204.",
+        "errors": "Measured authentication, permission, validation, negotiation, locale and method errors; HEAD405 after admission. SQL/cache faults preserve exact observed partial effects.",
+        "authentication": "Existing signed Bearer actor, distinct from effective target. Forged User-Id cannot choose management target.",
+        "permissions": "Real active superuser required.",
+        "resource_scope": "Owner selects own linked athletes/collaborators; administrator selects eligible active non-superusers. Live target, owner and association eligibility is rechecked.",
+        "side_effects": "ACCESS audit then shared Redis SET/DEL; exact audit index and failure recovery. Reading does not renew TTL.",
+        "transaction": "Preserve Django separately committed audit/cache steps, including nonfatal index INSERT failure and fatal index existence-read failure. No cross-store atomicity claim.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_impersonation_management.py",
+        "TESTS/test_impersonation_contract.py",
+        "TESTS/adapters/django/impersonation_management.py",
+        "TESTS/adapters/django/impersonation_effects.py",
+        "TESTS/adapters/redis_faults.py",
+        "TESTS/adapters/go/impersonation_management_image.py",
+        "BE_GO/internal/handler/impersonation_management_test.go",
+        "BE_GO/internal/service/impersonation_management_test.go",
+        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+      ],
+      "evidence": [
+        "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+      ],
+      "notes": [
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:administration/impersonation/users -> impersonation_users",
@@ -1964,25 +2003,62 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/impersonation_management.go",
+        "BE_GO/internal/dto/impersonation_management.go",
+        "BE_GO/internal/handler/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_management.go",
+        "BE_GO/internal/repository/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_list.go"
+      ],
+      "dependencies": [
+        "BE/application/views/admin_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/signals.py",
+        "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/administration/impersonation/users",
+          "/api/v1/administration/impersonation/users",
+          "/api/v2/administration/impersonation/users"
+        ],
+        "request": "Authored query pagination/search/role/sort grammar with last-value decoding.",
+        "response": "Paginated public user projection with nullable association and last_login.",
+        "errors": "Measured authentication, permission, validation, negotiation, locale and method errors; HEAD405 after admission. SQL/cache faults preserve exact observed partial effects.",
+        "authentication": "Existing signed Bearer actor, distinct from effective target. Forged User-Id cannot choose management target.",
+        "permissions": "Real active superuser required.",
+        "resource_scope": "Owner selects own linked athletes/collaborators; administrator selects eligible active non-superusers. Live target, owner and association eligibility is rechecked.",
+        "side_effects": "No durable writes.",
+        "transaction": "Two bounded repository SELECTs; composed administrator list adds one fresh actor read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_impersonation_management.py",
+        "TESTS/test_impersonation_contract.py",
+        "TESTS/adapters/django/impersonation_management.py",
+        "TESTS/adapters/django/impersonation_effects.py",
+        "TESTS/adapters/redis_faults.py",
+        "TESTS/adapters/go/impersonation_management_image.py",
+        "BE_GO/internal/handler/impersonation_management_test.go",
+        "BE_GO/internal/service/impersonation_management_test.go",
+        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+      ],
+      "evidence": [
+        "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+      ],
+      "notes": [
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/export/active -> AssociationExportViewSet.as_view({'get': 'active_export'})",
@@ -2174,25 +2250,64 @@
         "target": "impersonation_session",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/impersonation_management.go",
+        "BE_GO/internal/dto/impersonation_management.go",
+        "BE_GO/internal/handler/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_management.go",
+        "BE_GO/internal/repository/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_list.go"
+      ],
+      "dependencies": [
+        "BE/application/views/admin_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/signals.py",
+        "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/association/impersonation",
+          "/api/v1/association/impersonation",
+          "/api/v2/association/impersonation"
+        ],
+        "request": "POST exact target_user_id; GET/DELETE optional X-Impersonation-Id. Shared cache session identifier, not a new credential.",
+        "response": "GET nullable target; POST 201 session_id/target/expires_in=3600/actor_role/association; DELETE 204.",
+        "errors": "Measured authentication, permission, validation, negotiation, locale and method errors; HEAD405 after admission. SQL/cache faults preserve exact observed partial effects.",
+        "authentication": "Existing signed Bearer actor, distinct from effective target. Forged User-Id cannot choose management target.",
+        "permissions": "Current active association owner for list/start/read; DELETE admits active actors to revoke their own session.",
+        "resource_scope": "Owner selects own linked athletes/collaborators; administrator selects eligible active non-superusers. Live target, owner and association eligibility is rechecked.",
+        "side_effects": "ACCESS audit then shared Redis SET/DEL; exact audit index and failure recovery. Reading does not renew TTL.",
+        "transaction": "Preserve Django separately committed audit/cache steps, including nonfatal index INSERT failure and fatal index existence-read failure. No cross-store atomicity claim.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_impersonation_management.py",
+        "TESTS/test_impersonation_contract.py",
+        "TESTS/adapters/django/impersonation_management.py",
+        "TESTS/adapters/django/impersonation_effects.py",
+        "TESTS/adapters/redis_faults.py",
+        "TESTS/adapters/go/impersonation_management_image.py",
+        "BE_GO/internal/handler/impersonation_management_test.go",
+        "BE_GO/internal/service/impersonation_management_test.go",
+        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+      ],
+      "evidence": [
+        "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+      ],
+      "notes": [
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/impersonation/users -> impersonation_users",
@@ -2209,25 +2324,62 @@
         "target": "impersonation_users",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/domain/impersonation_management.go",
+        "BE_GO/internal/dto/impersonation_management.go",
+        "BE_GO/internal/handler/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_management.go",
+        "BE_GO/internal/repository/impersonation_management.go",
+        "BE_GO/internal/service/impersonation_list.go"
+      ],
+      "dependencies": [
+        "BE/application/views/admin_views.py",
+        "BE/application/impersonation.py",
+        "BE/application/signals.py",
+        "Existing JWT actor and identity resolution; shared Django-compatible Redis database 1 session codec",
+        "PostgreSQL users, associations, membership links, ACCESS audit and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/association/impersonation/users",
+          "/api/v1/association/impersonation/users",
+          "/api/v2/association/impersonation/users"
+        ],
+        "request": "Authored query pagination/search/role/sort grammar with last-value decoding.",
+        "response": "Paginated public user projection with nullable association and last_login.",
+        "errors": "Measured authentication, permission, validation, negotiation, locale and method errors; HEAD405 after admission. SQL/cache faults preserve exact observed partial effects.",
+        "authentication": "Existing signed Bearer actor, distinct from effective target. Forged User-Id cannot choose management target.",
+        "permissions": "Current active association owner for list/start/read; DELETE admits active actors to revoke their own session.",
+        "resource_scope": "Owner selects own linked athletes/collaborators; administrator selects eligible active non-superusers. Live target, owner and association eligibility is rechecked.",
+        "side_effects": "No durable writes.",
+        "transaction": "Two bounded repository SELECTs; composed administrator list adds one fresh actor read.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_impersonation_management.py",
+        "TESTS/test_impersonation_contract.py",
+        "TESTS/adapters/django/impersonation_management.py",
+        "TESTS/adapters/django/impersonation_effects.py",
+        "TESTS/adapters/redis_faults.py",
+        "TESTS/adapters/go/impersonation_management_image.py",
+        "BE_GO/internal/handler/impersonation_management_test.go",
+        "BE_GO/internal/service/impersonation_management_test.go",
+        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+      ],
+      "evidence": [
+        "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+      ],
+      "notes": [
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:association/import/start -> AssociationImportViewSet.as_view({'post': 'start_import'})",
@@ -9423,11 +9575,11 @@
         "The parent passed four 188 HTTP / 43 exact audit / 18 SQL fault workloads with immutable packaged image 54eb9199ce83 built from clean 9e51842, UID 10001, read-only filesystem, actual Docker PostgreSQL/Redis, revision/version/health verification and complete owned cleanup. An older image fails an actual category route with 404. See quality-reports/go-migration/category-acceptance/image-green2/results.json and image-route-red/results.json. This does not prove installed backend switching, historical migration or image/host file-lock interoperability.",
         "The parent independently reran the unchanged category browser against v1 and v2: six checks, five writes, seven denials and five exact new category audits per version, with complete initial VAT/defaults, original VAT preservation, exact 12-field CREATE changes and prior audit/index preservation. An independent Django observer records 48 selected requests for v1 and zero for v2, with 26 real Django coexistence requests each. A deliberate v2-to-Django fallback is rejected despite HTTP 200/go-v2 proxy header. Both workflows and private cleanup pass; see quality-reports/go-migration/category-acceptance/browser-parent-final/results.json, routing-negative-control.json and per-version reports. Archive toggles use authenticated PATCH because the UI has no control; payment persistence uses real Django coexistence, not broader Go payment ownership or installed acceptance.",
         "Independent parent Caddy socket-disconnect probes observe an actual blocked category SQL transaction for each runtime. v1 admits Django sync completion once after blocker release; v2 cancels and rolls back before release. Exact managed state, audit/index metadata, recovery and cleanup pass. An independent Django observer sees one v1 DELETE and zero v2 requests; deliberate v2-to-Django misrouting is rejected specifically as upstream_mismatch with exact cleanup. See quality-reports/go-migration/payment-categories/lifecycle-caddy-{v1,v2,negative-control}.json and category-caddy-parent.log. disconnect_semantics_match remains false; process shutdown and ambiguous-response recovery are separate gaps.",
-        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django’s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
+        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django\u2019s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django\u2019s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go\u2019s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
@@ -9518,11 +9670,11 @@
         "The parent passed four 188 HTTP / 43 exact audit / 18 SQL fault workloads with immutable packaged image 54eb9199ce83 built from clean 9e51842, UID 10001, read-only filesystem, actual Docker PostgreSQL/Redis, revision/version/health verification and complete owned cleanup. An older image fails an actual category route with 404. See quality-reports/go-migration/category-acceptance/image-green2/results.json and image-route-red/results.json. This does not prove installed backend switching, historical migration or image/host file-lock interoperability.",
         "The parent independently reran the unchanged category browser against v1 and v2: six checks, five writes, seven denials and five exact new category audits per version, with complete initial VAT/defaults, original VAT preservation, exact 12-field CREATE changes and prior audit/index preservation. An independent Django observer records 48 selected requests for v1 and zero for v2, with 26 real Django coexistence requests each. A deliberate v2-to-Django fallback is rejected despite HTTP 200/go-v2 proxy header. Both workflows and private cleanup pass; see quality-reports/go-migration/category-acceptance/browser-parent-final/results.json, routing-negative-control.json and per-version reports. Archive toggles use authenticated PATCH because the UI has no control; payment persistence uses real Django coexistence, not broader Go payment ownership or installed acceptance.",
         "Independent parent Caddy socket-disconnect probes observe an actual blocked category SQL transaction for each runtime. v1 admits Django sync completion once after blocker release; v2 cancels and rolls back before release. Exact managed state, audit/index metadata, recovery and cleanup pass. An independent Django observer sees one v1 DELETE and zero v2 requests; deliberate v2-to-Django misrouting is rejected specifically as upstream_mismatch with exact cleanup. See quality-reports/go-migration/payment-categories/lifecycle-caddy-{v1,v2,negative-control}.json and category-caddy-parent.log. disconnect_semantics_match remains false; process shutdown and ambiguous-response recovery are separate gaps.",
-        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django’s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
+        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django\u2019s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django\u2019s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go\u2019s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
@@ -9613,11 +9765,11 @@
         "The parent passed four 188 HTTP / 43 exact audit / 18 SQL fault workloads with immutable packaged image 54eb9199ce83 built from clean 9e51842, UID 10001, read-only filesystem, actual Docker PostgreSQL/Redis, revision/version/health verification and complete owned cleanup. An older image fails an actual category route with 404. See quality-reports/go-migration/category-acceptance/image-green2/results.json and image-route-red/results.json. This does not prove installed backend switching, historical migration or image/host file-lock interoperability.",
         "The parent independently reran the unchanged category browser against v1 and v2: six checks, five writes, seven denials and five exact new category audits per version, with complete initial VAT/defaults, original VAT preservation, exact 12-field CREATE changes and prior audit/index preservation. An independent Django observer records 48 selected requests for v1 and zero for v2, with 26 real Django coexistence requests each. A deliberate v2-to-Django fallback is rejected despite HTTP 200/go-v2 proxy header. Both workflows and private cleanup pass; see quality-reports/go-migration/category-acceptance/browser-parent-final/results.json, routing-negative-control.json and per-version reports. Archive toggles use authenticated PATCH because the UI has no control; payment persistence uses real Django coexistence, not broader Go payment ownership or installed acceptance.",
         "Independent parent Caddy socket-disconnect probes observe an actual blocked category SQL transaction for each runtime. v1 admits Django sync completion once after blocker release; v2 cancels and rolls back before release. Exact managed state, audit/index metadata, recovery and cleanup pass. An independent Django observer sees one v1 DELETE and zero v2 requests; deliberate v2-to-Django misrouting is rejected specifically as upstream_mismatch with exact cleanup. See quality-reports/go-migration/payment-categories/lifecycle-caddy-{v1,v2,negative-control}.json and category-caddy-parent.log. disconnect_semantics_match remains false; process shutdown and ambiguous-response recovery are separate gaps.",
-        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django’s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
+        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django\u2019s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django\u2019s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go\u2019s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },
@@ -9708,11 +9860,11 @@
         "The parent passed four 188 HTTP / 43 exact audit / 18 SQL fault workloads with immutable packaged image 54eb9199ce83 built from clean 9e51842, UID 10001, read-only filesystem, actual Docker PostgreSQL/Redis, revision/version/health verification and complete owned cleanup. An older image fails an actual category route with 404. See quality-reports/go-migration/category-acceptance/image-green2/results.json and image-route-red/results.json. This does not prove installed backend switching, historical migration or image/host file-lock interoperability.",
         "The parent independently reran the unchanged category browser against v1 and v2: six checks, five writes, seven denials and five exact new category audits per version, with complete initial VAT/defaults, original VAT preservation, exact 12-field CREATE changes and prior audit/index preservation. An independent Django observer records 48 selected requests for v1 and zero for v2, with 26 real Django coexistence requests each. A deliberate v2-to-Django fallback is rejected despite HTTP 200/go-v2 proxy header. Both workflows and private cleanup pass; see quality-reports/go-migration/category-acceptance/browser-parent-final/results.json, routing-negative-control.json and per-version reports. Archive toggles use authenticated PATCH because the UI has no control; payment persistence uses real Django coexistence, not broader Go payment ownership or installed acceptance.",
         "Independent parent Caddy socket-disconnect probes observe an actual blocked category SQL transaction for each runtime. v1 admits Django sync completion once after blocker release; v2 cancels and rolls back before release. Exact managed state, audit/index metadata, recovery and cleanup pass. An independent Django observer sees one v1 DELETE and zero v2 requests; deliberate v2-to-Django misrouting is rejected specifically as upstream_mismatch with exact cleanup. See quality-reports/go-migration/payment-categories/lifecycle-caddy-{v1,v2,negative-control}.json and category-caddy-parent.log. disconnect_semantics_match remains false; process shutdown and ambiguous-response recovery are separate gaps.",
-        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django’s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
+        "Additional category-family mutation proof, independently rerun and reviewed on final parent source: native Go and shipped Caddy v2 each pass three missing-content-type application-error cases and three deferred-COMMIT cases (POST, PATCH with VAT replacement, DELETE), plus six successful recoveries. Content-type PKs and prior audit references are preserved; application errors roll back a healthy SQL transaction. Verified DEFERRABLE INITIALLY DEFERRED triggers and actual blocked COMMIT observations establish the commit-failure stage. HTTP500, exact managed-row rollback, recovery audit/index attribution and owned cleanup pass. Ignored overlays that swallow ErrNoRows or COMMIT errors are rejected for false HTTP200/partial-state outcomes. Original four 188/43/18 workloads and lifecycle assertions remain unchanged. This is distinct from Django\u2019s injected pre-SQL ORM-constructor exception, not new packaged-image/installed/activation proof. Evidence: quality-reports/go-migration/category-transaction-parent/acceptance.json, parent-final.log, final-source.json and payment-categories/transaction-failures-{native-go,caddy-v2}.json."
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
-        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
+        "Status remains implementing. Installed activation/history, disconnect protocol parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django\u2019s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go\u2019s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof."
       ]
     },

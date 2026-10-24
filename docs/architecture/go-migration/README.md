@@ -6,9 +6,22 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 39 implementing,
-466 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 43 implementing,
+462 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
+
+The [impersonation-management slice](impersonation-management.md) implements the
+four owner/admin routes, shared sessions and exact ACCESS audit/cache ordering.
+Native and immutable packaged-image acceptance each pass 264 cases and 64 audits
+on Django, Go and both shipped Caddy prefixes, plus four cross-runtime session
+rounds. Shortened 60-second sessions prove reads do not renew TTL; actual fallback
+rejection checks durable state before rejecting routing. Five live PostgreSQL
+groups prove bounded reads, audit projection and cancellation, while real Redis
+GET/SET/DEL failures verify partial effects and explicit recovery. All 128 managed
+models and Redis database 1 excluding readiness keys are checked. Full Go race
+and vet checks pass. The image is bound to the modified source context and embeds
+its baseline revision; committed-image CI remains separate. Browser, concurrent
+mutations, historical data and activation acceptance remain open.
 
 At published `2ed5591`, hosted quality run `40056270692` passes all 16 jobs,
 including the separate storage job. Artifact `12546211090` contains 34 Django/Go TLS component cases,
@@ -644,7 +657,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 39 implementing, 5 needing review and 466
+The ledger currently has 4 deprecated, 43 implementing, 5 needing review and 462
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

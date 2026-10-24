@@ -295,6 +295,27 @@ checked. Database access is prohibited. Persistent output under
 `quality-reports/go-migration/impersonation-cache/` contains only results/versions.
 This adapter proves the cache record boundary, not target eligibility or audits.
 
+The separate management acceptance uses the production Python environment:
+
+```sh
+TESTS_IMPERSONATION_MANAGEMENT_GO=1 \
+TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 \
+TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 \
+python TESTS/adapters/django/accounts.py --only impersonation-management
+```
+
+It runs the same 264 authored cases on Django, native Go and both shipped Caddy
+prefixes, with exact durable audit/cache effects, live eligibility, actual SQL and
+Redis failures, shortened-TTL no-renewal checks and cross-runtime session rounds.
+Five PostgreSQL integration groups separately check bounded reads, cancellation,
+eligibility and audit projection. `TESTS.test_impersonation_contract` supplies
+strict JSON and retained-state negative controls. The packaged runner
+`TESTS/adapters/go/impersonation_management_image.py` requires an immutable image,
+full expected revision and a source-bound build receipt; CI builds that receipt
+and runs the same oracle plus guarded container Redis fault controls. Evidence
+covers current schema, not historical installation or backend activation. See
+[scope and receipts](../docs/architecture/go-migration/impersonation-management.md).
+
 
 The same account command now invokes `adapters/django/identity.py` with private
 Redis and runs 46 explicitly expected identity-selection cases against Django's

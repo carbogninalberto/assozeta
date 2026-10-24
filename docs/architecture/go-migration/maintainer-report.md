@@ -201,16 +201,29 @@ updated private patch preserves the same 507-binding/44-unchanged-MDX boundary.
 
 ## Implementation and architecture
 
-The root exposes 27 upstream paths: health/readiness, login/refresh/identifier
+The root exposes 31 upstream paths: health/readiness, login/refresh/identifier
 checks, instance bootstrap, manual sections/assets, profile information/updates/
 password/table preferences, 2FA setup/status/updates, two retired software-billing
 responses, four payment-category routes, public payment information and the
-canonical public logo. CORS, restore admission and security
-headers are composed explicitly.
+canonical public logo and four impersonation-management routes. CORS, restore
+admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 39 implementing, 5 requiring review and 466 uncharacterized; none
+4 deprecated, 43 implementing, 5 requiring review and 462 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
+
+The [impersonation-management slice](impersonation-management.md) implements the
+four owner/admin routes, shared sessions and exact ACCESS audit/cache ordering.
+Native and immutable packaged-image acceptance each pass 264 cases and 64 audits
+on Django, Go and both shipped Caddy prefixes, plus four cross-runtime session
+rounds. Shortened 60-second sessions prove reads do not renew TTL; actual fallback
+rejection checks durable state before rejecting routing. Five live PostgreSQL
+groups prove bounded reads, audit projection and cancellation, while real Redis
+GET/SET/DEL failures verify partial effects and explicit recovery. All 128 managed
+models and Redis database 1 excluding readiness keys are checked. Full Go race
+and vet checks pass. The image is bound to the modified source context and embeds
+its baseline revision; committed-image CI remains separate. Browser, concurrent
+mutations, historical data and activation acceptance remain open.
 
 The [public logo](instance-logo.md) has dedicated transport/service/storage
 boundaries and retains the S3 default-storage selection, candidate precedence,
@@ -383,10 +396,15 @@ passes all 507 authoring bindings and 46 offline checks. Only one Italian
 paragraph changes to clarify manual-link visibility. Parent validation against
 application `2ed5591` confirms all 507 bindings, the unchanged 132 binding objects
 and unchanged reviewed recipe/source paths. Candidate `ec847aea` is committed
-locally with the agent identity. Its disposable release rehearsal has cleared
-authoring validation and selected fresh capture of all 60 workflows. Runtime
-acceptance and coordinated companion delivery remain required; the companion
-commit has not been pushed or published.
+locally with the agent identity. Its disposable release rehearsal passes all 60
+fresh captures, 43-page compilation, actual Mintlify rendering, MCP/cited-answer
+evaluation and embedded checks covering 434 compatible public sections and 982
+image references. The 73 explicit coverage gaps remain. Packaging succeeds with
+no external actions, but appliance startup fails because the smoke harness stages
+only Django/web/renderer and omits the newly required Go image. Owned runtime
+resources are removed. A source-owned rehearsal repair and installation/upgrade/
+rollback acceptance remain required; the companion commit has not been pushed
+or published.
 
 Hosted `2ed5591` quality run `40056270692` passes all 16 jobs, including storage,
 including native/packaged TLS, packaged manifest, corrected spool resource and

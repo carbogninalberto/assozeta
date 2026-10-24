@@ -21,9 +21,9 @@ def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only',choices=['profile-tables','profile-update','profile-password','profile-info','login-http','login-response','medical-orphan-cleanup','subscription-auto-archive','payment-save-inputs','credential-concurrency','payment-description','payment-categories','payment-info','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','two-factor-update','two-factor-setup','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
+    parser.add_argument('--only',choices=['impersonation-management','profile-tables','profile-update','profile-password','profile-info','login-http','login-response','medical-orphan-cleanup','subscription-auto-archive','payment-save-inputs','credential-concurrency','payment-description','payment-categories','payment-info','subscription-dates','task-bodies','audit-retention','associate-age-update','subscription-token-cleanup','email-balance-reset','restore-admission','session-auth','refresh','identifiers','two-factor-info','two-factor-update','two-factor-setup','retired-billing'],help='Run the named component with its private schema/identity fixtures; not full account parity')
     options=parser.parse_args()
-    output = ROOT / ('quality-reports/go-migration/'+{'profile-tables':'profile-tables','profile-update':'profile-update','profile-password':'profile-password','profile-info':'profile-info','login-http':'login-http','login-response':'image-dispatch-response','medical-orphan-cleanup':'medical-orphan-cleanup','subscription-auto-archive':'subscription-auto-archive','payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','payment-categories':'payment-categories','payment-info':'payment-info','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','two-factor-update':'two-factor-update','two-factor-setup':'two-factor-setup','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
+    output = ROOT / ('quality-reports/go-migration/'+{'impersonation-management':'impersonation-management','profile-tables':'profile-tables','profile-update':'profile-update','profile-password':'profile-password','profile-info':'profile-info','login-http':'login-http','login-response':'image-dispatch-response','medical-orphan-cleanup':'medical-orphan-cleanup','subscription-auto-archive':'subscription-auto-archive','payment-save-inputs':'payment-save-inputs','credential-concurrency':'credential-concurrency','payment-description':'payment-description','payment-categories':'payment-categories','payment-info':'payment-info','subscription-dates':'subscription-dates','task-bodies':'task-bodies','audit-retention':'audit-retention','associate-age-update':'associate-age-update','subscription-token-cleanup':'subscription-token-cleanup','email-balance-reset':'email-balance-reset','restore-admission':'restore-admission','session-auth':'session-auth','refresh':'refresh-http','identifiers':'identifiers','two-factor-info':'two-factor-info','two-factor-update':'two-factor-update','two-factor-setup':'two-factor-setup','retired-billing':'retired-billing'}[options.only] if options.only else 'quality-reports/go-migration/accounts')
     output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'phase': 'started'}
     (output / 'results.json').write_text(json.dumps(report) + '\n')
@@ -36,6 +36,7 @@ def main():
     binaries = Path(postgres).parent
     tool_env = {name: value for name, value in os.environ.items()
                 if name in ('PATH', 'HOME', 'TMPDIR', 'GOCACHE', 'GOMODCACHE', 'GOTOOLCHAIN',
+                            'TESTS_IMPERSONATION_MANAGEMENT_VERSIONED', 'TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY', 'TESTS_IMPERSONATION_MANAGEMENT_GO', 'TESTS_IMPERSONATION_MANAGEMENT_GO_SOURCE',
                             'TESTS_PAYMENT_CATEGORIES_GO', 'TESTS_PAYMENT_CATEGORIES_VERSIONED',
                             'TESTS_PAYMENT_CATEGORIES_LIFECYCLE', 'TESTS_PAYMENT_INFO_GO',
                             'TESTS_PAYMENT_INFO_REPOSITORY_OVERLAY', 'TESTS_PAYMENT_INFO_VERSIONED')}
@@ -237,6 +238,14 @@ def main():
                         check=True, timeout=120, env={**tool_env, 'ASSOZETA_SCOPED_REQUESTS_FIXTURE': str(scoped_requests_fixture), 'ASSOZETA_SCOPED_RESOURCES_FIXTURE': str(scoped_fixture), 'ASSOZETA_IDENTITY_FIXTURE': str(identity_cases_file), 'ASSOZETA_IDENTITY_CACHE': identity_cache, 'ASSOZETA_ACTOR_CREDENTIAL_FIXTURE': str(credentials), 'ASSOZETA_ACCOUNT_TEST_DSN':
                             f'host={work} port=5432 user=contracts dbname=assozeta_contract_accounts sslmode=disable'})
                     assert snapshot() == before, 'identity reads changed persisted state or left a fixture transition behind'
+                    if options.only == 'impersonation-management':
+                        from TESTS.adapters.django.impersonation_management import run as impersonation_management
+                        result = impersonation_management(work, log, tool_env, identity_cache)
+                        connections.close_all()
+                        report = {**result, 'schema': 'current Django models; migration history not exercised',
+                                  'customer_data': 'none', 'complete_impersonation_parity': False}
+                        print(json.dumps(report), flush=True)
+                        return
                     if options.only == 'payment-info':
                         from TESTS.adapters.django.payment_info import run as payment_info
                         result = payment_info(work, log, tool_env, identity_cache)
