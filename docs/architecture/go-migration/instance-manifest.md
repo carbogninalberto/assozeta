@@ -115,6 +115,17 @@ only `instance-manifest-image/results.json`. These are current-schema packaged
 HTTP checks: native PostgreSQL bounds/cancellation remain mandatory separately,
 and PWA browser, historical data and installed switching remain open.
 
+The bootstrap validator now rejects JSON boolean/number aliases and non-integer
+write counters. Pure regressions reproduce the former false positives before
+the fix; the exact published153 fixture and its hosted observations pass the
+stricter comparisons. A fresh parent run with the stricter validator also passes
+all 42 cases in each of the four packaged workloads, with stable source hashes
+and complete cleanup (`instance-manifest-image-parent/strict-json/results.json`).
+The validator supports an explicit encoding choice for short buffered responses
+whose randomized gzip padding may remove the size benefit; any compressed result
+must really decode and be smaller. Existing manifest encoding expectations remain
+unchanged.
+
 ```sh
 LC_ALL=C LANG=C python TESTS/adapters/django/instance_bootstrap.py --backend django
 LC_ALL=C LANG=C python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned

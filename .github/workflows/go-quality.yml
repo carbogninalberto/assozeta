@@ -28,6 +28,7 @@ jobs:
       - name: Check inventory and Go code
         run: |
           python3 -m unittest discover -s TESTS/inventory -v
+          python3 -m unittest TESTS.contracts.test_instance_bootstrap_validator -v
           python3 -m TESTS.inventory.catalog --check
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
