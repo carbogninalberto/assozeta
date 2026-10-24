@@ -28,8 +28,10 @@ The [public logo implementation](instance-logo.md) adds canonical S3 reads,
 explicit candidate fallback and bounded response preparation. Actual native and
 versioned tests pass 76 S3 cases per runtime; both filesystem adapters pass 64.
 Independent packaged tests cover 65 MiB bodies, four concurrent 20 MiB responses,
-cancellation and SIGKILL/restart cleanup. Private-CA credential/transport
-compatibility, logo upload and installed acceptance remain unfinished.
+cancellation and SIGKILL/restart cleanup. The [storage trust correction](storage-trust.md)
+adds 34-case component and native/packaged HTTP acceptance, pinned default roots
+and characterized proxy verification. Broader provider compatibility, logo upload
+and installed acceptance remain unfinished.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new

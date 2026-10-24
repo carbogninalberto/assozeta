@@ -1,0 +1,56 @@
+--- a/load_options.go
++++ b/load_options.go
+@@ -1,3 +1,5 @@
++// Modified by Assozeta: opt-in lazy CA handling by the supplied HTTP client.
++// Original upstream v1.33.9; exact changes are in owned-http-trust.patch.
+ package config
+ 
+ import (
+@@ -118,6 +120,10 @@
+ 	// take precedence.
+ 	SharedCredentialsFiles []string
+ 
++	// CustomCABundleHandledByHTTPClient delegates CA selection and loading to the
++	// supplied HTTPClient. Default false preserves the upstream loader behavior.
++	CustomCABundleHandledByHTTPClient bool
++
+ 	// CustomCABundle is CA bundle PEM bytes reader
+ 	CustomCABundle io.Reader
+ 
+@@ -1392,3 +1398,13 @@
+ 		return nil
+ 	}
+ }
++
++// WithCustomCABundleHandledByHTTPClient skips only the SDK CA bundle resolver.
++// The supplied HTTPClient must own certificate verification; this does not
++// disable its TLS checks or change credential provider selection.
++func WithCustomCABundleHandledByHTTPClient() LoadOptionsFunc {
++	return func(o *LoadOptions) error {
++		o.CustomCABundleHandledByHTTPClient = true
++		return nil
++	}
++}
+--- a/resolve.go
++++ b/resolve.go
+@@ -1,3 +1,5 @@
++// Modified by Assozeta: opt-in lazy CA handling by the supplied HTTP client.
++// Original upstream v1.33.9; exact changes are in owned-http-trust.patch.
+ package config
+ 
+ import (
+@@ -40,6 +42,14 @@
+ // Config provider used:
+ // * customCABundleProvider
+ func resolveCustomCABundle(ctx context.Context, cfg *aws.Config, cfgs configs) error {
++	for _, source := range cfgs {
++		if options, ok := source.(LoadOptions); ok && options.CustomCABundleHandledByHTTPClient {
++			if options.HTTPClient == nil {
++				return fmt.Errorf("custom CA handling requires an explicit HTTP client")
++			}
++			return nil
++		}
++	}
+ 	pemCerts, found, err := getCustomCABundle(ctx, cfgs)
+ 	if err != nil {
+ 		// TODO error handling, What is the best way to handle this?

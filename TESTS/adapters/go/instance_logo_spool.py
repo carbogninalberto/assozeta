@@ -8,7 +8,8 @@ prove installed switching, historical migrations or unbounded host disk capacity
 import argparse
 import base64
 import copy
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 import hashlib
 from http.client import HTTPConnection
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -38,6 +39,29 @@ SOURCE_FILES = ('BE_GO/Dockerfile', 'selfhost/compose.yml',
                 'TESTS/adapters/go/payment_category_image.py',
                 'TESTS/adapters/go/age_worker_fixture.py', 'TESTS/adapters/django/settings.py',
                 'TESTS/adapters/django/production_runtime.py', 'TESTS/http_client.py')
+
+
+class Progress:
+    """Persist partial evidence atomically, including the phase active at cancellation."""
+    def __init__(self, report, receipt):
+        self.report, self.receipt = report, receipt
+        self.started = time.monotonic()
+        self.phase_started = {}
+
+    def __call__(self, phase, status='started'):
+        now = time.monotonic()
+        if status == 'started':
+            self.phase_started[phase] = now
+        event = {'phase': phase, 'status': status,
+                 'at': datetime.now(timezone.utc).isoformat(),
+                 'elapsed_seconds': round(now - self.started, 3)}
+        if phase in self.phase_started:
+            event['phase_seconds'] = round(now - self.phase_started[phase], 3)
+        self.report.setdefault('progress', []).append(event)
+        temporary = self.receipt.with_suffix('.tmp')
+        temporary.write_text(json.dumps(self.report, indent=2) + '\n')
+        temporary.replace(self.receipt)
+        print(json.dumps({'spool_progress': event}), flush=True)
 
 
 class Source:
@@ -267,20 +291,30 @@ class Deployment(ImageFixture):
     def begin(self):
         connection = HTTPConnection('127.0.0.1', self.port, timeout=60)
         connection.connect()
-        connection.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
         connection.request('GET', '/instance/logo.png', headers={'Accept-Encoding': 'identity'})
         return connection, connection.getresponse()
 
     @staticmethod
-    def finish(connection, response, size):
+    def finish(connection, response, size, *, total_timeout=60):
+        deadline = time.monotonic() + total_timeout
         try:
-            if connection.sock is not None:
-                connection.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, MIB)
             assert response.status == 200, f'Logo status {response.status}'
             assert response.getheader('Content-Type') == 'image/png', 'Unexpected fallback'
             assert response.getheader('Content-Length') == str(size)
+            # HTTPConnection detaches close-delimited sockets after getresponse.
+            # The response still owns that socket until its body is consumed.
+            body_socket = connection.sock or response.fp.raw._sock
             digest, length = hashlib.sha256(), 0
-            while chunk := response.read(64 << 10):
+            while length < size:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError('Logo body exceeded its total download deadline')
+                body_socket.settimeout(min(60, remaining))
+                # read() can keep receiving a trickle without returning; read1()
+                # permits checking the total deadline after every socket read.
+                chunk = response.read1(64 << 10)
+                if not chunk:
+                    break
                 digest.update(chunk)
                 length += len(chunk)
             assert length == size and digest.hexdigest() == Source.digest(size)
@@ -288,6 +322,35 @@ class Deployment(ImageFixture):
         finally:
             response.close()
             connection.close()
+
+    @staticmethod
+    def finish_concurrently(held, size, *, total_timeout=60):
+        sockets = [connection.sock or response.fp.raw._sock for connection, response in held]
+        executor = ThreadPoolExecutor(max_workers=4)
+        try:
+            futures = {executor.submit(Deployment.finish, connection, response, size,
+                                       total_timeout=total_timeout): index
+                       for index, (connection, response) in enumerate(held)}
+            results = [None] * len(held)
+            # Observe any failed consumer promptly, even if an earlier submitted
+            # consumer is stalled; preserve input order in the final evidence.
+            for future in as_completed(futures, timeout=90):
+                results[futures[future]] = future.result()
+            return results
+        finally:
+            # An assertion/timeout in one consumer must release peers before
+            # joining them. Every peer also has its own total body deadline.
+            for live in sockets:
+                if live is not None:
+                    try:
+                        live.shutdown(socket.SHUT_RDWR)
+                    except OSError:
+                        pass
+            executor.shutdown(wait=True, cancel_futures=True)
+            # A queued future cancelled before it starts never enters finish().
+            for connection, response in held:
+                response.close()
+                connection.close()
 
     def empty(self):
         poll(self.descriptors, lambda rows: not rows, timeout=15)
@@ -341,7 +404,8 @@ class Deployment(ImageFixture):
                 raise AssertionError('; '.join(errors))
 
 
-def exercise(proof, source, report):
+def exercise(proof, source, report, progress):
+    progress('historical-65mib-prepare')
     baseline_rss = proof.rss()
     source.configure(65 * MIB)
     connection, response = proof.begin()
@@ -349,9 +413,13 @@ def exercise(proof, source, report):
     report['first_response'] = {'status': response.status, 'type': response.getheader('Content-Type'),
         'length': response.getheader('Content-Length'), 'spool_descriptors': live}
     assert len(live) == 1 and live[0]['size'] == 65 * MIB
+    progress('historical-65mib-prepare', 'completed')
+    progress('historical-65mib-drain')
     report['historical_65mib'] = proof.finish(connection, response, 65 * MIB)
     proof.empty()
+    progress('historical-65mib-drain', 'completed')
 
+    progress('response-disconnect')
     source.configure(20 * MIB)
     connection, response = proof.begin()
     assert proof.descriptors(), 'Slow response did not retain its spool'
@@ -359,7 +427,9 @@ def exercise(proof, source, report):
     connection.close()
     proof.empty()
     report['response_disconnect_releases_spool'] = True
+    progress('response-disconnect', 'completed')
 
+    progress('storage-disconnect')
     source.configure(20 * MIB, hold=True)
     canceled = HTTPConnection('127.0.0.1', proof.port, timeout=15)
     canceled.request('GET', '/instance/logo.png')
@@ -369,7 +439,9 @@ def exercise(proof, source, report):
     proof.empty()
     report['storage_disconnect_before_source_release'] = True
     source.release.set()
+    progress('storage-disconnect', 'completed')
 
+    progress('four-held-20mib')
     source.configure(20 * MIB)
     held = [proof.begin() for _ in range(4)]
     try:
@@ -389,9 +461,9 @@ def exercise(proof, source, report):
             pass
         finally:
             waiter.close()
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(proof.finish, c, r, 20 * MIB) for c, r in held]
-            report['concurrent_20mib'] = [f.result(timeout=90) for f in futures]
+        progress('four-held-20mib', 'completed')
+        progress('four-20mib-drain')
+        report['concurrent_20mib'] = proof.finish_concurrently(held, 20 * MIB)
         held = []
         proof.empty()
         report['fifth_waiter_cancel_recovery'] = proof.finish(*proof.begin(), 20 * MIB)
@@ -401,7 +473,9 @@ def exercise(proof, source, report):
             r.close()
             c.close()
     proof.empty()
+    progress('four-20mib-drain', 'completed')
 
+    progress('prepared-body-sigkill-restart')
     source.configure(20 * MIB)
     c, r = proof.begin()
     try:
@@ -411,7 +485,9 @@ def exercise(proof, source, report):
         c.close()
     report['prepared_restart_exact'] = proof.finish(*proof.begin(), 20 * MIB)
     proof.empty()
+    progress('prepared-body-sigkill-restart', 'completed')
 
+    progress('partial-download-sigkill-restart')
     source.configure(20 * MIB, hold=True)
     pending = HTTPConnection('127.0.0.1', proof.port, timeout=15)
     pending.request('GET', '/instance/logo.png')
@@ -425,6 +501,7 @@ def exercise(proof, source, report):
     source.configure(20 * MIB)
     report['partial_restart_exact'] = proof.finish(*proof.begin(), 20 * MIB)
     proof.empty()
+    progress('partial-download-sigkill-restart', 'completed')
     report['source_preservation'] = {'only_head_get': all(m in ('HEAD', 'GET') for m, _ in source.methods),
         'deterministic_65mib_sha256': Source.digest(65 * MIB),
         'deterministic_20mib_sha256': Source.digest(20 * MIB)}
@@ -470,10 +547,12 @@ def main():
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     report = {'success': False, 'cleanup_verified': False, 'scope': __doc__,
+        'body_total_timeout_seconds': 60,
         'payload_scope': 'Synthetic opaque bytes served as image/png; not a decodable-image or PWA proof',
         'source_sha256': {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in SOURCE_FILES}}
     receipt = args.output / 'results.json'
-    receipt.write_text(json.dumps(report, indent=2) + '\n')
+    progress = Progress(report, receipt)
+    progress('build-provenance')
     try:
         build_receipt = (json.loads(args.build_receipt.read_text()) if args.build_receipt else
                          clean_build_receipt(args, report['source_sha256']))
@@ -485,46 +564,74 @@ def main():
             name in build_receipt['go_source_sha256'] for name in ('go.mod', 'go.sum', 'cmd/server/main.go'))
     except Exception as error:
         report['preflight_error'] = type(error).__name__
-        receipt.write_text(json.dumps(report, indent=2) + '\n')
+        progress('build-provenance', 'failed')
         raise
+    progress('build-provenance', 'completed')
     with tempfile.TemporaryDirectory(prefix='az-logo-spool-', dir='/tmp') as directory, \
             (args.output / 'services.log').open('w') as log:
         proof = Deployment(args.image, args.expected_revision, Path(directory), args.output, log)
         proof.build_receipt = build_receipt
         source = Source()
         try:
+            progress('private-services')
             proof.start_services(args.postgres, args.redis)
             assert proof.image_id == build_receipt['immutable_id']
+            progress('private-services', 'completed')
+            progress('current-schema')
             initialize_current_schema(Path(directory), '127.0.0.1', proof.postgres_port, DATABASE, log)
+            progress('current-schema', 'completed')
+            progress('compose-api')
             proof.start_api(source)
+            report['image'] = proof.metadata
+            progress('compose-api', 'completed')
             from django.apps import apps
             def snapshot():
                 return {m._meta.label: list(m._base_manager.order_by('pk').values())
                     for m in apps.get_models(include_auto_created=True) if m._meta.managed and not m._meta.proxy}
             original = snapshot()
             report['checks'] = {}
-            exercise(proof, source, report['checks'])
+            exercise(proof, source, report['checks'], progress)
+            progress('managed-state-verification')
             assert snapshot() == original, 'Logo resource probes changed managed database rows'
             report['managed_models_including_auto_created'] = len(original)
             report['managed_state_unchanged'] = True
             report['checks_passed'] = True
+            progress('managed-state-verification', 'completed')
+        except Exception as error:
+            report['execution_error'] = type(error).__name__
+            raise
         finally:
             errors = []
+            def cleanup_progress(phase, status='started'):
+                try:
+                    progress(phase, status)
+                except Exception:
+                    errors.append('Cleanup progress could not be persisted')
+
+            cleanup_progress('source-cleanup')
             try:
                 source.close()
                 report['source_stopped'] = True
+                cleanup_progress('source-cleanup', 'completed')
             except Exception:
                 errors.append('Private source shutdown failed')
+                cleanup_progress('source-cleanup', 'failed')
+            cleanup_progress('database-cleanup')
             try:
                 if 'django.db' in sys.modules:
                     from django.db import connections
                     connections.close_all()
+                cleanup_progress('database-cleanup', 'completed')
             except Exception:
                 errors.append('Private database connection cleanup failed')
+                cleanup_progress('database-cleanup', 'failed')
+            cleanup_progress('container-volume-cleanup')
             try:
                 proof.cleanup()
+                cleanup_progress('container-volume-cleanup', 'completed')
             except Exception:
                 errors.append('Private container/volume cleanup failed')
+                cleanup_progress('container-volume-cleanup', 'failed')
             report.update(image=proof.metadata, cleanup_verified=proof.cleanup_verified,
                 source_requests=source.methods,
                 cleanup_errors=errors, source_stable=all(hashlib.sha256((ROOT / p).read_bytes()).hexdigest() == digest
@@ -535,7 +642,7 @@ def main():
             report['success'] = bool(report.get('checks_passed') and proof.cleanup_verified
                 and report.get('source_stopped') and report['source_stable']
                 and report['build_source_stable'] and not errors)
-            receipt.write_text(json.dumps(report, indent=2) + '\n')
+            progress('finished', 'completed' if report['success'] else 'failed')
     assert report['success'], 'Packaged logo resource proof did not complete'
     print(json.dumps({'success': True, 'cleanup_verified': True, 'receipt': str(receipt)}))
 

@@ -9,6 +9,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/instancelogo"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3credentials"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3trust"
 )
 
 func composeInstanceLogo(cfg config.Config) *handler.InstanceLogoHandler {
@@ -20,6 +21,9 @@ func composeInstanceLogo(cfg config.Config) *handler.InstanceLogoHandler {
 		return *value
 	}
 	storage := instancelogo.NewS3(instancelogo.S3Options{TempDir: cfg.LogoSpoolDirectory, Endpoint: settings.Endpoint, Region: settings.Region, Bucket: settings.Bucket, Location: settings.Location,
+		Trust: func(ctx context.Context) (s3trust.Policy, error) {
+			return s3credentials.LoadTrust(ctx, optional(settings.SessionProfile))
+		},
 		Credentials: func(ctx context.Context) (aws.CredentialsProvider, error) {
 			if err := settings.ValidateBackend(); err != nil {
 				return nil, err

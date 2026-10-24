@@ -1,6 +1,7 @@
 FROM golang:1.25.12-alpine AS builder
 WORKDIR /src
 COPY go.mod go.sum ./
+COPY third_party/aws-config/go.mod third_party/aws-config/go.sum ./third_party/aws-config/
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -o /server ./cmd/server && \
@@ -55,6 +56,10 @@ COPY pkg/storage/loginimage/NOTICE /app/licenses/loginimage-NOTICE
 COPY migrations /app/migrations
 COPY pkg/storage/loginimage/LICENSE.pillow /app/licenses/Pillow-LICENSE
 COPY pkg/qrcode/LICENSE.go-qrcode /app/licenses/go-qrcode-LICENSE
+COPY third_party/aws-config/LICENSE.txt /app/licenses/aws-config-LICENSE
+COPY third_party/aws-config/PATCH.md /app/licenses/aws-config-adaptation-NOTICE
+COPY pkg/storage/s3trust/certifi/LICENSE /app/licenses/certifi-LICENSE
+COPY pkg/storage/s3trust/certifi/README.md /app/licenses/certifi-NOTICE
 USER 10001:10001
 # The same immutable package and asset gate as Django, executed as the runtime
 # user after normalizing artifact files that may have arrived with mode 0600.

@@ -49,3 +49,6 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 )
+
+// Preserve lazy storage trust without replacing the bounded credential client.
+replace github.com/aws/aws-sdk-go-v2/config => ./third_party/aws-config
