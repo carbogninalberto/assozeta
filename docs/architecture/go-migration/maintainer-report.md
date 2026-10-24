@@ -235,6 +235,11 @@ denial and expiry recovery per version, with exact managed-state/cache checks
 and cleanup. Selected v2 requests never reach Django; enumerated unrelated UI
 dependencies explicitly retain Django. Additional race coverage, historical data,
 complete frontend behavior and activation acceptance remain open.
+The first hosted impersonation-browser step at `6661d9d` fails on the private
+gateway's initial connection reset, before Chromium starts. Its other browser
+workloads pass. A startup-only bounded retry now passes a real reset/503/200
+regression and the independently repeated full browser matrix; business failures
+remain strict. Hosted confirmation of this harness correction is pending.
 
 The [public logo](instance-logo.md) has dedicated transport/service/storage
 boundaries and retains the S3 default-storage selection, candidate precedence,
