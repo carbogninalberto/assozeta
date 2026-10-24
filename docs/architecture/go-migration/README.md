@@ -19,9 +19,14 @@ rejection checks durable state before rejecting routing. Five live PostgreSQL
 groups prove bounded reads, audit projection and cancellation, while real Redis
 GET/SET/DEL failures verify partial effects and explicit recovery. All 128 managed
 models and Redis database 1 excluding readiness keys are checked. Full Go race
-and vet checks pass. The image is bound to the modified source context and embeds
-its baseline revision; committed-image CI remains separate. Browser, concurrent
-mutations, historical data and activation acceptance remain open.
+and vet checks pass. Hosted job `120775075723` in run `40061247470` also passes
+native and committed Linux/amd64 image acceptance; artifact `12547443852` matches
+all 826 build-context files and 1,096 oracle hashes to `b225276`. All 17 jobs in
+that hosted run pass. A subsequent independently replayed native matrix adds 24
+same/mixed-runtime overlap and revocation scenarios, preserving measured duplicate
+audits and multiple replacement sessions, with exact state and cleanup. Those
+races are separate from image/Caddy acceptance. Browser, additional race coverage,
+historical data and activation acceptance remain open.
 
 At published `2ed5591`, hosted quality run `40056270692` passes all 16 jobs,
 including the separate storage job. Artifact `12546211090` contains 34 Django/Go TLS component cases,

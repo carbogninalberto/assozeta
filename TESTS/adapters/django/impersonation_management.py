@@ -19,6 +19,7 @@ from .scoped_resources import uid
 
 
 def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_factory=None):
+    concurrency_requested = tool_env.get('TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY') == '1'
     versioned = tool_env.get('TESTS_IMPERSONATION_MANAGEMENT_VERSIONED') == '1'
     if versioned and tool_env.get('TESTS_IMPERSONATION_MANAGEMENT_GO') != '1':
         raise ValueError('Versioned acceptance requires the actual Go server')
@@ -48,6 +49,8 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
             'TESTS/adapters/django/impersonation_management.py', 'TESTS/adapters/django/accounts.py',
             'TESTS/contracts/test_impersonation_management.py', 'TESTS/http_client.py', 'TESTS/adapters/redis_faults.py'))
         paths.add(ROOT / 'TESTS/adapters/django/impersonation_effects.py')
+        if concurrency_requested:
+            paths.add(ROOT / 'TESTS/adapters/django/impersonation_concurrency.py')
         if versioned:
             paths.update(ROOT / relative for relative in ('TESTS/adapters/caddy.py', 'selfhost/caddy/Caddyfile', 'UI/Dockerfile'))
         result = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(paths)}
@@ -571,6 +574,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
     go_runtime = None
     proxy_cleanup = False
     cross_runtime_verified = False
+    concurrency = None
     try:
         poll(lambda: server.started if thread.is_alive() else (_ for _ in ()).throw(RuntimeError('Django stopped')), bool, timeout=20)
         django_port = server.servers[0].sockets[0].getsockname()[1]
@@ -645,6 +649,15 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
                 results.append({'backend': 'misrouted-v2', 'rejected': True, 'reason': 'upstream_mismatch',
                                 'managed_state_preserved': True, 'cache_preserved': True,
                                 'durable_checks_before_rejection': True})
+        if concurrency_requested:
+            from TESTS.adapters.django.impersonation_concurrency import run as run_concurrency
+            def observe(cid):
+                with observation_lock:
+                    return copy.deepcopy([row for row in observations if row['case'] == cid])
+            concurrency = run_concurrency(work=work, log=log, django_base=django_base,
+                go_base=base if go_runtime else None, users=users, tokens=tokens,
+                descriptions=descriptions, associations=associations, address=address, observe=observe)
+            assert concurrency['requested'] and concurrency['success'] and concurrency['cleanup_verified'] and concurrency['source_stable']
     finally:
         try:
             runtime_stack.close()
@@ -660,6 +673,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
             assert not thread.is_alive(), 'Django server did not stop'
     assert source_hashes() == sources_before, 'Sources changed during HTTP acceptance'
     return {'success': True, 'workloads': results, 'managed_models': len(seeded),
+            'concurrency_requested': concurrency_requested, 'concurrency': concurrency,
             'go_runtime': go_runtime, 'versioned': versioned, 'cross_runtime_verified': cross_runtime_verified,
             'repository_checked': repository_checked,
             'repository_tests': repository_tests,

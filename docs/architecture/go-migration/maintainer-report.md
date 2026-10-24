@@ -221,9 +221,14 @@ rejection checks durable state before rejecting routing. Five live PostgreSQL
 groups prove bounded reads, audit projection and cancellation, while real Redis
 GET/SET/DEL failures verify partial effects and explicit recovery. All 128 managed
 models and Redis database 1 excluding readiness keys are checked. Full Go race
-and vet checks pass. The image is bound to the modified source context and embeds
-its baseline revision; committed-image CI remains separate. Browser, concurrent
-mutations, historical data and activation acceptance remain open.
+and vet checks pass. Hosted job `120775075723` in run `40061247470` also passes
+native and committed Linux/amd64 image acceptance; artifact `12547443852` matches
+all 826 build-context files and 1,096 oracle hashes to `b225276`. All 17 jobs in
+that hosted run pass. A subsequent independently replayed native matrix adds 24
+same/mixed-runtime overlap and revocation scenarios, preserving measured duplicate
+audits and multiple replacement sessions, with exact state and cleanup. Those
+races are separate from image/Caddy acceptance. Browser, additional race coverage,
+historical data and activation acceptance remain open.
 
 The [public logo](instance-logo.md) has dedicated transport/service/storage
 boundaries and retains the S3 default-storage selection, candidate precedence,
@@ -401,10 +406,19 @@ fresh captures, 43-page compilation, actual Mintlify rendering, MCP/cited-answer
 evaluation and embedded checks covering 434 compatible public sections and 982
 image references. The 73 explicit coverage gaps remain. Packaging succeeds with
 no external actions, but appliance startup fails because the smoke harness stages
-only Django/web/renderer and omits the newly required Go image. Owned runtime
-resources are removed. A source-owned rehearsal repair and installation/upgrade/
-rollback acceptance remain required; the companion commit has not been pushed
-or published.
+only Django/web/renderer and omits the newly required Go image. Containers and
+networks were removed, but a later capacity audit found retained anonymous
+registry volumes: container removal omitted `-v`. The earlier complete-cleanup
+claim was therefore too broad. Only volumes matched to these exact attempts are
+being reclaimed, and the rehearsal repair will verify volume removal explicitly.
+A subsequent disposable replay with a verified host-directory registry passes
+Django's three installed contracts and real browser/MCP checks. Go passes two
+contracts, but the existing exact-release contract stops at the unsupported
+`/collaborators/list` route (404 instead of 200). That full gate remains unchanged;
+collaborator listing is being implemented. Historical upgrade/rollback is not
+reached. The corrected registry cleanup removes its exact owned storage; an
+independently found partial-container-start cleanup edge is being repaired.
+The companion commit has not been pushed or published.
 
 Hosted `2ed5591` quality run `40056270692` passes all 16 jobs, including storage,
 including native/packaged TLS, packaged manifest, corrected spool resource and

@@ -1977,15 +1977,18 @@
         "TESTS/adapters/go/impersonation_management_image.py",
         "BE_GO/internal/handler/impersonation_management_test.go",
         "BE_GO/internal/service/impersonation_management_test.go",
-        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+        "BE_GO/internal/repository/impersonation_management_integration_test.go",
+        "TESTS/adapters/django/impersonation_concurrency.py"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
-        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources.",
+        "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
+        "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json."
       ],
       "notes": [
-        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
       ]
     },
     {
@@ -2049,15 +2052,18 @@
         "TESTS/adapters/go/impersonation_management_image.py",
         "BE_GO/internal/handler/impersonation_management_test.go",
         "BE_GO/internal/service/impersonation_management_test.go",
-        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+        "BE_GO/internal/repository/impersonation_management_integration_test.go",
+        "TESTS/adapters/django/impersonation_concurrency.py"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
-        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources.",
+        "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
+        "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json."
       ],
       "notes": [
-        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
       ]
     },
     {
@@ -2298,15 +2304,18 @@
         "TESTS/adapters/go/impersonation_management_image.py",
         "BE_GO/internal/handler/impersonation_management_test.go",
         "BE_GO/internal/service/impersonation_management_test.go",
-        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+        "BE_GO/internal/repository/impersonation_management_integration_test.go",
+        "TESTS/adapters/django/impersonation_concurrency.py"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
-        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources.",
+        "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
+        "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json."
       ],
       "notes": [
-        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
       ]
     },
     {
@@ -2370,15 +2379,18 @@
         "TESTS/adapters/go/impersonation_management_image.py",
         "BE_GO/internal/handler/impersonation_management_test.go",
         "BE_GO/internal/service/impersonation_management_test.go",
-        "BE_GO/internal/repository/impersonation_management_integration_test.go"
+        "BE_GO/internal/repository/impersonation_management_integration_test.go",
+        "TESTS/adapters/django/impersonation_concurrency.py"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
-        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources."
+        "Five real PostgreSQL groups pass under race instrumentation: bounded directory queries, eligibility/deleted targets, audit/index projection, cancellation while blocker remains held, and existing-index guard. Full Go race tests and vet pass on imported freeze4 sources.",
+        "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
+        "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json."
       ],
       "notes": [
-        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, concurrent mutations, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
-        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; committed-image hosted acceptance remains separate."
+        "Current-schema implementing slice only; no verified or activation claim. Browser workflow, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
+        "Redis preservation covers database1 excluding Go readiness keys. Packaged local image embeds baseline2ed5591 plus exact dirty build-context hashes; subsequent hosted committed-image acceptance is recorded above."
       ]
     },
     {
@@ -9345,7 +9357,7 @@
         "Intentional scoped installment correction retains Django-red, Go-red and final green scope evidence plus 190 existing Django regressions. Five manual recipe dependency bindings still need review.",
         "Parent packaged image c742cd2 / sha256:6ce77683d8f3f0f0b958faf2646df34781b298b22f806ef6d48d9f3d0047538c passes 4x137 HTTP cases with actual PostgreSQL/Redis, UID10001, read-only root, no mounted executable, runtime observer and fallback rejection, exact state and cleanup. Six native repository groups are explicitly not run in image mode and remain a separate mandatory gate. Old-image actual route404 is retained as red evidence. Native receipts are preserved by isolated image output.",
         "Hosted c742 quality failed the former whole-database counter after HTTP/repository cases passed. Parent reproduction attributes exact114/145/1 to pg_statistic108/145/0 and its TOAST6/0/1, with128 user tables unchanged. New guard samples every user schema/relation after client drain, rejects relation replacement/statistics reset and retains system diagnostics. Seven actual private-PostgreSQL regression cases pass, including committed and rolled-back business/operational writes and held-client rejection. New hosted acceptance remains pending; no verified promotion.",
-        "Parent independently passes unchanged browser four authored OTHER/meta/subscription/course/carnet summaries plus revisits (eight checks/version),16 actual disabledStripe409 responses and final anonymous#/404 navigation. A transparent request gate exposes real loading-state rendering without mocking business responses. Independent Django observer16/0, actual200 misroute rejection and unknownroute502/no-fallback checks pass. All128 managed models including auto-created M2M tables, exact audits, source/artifact hashes and four ownedcleanup flags pass. No enabled checkout, literal reload, provider, installed or approved-policy claim; explicit Django Stripe/manifest/logo/health coexistence retained. See payment-info.md and parent source-bound acceptance."
+        "Parent independently passes unchanged browser four authored OTHER/meta/subscription/course/carnet summaries plus revisits (eight checks/version),16 actual disabledStripe409 responses and final anonymous#/404 navigation. A transparent request gate exposes real loading-state rendering without mocking business responses. Independent Django observer16/0, actual200 misroute rejection and unknownroute502/no-fallback checks pass. All 128 managed models including auto-created M2M tables, exact audits, source/artifact hashes and four ownedcleanup flags pass. No enabled checkout, literal reload, provider, installed or approved-policy claim; explicit Django Stripe/manifest/logo/health coexistence retained. See payment-info.md and parent source-bound acceptance."
       ]
     },
     {
@@ -16703,7 +16715,7 @@
         "Go releases canceled downloads while observed synchronous Django can continue until provider release; this difference remains explicit.",
         "Parent resource replay passes65MiB and4x20MiB exact bodies, cancellation, zero-link allocated-inode SIGKILL/same-volume restart,128-model preservation and owned cleanup. Local immutableimage c61280a7 binds599 Go/module hashes; embedded2715 is base only, not a clean revision build. Initial parent HTTP run passes58 disk and70 per Django/Go/v1/v2 S3 but fails slow-client synchronization after proxy buffering; that overall failure is retained, not counted as complete acceptance.",
         "Historical private-CA gap before the storage trust correction: pinned Django S3Storage accepts AWS_CA_BUNDLE/shared ca_bundle/REQUESTS_CA_BUNDLE fallback. The then-current Go static-credential object transport ignored these; production s3credentials.New also fails AWS/shared CA initialization because SDK custom-bundle resolution rejects its boundedHTTP wrapper. Same private server succeeds with explicit trusted transport. Component probe is not endpoint parity; fix requires both credential and object transport paths. No Linux SSL_CERT_FILE claim.",
-        "Final parent replay passes64 Django filesystem cases and76 S3cases per Django/nativeGo/v1/v2 in135.909s; separate Go filesystem64 passes. All128managed models, expected object/cache state, no-write/query bounds, actual200fallback rejection, source hashes and four cleanup gates pass. Real native/v2 slowclient retains exact65MiB zero-link FD after headers then releases it on disconnect; blocked preparation closes before provider release. Scoped repeated Accept/Accept-Encoding fixes include finite OPTIONS with explicit randomized optionalgzip and exact decoded/size-benefit checks. Full race/vet, workflowlint, kernelunlink probe and make selfhost-test pass. PrivateCA, cancellation semantics, upload, final PWA and installed acceptance remain open.",
+        "Final parent replay passes64 Django filesystem cases and76 S3cases per Django/nativeGo/v1/v2 in135.909s; separate Go filesystem64 passes. All 128managed models, expected object/cache state, no-write/query bounds, actual200fallback rejection, source hashes and four cleanup gates pass. Real native/v2 slowclient retains exact65MiB zero-link FD after headers then releases it on disconnect; blocked preparation closes before provider release. Scoped repeated Accept/Accept-Encoding fixes include finite OPTIONS with explicit randomized optionalgzip and exact decoded/size-benefit checks. Full race/vet, workflowlint, kernelunlink probe and make selfhost-test pass. PrivateCA, cancellation semantics, upload, final PWA and installed acceptance remain open.",
         "Committed 9188744 image 4b71e593 passes unchanged browser stock/v1/v2 open and real reload, native Chromium manifest parsing and a visible 512x512 logo with exact bytes. Actual Django observer totals are 8/8/0; separate manifest/logo misroutes each return 200 and are rejected by the same upstream validator. All 128 managed models including M2M, complete owned S3 objects/tags/sentinel and exact Redis state remain unchanged across five workloads; source hashes and cleanup pass. Pure controls reject false Go routing and redact Docker timeout commands and exception context. Installed PWA, OS icons, offline behavior, runtime operator selection and private CA remain open; status unchanged.",
         "Final clean committed 9188744 resource image 4b71e593/server 6ec26660 binds 601 Go/module sources and passes 65 MiB/four 20 MiB responses, cancellation, two SIGKILL/same-volume restart probes, preservation of 128 models and cleanup. This supersedes the earlier explicitly uncommitted 599-source resource image proof.",
         "Storage trust correction passes 34 Django/Go component cases and 34 native plus 34 packaged HTTP cases, with 204 independent SigV4 checks and preserved 128-model state, source, log redaction and cleanup. The frozen 147-file change manifest matches image e483ba58 and 817 Go/module source hashes; embedded 9188744 is the base only. Parent checks independently pass the component oracle, race/vet, upstream config tests, provenance guards and 60 Bookworm OpenSSL chain decisions. The 30-chain/90-call proxy matrix matches the inherited Django strict context; the explicit-proxy root-without-basic-constraints distinction remains. Existing 44/82/38 credential/provider cases pass. Complete provider, installed and migration parity remain unproven; status is implementing.",
