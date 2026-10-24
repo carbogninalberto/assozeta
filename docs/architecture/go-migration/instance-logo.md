@@ -75,17 +75,14 @@ behavior remains the explicit difference described below. Final parent receipts
 are `instance-logo-parent/final76/results.json` and
 `instance-logo-parent/final-disk/results.json` under the ignored evidence root.
 
-**Provider trust compatibility remains incomplete.** A separate private localhost
-TLS probe against pinned Django S3Storage confirms support for `AWS_CA_BUNDLE`,
-shared AWS `ca_bundle` configuration and the `REQUESTS_CA_BUNDLE` fallback. The
-Go logo transport with static credentials does not apply those trust settings;
-observed handshakes reject the private CA. An explicit trusted transport succeeds
-against the same server, so this is not an unavailable-server result. With the
-production credential constructor, AWS/shared CA settings also fail during SDK
-initialization because its custom-bundle resolver rejects the bounded HTTP-client
-wrapper. Both credential initialization and object transport require a tested
-fix. These component probes do not establish endpoint or complete provider
-parity, and this route remains `implementing`.
+The [storage trust correction](storage-trust.md) now applies the characterized
+AWS/shared-profile/requests CA policy to credential and logo transports, including
+lazy bundle loading and matching default certifi roots. Authored component cases
+pass 34 per Django/Go, and actual native/packaged logo HTTP passes 34 per runtime
+with independent signatures, 128-model preservation and cleanup. Proxy evidence
+is separate actual component HTTP/TLS, including 30 strict-chain decisions.
+Explicit proxy-context/malformed-chain differences and broader provider acceptance
+remain documented; this route remains `implementing`.
 
 The packaged resource runner passes on the clean committed `9188744` image
 `sha256:4b71e59340e965d08dfbceb9a38f75342226689e3d857d22d176e89fb6e66e5b`.
@@ -135,3 +132,23 @@ slice.
 Go cancels an in-progress download when its client disconnects; the observed
 Django synchronous download can continue until the held provider is released.
 This difference is explicit, not a claim of identical cancellation semantics.
+
+## Resource harness deadline correction
+
+Hosted `15743d5` passes native/versioned logo and packaged manifest checks, but
+its foundation job exceeds 30 minutes in the spool adapter. Its initial-only
+receipt cannot establish a completed scenario or cleanup. An independent Linux
+transport probe reproduces severe slowdown from the fixture's 4 KiB receive
+buffer; default buffering preserves a held response and drains the exact body.
+The adapter now leaves socket buffering unchanged, enforces a 60-second total
+body deadline, and aborts failed parallel consumers before joining their peers.
+Five real HTTP controls include stalled/trickling bodies and detached sockets.
+Atomic progress receipts identify each setup, resource and cleanup phase.
+
+The parent reruns the actual production Compose resource matrix on the
+source-bound `e483ba58` storage image in 14.002 seconds. Exact 65 MiB and four
+20 MiB responses, zero-link descriptors, fifth-waiter cancellation, both
+SIGKILL/restart cases, 128-model preservation and all cleanup checks pass.
+The receipt is `quality-reports/go-migration/storage-tls-parent/spool-corrected/results.json`.
+This local Linux/arm64 image replay uses a macOS client; the separate bounded
+Linux transport probe is not a substitute for the next hosted Linux/amd64 run.

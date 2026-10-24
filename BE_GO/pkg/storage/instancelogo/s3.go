@@ -20,12 +20,14 @@ import (
 	"github.com/aws/smithy-go/logging"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/s3trust"
 )
 
 type S3Options struct {
 	IOTimeout                          time.Duration
 	Endpoint, Region, Bucket, Location string
 	Credentials                        func(context.Context) (aws.CredentialsProvider, error)
+	Trust                              func(context.Context) (s3trust.Policy, error)
 	Transport                          http.RoundTripper
 	TempDir                            string
 }
@@ -101,6 +103,13 @@ func (s *S3) client(ctx context.Context) (*s3.Client, error) {
 			return &idleConnection{Conn: connection, timeout: timeout}, nil
 		}
 		transport = copy
+		if s.options.Trust != nil {
+			trust, err := s.options.Trust(ctx)
+			if err != nil {
+				return nil, err
+			}
+			transport = trust.Wrap(copy)
+		}
 	}
 	client := &http.Client{Transport: rawReadTransport{transport}, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	s.api = s3.New(s3.Options{Region: s.options.Region, BaseEndpoint: aws.String(s.options.Endpoint), Credentials: credentials, HTTPClient: client,

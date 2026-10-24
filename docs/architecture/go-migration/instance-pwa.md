@@ -62,8 +62,8 @@ build-time host/API configuration, while the fixture uses a private gateway.
 The stock control proves that the current compatibility alias still selects
 Django. Browser manifest parsing and a decoded logo do not prove OS icon
 installation, an install prompt, standalone launch, offline updates, worker
-handoff or an installed backend switch. Private-CA storage behavior remains the
-separate open issue documented in [logo acceptance](instance-logo.md). No ledger
+handoff or an installed backend switch. Storage trust has separate [component and image acceptance](storage-trust.md);
+that evidence does not complete all provider behavior. No ledger
 entry becomes verified through this browser slice.
 
 CI builds a Go image from its checkout, reuses the one unchanged UI build, runs

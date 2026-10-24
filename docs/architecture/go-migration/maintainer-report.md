@@ -219,9 +219,11 @@ Response preparation owns four bounded slots and anonymous open files. Packaged
 storage tests pass exact 65 MiB and four concurrent 20 MiB bodies, cancellation,
 SIGKILL and same-volume restart. Native/versioned S3 contracts pass 76 cases per
 runtime, and both filesystem adapters pass 64. Real kernel unlink denial is
-tested before payload consumption. Private-CA credential/transport compatibility,
-installed PWA behavior and operator selection remain separate open boundaries;
-no full-parity claim is made.
+tested before payload consumption. The [storage trust correction](storage-trust.md)
+passes 34 component and native/packaged HTTP cases per runtime, with pinned
+certifi roots and separately characterized proxy rules. Broader provider behavior,
+installed PWA behavior and operator selection remain open; no full-parity claim
+is made.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new
@@ -354,12 +356,36 @@ At `07507b8`, hosted browser job `120745204244` fails before PWA navigation:
 schema setup drops the configured Playwright cache path. The adapter now preserves
 its browser environment before schema setup. A real local nondefault-cache replay
 passes all five workloads, with recorded executable paths; a separate missing-cache
-control fails without default-cache fallback and cleans up. Foundation evidence
-for this head remains pending. Its manual runs `40051561938` and `40051561934`
+control fails without default-cache fallback and cleans up. That foundation run
+was canceled after bootstrap and partial logo observations; it has no complete
+logo cleanup receipt. Its manual runs `40051561938` and `40051561934`
 separately fail the content-recipe binding gate.
 
+At `15743d5`, the hosted PWA matrix, account and payment jobs pass. Foundation
+passes native logo 76-by-four plus both 64-case disk adapters and packaged
+manifest 42-by-four, then exceeds its 30-minute job budget during spool checks.
+The spool receipt is initial-only and kernel unlink is skipped. An owned Linux
+probe identifies the fixture's aggressive receive-buffer shrink: only 589,824
+bytes arrive in 15 seconds, while default buffering still holds the response
+under backpressure and then drains 65 MiB. The corrected fixture retains the
+resource assertions, adds a total body deadline and atomic phase receipts, and
+passes the actual Compose matrix in 14.002 seconds. Manifest/spool/unlink checks
+move to the mandatory storage job using its fresh image, preserving the release
+gate. Local proof is Linux/arm64 with a macOS client; hosted Linux/amd64 acceptance
+of the correction remains pending.
+
+Current manual release `40052417456` and MCP `40052417495` stop at recipe binding.
+Exact companion `9d9cffd` has no binding mismatch against `main@79a9460`, but this
+branch invalidates 375 sections across 14 recipe modules. This is branch-caused
+evidence drift, not a preexisting main binding failure. A separate local-only
+candidate reviews all affected claims, preserves the other 132 bindings, and
+passes all 507 authoring bindings and 46 offline checks. Only one Italian
+paragraph changes to clarify manual-link visibility. Runtime capture/reuse,
+release rehearsal and coordinated companion delivery remain required; no
+companion commit, push or publication is represented by these checks.
+
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
-`5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
+`5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Assozeta-owned Go module, Echo transport/DTOs,
 context-aware services, explicit constructors and sqlx/pgx repositories. Actor,
 effective user and resource scope are distinct. The durable job repository is an
 explicit Assozeta extension with its own additive operational migration history;

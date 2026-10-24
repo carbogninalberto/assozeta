@@ -172,17 +172,6 @@ jobs:
           python TESTS/adapters/go/scheduler_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/age_worker_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/token_worker_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
-      - name: Verify authored manifest contracts on the packaged server and both API versions
-        run: |
-          docker pull redis:7-alpine
-          python TESTS/adapters/go/instance_manifest_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
-      - name: Verify packaged logo spool capacity and crash cleanup
-        run: python TESTS/adapters/go/instance_logo_spool.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
-      - name: Verify kernel unlink denial before logo payload download
-        run: |
-          python TESTS/adapters/go/instance_logo_unlink.py \
-            --image "$(docker image inspect --format '{{.Id}}' assozeta-go-foundation:test)" \
-            --output quality-reports/go-migration/instance-logo-unlink
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -197,11 +186,8 @@ jobs:
             quality-reports/go-migration/security-headers/
             quality-reports/go-migration/instance-bootstrap/
             quality-reports/go-migration/instance-bootstrap-go/
-            quality-reports/go-migration/instance-manifest-image/results.json
             quality-reports/go-migration/instance-logo/results.json
             quality-reports/go-migration/instance-logo-disk/results.json
-            quality-reports/go-migration/instance-logo-spool/results.json
-            quality-reports/go-migration/instance-logo-unlink/results.json
             quality-reports/go-migration/manual-availability/
             quality-reports/go-migration/manual-bundle/
             quality-reports/go-migration/manual-reader/
@@ -243,6 +229,97 @@ jobs:
             quality-reports/go-migration/storage-credentials/
             quality-reports/go-migration/storage-roles/
             quality-reports/go-migration/storage-web-identity/
+
+  storage-tls:
+    name: Storage trust and packaged manifest, logo and HTTPS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+            docs/manuale/requirements-offline.txt
+      - name: Install storage fixture dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python TESTS/adapters/django/production_runtime.py
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+      - name: Verify the pinned AWS adaptation and credential transport
+        run: |
+          python TESTS/check_aws_config_patch.py
+          python TESTS/check_storage_ca_bundle.py
+          python -m unittest TESTS.test_storage_ca_bundle -v
+          go -C BE_GO test -race github.com/aws/aws-sdk-go-v2/config/...
+          go -C BE_GO test -race ./pkg/storage/s3trust ./pkg/storage/s3credentials ./pkg/storage/instancelogo
+          python -m unittest TESTS.contracts.test_storage_tls -v
+      - name: Verify authored trust contracts against Django and Go
+        env:
+          TESTS_STORAGE_TLS_REPORT: quality-reports/go-migration/storage-tls/component
+        run: python TESTS/adapters/django/storage_tls.py
+      - name: Verify native and packaged HTTPS storage endpoints
+        run: |
+          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-storage-tls:ci BE_GO
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python TESTS/adapters/go/storage_tls.py \
+            --image "$(docker image inspect --format '{{.Id}}' assozeta-storage-tls:ci)" \
+            --expected-revision "${{ github.sha }}" \
+            --output quality-reports/go-migration/storage-tls/endpoint
+      - name: Verify authored manifest contracts on the packaged server and both API versions
+        run: |
+          docker pull redis:7-alpine
+          python - <<'PY_CADDY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY_CADDY
+          python TESTS/adapters/go/instance_manifest_image.py --image assozeta-storage-tls:ci --expected-revision "${{ github.sha }}"
+      - name: Verify packaged logo spool capacity and crash cleanup
+        run: |
+          python -m unittest TESTS.test_instance_logo_spool -v
+          python TESTS/adapters/go/instance_logo_spool.py --image assozeta-storage-tls:ci --expected-revision "${{ github.sha }}"
+      - name: Verify kernel unlink denial before logo payload download
+        run: |
+          python TESTS/adapters/go/instance_logo_unlink.py \
+            --image "$(docker image inspect --format '{{.Id}}' assozeta-storage-tls:ci)" \
+            --output quality-reports/go-migration/instance-logo-unlink
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-storage-tls-evidence
+          path: |
+            quality-reports/go-migration/storage-tls/component/results.json
+            quality-reports/go-migration/storage-tls/endpoint/results.json
+            quality-reports/go-migration/instance-manifest-image/results.json
+            quality-reports/go-migration/instance-logo-spool/results.json
+            quality-reports/go-migration/instance-logo-unlink/results.json
 
   accounts:
     name: Shared accounts, identities and scoped resources

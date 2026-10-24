@@ -82,17 +82,26 @@ func New(ctx context.Context, o Options, client HTTPClient) (aws.CredentialsProv
 		return nil, err
 	}
 	if client == nil {
+		trust, err := trustFromProfile(o.Profile, profiles, aliases)
+		if err != nil {
+			return nil, err
+		}
 		transport := http.DefaultTransport
 		if t, ok := transport.(*http.Transport); ok {
 			copy := t.Clone()
 			copy.MaxConnsPerHost = 4
 			copy.MaxIdleConnsPerHost = 4
-			transport = copy
+			transport = trust.Wrap(copy)
+		} else {
+			return nil, ErrConfiguration
 		}
 		client = &http.Client{Transport: transport, Timeout: 10 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	}
 	client = boundedHTTP{client}
 	options := []func(*sdkconfig.LoadOptions) error{
+		// The supplied client owns lazy TLS trust, redirects and body limits.
+		// SDK eager CA loading cannot preserve that boundary.
+		sdkconfig.WithCustomCABundleHandledByHTTPClient(),
 		sdkconfig.WithAPIOptions([]func(*middleware.Stack) error{preserveMetadataPath}),
 		sdkconfig.WithSharedConfigFiles([]string{configFile}), sdkconfig.WithSharedCredentialsFiles([]string{credentialsFile}),
 		sdkconfig.WithHTTPClient(client), sdkconfig.WithLogger(logging.Nop{}),

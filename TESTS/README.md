@@ -1197,3 +1197,35 @@ of the foundation job; the frontend job reuses its one built UI image. The full
 account suite also runs unchanged in its own mandatory job, preserving sequential
 fixture dependencies while giving its 10–16 minute hosted workload a separate
 30-minute budget. All reusable workflow jobs contribute to the PR quality gate.
+
+### Storage trust and packaged response resources
+
+Run these commands in the production Python environment described above. The
+storage oracle checks authored CA selection, lazy failures and default-root
+isolation against Django and Go. The packaged adapter verifies actual logo HTTP,
+independent S3 signatures, 128 managed models and owned cleanup. Proxy behavior
+has separate real transport and certificate-chain tests; it is not inferred
+from the direct-TLS endpoint matrix.
+
+```sh
+python TESTS/check_aws_config_patch.py
+python TESTS/check_storage_ca_bundle.py
+python -m unittest TESTS.test_storage_ca_bundle TESTS.contracts.test_storage_tls
+go -C BE_GO test -race github.com/aws/aws-sdk-go-v2/config/...
+python TESTS/adapters/django/storage_tls.py
+docker build --build-arg CODE_REVISION="$(git rev-parse HEAD)" -t assozeta-storage-tls:local BE_GO
+docker pull postgres:16-alpine
+docker pull redis:7-alpine
+python TESTS/adapters/go/storage_tls.py --image assozeta-storage-tls:local --expected-revision "$(git rev-parse HEAD)"
+python -m unittest TESTS.test_instance_logo_spool
+python TESTS/adapters/go/instance_logo_spool.py --image assozeta-storage-tls:local --expected-revision "$(git rev-parse HEAD)"
+```
+
+The image commands require a clean exact checkout. Dirty or mixed builds require
+an explicit source-bound build receipt; a base revision alone is insufficient.
+The separate mandatory storage CI job owns this matrix and the packaged
+manifest/spool/kernel checks. Resource receipts persist phases atomically,
+retain real backpressure/descriptor assertions and enforce total body deadlines.
+Only named result JSON is uploaded. See
+[storage trust scope](../docs/architecture/go-migration/storage-trust.md) for
+legacy empty/HTTP-proxy behavior, the certifi update policy and remaining limits.
