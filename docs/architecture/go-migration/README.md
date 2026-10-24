@@ -10,10 +10,12 @@ export correction and earlier manual-delivery changes. Worktree branch:
 467 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
 
-Hosted quality `40039675776` passes all 15 jobs at published `77adbc7`, including
-the corrected write guard and packaged payment-info checks. The newer manifest
-and browser work below has separate local evidence and needs its own hosted run.
-The two manual workflows still stop at the existing recipe-binding gate.
+Hosted quality `40043636123` passes all 15 jobs at published `1539245`, including
+the packaged manifest, native bounds/cancellation, payment and unchanged checkout
+browser checks. Its independently audited foundation artifact is `12540946983`;
+the packaged Linux/amd64 image records PR merge `9725e9cf3a28d8694edf5dbf99fe28039d47ba6f`.
+Both separate manual workflows (`40043635989`, `40043636014`) stop at the existing
+recipe-binding gate. These successes do not complete backend parity.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new
@@ -22,8 +24,16 @@ ignored authentication headers, sessions and restore/negotiation behavior.
 One-query read-only PostgreSQL projections remain bounded through 10,000 rows;
 actual blocked-query cancellation releases the reader before its blocker.
 All 42 manifest cases also pass through each shipped Caddy prefix, with observed
-upstream identity, fallback rejection and actual gzip/header checks. Manifest
-image/PWA-browser/installed acceptance remains separate.
+upstream identity, fallback rejection and actual gzip/header checks. The packaged
+manifest separately passes 42 cases on each Django/image/v1/v2 workload, with
+all 128 managed models, SQL observer controls, session behavior and full cleanup.
+PWA browser and installed acceptance remain open.
+
+Bootstrap validation now distinguishes JSON booleans from numbers and requires
+an integer zero for the write counter. Pure regressions reproduce the former
+`true`/`1` and `false`/`0` aliases before the fix. Rechecking the exact committed
+`1539245` fixture against its downloaded native and packaged receipts passes;
+this strengthens historical evidence without claiming another HTTP execution.
 
 The [public payment-info implementation](payment-info.md) passes 137 authored
 cases on native Django/Go and both shipped Caddy routes, with exact managed state,

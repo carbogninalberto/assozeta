@@ -38,6 +38,7 @@ SOURCES = (
     'TESTS/adapters/django/settings.py',
     'TESTS/fixtures/instance-bootstrap.json',
     'TESTS/contracts/test_instance_bootstrap.py',
+    'TESTS/contracts/test_payment_info.py',
     'TESTS/http_client.py', 'TESTS/adapters/caddy.py',
     'selfhost/caddy/Caddyfile', 'UI/Dockerfile',
 )

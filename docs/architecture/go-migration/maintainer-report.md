@@ -298,9 +298,19 @@ groups passed. The parent reproduced and corrected catalog contamination as
 documented in [payment-info evidence](payment-info.md). Published `77adbc7` then
 passed all 15 jobs in quality run `40039675776`; its safe artifact independently
 confirms the stats/native/image and category transaction-failure gates on Linux.
-This result excludes the later manifest/browser increment, which needs its own
-hosted verification. Separate manual runs `40039675774` and `40039675800` both
-fail the existing recipe-binding gate and are not counted as passing acceptance.
+That result excludes later work. Published `1539245` now passes all 15 jobs in
+quality run `40043636123`, with independently audited native128/128 bootstrap,
+42-case versioned manifests, PostgreSQL bounds/cancellation, checkout browser and
+packaged manifest42-by-four receipts. Foundation artifact `12540946983` binds its
+Linux/amd64 image to PR merge `9725e9cf3a28d8694edf5dbf99fe28039d47ba6f`; it is
+distinct from local arm64 evidence. Separate manual runs `40043635989` and
+`40043636014` fail the recipe-binding gate and are not passing acceptance.
+
+The bootstrap contract validator also now rejects JSON boolean/number aliases
+and non-integer write counters. Pure failing regressions precede the fix. Its
+stricter comparisons pass when reapplied to the exact committed153 fixture and
+downloaded native/versioned/image observations. That is assertion revalidation,
+not another runtime execution or expanded endpoint coverage.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
