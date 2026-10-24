@@ -218,8 +218,14 @@ ignored authentication headers, sessions and restore/negotiation behavior.
 One-query read-only PostgreSQL projections remain bounded through 10,000 rows;
 actual blocked-query cancellation releases the reader before its blocker.
 All 42 manifest cases also pass through each shipped Caddy prefix, with observed
-upstream identity, fallback rejection and actual gzip/header checks. Manifest
-image/PWA-browser/installed acceptance remains separate.
+upstream identity, fallback rejection and actual gzip/header checks. The packaged
+manifest runner independently passes the same 42 cases on Django, the immutable
+Go image and both prefixes, checking all 128 managed models, SQL, sessions and
+cleanup. A preimplementation image fails with actual404; a rolled-back INSERT
+control proves the SQL observer detects non-durable writes. The fixture holds
+real restore locks separately in each runtime; cross-kernel sharing is not
+claimed. PWA browser and installed acceptance remain open, and native PostgreSQL
+tests remain a separate required gate.
 
 The [public payment-info implementation](payment-info.md) passes 137 authored
 cases on native Django/Go and both shipped Caddy routes, with exact managed state,
