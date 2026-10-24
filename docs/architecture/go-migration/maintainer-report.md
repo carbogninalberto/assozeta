@@ -227,8 +227,14 @@ all 826 build-context files and 1,096 oracle hashes to `b225276`. All 17 jobs in
 that hosted run pass. A subsequent independently replayed native matrix adds 24
 same/mixed-runtime overlap and revocation scenarios, preserving measured duplicate
 audits and multiple replacement sessions, with exact state and cleanup. Those
-races are separate from image/Caddy acceptance. Browser, additional race coverage,
-historical data and activation acceptance remain open.
+races are separate from image/Caddy acceptance. Hosted job `120779815977` at
+`4c912c6` also passes these native races and the sequential image matrix.
+The parent independently replays the unchanged impersonation frontend on v1/v2:
+17 required checkpoints, 12 audits, seven exact picker checks, foreign-athlete
+denial and expiry recovery per version, with exact managed-state/cache checks
+and cleanup. Selected v2 requests never reach Django; enumerated unrelated UI
+dependencies explicitly retain Django. Additional race coverage, historical data,
+complete frontend behavior and activation acceptance remain open.
 
 The [public logo](instance-logo.md) has dedicated transport/service/storage
 boundaries and retains the S3 default-storage selection, candidate precedence,
@@ -410,14 +416,23 @@ only Django/web/renderer and omits the newly required Go image. Containers and
 networks were removed, but a later capacity audit found retained anonymous
 registry volumes: container removal omitted `-v`. The earlier complete-cleanup
 claim was therefore too broad. Only volumes matched to these exact attempts are
-being reclaimed, and the rehearsal repair will verify volume removal explicitly.
+reclaimed; the repaired rehearsal now verifies owned storage removal explicitly.
 A subsequent disposable replay with a verified host-directory registry passes
 Django's three installed contracts and real browser/MCP checks. Go passes two
 contracts, but the existing exact-release contract stops at the unsupported
 `/collaborators/list` route (404 instead of 200). That full gate remains unchanged;
 collaborator listing is being implemented. Historical upgrade/rollback is not
 reached. The corrected registry cleanup removes its exact owned storage; an
-independently found partial-container-start cleanup edge is being repaired.
+independently found partial-container-start cleanup edge is repaired and covered
+by an actual occupied-port failure control. The final source-bound replay takes
+238.262 seconds and retains the same collaborator 404. Stopping Go produces 502
+for v2 health, authenticated sections and an indexed PNG while Django stays 200;
+Go recovers before the unchanged full contract runs. The registry runs as host
+UID:GID 501:20 on a private 0700 bind directory, with verified file ownership and
+no anonymous volume. Independent teardown finds no owned containers, networks,
+volumes, image tags or temporary directory. Eleven focused harness tests and 17
+existing manual/release regressions pass. Historical and recovery phases remain
+unexecuted because the full fresh-Go gate fails; no complete release claim is made.
 The companion commit has not been pushed or published.
 
 Hosted `2ed5591` quality run `40056270692` passes all 16 jobs, including storage,

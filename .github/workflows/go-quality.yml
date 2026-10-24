@@ -605,7 +605,7 @@ jobs:
             quality-reports/go-migration/payment-category-image/
 
   profile-browser:
-    name: Unchanged frontend profile, manual and categories on Django and Go
+    name: Unchanged frontend profile, manual, categories and impersonation on Django and Go
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -717,7 +717,30 @@ jobs:
           for image in ('postgres:16-alpine', 'redis:7-alpine', IMAGE):
               subprocess.run(['docker', 'pull', image], check=True)
           PY
-          docker build --build-arg CODE_REVISION="${{ github.sha }}" -t assozeta-go-pwa:test BE_GO
+          python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          from TESTS.adapters.go.impersonation_management_image import go_source_hashes
+          root = Path.cwd()
+          output = root / 'quality-reports/go-migration/impersonation-browser-build'
+          output.mkdir(parents=True, exist_ok=True)
+          revision = os.environ['GITHUB_SHA']
+          assert re.fullmatch('[0-9a-f]{40}', revision)
+          receipt = {'success': False, 'source_stable': False, 'source_revision': revision,
+                     'source_sha256': go_source_hashes(root)}
+          path = output / 'results.json'
+          path.write_text(json.dumps(receipt, indent=2) + '\n')
+          try:
+              subprocess.run(['docker', 'build', '--build-arg', 'CODE_REVISION=' + revision,
+                              '--iidfile', str(output / 'image-id'), '-t', 'assozeta-go-pwa:test', 'BE_GO'], check=True)
+              receipt['image_id'] = (output / 'image-id').read_text().strip()
+              assert re.fullmatch('sha256:[0-9a-f]{64}', receipt['image_id'])
+              receipt['source_stable'] = go_source_hashes(root) == receipt['source_sha256']
+              assert receipt['source_stable']
+              receipt['success'] = True
+          finally:
+              path.write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
           python TESTS/adapters/django/instance_pwa_browser.py \
             --prepare-ui-image assozeta-profile-web:ci \
             --ui-dir quality-reports/go-migration/instance-pwa-browser-ui/artifact \
@@ -728,6 +751,25 @@ jobs:
             --image assozeta-go-pwa:test --expected-revision "${{ github.sha }}" --with-go \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
             --output quality-reports/go-migration/instance-pwa-browser
+      - name: Verify unchanged impersonation controls and durable outcomes
+        # Reuse the same immutable Go and UI builds. Explicit Django dependencies
+        # remain visible; this does not claim installed backend activation.
+        run: |
+          python -m unittest TESTS.adapters.django.impersonation_browser -v
+          node --check TESTS/browser/impersonation.mjs
+          python TESTS/adapters/django/impersonation_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/impersonation-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/impersonation-browser-ui/provenance.json
+          python TESTS/adapters/django/impersonation_browser.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --versions v1 v2 \
+            --ui-dir quality-reports/go-migration/impersonation-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/impersonation-browser-ui/provenance.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
+            --output quality-reports/go-migration/impersonation-browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -747,3 +789,8 @@ jobs:
             quality-reports/go-migration/instance-pwa-browser/*/validation.json
             quality-reports/go-migration/instance-pwa-browser/*/*.png
             quality-reports/go-migration/instance-pwa-browser-ui/provenance.json
+            quality-reports/go-migration/impersonation-browser/results.json
+            quality-reports/go-migration/impersonation-browser/v*/results.json
+            quality-reports/go-migration/impersonation-browser/v*/*.png
+            quality-reports/go-migration/impersonation-browser-ui/provenance.json
+            quality-reports/go-migration/impersonation-browser-build/results.json

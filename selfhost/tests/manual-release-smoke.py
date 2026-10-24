@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 from urllib.request import urlopen
+from urllib.parse import quote
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,7 +23,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'BE')]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from TESTS.http_client import Client
 from application.manuale.bundle import load_bundle
-from distribution import validate_manifest
+from distribution import validate_manifest, download, unpack, digest
 
 
 def free_port():
@@ -30,6 +31,68 @@ def free_port():
         sock.bind(('127.0.0.1', 0))
         return sock.getsockname()[1]
 
+
+def build_manual_backends(work, package, release, revision, image, *, prefix=''):
+    """Build both current backend artifacts with one independently verified corpus."""
+    built = {}
+    for key, directory, name in (('backend', 'BE', 'bundled'), ('backend-go', 'BE_GO', 'go-bundled')):
+        context = work / directory
+        destination = context / 'release-manual'
+        if destination.exists():
+            shutil.rmtree(destination)
+        shutil.copytree(package, destination)
+        target = ('--target', 'production') if key == 'backend' else ()
+        built[key] = image(prefix + name, context, *target,
+                           '--build-arg', 'VERSION=' + release,
+                           '--build-arg', 'CODE_REVISION=' + revision,
+                           '--build-arg', 'REQUIRE_MANUAL=true')
+    return built
+
+
+def verified_historical_runtime(content, manifest):
+    """Authenticate the entire published archive before selecting runtime files."""
+    if digest(content) != manifest['bundle_sha256']:
+        raise ValueError('Historical archive digest differs from published manifest')
+    files = unpack(content)
+    if {name: digest(value[0]) for name, value in files.items()} != manifest['files']:
+        raise ValueError('Historical file manifest differs from published archive')
+    return {name: value for name, value in files.items()
+            if name == 'compose.yml' or name.startswith(('caddy/', 'config/'))}
+
+
+def install_historical_runtime(installation, files):
+    # Retain the current CLI's candidate-manual gates. This is a published Django
+    # schema/manual transition, not a managed distribution/Go rollout rehearsal.
+    for name, (content, mode) in files.items():
+        target = installation / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+        target.chmod(mode)
+    return {name: digest(value[0]) for name, value in files.items()}
+
+
+
+def cleanup_registry(registry_name, volume_ids, log, *, data_directory=None):
+    """Remove only the owned registry and prove its anonymous storage is gone."""
+    result = {'container': registry_name, 'volume_ids': volume_ids, 'verified': False}
+    try:
+        removal = subprocess.run(['docker', 'rm', '-f', '-v', registry_name], stdout=log, stderr=log)
+        listing = subprocess.run(['docker', 'volume', 'ls', '--format', '{{.Name}}'],
+                                 capture_output=True, text=True)
+        remaining = sorted(set(volume_ids).intersection(listing.stdout.splitlines()))
+        result.update(removal_exit_code=removal.returncode, listing_exit_code=listing.returncode,
+                      remaining_volume_ids=remaining,
+                      verified=removal.returncode == 0 and listing.returncode == 0 and not remaining)
+        if data_directory is not None:
+            result['bind_directory'] = str(data_directory)
+            if removal.returncode == 0 and data_directory.exists():
+                shutil.rmtree(data_directory)
+            result['bind_directory_removed'] = not data_directory.exists()
+            result['verified'] = result['verified'] and result['bind_directory_removed']
+    except OSError as exc:
+        result['verified'] = False
+        result['error_type'] = type(exc).__name__
+    return result
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -50,7 +113,12 @@ def main():
     output = ROOT / 'quality-reports/manual-release'
     output.mkdir(parents=True, exist_ok=True)
     result = {'status': 'running', 'application_revision': revision, 'release': args.release,
-              'corpus_identity': bundle.value['identity'], 'checks': [], 'timings': []}
+              'corpus_identity': bundle.value['identity'], 'checks': [], 'timings': [],
+              'proof_scope': {'current_distribution': 'Django default plus required Go manual artifact and HTTP/assets',
+                  'historical': ('independently verified synthetic package' if previous_bundle else
+                      'published Django schema and frozen Compose/config/Caddy; current CLI manual gates'),
+                  'full_managed_go_historical_transition': False},
+              'runner_sha256': digest(Path(__file__).read_bytes())}
     started = last_checkpoint = time.monotonic()
     project = 'assozeta-manual-release-' + uuid4().hex[:10]
     images = []
@@ -61,6 +129,10 @@ def main():
         installation = work / 'selfhost'
         cli = installation / 'bin/assozeta'
         registry_name = project + '-registry'
+        registry_created = False
+        registry_volumes = []
+        registry_data = work / 'registry-data'
+        registry_user = f'{os.getuid()}:{os.getgid()}'
         env = {**os.environ, 'ASSOZETA_ENV_FILE': str(env_file)}
         def command(argv, **kwargs):
             return subprocess.run([str(arg) for arg in argv], check=True, stdout=log,
@@ -96,7 +168,7 @@ def main():
             raise RuntimeError('Disposable release application failed readiness')
         def application_containers():
             containers = {}
-            for service in ('api', 'worker', 'beat'):
+            for service in ('api', 'api-go', 'worker', 'beat'):
                 identifier = subprocess.check_output([str(arg) for arg in
                     compose('ps', '--status', 'running', '-q', service)], env=env, text=True).strip()
                 if not identifier:
@@ -115,21 +187,16 @@ def main():
             # this build context. The runtime package is the sole generated input.
             archive = work / 'backend.tar'
             with archive.open('wb') as stream:
-                subprocess.run(['git', 'archive', 'HEAD', 'BE', 'selfhost'], cwd=ROOT, stdout=stream, check=True)
+                subprocess.run(['git', 'archive', 'HEAD', 'BE', 'BE_GO', 'selfhost'], cwd=ROOT, stdout=stream, check=True)
             command(['tar', '-xf', archive, '-C', work])
-            context = work / 'BE'
-            shutil.copytree(args.package, context / 'release-manual', dirs_exist_ok=True)
-            backend = image('bundled', context, '--target', 'production', '--build-arg', 'VERSION=' + args.release,
-                            '--build-arg', 'CODE_REVISION=' + revision, '--build-arg', 'REQUIRE_MANUAL=true')
+            backends = build_manual_backends(work, args.package, args.release, revision, image)
+            backend = backends['backend']
             web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
             renderer = image('renderer', ROOT / 'selfhost/renderer')
             if previous_bundle:
-                shutil.rmtree(context / 'release-manual')
-                shutil.copytree(args.previous_package, context / 'release-manual')
-                previous_backend = image('previous', context, '--target', 'production',
-                    '--build-arg', 'VERSION=' + args.previous_release, '--build-arg', 'CODE_REVISION=' + revision,
-                    '--build-arg', 'REQUIRE_MANUAL=true')
-                previous_images = {'backend': previous_backend, 'web': web, 'renderer': renderer}
+                previous_backends = build_manual_backends(work, args.previous_package,
+                    args.previous_release, revision, image, prefix='previous-')
+                previous_images = {**previous_backends, 'web': web, 'renderer': renderer}
                 result['previous_source'] = 'independently verified synthetic package'
             else:
                 tag = 'v' + args.previous_release.removeprefix('v')
@@ -137,12 +204,34 @@ def main():
                 with urlopen(url, timeout=60) as response:
                     previous_manifest = validate_manifest(json.load(response), tag)
                 previous_images = {name: previous_manifest['images'][name] for name in ('backend', 'web', 'renderer')}
-                result['previous_source'] = {'release': tag, 'manifest': url, 'images': previous_images}
+                archive_url = f'https://github.com/carbogninalberto/assozeta/releases/download/{tag}/assozeta-selfhost-{tag}.tar.gz'
+                historical_runtime = verified_historical_runtime(download(archive_url), previous_manifest)
+                result['previous_source'] = {'release': tag, 'manifest': url, 'images': previous_images,
+                    'archive': archive_url, 'bundle_sha256': previous_manifest['bundle_sha256'],
+                    'runtime_files': {name: digest(value[0]) for name, value in historical_runtime.items()}}
                 for reference in previous_images.values():
                     command(['docker', 'pull', reference])
             registry_port = free_port()
+            registry_data.mkdir(mode=0o700)
+            # Docker may create the container then fail to bind its port. The
+            # unique name is already owned, so finally must clean that partial start.
+            registry_created = True
+            result['registry_resources'] = {'container': registry_name, 'launch_attempted': True,
+                                            'bind_directory': str(registry_data)}
             command(['docker', 'run', '-d', '--name', registry_name,
+                     '--user', registry_user,
+                     '--mount', f'type=bind,source={registry_data},target=/var/lib/registry',
                      '-p', f'127.0.0.1:{registry_port}:5000', 'registry:2.8.3'])
+            registry_state = json.loads(subprocess.check_output(['docker', 'inspect', registry_name], text=True))[0]
+            registry_volumes = [mount['Name'] for mount in registry_state['Mounts'] if mount['Type'] == 'volume']
+            storage_mounts = [mount for mount in registry_state['Mounts'] if mount['Destination'] == '/var/lib/registry']
+            if (registry_state['Config']['User'] != registry_user
+                    or len(storage_mounts) != 1 or storage_mounts[0]['Type'] != 'bind'
+                    or Path(storage_mounts[0]['Source']).resolve() != registry_data.resolve()):
+                raise RuntimeError('Registry storage is not the exact owned host directory')
+            result['registry_resources'] = {'container': registry_name, 'container_id': registry_state['Id'],
+                                            'volume_ids': registry_volumes, 'storage_mount': storage_mounts[0],
+                                            'user': registry_user, 'host_uid': os.getuid(), 'host_gid': os.getgid()}
             registry = f'localhost:{registry_port}'
             deadline = time.monotonic() + 60
             while True:
@@ -154,8 +243,9 @@ def main():
                 if time.monotonic() >= deadline:
                     raise RuntimeError('Disposable image registry failed readiness')
                 time.sleep(.5)
-            repositories = {name: registry + '/' + project + '-' + name for name in ('backend', 'web', 'renderer')}
-            for version, version_images in ((args.release, {'backend': backend, 'web': web, 'renderer': renderer}),
+            target_images = {**backends, 'web': web, 'renderer': renderer}
+            repositories = {name: registry + '/' + project + '-' + name for name in target_images}
+            for version, version_images in ((args.release, target_images),
                                             (args.previous_release, previous_images)):
                 for name, source in version_images.items():
                     target = repositories[name] + ':' + version
@@ -168,6 +258,7 @@ def main():
             command([cli, 'configure', '--domain', f'localhost:{port}', '--version', args.release], env=env)
             set_env({'COMPOSE_PROJECT_NAME': project,
                      'ASSOZETA_BACKEND_IMAGE': repositories['backend'],
+                     'ASSOZETA_BACKEND_GO_IMAGE': repositories['backend-go'],
                      'ASSOZETA_WEB_IMAGE': repositories['web'],
                      'ASSOZETA_RENDERER_IMAGE': repositories['renderer'],
                      'HTTPS_PORT': free_port()})
@@ -211,8 +302,8 @@ def main():
                 'section_title': plan['title']}}
             fixture_path = work / 'fixture.json'
             fixture_path.write_text(json.dumps(fixture)); fixture_path.chmod(0o600)
-            def contracts(phase, browser=False):
-                command([ROOT / 'TESTS/run', 'manual', '--base-url', origin + '/api', '--fixture', fixture_path,
+            def contracts(phase, browser=False, api_prefix='/api'):
+                command([ROOT / 'TESTS/run', 'manual', '--base-url', origin + api_prefix, '--fixture', fixture_path,
                          '--output', output / phase], cwd=ROOT)
                 if browser:
                     mcp_configuration = {'command': 'python', 'args': ['manage.py', 'run_mcp_server',
@@ -227,6 +318,33 @@ def main():
                                  'TESTS_OUTPUT': str(output / phase / 'browser')})
             contracts('fresh', browser=True)
             record('fresh installation: reader, assets, search and real browser assistance without AI or subscription')
+            go_container = subprocess.check_output([str(arg) for arg in compose('ps', '-q', 'api-go')],
+                                                  env=env, text=True).strip()
+            go_state = json.loads(subprocess.check_output(['docker', 'inspect', go_container], text=True))[0]
+            if (go_state['Image'] != result['target_images']['backend-go']
+                    or go_state['State'].get('Health', {}).get('Status') != 'healthy'):
+                raise RuntimeError('Current-distribution Go image is not the expected healthy artifact')
+            result['current_go_image'] = go_state['Image']
+            # A real stopped upstream must fail on v2 while the Django alias still works.
+            command(compose('stop', 'api-go'), env=env)
+            go_owner = Client(origin + '/api/v2', owner.token)
+            first_asset = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
+            asset_path = '/manuale/assets/' + quote(first_asset, safe='/')
+            controls = {
+                'go_health': Client(origin + '/api/v2').request('GET', '/healthz')[0],
+                'django_health': public.request('GET', '/healthz')[0],
+                'go_sections': go_owner.request('GET', '/manuale/sections')[0],
+                'django_sections': owner.request('GET', '/manuale/sections')[0],
+                'go_asset': go_owner.request('GET', asset_path, raw=True)[0],
+                'django_asset': owner.request('GET', asset_path, raw=True)[0],
+            }
+            result['go_upstream_negative_control'] = controls
+            if controls != {'go_health': 502, 'django_health': 200, 'go_sections': 502,
+                            'django_sections': 200, 'go_asset': 502, 'django_asset': 200}:
+                raise RuntimeError('Go manual route negative control did not isolate the real upstream')
+            command(compose('up', '-d', '--wait', 'api-go'), env=env)
+            contracts('fresh-go', api_prefix='/api/v2')
+            record('current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available')
             before_restart = application_containers()
             # The shipped CLI handles workers with disabled healthchecks and
             # waits for public API readiness, including older Compose versions.
@@ -235,6 +353,7 @@ def main():
             if any(after_restart[service] == identifier for service, identifier in before_restart.items()):
                 raise RuntimeError('CLI restart did not recreate every application container')
             ready(); contracts('recreated')
+            contracts('recreated-go', api_prefix='/api/v2')
             record('container recreation retains the image-matched manual')
             # Stop at the real create/start boundary, as if activation had been
             # interrupted after replacing the container but before starting it.
@@ -247,6 +366,7 @@ def main():
                 raise RuntimeError('Activation interruption did not leave an unstarted candidate')
             command([cli, 'start'], env=env)
             ready(); contracts('interrupted-start-recovery')
+            contracts('interrupted-start-recovery-go', api_prefix='/api/v2')
             record('normal CLI startup recovers activation interrupted between container creation and startup')
             # Exercise the shipped upgrade error path: backup stops services,
             # the missing candidate fails to pull, and the CLI restores them.
@@ -257,6 +377,7 @@ def main():
             if unavailable.returncode == 0 or configured != args.release:
                 raise RuntimeError('Failed candidate download did not retain the installed release')
             ready(); contracts('failed-upgrade-recovery')
+            contracts('failed-upgrade-recovery-go', api_prefix='/api/v2')
             record('failed CLI candidate download restores services with the retained compatible manual')
             if previous_bundle:
                 previous_expected = {**fixture['manual'], 'release': args.previous_release,
@@ -306,20 +427,26 @@ def main():
                     raise RuntimeError(name + ' did not reject candidate startup at the manual validation gate')
             record('missing/corrupt index and PNGs and mismatched version reject candidate startup')
             contracts('retained-after-failure')
+            contracts('retained-after-failure-go', api_prefix='/api/v2')
             command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
             ready(); contracts('rollback')
+            contracts('rollback-go', api_prefix='/api/v2')
             record('failed candidate leaves valid package intact; original image recreates with compatible manual')
             if not previous_bundle:
                 # Start the real historical schema in empty, owned volumes.
-                # Current lifecycle tooling performs the ordinary upgrade; the
-                # backend, web and renderer are the published immutable images.
+                # The published runtime has no Go service. Keep that real
+                # composition for the bounded Django schema/manual transition;
+                # current-distribution Go delivery was verified independently above.
                 command(compose('down', '-v', '--remove-orphans'), env=env)
+                result['historical_runtime_installed'] = install_historical_runtime(installation, historical_runtime)
+                historical_services = subprocess.check_output([str(arg) for arg in compose('config', '--services')],
+                                                             env=env, text=True).splitlines()
+                if 'api-go' in historical_services or 'migrate-go' in historical_services:
+                    raise RuntimeError('Published pre-Go runtime unexpectedly contains Go services')
                 set_env({'ASSOZETA_VERSION': args.previous_release})
                 command([cli, 'start'], env=env); ready()
-                # The historical Compose migration job also seeded its required
-                # billing reference data. Current Compose no longer needs that
-                # bootstrap, so reproduce it with the published image's command.
-                command(compose('exec', '-T', 'api', 'python', 'manage.py', 'seed_selfhost'), env=env)
+                # The frozen published Compose migration job already ran its
+                # seed_selfhost command against the actual historical image.
                 owner, association_id = initialize_association()
                 if public.request('GET', '/instance/status')[1].get('manual_enabled', False):
                     raise RuntimeError('Historical transition expects a release without a manual')
@@ -383,7 +510,10 @@ def main():
                     subprocess.run(compose('logs', '--no-color', '--tail', '200'),
                                    stdout=log, stderr=log, env=env)
                 subprocess.run(compose('down', '-v', '--remove-orphans'), stdout=log, stderr=log, env=env)
-            subprocess.run(['docker', 'rm', '-f', registry_name], stdout=log, stderr=log)
+            if registry_created:
+                result['registry_cleanup'] = cleanup_registry(registry_name, registry_volumes, log, data_directory=registry_data)
+                if not result['registry_cleanup']['verified']:
+                    result['status'] = 'failed'
             for tag in reversed(images):
                 subprocess.run(['docker', 'image', 'rm', tag], stdout=log, stderr=log)
             log.close()
@@ -395,6 +525,8 @@ def main():
                 result['status'] = 'failed'
             result['elapsed_seconds'] = round(time.monotonic() - started, 3)
             (output / 'results.json').write_text(json.dumps(result, indent=2) + '\n')
+    if result['status'] != 'passed':
+        raise RuntimeError('Manual release rehearsal or owned registry cleanup failed')
 
 
 if __name__ == '__main__':
