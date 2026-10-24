@@ -6,9 +6,16 @@ foundation checks below does not establish backend parity.
 
 Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
 export correction and earlier manual-delivery changes. Worktree branch:
-`codex/go-backend-parity`. The ledger retains all 514 declarations: 43 implementing,
-462 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
+`codex/go-backend-parity`. The ledger retains all 514 declarations: 44 implementing,
+461 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
+
+The [collaborator-list slice](collaborator-list.md) adds scoped connected-user and
+invitation reads. Independent parent acceptance passes 115 cases on Django, Go
+and both Caddy versions, with exact state/cache preservation, zero user-table
+writes, bounded PostgreSQL reads and cancellation. It retains legacy unpaginated
+and invitation-disclosure behavior. Broader locale, mutation, historical,
+installed and activation acceptance remain open.
 
 The [impersonation-management slice](impersonation-management.md) implements the
 four owner/admin routes, shared sessions and exact ACCESS audit/cache ordering.
@@ -25,7 +32,11 @@ all 826 build-context files and 1,096 oracle hashes to `b225276`. All 17 jobs in
 that hosted run pass. A subsequent independently replayed native matrix adds 24
 same/mixed-runtime overlap and revocation scenarios, preserving measured duplicate
 audits and multiple replacement sessions, with exact state and cleanup. Those
-races are separate from image/Caddy acceptance. Browser, additional race coverage,
+races are separate from image/Caddy acceptance. The unchanged browser passes
+17 checkpoints and 12 audits per version locally, including expiry recovery and
+foreign-athlete denial. Its first hosted attempt fails at private gateway startup;
+a real reset regression and full local replay pass after the readiness fix,
+with hosted confirmation pending. Additional races, complete frontend behavior,
 historical data and activation acceptance remain open.
 
 At published `2ed5591`, hosted quality run `40056270692` passes all 16 jobs,
@@ -662,7 +673,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 43 implementing, 5 needing review and 462
+The ledger currently has 4 deprecated, 44 implementing, 5 needing review and 461
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

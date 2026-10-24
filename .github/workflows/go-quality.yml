@@ -389,7 +389,7 @@ jobs:
             quality-reports/go-migration/runtime.json
 
   impersonation-management:
-    name: Impersonation HTTP, shared sessions and packaged failure recovery
+    name: Impersonation and collaborator HTTP, shared sessions and packaged recovery
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -452,6 +452,12 @@ jobs:
           TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY: '1'
           TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
         run: python TESTS/adapters/django/accounts.py --only impersonation-management
+      - name: Verify collaborator listing, scopes and live PostgreSQL bounds
+        env:
+          TESTS_COLLABORATOR_LIST_GO: '1'
+          TESTS_COLLABORATOR_LIST_VERSIONED: '1'
+          TESTS_COLLABORATOR_LIST_REPOSITORY: '1'
+        run: python TESTS/adapters/django/accounts.py --only collaborator-list
       - name: Verify guarded container Redis faults and exact ACL restoration
         run: python TESTS/adapters/redis_faults.py --container-controls --output quality-reports/go-migration/impersonation-container-redis-fault-controls
       - name: Build a source-bound immutable impersonation image
@@ -499,6 +505,23 @@ jobs:
             --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
             --go-source "$GITHUB_WORKSPACE" \
             --output quality-reports/go-migration/impersonation-management-image/acceptance
+      - name: Verify packaged collaborator listing with the same immutable image
+        run: |
+          python -m unittest TESTS.adapters.go.collaborator_list_image -v
+          python TESTS/adapters/go/collaborator_list_image.py \
+            --image '${{ steps.impersonation-image.outputs.image }}' \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
+            --output quality-reports/go-migration/collaborator-list-image
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-collaborator-list-evidence
+          path: |
+            quality-reports/go-migration/collaborator-list/results.json
+            quality-reports/go-migration/collaborator-list/http-results.json
+            quality-reports/go-migration/collaborator-list-image/results.json
+            quality-reports/go-migration/collaborator-list-image/http-results.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
