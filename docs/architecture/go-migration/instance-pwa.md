@@ -71,3 +71,15 @@ the positive workflows and both fallback controls, and retains named result
 JSON and screenshots. Private service files and fixture inputs are not uploaded.
 The parent receipt is under ignored
 `quality-reports/go-migration/instance-pwa-parent/final-hardened/results.json`.
+
+The first hosted PWA run (`40051561946`, head `07507b8`) fails before navigation:
+schema initialization clears `PLAYWRIGHT_BROWSERS_PATH`, so Playwright searches
+the default cache although CI installed Chromium in its configured cache. The
+adapter now captures the browser tool environment before initializing Django and
+passes it explicitly to Node. Browser receipts record the resolved executable.
+The local regression replays all five workloads with a nondefault cache and
+verifies the executable path, state and cleanup. A separate missing-cache control
+fails before navigation and still cleans up, proving there is no silent fallback
+to the developer's installed default browser. These receipts are retained under
+`quality-reports/go-migration/instance-pwa-parent/browser-cache-regression/`;
+they do not turn the failed hosted run into a pass.

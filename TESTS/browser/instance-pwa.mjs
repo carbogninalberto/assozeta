@@ -14,6 +14,7 @@ let browser, context;
 const pending = [];
 const save = () => fs.writeFile(path.join(output, 'browser.json'), JSON.stringify(report, null, 2) + '\n');
 try {
+    report.browser_executable = chromium.executablePath();
     browser = await chromium.launch({headless: true});
     context = await browser.newContext({viewport: {width: 1280, height: 900}, colorScheme: 'light'});
     await context.route('**/*', async route => {

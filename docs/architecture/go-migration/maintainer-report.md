@@ -350,6 +350,14 @@ of the clean committed image pass the full spool and browser checks; this does
 not convert the failed hosted run into a success. Its manual runs `40049170440`
 and `40049170500` also fail the recipe-binding gate.
 
+At `07507b8`, hosted browser job `120745204244` fails before PWA navigation:
+schema setup drops the configured Playwright cache path. The adapter now preserves
+its browser environment before schema setup. A real local nondefault-cache replay
+passes all five workloads, with recorded executable paths; a separate missing-cache
+control fails without default-cache fallback and cleans up. Foundation evidence
+for this head remains pending. Its manual runs `40051561938` and `40051561934`
+separately fail the content-recipe binding gate.
+
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,
 context-aware services, explicit constructors and sqlx/pgx repositories. Actor,
