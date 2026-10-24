@@ -161,6 +161,10 @@ jobs:
           python TESTS/adapters/go/scheduler_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/age_worker_image.py --image assozeta-go-foundation:test
           python TESTS/adapters/go/token_worker_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
+      - name: Verify authored manifest contracts on the packaged server and both API versions
+        run: |
+          docker pull redis:7-alpine
+          python TESTS/adapters/go/instance_manifest_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -175,6 +179,7 @@ jobs:
             quality-reports/go-migration/security-headers/
             quality-reports/go-migration/instance-bootstrap/
             quality-reports/go-migration/instance-bootstrap-go/
+            quality-reports/go-migration/instance-manifest-image/results.json
             quality-reports/go-migration/manual-availability/
             quality-reports/go-migration/manual-bundle/
             quality-reports/go-migration/manual-reader/

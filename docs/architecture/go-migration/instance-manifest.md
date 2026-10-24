@@ -75,12 +75,50 @@ Vary lines are compared semantically; decoded payloads remain exact and no error
 body is truncated before secret checks.
 
 Final parent evidence is `instance-manifest-parent/final-acceptance.json` under
-the ignored evidence root. Immutable-image manifest, PWA browser and installed
-acceptance remain separate; no ledger entry is promoted to verified.
+the ignored evidence root. PWA browser and installed acceptance remain separate;
+no ledger entry is promoted to verified.
+
+## Packaged manifest HTTP evidence
+
+`TESTS/adapters/go/instance_manifest_image.py` independently runs the same **42
+authored cases on each of four workloads**: Django, the immutable packaged Go
+server and shipped Caddy v1/v2. The parent run uses image
+`sha256:ca4cc6971d5ffb4177180babd8a32b115354ffb91bb09e7d2b3410adc9d9365b`,
+Linux/arm64, revision `324d3741d3907b9ff1bf45d78325528870763080`. It verifies UID
+10001, a read-only root, packaged executable digest/revision/version, and actual
+startup readiness/health. No executable is mounted into the image. Both complete
+parent runs passed; the final source-bound run took 103.58 seconds.
+
+Every request checks all 128 managed models, including automatically created
+join tables, plus exact session-cache behavior and the existing secret canaries.
+Real PostgreSQL statement logs between unique query delimiters supply query and
+write counts. Separate controls capture one SELECT and an INSERT whose transaction
+is rolled back and leaves zero rows. The image's periodic healthcheck is disabled
+only within this fixture to exclude unrelated SELECTs; explicit startup probes
+still run. Raw SQL and private fixture environment files are not exported.
+
+Independent Django request totals are **42/0/42/0** for Django/image/v1/v2. A
+deliberately misrouted v2 request returns actual HTTP200 but fails the upstream
+observer. The older `c742cd2` image, which lacks this route, fails with actual
+HTTP404 against the authored HTTP200 expectation after Django passes; its owned
+resources and managed rows are also cleaned. Successful requests retain the
+one-SELECT expectations, and all gzip, Vary, session, negotiation and restore
+cases remain mandatory. Restore admission holds real host and container locks
+separately, including a container lock-contender check; this does **not** prove
+cross-kernel lock sharing.
+
+Final and negative receipts are under ignored
+`instance-manifest-image-parent/{final,missing-route-red}/results.json`. Their
+source hashes, managed-row restoration, ASGI shutdown and proxy/container/network
+cleanup pass. CI now requires this runner on its freshly built image and exports
+only `instance-manifest-image/results.json`. These are current-schema packaged
+HTTP checks: native PostgreSQL bounds/cancellation remain mandatory separately,
+and PWA browser, historical data and installed switching remain open.
 
 ```sh
 LC_ALL=C LANG=C python TESTS/adapters/django/instance_bootstrap.py --backend django
 LC_ALL=C LANG=C python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
+python TESTS/adapters/go/instance_manifest_image.py --image IMAGE --expected-revision FULL_GIT_REVISION
 cd BE_GO
 go vet ./...
 go vet -tags=instancebootstrapintegration ./...

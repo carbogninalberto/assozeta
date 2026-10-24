@@ -16539,6 +16539,7 @@
         "TESTS/fixtures/instance-bootstrap.json",
         "TESTS/contracts/test_instance_bootstrap.py",
         "TESTS/adapters/django/instance_bootstrap.py",
+        "TESTS/adapters/go/instance_manifest_image.py",
         "BE_GO/internal/service/instance_manifest_test.go",
         "BE_GO/internal/handler/instance_manifest_test.go",
         "BE_GO/internal/repository/instance_bootstrap_integration_test.go",
@@ -16548,13 +16549,16 @@
         "docs/architecture/go-migration/instance-manifest.md",
         "quality-reports/go-migration/instance-manifest-parent/native-acceptance.json",
         "quality-reports/go-migration/instance-manifest-parent/go-missing-route-red-results.json",
-        "quality-reports/go-migration/instance-manifest-parent/final-acceptance.json"
+        "quality-reports/go-migration/instance-manifest-parent/final-acceptance.json",
+        "quality-reports/go-migration/instance-manifest-image-parent/final/results.json",
+        "quality-reports/go-migration/instance-manifest-image-parent/missing-route-red/results.json"
       ],
       "notes": [
         "Native Django and Go each pass128 authored bootstrap cases including42 manifest cases. Genuine preimplementation Go404 is retained; initial Italian405 expectation punctuation was corrected against pinned Django before implementation.",
         "Successful no-cookie GET/HEAD each uses one SELECT. Read-only PostgreSQL tests at100/1000/10000 rows preserve first-PK ordering, one-query bound and bounded indexed plans. Actual blocked manifest reader cancellation releases backend/transaction/pool before blocker release and recovers.",
-        "Status remains implementing. Image/browser/installed PWA proof and logo serving are separate acceptance work. Existing stored URLs and public defaults are preserved; no production/provider configuration changed.",
-        "Parent final versioned run passes all42 manifest cases on both prefixes with observer42/0, deliberate actualHTTP200 Django fallback rejection, SQL/state/cache/header checks and cleanup. Compression red led to reused Django encoding middleware; exact decoded bodies and all Vary tokens pass, including explicit same-for-both-upstreams uppercaseGZIP Caddy behavior. Native Django/Go each pass128 total bootstrap cases. Final acceptance: quality-reports/go-migration/instance-manifest-parent/final-acceptance.json."
+        "Status remains implementing. Browser/installed PWA proof and logo serving are separate acceptance work. Existing stored URLs and public defaults are preserved; no production/provider configuration changed.",
+        "Parent final versioned run passes all42 manifest cases on both prefixes with observer42/0, deliberate actualHTTP200 Django fallback rejection, SQL/state/cache/header checks and cleanup. Compression red led to reused Django encoding middleware; exact decoded bodies and all Vary tokens pass, including explicit same-for-both-upstreams uppercaseGZIP Caddy behavior. Native Django/Go each pass128 total bootstrap cases. Final acceptance: quality-reports/go-migration/instance-manifest-parent/final-acceptance.json.",
+        "Packaged image ca4cc6971d5f at revision324d374 independently passes42 cases on each Django/image/v1/v2 workload, observer42/0/42/0, all128 managed models including auto-created joins, SQL/session/header/secret checks and full cleanup. Real SELECT and rolled-back INSERT controls validate SQL observation; periodic image healthcheck is disabled only during this measurement with explicit startup readiness/health preserved. Older c742 image fails actual404 with cleanup. Real restore locks are held separately on host/container, not cross-kernel sharing proof. CI requires image runner and exports safe results only. Native PG bounds/cancellation remain required separately; no installed/PWA completion claim."
       ]
     },
     {
