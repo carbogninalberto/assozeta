@@ -388,6 +388,128 @@ jobs:
             quality-reports/go-migration/security-headers/public-results.json
             quality-reports/go-migration/runtime.json
 
+  impersonation-management:
+    name: Impersonation HTTP, shared sessions and packaged failure recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      LANG: C
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PYVERSION'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PYVERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+            docs/manuale/requirements-offline.txt
+      - name: Install disposable impersonation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python -m pip install -r docs/manuale/requirements-offline.txt
+          python TESTS/adapters/django/production_runtime.py
+          docker pull postgres:16-alpine
+          docker pull redis:7-alpine
+          python - <<'PYIMAGE'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(r'^FROM (caddy:\S+) AS production$', Path('UI/Dockerfile').read_text(), re.M).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PYIMAGE
+      - name: Verify JSON and retained-state oracle controls
+        run: python -m unittest TESTS.test_impersonation_contract -v
+      - name: Verify real Redis command faults and exact ACL restoration
+        run: python TESTS/adapters/redis_faults.py --output quality-reports/go-migration/impersonation-redis-fault-controls
+      - name: Verify native and versioned impersonation contracts and live PostgreSQL checks
+        env:
+          TESTS_IMPERSONATION_MANAGEMENT_GO: '1'
+          TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY: '1'
+          TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
+        run: python TESTS/adapters/django/accounts.py --only impersonation-management
+      - name: Verify guarded container Redis faults and exact ACL restoration
+        run: python TESTS/adapters/redis_faults.py --container-controls --output quality-reports/go-migration/impersonation-container-redis-fault-controls
+      - name: Build a source-bound immutable impersonation image
+        id: impersonation-image
+        run: |
+          python - <<'PYBUILD'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          from TESTS.adapters.go.impersonation_management_image import go_source_hashes
+          root = Path.cwd()
+          output = root / 'quality-reports/go-migration/impersonation-management-image/build'
+          output.mkdir(parents=True, exist_ok=True)
+          receipt = output / 'results.json'
+          image_file = output / 'image-id'
+          report = {'success': False, 'source_stable': False,
+                    'source_revision': os.environ['GITHUB_SHA'],
+                    'source_sha256': go_source_hashes(root), 'image_id': None}
+          receipt.write_text(json.dumps(report, indent=2) + '\n')
+          build_completed = False
+          try:
+              image_file.unlink(missing_ok=True)
+              subprocess.run(['docker', 'build', '--iidfile', str(image_file),
+                              '--build-arg', 'CODE_REVISION=' + report['source_revision'],
+                              '--build-arg', 'VERSION=v0.0.0-impersonation-management', 'BE_GO'],
+                             check=True, timeout=600)
+              report['image_id'] = image_file.read_text().strip()
+              assert re.fullmatch(r'sha256:[0-9a-f]{64}', report['image_id'])
+              build_completed = True
+          finally:
+              report['source_stable'] = report['source_sha256'] == go_source_hashes(root)
+              report['success'] = bool(build_completed and report['source_stable'])
+              receipt.write_text(json.dumps(report, indent=2) + '\n')
+          assert report['success'], 'Image build source changed'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              stream.write('image=' + report['image_id'] + '\n')
+          PYBUILD
+      - name: Verify packaged impersonation HTTP, shared sessions and failure recovery
+        run: |
+          python TESTS/adapters/go/impersonation_management_image.py \
+            --image '${{ steps.impersonation-image.outputs.image }}' \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
+            --go-source "$GITHUB_WORKSPACE" \
+            --output quality-reports/go-migration/impersonation-management-image/acceptance
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-impersonation-evidence
+          # Fixtures and service logs may contain synthetic credentials/session data.
+          path: |
+            quality-reports/go-migration/impersonation-management/results.json
+            quality-reports/go-migration/impersonation-redis-fault-controls/results.json
+            quality-reports/go-migration/impersonation-container-redis-fault-controls/results.json
+            quality-reports/go-migration/impersonation-management-image/build/results.json
+            quality-reports/go-migration/impersonation-management-image/acceptance/results.json
+
   payment-categories:
     name: Payment HTTP, concurrency and packaged image
     runs-on: ubuntu-24.04
