@@ -14,6 +14,9 @@ import json
 import os
 from pathlib import Path
 import re
+import socket
+import socketserver
+import struct
 import subprocess
 import sys
 import tempfile
@@ -22,6 +25,7 @@ import time
 import unittest
 from uuid import UUID, uuid4
 from unittest.mock import patch
+from urllib.error import URLError
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'BE'), str(ROOT)]
@@ -69,6 +73,16 @@ def write_private_json(path, value):
     with os.fdopen(descriptor,'w') as output:json.dump(value,output)
     os.replace(pending,path)
 
+def wait_gateway_ready(origin, timeout=30, interval=.1):
+    # Docker can publish its socket before Caddy accepts HTTP. Only this private
+    # startup probe retries transport failures; business requests still fail.
+    def ready():
+        try:
+            return Client(origin,timeout=min(1,timeout)).request('GET','/fixture-health')[0]
+        except (ConnectionError,TimeoutError,URLError):
+            return None
+    return poll(ready,lambda value:value==200,timeout=timeout,interval=interval)
+
 def assert_browser_acceptance(browser, checkpoints):
     assert browser['success'] and browser['browser_created'] and browser['contexts_closed'] and browser['browser_closed']
     assert not browser['failures'] and browser['browser_cache_matches_invocation']
@@ -85,6 +99,42 @@ def assert_browser_acceptance(browser, checkpoints):
                for key in ('access_token_sha256','refresh_token_sha256'))
 
 class ImpersonationBrowserContractTests(unittest.TestCase):
+    def test_gateway_never_treats_unavailable_http_as_ready(self):
+        class Unavailable(socketserver.BaseRequestHandler):
+            def handle(self):
+                self.request.recv(4096)
+                self.request.sendall(b'HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n')
+        with socketserver.TCPServer(('127.0.0.1',0),Unavailable) as server:
+            thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+            try:
+                started=time.monotonic()
+                with self.assertRaisesRegex(AssertionError,'Timed out waiting'):
+                    wait_gateway_ready('http://127.0.0.1:'+str(server.server_address[1]),timeout=.1,interval=.01)
+                self.assertLess(time.monotonic()-started,2)
+            finally:
+                server.shutdown();thread.join(timeout=2)
+                self.assertFalse(thread.is_alive())
+
+    def test_gateway_waits_through_actual_connection_reset_then_requires_http_200(self):
+        requests=[]
+        class Startup(socketserver.BaseRequestHandler):
+            def handle(self):
+                requests.append(self.request.recv(4096))
+                if len(requests)==1:
+                    self.request.setsockopt(socket.SOL_SOCKET,socket.SO_LINGER,struct.pack('ii',1,0))
+                    return
+                status='503 Service Unavailable' if len(requests)==2 else '200 OK'
+                self.request.sendall(('HTTP/1.1 '+status+'\r\nContent-Length: 0\r\nConnection: close\r\n\r\n').encode())
+        with socketserver.TCPServer(('127.0.0.1',0),Startup) as server:
+            thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+            try:
+                wait_gateway_ready('http://127.0.0.1:'+str(server.server_address[1]),timeout=2,interval=.01)
+                self.assertEqual(len(requests),3)
+                self.assertTrue(all(request.startswith(b'GET /fixture-health HTTP/1.1') for request in requests))
+            finally:
+                server.shutdown();thread.join(timeout=2)
+                self.assertFalse(thread.is_alive())
+
     def test_checkpoint_ack_is_private_and_atomically_published(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'1.ack.json'
@@ -162,7 +212,7 @@ def gateway(proof, work, ui, upstream, django_port, version):
         '--mount',f'type=bind,source={ui},target=/srv,readonly')
     try:
         origin='http://127.0.0.1:'+str(proof.published_port(name,80))
-        poll(lambda:Client(origin).request('GET','/fixture-health')[0],lambda value:value==200,timeout=30)
+        wait_gateway_ready(origin)
         proof.docker('exec',name,'caddy','validate','--config','/etc/caddy/Caddyfile')
         yield origin,{'configuration_sha256':hashlib.sha256(config.encode()).hexdigest(),'selected_routes':SELECTED,
                       'coexistence_routes':COEXISTENCE,'websocket_coexistence':'/ws/*','private_alias_rewrite':True}

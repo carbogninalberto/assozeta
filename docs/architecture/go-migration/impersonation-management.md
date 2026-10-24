@@ -238,6 +238,21 @@ installed backend selection and complete frontend parity remain separate. CI
 reuses the existing profile-browser UI and Go builds and uploads only safe
 receipts/screenshots.
 
+The first hosted browser job, `120783568992` in run `40064041493` at `6661d9d`,
+fails before Chromium starts: the first private gateway health probe raises
+`ConnectionResetError` and exits the readiness poll immediately. Artifact
+`12548452561` preserves the failure and verified container/Django cleanup. Earlier
+profile, category, checkout and PWA workloads pass in that same job. This is not
+hosted impersonation-browser acceptance. A real local TCP reset reproduces the
+same failure. The startup-only readiness poll now retries transport errors within
+its deadline, requires HTTP 200 and still rejects a permanently unavailable
+endpoint. Five harness controls pass; business requests are not retried.
+The parent repeats the full browser workflow after this correction: both versions
+pass all 17 checkpoints and 12 audits, with 95/0 selected Django requests, exact
+state/cache checks, source stability and cleanup. Receipts are under
+`quality-reports/go-migration/impersonation-browser-readiness-parent/`.
+Hosted confirmation of the correction remains pending.
+
 ## Remaining acceptance
 
 Additional race coverage for administrator/collaborator operations, cache expiration during active
