@@ -103,7 +103,7 @@ func InstanceBootstrapLocale() echo.MiddlewareFunc {
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
 			}
 			switch c.Request().URL.Path {
-			case "/instance/status", "/instance/config", "/instance/access", "/instance/manifest.json":
+			case "/instance/status", "/instance/config", "/instance/access", "/instance/manifest.json", "/instance/logo.png":
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
 			}
 			return next(c)

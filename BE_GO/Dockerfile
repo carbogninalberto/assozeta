@@ -28,6 +28,10 @@ RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
 WORKDIR /app
 RUN mkdir -p /app/manuale && chown 10001:10001 /app/manuale && chmod 0750 /app/manuale
+# Compose mounts transient logo preparation storage here. Keep image metadata
+# free of VOLUME declarations so other commands do not create implicit volumes.
+RUN mkdir -p /var/cache/assozeta-logo && \
+    chown 10001:10001 /var/cache/assozeta-logo && chmod 0700 /var/cache/assozeta-logo
 COPY --chown=0:0 release-manual/ /app/release-manual/
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION && \

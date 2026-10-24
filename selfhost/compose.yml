@@ -173,6 +173,7 @@ services:
       DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
       ASSOZETA_DEPLOYMENT_MODE: production
       MANUAL_INDEX_PATH: /app/manuale/index.json
+      GO_LOGO_SPOOL_DIR: /var/cache/assozeta-logo
     user: "10001:10001"
     read_only: true
     tmpfs:
@@ -181,6 +182,8 @@ services:
     volumes:
       - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
       - manuale_data:/app/manuale
+      # Anonymous disk-backed preparation space, never authoritative logo data.
+      - /var/cache/assozeta-logo
     networks:
       - internal
     depends_on:
@@ -206,6 +209,13 @@ services:
   # lease. The service is also the capability boundary for historical recovery.
   migrate-go:
     <<: *backend-go
+    environment:
+      DATA_RESTORE_LOCK_PATH: /run/assozeta-operations/lifecycle.lock
+      ASSOZETA_DEPLOYMENT_MODE: production
+      MANUAL_INDEX_PATH: /app/manuale/index.json
+    volumes:
+      - ${ASSOZETA_SELFHOST_DIR:-.}/.operations:/run/assozeta-operations
+      - manuale_data:/app/manuale
     profiles: [tools]
     entrypoint: ["/app/migrate"]
     depends_on:

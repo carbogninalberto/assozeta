@@ -201,15 +201,27 @@ updated private patch preserves the same 507-binding/44-unchanged-MDX boundary.
 
 ## Implementation and architecture
 
-The root exposes 26 upstream paths: health/readiness, login/refresh/identifier
+The root exposes 27 upstream paths: health/readiness, login/refresh/identifier
 checks, instance bootstrap, manual sections/assets, profile information/updates/
 password/table preferences, 2FA setup/status/updates, two retired software-billing
-responses, four payment-category routes and public payment information. CORS, restore admission and security
+responses, four payment-category routes, public payment information and the
+canonical public logo. CORS, restore admission and security
 headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 38 implementing, 5 requiring review and 467 uncharacterized; none
+4 deprecated, 39 implementing, 5 requiring review and 466 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
+
+The [public logo](instance-logo.md) has dedicated transport/service/storage
+boundaries and retains the S3 default-storage selection, candidate precedence,
+preparation failure fallback, exact bytes and streaming encoding behavior.
+Response preparation owns four bounded slots and anonymous open files. Packaged
+storage tests pass exact 65 MiB and four concurrent 20 MiB bodies, cancellation,
+SIGKILL and same-volume restart. Native/versioned S3 contracts pass 76 cases per
+runtime, and both filesystem adapters pass 64. Real kernel unlink denial is
+tested before payload consumption. Private-CA credential/transport compatibility,
+unchanged-UI acceptance and installed selection remain separate open boundaries;
+no full-parity claim is made.
 
 The [public PWA manifest](instance-manifest.md) now has dedicated Go transport,
 service and five-column repository projection. Actual Django/Go pass 42 new
@@ -311,6 +323,16 @@ and non-integer write counters. Pure failing regressions precede the fix. Its
 stricter comparisons pass when reapplied to the exact committed153 fixture and
 downloaded native/versioned/image observations. That is assertion revalidation,
 not another runtime execution or expanded endpoint coverage.
+
+Published `2715eed` subsequently passes all 15 quality jobs in `40046002650`.
+Foundation artifact `12541833237` independently passes the exact committed
+strict validator/fixture: native128/128, versioned42/42, both PostgreSQL groups
+and four bounds subcases, and packaged42-by-four. All 11 packaged source hashes,
+observer42/0/42/0, actual200 fallback rejection, SQL observer controls, 128 model
+snapshots and cleanup pass. Its Linux/amd64 image revision is PR merge
+`9eb3ec45e00c4276fa42f356a1bb31f19d4bb0c4`. This excludes later logo work.
+Manual release `40046002082` and MCP `40046002042` separately fail the reviewed
+content-recipe binding gate.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Go module, Echo transport/DTOs,

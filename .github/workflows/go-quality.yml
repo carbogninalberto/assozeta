@@ -108,6 +108,11 @@ jobs:
           python -m unittest TESTS.contracts.test_manual_reader_http
           python TESTS/adapters/django/instance_bootstrap.py --backend django
           python TESTS/adapters/django/instance_bootstrap.py --backend go --manifest-versioned
+      - name: Verify public logo storage contracts through both API versions
+        run: |
+          python -m unittest TESTS.contracts.test_instance_logo -v
+          python TESTS/adapters/django/instance_logo.py --backend both --versioned --output quality-reports/go-migration/instance-logo
+          python TESTS/adapters/django/instance_logo.py --backend go --disk-injection --output quality-reports/go-migration/instance-logo-disk
       - name: Verify effective scheduler authority and Go timing
         run: python TESTS/adapters/go/schedule_due.py
       - name: Verify atomic periodic publication on the Django schedule schema
@@ -166,6 +171,13 @@ jobs:
         run: |
           docker pull redis:7-alpine
           python TESTS/adapters/go/instance_manifest_image.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
+      - name: Verify packaged logo spool capacity and crash cleanup
+        run: python TESTS/adapters/go/instance_logo_spool.py --image assozeta-go-foundation:test --expected-revision "${{ github.sha }}"
+      - name: Verify kernel unlink denial before logo payload download
+        run: |
+          python TESTS/adapters/go/instance_logo_unlink.py \
+            --image "$(docker image inspect --format '{{.Id}}' assozeta-go-foundation:test)" \
+            --output quality-reports/go-migration/instance-logo-unlink
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -181,6 +193,10 @@ jobs:
             quality-reports/go-migration/instance-bootstrap/
             quality-reports/go-migration/instance-bootstrap-go/
             quality-reports/go-migration/instance-manifest-image/results.json
+            quality-reports/go-migration/instance-logo/results.json
+            quality-reports/go-migration/instance-logo-disk/results.json
+            quality-reports/go-migration/instance-logo-spool/results.json
+            quality-reports/go-migration/instance-logo-unlink/results.json
             quality-reports/go-migration/manual-availability/
             quality-reports/go-migration/manual-bundle/
             quality-reports/go-migration/manual-reader/
