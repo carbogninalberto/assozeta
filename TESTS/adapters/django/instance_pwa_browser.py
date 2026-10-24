@@ -149,7 +149,7 @@ def gateway(proof, work, ui, upstream, django_port, mode, misroute=None):
             assert proof.docker('inspect', name, check=False).returncode != 0
 
 
-def exercise(proof, work, log, args, report):
+def exercise(proof, work, log, args, report, browser_environment):
     import boto3
     from botocore.config import Config
     import redis
@@ -260,7 +260,7 @@ def exercise(proof, work, log, args, report):
                         private = work / 'browser-input.json'; private.write_text(json.dumps(fixture)); private.chmod(0o600)
                         try:
                             subprocess.run(['node', str(ROOT / 'TESTS/browser/instance-pwa.mjs')], cwd=ROOT,
-                                env={**os.environ, 'TESTS_FIXTURE': str(private), 'TESTS_OUTPUT': str(target)},
+                                env={**browser_environment, 'TESTS_FIXTURE': str(private), 'TESTS_OUTPUT': str(target)},
                                 stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120)
                         finally: private.unlink(missing_ok=True)
                         browser = json.loads((target / 'browser.json').read_text())
@@ -328,6 +328,10 @@ def main():
     if args.prepare_ui_image:
         prepare_ui(args.prepare_ui_image, args.ui_dir, args.ui_provenance, WORKFLOW_SOURCES); return
     require_production_python()
+    # Schema setup replaces os.environ with the isolated Django environment.
+    # Keep the caller's browser cache location and tool paths before that reset.
+    browser_environment = {key: value for key, value in os.environ.items()
+        if key in ('PATH', 'HOME', 'TMPDIR', 'PLAYWRIGHT_BROWSERS_PATH')}
     if not args.image or not args.expected_revision or not args.output: parser.error('--image, --expected-revision and --output required')
     assert re.fullmatch(r'[0-9a-f]{40}', args.expected_revision)
     args.output = args.output.resolve(); args.output.mkdir(parents=True, exist_ok=True)
@@ -358,7 +362,7 @@ def main():
             try:
                 proof.start_services('postgres:16-alpine', 'redis:7-alpine')
                 initialize_current_schema(work, '127.0.0.1', proof.postgres_port, DATABASE, log)
-                exercise(proof, work, log, args, report)
+                exercise(proof, work, log, args, report, browser_environment)
             finally:
                 try:
                     if 'django.db' in sys.modules:
