@@ -380,9 +380,22 @@ branch invalidates 375 sections across 14 recipe modules. This is branch-caused
 evidence drift, not a preexisting main binding failure. A separate local-only
 candidate reviews all affected claims, preserves the other 132 bindings, and
 passes all 507 authoring bindings and 46 offline checks. Only one Italian
-paragraph changes to clarify manual-link visibility. Runtime capture/reuse,
-release rehearsal and coordinated companion delivery remain required; no
-companion commit, push or publication is represented by these checks.
+paragraph changes to clarify manual-link visibility. Parent validation against
+application `2ed5591` confirms all 507 bindings, the unchanged 132 binding objects
+and unchanged reviewed recipe/source paths. Candidate `ec847aea` is committed
+locally with the agent identity. Its disposable release rehearsal has cleared
+authoring validation and selected fresh capture of all 60 workflows. Runtime
+acceptance and coordinated companion delivery remain required; the companion
+commit has not been pushed or published.
+
+Hosted `2ed5591` quality run `40056270692` passes all 16 jobs, including storage,
+including native/packaged TLS, packaged manifest, corrected spool resource and
+kernel unlink checks. Artifact `12546211090` records Linux/amd64 spool completion
+in 10.686 seconds with 128-model preservation, matching source hashes and cleanup.
+Foundation finishes in 21 minutes 28 seconds, with bootstrap/manifest/logo/disk
+receipts in artifact `12546082869`; browser, accounts and payment also pass.
+Aggregate job `120764475269` completes successfully. This resolves
+the earlier spool timeout without treating the canceled `15743d5` run as passing.
 
 The architecture follows specification `4d0f68d` and inspected Kuayle revision
 `5025d2a6bc966d0d08c49832ff9c7c86184207cd`: one Assozeta-owned Go module, Echo transport/DTOs,
