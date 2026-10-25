@@ -10,9 +10,7 @@ const spec = organizationAuthoredWorkflows[id];
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 // List endpoints order by fixture timestamps that share one frozen value (and the
 // instructor list is unordered), so compare record sets, not physical row order.
-// Some list endpoints return keyed objects; their keys are the record identities.
-const recordSet = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort());
+const recordSet = rows => JSON.stringify(rows.map(row => JSON.stringify(row)).sort());
 const sameRecords = (left, right) => recordSet(left) === recordSet(right);
 await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
@@ -31,8 +29,10 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
         const facts = {};
         const proof = (field, value) => {expect(value, field).toEqual(spec.outcome.expected[field]); facts[field] = value;};
         const allPayments = async () => Object.values((await read('payment/list?pagination[perpage]=100')).data);
+        // The member-list keys are pagination positions, not subscription IDs.
+        const allMembers = async () => Object.values((await read('subscription/list?pagination[perpage]=100')).data);
         const originalPayments = await allPayments();
-        const originalMembers = (await read('subscription/list?pagination[perpage]=100')).data;
+        const originalMembers = await allMembers();
         const originalCourses = (await read('course/list?all=1')).data;
         const originalInstructors = (await read('instructor/list')).data;
         const owned = {instructor: null, course: null, category: null, payments: new Set(), hours: [], memberships: [], calendar: false};
@@ -339,7 +339,7 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
             if (cleanupError && !primaryError) throw new Error(cleanupError);
         }
         proof('baseline_records_preserved', sameRecords(await allPayments(), originalPayments)
-            && sameRecords((await read('subscription/list?pagination[perpage]=100')).data, originalMembers)
+            && sameRecords(await allMembers(), originalMembers)
             && sameRecords((await read('course/list?all=1')).data, originalCourses));
         proof('owned_resources_cleaned', sameRecords((await read('instructor/list')).data, originalInstructors));
         expect(facts).toEqual(spec.outcome.expected); report[spec.outcome.field] = facts;
