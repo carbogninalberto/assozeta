@@ -8,6 +8,10 @@ permissions:
   contents: read
 
 jobs:
+  historical-read:
+    name: Historical import and read compatibility
+    uses: ./.github/workflows/go-historical-read.yml
+
   golang:
     name: Go foundation and inventory
     runs-on: ubuntu-24.04
@@ -33,6 +37,7 @@ jobs:
           test -z "$(gofmt -l BE_GO)"
           go -C BE_GO vet ./...
           go -C BE_GO test -race ./...
+          go -C BE_GO test -race -tags=redisdeadlineintegration ./internal/redisclient -count=1 -timeout=90s
       - name: Read production Python version
         id: production-python
         run: |

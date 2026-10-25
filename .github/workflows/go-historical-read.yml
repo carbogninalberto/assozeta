@@ -1,0 +1,97 @@
+name: Historical import and read compatibility
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-read:
+    name: Historical read with ${{ matrix.first }} first
+    runs-on: ubuntu-24.04
+    # The focused runtime is short, but hosted setup, dependency installation,
+    # the Go build, a 547-migration import and both transports need headroom.
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        first: [django, go]
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install pinned historical integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/production_runtime.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(
+              r'^FROM (caddy:\S+) AS production$',
+              Path('UI/Dockerfile').read_text(encoding='utf-8'),
+              re.MULTILINE,
+          ).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY
+
+      - name: Verify portable historical fixture and adapter controls
+        run: |
+          python -m unittest -v \
+            TESTS.test_historical_read_adapter \
+            TESTS.test_historical_read_cache \
+            TESTS.test_historical_read_population \
+            TESTS.test_caddy_cleanup \
+            TESTS.adapters.go.test_historical_read_image \
+            TESTS.contracts.test_historical_read_routes.HistoricalReadFixtureControls
+
+      - name: Import the historical archive and compare native plus versioned reads
+        run: |
+          python TESTS/adapters/django/historical_read_routes.py \
+            --first-backend "${{ matrix.first }}" \
+            --versioned \
+            --output "quality-reports/go-migration/historical-read-${{ matrix.first }}-first"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-historical-read-${{ matrix.first }}-first
+          path: quality-reports/go-migration/historical-read-${{ matrix.first }}-first/results.json
+          if-no-files-found: ignore

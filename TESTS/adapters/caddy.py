@@ -63,5 +63,10 @@ def proxy(django, golang, log, *, operations=None, network=None, network_alias=N
                     '{"container_id":{{json .Id}},"image_id":{{json .Image}}}', name)))
             yield base, image
         finally:
-            subprocess.run(['docker', 'logs', name], stdout=log, stderr=log, timeout=15)
-            subprocess.run(['docker', 'rm', '-f', name], stdout=log, stderr=log, timeout=30, check=True)
+            # Log collection is diagnostic. Owned-container removal must still
+            # run when it times out or raises for any other reason.
+            try:
+                subprocess.run(['docker', 'logs', name], stdout=log, stderr=log, timeout=15)
+            finally:
+                subprocess.run(['docker', 'rm', '-f', name], stdout=log, stderr=log,
+                               timeout=30, check=True)
