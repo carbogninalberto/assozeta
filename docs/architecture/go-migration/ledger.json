@@ -2833,9 +2833,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts-transfer/<str:uid>/update -> balance_sheet_accounts_transfer_update",
@@ -2868,9 +2872,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts-transfer/add -> balance_sheet_accounts_transfer_add",
@@ -2903,9 +2911,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts-transfer/list -> balance_sheet_accounts_transfer_list",
@@ -2938,9 +2950,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts/<str:uid>/delete -> balance_sheet_accounts_delete",
@@ -2973,9 +2989,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts/<str:uid>/update -> balance_sheet_accounts_update",
@@ -3008,9 +3028,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts/add -> balance_sheet_accounts_add",
@@ -3043,9 +3067,13 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "BE/application/tests/test_balance_sheet_ownership.py"
+      ],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/accounts/list -> balance_sheet_accounts_list",
@@ -3080,7 +3108,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:balance-sheet/archived -> balance_sheet_archived",
@@ -18145,7 +18175,7 @@
         "file": "BE/application/serializers/balance_sheet.py",
         "line": 113,
         "symbol": "CustomAccountSerializer.save",
-        "sha256": "718b937c896e289fcf232351859da538de98ea829511f1b93baefdbf45d7019e"
+        "sha256": "1a9e9836d10a4da0e4b64a812fe519cf95ee25c94e8b0a8d68183b332d7418a9"
       },
       "source_present": true,
       "declaration": {
@@ -18169,16 +18199,18 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/balance_sheet.py:CustomAccountTransferSerializer.save",
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/balance_sheet.py",
-        "line": 149,
+        "line": 180,
         "symbol": "CustomAccountTransferSerializer.save",
-        "sha256": "718b937c896e289fcf232351859da538de98ea829511f1b93baefdbf45d7019e"
+        "sha256": "1a9e9836d10a4da0e4b64a812fe519cf95ee25c94e8b0a8d68183b332d7418a9"
       },
       "source_present": true,
       "declaration": {
@@ -18202,7 +18234,9 @@
       },
       "tests": [],
       "evidence": [],
-      "notes": []
+      "notes": [
+        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+      ]
     },
     {
       "id": "serializer_hook:BE/application/serializers/camps_and_retreats_serializers.py:CampsAndRetreatsPeriodSerializer.save",
