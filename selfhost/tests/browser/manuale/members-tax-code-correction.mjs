@@ -1,11 +1,9 @@
+import {recordSet as records} from './record-set.mjs';
 // Correct a real persisted persona; never treat a typed input or toast as proof.
 import {scenario, expect} from './scenario.mjs';
 import {memberAuthoredWorkflows} from '../../../../docs/manuale/member-authored-workflows.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'members-tax-code-correction', spec = memberAuthoredWorkflows[id];
 await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_profile || 'baseline').toBe('baseline');

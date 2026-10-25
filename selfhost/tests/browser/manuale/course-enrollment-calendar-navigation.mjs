@@ -1,9 +1,7 @@
+import {recordSet as records} from './record-set.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {campsPersonasAuthoredWorkflows} from '../../../../docs/manuale/camps-personas-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id='course-enrollment-calendar-navigation',spec=campsPersonasAuthoredWorkflows[id];
 await scenario({id,actions:async({page,api,open,actor,input,capture,report})=>{
     expect(input.fixture_version).toBe(8);expect(input.fixture_profile||'baseline').toBe('baseline');

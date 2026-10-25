@@ -1,10 +1,8 @@
+import {recordSet as records} from './record-set.mjs';
 // Real UI handlers and persisted API reads; the run owner executes this file.
 import {scenario, expect} from './scenario.mjs';
 
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 
 await scenario({id: 'camps-calendar-manage', actions: async ({page, api, actor, open, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);

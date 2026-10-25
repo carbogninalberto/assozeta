@@ -1,11 +1,9 @@
+import {recordSet as records} from './record-set.mjs';
 // All workflow mutations use the application handlers; the rule is never enabled.
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus, textFocus} from './focus.mjs';
 import {communicationAuthAuthoredWorkflows} from '../../../../docs/manuale/communication-auth-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'communication-workflow-manage';
 const spec = communicationAuthAuthoredWorkflows[id];
 

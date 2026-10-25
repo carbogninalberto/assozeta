@@ -1,3 +1,4 @@
+import {recordSet as records} from './record-set.mjs';
 // Actual Archivio editor and printing service; no fabricated document responses.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,10 +7,7 @@ import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
 import {organizationBasicsAuthoredWorkflows} from '../../../../docs/manuale/organization-basics-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'organization-document-templates', spec = organizationBasicsAuthoredWorkflows[id];
 await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8); expect(input.fixture_profile || 'baseline').toBe('baseline');

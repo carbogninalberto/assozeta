@@ -1,12 +1,10 @@
+import {recordSet as records} from './record-set.mjs';
 // Reuse real enrollment/carnet preparation; assert each additional saved action.
 import {scenario, expect} from './scenario.mjs';
 import {runAttendanceCarnet} from './attendance-carnet.mjs';
 import {openGiulia} from './member-profile-sources.mjs';
 import {attendanceCarnetAuthoredWorkflows} from '../../../../docs/manuale/attendance-carnet-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'attendance-carnet-maintenance', spec = attendanceCarnetAuthoredWorkflows[id];
 await scenario({id, actions: async scenarioContext => {
         const {page, api, open, actor, input, capture, report} = scenarioContext;

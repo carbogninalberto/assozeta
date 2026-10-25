@@ -1,3 +1,4 @@
+import {recordSet as records} from './record-set.mjs';
 import {setCheckbox} from './controls.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {paymentClassificationAuthoredWorkflows} from '../../../../docs/manuale/payment-classification-authored-workflows.mjs';
@@ -137,7 +138,6 @@ await scenario({id, actions: async ({page, api, actor, open, input, capture, rep
             if (cleanupFailures.length) {report.cleanup_failures = cleanupFailures; if (!error) throw new Error('Classification cleanup failed');}
         }
         // Seeded rows share one frozen timestamp, so compare record sets, not row order.
-        const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row)) : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
         expect(records(await payments())).toEqual(records(baselinePayments));
         expect(records((await categories()).filter(item => item.payment_category_id !== categoryId))).toEqual(records(baselineCategories));
         expect((await savedCategory()).deleted).toBe(true);

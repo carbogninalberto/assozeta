@@ -1,3 +1,4 @@
+import {recordSet} from './record-set.mjs';
 // Real browser downloads and backend records; never retain recovery archives publicly.
 import {scenario, expect} from './scenario.mjs';
 import {organizationAuthoredWorkflows} from '../../../../docs/manuale/organization-authored-workflows.mjs';
@@ -6,10 +7,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {inflateRawSync} from 'node:zlib';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const recordSet = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 
 // Shared with the instructor report scenario. Importing this file launches no scenario.
 export function zipParts(bytes) {

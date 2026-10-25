@@ -1,9 +1,9 @@
+import {recordSet} from './record-set.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {instructorMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/instructor-maintenance-authored-workflows.mjs';
 import crypto from 'node:crypto';
 // Seeded and frozen-clock rows share timestamps, so list order is not part of the contract.
-const records = rows => JSON.stringify((Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort());
+const records = rows => JSON.stringify(recordSet(rows));
 
 const id = 'instructor-maintenance';
 const spec = instructorMaintenanceAuthoredWorkflows[id];

@@ -1,10 +1,8 @@
+import {recordSet as records} from './record-set.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {courseCalendarMaintenanceAuthoredWorkflows} from '../../../../docs/manuale/course-calendar-maintenance-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 
 const id = 'course-calendar-maintenance';
 const spec = courseCalendarMaintenanceAuthoredWorkflows[id];

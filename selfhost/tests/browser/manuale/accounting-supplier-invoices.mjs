@@ -1,3 +1,4 @@
+import {recordSet as records} from './record-set.mjs';
 import {scenario, expect} from './scenario.mjs';
 import {accountingDocumentsAuthoredWorkflows} from '../../../../docs/manuale/accounting-documents-authored-workflows.mjs';
 const id='accounting-supplier-invoices-manage', spec=accountingDocumentsAuthoredWorkflows[id];
@@ -7,7 +8,6 @@ await scenario({id,actions:async ({page,api,actor,input,capture,report}) => {
         const list=async()=>Object.values((await read('invoice-suppliers/list?pagination[perpage]=100')).data);
         const ordered=rows=>[...rows].sort((a,b)=>a.invoice_supplier_id.localeCompare(b.invoice_supplier_id));
         // Seeded rows share one frozen timestamp, so list order is not part of the contract.
-        const records=rows=>(Array.isArray(rows)?rows.map(row=>JSON.stringify(row)):Object.entries(rows).map(entry=>JSON.stringify(entry))).sort();
         const baseline=ordered(await list()),payments=(await read('payment/list?pagination[perpage]=100')).data;
         const accounts=(await read('balance-sheet/accounts/list')).data;
         const categories=(await read('payment/category/list')).data;

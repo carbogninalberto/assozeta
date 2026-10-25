@@ -1,13 +1,11 @@
+import {recordSet as records} from './record-set.mjs';
 // Configure real fee plans, select one in the reused wizard, inspect its actual payment.
 import {scenario, expect} from './scenario.mjs';
 import {setCheckbox} from './controls.mjs';
 import {memberAuthoredWorkflows} from '../../../../docs/manuale/member-authored-workflows.mjs';
 import {createMember} from './member-create-flow.mjs';
 import {reloadOrganizationProfile} from './organization-access-sources.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'members-fee-plan-selection', spec = memberAuthoredWorkflows[id];
 await scenario({id, actions: async scenarioContext => {
         const {page, api, open, actor, context, input, capture, report} = scenarioContext;

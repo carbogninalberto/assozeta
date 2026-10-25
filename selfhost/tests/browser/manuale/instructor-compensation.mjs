@@ -1,3 +1,4 @@
+import {sameRecords} from './record-set.mjs';
 // Compensation, PDF and lesson report use the real UI, API and rendering worker.
 import {scenario, expect} from './scenario.mjs';
 import {organizationAuthoredWorkflows} from '../../../../docs/manuale/organization-authored-workflows.mjs';
@@ -8,10 +9,6 @@ import fs from 'node:fs';
 const id = 'instructor-compensation';
 const spec = organizationAuthoredWorkflows[id];
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
-// List endpoints order by fixture timestamps that share one frozen value (and the
-// instructor list is unordered), so compare record sets, not physical row order.
-const recordSet = rows => JSON.stringify(rows.map(row => JSON.stringify(row)).sort());
-const sameRecords = (left, right) => recordSet(left) === recordSet(right);
 await scenario({id, actions: async ({page, api, open, actor, input, capture, report}) => {
         expect(input.fixture_version).toBe(8);
         expect(input.fixture_profile || 'baseline').toBe('baseline');

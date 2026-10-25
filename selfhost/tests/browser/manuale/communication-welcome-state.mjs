@@ -1,12 +1,10 @@
+import {recordSet as records} from './record-set.mjs';
 // Activating a saved new_subscription rule does not schedule a cron or
 // retrospectively emit an event. No new subscription is created in this scenario.
 import {scenario, expect} from './scenario.mjs';
 import {focusRegion, tableFocus} from './focus.mjs';
 import {communicationCompleteAuthoredWorkflows} from '../../../../docs/manuale/communication-complete-authored-workflows.mjs';
-// Seeded and frozen-clock rows share timestamps (or the list is unordered), so compare
-// record sets: identical rows and contents, independent of physical row order.
-const records = rows => (Array.isArray(rows) ? rows.map(row => JSON.stringify(row))
-    : Object.entries(rows).map(entry => JSON.stringify(entry))).sort();
+
 const id = 'communication-welcome-state';
 const spec = communicationCompleteAuthoredWorkflows[id];
 await scenario({id, actions: async ({page, api, context, actor, open, capture, report, input}) => {
