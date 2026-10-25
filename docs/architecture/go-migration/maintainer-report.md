@@ -209,7 +209,7 @@ canonical public logo, four impersonation-management routes and collaborator
 listing. CORS, restore
 admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 44 implementing, 5 requiring review and 461 uncharacterized; none
+4 deprecated, 44 implementing, 6 requiring review and 460 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 
@@ -563,12 +563,20 @@ retargeted. A new package must use the supported producer at a committed target
 and reassess capture reuse after the upstream tooling changes. The unchanged full
 installed contract, including collaborator listing, remains mandatory.
 
-A separate, unintegrated deletion correction has a real 12-case Django HTTP green
-following preserved ownership and partial-commit reds. Seven PostgreSQL trigger
-faults now roll back user/invitation/audit/index writes; foreign same-email users
-survive. Independent DeepSeek review identifies invitation-acceptance races,
-ambiguous email linkage and cascade/history gaps. Lock tests are in progress; no
-Go DELETE implementation or full deletion parity is claimed by this checkpoint.
+The [Django deletion reference correction](collaborator-delete.md) now passes an
+independent integrated run: 18 HTTP cases, seven real PostgreSQL trigger faults
+and five observed row-lock/reparent/duplicate-delete cases. All 128 model snapshots,
+cache bytes, source hashes and owned cleanup pass. A separate copy with row locks
+removed fails the unchanged observed-wait gate after all 18 ordinary cases pass.
+The corrected baseline is mandatory in CI, with separate safe evidence artifacts.
+Go DELETE, acceptance races, ambiguous email linkage and cascade/history remain
+open; the route moves to needs_review, never verified.
+
+Local companion `378421a` refreshes 69 bindings across the two affected recipe
+modules and preserves the other 438 bindings exactly. Two Italian removal
+sentences clarify the accepted-invitation ownership limit. All 507 authoring
+bindings and the full authored-MDX preflight pass; no new capture or publication
+is claimed. The prior prepared `6fbed7f` run is superseded for these changed inputs.
 
 A read-only capacity probe finds only 411,728 KiB available in the Docker VM
 before the next rehearsal; its temporary container is removed. The producer is

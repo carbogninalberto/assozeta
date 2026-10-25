@@ -7,8 +7,12 @@ foundation checks below does not establish backend parity.
 Baseline: `main` through `dc4735d`, including reader corpus/release binding,
 retained-capture validation and the earlier deleted-payment export correction. Worktree branch:
 `codex/go-backend-parity`. The ledger retains all 514 declarations: 44 implementing,
-461 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
+460 uncharacterized, 6 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.
+
+The [collaborator-deletion reference](collaborator-delete.md) corrects Django's
+foreign-email lookup and partial audit/deletion commits. Eighteen HTTP cases and
+five observed PostgreSQL contention cases pass; Go deletion remains unimplemented.
 
 The [collaborator-list slice](collaborator-list.md) adds scoped connected-user and
 invitation reads. Independent parent acceptance passes 115 cases on Django, Go
@@ -673,7 +677,7 @@ python TESTS/adapters/django/inventory.py
 ```
 
 Two retired tasks and both legacy software-billing routes are explicitly classified.
-The ledger currently has 4 deprecated, 44 implementing, 5 needing review and 461
+The ledger currently has 4 deprecated, 44 implementing, 6 needing review and 460
 uncharacterized declarations; none is verified. Implementing entries include
 partial HTTP, audit, task and model-hook components. Login, refresh and 2FA updates now have registered upstream handlers and portable HTTP/effect evidence; their remaining scope is recorded above.
 Caller tracing, internal service operations, persisted schedules, conditional

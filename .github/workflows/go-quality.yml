@@ -452,6 +452,8 @@ jobs:
           TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY: '1'
           TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
         run: python TESTS/adapters/django/accounts.py --only impersonation-management
+      - name: Verify corrected Django collaborator deletion and observed PostgreSQL locks
+        run: python TESTS/adapters/django/accounts.py --only collaborator-delete
       - name: Verify collaborator listing, scopes and live PostgreSQL bounds
         env:
           TESTS_COLLABORATOR_LIST_GO: '1'
@@ -513,6 +515,13 @@ jobs:
             --expected-revision "$GITHUB_SHA" \
             --build-receipt quality-reports/go-migration/impersonation-management-image/build/results.json \
             --output quality-reports/go-migration/collaborator-list-image
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: django-collaborator-delete-evidence
+          path: |
+            quality-reports/go-migration/collaborator-delete/results.json
+            quality-reports/go-migration/collaborator-delete/http-results.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

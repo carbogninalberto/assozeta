@@ -4512,25 +4512,48 @@
         "target": "collaborators_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
+        "BE/application/models/user_models.py"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/collaborators/{uid}/delete"
+        ],
+        "request": "Existing UUID path; body unused by deletion.",
+        "response": "200 JSON {\"msg\":\"collaborator deleted.\"}; direct users and invitation records remain distinct targets.",
+        "errors": "Authored native cases include foreign/missing 400, invalid UUID 400, anonymous 401, method 405 and seven actual PostgreSQL fault 500 responses.",
+        "authentication": "Existing IsAuthenticated and resolved effective user; complete actor/impersonation matrix pending.",
+        "permissions": "Existing permission registry and sport-association admission retained; no new target-role policy.",
+        "resource_scope": "Direct user: connected_user equals resolved owner. Invitation: user equals resolved owner. Confirmed bug fix also scopes accepted-invite email lookup to connected_user.",
+        "side_effects": "Django hard deletion and synchronous DELETE audit/index. Current fixtures prove user/invite effects; transitive cascades and historical/external effects remain open.",
+        "transaction": "Confirmed bug fix: atomic_audit_mutation encloses both deletes and audits/indexes. Owner-first and scoped target row locks; observed reparent and duplicate-delete tests pass.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/contracts/test_collaborator_delete.py",
+        "TESTS/adapters/django/collaborator_delete.py",
+        "TESTS/adapters/django/collaborator_delete_locks.py"
+      ],
+      "evidence": [
+        {
+          "command": "python -m TESTS.adapters.django.accounts --only collaborator-delete",
+          "revision": "source-bound parent-integrated receipt; see source_sha256",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/collaborator-delete/http-results.json"
+        }
+      ],
+      "notes": [
+        "Django reference correction only; Go DELETE is not implemented. Eighteen actual HTTP cases, seven trigger faults, five observed PostgreSQL contention cases, 128-model/cache checks and cleanup pass.",
+        "Original unsafe ownership and partial-commit failures, plus actual no-row-lock failure, retained. No complete deletion parity, acceptance-race, ambiguous-email, cascade/history, frontend or installed acceptance claim. See collaborator-delete.md."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:collaborators/<str:uid>/update -> collaborators_update",
