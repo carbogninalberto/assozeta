@@ -22,6 +22,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/redisclient"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
@@ -96,6 +97,7 @@ func run() error {
 			redisOptions.TLSConfig.RootCAs = roots
 		}
 	}
+	redisOptions.Dialer = redisclient.DialContext(redisOptions)
 	cache := redis.NewClient(redisOptions)
 	defer cache.Close()
 	tokens, err := jwt.New([]byte(cfg.JWTSigningKey), []byte(cfg.JWTVerifyingKey), time.Now)

@@ -44,7 +44,11 @@ ASSOZETA_READINESS_FIXTURE=/absolute/path/private-fixture.json \
 Run from `BE_GO`; keep the fixture outside committed sources. These tests create
 and remove only their own keys and temporary ACL users. They cover concurrent
 keyspace snapshots, collisions, denied operations, script errors, actual expiry
-and deadline recovery. TLS handshake deadline coverage is tracked separately.
+and deadline recovery. The Redis dialer preserves request cancellation and
+deadlines through TCP connection and TLS handshaking while retaining configured
+certificate verification, dial timeout and keepalive. Its additional loopback
+transport checks run with `go test -race -tags=redisdeadlineintegration
+./internal/redisclient`; they need no Redis service or external network.
 
 The Django adapters require the exact Python patch version in `BE/Dockerfile`
 (currently 3.13.16), `BE/requirements.txt` and the independent test dependencies.
