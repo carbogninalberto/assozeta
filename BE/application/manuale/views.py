@@ -60,7 +60,7 @@ def manual_asset(request, asset_path):
         index, context = _load(None)
         if not index.asset_root:
             raise Http404
-        image = next((image for chunk in index.applicable(**context) for image in chunk['screenshots']
+        image = next((image for chunk in index.applicable(**context, asset_path=asset_path) for image in chunk['screenshots']
                       if image['path'] == asset_path), None)
         if not image:
             raise Http404

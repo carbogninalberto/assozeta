@@ -632,7 +632,7 @@ class ManualIndex:
             if file_digest(owned_path(code_root, path)) != expected:
                 raise EvidenceError(f'Implementation changed since manual verification: {path}')
 
-    def stale_sections(self, code_root):
+    def stale_sections(self, code_root, chunks=None):
         """Invalidate each guide using its captured application sources."""
         if code_root is None:
             return {}
@@ -646,7 +646,7 @@ class ManualIndex:
                               'UI/src/utils/ApiMiddleware.js', 'UI/src/utils/checkAuth.js'}}
         checked = {}
         stale = {}
-        for chunk in self.value['chunks']:
+        for chunk in self.value['chunks'] if chunks is None else chunks:
             bindings = {source['path']: source['sha256'] for source in chunk['evidence']}
             bindings.update(chunk.get('runtime_dependencies', {}))
             bindings.update(shared)
@@ -663,12 +663,16 @@ class ManualIndex:
                 stale[chunk['id']] = sorted(changed)
         return stale
 
-    def applicable(self, *, revision, release, features=(), maintainer=False, code_root=None):
+    def applicable(self, *, revision, release, features=(), maintainer=False, code_root=None, asset_path=None):
         self.check_version(revision=revision, release=release)
-        stale = self.stale_sections(code_root)
-        return [chunk for chunk in self.value['chunks']
+        candidates = [chunk for chunk in self.value['chunks']
                 if chunk['status'] == 'verified' and (chunk['audience'] == 'public' or maintainer)
-                and chunk['id'] not in stale and set(chunk['features']).issubset(set(features))]
+                and set(chunk['features']).issubset(set(features))
+                and (asset_path is None or any(image['path'] == asset_path for image in chunk['screenshots']))]
+        # An image needs the same compatibility checks as its referring sections,
+        # not source-file reads for every unrelated chapter on each request.
+        stale = self.stale_sections(code_root, candidates)
+        return [chunk for chunk in candidates if chunk['id'] not in stale]
 
     def search(self, query, *, limit=5, **context):
         import numpy as np

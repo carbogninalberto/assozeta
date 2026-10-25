@@ -8,7 +8,7 @@ const reviewed = {
   "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
   "UI/src/routes/manuale/ManualContent.svelte": "b3d31df4c3d47770c335078e7edd89026b423e2ccdd160b767cb3f8d885e84c8",
   "UI/src/routes/manuale/manualPresentation.js": "c52433eb377246d5e3a05093b78af3b8c1197ab0751b062e7644835c99cf63f4",
-  "BE/application/manuale/views.py": "78cbb273fcb121bd9a678dcfe2f5083707f6307971af8d5909e060fb4ed0a0ac",
+  "BE/application/manuale/views.py": "8a4488bcb6b2faa28cb025910b26dbda527440e2054ff6e49be7c28ca12d233d",
   "UI/src/routes/association/Members/subscription/Template.svelte": "e01e73eb4435b7ea9ecf35971dd59182c4b6752fd404921e44a0770a64682903",
   "UI/src/routes/association/Members/subscription/partials/TypesModule.svelte": "f83c5113b5bf8ce41420ceafe5a8311802284cb4c9e4ca2891e94c0cca5924bd",
   "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",
