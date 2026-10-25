@@ -45,7 +45,7 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
         'cleanup_verified': False,
         'disconnect_semantics_match': False,
         'complete_payment_category_parity': False,
-        'remaining_parity_gap': 'Go cancels a blocked mutation on client disconnect; admitted Django sync requests continue and may commit.',
+        'remaining_parity_gap': 'HTTP disconnect semantics are measured as common; process shutdown and ambiguous-response recovery remain separately unproven.',
     }
 
     def save_evidence():
@@ -276,52 +276,37 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
                         observed.update(success=False, failure_kind='upstream_mismatch',
                                         failure='wrong upstream runtime', expected_django_requests=expected_requests)
                         return observed
-                if backend == 'Django':
-                    # An admitted synchronous Django view is not canceled with
-                    # its ASGI caller. Characterize that existing behavior; do
-                    # not claim it matches Go's request-context cancellation.
-                    assert not ended and before_release_unchanged, observed
-                    assert row.deleted and row.name == 'Lifecycle original', observed
-                    assert_audit(audit_rows(cid), [(cid + '-abandoned', 'paymentcategory', category_id,
-                                                   {'deleted': ['False', 'True']})])
-                    after = snapshot()
-                    changed = {label for label in before if before[label] != after[label]}
-                    assert changed == {'application.PaymentCategory', 'auditlog.LogEntry', 'application.AuditLogIndex'}, changed
-                    expected_categories = [dict(record) for record in before['application.PaymentCategory']]
-                    for record in expected_categories:
-                        if str(record['payment_category_id']) == category_id:
-                            record['deleted'] = True
-                    assert after['application.PaymentCategory'] == expected_categories
-                    for model in ('auditlog.LogEntry', 'application.AuditLogIndex'):
-                        assert len(after[model]) == len(before[model]) + 1
-                        assert all(record in after[model] for record in before[model])
-                    status, response = client.request('PATCH', f'/payment/category/{category_id}/update',
-                                                       {'name': 'Recovered after committed disconnect'},
-                                                       {'X-Correlation-ID': cid + '-recovery'})
-                    assert status == 200 and response['data']['name'] == 'Recovered after committed disconnect', response
-                    assert_audit(audit_rows(cid), [
-                        (cid + '-abandoned', 'paymentcategory', category_id, {'deleted': ['False', 'True']}),
-                        (cid + '-recovery', 'paymentcategory', category_id,
-                         {'name': ['Lifecycle original', 'Recovered after committed disconnect']}),
-                    ])
-                    assert_category_effects(before, category_id,
-                                            {'deleted': True, 'name': 'Recovered after committed disconnect'}, cid)
-                    observed.update(success=True, audited_recovery=True, disconnect_semantics_match=False,
-                                    expected_outcome='admitted_sync_request_commits_once_after_barrier_release')
+                assert backend in ('Django', 'Go'), ('unsupported disconnect runtime', backend)
+                if ended or not before_release_unchanged:
+                    observed.update(success=False, failure='HTTP disconnect ended or changed the blocked admitted mutation before barrier release')
                     return observed
-                assert backend == 'Go', ('unsupported disconnect runtime', backend)
-                if not ended or not before_release_unchanged or snapshot() != before:
-                    observed.update(success=False, failure='HTTP disconnect did not end the blocked mutation and roll back before barrier release')
-                    return observed
-                status, response = client.request('DELETE', f'/payment/category/{category_id}/delete',
-                                                  headers={'X-Correlation-ID': cid + '-recovery'})
-                assert (status, response) == (200, {'msg': 'payment category deleted'}), (status, response)
-                assert PaymentCategory._base_manager.get(pk=category_id).deleted
-                assert_audit(audit_rows(cid), [(cid + '-recovery', 'paymentcategory', category_id,
+                assert row.deleted and row.name == 'Lifecycle original', observed
+                assert_audit(audit_rows(cid), [(cid + '-abandoned', 'paymentcategory', category_id,
                                                {'deleted': ['False', 'True']})])
-                assert_category_effects(before, category_id, {'deleted': True}, cid)
-                observed.update(success=True, audited_recovery=True, disconnect_semantics_match=False,
-                                expected_outcome='request_context_cancels_and_rolls_back_before_barrier_release')
+                after = snapshot()
+                changed = {label for label in before if before[label] != after[label]}
+                assert changed == {'application.PaymentCategory', 'auditlog.LogEntry', 'application.AuditLogIndex'}, changed
+                expected_categories = [dict(record) for record in before['application.PaymentCategory']]
+                for record in expected_categories:
+                    if str(record['payment_category_id']) == category_id:
+                        record['deleted'] = True
+                assert after['application.PaymentCategory'] == expected_categories
+                for model in ('auditlog.LogEntry', 'application.AuditLogIndex'):
+                    assert len(after[model]) == len(before[model]) + 1
+                    assert all(record in after[model] for record in before[model])
+                status, response = client.request('PATCH', f'/payment/category/{category_id}/update',
+                                                   {'name': 'Recovered after committed disconnect'},
+                                                   {'X-Correlation-ID': cid + '-recovery'})
+                assert status == 200 and response['data']['name'] == 'Recovered after committed disconnect', response
+                assert_audit(audit_rows(cid), [
+                    (cid + '-abandoned', 'paymentcategory', category_id, {'deleted': ['False', 'True']}),
+                    (cid + '-recovery', 'paymentcategory', category_id,
+                     {'name': ['Lifecycle original', 'Recovered after committed disconnect']}),
+                ])
+                assert_category_effects(before, category_id,
+                                        {'deleted': True, 'name': 'Recovered after committed disconnect'}, cid)
+                observed.update(success=True, audited_recovery=True, disconnect_semantics_match=True,
+                                expected_outcome='admitted_sync_mutation_commits_once_after_barrier_release')
                 return observed
             finally:
                 transport.close()
@@ -346,8 +331,10 @@ def run(base, backend, *, owner_id, association_id, token, snapshot, evidence_pa
             result = {'name': name, 'success': False, 'failure': f'{type(failure).__name__}: {failure}'}
         evidence['cases'].append(result)
         save_evidence()
-        distinction = ' (runtime-specific expectation; disconnect parity remains open)' if name == 'http-disconnect-blocked-delete' else ''
-        print(f'{backend} {transport} lifecycle {name}: {"PASS" if result["success"] else "FAIL"}{distinction}', flush=True)
+        print(f'{backend} {transport} lifecycle {name}: {"PASS" if result["success"] else "FAIL"}', flush=True)
+    disconnect_case = next((case for case in evidence['cases'] if case.get('name') == 'http-disconnect-blocked-delete'), None)
+    if disconnect_case and disconnect_case.get('success'):
+        evidence['disconnect_semantics_match'] = bool(disconnect_case['disconnect_semantics_match'])
     evidence['cleanup_verified'] = snapshot() == initial_snapshot
     evidence['success'] = evidence['cleanup_verified'] and all(case['success'] for case in evidence['cases'])
     evidence['elapsed_seconds'] = round(time.monotonic() - started, 3)

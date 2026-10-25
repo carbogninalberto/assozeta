@@ -59,7 +59,10 @@ release, source stability and fixture cleanup pass. Receipts are retained under
 `http-results.json`, `parent-import.json` and `parent-audit.json`. CI runs this
 Django baseline separately and uploads only the safe JSON receipts. The 172 manual
 Python tests, 79 browser-helper tests, 21 inventory tests, reviewed source guard
-and workflow lint also pass after integration. Hosted confirmation is pending.
+and workflow lint also pass after integration. Hosted run `40214170657` at
+`288ad72` passes all 17 quality jobs. Its separate deletion artifact `12606744130`
+passes the 18 HTTP and five locking cases; the parent independently matched all
+421 oracle source hashes to that commit. This does not cover later fixture additions.
 
 Original ownership and partial-commit reds remain preserved in the isolated
 characterization worktree. A separate source copy retains the atomic/ownership
@@ -73,13 +76,53 @@ stopped the attempted infrastructure workaround, corrected the correlation-ID an
 queued-waiter assertions, and ran both the actual negative control and integrated
 acceptance using the existing private fixture. Agent output is not test evidence.
 
+## Expanded transport admission
+
+Fifty-two independent HTTP cases also pass against Django: association, athlete,
+full/restricted collaborator roles; UUID/permission precedence; OPTIONS/GET/HEAD;
+format and Accept negotiation, repeated headers, 1,000/1,001 query fields, English/
+French negotiation and cookie selection, ignored versus scoped bodies, gzip, and
+forged impersonation headers. Every case checks retained model and cache state.
+The first parent execution exposed incorrect boolean error expectations in the
+worker fixture: pinned DRF recursively converts error details to strings, so
+`impersonation_invalid` is `"True"`. The source-backed correction and first failure
+receipt are retained; no application behavior was changed to satisfy the test.
+
+Final source-bound parent execution passes 18 core cases, five observed lock cases,
+eight cascade cases and all 52 admission cases. New graph/cascade/admission helpers
+are included in the source manifest. The unregistered Go transport draft has only
+unit evidence and remains outside production routing until the service, repository
+and complete differential matrix are implemented.
+
+## Representative cascade contracts
+
+The parent executed eight additional HTTP cases with explicit expected removals,
+retained rows and audit identities. These exercise recursive connected users and
+owned onboarding/invitation records; instructor/hour/document joins and notification
+membership; shared auth/permission/feature joins; old audit actor and staff author
+SET_NULL; three separate billing/restore PROTECT failures; and a standalone
+Associate reference that rejects deletion at the actual deferred PostgreSQL commit.
+All cases preserve the authored remaining state across 128 models and Redis, with
+exact audit object identities, actor, action, CID and association index attribution.
+Document and broadcast parent rows survive. No physical file operation is claimed.
+
+A read-only schema receipt distinguishes 197 ORM relations from 197 actual
+PostgreSQL foreign keys. All those database constraints use NO ACTION; Django's
+collector supplies the cascade policies. User deletion can reach 89 model types,
+including 16 automatic join tables and social-auth rows. These are potential
+schema dependencies, not 89 executed cascade scenarios. The eight fixtures are
+representative and do not prove financial hooks, complete audit value serialization,
+or all transitive combinations. The optional Go implementation probe records an
+actual 404 against an owned-user DELETE and always remains red until replaced by
+a complete differential matrix.
+
 ## Remaining work
 
 Accepted invitations are linked to accounts by email rather than a durable user
 identifier. Duplicate/changed emails and concurrent acceptance require further
 characterization and a separately reviewed contract. Target-role restrictions,
 missing-association index resolution, collaborator/admin/impersonation attribution,
-transitive cascades and their signals, protected references, historical schemas,
+the remaining transitive cascades and their signals, historical schemas,
 files and queued external effects remain open. This fixture does not seed every
 cascade relation and cannot establish those behaviors by snapshot count alone.
 

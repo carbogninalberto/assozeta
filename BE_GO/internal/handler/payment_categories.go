@@ -33,6 +33,18 @@ func NewPaymentCategoriesHandler(categories PaymentCategoryService, actors *serv
 	return &PaymentCategoriesHandler{categories: categories, actors: actors, identities: identities, audit: audit}
 }
 
+// paymentCategoryOperationContext detaches only a fully admitted mutation from
+// client cancellation. context.WithoutCancel retains request tracing values;
+// http.Server.Shutdown still waits for the handler to finish or reach its drain
+// deadline. Transport admission, body parsing and service admission use the
+// original request context.
+func paymentCategoryOperationContext(ctx context.Context) (context.Context, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return context.WithoutCancel(ctx), nil
+}
+
 func (h *PaymentCategoriesHandler) List(c echo.Context) error {
 	identity, err := authenticatedRESTIdentity(c, h.actors, h.identities, http.MethodGet, "payment_category_list")
 	if identity == nil {
@@ -80,7 +92,11 @@ func (h *PaymentCategoriesHandler) Add(c echo.Context) error {
 	if err != nil {
 		return restError(c, err)
 	}
-	result, err := h.categories.Add(request.Context(), *identity, input, audit)
+	operationContext, err := paymentCategoryOperationContext(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	result, err := h.categories.Add(operationContext, *identity, input, audit)
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
@@ -116,7 +132,11 @@ func (h *PaymentCategoriesHandler) Update(c echo.Context) error {
 	if err != nil {
 		return restError(c, err)
 	}
-	result, err := h.categories.Update(request.Context(), *identity, id, input, audit)
+	operationContext, err := paymentCategoryOperationContext(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	result, err := h.categories.Update(operationContext, *identity, id, input, audit)
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
@@ -140,7 +160,11 @@ func (h *PaymentCategoriesHandler) Delete(c echo.Context) error {
 	if err != nil {
 		return restError(c, err)
 	}
-	if err = h.categories.Delete(request.Context(), *identity, id, audit); err != nil {
+	operationContext, err := paymentCategoryOperationContext(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	if err = h.categories.Delete(operationContext, *identity, id, audit); err != nil {
 		return paymentCategoryError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "payment category deleted"})

@@ -2584,15 +2584,21 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                     evidence_path=ROOT / f'quality-reports/go-migration/payment-categories/lifecycle-{backend.lower()}.json',
                 )
             fixture['oracle']['lifecycle'] = lifecycle_results
-            fixture['oracle']['disconnect_semantics_match'] = False
-            fixture['oracle']['lifecycle_remaining_parity_gaps'] = [
-                'Go cancels blocked HTTP mutations on disconnect; admitted Django synchronous requests may complete and commit.',
-            ]
+            lifecycle_disconnect_match = all(
+                result.get('disconnect_semantics_match') is True for result in lifecycle_results.values()
+            )
+            fixture['oracle']['disconnect_semantics_match'] = lifecycle_disconnect_match
+            fixture['oracle']['complete_payment_category_parity'] = False
+            fixture['oracle']['lifecycle_remaining_parity_gaps'] = (
+                [] if lifecycle_disconnect_match else
+                ['Measured HTTP disconnect outcome differs from the authored admitted-mutation behavior.']
+            )
             assert all(result['success'] for result in lifecycle_results.values()), (
                 'payment-category lifecycle invariants failed; see lifecycle-{go,django}.json',
                 {backend: [case for case in result['cases'] if not case['success']]
                  for backend, result in lifecycle_results.items()},
             )
+            assert lifecycle_disconnect_match, ('payment-category disconnect semantics differ', lifecycle_results)
         versioned_results = None
         if versioned:
             from TESTS.adapters.caddy import proxy
@@ -2648,6 +2654,9 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                         )
                         versioned_results['routes'][route]['disconnect'] = proxy_lifecycle
                         assert proxy_lifecycle['success'], ('Caddy disconnect invariant failed', proxy_lifecycle)
+                        assert proxy_lifecycle['disconnect_semantics_match'], (
+                            'Caddy disconnect parity invariant failed', proxy_lifecycle,
+                        )
                     print(f'{backend} through shipped Caddy {route}: {len(cases)} HTTP cases and {len(proxy_audit)} exact audit rows passed', flush=True)
                 if lifecycle:
                     # Deliberately route v2 to Django in a separate disposable
@@ -2686,7 +2695,11 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
             'go': go_result,
             'versioned': versioned_results,
             'lifecycle': lifecycle_results,
-            'disconnect_semantics_match': False if lifecycle else None,
+            'disconnect_semantics_match': (
+                all(result.get('disconnect_semantics_match') is True for result in lifecycle_results.values())
+                if lifecycle_results else None
+            ),
+            'complete_payment_category_parity': False,
             'fixture': str(persistent_fixture),
         })
     finally:

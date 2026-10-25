@@ -4,7 +4,8 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `dc4735d`, including reader corpus/release binding,
+Baseline: `main` through `dd285c4`, including the instructor-compensation comparison
+correction, reader corpus/release binding,
 retained-capture validation and the earlier deleted-payment export correction. Worktree branch:
 `codex/go-backend-parity`. The ledger retains all 514 declarations: 44 implementing,
 460 uncharacterized, 6 needing review, 4 deprecated and **0 verified**. Production
@@ -12,7 +13,9 @@ installations remain unchanged.
 
 The [collaborator-deletion reference](collaborator-delete.md) corrects Django's
 foreign-email lookup and partial audit/deletion commits. Eighteen HTTP cases and
-five observed PostgreSQL contention cases pass; Go deletion remains unimplemented.
+five observed PostgreSQL contention cases pass. Eight additional representative
+cascade/protection cases also pass locally; Go deletion remains unimplemented.
+Execution priorities and worker ownership are tracked in [delivery-coordination.md](delivery-coordination.md).
 
 The [collaborator-list slice](collaborator-list.md) adds scoped connected-user and
 invitation reads. Independent parent acceptance passes 115 cases on Django, Go
@@ -135,11 +138,12 @@ See the [transaction evidence](payment-categories.md#application-errors-and-actu
 Six real-schema PostgreSQL groups pass, with two repository LIST
 queries at 1/8/32/128 distinct VATs and observed blocked-query cancellation/recovery.
 Nine native lifecycle probes per runtime also pass: profile/category lock overlap,
-owner deactivation/deletion denial and audited recovery. Actual HTTP disconnect
-exposes an explicit gap: Go rolls back before the blocker is released; Django
-completes its admitted synchronous deletion once after release. Separate native
-and shipped-Caddy socket probes reproduce the difference, with actual blocked
-SQL, independent Django observation and an expected misrouting rejection. The packaged
+owner deactivation/deletion denial and audited recovery. The Go HTTP admission
+boundary now preserves admitted mutations after disconnect. Parent native and
+shipped-Caddy probes require both runtimes to remain blocked, commit once after
+release and recover with exact audits. Independent Django observation still
+rejects a deliberately misrouted v2. Service-caller cancellation remains unchanged;
+full Go race/vet and the four 188/43/18 HTTP workloads pass. Earlier packaged
 non-root, read-only image passes the same four 188/43/18 workloads with immutable
 image identity and revision/version/health checks. The unchanged category browser
 passes six checks, five writes, seven denials and five exact audits per version; an
@@ -148,7 +152,7 @@ A fresh installed rehearsal now proves category/VAT/audit/reference preservation
 through corrupt-archive rejection, actual post-swap rollback and valid restore;
 a stopped-Go control proves v2 has no Django fallback. The four routes remain
 `implementing`: historical data, activation, process shutdown, ambiguous-response
-recovery and disconnect protocol parity remain acceptance work. Arbitrary
+recovery and broader interruption parity remain acceptance work. Arbitrary
 infrastructure or panic failures are not established by the transaction probes.
 The 19 focused and 188 existing Django baseline regressions remain scoped
 evidence; no endpoint is promoted to verified.

@@ -40,14 +40,31 @@ def run(work,log,tool_env,address):
     receipt=output/'http-results.json';receipt.write_text(json.dumps(report)+'\n')
     def hashes():
         paths=set((ROOT/'BE').rglob('*.py'))
-        paths.update(ROOT/p for p in ('TESTS/adapters/django/collaborator_delete.py','TESTS/adapters/django/collaborator_delete_locks.py','TESTS/contracts/test_collaborator_delete.py','TESTS/contracts/test_impersonation_management.py','TESTS/adapters/django/accounts.py','TESTS/adapters/django/settings.py','TESTS/adapters/django/impersonation_effects.py','TESTS/http_client.py'))
+        paths.update(ROOT/p for p in ('TESTS/adapters/django/collaborator_delete.py','TESTS/adapters/django/collaborator_delete_locks.py','TESTS/adapters/django/collaborator_delete_graph.py','TESTS/adapters/django/collaborator_delete_cascades.py','TESTS/adapters/django/collaborator_delete_admission.py','TESTS/contracts/test_collaborator_delete.py','TESTS/contracts/test_impersonation_management.py','TESTS/adapters/django/accounts.py','TESTS/adapters/django/settings.py','TESTS/adapters/django/impersonation_effects.py','TESTS/http_client.py'))
+        if tool_env.get('TESTS_COLLABORATOR_DELETE_GO_PROBE') == '1':
+            paths.update(p for p in (ROOT / 'BE_GO').rglob('*')
+                if p.is_file() and p.suffix in ('.go', '.mod', '.sum', '.c', '.h', '.pem'))
+            paths.update(ROOT / p for p in ('TESTS/adapters/go/payment_category_server.py',
+                'TESTS/adapters/go/server.py', 'TESTS/adapters/django/login_jpeg.py'))
         return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
+    go_probe = tool_env.get('TESTS_COLLABORATOR_DELETE_GO_PROBE') == '1'
     sources=hashes()
     models=[m for m in apps.get_models(include_auto_created=True) if m._meta.managed and not m._meta.proxy]
     def snapshot():return {m._meta.label:list(m._base_manager.order_by('pk').values()) for m in models}
     host,port=address.split(':');raw=redis.Redis(host=host,port=int(port),db=1,password='synthetic-identity-only')
     def cache_snapshot():return {key:raw.get(key) for key in raw.scan_iter() if not key.startswith(b'assozeta:go:readiness:')}
     original,original_cache=snapshot(),cache_snapshot();created=[];new_audits=[]
+    from TESTS.adapters.django.collaborator_delete_graph import describe
+    graph = describe(models, connections['default'])
+    assert snapshot() == original and cache_snapshot() == original_cache
+    (output / 'deletion-graph.json').write_text(json.dumps(graph, indent=2) + '\n')
+    report['deletion_graph'] = {
+        'path': 'deletion-graph.json',
+        'sha256': hashlib.sha256((output / 'deletion-graph.json').read_bytes()).hexdigest(),
+        'current_model_count': len(graph['models']), 'relations': len(graph['relations']),
+        'foreign_keys': len(graph['postgresql_foreign_keys']),
+        'business_operations_executed': False,
+    }
     def seed(model,number,**values):
         assert not model._base_manager.filter(pk=uid(number)).exists()
         row=model(pk=UUID(uid(number)),**values);model._base_manager.bulk_create([row]);created.append((model,row.pk));return row
@@ -168,6 +185,39 @@ def run(work,log,tool_env,address):
         from TESTS.adapters.django.collaborator_delete_locks import run as collaborator_delete_locks
         collaborator_delete_locks(base=base,owner=owner,foreign=foreign,association=association,
             person=person,seed=seed,snapshot=snapshot,cache_snapshot=cache_snapshot,models=models,report=report)
+        from TESTS.adapters.django.collaborator_delete_cascades import run as collaborator_delete_cascades
+        collaborator_delete_cascades(base=base, owner=owner, foreign=foreign, association=association,
+            person=person, seed=seed, snapshot=snapshot, cache_snapshot=cache_snapshot,
+            models=models, created=created, report=report)
+        from TESTS.adapters.django.collaborator_delete_admission import run as collaborator_delete_admission
+        collaborator_delete_admission(base=base, owner=owner, foreign=foreign, association=association,
+            person=person, seed=seed, snapshot=snapshot, cache_snapshot=cache_snapshot,
+            models=models, created=created, report=report)
+        if go_probe:
+            # A deliberately bounded implementation red, never a full Go matrix.
+            from TESTS.adapters.go.payment_category_server import native_server
+            from TESTS.http_client import Client
+            target = person(718001, 3, connected_user=owner)
+            case = {'name': 'collaborator-delete-go-owned-user',
+                'path': f'/collaborators/{target.pk}/delete', 'token': str(owner_access),
+                'status': 200, 'response': {'msg': 'collaborator deleted.'}}
+            before, before_cache = snapshot(), cache_snapshot()
+            with native_server(work, log, tool_env, address) as runtime:
+                status, response = Client(runtime['base_url'], str(owner_access)).request(
+                    'DELETE', case['path'], headers={'Accept-Language': 'en',
+                    'X-Correlation-ID': case['name']})
+                report['go_implementation_probe'] = {
+                    'expected_status': 200, 'actual_status': status, 'response': response,
+                    'native_binary_sha256': hashlib.sha256((work / 'payment-categories-server').read_bytes()).hexdigest(),
+                    'full_go_matrix': False,
+                }
+                if status != 200:
+                    assert snapshot() == before and cache_snapshot() == before_cache
+                    report['go_implementation_probe']['failed_request_state_preserved'] = True
+                test.assertEqual(status, 200, case['name'])
+                test.assertEqual(response, case['response'])
+                # A successful probe alone must not masquerade as Go acceptance.
+                raise AssertionError('Replace the implementation probe with the complete differential matrix')
         report.update(success=True,http_cases=len(report['cases']),managed_models=len(models),ownership_boundary='email and resolved owner; original unsafe receipt retained')
     except BaseException as error:report['error_type']=type(error).__name__;raise
     finally:

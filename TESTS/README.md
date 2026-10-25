@@ -1177,10 +1177,12 @@ private seed before each backend. The portable contract remains independent of
 application imports in `TESTS/contracts/test_payment_categories.py`.
 
 The optional lifecycle flag adds deterministic profile/category and owner-state
-races, plus actual socket-disconnect checks. It records an explicit difference:
-Go cancels the blocked mutation; an admitted Django synchronous request may still
-commit after the client disconnects. Passing each runtime's declared expectation
-does not claim identical disconnect semantics.
+races, plus actual socket-disconnect checks. The common contract requires an
+admitted deletion to remain blocked after disconnect, commit exactly once after
+barrier release, and support exact audited recovery. Native Django/Go and both
+Caddy routes pass; independent upstream observation still rejects a misrouted v2.
+Service caller cancellation remains tested separately. Process shutdown and
+ambiguous-response recovery are not implied by these disconnect checks.
 
 To exercise an existing packaged Go image, supply its actual build revision:
 

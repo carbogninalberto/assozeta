@@ -213,31 +213,38 @@ lock is acquired produce 403 without mutation for both PATCH and DELETE; restori
 the owner permits an independently audited recovery. Complete managed-state
 snapshots verify owned cleanup and preservation of unrelated rows.
 
-An actual HTTP client disconnect while DELETE is blocked establishes a deliberate
-evidence distinction. Go cancels the request context, ends the database transaction
-before the category blocker is released, leaves no mutation or audit, and recovers
-with one audited request. Django's admitted synchronous view stays blocked and
-then commits its deletion exactly once after release; its audit is retained,
-the transaction drains, and a later request succeeds with its own audit. Client
-disconnect therefore does not prove that Django did not commit.
+The earlier oracle exposed a real mismatch: Django completed an admitted deletion
+after client disconnect, while Go canceled and rolled back. The Go handler now
+checks that the request is still live immediately before final mutation dispatch,
+then passes a value-preserving `context.WithoutCancel` context to Add, Update and
+Delete. Authentication, admission reads, parsing and audit-context extraction stay
+request-cancelable. LIST and explicit service-caller cancellation are unchanged.
+The service still revalidates ownership inside its atomic mutation transaction.
 
-The initial shared cancellation expectation produced a preserved red receipt.
-The final probes assert these two explicit existing runtime behaviors, rather
-than changing Django production code or treating the difference as parity.
-Reports retain `disconnect_semantics_match: false` and
-`complete_payment_category_parity: false`. The nine-probe suites retain separate native receipts. A further actual socket
-probe through each shipped Caddy route, independently rerun by the parent,
-establishes the same distinct outcomes: v1 commits after lock release; v2 rolls
-back before release. Each probe observes the actual blocked category SQL request,
-then verifies complete managed state, exact audit/index changes and recovery.
-An observer inside Django sees the v1 DELETE and no v2 traffic; a separate
-intentionally misrouted v2 Caddy must be rejected specifically for an upstream
-mismatch, with fixture cleanup still exact. The negative-control receipt correctly
-has `success: false`; its enclosing expected-rejection check passes.
+The parent independently reproduced failing Add/Update/Delete cancellation tests
+against the pre-fix handler through a Go overlay, then passed the integrated full
+Go race and vet suites. Actual native Django/Go and both shipped Caddy routes pass
+188 HTTP cases, 43 exact audit rows and 18 rollback faults per workload. Nine
+native lifecycle probes per runtime also pass. The common disconnect assertion
+observes the real blocked PostgreSQL transaction, verifies unchanged state before
+release, then requires one committed deletion/audit/index and exact audited recovery.
+All four disconnect probes now record `disconnect_semantics_match: true`.
 
-This does not prove identical interruption semantics, actual process shutdown,
-installed switching or safe automatic retries after an ambiguous response. A lost
-connection cannot tell the caller whether Django committed.
+The independent Django observer still rejects an intentionally misrouted v2
+request specifically as `upstream_mismatch`, even though both backends now have
+the same mutation outcome. Cleanup remains exact. Reports retain
+`complete_payment_category_parity: false`. The existing 25-second server drain,
+process shutdown, installed switching, all mutation interruption points and safe
+automatic retries after an ambiguous response still require separate acceptance.
+A lost connection cannot tell the caller whether either runtime committed.
+
+Parent receipts and the pre-fix red log are under
+`quality-reports/go-migration/parallel-delivery-20261025/`:
+`category-parent-audit.json`, `category-parent-http.log`, `category-parent-red.log`,
+`category-import.json`, `go-race.log` and `go-vet.log`. The original native and
+Caddy lifecycle receipts remain under the payment-category evidence directory.
+Old packaged-image and installed results predate this admission correction; new
+hosted/image confirmation is required for the changed Go build.
 
 The oracle now accepts an owned server-context factory. Its default native factory
 uses Django's private restore-lock path and drains the Go process before fixture
@@ -408,10 +415,9 @@ including the 10,000-row bound. Neither correction changes production behavior.
 - Preserve the explicit distinction between Django's injected ORM-constructor
   exception and Go's application-error/deferred-COMMIT proof. These tests do not
   establish arbitrary infrastructure/panic failures or process shutdown.
-- Reconcile the demonstrated HTTP-disconnect semantic difference before claiming
-  runtime protocol parity or activation readiness. Current probes establish each
-  runtime's behavior natively and through Caddy, not a shared outcome, process
-  shutdown, every interleaving or client-side ambiguous-commit recovery.
+- Extend the now-common native/Caddy admitted-DELETE disconnect proof to process
+  shutdown, packaged execution, every relevant mutation interleaving and client-side
+  ambiguous-commit recovery before claiming lifecycle parity or activation readiness.
 
 No category ledger entry is `verified`. Other payment operations and the wider
 business/API/background/MCP/WebSocket migration remain unfinished.

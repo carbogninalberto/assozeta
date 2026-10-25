@@ -522,6 +522,7 @@ jobs:
           path: |
             quality-reports/go-migration/collaborator-delete/results.json
             quality-reports/go-migration/collaborator-delete/http-results.json
+            quality-reports/go-migration/collaborator-delete/deletion-graph.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
