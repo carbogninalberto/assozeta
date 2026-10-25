@@ -26,6 +26,26 @@ and Redis/API processes, forces dependency failures/recovery and removes its own
 resources. It requires Go, PostgreSQL binaries, Redis, OpenSSL, a C compiler,
 `pkg-config`, libjpeg, zlib and libwebp/libwebpdemux. Missing dependencies fail.
 
+Redis readiness uses one atomic `EVAL` to write, read and delete a unique
+`assozeta:go:readiness:*` key. Successful probes preserve all existing keys and
+expiry times, including during concurrent probes. Redis ACLs must permit `EVAL`,
+`SET`, `GET` and `DEL` on that namespace. Denial or a failed readback/cleanup
+returns not-ready; failed scripts may retain their own key for at most ten
+seconds. The probe does not retry an ambiguous execution.
+
+The focused real Redis tests require a private disposable fixture JSON with
+`address`, `username`, `password` and `db` and ACL administration rights:
+
+```sh
+ASSOZETA_READINESS_FIXTURE=/absolute/path/private-fixture.json \
+  go test -race -tags=readinessintegration ./internal/repository -run '^TestRedisProbe' -count=1
+```
+
+Run from `BE_GO`; keep the fixture outside committed sources. These tests create
+and remove only their own keys and temporary ACL users. They cover concurrent
+keyspace snapshots, collisions, denied operations, script errors, actual expiry
+and deadline recovery. TLS handshake deadline coverage is tracked separately.
+
 The Django adapters require the exact Python patch version in `BE/Dockerfile`
 (currently 3.13.16), `BE/requirements.txt` and the independent test dependencies.
 `TESTS/adapters/django/credentials.py` checks bidirectional credentials without a
