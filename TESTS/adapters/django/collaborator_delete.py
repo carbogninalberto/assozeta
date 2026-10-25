@@ -40,7 +40,7 @@ def run(work,log,tool_env,address):
     receipt=output/'http-results.json';receipt.write_text(json.dumps(report)+'\n')
     def hashes():
         paths=set((ROOT/'BE').rglob('*.py'))
-        paths.update(ROOT/p for p in ('TESTS/adapters/django/collaborator_delete.py','TESTS/adapters/django/collaborator_delete_locks.py','TESTS/adapters/django/collaborator_delete_graph.py','TESTS/adapters/django/collaborator_delete_cascades.py','TESTS/adapters/django/collaborator_delete_admission.py','TESTS/contracts/test_collaborator_delete.py','TESTS/contracts/test_impersonation_management.py','TESTS/adapters/django/accounts.py','TESTS/adapters/django/settings.py','TESTS/adapters/django/impersonation_effects.py','TESTS/http_client.py'))
+        paths.update(ROOT/p for p in ('TESTS/adapters/django/collaborator_delete.py','TESTS/adapters/django/collaborator_delete_locks.py','TESTS/adapters/django/collaborator_delete_graph.py','TESTS/adapters/django/collaborator_delete_cascades.py','TESTS/adapters/django/collaborator_delete_admission.py','TESTS/adapters/django/collaborator_delete_email_links.py','TESTS/test_collaborator_delete_email_links.py','TESTS/contracts/test_collaborator_delete.py','TESTS/contracts/test_impersonation_management.py','TESTS/adapters/django/accounts.py','TESTS/adapters/django/settings.py','TESTS/adapters/django/impersonation_effects.py','TESTS/http_client.py'))
         if tool_env.get('TESTS_COLLABORATOR_DELETE_GO_PROBE') == '1':
             paths.update(p for p in (ROOT / 'BE_GO').rglob('*')
                 if p.is_file() and p.suffix in ('.go', '.mod', '.sum', '.c', '.h', '.pem'))
@@ -191,6 +191,10 @@ def run(work,log,tool_env,address):
             models=models, created=created, report=report)
         from TESTS.adapters.django.collaborator_delete_admission import run as collaborator_delete_admission
         collaborator_delete_admission(base=base, owner=owner, foreign=foreign, association=association,
+            person=person, seed=seed, snapshot=snapshot, cache_snapshot=cache_snapshot,
+            models=models, created=created, report=report)
+        from TESTS.adapters.django.collaborator_delete_email_links import run as collaborator_delete_email_links
+        collaborator_delete_email_links(base=base, owner=owner, foreign=foreign, association=association,
             person=person, seed=seed, snapshot=snapshot, cache_snapshot=cache_snapshot,
             models=models, created=created, report=report)
         if go_probe:

@@ -103,7 +103,7 @@ its unchanged Go build inputs do not establish the new manual lifecycle.
 This work does not implement collaborator creation, editing, invitation delivery
 or removal. The [read-route locale matrix](read-route-locales.md) now covers all 99
 configured languages and six framework messages on native/versioned transports.
-Other localized errors and shared handler behavior remain open. Historical data, the unchanged collaborator-management frontend,
+Other localized errors and shared handler behavior remain open. Historical data, the complete collaborator-management frontend,
 complete release rehearsal, operator activation and full performance acceptance
 are not established by this route's current-schema checks. No ledger entry is
 promoted to verified on this evidence.
@@ -123,4 +123,37 @@ Five actual-component rendering tests and a real Chromium DOM interaction check
 cover malformed values, external updates, individual/group/all selection and
 clearing. All 168 UI tests pass. This is a bounded reference correction applied
 to the same frontend artifact for both backends; it does not change backend
-authorization or normalize stored data. Complete list browser acceptance on both backends remains open.
+authorization or normalize stored data.
+
+## Unchanged frontend list acceptance
+
+The parent executed the actual compiled frontend against Django/v1 and Go/v2
+with four ordinary password logins per backend. The owner sees 12 authored rows
+(nine accounts and three invitations) across pages of ten and two; reload,
+names/emails/status/roles, exact DOM user IDs, control availability and restricted
+denial pass. Foreign email checks use exact text and a required nonempty contrast.
+No creation, editing or deletion control is clicked.
+
+Each backend records seven list requests (six successful and one denied) and 11
+durable checkpoints. Login changes only the authenticated actor's last-login;
+subsequent reads preserve all 128 managed models and raw cache values. A real
+equivalent Django 200 response deliberately routed as v2 is rejected by the
+independent observer. Unknown API requests fail before Django. Twenty portable
+controls cover evidence and checkpoint rejection.
+
+The Go artifact is image
+`sha256:d4c5488f3d1f75d0af4c2bc222778d6d3300b571b00e171d21f1266984eb4543`,
+revision `29ac4838a4e23cec697b446ec5e96b777e892831`, with executable
+`dd069385dd0649173ce10d2d7205ba14bcd841d3f5a9cebd5f507f90918f7857`.
+The receipt binds 852 Go build inputs, 454 oracle/reference inputs and the same
+compiled frontend image `cf62eb04e70951b1f12f158f6d7b56910da3ff3906e4a1855705594f403a37d2`
+for both versions. The parent independently rechecks both source inventories;
+source/UI stability, process/context closure and owned cleanup pass.
+
+Receipts are under
+`quality-reports/go-migration/collaborator-browser-parent-29ac4838-r7/`.
+The final fixture uses real private notification Redis and explicitly permits
+only observed Django coexistence dependencies: manifest, logo, export-active,
+dashboard/staffboard and two WebSocket paths. This does not establish those
+dependencies in Go, installed backend activation, other collaborator workflows
+or complete route verification. Earlier failed fixture attempts are retained.

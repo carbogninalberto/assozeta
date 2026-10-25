@@ -119,8 +119,9 @@ a complete differential matrix.
 ## Remaining work
 
 Accepted invitations are linked to accounts by email rather than a durable user
-identifier. Duplicate/changed emails and concurrent acceptance require further
-characterization and a separately reviewed contract. Target-role restrictions,
+identifier. Changed and duplicate email cases now have the bounded characterization below.
+A durable invitation/account identity rule and concurrent acceptance still require
+a separately reviewed contract. Target-role restrictions,
 missing-association index resolution, collaborator/admin/impersonation attribution,
 the remaining transitive cascades and their signals, historical schemas,
 files and queued external effects remain open. This fixture does not seed every
@@ -132,3 +133,26 @@ reference hashes are reviewed against the corrected view; local companion
 `378421a` refreshes 69 bindings while preserving 438 others. Its two Italian ownership
 clarifications and 507 passing authoring bindings do not claim fresh captures or
 publication. No production installation or customer data is changed.
+
+
+## Accepted-invitation email links
+
+The parent ran eight new authored HTTP cases from
+`TESTS/adapters/django/collaborator_delete_email_links.py` alongside the existing
+18 core, five locking, eight cascade and 52 admission cases. Exact retained and
+removed rows across all 128 models, cache bytes, audit object identities and
+association-index attribution pass, with source stability and cleanup.
+
+The cases cover changed account email, old/new owned-account contrasts, exact
+case and case mismatch, no matching account, foreign same-email retention,
+pending-invitation retention and duplicate owned matches. Django's `first()` adds
+primary-key ordering to an unordered queryset, so duplicate matching deletes the
+lowest-PK account. This is explicitly characterization, not approval of that
+selection as the business identity represented by an accepted invitation. The
+receipt records the unresolved reference gap separately; no production behavior
+was changed and no Go mutation or route verification is claimed.
+
+Three portable controls cover fixture range and exact state comparison. Actual
+HTTP establishes the observed behavior. Receipts remain under
+`quality-reports/go-migration/collaborator-delete/` and
+`parallel-delivery-20261025/delete-email-parent-runtime.log`.

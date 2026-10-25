@@ -32,7 +32,7 @@ export const organizationAccessSourceContracts = {
         ['UI/src/routes/connectedCollaborators/CollaboratorActions.svelte', 'function remove()', 77],
         ['UI/src/routes/connectedCollaborators/modals/EditModal.svelte', 'async function update()', 121],
         ['UI/src/components/PermissionsComponent.svelte', 'let collaboratorPermissionsMap =', 129],
-        ['UI/src/components/PermissionsComponent.svelte', 'function updatePermissions(permissions)', 100],
+        ['UI/src/components/PermissionsComponent.svelte', 'function selectedPermissions()', 95],
         ['BE/application/views/collaborator_views.py', 'def collaborators_list(request):', 38],
         ['BE/application/views/collaborator_views.py', 'def collaborators_add(request):', 79],
         ['BE/application/views/collaborator_views.py', 'def collaborators_update(request, uid):', 48],

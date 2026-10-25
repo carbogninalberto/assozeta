@@ -1290,3 +1290,24 @@ bundle validation. Use the pinned production Python interpreter and Go.
 The permission editor's actual DOM interaction check is
 `node UI/scripts/test-permissions-component.mjs`, with UI dependencies and the
 normal browser harness's Chromium installed.
+
+The unchanged collaborator-list browser acceptance uses the same compiled UI
+artifact against both versions. Prepare its extracted artifact and provenance
+with `python TESTS/adapters/django/collaborator_list_browser.py
+--prepare-ui-image UI_IMAGE --ui-dir ARTIFACT --ui-provenance PROVENANCE`.
+Then run that adapter with `--image IMMUTABLE_GO_IMAGE --expected-revision FULL_SHA
+--build-receipt RECEIPT --ui-dir ARTIFACT --ui-provenance PROVENANCE
+--output DIRECTORY`; add `--go-source CHECKOUT` for a frozen source context.
+Portable controls are `python -m unittest
+TESTS.adapters.django.collaborator_list_browser
+TESTS.test_collaborator_browser_checkpoints -v`.
+Real password logins, exact displayed rows, pagination/reload, denied access,
+state/cache checkpoints and independent upstream attribution are mandatory.
+Explicit Django dependencies do not establish Go dashboard or WebSocket parity.
+
+The Django collaborator-deletion adapter also executes eight email-link cases,
+including changed email, case differences, foreign accounts and duplicate owned
+matches. Run their portable controls with `python -m unittest
+TESTS.test_collaborator_delete_email_links -v`. Duplicate selection remains
+characterization with an unresolved durable-identity contract; no Go deletion
+acceptance is implied.

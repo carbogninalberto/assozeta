@@ -93,3 +93,15 @@ receipt is mandatory; a clean checkout alone does not bind an image to source. C
 image and records the binary digest before running this matrix. Installed
 activation, historical schemas, complete browser flows and whole-route
 verification remain separate requirements; no declaration is promoted here.
+
+Hosted run `40226671786` repeats the complete packaged matrix after the owned
+transaction correction. Its receipt records the actual PR merge revision
+`2cac210cb2a790cf481df3f8854fa3d8ec1005ad`; the parent compares all 852 Go build
+inputs against task commit `29ac4838` with no differences. The image is
+`sha256:51e7b85a3ae800313eff48d01d099a1200fe8c121053830915b2f6aaca2104fe`
+and server digest is
+`1e4c746e6d5ba1cd5d1328684ebcfa94275b72d1ff37571a331cc18451b1d585`.
+All four 848-case workloads, notice bytes, source/build stability and cleanup
+pass. Downloaded receipts retain their original identity under
+`parallel-delivery-20261025/profile-browser-ci-29ac4838/`; they are not relabeled
+as tests of later application changes.

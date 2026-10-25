@@ -4543,7 +4543,9 @@
         "TESTS/adapters/django/collaborator_delete_locks.py",
         "TESTS/adapters/django/collaborator_delete_graph.py",
         "TESTS/adapters/django/collaborator_delete_cascades.py",
-        "TESTS/adapters/django/collaborator_delete_admission.py"
+        "TESTS/adapters/django/collaborator_delete_admission.py",
+        "TESTS/adapters/django/collaborator_delete_email_links.py",
+        "TESTS/test_collaborator_delete_email_links.py"
       ],
       "evidence": [
         {
@@ -4557,6 +4559,12 @@
           "revision": "f4b00c5 plus source_sha256 in exact parent receipt",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/delete-parent-audit.json"
+        },
+        {
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/collaborator-delete/http-results.json",
+          "revision": "29ac4838 plus exact source_sha256 for email-link oracle",
+          "scope": "Eight email-link reference cases with exact state/cache/audit; duplicate lowest-PK selection is characterization with unresolved durable identity. No Go mutation acceptance."
         }
       ],
       "notes": [
@@ -4699,7 +4707,10 @@
         "BE_GO/internal/repository/collaborator_list_integration_test.go",
         "TESTS/adapters/go/collaborator_list_image.py",
         "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection",
-        "TESTS/adapters/go/read_route_locales_image.py: unchanged 848-case matrix on Django, immutable Linux Go image and both versioned transports; 8 provenance and 8 portable matrix controls"
+        "TESTS/adapters/go/read_route_locales_image.py: unchanged 848-case matrix on Django, immutable Linux Go image and both versioned transports; 8 provenance and 8 portable matrix controls",
+        "TESTS/adapters/django/collaborator_list_browser.py",
+        "TESTS/browser/collaborator-list.mjs",
+        "TESTS/test_collaborator_browser_checkpoints.py"
       ],
       "evidence": [
         "Independent parent replay passes 115 authored cases each on Django, Go, Caddy v1 and v2. ASGI attribution 115/0/115/0; real Django 200 fallback rejected after durable checks. All 128 managed models, DB1 values, all 128 user-table counters, source 1114 hashes and cleanup pass. Required actual-PG groups cover 0/1/32/128 cardinalities, two/one service SELECTs, foreign/deleted exclusion, observed lock cancellation and pool recovery. Full source-matched Go race and ordinary/tagged vet pass. See collaborator-list.md and ignored collaborator-list/parent-audit.json.",
@@ -4716,6 +4727,12 @@
           "artifact": "quality-reports/go-migration/read-route-locales-image-c2ee3a2-r2/results.json",
           "revision": "c2ee3a29829540419ebaeed6d56ffbba07d51dd2 plus measured manual source changes; 849 build inputs, image 607b13012234 and server 1bd7134a22f1",
           "scope": "Packaged locale subset; not later transaction source or whole route verification"
+        },
+        {
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/collaborator-browser-parent-29ac4838-r7/results.json",
+          "revision": "29ac4838a4e23cec697b446ec5e96b777e892831; exact 852 Go and 454 reference hashes in receipt",
+          "scope": "Same compiled UI list on v1/v2; ordinary logins, exact rows, pagination, denial, state/cache, real misroute rejection and cleanup. Explicit Django dependencies; no mutation or full-route claim."
         }
       ],
       "notes": [

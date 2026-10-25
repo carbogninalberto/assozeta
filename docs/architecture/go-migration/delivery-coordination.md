@@ -9,48 +9,47 @@ behavior, or count documentation/inventory completion as implemented parity.
 
 ## Current integration checkpoint
 
-The published task head is `c2ee3a2`, aligned with main `fdf6c77` (checked again
-before this batch). Existing authors are preserved. Hosted quality run
-`40222694690` completed: backend/UI, shared accounts, storage, payment HTTP,
-packaged HTTP, existing frontend migration workflows and Linux lifecycle jobs
-passed. Scheduler TERM exposed a real post-transaction `Conn.Raw` race. The SSO
-browser job also failed before its initial button appeared; retained artifacts
-lack the originating exception. Neither failure is erased or called flaky.
+Published task head `29ac4838` is aligned with main `fdf6c77`. Hosted quality
+run `40226671786` passes the updated Go foundation, payment/versioned/image,
+shared account, frontend, SSO and self-host checks. Its legacy-controller job
+failed before application execution while pulling BuildKit from Docker Hub
+(IPv6 network unreachable); the normal failed-job retry passed. The
+original failure remains recorded. The earlier scheduler Raw race is repaired;
+the earlier SSO failure remains historical, with improved diagnostics and a
+passing new-source hosted run.
 
-The integrated work closes three acceptance gaps. Manual screenshot source
-checks now match main's accessible-section behavior; 26 independent Django/Go
-comparisons and the original 36-case reader oracle pass. Packaged locale testing
-passes 4 × 848 cases on a source-bound Linux/arm64 image, including actual
-misroute rejection, exact state/cache preservation and notice bytes. A malformed
-stored collaborator permission object exposed a shared frontend crash; the
-bounded component correction passes real DOM interactions and all 168 UI tests.
-The full Go race suite and vet pass for that integration stage.
+The hosted locale image receipt keeps actual PR merge revision `2cac210`, rather
+than relabeling it as the branch commit. All 852 Go build hashes match `29ac4838`.
+All four 848-case transports pass with image/executable binding, state/cache
+preservation, misroute rejection and cleanup. Hosted payment/category evidence
+also passes the complete versioned matrix and both native shutdown scenarios;
+this supplies the affected regression left open by the retained local Docker
+readiness/cleanup failure. It does not establish packaged shutdown.
 
-These packaged receipts retain `c2ee3a2` plus the measured manual source changes,
-849 build inputs and exact image/executable hashes. They do not prove later
-transaction changes. The invalid first receipt with an empty source inventory
-was rejected before services started; a regression test covers frozen contexts
-under a generated-report directory. Native locale/category shutdown receipts
-from earlier batches likewise retain their original inputs.
+The parent now passes unchanged collaborator-list browser acceptance on both
+versions: four ordinary logins, 12-row pagination, denial, exact rows and controls,
+11 durable checkpoints and seven list requests per backend. All 454 reference
+and 852 Go build hashes match the integrated source. The same compiled frontend,
+immutable Go image and executable are bound to the receipt; source stability,
+real misroute rejection and cleanup pass. Twenty controls reject incomplete
+browser evidence. Mutation controls are not clicked. Explicit Django coexistence
+for dashboard/notification dependencies does not establish their Go parity.
 
-Astra implemented the transaction cleanup repair after review rejected a
-DeepSeek proposal to recover the panic in the scheduler. Physical completion is
-now observed inside the owned pgx driver boundary, with no post-BEGIN Raw calls.
-Independent review found and corrected completion-context reuse on an unsupported
-DB.BeginTx retry. Parent final-source execution passes eight lifetime groups, durable queue and
-ownership checks, credential concurrency, and native category graceful/expired
-drain shutdown, with before/after source stability. All 12 scheduler process
-scenarios, 14 worker process scenarios and full Go race/vet pass. Native category
-HTTP/fault/concurrency checks progressed to the versioned proxy, where Caddy
-readiness failed and Docker cleanup timed out. The failed receipt is retained;
-that complete versioned regression is still required. Final collaborator browser
-acceptance remains local pending the source-bound frontend build.
+Eight new accepted-invitation email-link cases pass against Django alongside
+18 core, five locking, eight cascade and 52 admission cases. Duplicate matching
+uses primary-key order and remains characterization: the durable business link
+is unresolved. No Go deletion mutation is accepted from these reference tests.
 
-The frozen manual producer at application `288ad72` and local companion
-`378421a` finished with 57 passing and three failing captures. Required package
-verification did not run. Missing manifest and changed shared tooling prevent
-reusing those 57 as current acceptance. A supported new targeted capture can
-reuse its UI only if frontend/environment compatibility passes. Companion and
+The frozen manual producer at application `288ad72` and companion `378421a`
+finished 57/60 captures; package verification did not run. Missing manifest and
+changed shared tooling prevent reusing those captures as current acceptance.
+DeepSeek Flash/high refreshed 25 reviewed bindings in local companion `7edde85`;
+the parent independently validates all 507 sections, preserving 482 bindings and
+all Italian prose. Astra corrected the permission-editor recipe hash and source
+anchor after both hosted manual workflows rejected the stale reference. Actual
+catalogue resolution and all 175 parent offline manual tests now pass in the
+pinned interpreter, without skips. The initial host-Python run lacked NumPy and
+its failed receipt is retained. Fresh captures and package verification still follow. Companion and
 release publication remain unauthorized; no production systems were changed.
 
 ## Assignments and integration rules
@@ -67,10 +66,10 @@ transaction race and independent final review because of its concurrency scope:
 | Collaborator deletion transport (handoff) | Existing unregistered handler plus independent admission helper | Parent passed all 52 Django cases after correcting error-detail expectations; transport stays isolated pending mutation implementation |
 | Acceptance audit (complete) | Existing-family evidence and gap report | Manifest, collaborator list and impersonation remain nearest candidates; no status promotion |
 | Read-route locales (integrated) | Shared route-local selection/catalogs and manifest response boundary | Parent passed 4 × 848 actual cases, all 99 languages, Latin-1 wire edges and source/artifact checks |
-| Collaborator browser (acceptance) | Same UI list consumer on both backends and private adapter | Parent passed 17 protocol/evidence controls; source-bound UI image build and actual runtime acceptance remain required |
+| Collaborator browser (acceptance) | Same UI list consumer on both backends and private adapter | Parent passed 20 controls and actual source/image/UI-bound v1/v2 list browser acceptance |
 | Manual asset scope (integrated) | Accessible source filtering and authored oracle | Parent passed 26 differential checks, existing 36-case oracle and full Go race/vet |
 | Packaged locales (integrated) | Existing 848-case runner with immutable image factory | Parent passed all four transports, source/binary/notice/state/misroute/cleanup checks |
-| Owned transactions (integrated) | Astra implementation of pgx completion and existing DB constructors | Parent passed PG lifetime/queue/credentials, 12 scheduler and 14 worker scenarios, native shutdown and full Go race/vet; versioned proxy replay pending Docker recovery |
+| Owned transactions (integrated) | Astra implementation of pgx completion and existing DB constructors | Parent passed PG lifetime/queue/credentials, 12 scheduler and 14 worker scenarios, native shutdown and full Go race/vet; hosted complete versioned regression passes; packaged shutdown remains open |
 
 The completed cascade-fixture worker handed off eight authored scenarios. Parent
 execution passed them alongside the existing deletion/locking matrix. All new
@@ -90,9 +89,11 @@ bugs, and independently verified the integrated implementation. Worker reports
 alone never establish acceptance. Each external worker receives an exact message
 file path; worktree-local links avoid assuming native messaging is shared.
 
-The next browser slice targets collaborator listing, with explicit Django
-coexistence only for dependencies the unchanged UI actually requests. Its
-creation/editing/deletion workflows remain separate. Packaged shutdown,
+The collaborator listing browser slice passes with explicit Django coexistence
+for observed dependencies. Creation/editing/deletion workflows remain separate.
+Astra implements packaged shutdown acceptance in an isolated worktree while
+DeepSeek refreshes reviewed manual bindings; the coordinator owns integration
+and independent runtime checks. Packaged shutdown,
 historical data, memory bounds and other documented family gaps still require
 proof. No declaration has been promoted to verified from the current batch.
 

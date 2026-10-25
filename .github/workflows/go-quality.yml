@@ -456,7 +456,9 @@ jobs:
           TESTS_IMPERSONATION_MANAGEMENT_VERSIONED: '1'
         run: python TESTS/adapters/django/accounts.py --only impersonation-management
       - name: Verify corrected Django collaborator deletion and observed PostgreSQL locks
-        run: python TESTS/adapters/django/accounts.py --only collaborator-delete
+        run: |
+          python -m unittest TESTS.test_collaborator_delete_email_links -v
+          python TESTS/adapters/django/accounts.py --only collaborator-delete
       - name: Verify collaborator listing, scopes and live PostgreSQL bounds
         env:
           TESTS_COLLABORATOR_LIST_GO: '1'
@@ -824,6 +826,21 @@ jobs:
         run: |
           npm ci --prefix UI
           node UI/scripts/test-permissions-component.mjs
+      - name: Verify collaborator list, pagination and denied access on both backends
+        run: |
+          python -m unittest TESTS.adapters.django.collaborator_list_browser TESTS.test_collaborator_browser_checkpoints -v
+          node --check TESTS/browser/collaborator-list.mjs
+          python TESTS/adapters/django/collaborator_list_browser.py \
+            --prepare-ui-image assozeta-profile-web:ci \
+            --ui-dir quality-reports/go-migration/collaborator-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/collaborator-browser-ui/provenance.json
+          python TESTS/adapters/django/collaborator_list_browser.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --ui-dir quality-reports/go-migration/collaborator-browser-ui/artifact \
+            --ui-provenance quality-reports/go-migration/collaborator-browser-ui/provenance.json \
+            --output quality-reports/go-migration/collaborator-browser
       - name: Verify unchanged impersonation controls and durable outcomes
         # Reuse the same immutable Go and UI builds. Explicit Django dependencies
         # remain visible; this does not claim installed backend activation.
@@ -869,3 +886,7 @@ jobs:
             quality-reports/go-migration/impersonation-browser-build/results.json
             quality-reports/go-migration/read-route-locales-image/results.json
             quality-reports/go-migration/read-route-locales-image/http-results.json
+            quality-reports/go-migration/collaborator-browser/results.json
+            quality-reports/go-migration/collaborator-browser/v*/browser.json
+            quality-reports/go-migration/collaborator-browser/v*/validation.json
+            quality-reports/go-migration/collaborator-browser-ui/provenance.json
