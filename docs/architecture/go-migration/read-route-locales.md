@@ -63,6 +63,33 @@ the recorded uncommitted file hashes, not a claim about a different image.
 
 Invalid/expired JWTs, custom identity denials, malformed scoped request bodies,
 invalid resource identifiers, HTML 400/500 paths and other routes remain separate
-contracts. This slice does not establish historical-data behavior, packaged or
+contracts. The native slice does not establish historical-data behavior or
 installed acceptance, operator activation, complete browser workflows or full
 performance requirements. No route status is promoted from this subset.
+
+
+## Packaged locale acceptance, 25 October 2026
+
+`TESTS/adapters/go/read_route_locales_image.py` supplies the same independent
+848-case matrix with an immutable container instead of the native Go process.
+The parent passed Django, the Linux/arm64 Go image and both versioned transports
+(4 × 848), including all 99 languages, exact managed-model/cache preservation,
+zero user-table writes and an actual equivalent-response misroute rejection.
+The packaged framework locale notice matches the source bytes. Cleanup passed.
+
+The successful receipt is
+`quality-reports/go-migration/read-route-locales-image-c2ee3a2-r2/results.json`.
+It binds image `sha256:607b13012234f9a56c2d76f7ae2fd35355a476ccfbbf2a4e0e8492aced290a64`,
+server SHA-256 `1bd7134a22f15e1772c34a26933bc224e29fde3fc8b62f2034a5e689d5ac67fb`
+and 849 frozen Go inputs at `c2ee3a2` plus the reviewed manual asset-scope change.
+It does not establish acceptance for later transaction implementation changes.
+The first build receipt had an empty source inventory and was rejected before
+services started. The corrected inventory excludes generated paths relative to
+the source root; a source tree under `quality-reports` is no longer excluded as a
+whole. A regression control detects changes in that exact placement.
+
+Eight adapter controls and eight portable matrix controls pass. The build
+receipt is mandatory; a clean checkout alone does not bind an image to source. CI reuses its immutable browser-job
+image and records the binary digest before running this matrix. Installed
+activation, historical schemas, complete browser flows and whole-route
+verification remain separate requirements; no declaration is promoted here.

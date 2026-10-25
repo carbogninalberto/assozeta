@@ -12,9 +12,9 @@ import (
 	"os"
 	"sync/atomic"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -34,7 +34,7 @@ func run() error {
 		}
 		return dial(ctx, network, address)
 	}
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)

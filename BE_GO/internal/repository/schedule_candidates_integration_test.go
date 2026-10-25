@@ -15,12 +15,12 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -82,7 +82,7 @@ func TestSchedulePagesPostgres(t *testing.T) {
 	queries := &pageQueries{}
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
 	cfg.Tracer = queries
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(8)
 	db.SetMaxIdleConns(8)

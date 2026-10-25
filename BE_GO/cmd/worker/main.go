@@ -16,13 +16,13 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -74,7 +74,7 @@ func run(arguments []string) error {
 	database.DefaultQueryExecMode = pgx.QueryExecModeExec
 	database.ConnectTimeout = 5 * time.Second
 	database.RuntimeParams["application_name"] = "assozeta-go-worker"
-	db := sqlx.NewDb(stdlib.OpenDB(*database), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*database), "pgx")
 	defer db.Close()
 	logger := slog.Default()
 	reset := service.NewEmailBalanceReset(repository.NewEmailBalanceResets(db), logger)

@@ -108,9 +108,12 @@ func (l *Loader) loadPreview(ctx context.Context) (*ReaderSnapshot, error) {
 	return &ReaderSnapshot{preview: value, assetRoot: root}, nil
 }
 func (l *Loader) loadReader(ctx context.Context, features []string) (*ReaderSnapshot, error) {
-	return l.loadKnowledge(ctx, features, false, true)
+	return l.loadKnowledge(ctx, features, false, true, "")
 }
-func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintainer, validate bool) (*ReaderSnapshot, error) {
+func (l *Loader) loadReaderAsset(ctx context.Context, features []string, assetPath string) (*ReaderSnapshot, error) {
+	return l.loadKnowledge(ctx, features, false, true, assetPath)
+}
+func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintainer, validate bool, assetPath string) (*ReaderSnapshot, error) {
 	s := l.settings
 	result := &ReaderSnapshot{}
 	revision := s.ApplicationRevision
@@ -215,7 +218,7 @@ func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintaine
 		return nil, errEvidence
 	}
 	if validate {
-		result.applicable, err = knowledgeApplicable(ctx, result.index, features, s.SourceRoot, maintainer)
+		result.applicable, err = knowledgeApplicableForAsset(ctx, result.index, features, s.SourceRoot, maintainer, assetPath)
 		if err != nil {
 			return nil, err
 		}
@@ -223,22 +226,21 @@ func (l *Loader) loadKnowledge(ctx context.Context, features []string, maintaine
 	return result, nil
 }
 func readerApplicable(ctx context.Context, index map[string]any, features []string, source string) ([]map[string]any, error) {
-	return knowledgeApplicable(ctx, index, features, source, false)
+	return knowledgeApplicableForAsset(ctx, index, features, source, false, "")
 }
 func knowledgeApplicable(ctx context.Context, index map[string]any, features []string, source string, maintainer bool) ([]map[string]any, error) {
+	return knowledgeApplicableForAsset(ctx, index, features, source, maintainer, "")
+}
+func knowledgeApplicableForAsset(ctx context.Context, index map[string]any, features []string, source string, maintainer bool, assetPath string) ([]map[string]any, error) {
 	chunks, ok := index["chunks"].([]any)
 	if !ok {
 		return nil, errEvidence
-	}
-	stale, err := stalePublicSections(ctx, index, chunks, source)
-	if err != nil {
-		return nil, err
 	}
 	enabled := map[string]bool{}
 	for _, f := range features {
 		enabled[f] = true
 	}
-	result := []map[string]any{}
+	candidates := []any{}
 	for _, raw := range chunks {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
@@ -261,22 +263,62 @@ func knowledgeApplicable(ctx context.Context, index map[string]any, features []s
 		if audience != "public" && !maintainer {
 			continue
 		}
-		id, ok := m["id"].(string)
-		if !ok {
-			return nil, errEvidence
-		}
-		if stale[id] {
-			continue
-		}
 		ok, err = readerFeatures(m["features"], enabled)
 		if err != nil {
 			return nil, err
 		}
-		if ok {
+		if !ok {
+			continue
+		}
+		matches, err := scopeMatchesAsset(m, assetPath)
+		if err != nil {
+			return nil, err
+		}
+		if !matches {
+			continue
+		}
+		candidates = append(candidates, m)
+	}
+	stale, err := stalePublicSections(ctx, index, candidates, source)
+	if err != nil {
+		return nil, err
+	}
+	result := []map[string]any{}
+	for _, raw := range candidates {
+		m := raw.(map[string]any)
+		id, ok := m["id"].(string)
+		if !ok {
+			return nil, errEvidence
+		}
+		if !stale[id] {
 			result = append(result, m)
 		}
 	}
 	return result, nil
+}
+
+func scopeMatchesAsset(chunk map[string]any, assetPath string) (bool, error) {
+	if assetPath == "" {
+		return true, nil
+	}
+	images, ok := chunk["screenshots"].([]any)
+	if !ok {
+		return false, errEvidence
+	}
+	for _, raw := range images {
+		image, ok := raw.(map[string]any)
+		if !ok {
+			return false, errEvidence
+		}
+		path, present := image["path"]
+		if !present {
+			return false, errEvidence
+		}
+		if path == assetPath {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // ReadAsset preserves the separate preview-prefix branch: an active preview
@@ -298,7 +340,7 @@ func (l *Loader) ReadAsset(ctx context.Context, features []string, relative stri
 		s, err = l.loadPreview(ctx)
 		relative = strings.TrimPrefix(relative, "preview/")
 	} else {
-		s, err = l.loadReader(ctx, features)
+		s, err = l.loadReaderAsset(ctx, features, relative)
 	}
 	if ctx.Err() != nil {
 		return nil, ctx.Err()

@@ -14,11 +14,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -92,7 +92,7 @@ func TestSocialPostgres(t *testing.T) {
 	}
 	counter := &socialQueryCounter{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	parse := func(raw json.RawMessage) any {

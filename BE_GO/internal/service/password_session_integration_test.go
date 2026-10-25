@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
@@ -22,7 +23,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -74,7 +74,7 @@ func TestPasswordSessionPostgres(t *testing.T) {
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec // Same mode as cmd/server and transaction poolers.
 	counter := &sessionQueryCounter{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	admission := NewPasswordAdmission(NewPasswordLogin(repository.NewPasswordLogins(db), passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()), 2), NewLoginPreparation(repository.NewLoginPreparations(db), clock), NewSecondFactor(func() time.Time { return time.Unix(59, 0) }))

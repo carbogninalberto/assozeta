@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
 )
@@ -47,7 +47,7 @@ func TestRetiredBillingPostgres(t *testing.T) {
 	queries := &retiredBillingQueries{}
 	cfg.Tracer = queries
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	db.SetMaxIdleConns(4)

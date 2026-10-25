@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -30,7 +30,7 @@ func TestProfileUpdateCollaboratorResponsePostgres(t *testing.T) {
 	q := &profileMutationQueries{}
 	cfg.Tracer = q
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

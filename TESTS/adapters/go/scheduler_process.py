@@ -20,7 +20,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from TESTS.adapters.django.production_runtime import require_production_python
-from TESTS.adapters.go.worker_process import Rehearsal, await_condition, KIND
+from TESTS.adapters.go.worker_process import Rehearsal, await_condition, KIND, process_source_hashes
 
 EXPECTED = {
     'missing empty and blank file lease refuse readiness',
@@ -261,6 +261,7 @@ def main():
     output=ROOT/'quality-reports/go-migration/scheduler-process'
     output.mkdir(parents=True,exist_ok=True)
     result={'success':False,'scope':'native scheduler; actual Beat schema; synthetic restore/business effects; no installed handoff'}
+    result['source_hashes'] = process_source_hashes()
     report=output/'results.json';report.write_text(json.dumps(result)+'\n')
     environment={k:v for k,v in os.environ.items() if k in ('PATH','HOME','TMPDIR','GOCACHE','GOMODCACHE','GOTOOLCHAIN')}
     environment.update(LC_ALL='C',LANG='C')
@@ -275,6 +276,8 @@ def main():
             for name in ('scheduler','worker','migrate'):
                 subprocess.run(['go','build','-race','-o',str(work/name),'./cmd/'+name],cwd=ROOT/'BE_GO',env=environment,
                     stdout=log,stderr=subprocess.STDOUT,check=True,timeout=120)
+            result['binary_sha256'] = {name: hashlib.sha256((work/name).read_bytes()).hexdigest()
+                                       for name in ('scheduler', 'worker', 'migrate')}
             run([binaries/'initdb','-D',work/'postgres','-A','trust','-U','contracts','--no-sync','--no-locale','-E','UTF8'])
             started=True
             run([binaries/'pg_ctl','-D',work/'postgres','-l',work/'postgres.log','-o',f"-k {work} -h '' -F",'-w','start'])
@@ -306,11 +309,9 @@ def main():
                 finally:
                     if (work/'postgres.log').exists():shutil.copyfile(work/'postgres.log',output/'postgres.log')
                     report.write_text(json.dumps(result,indent=2)+'\n')
-    paths=['TESTS/adapters/go/scheduler_process.py','BE_GO/cmd/scheduler/main.go',
-           'BE_GO/internal/service/schedule_loop.go','BE_GO/internal/service/schedule_page.go',
-           'BE_GO/internal/repository/occurrence.go','BE_GO/internal/repository/transaction.go',
-           'BE_GO/internal/repository/schedule_schema.go']
-    result.update(success=True,private_postgres_stopped=True,source_hashes={p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths})
+    result['source_stable'] = process_source_hashes() == result['source_hashes']
+    assert result['source_stable'], 'Process acceptance source changed during execution'
+    result.update(success=True,private_postgres_stopped=True)
     report.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
 
 if __name__=='__main__': main()

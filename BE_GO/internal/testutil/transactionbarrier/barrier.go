@@ -11,6 +11,7 @@ import (
 	"net"
 	"sync"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -132,7 +133,7 @@ func OpenConfig(original *pgx.ConnConfig) (*sqlx.DB, *Control, error) {
 		}
 		return &wrappedNetwork{Conn: conn, control: control}, nil
 	}
-	db := sqlx.NewDb(sql.OpenDB(&wrappedConnector{Connector: stdlib.GetConnector(*cfg), control: control}), "pgx")
+	db := sqlx.NewDb(sql.OpenDB(ownedpgx.WrapConnector(&wrappedConnector{Connector: stdlib.GetConnector(*cfg), control: control})), "pgx")
 	db.SetMaxOpenConns(8)
 	db.SetMaxIdleConns(8)
 	return db, control, nil

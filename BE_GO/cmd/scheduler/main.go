@@ -16,12 +16,12 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -85,7 +85,7 @@ func run(arguments []string) error {
 	database.DefaultQueryExecMode = pgx.QueryExecModeExec
 	database.ConnectTimeout = 5 * time.Second
 	database.RuntimeParams["application_name"] = "assozeta-go-scheduler"
-	db := sqlx.NewDb(stdlib.OpenDB(*database), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*database), "pgx")
 	defer db.Close()
 	// Pages are serial. An occurrence owns one connection; discovery and restore
 	// reads precede it. No independent heartbeat or unbounded pool is needed.

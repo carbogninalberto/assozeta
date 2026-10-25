@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -58,7 +58,7 @@ func TestLoginFinalizationPostgres(t *testing.T) {
 	}
 	counter := &finalizationQueries{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	store := repository.NewLoginFinalizations(db)
@@ -177,7 +177,7 @@ func TestLoginFinalizationPostgres(t *testing.T) {
 			t.Run(role, func(t *testing.T) {
 				restricted := cfg.Copy()
 				restricted.RuntimeParams["role"] = role
-				roleDB := sqlx.NewDb(stdlib.OpenDB(*restricted), "pgx")
+				roleDB := sqlx.NewDb(ownedpgx.OpenDB(*restricted), "pgx")
 				defer roleDB.Close()
 				roleDB.SetMaxOpenConns(1)
 				err := NewLoginFinalization(repository.NewLoginFinalizations(roleDB), func() time.Time { return at }).Finalize(context.Background(), fixture.Atomic, domain.LoginAuditContext{})

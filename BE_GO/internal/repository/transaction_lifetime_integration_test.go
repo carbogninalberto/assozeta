@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
@@ -27,7 +28,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 )
@@ -63,7 +63,7 @@ func TestTransactionLifetimePostgres(t *testing.T) {
 		t.Fatal("invalid private fixture DSN")
 	}
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	admin := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	admin := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer admin.Close()
 	ctx, stop := context.WithTimeout(context.Background(), 90*time.Second)
 	defer stop()

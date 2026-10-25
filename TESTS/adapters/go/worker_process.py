@@ -6,6 +6,7 @@ exist only in this trusted fixture. No installed service or scheduler is started
 Run with the existing Django test Python environment (psycopg2 is required).
 """
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,18 @@ import psycopg2
 ROOT = Path(__file__).resolve().parents[3]
 KIND = 'reset_communication_daily_email_balance'
 NIL = '00000000-0000-0000-0000-000000000000'
+
+
+def process_source_hashes():
+    """Bind native process builds and their actual Django/fixture inputs."""
+    paths = {path for path in (ROOT / 'BE_GO').rglob('*')
+             if path.is_file() and not any(part in ('quality-reports', '.git')
+                 for part in path.relative_to(ROOT).parts)}
+    paths.update((ROOT / 'BE').rglob('*.py'))
+    paths.update((ROOT / 'TESTS/adapters').rglob('*.py'))
+    paths.add(ROOT / 'selfhost/.env.example')
+    return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(paths)}
 
 
 def await_condition(predicate, description, timeout=12):
@@ -404,6 +417,7 @@ def main():
     output = ROOT / 'quality-reports/go-migration/worker-process'
     output.mkdir(parents=True, exist_ok=True)
     result = {'success': False, 'scope': 'native binary and synthetic transaction boundary; not installed activation or historical task parity'}
+    result['source_hashes'] = process_source_hashes()
     postgres = shutil.which('postgres')
     if not postgres:
         candidates = sorted(Path('/opt/homebrew/opt').glob('postgresql*/bin/postgres'))
@@ -425,6 +439,8 @@ def main():
                 subprocess.run(['go', 'build', '-race', '-o', str(work / name), './cmd/' + name],
                                cwd=ROOT / 'BE_GO', env=environment, stdout=log, stderr=subprocess.STDOUT,
                                check=True, timeout=120)
+            result['binary_sha256'] = {name: hashlib.sha256((work / name).read_bytes()).hexdigest()
+                                       for name in ('worker', 'migrate')}
             run([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust', '-U', 'contracts', '--no-sync', '--no-locale', '-E', 'UTF8'])
             run([binaries / 'pg_ctl', '-D', work / 'postgres', '-l', work / 'postgres.log',
                  '-o', f"-k {work} -h '' -F", '-w', 'start'])
@@ -446,6 +462,8 @@ def main():
                     if (work / 'postgres.log').exists():
                         shutil.copyfile(work / 'postgres.log', output / 'postgres.log')
                     (output / 'results.json').write_text(json.dumps(result, indent=2) + '\n')
+    result['source_stable'] = process_source_hashes() == result['source_hashes']
+    assert result['source_stable'], 'Process acceptance source changed during execution'
     result['success'] = True
     (output / 'results.json').write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result))

@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -91,14 +92,24 @@ func TestCredentialConcurrencyPostgres(t *testing.T) {
 	if err != nil || json.Unmarshal(raw, &fixture) != nil || len(fixture.BatchIDs) != 129 {
 		t.Fatal("run accounts.py --only credential-concurrency")
 	}
-	db, err := sqlx.Connect("pgx", os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
+	dbConfig, err := pgx.ParseConfig(os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
 	if err != nil {
+		t.Fatal(err)
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal(err)
 	}
 	defer db.Close()
 	db.SetMaxOpenConns(4)
-	writer, err := sqlx.Connect("pgx", os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
+	writerConfig, err := pgx.ParseConfig(os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
 	if err != nil {
+		t.Fatal(err)
+	}
+	writer := sqlx.NewDb(ownedpgx.OpenDB(*writerConfig), "pgx")
+	if err = writer.Ping(); err != nil {
+		_ = writer.Close()
 		t.Fatal(err)
 	}
 	defer writer.Close()

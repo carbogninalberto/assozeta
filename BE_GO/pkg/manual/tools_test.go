@@ -31,7 +31,7 @@ func toolFixture(t *testing.T) (*Loader, string) {
 
 func TestManualToolCopiesAndConcurrentAuthority(t *testing.T) {
 	l, path := toolFixture(t)
-	if _, err := l.loadKnowledge(context.Background(), nil, true, true); err != nil {
+	if _, err := l.loadKnowledge(context.Background(), nil, true, true, ""); err != nil {
 		t.Fatal("fixture source", err)
 	}
 	before, _ := os.ReadFile(path)

@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -61,7 +61,7 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 	}
 	counter := &cardQueries{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	store := repository.NewMembershipCardConfigurations(db)
@@ -152,7 +152,7 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 			t.Run(role, func(t *testing.T) {
 				deniedCfg := cfg.Copy()
 				deniedCfg.RuntimeParams["role"] = role
-				deniedDB := sqlx.NewDb(stdlib.OpenDB(*deniedCfg), "pgx")
+				deniedDB := sqlx.NewDb(ownedpgx.OpenDB(*deniedCfg), "pgx")
 				defer deniedDB.Close()
 				deniedDB.SetMaxOpenConns(1)
 				denied := NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(deniedDB), time.Now)
@@ -234,7 +234,7 @@ func TestMembershipCardConfigurationAgainstDjango(t *testing.T) {
 		}
 		retryCfg := cfg.Copy()
 		retryCfg.RuntimeParams["deadlock_timeout"] = "10ms"
-		retryDB := sqlx.NewDb(stdlib.OpenDB(*retryCfg), "pgx")
+		retryDB := sqlx.NewDb(ownedpgx.OpenDB(*retryCfg), "pgx")
 		defer retryDB.Close()
 		retryDB.SetMaxOpenConns(2)
 		observed := &observedCardStore{MembershipCardConfigurationStore: repository.NewMembershipCardConfigurations(retryDB), ready: make(chan struct{}), proceed: make(chan struct{})}

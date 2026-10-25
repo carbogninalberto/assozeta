@@ -74,7 +74,7 @@ func (l *Loader) executeTool(ctx context.Context, caller ToolContext, name strin
 	default:
 		return nil, ErrUnknownTool
 	}
-	snapshot, err := l.loadKnowledge(ctx, caller.Features, caller.Maintainer, name != "get_manual_gaps")
+	snapshot, err := l.loadKnowledge(ctx, caller.Features, caller.Maintainer, name != "get_manual_gaps", "")
 	if err != nil {
 		return nil, err
 	}

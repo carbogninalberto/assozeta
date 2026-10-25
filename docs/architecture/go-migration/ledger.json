@@ -4698,7 +4698,8 @@
         "BE_GO/internal/service/collaborator_list_test.go",
         "BE_GO/internal/repository/collaborator_list_integration_test.go",
         "TESTS/adapters/go/collaborator_list_image.py",
-        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection"
+        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection",
+        "TESTS/adapters/go/read_route_locales_image.py: unchanged 848-case matrix on Django, immutable Linux Go image and both versioned transports; 8 provenance and 8 portable matrix controls"
       ],
       "evidence": [
         "Independent parent replay passes 115 authored cases each on Django, Go, Caddy v1 and v2. ASGI attribution 115/0/115/0; real Django 200 fallback rejected after durable checks. All 128 managed models, DB1 values, all 128 user-table counters, source 1114 hashes and cleanup pass. Required actual-PG groups cover 0/1/32/128 cardinalities, two/one service SELECTs, foreign/deleted exclusion, observed lock cancellation and pool recovery. Full source-matched Go race and ordinary/tagged vet pass. See collaborator-list.md and ignored collaborator-list/parent-audit.json.",
@@ -4709,6 +4710,12 @@
           "revision": "f9a71e3449b323ec0a62c5ef56ab84a78b639832 plus exact source_sha256/runtime_sources in HTTP receipt",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/locale-parent-audit.json"
+        },
+        {
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/read-route-locales-image-c2ee3a2-r2/results.json",
+          "revision": "c2ee3a29829540419ebaeed6d56ffbba07d51dd2 plus measured manual source changes; 849 build inputs, image 607b13012234 and server 1bd7134a22f1",
+          "scope": "Packaged locale subset; not later transaction source or whole route verification"
         }
       ],
       "notes": [
@@ -7586,13 +7593,19 @@
         "selfhost/tests/test_go_lifecycle.py",
         "TESTS/adapters/django/profile_browser.py",
         "TESTS/adapters/django/manual_browser_fixture.py",
-        "TESTS/browser/manual-reader.mjs"
+        "TESTS/browser/manual-reader.mjs",
+        "TESTS/adapters/django/manual_asset_scope.py: 26 authored Django/Go case and sequence checks for accessible screenshot source scope"
       ],
       "evidence": [
         "58 actual Django HTTP cases establish identity, transport, source selection, side effects and SQL observations; 32 separate Go library comparisons cover source selection and assets. See docs/architecture/go-migration/manual-reader.md.",
         "69 actual Django and 69 actual Go HTTP cases pass directly and again through shipped Caddy /api/v1 and /api/v2. Portable differential compares full responses, selected headers, publisher requests, unchanged records/cache and bounded SQL. At 16/128 sections owner reads use two SQL statements and collaborator reads three. Whole Go vet/race passes.",
         "Actual Django/Go processes serialize refresh under the same file lease, including cancellation; changing the Go lock filename fails the test. Packaged Go/Django filesystem probes pass both shared-volume initialization orders as UID 10001 with read-only roots; the previous Go image fails Go-first. All private probe resources removed. These checks do not claim packaged HTTP refresh or a verified required release artifact.",
-        "Unchanged built frontend passes real password login and manual navigation/search/reload/authenticated-image/mobile/denial checks with Django and Go, using the same authored synthetic corpus and 640x360 PNG. Exact consumed image Blob hashes and dimensions are checked; screenshots inspected. Pinned pre-route Go f2993b0 fails with an actual manual-sections 404. Private canonical API proxy only; root WebSockets remain Django. Existing profile/audit checks also pass. See docs/architecture/go-migration/manual-reader.md for scope."
+        "Unchanged built frontend passes real password login and manual navigation/search/reload/authenticated-image/mobile/denial checks with Django and Go, using the same authored synthetic corpus and 640x360 PNG. Exact consumed image Blob hashes and dimensions are checked; screenshots inspected. Pinned pre-route Go f2993b0 fails with an actual manual-sections 404. Private canonical API proxy only; root WebSockets remain Django. Existing profile/audit checks also pass. See docs/architecture/go-migration/manual-reader.md for scope.",
+        {
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/manual-asset-scope-parent-results.json",
+          "scope": "Reader library source selection; not packaged manual completion"
+        }
       ],
       "notes": [
         "HTTP routes and scoped synthetic-corpus reader browser workflows implemented; packaged HTTP refresh, MCP/assistant integration and genuine required-release corpus delivery with full browser verification remain unverified."
@@ -16947,7 +16960,8 @@
         "TESTS/adapters/django/instance_pwa_browser.py",
         "TESTS/adapters/django/test_instance_pwa_browser.py",
         "TESTS/browser/instance-pwa.mjs",
-        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection"
+        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection",
+        "TESTS/adapters/go/read_route_locales_image.py: unchanged 848-case matrix on Django, immutable Linux Go image and both versioned transports; 8 provenance and 8 portable matrix controls"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-manifest.md",
@@ -16963,6 +16977,12 @@
           "revision": "f9a71e3449b323ec0a62c5ef56ab84a78b639832 plus exact source_sha256/runtime_sources in HTTP receipt",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/locale-parent-audit.json"
+        },
+        {
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/read-route-locales-image-c2ee3a2-r2/results.json",
+          "revision": "c2ee3a29829540419ebaeed6d56ffbba07d51dd2 plus measured manual source changes; 849 build inputs, image 607b13012234 and server 1bd7134a22f1",
+          "scope": "Packaged locale subset; not later transaction source or whole route verification"
         }
       ],
       "notes": [

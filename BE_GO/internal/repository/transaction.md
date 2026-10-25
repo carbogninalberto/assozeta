@@ -11,19 +11,39 @@ paused and PostgreSQL still holds the transaction's row locks. The old worker an
 HTTP paths then released their lifecycle lease prematurely; a read-only snapshot
 also returned before its rollback completed.
 
-`ownedTransaction` captures pgx's immutable cleanup channel while it owns the
-driver connection. A successful synchronous commit or rollback returns the
-connection to the normal pool. An error, cancellation or concurrent `ErrTxDone`
-discards the private connection and joins its driver/socket cleanup. A `sync.Once`
-joins concurrent completion callers and prevents a deferred rollback from
-discarding a connection already returned after successful commit. No pgx state
-is inspected after pool return, and cancellation is not detached from SQL work.
+`internal/database.OpenDB` wraps the owned pgx connector beneath the existing
+`sqlx.DB`, `sqlx.Conn` and `sqlx.Tx` architecture. Its small driver transaction
+wrapper publishes an immutable completion record after the actual driver
+Commit/Rollback returns. The repository passes that record through a context
+value that preserves the caller's cancellation and deadline. BEGIN, queries and
+database/sql's commit cancellation guard remain attached to the caller.
 
-This requires directly owned pgx connections (`stdlib.OpenDB` or `sql.Open` with
-the pgx driver), as used by the composition roots. `stdlib.OpenDBFromPool` is not
-supported: its driver close returns a connection to another pool rather than
-closing the socket. This is an internal repository contract, not a general driver
-or pool abstraction.
+The wrapper closes failed or cancelled transactions inside the driver call,
+where database/sql exclusively owns the driver connection. The completion record
+contains pgx's captured cleanup channel; the repository joins it before returning
+and releasing restore admission. The connector implements `driver.Validator`,
+so a concurrently closing `sql.Conn` cannot return a discarded socket to the
+pool. Healthy commits and rollbacks preserve normal pool reuse. `ErrTxDone` from
+a concurrent terminal caller is not itself a failure: all callers join the same
+driver result, and `sync.Once` releases the private connection only once. Failed
+BEGIN also publishes cleanup; a BEGIN that never enters the driver has nothing
+to join. Original transaction errors take precedence over cleanup errors.
+
+There is one capability check using `Conn.Raw` before BEGIN and no Raw call after
+the transaction starts. This avoids a Go 1.25.12 `database/sql` race observed in
+the scheduler TERM fixture: `Conn.grabConn` checks `done` before taking its read
+lock, so concurrent automatic rollback can clear the driver pointer before Raw
+uses it. Driver completion alone cannot make a subsequent Raw safe, because
+database/sql releases its connection after the driver method returns. Closing
+and invalidating failed connections inside the driver boundary removes the
+need for that access. No panic recovery or retained native pointer bypasses the
+database/sql ownership rules.
+
+Production composition roots and integration databases that invoke owned
+transactions use `database.OpenDB`. The scheduling fixture composes its real-pgx
+barriers through `database.WrapConnector`. `stdlib.OpenDBFromPool` is unsupported:
+its driver close returns a connection to another pool rather than closing the
+socket. This is an internal owned-pgx contract, not a general driver abstraction.
 
 Successful synchronous transaction completion has a server acknowledgement.
 For failed/cancelled work, joining local socket cleanup does not assert that the
@@ -56,6 +76,13 @@ Callers and lifecycle admission remain blocked through both controlled cleanup
 stages. The tests subsequently await server lock release and verify durable state.
 Synthetic business tables are transaction sentinels, not Django parity evidence.
 Separate actual-Beat publication and full Django/Go adapters cover those schemas.
+
+Additional `internal/database` unit tests control the database/sql driver
+boundary before and after SQL releases its transaction lease. They cover
+concurrent terminal callers, cancelled rollback with independent cleanup,
+unentered and failed BEGIN, failed COMMIT including ErrBadConn, and successful
+pool reuse. They supplement the required PostgreSQL tests; they do not substitute
+for real SQL cancellation, physical socket cleanup or process shutdown evidence.
 
 ```sh
 python TESTS/adapters/go/transaction_lifetime.py

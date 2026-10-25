@@ -22,13 +22,22 @@ function endpoint(url) {
 function increment(counts, key) { counts[key] = Math.min(1000, (counts[key] || 0) + 1); }
 
 export function observeInitialPairing(page) {
-    const responses = {}, failedRequests = {}, pageErrors = {};
+    const responses = {}, failedRequests = {}, pageErrors = {}, pageErrorDetails = [];
     const response = value => {
         const path = endpoint(value.url()), status = value.status();
         if (path && Number.isInteger(status) && status >= 100 && status <= 599) responses[path] = status;
     };
     const failed = value => { const path = endpoint(value.url()); if (path) increment(failedRequests, path); };
-    const error = value => increment(pageErrors, errorKinds.has(value.name) ? value.name : 'Other');
+    const error = value => {
+        const name = errorKinds.has(value?.name) ? value.name : 'Other';
+        increment(pageErrors, name);
+        if (pageErrorDetails.length >= 5) return;
+        const category = ['Cannot read properties', 'not defined', 'Failed to fetch dynamically imported module', 'MIME type', 'Timeout', 'JSON.parse']
+            .find(text => String(value?.message || '').includes(text)) || 'unclassified';
+        const assetFrames = [...String(value?.stack || '').matchAll(/\/build-assets\/([A-Za-z0-9_.-]{1,128}\.js):(\d{1,9}):(\d{1,9})/g)]
+            .slice(0, 5).map(match => ({asset: match[1], line: Number(match[2]), column: Number(match[3])}));
+        pageErrorDetails.push({name, category, assetFrames});
+    };
     page.on('response', response); page.on('requestfailed', failed); page.on('pageerror', error);
     return {
         stop() { page.off('response', response); page.off('requestfailed', failed); page.off('pageerror', error); },
@@ -53,7 +62,8 @@ export function observeInitialPairing(page) {
                 catch { /* Page may have closed after the failure. */ }
             }
             return {version: 1, phase: 'initial-pairing', route, button, messages: visible,
-                responses: {...responses}, failedRequests: {...failedRequests}, pageErrors: {...pageErrors}};
+                responses: {...responses}, failedRequests: {...failedRequests}, pageErrors: {...pageErrors},
+                pageErrorDetails: pageErrorDetails.map(row => ({...row, assetFrames: row.assetFrames.map(frame => ({...frame}))}))};
         },
     };
 }

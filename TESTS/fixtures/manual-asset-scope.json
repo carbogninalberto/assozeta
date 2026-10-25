@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "scope": "Authored expected asset bytes and denials for the installed manual asset scope differential; expectations were fixed before either backend ran.",
+  "artifacts": {
+    "shared": {
+      "sha256": "5d32879481f78804a783e963a802676fdcdef68dcbe71f25625ef2321282f2a5"
+    },
+    "target": {
+      "sha256": "21caddeb74cab1fe937bb0fd5aac72fde7ee96d7a5b3e6a5043eb726315c6d22"
+    },
+    "feature": {
+      "sha256": "461a03c315cc6df6795e1733460dc22a9005f0b089b4638badf3404020c2c548"
+    },
+    "private": {
+      "sha256": "8d2fd7edaf502943d715e0cc154490e346cf246589ebd11cb27272c3ea4aa141"
+    },
+    "draft": {
+      "sha256": "6a6fcb5f419f549dc208d094895222d35c730e48d0fcfc3c0d8fb152eebdec45"
+    },
+    "unrelated": {
+      "sha256": "04fd811152209ed7578306c6fd2f21ecae2199303e88c1722248491f4d92101d"
+    }
+  },
+  "cases": [
+    {
+      "name": "baseline-shared",
+      "asset_path": "images/shared.png",
+      "features": [],
+      "expected": {
+        "access": "bytes",
+        "artifact": "shared"
+      }
+    },
+    {
+      "name": "inaccessible-bad-source-ignored",
+      "asset_path": "images/target.png",
+      "features": [],
+      "bundle_variant": "inaccessible-bad-source",
+      "expected": {
+        "access": "bytes",
+        "artifact": "target"
+      }
+    },
+    {
+      "name": "unrelated-bad-source-ignored",
+      "asset_path": "images/target.png",
+      "features": [],
+      "bundle_variant": "unrelated-bad-source",
+      "expected": {
+        "access": "bytes",
+        "artifact": "target"
+      }
+    },
+    {
+      "name": "feature-hidden",
+      "asset_path": "images/feature.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "feature-enabled",
+      "asset_path": "images/feature.png",
+      "features": [
+        "self_hosted"
+      ],
+      "expected": {
+        "access": "bytes",
+        "artifact": "feature"
+      }
+    },
+    {
+      "name": "maintainer-audience-hidden",
+      "asset_path": "images/private.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "pending-status-hidden",
+      "asset_path": "images/draft.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "wrong-application-revision",
+      "asset_path": "images/target.png",
+      "features": [],
+      "revision": "other-revision",
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "wrong-release",
+      "asset_path": "images/target.png",
+      "features": [],
+      "release": "other-release",
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "missing-requested-image",
+      "asset_path": "images/missing.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "tampered-requested-image",
+      "asset_path": "images/tampered.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "requested-image-missing-hash",
+      "asset_path": "images/no-hash.png",
+      "features": [],
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "malformed-image-structure",
+      "asset_path": "images/target.png",
+      "features": [],
+      "bundle_variant": "malformed-image-structure",
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "invalid-index-seal",
+      "asset_path": "images/target.png",
+      "features": [],
+      "bundle_variant": "invalid-index-seal",
+      "expected": {
+        "access": "denied"
+      }
+    },
+    {
+      "name": "invalid-bundle-receipt",
+      "asset_path": "images/target.png",
+      "features": [],
+      "bundle_variant": "bad-receipt",
+      "expected": {
+        "access": "denied"
+      }
+    }
+  ],
+  "sequences": [
+    {
+      "name": "referring-source-change-restore",
+      "features": [],
+      "stages": [
+        {
+          "name": "original",
+          "writes": {},
+          "checks": [
+            {
+              "asset_path": "images/target.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "target"
+              }
+            }
+          ]
+        },
+        {
+          "name": "referring-source-changed",
+          "writes": {
+            "BE/z.py": "changed"
+          },
+          "checks": [
+            {
+              "asset_path": "images/target.png",
+              "expected": {
+                "access": "denied"
+              }
+            }
+          ]
+        },
+        {
+          "name": "referring-source-restored",
+          "writes": {
+            "BE/z.py": "original"
+          },
+          "checks": [
+            {
+              "asset_path": "images/target.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "target"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shared-image-current-reference",
+      "features": [],
+      "stages": [
+        {
+          "name": "original",
+          "writes": {},
+          "checks": [
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "shared"
+              }
+            }
+          ]
+        },
+        {
+          "name": "first-reference-changed",
+          "writes": {
+            "BE/a.py": "changed"
+          },
+          "checks": [
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "shared"
+              }
+            }
+          ]
+        },
+        {
+          "name": "both-references-changed",
+          "writes": {
+            "BE/runtime.py": "changed"
+          },
+          "checks": [
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "denied"
+              }
+            }
+          ]
+        },
+        {
+          "name": "both-references-restored",
+          "writes": {
+            "BE/a.py": "original",
+            "BE/runtime.py": "original"
+          },
+          "checks": [
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "shared"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shared-security-change-restore",
+      "features": [],
+      "stages": [
+        {
+          "name": "shared-security-changed",
+          "writes": {
+            "BE/core/authentication.py": "changed"
+          },
+          "checks": [
+            {
+              "asset_path": "images/target.png",
+              "expected": {
+                "access": "denied"
+              }
+            },
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "denied"
+              }
+            }
+          ]
+        },
+        {
+          "name": "shared-security-restored",
+          "writes": {
+            "BE/core/authentication.py": "original"
+          },
+          "checks": [
+            {
+              "asset_path": "images/target.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "target"
+              }
+            },
+            {
+              "asset_path": "images/shared.png",
+              "expected": {
+                "access": "bytes",
+                "artifact": "shared"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

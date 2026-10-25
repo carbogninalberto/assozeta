@@ -98,7 +98,9 @@ def _request(base, case, token, session, request_id):
         client.close()
 
 
-def run(work, log, tool_env, address):
+def run(work, log, tool_env, address, *, go_server_factory=None, output=OUTPUT,
+        database_name='assozeta_contract_accounts',
+        database_host_prefix='/tmp/az-accounts-'):
     from auditlog.context import disable_auditlog
     from django.apps import apps
     from django.core.asgi import get_asgi_application
@@ -113,10 +115,11 @@ def run(work, log, tool_env, address):
     import redis
     import uvicorn
 
-    assert connections['default'].settings_dict['NAME'] == 'assozeta_contract_accounts'
-    assert str(connections['default'].settings_dict['HOST']).startswith('/tmp/az-accounts-')
-    OUTPUT.mkdir(parents=True, exist_ok=True)
-    receipt = OUTPUT / 'http-results.json'
+    assert connections['default'].settings_dict['NAME'] == database_name
+    assert str(connections['default'].settings_dict['HOST']).startswith(database_host_prefix)
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    receipt = output / 'http-results.json'
     report = {'success': False, 'cleanup_verified': False, 'workloads': [],
               'complete_route_parity': False,
               'caddy_containers': [],
@@ -259,9 +262,16 @@ def run(work, log, tool_env, address):
         replay(django_base, 'django', True)
         if go_requested:
             from TESTS.adapters.go.payment_category_server import native_server
-            with native_server(work, log, tool_env, address, versioned=versioned) as runtime:
-                report['native_binary_sha256'] = hashlib.sha256(
-                    (work / 'payment-categories-server').read_bytes()).hexdigest()
+            server_factory = go_server_factory or native_server
+            native = go_server_factory is None
+            with server_factory(work, log, tool_env, address, versioned=versioned) as runtime:
+                if native:
+                    report['native_binary_sha256'] = hashlib.sha256(
+                        (work / 'payment-categories-server').read_bytes()).hexdigest()
+                else:
+                    packaged_digest = runtime.get('metadata', {}).get('server_sha256')
+                    assert packaged_digest, 'Packaged server did not expose its binary digest'
+                    report['packaged_binary_sha256'] = packaged_digest
                 replay(runtime['base_url'], 'go', False)
                 if versioned:
                     from TESTS.adapters.caddy import proxy

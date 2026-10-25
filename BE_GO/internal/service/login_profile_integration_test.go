@@ -15,10 +15,10 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -58,7 +58,7 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 	}
 	counter := &profileQueries{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	flow := NewLoginProfiles(repository.NewLoginProfiles(db), func() time.Time { return fixture.Now })
@@ -116,7 +116,7 @@ func TestLoginProfileAgainstDjango(t *testing.T) {
 		}
 		deniedCfg := cfg.Copy()
 		deniedCfg.RuntimeParams["role"] = "profile_onboarding_denied"
-		deniedDB := sqlx.NewDb(stdlib.OpenDB(*deniedCfg), "pgx")
+		deniedDB := sqlx.NewDb(ownedpgx.OpenDB(*deniedCfg), "pgx")
 		defer deniedDB.Close()
 		deniedDB.SetMaxOpenConns(1)
 		deniedFlow := NewLoginProfiles(repository.NewLoginProfiles(deniedDB), func() time.Time { return fixture.Now })

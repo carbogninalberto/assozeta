@@ -13,11 +13,12 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -28,8 +29,13 @@ func TestJobOwnershipPostgres(t *testing.T) {
 	if dsn == "" {
 		t.Fatal("private ownership PostgreSQL fixture required; no skipped integration")
 	}
-	db, err := sqlx.Connect("pgx", dsn)
+	dbConfig, err := pgx.ParseConfig(dsn)
 	if err != nil {
+		t.Fatal("private database unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("private database unavailable")
 	}
 	defer db.Close()

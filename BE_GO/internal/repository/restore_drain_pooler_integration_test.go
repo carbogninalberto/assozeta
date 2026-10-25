@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -83,7 +83,7 @@ func poolerOpenRuntime(cfg *pgx.ConnConfig, failCancel bool, t *poolerTrace) *sq
 			return dial(ctx, n, a)
 		}
 	}
-	db := sqlx.NewDb(stdlib.OpenDB(*c), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*c), "pgx")
 	db.SetMaxOpenConns(1)
 	return db
 }
@@ -108,12 +108,12 @@ func TestRestoreDrainPooler(t *testing.T) {
 	if cfg.Port == adminCfg.Port {
 		panic("runtime must use distinct PgBouncer port")
 	}
-	admin := sqlx.NewDb(stdlib.OpenDB(*adminCfg), "pgx")
+	admin := sqlx.NewDb(ownedpgx.OpenDB(*adminCfg), "pgx")
 	defer admin.Close()
 	fmt.Printf("RUNTIME pool_port=%d direct_admin_port=%d mode=transaction shared_key=(1095981639,1381192786)\n", cfg.Port, adminCfg.Port)
-	a := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	a := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer a.Close()
-	b := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	b := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer b.Close()
 	ta, e := a.BeginTxx(ctx, nil)
 	poolerMust(e)
@@ -174,7 +174,7 @@ func TestRestoreDrainPooler(t *testing.T) {
 		panic("caller did not complete")
 	}
 	select {
-	case <-owned.cleanup:
+	case <-owned.completion.Wait().Cleanup:
 	default:
 		panic("local helper cleanup absent")
 	}
@@ -324,7 +324,7 @@ func TestRestoreDrainPooler(t *testing.T) {
 		panic("CLI writer cleanup timeout")
 	}
 	select {
-	case <-cliOwned.cleanup:
+	case <-cliOwned.completion.Wait().Cleanup:
 	default:
 		panic("CLI writer local cleanup absent")
 	}

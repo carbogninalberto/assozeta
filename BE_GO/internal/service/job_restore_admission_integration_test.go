@@ -11,10 +11,12 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -38,8 +40,13 @@ func TestJobRestoreAdmissionDjango(t *testing.T) {
 		t.Fatal("missing declared job admission cases")
 	}
 	dsn := os.Getenv("ASSOZETA_JOB_TEST_DSN")
-	db, err := sqlx.Connect("pgx", dsn)
+	dbConfig, err := pgx.ParseConfig(dsn)
 	if err != nil {
+		t.Fatal("private database unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("private database unavailable")
 	}
 	defer db.Close()

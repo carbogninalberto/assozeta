@@ -18,13 +18,13 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/jwt"
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/loginimage"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -142,7 +142,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 	}
 	counter := &responseQueries{}
 	cfg.Tracer = counter
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	images, err := loginimage.NewProcessor(os.Getenv("ASSOZETA_LOGIN_JPEG_CODEC"), loginimage.ProcessorLimits{
@@ -298,7 +298,7 @@ func TestLoginResponsePostgres(t *testing.T) {
 	t.Run("instructor permission required only for collaborator", func(t *testing.T) {
 		restricted := cfg.Copy()
 		restricted.RuntimeParams["role"] = "login_instructor_denied"
-		roleDB := sqlx.NewDb(stdlib.OpenDB(*restricted), "pgx")
+		roleDB := sqlx.NewDb(ownedpgx.OpenDB(*restricted), "pgx")
 		defer roleDB.Close()
 		roleDB.SetMaxOpenConns(1)
 		for _, tc := range []responseFixtureCase{fixture.Cases[6], fixture.Cases[14]} {

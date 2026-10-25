@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/testutil/transactionbarrier"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,7 +27,7 @@ func TestOwnedTransactionPostgres(t *testing.T) {
 		t.Fatal("required private owned-stdlib PostgreSQL fixture")
 	}
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	admin := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	admin := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer admin.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -143,6 +143,7 @@ func TestOwnedTransactionPostgres(t *testing.T) {
 
 	t.Run("concurrent repeated completion joins one driver operation", func(t *testing.T) {
 		db, control := fresh(t)
+		before := pid(t, db)
 		tx, e := beginOwnedTransaction(ctx, db, nil)
 		if e != nil {
 			t.Fatal(e)
@@ -164,8 +165,8 @@ func TestOwnedTransactionPostgres(t *testing.T) {
 			t.Fatal(a, b)
 		}
 		rowReleased(t)
-		if value(t) != 1 || db.Stats().InUse != 0 {
-			t.Fatal("repeat completion leaked ownership")
+		if value(t) != 1 || db.Stats().InUse != 0 || pid(t, db) != before {
+			t.Fatal("repeat completion leaked ownership or discarded successful rollback")
 		}
 	})
 

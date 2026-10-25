@@ -16,11 +16,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -35,7 +35,7 @@ func TestDurableJobsPostgres(t *testing.T) {
 	}
 	queries := &jobQueryCounter{}
 	cfg.Tracer = queries
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	err = db.Ping()
 	if err != nil {
 		t.Fatal("private PostgreSQL unavailable")
@@ -607,8 +607,13 @@ func TestDurableJobCrashChild(t *testing.T) {
 	if os.Getenv("ASSOZETA_JOB_CRASH_CHILD") == "" {
 		return
 	}
-	db, err := sqlx.Connect("pgx", os.Getenv("ASSOZETA_JOB_TEST_DSN"))
+	dbConfig, err := pgx.ParseConfig(os.Getenv("ASSOZETA_JOB_TEST_DSN"))
 	if err != nil {
+		t.Fatal("private child database unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("private child database unavailable")
 	}
 	defer db.Close()

@@ -13,10 +13,12 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
@@ -26,8 +28,13 @@ func TestJobExecutorPostgres(t *testing.T) {
 	if dsn == "" {
 		t.Fatal("run TESTS/adapters/go/jobs.py")
 	}
-	db, err := sqlx.Connect("pgx", dsn)
+	dbConfig, err := pgx.ParseConfig(dsn)
 	if err != nil {
+		t.Fatal("private PostgreSQL unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("private PostgreSQL unavailable")
 	}
 	defer db.Close()

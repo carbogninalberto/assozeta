@@ -14,12 +14,12 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/migrations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -64,7 +64,7 @@ func TestQueueServerFence(t *testing.T) {
 		t.Fatal("explicit private fixture database required")
 	}
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	admin := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	admin := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer admin.Close()
 	fenceMust(t, migrations.Apply(dsn))
 	_, err = admin.Exec(`UPDATE assozeta_go_job_ownership SET runtime='go',generation=2`)
@@ -98,7 +98,7 @@ func TestQueueServerFence(t *testing.T) {
 					}
 					return dial(c, n, a)
 				}
-				db := sqlx.NewDb(stdlib.OpenDB(*local), "pgx")
+				db := sqlx.NewDb(ownedpgx.OpenDB(*local), "pgx")
 				db.SetMaxOpenConns(1)
 				db.SetMaxIdleConns(1)
 				defer func() {

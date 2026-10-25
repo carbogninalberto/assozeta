@@ -45,7 +45,8 @@ def go_source_hashes(source):
     """Bind the full owned build context; usable by the CI build receipt step."""
     return {str(path.relative_to(source)): hashlib.sha256(path.read_bytes()).hexdigest()
               for path in sorted((source / 'BE_GO').rglob('*'))
-              if path.is_file() and not any(part in path.parts for part in ('quality-reports', '.git'))}
+              if path.is_file() and not any(part in path.relative_to(source).parts
+                                          for part in ('quality-reports', '.git'))}
 
 
 def build_source_matches(source, manifest):

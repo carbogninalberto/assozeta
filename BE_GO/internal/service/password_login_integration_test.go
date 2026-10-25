@@ -15,9 +15,10 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -45,8 +46,13 @@ func TestPasswordLoginAgainstDjango(t *testing.T) {
 	if json.Unmarshal(raw, &fixture) != nil || len(fixture.Cases) == 0 {
 		t.Fatal("invalid synthetic fixture")
 	}
-	db, err := sqlx.Connect("pgx", dsn)
+	dbConfig, err := pgx.ParseConfig(dsn)
 	if err != nil {
+		t.Fatal("private database unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("private database unavailable")
 	}
 	defer db.Close()
@@ -182,8 +188,13 @@ func TestPasswordLoginTransactionsAndBounds(t *testing.T) {
 	if json.Unmarshal(data, &fixture) != nil || len(fixture.Batches) != 5 {
 		t.Fatal("five query-size fixtures required")
 	}
-	db, err := sqlx.Connect("pgx", os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
+	dbConfig, err := pgx.ParseConfig(os.Getenv("ASSOZETA_ACCOUNT_TEST_DSN"))
 	if err != nil {
+		t.Fatal("database unavailable")
+	}
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	if err = db.Ping(); err != nil {
+		_ = db.Close()
 		t.Fatal("database unavailable")
 	}
 	defer db.Close()

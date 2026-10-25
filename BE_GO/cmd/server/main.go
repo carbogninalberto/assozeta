@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/config"
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
@@ -30,7 +31,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/loginimage"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
@@ -72,7 +72,7 @@ func run() error {
 	}
 	// Transaction poolers cannot retain prepared statements across transactions.
 	dbConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
-	db := sqlx.NewDb(stdlib.OpenDB(*dbConfig), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)

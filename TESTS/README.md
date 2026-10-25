@@ -1272,3 +1272,21 @@ and owned cleanup. Run its negative controls with
 `python -m unittest TESTS.test_payment_category_shutdown_oracle -v`. Django
 process shutdown, other operations and packaged/installed lifecycle remain
 separate acceptance requirements.
+
+
+The same locale matrix can run against a source-bound image with
+`python TESTS/adapters/go/read_route_locales_image.py --image IMAGE_ID
+--expected-revision FULL_SHA --build-receipt RECEIPT --output DIRECTORY`.
+For a frozen build context, add `--go-source CHECKOUT`. Run portable provenance
+controls with `python -m unittest TESTS.adapters.go.test_read_route_locales_image`.
+Receipts include actual image/executable/source identity and shipped locale
+notice bytes; a matching base revision alone does not authorize a dirty build.
+
+`python TESTS/adapters/django/manual_asset_scope.py` compares 15 independent
+manual-image cases and three mutation sequences (11 checks) against Django and
+Go. It verifies accessible/referring source selection without weakening global
+bundle validation. Use the pinned production Python interpreter and Go.
+
+The permission editor's actual DOM interaction check is
+`node UI/scripts/test-permissions-component.mjs`, with UI dependencies and the
+normal browser harness's Chromium installed.

@@ -81,6 +81,8 @@ jobs:
           python TESTS/adapters/django/manual_availability.py
           python TESTS/adapters/django/manual_bundle.py
           python TESTS/adapters/django/manual_reader_library.py
+          mkdir -p quality-reports/go-migration/manual-asset-scope
+          python TESTS/adapters/django/manual_asset_scope.py > quality-reports/go-migration/manual-asset-scope/results.json
           python TESTS/adapters/django/manual_retrieval.py
           python TESTS/adapters/django/manual_reader_http.py --tools --go-source
           TESTS_MANUAL_TOOL_REPORT=quality-reports/go-migration/manual-tools-go-library/results.json \
@@ -191,6 +193,7 @@ jobs:
             quality-reports/go-migration/manual-availability/
             quality-reports/go-migration/manual-bundle/
             quality-reports/go-migration/manual-reader/
+            quality-reports/go-migration/manual-asset-scope/results.json
             quality-reports/go-migration/manual-retrieval/
             quality-reports/go-migration/manual-tools/
             quality-reports/go-migration/manual-tools-go-library/
@@ -766,7 +769,7 @@ jobs:
               subprocess.run(['docker', 'pull', image], check=True)
           PY
           python - <<'PY'
-          import json, os, re, subprocess
+          import hashlib, json, os, re, subprocess, tempfile, uuid
           from pathlib import Path
           from TESTS.adapters.go.impersonation_management_image import go_source_hashes
           root = Path.cwd()
@@ -783,6 +786,16 @@ jobs:
                               '--iidfile', str(output / 'image-id'), '-t', 'assozeta-go-pwa:test', 'BE_GO'], check=True)
               receipt['image_id'] = (output / 'image-id').read_text().strip()
               assert re.fullmatch('sha256:[0-9a-f]{64}', receipt['image_id'])
+              assert receipt['source_sha256'], 'Build source manifest must not be empty'
+              container = 'az-ci-image-digest-' + uuid.uuid4().hex
+              try:
+                  subprocess.run(['docker', 'create', '--pull', 'never', '--name', container, receipt['image_id']], check=True, capture_output=True)
+                  with tempfile.TemporaryDirectory() as directory:
+                      binary = Path(directory) / 'server'
+                      subprocess.run(['docker', 'cp', container + ':/app/server', str(binary)], check=True)
+                      receipt['server_sha256'] = hashlib.sha256(binary.read_bytes()).hexdigest()
+              finally:
+                  subprocess.run(['docker', 'rm', container], check=True, capture_output=True)
               receipt['source_stable'] = go_source_hashes(root) == receipt['source_sha256']
               assert receipt['source_stable']
               receipt['success'] = True
@@ -799,6 +812,18 @@ jobs:
             --image assozeta-go-pwa:test --expected-revision "${{ github.sha }}" --with-go \
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test/index.mjs \
             --output quality-reports/go-migration/instance-pwa-browser
+      - name: Verify packaged read-route language contracts and licenses
+        run: |
+          python -m unittest TESTS.adapters.go.test_read_route_locales_image TESTS.contracts.test_read_route_locales -v
+          LC_ALL=C LANG=C python TESTS/adapters/go/read_route_locales_image.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --output quality-reports/go-migration/read-route-locales-image
+      - name: Verify permission editor rendering and real DOM updates
+        run: |
+          npm ci --prefix UI
+          node UI/scripts/test-permissions-component.mjs
       - name: Verify unchanged impersonation controls and durable outcomes
         # Reuse the same immutable Go and UI builds. Explicit Django dependencies
         # remain visible; this does not claim installed backend activation.
@@ -842,3 +867,5 @@ jobs:
             quality-reports/go-migration/impersonation-browser/v*/*.png
             quality-reports/go-migration/impersonation-browser-ui/provenance.json
             quality-reports/go-migration/impersonation-browser-build/results.json
+            quality-reports/go-migration/read-route-locales-image/results.json
+            quality-reports/go-migration/read-route-locales-image/http-results.json

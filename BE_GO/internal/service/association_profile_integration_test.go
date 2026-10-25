@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -59,7 +59,7 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 	}
 	queries := &associationQueries{}
 	cfg.Tracer = queries
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	defer db.Close()
 	db.SetMaxOpenConns(4)
 	profiles := NewAssociationProfiles(repository.NewAssociationProfiles(db), func() time.Time { return fixture.Now })
@@ -147,7 +147,7 @@ func TestAssociationProfileAgainstDjango(t *testing.T) {
 	t.Run("required group failure returns no partial association", func(t *testing.T) {
 		deniedCfg := cfg.Copy()
 		deniedCfg.RuntimeParams["role"] = "association_groups_denied"
-		deniedDB := sqlx.NewDb(stdlib.OpenDB(*deniedCfg), "pgx")
+		deniedDB := sqlx.NewDb(ownedpgx.OpenDB(*deniedCfg), "pgx")
 		defer deniedDB.Close()
 		deniedDB.SetMaxOpenConns(1)
 		flow := NewAssociationProfiles(repository.NewAssociationProfiles(deniedDB), func() time.Time { return fixture.Now })

@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -39,7 +39,7 @@ func openPaymentCategoryIntegrationDB(t *testing.T) *sqlx.DB {
 		t.Fatal("required private payment-category PostgreSQL fixture")
 	}
 	cfg.DefaultQueryExecMode = pgx.QueryExecModeExec
-	db := sqlx.NewDb(stdlib.OpenDB(*cfg), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*cfg), "pgx")
 	db.SetMaxOpenConns(8)
 	db.SetMaxIdleConns(8)
 	t.Cleanup(func() { _ = db.Close() })

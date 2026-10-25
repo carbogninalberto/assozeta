@@ -55,18 +55,11 @@ func (l *Loader) publicBundle(ctx context.Context, features []string) (*PublicBu
 	if !ok {
 		return nil, ErrReaderUnavailable
 	}
-	stale, err := stalePublicSections(ctx, index, chunks, l.settings.SourceRoot)
-	if err != nil {
-		return nil, err
-	}
 	enabled := map[string]bool{}
 	for _, feature := range features {
 		enabled[feature] = true
 	}
-	result := &PublicBundle{root: l.settings.BundlePath, ids: []string{}}
-	if result.root == "" {
-		result.root = "."
-	}
+	candidates := []any{}
 	for _, raw := range chunks {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -89,12 +82,8 @@ func (l *Loader) publicBundle(ctx context.Context, features []string) (*PublicBu
 		if audience != "public" {
 			continue
 		}
-		id, ok := chunk["id"].(string)
-		if !ok {
+		if _, ok := chunk["id"].(string); !ok {
 			return nil, ErrReaderUnavailable
-		}
-		if stale[id] {
-			continue
 		}
 		required, present := chunk["features"]
 		if !present {
@@ -105,6 +94,22 @@ func (l *Loader) publicBundle(ctx context.Context, features []string) (*PublicBu
 			return nil, err
 		}
 		if !applicable {
+			continue
+		}
+		candidates = append(candidates, chunk)
+	}
+	stale, err := stalePublicSections(ctx, index, candidates, l.settings.SourceRoot)
+	if err != nil {
+		return nil, err
+	}
+	result := &PublicBundle{root: l.settings.BundlePath, ids: []string{}}
+	if result.root == "" {
+		result.root = "."
+	}
+	for _, raw := range candidates {
+		chunk := raw.(map[string]any)
+		id := chunk["id"].(string)
+		if stale[id] {
 			continue
 		}
 		result.ids = append(result.ids, id)

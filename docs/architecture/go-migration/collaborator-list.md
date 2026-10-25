@@ -107,3 +107,20 @@ Other localized errors and shared handler behavior remain open. Historical data,
 complete release rehearsal, operator activation and full performance acceptance
 are not established by this route's current-schema checks. No ledger entry is
 promoted to verified on this evidence.
+
+
+## Browser reference correction
+
+The actual collaborator list mounts its edit modal for each custom collaborator.
+An existing object-valued permission field made that modal call `.includes` on
+an object and crash the whole list. Actual Svelte server rendering reproduced
+this independently of the migration fixture. The shared component now renders
+non-array values as unchecked without mutating the bound value. Only an explicit
+editing action produces a new permission array. Valid arrays preserve existing
+semantics; inline reactive checks retain external prop updates.
+
+Five actual-component rendering tests and a real Chromium DOM interaction check
+cover malformed values, external updates, individual/group/all selection and
+clearing. All 168 UI tests pass. This is a bounded reference correction applied
+to the same frontend artifact for both backends; it does not change backend
+authorization or normalize stored data. Complete list browser acceptance on both backends remains open.

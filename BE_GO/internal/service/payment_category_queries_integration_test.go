@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
+	ownedpgx "github.com/carbogninalberto/assozeta/BE_GO/internal/database"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -60,7 +60,7 @@ func paymentCategoryTracedDB(t *testing.T, trace *paymentCategoryQueryTrace) *sq
 	}
 	config.DefaultQueryExecMode = pgx.QueryExecModeExec
 	config.Tracer = trace
-	db := sqlx.NewDb(stdlib.OpenDB(*config), "pgx")
+	db := sqlx.NewDb(ownedpgx.OpenDB(*config), "pgx")
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
 	t.Cleanup(func() { _ = db.Close() })

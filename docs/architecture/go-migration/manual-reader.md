@@ -270,3 +270,30 @@ causal relationship with the individual failures. The failed batch was retained;
 generation, package verification and release export were not counted as passing.
 All owned services, volumes and networks were removed. The failed batch never
 reached generation, verification, indexing, evaluation or release-package export.
+
+
+## Accessible screenshot source scope
+
+Main `fdf6c77` limits runtime asset source checks to accessible sections that
+refer to the requested image. Go now applies the same audience, feature and
+image selection before checking source freshness. An unrelated or inaccessible
+section cannot invalidate an otherwise accessible screenshot. Shared dependency
+checks, digest validation and strict whole-bundle validation remain enforced.
+
+`TESTS/adapters/django/manual_asset_scope.py` executes 15 authored cases and
+three mutation sequences with 11 stage checks against actual Django and Go
+reader implementations. Parent execution passes all 26 comparisons, including
+malformed image structure and source changes between reads. The old Go reader
+fails three authored cases. The existing 36-case reader oracle and full Go race
+suite/vet also pass. Inputs and before/after source hashes remain in
+`quality-reports/go-migration/parallel-delivery-20261025/manual-asset-scope-parent-results.json`.
+This proof concerns reader behavior, not a complete released manual package.
+
+The separate frozen manual producer at application `288ad72` / companion
+`378421a` finished with 57 of 60 captures passing. Attendance readiness,
+instructor baseline comparison and print download failed; package verification
+did not run. There is no valid manifest for reusing those captures, and current
+shared tooling changes invalidate their reuse. Preserve the failed receipts.
+The captured UI artifact remains independently reusable only through the normal
+frontend source/environment compatibility gate. No companion or release was
+published.
