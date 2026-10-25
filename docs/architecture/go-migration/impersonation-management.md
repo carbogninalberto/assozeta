@@ -251,7 +251,18 @@ The parent repeats the full browser workflow after this correction: both version
 pass all 17 checkpoints and 12 audits, with 95/0 selected Django requests, exact
 state/cache checks, source stability and cleanup. Receipts are under
 `quality-reports/go-migration/impersonation-browser-readiness-parent/`.
-Hosted confirmation of the correction remains pending.
+Hosted confirmation now passes: job `120787942110` in quality run `40065544973`
+at `6d18bc7` completes both browser versions, all 17 checkpoints and 12 audits per
+version, with 94/0 selected Django requests. The parent verifies all 445 oracle
+hashes against the tested commit and all 837 Go build inputs. Linux/amd64 image
+`sha256:ab193ef001ad485d5de99cd333142d81b33578a8c08125d13ac3a53220d440b0`
+embeds PR merge `473958ef37c231ab5750aacc00bca0e7dc1a98b9`, runs read-only as
+UID 10001 and has no mounted executables. The real successful fallback is rejected;
+all 128 managed-model checks, cache checks and owned-resource cleanup pass.
+Retained evidence is under `impersonation-browser-ci-6d18bc7/`, including the
+parent audit. This is evidence for that committed source, not a fresh browser run
+after the `dc4735d` rebase; its two changed manual helper hashes are recorded
+explicitly and the Go build inputs remain identical.
 
 ## Remaining acceptance
 

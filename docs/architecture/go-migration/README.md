@@ -4,8 +4,8 @@
 accepted scope is retained in [requirements.md](requirements.md). Passing the
 foundation checks below does not establish backend parity.
 
-Baseline: `main` through `79a9460`, including the deleted-payment category/VAT
-export correction and earlier manual-delivery changes. Worktree branch:
+Baseline: `main` through `dc4735d`, including reader corpus/release binding,
+retained-capture validation and the earlier deleted-payment export correction. Worktree branch:
 `codex/go-backend-parity`. The ledger retains all 514 declarations: 44 implementing,
 461 uncharacterized, 5 needing review, 4 deprecated and **0 verified**. Production
 installations remain unchanged.

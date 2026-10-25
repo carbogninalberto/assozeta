@@ -255,7 +255,12 @@ The first hosted impersonation-browser step at `6661d9d` fails on the private
 gateway's initial connection reset, before Chromium starts. Its other browser
 workloads pass. A startup-only bounded retry now passes a real reset/503/200
 regression and the independently repeated full browser matrix; business failures
-remain strict. Hosted confirmation of this harness correction is pending.
+remain strict. Hosted job `120787942110` at `6d18bc7` now passes both versions,
+17 checkpoints and 12 audits each, with 94/0 selected Django requests, full
+state/cache checks and cleanup. The parent audits 445 oracle and 837 Go build
+hashes. All 17 jobs in quality run `40065544973` pass, including the separate
+collaborator native/image gate. The two independent manual workflows still fail;
+quality success does not imply manual publication or complete release acceptance.
 
 The [public logo](instance-logo.md) has dedicated transport/service/storage
 boundaries and retains the S3 default-storage selection, candidate precedence,
@@ -537,3 +542,35 @@ Association/course memberships, payments and supported communications remain in
 scope. Historical backup skips remain limited to `BillingPlan` and
 `PreviewAndCustomFeatures`; missing Go support cannot expand that allowlist.
 Existing installations must retain Django until explicit, verified activation.
+
+
+## Main alignment and recovered manual producer (2026-10-25)
+
+The migration branch is rebased onto `main@dc4735d`. A conflict in the reviewed
+export-source comment is resolved while preserving the identical source hash and
+upstream reader corpus/release binding. Go implementation and build-context bytes
+remain unchanged. All 172 manual Python tests, 79 browser-helper tests and 21
+inventory tests pass after the rebase; the catalog remains consistent. The hosted
+`6d18bc7` evidence above is retained under its actual
+revision; it is not relabeled as post-rebase acceptance.
+
+The completed `6661d9d` manual producer passes all 60 fresh captures, compilation,
+rendering, MCP/cited-answer evaluation and packaging with no external actions.
+Its appliance gate fails on the then-missing Go `/collaborators/list` route. Capture
+and appliance container/volume/network cleanup is recorded; not every retained
+image has deletion proof. The package remains bound to `6661d9d` and must not be
+retargeted. A new package must use the supported producer at a committed target
+and reassess capture reuse after the upstream tooling changes. The unchanged full
+installed contract, including collaborator listing, remains mandatory.
+
+A separate, unintegrated deletion correction has a real 12-case Django HTTP green
+following preserved ownership and partial-commit reds. Seven PostgreSQL trigger
+faults now roll back user/invitation/audit/index writes; foreign same-email users
+survive. Independent DeepSeek review identifies invitation-acceptance races,
+ambiguous email linkage and cascade/history gaps. Lock tests are in progress; no
+Go DELETE implementation or full deletion parity is claimed by this checkpoint.
+
+A read-only capacity probe finds only 411,728 KiB available in the Docker VM
+before the next rehearsal; its temporary container is removed. The producer is
+not started under that capacity constraint. This is an unexecuted acceptance
+gate, not a successful release result.

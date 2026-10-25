@@ -83,7 +83,20 @@ independently tested `accounts.py` dispatch merge retaining the concurrency flag
 the image fixture invokes the shared oracle directly. Parent inspection is saved
 in `collaborator-list/parent-image-audit.json`. CI uses the same immutable build
 as the impersonation job, retains separate safe collaborator receipts, and runs
-both the native repository and packaged gates. Hosted confirmation is pending.
+both the native repository and packaged gates.
+
+Hosted run `40065544973` at `6d18bc7` passes all 17 quality jobs. Its collaborator
+job `120787942161` passes the native and Linux/amd64 packaged matrices: 115 cases
+on each of four transports, both native PostgreSQL groups, all 128 models/cache
+values and zero user-table writes. The parent independently audits 1,114 native
+oracle hashes, 428 packaged oracle/runner hashes and all 837 Go build inputs,
+plus fallback rejection and cleanup. The committed image is
+`sha256:70697c059cff3e8ab54f998c53186d3be193cb3a9f9dc5504f5b0f7f2279e17a`,
+with PR merge revision `473958ef37c231ab5750aacc00bca0e7dc1a98b9` and binary
+`9ca91786fc25a2d5cb957bf9ca619ffad9d8383f4446158d912ba8b7fa546632`.
+Receipts are under `collaborator-list/ci-6d18bc7/`; the packaged matrix takes
+55.222 seconds. This evidence predates the subsequent rebase onto `dc4735d`;
+its unchanged Go build inputs do not establish the new manual lifecycle.
 
 ## Remaining acceptance
 
