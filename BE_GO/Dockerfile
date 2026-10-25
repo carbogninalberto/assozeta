@@ -53,6 +53,7 @@ COPY pkg/storage/loginimage/LICENSE.libwebp /app/licenses/libwebp-LICENSE
 COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/LICENSE.md /app/licenses/libjpeg-turbo-LICENSE.md
 COPY --from=codec-builder /usr/share/doc/libjpeg-turbo/README.ijg /app/licenses/libjpeg-turbo-README.ijg
 COPY pkg/storage/loginimage/NOTICE /app/licenses/loginimage-NOTICE
+COPY THIRD_PARTY_NOTICES.md /app/licenses/framework-locales-NOTICE.md
 COPY migrations /app/migrations
 COPY pkg/storage/loginimage/LICENSE.pillow /app/licenses/Pillow-LICENSE
 COPY pkg/qrcode/LICENSE.go-qrcode /app/licenses/go-qrcode-LICENSE

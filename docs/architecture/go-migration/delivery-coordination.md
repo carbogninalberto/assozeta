@@ -9,20 +9,34 @@ behavior, or count documentation/inventory completion as implemented parity.
 
 ## Current integration checkpoint
 
-The task branch is rebased onto main `dd285c4`. The only upstream tree change from
-previous main `dc4735d` corrects member-record comparison in the instructor manual
-browser scenario. Completed quality run `40214170657` tested published `288ad72`
-and passed all 17 jobs. Its artifacts retain that source identity after the rebase.
-The separate manual workflows failed at stale companion content recipe bindings.
-A disposable producer remains pinned to application `288ad72` and local companion
-`378421a`; its captures/package/installed checks must finish before claiming success.
-No companion publication, release or production change is authorized by that run.
+The task branch is rebased onto main `fdf6c77`. Earlier changes share
+order-independent manual cleanup comparisons and retain sanitized embedded reader
+failure diagnostics; all 82 manual helper tests passed. The latest main change
+limits screenshot source checks to accessible referring sections. All five
+affected Python runtime-scope tests and the inventory check pass after rebase.
+Original authors were preserved across all 170 replayed task commits. Go manual
+asset-scope alignment is a separate bounded implementation assignment.
 
-The parent independently matched current hosted collaborator-list evidence to
-`288ad72`: 1,114 native oracle files, 428 packaged oracle files and 837 Go build
-files. Native and packaged matrices each passed 115 cases on four transports.
-The immutable image embeds PR merge `4570c873fb0e5c41975a72034e415bf4a022d9d3`.
-This updates provenance without resolving the documented remaining acceptance gaps.
+The locale and shutdown receipts below retain their measured `f9a71e3` plus
+integrated source hashes and native executable identity. They are not relabeled
+as acceptance for the rebased build; hosted CI will replay the published head.
+
+Hosted quality run `40217915855` at published `e74618d` passed after one rerun of
+the failed Linux legacy browser job. The first attempt passed bootstrap but its
+browser command failed; exported artifacts do not identify that assertion. The
+rerun result does not erase the original failure. Both separate manual workflows
+still fail at stale companion recipe bindings. A disposable producer remains
+pinned to application `288ad72` and local companion `378421a`; its ongoing captures
+and eventual package checks retain those exact inputs. It is not rebased in place,
+and no companion publication, release or production change is authorized.
+
+The integrated read-route locale matrix passes 848 cases on each of Django, Go,
+v1 and v2, with 99 languages, exact cache/model preservation, zero user-table
+writes and actual misroute rejection. Native category shutdown passes graceful
+completion and real 25-second expiry with PostgreSQL termination before blocker
+release, no late commit, exact audit/index effects and fresh-process recovery.
+Both proofs use the same measured final native executable. The existing category
+matrix remains green across four transports after the lifetime change.
 
 ## Assignments and integration rules
 
@@ -33,10 +47,11 @@ reasoning effort, as confirmed in launch output:
 | Assignment | Owned scope | Acceptance before integration |
 | --- | --- | --- |
 | Payment categories (integrated) | HTTP mutation admission and lifecycle oracle | Parent passed native/versioned disconnect, exact commit/audit/recovery, caller cancellation and full Go race/vet |
-| Category shutdown (active follow-on) | New process-shutdown acceptance helper | Parent must execute real SIGTERM and drain-expiry checks before acceptance |
+| Category shutdown (integrated) | Explicit admitted-operation lifetime and process oracle | Parent passed real SIGTERM/25-second expiry, PostgreSQL termination, exact effects/recovery and cleanup |
 | Collaborator deletion transport (handoff) | Existing unregistered handler plus independent admission helper | Parent passed all 52 Django cases after correcting error-detail expectations; transport stays isolated pending mutation implementation |
 | Acceptance audit (complete) | Existing-family evidence and gap report | Manifest, collaborator list and impersonation remain nearest candidates; no status promotion |
-| Read-route locales (active) | Shared locale behavior for manifest and collaborator list | Parent must execute independent Django/Go expectations; no generic handler-wide change without integration review |
+| Read-route locales (integrated) | Shared route-local selection/catalogs and manifest response boundary | Parent passed 4 × 848 actual cases, all 99 languages, Latin-1 wire edges and source/artifact checks |
+| Collaborator browser (review) | New unchanged-UI list consumer and private adapter | Worker repaired fixture database, login-baseline and row-key defects; parent review and actual runtime acceptance remain required |
 
 The completed cascade-fixture worker handed off eight authored scenarios. Parent
 execution passed them alongside the existing deletion/locking matrix. All new
@@ -49,12 +64,18 @@ projects' workers and resources are preserved and considered in capacity checks.
 
 ## Next decisions and remaining acceptance
 
-Prioritize existing implementations near verification. Payment-category disconnect
-is a measured implementation gap; collaborator-list and impersonation remaining
-locale/history/lifecycle boundaries need concrete tests. The acceptance audit identifies public manifest, collaborator list and impersonation
-as nearest existing candidates. Broader locales and category shutdown are assigned
-as follow-ons while the parent publishes the completed admission correction. Avoid opening unrelated routes while these
-families lack required proof.
+The current bottleneck is acceptance for already implemented families. The
+coordinator rejected two incorrect locale-review claims using pinned CPython
+source and actual Django results, fixed fixture-authoring and report-serialization
+bugs, and independently verified the integrated implementation. Worker reports
+alone never establish acceptance. Each external worker receives an exact message
+file path; worktree-local links avoid assuming native messaging is shared.
+
+The next browser slice targets collaborator listing, with explicit Django
+coexistence only for dependencies the unchanged UI actually requests. Its
+creation/editing/deletion workflows remain separate. Packaged locale/shutdown,
+historical data, memory bounds and other documented family gaps still require
+proof. No declaration has been promoted to verified from the current batch.
 
 All 14 requirements still have unfinished work. Major cross-family gaps include
 supported historical data, workers/schedules, realtime/integrations, coordinated

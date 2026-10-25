@@ -21,8 +21,10 @@ The [collaborator-list slice](collaborator-list.md) adds scoped connected-user a
 invitation reads. Independent parent acceptance passes 115 cases on Django, Go
 and both Caddy versions, with exact state/cache preservation, zero user-table
 writes, bounded PostgreSQL reads and cancellation. It retains legacy unpaginated
-and invitation-disclosure behavior. Broader locale, mutation, historical,
-installed and activation acceptance remain open.
+and invitation-disclosure behavior. The shared [read-route locale matrix](read-route-locales.md)
+passes 848 cases per transport across all 99 configured languages for six
+framework messages. Other localized errors, mutation, historical, installed and
+activation acceptance remain open.
 
 The [impersonation-management slice](impersonation-management.md) implements the
 four owner/admin routes, shared sessions and exact ACCESS audit/cache ordering.

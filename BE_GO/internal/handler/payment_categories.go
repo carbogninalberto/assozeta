@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -27,22 +28,11 @@ type PaymentCategoriesHandler struct {
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewPaymentCategoriesHandler(categories PaymentCategoryService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader) *PaymentCategoriesHandler {
-	return &PaymentCategoriesHandler{categories: categories, actors: actors, identities: identities, audit: audit}
-}
-
-// paymentCategoryOperationContext detaches only a fully admitted mutation from
-// client cancellation. context.WithoutCancel retains request tracing values;
-// http.Server.Shutdown still waits for the handler to finish or reach its drain
-// deadline. Transport admission, body parsing and service admission use the
-// original request context.
-func paymentCategoryOperationContext(ctx context.Context) (context.Context, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	return context.WithoutCancel(ctx), nil
+func NewPaymentCategoriesHandler(categories PaymentCategoryService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *PaymentCategoriesHandler {
+	return &PaymentCategoriesHandler{categories: categories, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *PaymentCategoriesHandler) List(c echo.Context) error {
@@ -76,7 +66,12 @@ func (h *PaymentCategoriesHandler) Add(c echo.Context) error {
 	if request.Method != http.MethodPost {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
-	if err = h.categories.AdmitAdd(request.Context(), *identity); err != nil {
+	operation, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer operation.Release()
+	if err = h.categories.AdmitAdd(operation.Context(), *identity); err != nil {
 		return paymentCategoryError(c, err)
 	}
 	body, err := paymentCategoryWriteBody(c, false)
@@ -92,7 +87,7 @@ func (h *PaymentCategoriesHandler) Add(c echo.Context) error {
 	if err != nil {
 		return restError(c, err)
 	}
-	operationContext, err := paymentCategoryOperationContext(request.Context())
+	operationContext, err := operation.Admit()
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
@@ -115,8 +110,13 @@ func (h *PaymentCategoriesHandler) Update(c echo.Context) error {
 	if request.Method != http.MethodPatch {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	operation, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer operation.Release()
 	id := c.Param("uid")
-	if err = h.categories.AdmitUpdate(request.Context(), *identity, id); err != nil {
+	if err = h.categories.AdmitUpdate(operation.Context(), *identity, id); err != nil {
 		return paymentCategoryError(c, err)
 	}
 	body, err := paymentCategoryWriteBody(c, true)
@@ -132,7 +132,7 @@ func (h *PaymentCategoriesHandler) Update(c echo.Context) error {
 	if err != nil {
 		return restError(c, err)
 	}
-	operationContext, err := paymentCategoryOperationContext(request.Context())
+	operationContext, err := operation.Admit()
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
@@ -155,12 +155,17 @@ func (h *PaymentCategoriesHandler) Delete(c echo.Context) error {
 	if request.Method != http.MethodDelete {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
 	}
+	operation, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer operation.Release()
 	id := c.Param("uid")
 	audit, err := h.audit(request)
 	if err != nil {
 		return restError(c, err)
 	}
-	operationContext, err := paymentCategoryOperationContext(request.Context())
+	operationContext, err := operation.Admit()
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}

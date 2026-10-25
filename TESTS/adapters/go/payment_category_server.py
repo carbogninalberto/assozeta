@@ -12,7 +12,7 @@ from TESTS.http_client import Client, poll
 
 
 @contextmanager
-def native_server(work, log, tool_env, address, *, versioned=False):
+def native_server(work, log, tool_env, address, *, versioned=False, process_observer=None):
     from django.conf import settings
 
     executable = work / 'payment-categories-server'
@@ -52,6 +52,8 @@ def native_server(work, log, tool_env, address, *, versioned=False):
                 return False
 
         poll(ready, bool, timeout=30)
+        if process_observer is not None:
+            process_observer(process)
         yield {'base_url': base, 'proxy_upstream': f'host.docker.internal:{http_port}',
                'network': None, 'metadata': {'kind': 'native-built-server'}}
     finally:

@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handler"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/middleware"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
@@ -33,6 +35,23 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
 )
+
+const (
+	httpDrainTimeout         = 25 * time.Second
+	operationCleanupTimeout  = 5 * time.Second
+	httpDrainDeadlineMessage = "HTTP drain deadline exceeded"
+)
+
+type gracefulHTTPServer interface {
+	Shutdown(context.Context) error
+	Close() error
+}
+
+type admittedOperations interface {
+	StopAdmission()
+	Expire()
+	Wait(context.Context) error
+}
 
 func main() {
 	if err := run(); err != nil {
@@ -133,7 +152,8 @@ func run() error {
 	retiredBillingHandler := handler.NewRetiredBillingHandler(service.NewRetiredSoftwareBilling(), service.NewActorAuthentication(accounts, tokens), identities)
 	manualSource := manual.New(cfg.Manual)
 	manualHandler := handler.NewManualReaderHandler(service.NewManualReader(repository.NewManualFeatures(db), manualSource), service.NewActorAuthentication(accounts, tokens), identities)
-	paymentCategoriesHandler := handler.NewPaymentCategoriesHandler(service.NewPaymentCategories(repository.NewPaymentCategories(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
+	paymentCategoryOperations := paymentcategorylifecycle.New()
+	paymentCategoriesHandler := handler.NewPaymentCategoriesHandler(service.NewPaymentCategories(repository.NewPaymentCategories(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	collaboratorListHandler := handler.NewCollaboratorListHandler(service.NewCollaboratorList(repository.NewCollaboratorList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	impersonationHandler := handler.NewImpersonationManagementHandler(service.NewImpersonationManagement(accounts, repository.NewImpersonationManagement(db), sessions, time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
@@ -198,12 +218,31 @@ func run() error {
 			return errors.New("HTTP server stopped unexpectedly")
 		}
 	case <-ctx.Done():
-		drain, cancel := context.WithTimeout(context.Background(), 25*time.Second)
-		defer cancel()
-		if err := server.Shutdown(drain); err != nil {
-			server.Close()
-			return errors.New("HTTP drain deadline exceeded")
+		if err := drainHTTPServer(server, paymentCategoryOperations); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+func drainHTTPServer(server gracefulHTTPServer, operations admittedOperations) error {
+	operations.StopAdmission()
+	drainContext, cancelDrain := context.WithTimeout(context.Background(), httpDrainTimeout)
+	shutdownErr := server.Shutdown(drainContext)
+	cancelDrain()
+	if shutdownErr == nil {
+		return nil
+	}
+
+	// Shutdown has stopped accepting connections at this point. Closing sockets
+	// is necessary for requests that outlived the graceful deadline. Only then
+	// may expiry revoke the detached admitted-operation contexts.
+	_ = server.Close()
+	operations.Expire()
+	cleanupContext, cancelCleanup := context.WithTimeout(context.Background(), operationCleanupTimeout)
+	defer cancelCleanup()
+	if cleanupErr := operations.Wait(cleanupContext); cleanupErr != nil {
+		return fmt.Errorf("%s: %w", httpDrainDeadlineMessage, errors.Join(shutdownErr, cleanupErr))
+	}
+	return errors.New(httpDrainDeadlineMessage)
 }

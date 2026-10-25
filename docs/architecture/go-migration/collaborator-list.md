@@ -101,9 +101,9 @@ its unchanged Go build inputs do not establish the new manual lifecycle.
 ## Remaining acceptance
 
 This work does not implement collaborator creation, editing, invitation delivery
-or removal. The characterized transport language scope is English, Italian and
-French; the rest of Django's translation catalogs and shared handler behavior
-remain open. Historical data, the unchanged collaborator-management frontend,
+or removal. The [read-route locale matrix](read-route-locales.md) now covers all 99
+configured languages and six framework messages on native/versioned transports.
+Other localized errors and shared handler behavior remain open. Historical data, the unchanged collaborator-management frontend,
 complete release rehearsal, operator activation and full performance acceptance
 are not established by this route's current-schema checks. No ledger entry is
 promoted to verified on this evidence.

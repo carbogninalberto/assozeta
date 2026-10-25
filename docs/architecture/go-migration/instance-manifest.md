@@ -137,3 +137,9 @@ go vet ./...
 go vet -tags=instancebootstrapintegration ./...
 go test -race ./...
 ```
+
+The separate [read-route locale matrix](read-route-locales.md) passes 848 cases
+per native/versioned transport across this manifest and collaborator listing,
+including all 99 configured languages, negotiation messages and response-boundary
+language headers. It supplements the manifest payload/database/PWA evidence
+above without establishing installed or historical compatibility.

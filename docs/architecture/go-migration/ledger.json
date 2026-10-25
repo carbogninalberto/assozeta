@@ -4658,7 +4658,9 @@
         "BE_GO/internal/service/collaborator_list.go",
         "BE_GO/internal/handler/collaborator_list.go",
         "BE_GO/internal/handler/collaborator_list_locale.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/rest_route_locale.go",
+        "BE_GO/internal/handler/rest_route_locale_catalogs.go"
       ],
       "dependencies": [
         "BE/application/views/collaborator_views.py",
@@ -4695,15 +4697,23 @@
         "BE_GO/internal/handler/collaborator_list_locale_test.go",
         "BE_GO/internal/service/collaborator_list_test.go",
         "BE_GO/internal/repository/collaborator_list_integration_test.go",
-        "TESTS/adapters/go/collaborator_list_image.py"
+        "TESTS/adapters/go/collaborator_list_image.py",
+        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection"
       ],
       "evidence": [
         "Independent parent replay passes 115 authored cases each on Django, Go, Caddy v1 and v2. ASGI attribution 115/0/115/0; real Django 200 fallback rejected after durable checks. All 128 managed models, DB1 values, all 128 user-table counters, source 1114 hashes and cleanup pass. Required actual-PG groups cover 0/1/32/128 cardinalities, two/one service SELECTs, foreign/deleted exclusion, observed lock cancellation and pool recovery. Full source-matched Go race and ordinary/tagged vet pass. See collaborator-list.md and ignored collaborator-list/parent-audit.json.",
         "Actual reds retained for missing route 404, nullable JSON scan, fractional 1.0 encoding, 1001 query fields, weighted locale, French scoped 415 and duplicate language-cookie order. Existing Django output is not learned into expected responses.",
-        "Packaged immutable Linux image d1b1dfe237fa81927a2641f4757a45553fdf7cc1b2e41d9f3ed61837252e1ce0 passes 4 × 115 in 110.687 seconds: Django attribution 115/0/115/0, all 128 managed models/DB1 values preserved, zero user-table DML, real 200 fallback rejected and exact cleanup. Parent independently matches 837 Go build-context files to integrated source and runs 4 negative-control tests. Genuine old committed-image 404 red preserved. Embedded b225 revision is explicitly a base plus uncommitted source; committed-image/hosted acceptance remains pending. Native repository groups are separate. See collaborator-list/parent-image-audit.json."
+        "Packaged immutable Linux image d1b1dfe237fa81927a2641f4757a45553fdf7cc1b2e41d9f3ed61837252e1ce0 passes 4 × 115 in 110.687 seconds: Django attribution 115/0/115/0, all 128 managed models/DB1 values preserved, zero user-table DML, real 200 fallback rejected and exact cleanup. Parent independently matches 837 Go build-context files to integrated source and runs 4 negative-control tests. Genuine old committed-image 404 red preserved. Embedded b225 revision is explicitly a base plus uncommitted source; committed-image/hosted acceptance remains pending. Native repository groups are separate. See collaborator-list/parent-image-audit.json.",
+        {
+          "command": "TESTS_READ_ROUTE_LOCALES_GO=1 TESTS_READ_ROUTE_LOCALES_VERSIONED=1 python -m TESTS.adapters.django.accounts --only read-route-locales",
+          "revision": "f9a71e3449b323ec0a62c5ef56ab84a78b639832 plus exact source_sha256/runtime_sources in HTTP receipt",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/locale-parent-audit.json"
+        }
       ],
       "notes": [
-        "Implementing only. Existing unpaginated response size and invitation token/accepted/expired disclosure remain explicit baseline behavior, not new privacy approval. Broader locales, collaborator mutations, complete frontend/history/installed/operator-selection/performance acceptance remain open."
+        "Implementing only. Existing unpaginated response size and invitation token/accepted/expired disclosure remain explicit baseline behavior, not new privacy approval. Broader locales, collaborator mutations, complete frontend/history/installed/operator-selection/performance acceptance remain open.",
+        "99-language selection and six framework messages pass 848 cases on each native/versioned transport; other localized errors, history, installed behavior and remaining route acceptance are still open. No status promotion."
       ]
     },
     {
@@ -9609,7 +9619,8 @@
         "BE_GO/internal/service/payment_categories.go",
         "BE_GO/internal/repository/payment_categories.go",
         "BE_GO/internal/service/payment_categories_validation.go",
-        "BE_GO/internal/dto/payment_category_datetime.go"
+        "BE_GO/internal/dto/payment_category_datetime.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle.go"
       ],
       "dependencies": [
         "BE/application/views/payment_views.py",
@@ -9662,7 +9673,9 @@
         "selfhost/tests/go-production-probe.py",
         "selfhost/tests/production-smoke.sh",
         "TESTS/adapters/django/payment_category_transaction_failures.py",
-        "BE_GO/internal/handler/payment_categories_admission_test.go"
+        "BE_GO/internal/handler/payment_categories_admission_test.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle_test.go; payment_categories_admission_test.go: pre-admission cancellation, admitted client disconnect, drain cancellation and cleanup",
+        "TESTS/adapters/django/payment_category_shutdown.py; TESTS/test_payment_category_shutdown_oracle.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9679,13 +9692,26 @@
           "revision": "f4b00c5 plus exact implementation_and_oracle_sha256 in parent audit",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-parent-audit.json"
+        },
+        {
+          "command": "TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 TESTS_PAYMENT_CATEGORIES_LIFECYCLE=1 python -m TESTS.adapters.django.accounts --only payment-categories",
+          "revision": "f9a71e3 plus exact implementation_and_oracle_sha256 in parent regression audit",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-lifetime-parent-regression-audit.json"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.accounts --only payment-category-shutdown",
+          "revision": "f9a71e3 plus exact source hashes and final native binary 65c6fa8e412302ece160866aba53ad84fb0eb1affc186a22b6666dba44d82379",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/shutdown-parent-audit.json"
         }
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
         "Status remains implementing. Installed activation/history, broader interruption parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof.",
-        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing."
+        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing.",
+        "Explicit process-owned mutation lifetime preserves admitted disconnect behavior and cancels on 25-second drain expiry with five-second bounded cleanup. Native real-process DELETE proof is separate from Add/Update unit coverage; full operation/runtime/history/activation acceptance remains open."
       ]
     },
     {
@@ -9712,7 +9738,8 @@
         "BE_GO/internal/service/payment_categories.go",
         "BE_GO/internal/repository/payment_categories.go",
         "BE_GO/internal/service/payment_categories_validation.go",
-        "BE_GO/internal/dto/payment_category_datetime.go"
+        "BE_GO/internal/dto/payment_category_datetime.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle.go"
       ],
       "dependencies": [
         "BE/application/views/payment_views.py",
@@ -9765,7 +9792,8 @@
         "selfhost/tests/go-production-probe.py",
         "selfhost/tests/production-smoke.sh",
         "TESTS/adapters/django/payment_category_transaction_failures.py",
-        "BE_GO/internal/handler/payment_categories_admission_test.go"
+        "BE_GO/internal/handler/payment_categories_admission_test.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle_test.go; payment_categories_admission_test.go: pre-admission cancellation, admitted client disconnect, drain cancellation and cleanup"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9782,13 +9810,20 @@
           "revision": "f4b00c5 plus exact implementation_and_oracle_sha256 in parent audit",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-parent-audit.json"
+        },
+        {
+          "command": "TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 TESTS_PAYMENT_CATEGORIES_LIFECYCLE=1 python -m TESTS.adapters.django.accounts --only payment-categories",
+          "revision": "f9a71e3 plus exact implementation_and_oracle_sha256 in parent regression audit",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-lifetime-parent-regression-audit.json"
         }
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
         "Status remains implementing. Installed activation/history, broader interruption parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof.",
-        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing."
+        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing.",
+        "Explicit process-owned mutation lifetime preserves admitted disconnect behavior and cancels on 25-second drain expiry with five-second bounded cleanup. Native real-process DELETE proof is separate from Add/Update unit coverage; full operation/runtime/history/activation acceptance remains open."
       ]
     },
     {
@@ -9815,7 +9850,8 @@
         "BE_GO/internal/service/payment_categories.go",
         "BE_GO/internal/repository/payment_categories.go",
         "BE_GO/internal/service/payment_categories_validation.go",
-        "BE_GO/internal/dto/payment_category_datetime.go"
+        "BE_GO/internal/dto/payment_category_datetime.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle.go"
       ],
       "dependencies": [
         "BE/application/views/payment_views.py",
@@ -9868,7 +9904,8 @@
         "selfhost/tests/go-production-probe.py",
         "selfhost/tests/production-smoke.sh",
         "TESTS/adapters/django/payment_category_transaction_failures.py",
-        "BE_GO/internal/handler/payment_categories_admission_test.go"
+        "BE_GO/internal/handler/payment_categories_admission_test.go",
+        "BE_GO/internal/paymentcategorylifecycle/lifecycle_test.go; payment_categories_admission_test.go: pre-admission cancellation, admitted client disconnect, drain cancellation and cleanup"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9885,13 +9922,20 @@
           "revision": "f4b00c5 plus exact implementation_and_oracle_sha256 in parent audit",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-parent-audit.json"
+        },
+        {
+          "command": "TESTS_PAYMENT_CATEGORIES_GO=1 TESTS_PAYMENT_CATEGORIES_VERSIONED=1 TESTS_PAYMENT_CATEGORIES_LIFECYCLE=1 python -m TESTS.adapters.django.accounts --only payment-categories",
+          "revision": "f9a71e3 plus exact implementation_and_oracle_sha256 in parent regression audit",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/category-lifetime-parent-regression-audit.json"
         }
       ],
       "notes": [
         "Corrected Django baseline is authoritative: immutable category identity/association, missing-active-association mutation denial, atomic VAT/category/audit/index writes and current-row locking. Preserve existing actor/effective/scope and Italian application messages.",
         "Status remains implementing. Installed activation/history, broader interruption parity, process shutdown and ambiguous-response recovery remain acceptance work; no production owner or activation change. Django’s injected AuditLogIndex.objects.create exception has no request-reachable Go ORM-constructor counterpart. Go’s distinct missing-content-type application-error and deferred-COMMIT paths now have black-box rollback/recovery coverage; arbitrary infrastructure/panic failure is not established. Native factory uses the private Django restore-lock path; image evidence makes no host file-lock interoperability claim. Parent transaction receipt: quality-reports/go-migration/category-transaction-parent/acceptance.json; earlier acceptance: quality-reports/go-migration/category-acceptance/final-acceptance.json.",
         "Parent installed production smoke passes final source with fresh 8f26968 Linux arm64 Django/Go images. Exact selected category/VAT/payment/camp/period/service tables, category/VAT audits/indexes and both owner defaults survive corrupt-archive rejection and actual post-swap DB/object rollback; valid restore recovers pre-backup state. Four category references and original VAT are retained. Stopped Go yields v2 502 and v1 200; same Go container recovers. Owned resources removed, test tags restored. See payment-categories.md and ignored category-installed-parent/final-execution.json. Not historical fixtures, activation, active-request draining, required-manual release or cross-kernel lock proof.",
-        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing."
+        "Parent integrated replay closes the admitted HTTP DELETE disconnect mismatch on native Django/Go and Caddy v1/v2: observed blocked SQL, unchanged state before release, one commit/audit/index, exact recovery and upstream misroute rejection. Four workloads each pass 188 HTTP cases, 43 audits and 18 faults; nine native lifecycle probes per runtime and full Go race/vet pass. Add/Update/Delete preserve context values while detaching only final mutation dispatch; LIST and service caller cancellation stay unchanged. Process shutdown, the changed packaged build, history, activation and ambiguous-response recovery remain open; status stays implementing.",
+        "Explicit process-owned mutation lifetime preserves admitted disconnect behavior and cancels on 25-second drain expiry with five-second bounded cleanup. Native real-process DELETE proof is separate from Add/Update unit coverage; full operation/runtime/history/activation acceptance remains open."
       ]
     },
     {
@@ -16861,7 +16905,9 @@
         "BE_GO/internal/repository/instance_manifest.go",
         "BE_GO/internal/service/instance_manifest.go",
         "BE_GO/internal/handler/instance_manifest.go",
-        "BE_GO/cmd/server/main.go"
+        "BE_GO/cmd/server/main.go",
+        "BE_GO/internal/handler/rest_route_locale.go",
+        "BE_GO/internal/handler/rest_route_locale_catalogs.go"
       ],
       "dependencies": [
         "instance.InstanceConfiguration first-primary-key branding",
@@ -16900,7 +16946,8 @@
         "BE_GO/internal/repository/instance_manifest_integration_test.go",
         "TESTS/adapters/django/instance_pwa_browser.py",
         "TESTS/adapters/django/test_instance_pwa_browser.py",
-        "TESTS/browser/instance-pwa.mjs"
+        "TESTS/browser/instance-pwa.mjs",
+        "TESTS/contracts/test_read_route_locales.py; TESTS/adapters/django/read_route_locales.py: 848 cases per Django/Go/v1/v2 with all 99 languages, strict message/header/attribution checks, 128 models/cache, zero tuple writes and real misroute rejection"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-manifest.md",
@@ -16910,7 +16957,13 @@
         "quality-reports/go-migration/instance-manifest-image-parent/final/results.json",
         "quality-reports/go-migration/instance-manifest-image-parent/missing-route-red/results.json",
         "docs/architecture/go-migration/instance-pwa.md",
-        "quality-reports/go-migration/instance-pwa-parent/final-hardened/results.json"
+        "quality-reports/go-migration/instance-pwa-parent/final-hardened/results.json",
+        {
+          "command": "TESTS_READ_ROUTE_LOCALES_GO=1 TESTS_READ_ROUTE_LOCALES_VERSIONED=1 python -m TESTS.adapters.django.accounts --only read-route-locales",
+          "revision": "f9a71e3449b323ec0a62c5ef56ab84a78b639832 plus exact source_sha256/runtime_sources in HTTP receipt",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/locale-parent-audit.json"
+        }
       ],
       "notes": [
         "Native Django and Go each pass128 authored bootstrap cases including42 manifest cases. Genuine preimplementation Go404 is retained; initial Italian405 expectation punctuation was corrected against pinned Django before implementation.",
@@ -16918,7 +16971,8 @@
         "Status remains implementing. Browser/installed PWA proof and logo serving are separate acceptance work. Existing stored URLs and public defaults are preserved; no production/provider configuration changed.",
         "Parent final versioned run passes all42 manifest cases on both prefixes with observer42/0, deliberate actualHTTP200 Django fallback rejection, SQL/state/cache/header checks and cleanup. Compression red led to reused Django encoding middleware; exact decoded bodies and all Vary tokens pass, including explicit same-for-both-upstreams uppercaseGZIP Caddy behavior. Native Django/Go each pass128 total bootstrap cases. Final acceptance: quality-reports/go-migration/instance-manifest-parent/final-acceptance.json.",
         "Packaged image ca4cc6971d5f at revision324d374 independently passes42 cases on each Django/image/v1/v2 workload, observer42/0/42/0, all128 managed models including auto-created joins, SQL/session/header/secret checks and full cleanup. Real SELECT and rolled-back INSERT controls validate SQL observation; periodic image healthcheck is disabled only during this measurement with explicit startup readiness/health preserved. Older c742 image fails actual404 with cleanup. Real restore locks are held separately on host/container, not cross-kernel sharing proof. CI requires image runner and exports safe results only. Native PG bounds/cancellation remain required separately; no installed/PWA completion claim.",
-        "Committed 9188744 image 4b71e593 passes unchanged browser stock/v1/v2 open and real reload, native Chromium manifest parsing and a visible 512x512 logo with exact bytes. Actual Django observer totals are 8/8/0; separate manifest/logo misroutes each return 200 and are rejected by the same upstream validator. All 128 managed models including M2M, complete owned S3 objects/tags/sentinel and exact Redis state remain unchanged across five workloads; source hashes and cleanup pass. Pure controls reject false Go routing and redact Docker timeout commands and exception context. Installed PWA, OS icons, offline behavior, runtime operator selection and private CA remain open; status unchanged."
+        "Committed 9188744 image 4b71e593 passes unchanged browser stock/v1/v2 open and real reload, native Chromium manifest parsing and a visible 512x512 logo with exact bytes. Actual Django observer totals are 8/8/0; separate manifest/logo misroutes each return 200 and are rejected by the same upstream validator. All 128 managed models including M2M, complete owned S3 objects/tags/sentinel and exact Redis state remain unchanged across five workloads; source hashes and cleanup pass. Pure controls reject false Go routing and redact Docker timeout commands and exception context. Installed PWA, OS icons, offline behavior, runtime operator selection and private CA remain open; status unchanged.",
+        "99-language selection and six framework messages pass 848 cases on each native/versioned transport; other localized errors, history, installed behavior and remaining route acceptance are still open. No status promotion."
       ]
     },
     {

@@ -1256,3 +1256,19 @@ retain real backpressure/descriptor assertions and enforce total body deadlines.
 Only named result JSON is uploaded. See
 [storage trust scope](../docs/architecture/go-migration/storage-trust.md) for
 legacy empty/HTTP-proxy behavior, the certifi update policy and remaining limits.
+
+The focused read-route language matrix covers 99 supported languages and six
+framework messages across the manifest and collaborator list. Run
+`TESTS_READ_ROUTE_LOCALES_GO=1 TESTS_READ_ROUTE_LOCALES_VERSIONED=1 python
+TESTS/adapters/django/accounts.py --only read-route-locales` with the pinned
+production interpreter, private PostgreSQL/Redis and Docker. Its 848 cases per
+transport include real upstream attribution, state/cache preservation and
+all-user-table write counters; this is a subset of route acceptance.
+
+`python TESTS/adapters/django/accounts.py --only payment-category-shutdown`
+executes native Go SIGTERM/drain-expiry cases with real PostgreSQL row locks.
+It checks exact mutation/audit outcomes, socket/backend termination, recovery
+and owned cleanup. Run its negative controls with
+`python -m unittest TESTS.test_payment_category_shutdown_oracle -v`. Django
+process shutdown, other operations and packaged/installed lifecycle remain
+separate acceptance requirements.

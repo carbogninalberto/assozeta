@@ -407,6 +407,49 @@ a lateral SQL result, checks inserted counts, and separates setup deadlines from
 read deadlines. Its 86 HTTP comparisons and four PostgreSQL groups pass again,
 including the 10,000-row bound. Neither correction changes production behavior.
 
+## Admitted mutation process lifetime
+
+The HTTP lifetime is now an explicit server dependency. The small
+`internal/paymentcategorylifecycle` component is an Assozeta transport-lifecycle
+extension: it tracks category Add/Update/Delete through admission and service
+completion, without business SQL or framework contexts. Before admission, client
+cancellation remains effective. After admission, request values and audit context
+survive a client disconnect. SIGTERM stops new mutation admission and preserves
+the existing 25-second HTTP drain. On expiry the server closes HTTP sockets,
+cancels tracked work and waits up to five additional seconds for service and
+owned-transaction/driver cleanup. Other mutation families are not claimed to use
+this lifetime yet.
+
+A real PostgreSQL/process test first failed: the process exited after 25 seconds
+while its category transaction remained waiting on a row lock. The integrated
+fix passes both authored native DELETE cases. Releasing the lock within the
+graceful window commits exactly one soft deletion, audit event and association
+index, exits zero and allows an audited update from a fresh process. Holding the
+lock past the real deadline exits one after 25.024 seconds; the client socket and
+identified PostgreSQL backend end before blocker release. All 128 model snapshots
+remain unchanged, no abandoned audit or late commit appears, and a fresh process
+can perform the deletion exactly once.
+
+The focused command is:
+
+```sh
+python -m unittest TESTS.test_payment_category_shutdown_oracle -v
+python TESTS/adapters/django/accounts.py --only payment-category-shutdown
+```
+
+The parent verifies four native process identities, one unchanged executable
+hash, 1,116 source hashes, exact audit/index fields, timestamp bounds, all managed
+models, cache preservation and observed cleanup. The final CLI command and its
+JSON report both pass. This final binary is also the binary tested by the
+read-route locale matrix. Internal `server.Close()` invocation is not instrumented;
+the oracle proves its observable process/socket/database outcomes.
+
+After integration, the full existing regression still passes 188 cases and 43
+audits per Django/Go/v1/v2 workload, nine native lifecycle probes per runtime,
+transaction fault probes and the actual-upstream negative control. Full Go
+race/vet also pass. Evidence is under `payment-category-shutdown/` and
+`parallel-delivery-20261025/{shutdown-parent-audit,category-lifetime-parent-regression-audit}.json`.
+
 ## Remaining acceptance work
 
 - Extend the disposable installed backup/restore proof to normal updates,
@@ -414,9 +457,9 @@ including the 10,000-row bound. Neither correction changes production behavior.
   fixture does not prove historical schema/data parity or active-request draining.
 - Preserve the explicit distinction between Django's injected ORM-constructor
   exception and Go's application-error/deferred-COMMIT proof. These tests do not
-  establish arbitrary infrastructure/panic failures or process shutdown.
+  establish arbitrary infrastructure/panic failures or Django/packaged process shutdown.
 - Extend the now-common native/Caddy admitted-DELETE disconnect proof to process
-  shutdown, packaged execution, every relevant mutation interleaving and client-side
+  shutdown across all operations and runtimes, packaged execution, every relevant mutation interleaving and client-side
   ambiguous-commit recovery before claiming lifecycle parity or activation readiness.
 
 No category ledger entry is `verified`. Other payment operations and the wider

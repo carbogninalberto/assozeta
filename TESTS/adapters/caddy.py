@@ -1,5 +1,6 @@
 """Disposable real Caddy using the shipped self-host routes and pinned image."""
 import contextlib
+import json
 import pathlib
 import re
 import subprocess
@@ -12,7 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 @contextlib.contextmanager
-def proxy(django, golang, log, *, operations=None, network=None, network_alias=None):
+def proxy(django, golang, log, *, operations=None, network=None, network_alias=None, container_observer=None):
     if network_alias and not network:
         raise ValueError('A proxy network alias requires an owned Docker network')
     image = re.search(r'^FROM (caddy:\S+) AS production$',
@@ -57,6 +58,9 @@ def proxy(django, golang, log, *, operations=None, network=None, network_alias=N
                     return False
             poll(ready, bool, timeout=30)
             docker('exec', name, 'caddy', 'validate', '--config', '/etc/caddy/Caddyfile')
+            if container_observer is not None:
+                container_observer(json.loads(docker('inspect', '--format',
+                    '{"container_id":{{json .Id}},"image_id":{{json .Image}}}', name)))
             yield base, image
         finally:
             subprocess.run(['docker', 'logs', name], stdout=log, stderr=log, timeout=15)

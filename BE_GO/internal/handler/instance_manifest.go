@@ -21,13 +21,13 @@ func NewInstanceManifestHandler(reader InstanceManifestReader) *InstanceManifest
 func (h *InstanceManifestHandler) Read(c echo.Context) error {
 	r := c.Request()
 	c.Response().Header().Set("Allow", "GET, HEAD, OPTIONS")
-	c.Response().Header().Set("Content-Language", restLanguage(r))
+	c.Response().Header().Set("Content-Language", handlerReadRouteLocale.Language(r))
 	query := parseReferenceForm(r.URL.RawQuery)
 	if format, ok := query.Lookup("format"); ok && format != "" && format != "json" {
-		return restError(c, &restInputError{Status: 404, Detail: restText(r, "notfound")})
+		return restError(c, &restInputError{Status: 404, Detail: handlerReadRouteLocale.Text(r, readRouteNotFound)})
 	}
 	if !acceptsJSON(r.Header.Get("Accept")) {
-		return restError(c, &restInputError{Status: 406, Detail: restText(r, "accept")})
+		return restError(c, &restInputError{Status: 406, Detail: handlerReadRouteLocale.Text(r, readRouteAccept)})
 	}
 	// The Django view explicitly disables authentication. Neither Bearer nor
 	// impersonation/group headers select a different public manifest.
@@ -36,7 +36,7 @@ func (h *InstanceManifestHandler) Read(c echo.Context) error {
 			"renders": []string{"application/json"}, "parses": []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}})
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		return restError(c, &restInputError{Status: 405, Detail: restText(r, "method")})
+		return restError(c, &restInputError{Status: 405, Detail: handlerReadRouteLocale.Text(r, readRouteMethod)})
 	}
 	value, err := h.reader.Read(r.Context())
 	if err != nil {

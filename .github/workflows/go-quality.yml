@@ -460,6 +460,13 @@ jobs:
           TESTS_COLLABORATOR_LIST_VERSIONED: '1'
           TESTS_COLLABORATOR_LIST_REPOSITORY: '1'
         run: python TESTS/adapters/django/accounts.py --only collaborator-list
+      - name: Verify read-route locales against Django, Go and both versioned paths
+        env:
+          TESTS_READ_ROUTE_LOCALES_GO: '1'
+          TESTS_READ_ROUTE_LOCALES_VERSIONED: '1'
+        run: |
+          python -m unittest TESTS.contracts.test_read_route_locales -v
+          python TESTS/adapters/django/accounts.py --only read-route-locales
       - name: Verify guarded container Redis faults and exact ACL restoration
         run: python TESTS/adapters/redis_faults.py --container-controls --output quality-reports/go-migration/impersonation-container-redis-fault-controls
       - name: Build a source-bound immutable impersonation image
@@ -530,6 +537,8 @@ jobs:
           path: |
             quality-reports/go-migration/collaborator-list/results.json
             quality-reports/go-migration/collaborator-list/http-results.json
+            quality-reports/go-migration/read-route-locales/results.json
+            quality-reports/go-migration/read-route-locales/http-results.json
             quality-reports/go-migration/collaborator-list-image/results.json
             quality-reports/go-migration/collaborator-list-image/http-results.json
       - uses: actions/upload-artifact@v4
@@ -603,6 +612,10 @@ jobs:
           TESTS_PAYMENT_CATEGORIES_VERSIONED: '1'
           TESTS_PAYMENT_CATEGORIES_LIFECYCLE: '1'
         run: python TESTS/adapters/django/accounts.py --only payment-categories
+      - name: Verify admitted category mutation process shutdown and recovery
+        run: |
+          python -m unittest TESTS.test_payment_category_shutdown_oracle -v
+          python TESTS/adapters/django/accounts.py --only payment-category-shutdown
       - name: Verify native and versioned payment-info contracts and live PostgreSQL checks
         env:
           TESTS_PAYMENT_INFO_GO: '1'
@@ -630,6 +643,8 @@ jobs:
             quality-reports/go-migration/payment-categories/services.log
             quality-reports/go-migration/payment-categories/lifecycle-*.json
             quality-reports/go-migration/payment-categories/transaction-failures-*.json
+            quality-reports/go-migration/payment-category-shutdown/results.json
+            quality-reports/go-migration/payment-category-shutdown/http-results.json
             quality-reports/go-migration/payment-info/results.json
             quality-reports/go-migration/payment-info/http-results.json
             quality-reports/go-migration/payment-info-image/results.json

@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -46,7 +47,9 @@ type paymentCategoryServiceTest struct {
 	mutationStarted chan struct{}
 	mutationRelease chan struct{}
 	mutationContext context.Context
+	mutationAudit   domain.LoginAuditContext
 	mutationCalls   int
+	mutationApplied int
 
 	listStarted chan struct{}
 	listRelease chan struct{}
@@ -61,13 +64,17 @@ func (s *paymentCategoryServiceTest) AdmitUpdate(ctx context.Context, _ domain.R
 	return s.admit(ctx, "update")
 }
 
-func (s *paymentCategoryServiceTest) admit(_ context.Context, operation string) error {
+func (s *paymentCategoryServiceTest) admit(ctx context.Context, operation string) error {
 	s.mu.Lock()
 	s.admissions = append(s.admissions, operation)
 	release, admissionErr := s.admissionRelease, s.admissionErr
 	s.mu.Unlock()
 	if release != nil {
-		<-release
+		select {
+		case <-release:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
 	if admissionErr != nil {
 		return admissionErr
@@ -75,34 +82,42 @@ func (s *paymentCategoryServiceTest) admit(_ context.Context, operation string) 
 	return nil
 }
 
-func (s *paymentCategoryServiceTest) Add(ctx context.Context, _ domain.ResolvedIdentity, _ dto.PaymentCategoryWrite, _ domain.LoginAuditContext) (dto.PaymentCategory, error) {
-	return s.mutate(ctx)
+func (s *paymentCategoryServiceTest) Add(ctx context.Context, _ domain.ResolvedIdentity, _ dto.PaymentCategoryWrite, audit domain.LoginAuditContext) (dto.PaymentCategory, error) {
+	return s.mutate(ctx, audit)
 }
 
-func (s *paymentCategoryServiceTest) Update(ctx context.Context, _ domain.ResolvedIdentity, _ string, _ dto.PaymentCategoryWrite, _ domain.LoginAuditContext) (dto.PaymentCategory, error) {
-	return s.mutate(ctx)
+func (s *paymentCategoryServiceTest) Update(ctx context.Context, _ domain.ResolvedIdentity, _ string, _ dto.PaymentCategoryWrite, audit domain.LoginAuditContext) (dto.PaymentCategory, error) {
+	return s.mutate(ctx, audit)
 }
 
-func (s *paymentCategoryServiceTest) Delete(ctx context.Context, _ domain.ResolvedIdentity, _ string, _ domain.LoginAuditContext) error {
-	_, err := s.mutate(ctx)
+func (s *paymentCategoryServiceTest) Delete(ctx context.Context, _ domain.ResolvedIdentity, _ string, audit domain.LoginAuditContext) error {
+	_, err := s.mutate(ctx, audit)
 	return err
 }
 
-func (s *paymentCategoryServiceTest) mutate(ctx context.Context) (dto.PaymentCategory, error) {
+func (s *paymentCategoryServiceTest) mutate(ctx context.Context, audit domain.LoginAuditContext) (dto.PaymentCategory, error) {
 	s.mu.Lock()
 	s.mutationCalls++
 	s.mutationContext = ctx
+	s.mutationAudit = audit
 	started, release := s.mutationStarted, s.mutationRelease
 	s.mu.Unlock()
 	if started != nil {
 		close(started)
 	}
 	if release != nil {
-		<-release
+		select {
+		case <-release:
+		case <-ctx.Done():
+			return dto.PaymentCategory{}, ctx.Err()
+		}
 	}
 	if err := ctx.Err(); err != nil {
 		return dto.PaymentCategory{}, err
 	}
+	s.mu.Lock()
+	s.mutationApplied++
+	s.mu.Unlock()
 	return dto.PaymentCategory{ID: "00000000-0000-4000-8000-000000000102", Name: "Admitted"}, nil
 }
 
@@ -129,20 +144,23 @@ func (s *paymentCategoryServiceTest) snapshot() (int, context.Context) {
 	return s.mutationCalls, s.mutationContext
 }
 
-func newPaymentCategoryAdmissionHandler(categories *paymentCategoryServiceTest, auditRelease <-chan struct{}) *PaymentCategoriesHandler {
-	audit := func(*http.Request) (domain.LoginAuditContext, error) {
+func newPaymentCategoryAdmissionHandler(categories *paymentCategoryServiceTest, auditRelease <-chan struct{}) (*PaymentCategoriesHandler, *paymentcategorylifecycle.Lifecycle) {
+	audit := func(request *http.Request) (domain.LoginAuditContext, error) {
 		if auditRelease != nil {
 			<-auditRelease
 		}
-		return domain.LoginAuditContext{}, nil
+		email, _ := request.Context().Value(paymentCategoryAdmissionContextKey{}).(string)
+		return domain.LoginAuditContext{ActorEmail: &email}, nil
 	}
 	accounts := paymentCategoryAccountsTest{}
+	operations := paymentcategorylifecycle.New()
 	return NewPaymentCategoriesHandler(
 		categories,
 		service.NewActorAuthentication(accounts, paymentCategoryTokensTest{}),
 		service.NewIdentityResolver(accounts, nil, nil, nil, nil),
 		audit,
-	)
+		operations,
+	), operations
 }
 
 func newPaymentCategoryAdmissionRequest(t *testing.T, method, path, body string) (echo.Context, *httptest.ResponseRecorder, context.CancelFunc) {
@@ -175,7 +193,7 @@ func TestPaymentCategoryAdmittedMutationsSurviveRequestCancellation(t *testing.T
 				mutationStarted: make(chan struct{}),
 				mutationRelease: release,
 			}
-			h := newPaymentCategoryAdmissionHandler(service, nil)
+			h, _ := newPaymentCategoryAdmissionHandler(service, nil)
 			c, recorder, cancelRequest := newPaymentCategoryAdmissionRequest(t, tc.method, tc.path, tc.body)
 			defer cancelRequest()
 			if tc.name != "add" {
@@ -191,9 +209,13 @@ func TestPaymentCategoryAdmittedMutationsSurviveRequestCancellation(t *testing.T
 			}
 			service.mu.Lock()
 			operationCtx := service.mutationContext
+			mutationAudit := service.mutationAudit
 			service.mu.Unlock()
 			if got := operationCtx.Value(paymentCategoryAdmissionContextKey{}); got != "trace-admission" {
 				t.Fatalf("operation context lost tracing value: %v", got)
+			}
+			if mutationAudit.ActorEmail == nil || *mutationAudit.ActorEmail != "trace-admission" {
+				t.Fatalf("mutation lost request audit values: %+v", mutationAudit)
 			}
 			cancelRequest()
 			<-c.Request().Context().Done()
@@ -216,6 +238,12 @@ func TestPaymentCategoryAdmittedMutationsSurviveRequestCancellation(t *testing.T
 				t.Fatalf("mutation calls=%d, want 1", calls)
 			}
 			service.mu.Lock()
+			applied := service.mutationApplied
+			service.mu.Unlock()
+			if applied != 1 {
+				t.Fatalf("mutation effects=%d, want 1", applied)
+			}
+			service.mu.Lock()
 			admissions := append([]string(nil), service.admissions...)
 			service.mu.Unlock()
 			switch tc.name {
@@ -236,10 +264,96 @@ func TestPaymentCategoryAdmittedMutationsSurviveRequestCancellation(t *testing.T
 	}
 }
 
+func TestPaymentCategoryDrainExpiryCancelsEveryAdmittedMutation(t *testing.T) {
+	for _, tc := range []struct {
+		name, method, path, body string
+		invoke                   func(*PaymentCategoriesHandler, echo.Context) error
+	}{
+		{name: "add", method: http.MethodPost, path: "/payment/category/add", body: `{}`,
+			invoke: func(h *PaymentCategoriesHandler, c echo.Context) error { return h.Add(c) }},
+		{name: "update", method: http.MethodPatch, path: "/payment/category/00000000-0000-4000-8000-000000000102/update", body: `{}`,
+			invoke: func(h *PaymentCategoriesHandler, c echo.Context) error { return h.Update(c) }},
+		{name: "delete", method: http.MethodDelete, path: "/payment/category/00000000-0000-4000-8000-000000000102/delete", body: "",
+			invoke: func(h *PaymentCategoriesHandler, c echo.Context) error { return h.Delete(c) }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			release := make(chan struct{})
+			defer close(release)
+			service := &paymentCategoryServiceTest{
+				mutationStarted: make(chan struct{}),
+				mutationRelease: release,
+			}
+			h, operations := newPaymentCategoryAdmissionHandler(service, nil)
+			c, _, cancelRequest := newPaymentCategoryAdmissionRequest(t, tc.method, tc.path, tc.body)
+			defer cancelRequest()
+			if tc.name != "add" {
+				c.SetParamNames("uid")
+				c.SetParamValues("00000000-0000-4000-8000-000000000102")
+			}
+			done := make(chan error, 1)
+			go func() { done <- tc.invoke(h, c) }()
+			select {
+			case <-service.mutationStarted:
+			case <-time.After(time.Second):
+				t.Fatal("admitted mutation did not start")
+			}
+			service.mu.Lock()
+			operationContext := service.mutationContext
+			service.mu.Unlock()
+
+			operations.StopAdmission()
+			if operationContext.Err() != nil {
+				t.Fatalf("graceful drain canceled admitted mutation: %v", operationContext.Err())
+			}
+			operations.Expire()
+			select {
+			case <-done:
+			case <-time.After(time.Second):
+				t.Fatal("drain expiry did not cancel admitted mutation")
+			}
+			if !errors.Is(operationContext.Err(), context.Canceled) {
+				t.Fatalf("mutation context error = %v", operationContext.Err())
+			}
+			if calls, _ := service.snapshot(); calls != 1 {
+				t.Fatalf("mutation calls=%d, want 1", calls)
+			}
+			service.mu.Lock()
+			applied := service.mutationApplied
+			service.mu.Unlock()
+			if applied != 0 {
+				t.Fatalf("expired mutation applied %d effects", applied)
+			}
+			waitContext, cancelWait := context.WithTimeout(context.Background(), time.Second)
+			defer cancelWait()
+			if err := operations.Wait(waitContext); err != nil {
+				t.Fatalf("handler did not release expired mutation: %v", err)
+			}
+		})
+	}
+}
+
+func TestPaymentCategoryDoesNotStartMutationAfterAdmissionStops(t *testing.T) {
+	service := &paymentCategoryServiceTest{}
+	h, operations := newPaymentCategoryAdmissionHandler(service, nil)
+	operations.StopAdmission()
+	c, recorder, cancelRequest := newPaymentCategoryAdmissionRequest(t, http.MethodPost, "/payment/category/add", `{}`)
+	defer cancelRequest()
+
+	if err := h.Add(c); err != nil {
+		t.Fatal(err)
+	}
+	if calls, _ := service.snapshot(); calls != 0 {
+		t.Fatalf("mutation started after admission stopped: %d", calls)
+	}
+	if recorder.Code != http.StatusInternalServerError {
+		t.Fatalf("post-stop admission response: %d %s", recorder.Code, recorder.Body.String())
+	}
+}
+
 func TestPaymentCategoryCancellationBeforeMutationDispatchDoesNotMutate(t *testing.T) {
 	admissionRelease := make(chan struct{})
 	service := &paymentCategoryServiceTest{admissionRelease: admissionRelease}
-	h := newPaymentCategoryAdmissionHandler(service, nil)
+	h, _ := newPaymentCategoryAdmissionHandler(service, nil)
 	c, recorder, cancelRequest := newPaymentCategoryAdmissionRequest(t, http.MethodPost, "/payment/category/add", `{}`)
 	defer cancelRequest()
 	done := make(chan error, 1)
@@ -274,10 +388,53 @@ func TestPaymentCategoryCancellationBeforeMutationDispatchDoesNotMutate(t *testi
 	}
 }
 
+func TestPaymentCategoryDrainExpiryCancelsAndWaitsForAdmissionCleanup(t *testing.T) {
+	admissionRelease := make(chan struct{})
+	service := &paymentCategoryServiceTest{admissionRelease: admissionRelease}
+	h, operations := newPaymentCategoryAdmissionHandler(service, nil)
+	c, recorder, cancelRequest := newPaymentCategoryAdmissionRequest(t, http.MethodPost, "/payment/category/add", `{}`)
+	defer cancelRequest()
+	done := make(chan error, 1)
+	go func() { done <- h.Add(c) }()
+
+	deadline := time.Now().Add(time.Second)
+	for {
+		service.mu.Lock()
+		admitted := len(service.admissions) == 1
+		service.mu.Unlock()
+		if admitted {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("Add service admission did not start")
+		}
+		time.Sleep(time.Millisecond)
+	}
+	operations.StopAdmission()
+	operations.Expire()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("drain expiry did not cancel pre-admission cleanup")
+	}
+	if calls, _ := service.snapshot(); calls != 0 {
+		t.Fatalf("pre-admission expiry invoked %d mutations", calls)
+	}
+	if recorder.Code != http.StatusInternalServerError {
+		t.Fatalf("pre-admission expiry response: %d %s", recorder.Code, recorder.Body.String())
+	}
+	waitContext, cancelWait := context.WithTimeout(context.Background(), time.Second)
+	defer cancelWait()
+	if err := operations.Wait(waitContext); err != nil {
+		t.Fatalf("handler did not release pre-admission cleanup: %v", err)
+	}
+	close(admissionRelease)
+}
+
 func TestPaymentCategoryListRemainsRequestCancelable(t *testing.T) {
 	release := make(chan struct{})
 	service := &paymentCategoryServiceTest{listStarted: make(chan struct{}), listRelease: release}
-	h := newPaymentCategoryAdmissionHandler(service, nil)
+	h, _ := newPaymentCategoryAdmissionHandler(service, nil)
 	c, recorder, cancelRequest := newPaymentCategoryAdmissionRequest(t, http.MethodGet, "/payment/category/list", "")
 	defer cancelRequest()
 	done := make(chan error, 1)
@@ -306,11 +463,12 @@ func TestPaymentCategoryListRemainsRequestCancelable(t *testing.T) {
 	}
 }
 
-func TestPaymentCategoryServiceCancellationStillSurvivesDispatchHelper(t *testing.T) {
+func TestPaymentCategoryLifecycleRejectsCancelledContextBeforeAdmission(t *testing.T) {
+	lifecycle := paymentcategorylifecycle.New()
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	operationCtx, err := paymentCategoryOperationContext(ctx)
-	if !errors.Is(err, context.Canceled) || operationCtx != nil {
-		t.Fatalf("cancelled context accepted: %v %v", operationCtx, err)
+	operation, err := lifecycle.Track(ctx)
+	if !errors.Is(err, context.Canceled) || operation != nil {
+		t.Fatalf("cancelled context accepted: %v %v", operation, err)
 	}
 }
