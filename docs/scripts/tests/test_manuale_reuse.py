@@ -160,6 +160,17 @@ class ReuseFixtureTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 reuse.check_report(self.old, self.recipe, {**report, **changed}, origin)
 
+    def test_report_requires_a_nonempty_capture_identifier(self):
+        for capture_id in (None, '', '   ', 17):
+            with self.subTest(capture_id=capture_id):
+                report = {**self.report, 'capture_id': capture_id}
+                origin = {'application_revision': self.revision, 'capture_id': capture_id}
+                with self.assertRaisesRegex(ValueError, 'original-report-provenance-invalid'):
+                    reuse.check_report(self.old, self.recipe, report, origin)
+        report = {key: value for key, value in self.report.items() if key != 'capture_id'}
+        with self.assertRaisesRegex(ValueError, 'original-report-provenance-invalid'):
+            reuse.check_report(self.old, self.recipe, report, {'application_revision': self.revision})
+
     def test_captured_tooling_must_be_sealed_and_byte_identical(self):
         relative = 'selfhost/tests/browser/manuale/unit-helper.mjs'
         report = {**self.report, 'source_hashes': {

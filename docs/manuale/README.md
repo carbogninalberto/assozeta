@@ -118,6 +118,8 @@ python3 docs/scripts/manuale-scaffold.py review-content --output PERCORSO_MANUAL
 La revisione lega gli hash prima/dopo e non attesta una nuova cattura. Il riuso
 mantiene le prove originali e ricontrolla la proiezione del testo: passaggi,
 componenti, collegamenti, immagini, codice e numeri devono restare invariati.
+Chi revisiona attesta che il significato operativo della prosa resta invariato:
+il controllo strutturale non interpreta le istruzioni espresse nel testo.
 Per cambi di comportamento usare la revisione ordinaria e nuove catture. La
 revisione editoriale non può contemporaneamente aggiornare contratti di codice.
 
@@ -142,6 +144,9 @@ supplementari più ristrette conservano le loro verifiche senza sostituire le
 procedure complete. Il generatore legge il testo revisionato dagli MDX e non
 esegue le vecchie proiezioni di prosa. `timings.json` registra tempi e risultati
 delle fasi e dei comandi con etichette pubbliche, senza argomenti o credenziali.
+`reuse-inputs` misura la selezione e il controllo della cache; `retained-evidence`
+misura la rivalidazione nel runner. Le fasi possono contenere altre fasi e comandi:
+non sommare i tempi annidati per ricavare la durata totale.
 
 ## Cache delle verifiche CI
 
@@ -488,7 +493,7 @@ La validità in lettura è ora controllata per sezione: cambiare un test, il ren
 
 Per ogni aggiornamento usare un solo blocco finale: compilazione MDX e riferimenti, prove dei flussi modificati, verifica delle risposte interessate. Eseguire l'intera suite nelle modifiche al nucleo di recupero, autorizzazione o pubblicazione e nei controlli di rilascio. Non ripetere verifiche già superate senza una nuova modifica, un errore o una questione ancora aperta.
 
-La generazione ora legge la prosa dal checkout MDX e verifica `.manuale-evidence.json`, che contiene soltanto hash, titoli e collegamenti alle ricette revisionate. Le ricette JavaScript conservano i modelli iniziali della stesura e i controlli sulle prove; non sostituiscono il testo editoriale durante la pubblicazione. Dopo aver controllato nel codice una modifica intenzionale al testo, registrarla senza modificare la ricetta:
+La generazione legge la prosa dal checkout MDX e verifica `.manuale-evidence.json`, che contiene hash, titoli e collegamenti alle ricette revisionate. I moduli JavaScript definiscono i workflow e i controlli sulle prove; i precedenti modelli di prosa duplicati sono stati rimossi. Dopo aver controllato nel codice una modifica intenzionale al testo, registrarla senza modificare la ricetta:
 
 ```sh
 python3 docs/scripts/manuale-scaffold.py review-content --output PERCORSO_MANUALE --section 'docs/corsi.mdx#creare-un-corso'

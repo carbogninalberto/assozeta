@@ -307,7 +307,9 @@ def origin_sections(old, manifest, identifier, report_hash, report, *, allow_emp
 
 
 def check_report(state, recipe, report, origin):
-    if (report.get('id') != recipe['id'] or report.get('status') != 'passed' or report.get('backend') != 'real'
+    capture_id = report.get('capture_id')
+    if (not isinstance(capture_id, str) or not capture_id.strip()
+            or report.get('id') != recipe['id'] or report.get('status') != 'passed' or report.get('backend') != 'real'
             or report.get('application_revision') != origin['application_revision'] or report.get('capture_id') != origin['capture_id']):
         raise ReuseError('original-report-provenance-invalid')
     expected = {'reference_date': state['reference_date'], 'fixture_profile': recipe.get('fixture', 'baseline'),

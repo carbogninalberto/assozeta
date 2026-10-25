@@ -121,6 +121,7 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     if (evaluation.get('status') != 'passed' or evaluation.get('corpus_identity') != original.value['identity']
             or evaluation.get('application_revision') != application_revision or evaluation.get('version') != release
             or embedded.get('status') != 'passed' or embedded.get('backend') != 'real'
+            or embedded.get('corpus_identity') != original.value['identity'] or embedded.get('version') != release
             or embedded.get('application_revision') != application_revision or render.get('status') != 'passed'):
         raise EvidenceError('Preparation requires retained successful MCP/agent, reader and render evidence')
     rendered = {page['page']: page for page in render.get('pages', [])}

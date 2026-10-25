@@ -568,7 +568,8 @@ def validate_retained_evidence(state):
         return None
     if binding.get('path') != file.name or not file.is_file() or sha(file) != binding.get('sha256'):
         raise RuntimeError('Retained evidence plan changed after preparation')
-    return retained_evidence_helper(state).validate_reuse_plan(state)
+    with timed(state['run'], 'retained-evidence'):
+        return retained_evidence_helper(state).validate_reuse_plan(state)
 
 
 def authoring_preflight(state):
@@ -743,7 +744,8 @@ def prepare(args):
         write_json(run / 'run.json', state)
         authoring_preflight(state)
         state['preparation_stage'] = 'evidence-reuse'
-        reuse_inputs(state, args)
+        with timed(run, 'reuse-inputs'):
+            reuse_inputs(state, args)
     except Exception as exc:
         state.update(status='preparation_failed', failure={'stage': state.get('preparation_stage', 'manual-authoring'),
                      'type': type(exc).__name__, 'message': str(exc)})
@@ -947,7 +949,8 @@ def capture(state):
 
 def generate(state):
     validate_tooling(state)
-    validate_retained_evidence(state)
+    # The generator validates retained proof before writing MDX; the index
+    # independently validates it before accepting the resulting corpus.
     catalog = str(Path(state['application']) / 'docs/scripts/manuale-catalog.py')
     execute([sys.executable, catalog, '--run', state['run'], '--preflight'], Path(state['run']),
             'Validate every navigation/backlog target against real application source and Git', cwd=state['application'])

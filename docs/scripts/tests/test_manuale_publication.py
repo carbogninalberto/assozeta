@@ -101,6 +101,7 @@ class PublicationFixtureTests(unittest.TestCase):
         write(self.run, 'evaluation.json', {'status': 'passed', 'corpus_identity': self.corpus['identity'],
             'application_revision': self.revision, 'version': 'v-fixture', 'evidence_kind': 'offline-unit-fixture'})
         write(self.run, 'embedded-manual.json', {'status': 'passed', 'backend': 'real',
+            'corpus_identity': self.corpus['identity'], 'version': 'v-fixture',
             'application_revision': self.revision, 'evidence_kind': 'offline-unit-fixture'})
         write(self.run, 'render.json', {'status': 'passed', 'evidence_kind': 'offline-unit-fixture',
             'pages': [{'page': 'docs/action', 'source_sha256': index.file_digest(self.manual / 'docs/action.mdx'),
@@ -117,6 +118,9 @@ class PublicationFixtureTests(unittest.TestCase):
         evaluation = publication.read_json(self.run, 'evaluation.json')
         evaluation['corpus_identity'] = self.corpus['identity']
         write(self.run, 'evaluation.json', evaluation)
+        embedded = publication.read_json(self.run, 'embedded-manual.json')
+        embedded['corpus_identity'] = self.corpus['identity']
+        write(self.run, 'embedded-manual.json', embedded)
         self.prepare()
         candidate = index.ManualIndex.load(self.output / 'index.json')
         self.assertTrue(candidate.value['chunks'][0]['url'].endswith('#l%E2%80%99azione'))
@@ -186,6 +190,19 @@ class PublicationFixtureTests(unittest.TestCase):
         with self.assertRaisesRegex(index.EvidenceError, 'successful MCP/agent'):
             self.prepare()
         self.assertFalse(self.output.exists())
+
+    def test_reader_acceptance_must_match_the_corpus_and_release(self):
+        embedded = publication.read_json(self.run, 'embedded-manual.json')
+        for field, stale in (('corpus_identity', '0' * 64), ('version', 'old-release')):
+            for missing in (False, True):
+                with self.subTest(field=field, missing=missing):
+                    changed = {**embedded, field: stale}
+                    if missing:
+                        changed.pop(field)
+                    write(self.run, 'embedded-manual.json', changed)
+                    with self.assertRaisesRegex(index.EvidenceError, 'successful MCP/agent'):
+                        self.prepare()
+                    self.assertFalse(self.output.exists())
 
     def availability_fixtures(self):
         """Deterministic HTTPS response bytes; explicitly not real availability."""

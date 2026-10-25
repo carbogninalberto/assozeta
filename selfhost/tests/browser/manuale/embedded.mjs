@@ -10,8 +10,9 @@ const expect = baseExpect.configure({timeout: 45000});
 if (!run) throw new Error('ASSOZETA_MANUAL_RUN is required');
 const state = JSON.parse(fs.readFileSync(path.join(run, 'run.json')));
 const input = JSON.parse(fs.readFileSync(path.join(run, 'browser-input.json')));
-const report = {status: 'running', backend: 'real', application_revision: state.application_input.revision, checks: []};
 const corpus = JSON.parse(fs.readFileSync(path.join(run, 'index.json')));
+const report = {status: 'running', backend: 'real', application_revision: state.application_input.revision,
+    corpus_identity: corpus.identity, version: corpus.metadata.release, checks: []};
 const plan = readerPlan(corpus.chunks);
 const publicSections = plan.sections;
 const browser = await chromium.launch();
