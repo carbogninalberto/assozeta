@@ -21,6 +21,37 @@ const appPage = await context.newPage();
 let page = appPage;
 page.setDefaultTimeout(45000);
 const errors = [];
+let progress = {phase: 'open-reader'};
+// Keep only manual asset paths and transport state, never credentials or bodies.
+const assets = new Map();
+const sockets = [];
+const assetPath = request => {
+    const pathname = new URL(request.url()).pathname;
+    return pathname.startsWith('/api/manuale/assets/') ? pathname : null;
+};
+context.on('request', request => {
+    const pathname = assetPath(request);
+    if (pathname) assets.set(request, {path: pathname, state: 'pending'});
+});
+context.on('response', response => {
+    const asset = assets.get(response.request());
+    if (asset) asset.status = response.status();
+});
+context.on('requestfinished', request => {
+    const asset = assets.get(request);
+    if (asset) asset.state = 'finished';
+});
+context.on('requestfailed', request => {
+    const asset = assets.get(request);
+    if (asset) asset.state = 'failed';
+});
+appPage.on('websocket', socket => {
+    // Record paths only: WebSocket URLs can contain authentication tokens.
+    const entry = {path: new URL(socket.url()).pathname, received: 0, closed: false};
+    sockets.push(entry);
+    socket.on('framereceived', () => entry.received++);
+    socket.on('close', () => entry.closed = true);
+});
 function markdownParts(content) {
     return (content || []).flatMap(part => part.kind === 'markdown' ? [part.markdown]
         : [...markdownParts(part.content), ...(part.cards || []).flatMap(card => markdownParts(card.content))]);
@@ -74,12 +105,14 @@ try {
         return article.locator('.chapter-section').filter({has: page.getByRole('heading', {name: section.title, exact: true, level: 2})});
     }
     for (const section of publicSections) {
+        progress = {phase: 'reader-sections', section: section.id};
         const article = await select(section);
         await expect(article.getByRole('heading', {name: section.title, exact: true, level: 2})).toBeVisible();
         const blocks = section.reader || [{title: '', text: section.text, screenshots: section.screenshots.map(image => image.path)}];
         const renderedBlocks = article.locator('.manual-step');
         await expect(renderedBlocks).toHaveCount(blocks.length);
         for (const [index, block] of blocks.entries()) {
+            progress.block = index;
             if (block.title) await expect(article).toContainText(block.title);
             const renderedBlock = renderedBlocks.nth(index);
             const expectedProse = block.content ? markdownParts(block.content) : [block.markdown || block.text].filter(Boolean);
@@ -107,6 +140,7 @@ try {
         imageReferences += count;
     }
     await select(plan.section);
+    progress = {phase: 'reader-navigation'};
     await page.screenshot({path: path.join(run, 'embedded-manual.png'), fullPage: false, animations: 'disabled'});
     const deepLink = page.url();
     await page.reload();
@@ -157,6 +191,7 @@ try {
     await headerReader.close();
     expect(context.pages()).toHaveLength(2);
     // Exercise the visible chat and real socket with the fixture's unconfigured AI.
+    progress = {phase: 'manual-only-chat'};
     await appPage.getByRole('button', {name: 'Assistenza manuale', exact: true}).click();
     const chat = appPage.locator('.agent-panel');
     await expect(chat).toContainText('Posso cercare istruzioni verificate');
@@ -185,6 +220,14 @@ try {
     report.status = 'passed';
 } catch (error) {
     report.status = 'failed'; report.error = error.message; process.exitCode = 1;
+    report.diagnostics = {...progress, browser_errors: errors, sockets,
+        assets: [...assets.values()].filter(asset => asset.state !== 'finished' || asset.status !== 200)};
+    report.diagnostics.reader = await page.evaluate(() => ({
+        unavailable_images: [...document.querySelectorAll('.manual-step p')]
+            .filter(element => element.textContent === 'Screenshot non disponibile.').length,
+        incomplete_images: [...document.querySelectorAll('.manual-step img')]
+            .filter(element => !element.complete || !element.naturalWidth).length,
+    })).catch(() => null);
 } finally {
     await browser.close();
     fs.writeFileSync(path.join(run, 'embedded-manual.json'), JSON.stringify(report, null, 2) + '\n');
