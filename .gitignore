@@ -48,6 +48,7 @@ __pycache__/
 
 # Disposable release-quality evidence and browser output
 quality-reports/
+/quality-browsers/
 selfhost/tests/browser/test-results/
 selfhost/tests/browser/node_modules
 /UI/node_modules
