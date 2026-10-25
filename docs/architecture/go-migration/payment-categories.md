@@ -452,14 +452,42 @@ race/vet also pass. Evidence is under `payment-category-shutdown/` and
 
 ## Remaining acceptance work
 
+The packaged shutdown adapter reuses the same two real PostgreSQL branches
+through explicit runtime hooks; it does not duplicate their expected outcomes.
+The parent passes both cases on immutable image
+`sha256:88248f0b177915515c5066784a6c0b53d0ac45cbbde71e5690c12e3d7bf348ea`,
+revision `797d1991`, with all 853 recorded context files and the packaged executable bound
+by a successful receipt. Four non-root read-only server processes are observed;
+the actual container listener and PID1 are checked instead of Docker's host
+forwarding socket. Exact effects, rollback, recovery and owned cleanup pass.
+
+The first runtime attempt stopped before services because the image was no
+longer present. The next real run passed expiry but exposed a 2.467ms host/container
+wall-clock mismatch in the graceful audit bracket. The final oracle samples real
+PostgreSQL `clock_timestamp()` before/after the causal boundaries and verifies
+that PostgreSQL and Go share the Linux kernel boot ID. Nine timestamp samples
+retain strict audit bounds. Monotonic drain deadlines and exact audit assertions
+are unchanged; native defaults still use host UTC and both native cases pass
+again. Fourteen protocol/negative controls pass. No production change was needed.
+
+Final receipts are `payment-category-shutdown-image-parent-797d-r3/results.json`
+and `parallel-delivery-20261025/packaged-shutdown-parent-audit.json` under the
+ignored evidence root. Earlier failed receipts remain retained. CI runs the same
+adapter against its existing source-bound browser-job image. This proves the
+packaged DELETE shutdown cases, not Caddy/Django shutdown, every mutation or
+installed activation. The command is
+`python TESTS/adapters/go/payment_category_shutdown_image.py --image IMAGE_ID
+--expected-revision FULL_SHA --build-receipt RECEIPT --output NEW_DIRECTORY`;
+use `--go-source FROZEN_CHECKOUT` for a separately frozen build context.
+
 - Extend the disposable installed backup/restore proof to normal updates,
   backend selection and coordinated activation/rollback. The current application
   fixture does not prove historical schema/data parity or active-request draining.
 - Preserve the explicit distinction between Django's injected ORM-constructor
   exception and Go's application-error/deferred-COMMIT proof. These tests do not
-  establish arbitrary infrastructure/panic failures or Django/packaged process shutdown.
+  establish arbitrary infrastructure/panic failures or Django process shutdown.
 - Extend the now-common native/Caddy admitted-DELETE disconnect proof to process
-  shutdown across all operations and runtimes, packaged execution, every relevant mutation interleaving and client-side
+  shutdown across all operations and runtimes, every relevant mutation interleaving and client-side
   ambiguous-commit recovery before claiming lifecycle parity or activation readiness.
 
 No category ledger entry is `verified`. Other payment operations and the wider

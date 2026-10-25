@@ -2,6 +2,8 @@
 
 The expected duplicate ended audits and surviving replacement sessions are
 Django baseline observations to preserve, not an exactly-once guarantee.
+The active-expiry cases additionally expire the already-resolved old Redis
+record while the ended audit INSERT remains blocked.
 """
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager, nullcontext
@@ -20,6 +22,138 @@ import unittest
 from TESTS.adapters.django.impersonation_effects import assert_cache_transition, assert_retained_rows
 from TESTS.contracts.test_impersonation_management import assert_json_equal
 from TESTS.http_client import poll
+
+
+EXPIRY_SCENARIOS = (
+    'delete-expires-during-ended-audit',
+    'replacement-expires-during-ended-audit',
+)
+EXPIRY_BARRIER_EVENTS = (
+    'http_request_admitted',
+    'ended_audit_insert_blocked',
+    'old_session_expired',
+    'sql_still_blocked',
+    'old_session_absent_while_request_in_flight',
+    'barrier_released',
+)
+DEFAULT_SESSION_TTL_MS = 3_600_000
+TTL_CLOCK_ALLOWANCE_MS = 1_000
+EXPIRY_WINDOW_MS = 250
+BEHAVIOR_SOURCES = (
+    'TESTS/adapters/django/impersonation_concurrency.py',
+    'TESTS/test_impersonation_active_expiry.py',
+)
+
+
+def behavior_source_hashes(root, sources=BEHAVIOR_SOURCES):
+    """Bind the mutable expiry helper and its portable oracle in the receipt."""
+    root = Path(root)
+    manifest = {}
+    for relative in sources:
+        path = root / relative
+        if not path.is_file():
+            raise AssertionError('Behavior source is missing: ' + relative)
+        manifest[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return manifest
+
+
+def validate_default_ttl(ttl_ms, elapsed_ms):
+    """Bound TTL decay by time since POST submission, before session creation."""
+    if type(elapsed_ms) is not int or elapsed_ms < 0:
+        raise AssertionError('Replacement TTL sample has invalid elapsed time')
+    if (type(ttl_ms) is not int or not 0 < ttl_ms <= DEFAULT_SESSION_TTL_MS
+            or ttl_ms < DEFAULT_SESSION_TTL_MS - elapsed_ms - TTL_CLOCK_ALLOWANCE_MS):
+        raise AssertionError('Replacement session TTL was shortened beyond observed elapsed time')
+
+
+def validate_expiry_evidence(evidence):
+    """Reject a cache event that was not observed after request admission."""
+    if not isinstance(evidence, dict):
+        raise AssertionError('Expiry evidence must be an object')
+    scenario = evidence.get('scenario')
+    if scenario not in EXPIRY_SCENARIOS:
+        raise AssertionError('Unknown expiry scenario')
+    if tuple(evidence.get('events', ())) != EXPIRY_BARRIER_EVENTS:
+        raise AssertionError('Expiry did not occur at the admitted SQL barrier')
+    for field in (
+        'old_resolved_before_expiry',
+        'request_in_flight_when_key_absent',
+        'sql_blocked_before_expiry',
+        'sql_blocked_when_key_absent',
+        'old_key_absent_before_release',
+        'unrelated_cache_preserved',
+        'expiry_request_accepted',
+    ):
+        if evidence.get(field) is not True:
+            raise AssertionError('Expiry evidence is incomplete: ' + field)
+    old = evidence.get('old_session')
+    try:
+        parsed_old = UUID(str(old))
+    except (ValueError, TypeError, AttributeError):
+        raise AssertionError('Invalid expired old session') from None
+    if str(parsed_old) != old or parsed_old.version != 4:
+        raise AssertionError('Invalid expired old session')
+    old_ttl = evidence.get('old_ttl_before_expiry_ms')
+    if type(old_ttl) is not int or not EXPIRY_WINDOW_MS < old_ttl <= 3_600_000:
+        raise AssertionError('Expired session did not have a live default TTL')
+    shortened = evidence.get('ttl_after_expiry_request_ms')
+    if type(shortened) is not int or not (shortened == -2 or 0 < shortened <= EXPIRY_WINDOW_MS):
+        raise AssertionError('Old session expiry was not actually requested')
+    if evidence.get('expiry_window_ms') != EXPIRY_WINDOW_MS:
+        raise AssertionError('Old session expiry window differs from the authored bound')
+    expected_method = 'DELETE' if scenario == EXPIRY_SCENARIOS[0] else 'POST'
+    if evidence.get('method') != expected_method:
+        raise AssertionError('Expiry method does not match its scenario')
+    if not re.fullmatch(r'[a-z0-9-]{1,50}', str(evidence.get('request_cid', ''))):
+        raise AssertionError('Invalid expiry request correlation ID')
+    new = evidence.get('new_session')
+    if expected_method == 'DELETE':
+        if new is not None or evidence.get('new_session_default_ttl_preserved') is not False:
+            raise AssertionError('DELETE expiry unexpectedly claims a replacement session')
+        return
+    try:
+        parsed_new = UUID(str(new))
+    except (ValueError, TypeError, AttributeError):
+        raise AssertionError('Invalid replacement session') from None
+    if str(parsed_new) != new or parsed_new.version != 4 or new == old:
+        raise AssertionError('Invalid or colliding replacement session')
+    for suffix in ('before', 'while_old_absent'):
+        validate_default_ttl(evidence.get('new_session_ttl_' + suffix + '_ms'),
+                             evidence.get('new_session_elapsed_' + suffix + '_ms'))
+    if evidence['new_session_elapsed_while_old_absent_ms'] < evidence['new_session_elapsed_before_ms']:
+        raise AssertionError('Replacement TTL observations reversed elapsed time')
+    if evidence['new_session_ttl_while_old_absent_ms'] > evidence['new_session_ttl_before_ms']:
+        raise AssertionError('Replacement session TTL was renewed while the old session expired')
+    if evidence.get('new_session_default_ttl_preserved') is not True:
+        raise AssertionError('Replacement session default TTL was not preserved')
+
+
+def validate_expiry_case(case):
+    """Require complete effects cleanup as well as the active-expiry evidence."""
+    validate_expiry_evidence(case.get('expiry_evidence'))
+    for field in ('success', 'barrier_cleanup', 'workers_stopped', 'cleanup_verified'):
+        if case.get(field) is not True:
+            raise AssertionError('Expiry case did not complete: ' + field)
+    if case.get('expired_old_denial_state_checked') is not True:
+        raise AssertionError('Missing exact state check after expired old-session denial')
+    reads = case.get('default_ttl_reads')
+    if case['expiry_evidence']['scenario'] == EXPIRY_SCENARIOS[0]:
+        if reads != [] or case.get('default_ttl_read_state_checked') is not False:
+            raise AssertionError('DELETE expiry unexpectedly claims a replacement read')
+        return
+    if case.get('default_ttl_read_state_checked') is not True:
+        raise AssertionError('Missing exact state check after default TTL read')
+    if not isinstance(reads, list) or len(reads) != 1:
+        raise AssertionError('Missing replacement default TTL read')
+    read = reads[0]
+    for prefix in ('before', 'after'):
+        validate_default_ttl(read.get(prefix + '_ms'), read.get(prefix + '_elapsed_ms'))
+    previous = case['expiry_evidence']
+    if not (previous['new_session_elapsed_while_old_absent_ms'] <= read['before_elapsed_ms']
+            <= read['after_elapsed_ms']):
+        raise AssertionError('Replacement read TTL observations reversed elapsed time')
+    if not 0 < read['after_ms'] <= read['before_ms'] <= previous['new_session_ttl_while_old_absent_ms']:
+        raise AssertionError('Replacement session TTL was renewed during follow-up reads')
 
 
 class Transport:
@@ -137,11 +271,19 @@ def audit_barrier(cids, old_session, report, *, action="ended"):
                                [['race:' + cid for cid in cids]])
                 return cursor.fetchall()
 
-        def wait():
-            rows = poll(observed, lambda rows: len(rows) == len(cids) and all(
-                row[2] == 'Lock' and row[3] == 'advisory' and blocker_pid in row[4] for row in rows),
-                timeout=8, interval=.025)
+        def blocked(rows):
+            return len(rows) == len(cids) and all(
+                row[2] == 'Lock' and row[3] == 'advisory' and blocker_pid in row[4] for row in rows)
+
+        def assert_waiting():
+            rows = observed()
+            assert blocked(rows), ('Owned SQL barrier no longer contains every request', rows)
             assert len({row[0] for row in rows}) == len(cids), 'Requests did not use independent database backends'
+            return rows
+
+        def wait():
+            rows = poll(observed, blocked, timeout=8, interval=.025)
+            assert_waiting()
             report['observed_barriers'] = [{'cid': row[1].removeprefix('race:'),
                                             'wait_event': row[3], 'owned_blocker_verified': True} for row in rows]
 
@@ -151,7 +293,7 @@ def audit_barrier(cids, old_session, report, *, action="ended"):
                 cursor.execute('SELECT pg_advisory_unlock(%s)', [key])
                 assert cursor.fetchone()[0]
             held.remove(key)
-        yield wait, release
+        yield wait, release, assert_waiting
     finally:
         try:
             with blocker.cursor() as cursor:
@@ -225,7 +367,9 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
     assert connection.settings_dict['NAME'] == 'assozeta_contract_accounts'
     assert Path(connection.settings_dict['HOST']).resolve() == work
     assert re.fullmatch(r'127\.0\.0\.1:[0-9]+', address), 'Owned loopback Redis required'
-    source_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    root = Path(__file__).resolve().parents[3]
+    source_hashes_before = behavior_source_hashes(root)
+    source_hash = source_hashes_before[BEHAVIOR_SOURCES[0]]
     host, port = address.split(':')
     raw = redis.Redis(host=host, port=int(port), password='synthetic-identity-only', db=1)
     transport = Transport()
@@ -234,11 +378,15 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
     if go_base:
         pairings += [('go-go', go_base, go_base), ('django-go', django_base, go_base),
                      ('go-django', go_base, django_base)]
-    scenarios = ('dual-delete', 'dual-replace', 'replace-delete', 'double-delete-del-failure',
-                 'eligibility-after-admission', 'read-after-revocation')
+    original_scenarios = ('dual-delete', 'dual-replace', 'replace-delete', 'double-delete-del-failure',
+                          'eligibility-after-admission', 'read-after-revocation')
+    scenarios = original_scenarios + EXPIRY_SCENARIOS
     expected_names = [name + ':' + scenario for name, *_ in pairings for scenario in scenarios]
+    expected_expiry_names = [name + ':' + scenario for name, *_ in pairings for scenario in EXPIRY_SCENARIOS]
     report = {'success': False, 'requested': True, 'cases': [], 'expected_scenarios': expected_names,
               'go_requested': go_base is not None, 'source_sha256': source_hash,
+              'source_hashes': source_hashes_before, 'expiry_scenarios': list(EXPIRY_SCENARIOS),
+              'expected_expiry_cases': expected_expiry_names, 'expiry_case_count': 0,
               'scope': 'Observed audit barriers for overlapping DELETE/replacement; no mutation linearizability claim',
               'cleanup_verified': False}
 
@@ -352,11 +500,90 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
         assert 0 < after <= before
         entry['shortened_ttl_checks'].append({'before_ms': before, 'after_ms': after})
 
+    def sample_default_ttl(key, request_started_ns):
+        value = raw.pttl(key)
+        # Include the Redis round-trip; rounding up is conservative at 1 ms.
+        elapsed = (time.monotonic_ns() - request_started_ns + 999_999) // 1_000_000
+        validate_default_ttl(value, elapsed)
+        return value, elapsed
+
+    def default_ttl_read(base, cid, identifier, entry, request_started_ns):
+        """Verify a fresh session remains usable without shortening its TTL."""
+        key = cache.make_key(session_key(identifier)).encode()
+        before, before_elapsed = sample_default_ttl(key, request_started_ns)
+        assert before <= entry['expiry_evidence']['new_session_ttl_while_old_absent_ms']
+        status, body = request(base, 'GET', cid, identifier)
+        assert status == 200
+        assert_json_equal(tester, body, {'target': target})
+        after, after_elapsed = sample_default_ttl(key, request_started_ns)
+        assert after <= before, 'Replacement session TTL was renewed by the read'
+        entry['default_ttl_reads'].append({'before_ms': before, 'after_ms': after,
+            'before_elapsed_ms': before_elapsed, 'after_elapsed_ms': after_elapsed})
+
+    def expire_resolved_session(entry, future, old, still_blocked, expected_events, request_cid,
+                                request_started_ns, new_session=None):
+        """Expire the already-fetched old record, not a newly created session."""
+        assert not future.done(), 'Request completed before the intended expiry'
+        old_key = cache.make_key(session_key(old)).encode()
+        old_bytes = raw.get(old_key)
+        old_ttl_before = raw.pttl(old_key)
+        assert old_bytes is not None and old_ttl_before > 0
+        current = [old] + ([new_session] if new_session else [])
+        entry['blocked_before_expiry'] = state(expected_events, current)
+
+        new_key = cache.make_key(session_key(new_session)).encode() if new_session else None
+        new_ttl_before, new_elapsed_before = (sample_default_ttl(new_key, request_started_ns)
+                                               if new_key else (None, None))
+
+        assert raw.pexpire(old_key, EXPIRY_WINDOW_MS)
+        ttl_after_expiry_request = raw.pttl(old_key)
+        assert ttl_after_expiry_request == -2 or 0 < ttl_after_expiry_request <= EXPIRY_WINDOW_MS
+        events = list(EXPIRY_BARRIER_EVENTS[:2])
+        poll(lambda: raw.exists(old_key), lambda present: present == 0, timeout=5, interval=.01)
+        events.append('old_session_expired')
+        assert raw.get(old_key) is None, 'Old session did not actually expire'
+        assert not future.done(), 'HTTP request was not in flight when the old session vanished'
+        still_blocked()
+        events.append('sql_still_blocked')
+
+        entry['blocked_after_expiry'] = state(expected_events, [new_session] if new_session else [])
+        assert not future.done() and raw.get(old_key) is None
+        events.append('old_session_absent_while_request_in_flight')
+        new_ttl_after, new_elapsed_after = (sample_default_ttl(new_key, request_started_ns)
+                                             if new_key else (None, None))
+        if new_session:
+            assert new_ttl_after <= new_ttl_before
+        evidence = {
+            'scenario': entry['name'].partition(':')[2],
+            'method': 'POST' if new_session else 'DELETE',
+            'request_cid': request_cid,
+            'old_session': old,
+            'new_session': new_session,
+            'events': events,
+            'old_resolved_before_expiry': True,
+            'request_in_flight_when_key_absent': True,
+            'sql_blocked_before_expiry': True,
+            'sql_blocked_when_key_absent': True,
+            'old_key_absent_before_release': True,
+            'unrelated_cache_preserved': True,
+            'expiry_request_accepted': True,
+            'old_ttl_before_expiry_ms': old_ttl_before,
+            'expiry_window_ms': EXPIRY_WINDOW_MS,
+            'ttl_after_expiry_request_ms': ttl_after_expiry_request,
+            'new_session_ttl_before_ms': new_ttl_before,
+            'new_session_ttl_while_old_absent_ms': new_ttl_after,
+            'new_session_elapsed_before_ms': new_elapsed_before,
+            'new_session_elapsed_while_old_absent_ms': new_elapsed_after,
+            'new_session_default_ttl_preserved': bool(new_session),
+        }
+        return evidence
+
     try:
         for pairing, first, second in pairings:
             for scenario in scenarios:
                 entry = {'name': pairing + ':' + scenario, 'success': False, 'barrier_cleanup': False,
-                         'shortened_ttl_checks': []}
+                         'scenario': scenario, 'expiry_case': scenario in EXPIRY_SCENARIOS,
+                         'shortened_ttl_checks': [], 'default_ttl_reads': []}
                 report['cases'].append(entry)
                 receipt.write_text(json.dumps(report, indent=2) + '\n')
                 prefix = 'ic-' + uuid4().hex[:10]
@@ -379,7 +606,7 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
                             if str(row['user_id']) == target_id:
                                 row['deleted'] = True
                         try:
-                            with audit_barrier([cid_a], None, entry, action='started') as (wait, release):
+                            with audit_barrier([cid_a], None, entry, action='started') as (wait, release, _still_blocked):
                                 futures.append(executor.submit(request, first, 'POST', cid_a, None, target_id))
                                 wait()
                                 entry['blocked_state'] = state([], [])
@@ -415,9 +642,60 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
                         entry['response_statuses'] = [200, 204]
                         entry['final_state'] = state(expected, [])
                         assert request(first, 'GET', prefix + '-fresh-denial', old)[0] == 403
+                    elif scenario in EXPIRY_SCENARIOS:
+                        replacement = scenario == EXPIRY_SCENARIOS[1]
+                        method = 'POST' if replacement else 'DELETE'
+                        new = []
+                        entry['expired_old_denial_state_checked'] = False
+                        entry['default_ttl_read_state_checked'] = False
+                        with audit_barrier([cid_a], old, entry) as (wait, release, still_blocked):
+                            request_started_ns = time.monotonic_ns()
+                            futures.append(executor.submit(request, first, method, cid_a, old,
+                                target_id if replacement else None))
+                            wait()
+                            if replacement:
+                                events = list(LogEntry.objects.filter(cid=cid_a))
+                                assert len(events) == 1 and events[0].changes_dict == {'impersonation': ['', 'started']}
+                                identifier = events[0].additional_data['impersonation_session']
+                                assert str(UUID(identifier)) == identifier and UUID(identifier).version == 4
+                                assert identifier not in owned_sessions
+                                owned_sessions.add(identifier)
+                                new.append(identifier)
+                                expected.append((cid_a, identifier, 'started'))
+                            entry['expiry_evidence'] = expire_resolved_session(
+                                entry, futures[0], old, still_blocked, expected, cid_a, request_started_ns,
+                                new[0] if new else None)
+                            release(0)
+                            entry['expiry_evidence']['events'].append('barrier_released')
+                            response = futures[0].result(timeout=12)
+                            validate_expiry_evidence(entry['expiry_evidence'])
+
+                        if replacement:
+                            assert response[0] == 201
+                            assert_json_equal(tester, response[1], {'session_id': new[0], 'target': target,
+                                'expires_in': 3600, 'actor_role': 'association', 'association': association})
+                        else:
+                            assert response == (204, '')
+                        expected.append((cid_a, old, 'ended'))
+                        entry['response_statuses'] = [response[0]]
+                        entry['final_state'] = state(expected, new)
+                        status, detail = request(second, 'GET', prefix + '-expired-old-denial', old)
+                        assert status == 403
+                        assert_json_equal(tester, detail,
+                            {'detail': 'Sessione di impersonificazione scaduta o revocata. Torna al tuo account.'})
+                        entry['after_expired_old_denial_state'] = state(expected, new)
+                        entry['expired_old_denial_state_checked'] = True
+                        if replacement:
+                            default_ttl_read(second, prefix + '-default-ttl-read', new[0], entry, request_started_ns)
+                            entry['after_default_ttl_read_state'] = state(expected, new)
+                            entry['default_ttl_read_state_checked'] = True
+                            cleanup_cid = prefix + '-cleanup'
+                            assert request(second, 'DELETE', cleanup_cid, new[0]) == (204, '')
+                            expected.append((cleanup_cid, new[0], 'ended'))
+                            state(expected, [])
                     else:
                         new = []
-                        with audit_barrier([cid_a, cid_b], old, entry) as (wait, release):
+                        with audit_barrier([cid_a, cid_b], old, entry) as (wait, release, _still_blocked):
                             actions = ('POST', 'POST') if scenario == 'dual-replace' else (
                                       ('POST', 'DELETE') if scenario == 'replace-delete' else ('DELETE', 'DELETE'))
                             for base, cid, method in zip((first, second), (cid_a, cid_b), actions):
@@ -504,7 +782,7 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
             pass
         try:
             try:
-                with audit_barrier([request_cid], identifier, probe) as (wait, _release):
+                with audit_barrier([request_cid], identifier, probe) as (wait, _release, _still_blocked):
                     future = executor.submit(request, django_base, 'DELETE', request_cid, identifier)
                     wait()
                     raise ExpectedFixtureFailure()
@@ -533,6 +811,11 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
         assert [case['name'] for case in report['cases']] == expected_names
         assert all(case['success'] and case['barrier_cleanup'] and case['workers_stopped'] and case['cleanup_verified']
                    for case in report['cases'])
+        expiry_cases = [case for case in report['cases'] if case['expiry_case']]
+        assert [case['name'] for case in expiry_cases] == expected_expiry_names
+        for case in expiry_cases:
+            validate_expiry_case(case)
+        report['expiry_case_count'] = len(expiry_cases)
         report['success'] = True
         return report
     finally:
@@ -545,7 +828,9 @@ def run(*, work, log, django_base, go_base, users, tokens, descriptions, associa
             cleanup_errors.append(type(error).__name__)
         finally:
             raw.close()
+            source_hashes_after = behavior_source_hashes(root)
             report['cleanup_errors'] = cleanup_errors
-            report['source_stable'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == source_hash
+            report['source_hashes_after'] = source_hashes_after
+            report['source_stable'] = source_hashes_after == source_hashes_before
             report['success'] = bool(report['success'] and report['cleanup_verified'] and report['source_stable'] and not cleanup_errors)
             receipt.write_text(json.dumps(report, indent=2) + '\n')

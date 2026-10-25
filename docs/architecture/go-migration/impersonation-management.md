@@ -264,10 +264,39 @@ parent audit. This is evidence for that committed source, not a fresh browser ru
 after the `dc4735d` rebase; its two changed manual helper hashes are recorded
 explicitly and the Go build inputs remain identical.
 
+## Expiry after mutation admission
+
+The parent passes eight additional native HTTP cases: DELETE and replacement
+POST on each Django/Django, Go/Go, Django/Go and Go/Django pairing. A real
+PostgreSQL audit-insert barrier proves the old session has already been resolved.
+Its actual Redis key expires while the request and SQL statement remain blocked;
+both conditions are observed again before the barrier is released. No application
+clock or authentication response is substituted.
+
+The admitted operation completes with the authored response and exact audit/CID,
+session and retained-model effects. Subsequent reads reject the expired old
+session and preserve all state. Replacement sessions remain usable, with their
+3,600-second TTL bounded by measured elapsed time plus one second for clock
+granularity; it is not deliberately shortened. Exact state is checked after
+both denied and successful reads, before cleanup can erase unexpected effects.
+
+Independent review found and corrected missing post-read state assertions and
+an overly broad TTL lower bound before parent runtime execution. Twenty-six
+protocol/retained-state controls pass. The real parent run passes all 32 native
+cases (24 existing plus eight expiry cases), all four 264-case HTTP workloads,
+required PostgreSQL checks, actual misroute rejection and owned cleanup. Source
+hashes match the integrated implementation. Receipts remain under
+`quality-reports/go-migration/impersonation-concurrency/results.json` and
+`parallel-delivery-20261025/active-expiry-parent-audit.json`.
+
+These eight cases are a mutation overlapping cache expiry followed by a read on
+the paired backend; they are not two concurrent HTTP mutations. They do not
+establish packaged/Caddy expiry races or expiry at every request phase.
+
 ## Remaining acceptance
 
-Additional race coverage for administrator/collaborator operations, cache expiration during active
-requests, mutating-request
+Additional race coverage for administrator/collaborator operations, expiry at
+other request phases, mutating-request
 disconnect/shutdown outcomes, historical installed data and backend switch/rollback
 acceptance are not established by the current-schema matrix. No route is promoted
 to verified, and operators should not activate the incomplete replacement backend

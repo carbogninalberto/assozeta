@@ -1273,6 +1273,17 @@ and owned cleanup. Run its negative controls with
 process shutdown, other operations and packaged/installed lifecycle remain
 separate acceptance requirements.
 
+The packaged category shutdown runner uses the same real 25-second oracle:
+`python TESTS/adapters/go/payment_category_shutdown_image.py --image IMAGE_ID
+--expected-revision FULL_SHA --build-receipt RECEIPT --output NEW_DIRECTORY`.
+An immutable image ID and full source-bound build receipt are mandatory. Add
+`--go-source FROZEN_CHECKOUT` for an independently frozen build context.
+Run protocol controls with `python -m unittest
+TESTS.adapters.go.test_payment_category_shutdown_image
+TESTS.test_payment_category_shutdown_oracle -v`. These controls are separate
+from actual packaged PostgreSQL/process acceptance and do not establish Caddy,
+Django or installed shutdown behavior.
+
 
 The same locale matrix can run against a source-bound image with
 `python TESTS/adapters/go/read_route_locales_image.py --image IMAGE_ID
@@ -1311,3 +1322,13 @@ matches. Run their portable controls with `python -m unittest
 TESTS.test_collaborator_delete_email_links -v`. Duplicate selection remains
 characterization with an unresolved durable-identity contract; no Go deletion
 acceptance is implied.
+
+The impersonation concurrency option now retains its original 24 native cases
+and adds eight active-expiry cases across four Django/Go pairings. Run
+`TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY=1 TESTS_IMPERSONATION_MANAGEMENT_GO=1
+TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1
+TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python
+TESTS/adapters/django/accounts.py --only impersonation-management`. The HTTP
+matrix includes both API versions; the concurrency cases themselves use native
+URLs. Portable controls are `python -m unittest
+TESTS.test_impersonation_active_expiry TESTS.test_impersonation_contract -v`.

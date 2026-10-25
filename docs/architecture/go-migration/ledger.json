@@ -2315,7 +2315,8 @@
         "BE_GO/internal/repository/impersonation_management_integration_test.go",
         "TESTS/adapters/django/impersonation_concurrency.py",
         "TESTS/adapters/django/impersonation_browser.py",
-        "TESTS/browser/impersonation.mjs"
+        "TESTS/browser/impersonation.mjs",
+        "TESTS/test_impersonation_active_expiry.py: active old-session expiry during SQL-blocked DELETE/replacement; source-bound exact effects and TTL controls"
       ],
       "evidence": [
         "Native and immutable packaged image each pass four 264-case/64-audit workloads (Django, Go, v1, v2), plus four cross-runtime session rounds and actual fallback rejection. See docs/architecture/go-migration/impersonation-management.md for source-bound receipts and final strengthened replay status.",
@@ -2323,7 +2324,14 @@
         "Hosted b225276 job 120775075723 in quality run 40061247470 passes native and Linux/amd64 packaged acceptance; artifact 12547443852 independently matches 826 build-context files and 1096 oracle hashes. Five native PostgreSQL groups,6 native / 20 container Redis controls, 24 shortened TTLs per full run, durable fallback rejection and cleanup pass. Image embeds PR merge 0f23a2f8c907d0b32fa3e47093940243ab2152c3; broader CI and migration acceptance remain separate.",
         "Parent native replay passes 24 overlap/revocation scenarios across Django/Django, Go/Go and both mixed directions, plus 16 shortened TTL reads and a separate real barrier-exception cleanup control. Actual advisory/table locks establish admitted boundaries; duplicate ended audits, multiple replacement sessions, persistent DEL failure and post-admission eligibility/revocation retain Django outcomes. All 128 managed models, exact audit/index/cache state, workers and locks are checked. These owner/athlete races use direct native URLs; ordinary 4×264 Caddy/native contracts and five PostgreSQL groups pass alongside them. See impersonation-management.md and ignored impersonation-concurrency/parent-audit.json.",
         "Hosted 4c912c6 job 120779815977 in run 40062822323 passes 24 native races and the sequential packaged matrix. Independent artifact audit matches 1253 distinct source paths, including all 826 build-context files, to the published commit; cleanup passes. Image/Caddy races remain unclaimed.",
-        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md."
+        "Independent parent replay of unchanged compiled UI passes Django/v1 and committed b225276 Go/v2: 17 required checkpoints, 12 ACCESS events, seven exact picker checks, foreign-athlete denial, unchanged actor credentials and real expiry recovery per version. All 128 managed models and DB1 values checked with documented login/audit/session/readiness exceptions; unrelated audit/index sentinel preserved. Selected Django observer 93/0, real 200 fallback rejected, source/build/UI stability and cleanup pass. Same final source has genuine picker 404 red on the preserved pre-management image. Explicit Django coexistence dependencies, current schema and private aliases are not installed/history/activation acceptance. See impersonation-management.md.",
+        {
+          "command": "TESTS_IMPERSONATION_MANAGEMENT_CONCURRENCY=1 TESTS_IMPERSONATION_MANAGEMENT_GO=1 TESTS_IMPERSONATION_MANAGEMENT_REPOSITORY=1 TESTS_IMPERSONATION_MANAGEMENT_VERSIONED=1 python TESTS/adapters/django/accounts.py --only impersonation-management",
+          "revision": "797d1991 plus exact source_sha256/source_hashes in parent runtime receipts",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/active-expiry-parent-audit.json",
+          "scope": "32 native concurrency cases, including8 active-expiry cases;4x264 native/versioned HTTP. No packaged/Caddy expiry-race or full-route claim."
+        }
       ],
       "notes": [
         "Current-schema implementing slice only; no verified or activation claim. Complete frontend behavior, additional administrator/collaborator races, mutating disconnect/shutdown, historical installed data and backend switching remain open.",
@@ -4564,7 +4572,8 @@
           "result": "passed",
           "artifact": "quality-reports/go-migration/collaborator-delete/http-results.json",
           "revision": "29ac4838 plus exact source_sha256 for email-link oracle",
-          "scope": "Eight email-link reference cases with exact state/cache/audit; duplicate lowest-PK selection is characterization with unresolved durable identity. No Go mutation acceptance."
+          "scope": "Eight email-link reference cases with exact state/cache/audit; duplicate lowest-PK selection is characterization with unresolved durable identity. No Go mutation acceptance.",
+          "command": "python TESTS/adapters/django/accounts.py --only collaborator-delete"
         }
       ],
       "notes": [
@@ -4732,7 +4741,8 @@
           "result": "passed",
           "artifact": "quality-reports/go-migration/collaborator-browser-parent-29ac4838-r7/results.json",
           "revision": "29ac4838a4e23cec697b446ec5e96b777e892831; exact 852 Go and 454 reference hashes in receipt",
-          "scope": "Same compiled UI list on v1/v2; ordinary logins, exact rows, pagination, denial, state/cache, real misroute rejection and cleanup. Explicit Django dependencies; no mutation or full-route claim."
+          "scope": "Same compiled UI list on v1/v2; ordinary logins, exact rows, pagination, denial, state/cache, real misroute rejection and cleanup. Explicit Django dependencies; no mutation or full-route claim.",
+          "command": "python TESTS/adapters/django/collaborator_list_browser.py --image sha256:d4c5488f3d1f75d0af4c2bc222778d6d3300b571b00e171d21f1266984eb4543 --expected-revision 29ac4838a4e23cec697b446ec5e96b777e892831 --build-receipt quality-reports/go-migration/acceptance-image-owned-transactions/results.json --go-source quality-reports/go-migration/acceptance-image-owned-transactions/source --ui-dir quality-reports/go-migration/collaborator-browser-ui-reference/artifact-dashboard --ui-provenance quality-reports/go-migration/collaborator-browser-ui-reference/provenance-dashboard.json --output quality-reports/go-migration/collaborator-browser-parent-29ac4838-r7"
         }
       ],
       "notes": [
@@ -9705,7 +9715,9 @@
         "TESTS/adapters/django/payment_category_transaction_failures.py",
         "BE_GO/internal/handler/payment_categories_admission_test.go",
         "BE_GO/internal/paymentcategorylifecycle/lifecycle_test.go; payment_categories_admission_test.go: pre-admission cancellation, admitted client disconnect, drain cancellation and cleanup",
-        "TESTS/adapters/django/payment_category_shutdown.py; TESTS/test_payment_category_shutdown_oracle.py"
+        "TESTS/adapters/django/payment_category_shutdown.py; TESTS/test_payment_category_shutdown_oracle.py",
+        "TESTS/adapters/go/payment_category_shutdown_image.py: shared real25-second shutdown oracle on source-bound image; parent native and packaged acceptance passed",
+        "TESTS/adapters/go/test_payment_category_shutdown_image.py: protocol and negative controls only"
       ],
       "evidence": [
         "docs/architecture/go-migration/payment-categories.md",
@@ -9734,6 +9746,13 @@
           "revision": "f9a71e3 plus exact source hashes and final native binary 65c6fa8e412302ece160866aba53ad84fb0eb1affc186a22b6666dba44d82379",
           "result": "passed",
           "artifact": "quality-reports/go-migration/parallel-delivery-20261025/shutdown-parent-audit.json"
+        },
+        {
+          "command": "python TESTS/adapters/go/payment_category_shutdown_image.py --image sha256:88248f0b177915515c5066784a6c0b53d0ac45cbbde71e5690c12e3d7bf348ea --expected-revision 797d1991a29bf63fce27121691b47259f61951e2 --build-receipt quality-reports/go-migration/acceptance-image-shutdown-797d1991-r2/results.json --go-source quality-reports/go-migration/acceptance-image-shutdown-797d1991-r2/source --output quality-reports/go-migration/payment-category-shutdown-image-parent-797d-r3",
+          "revision": "797d1991 plus853 recorded context files and exact parent oracle source_sha256",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/parallel-delivery-20261025/packaged-shutdown-parent-audit.json",
+          "scope": "Two real packaged DELETE shutdown cases, four executable identities, shared-kernel audit clock, exact effects/recovery and cleanup. No Caddy/Django/all-mutation/installed shutdown claim."
         }
       ],
       "notes": [

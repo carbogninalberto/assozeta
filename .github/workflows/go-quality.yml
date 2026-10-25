@@ -445,7 +445,7 @@ jobs:
           subprocess.run(['docker', 'pull', image], check=True)
           PYIMAGE
       - name: Verify JSON and retained-state oracle controls
-        run: python -m unittest TESTS.test_impersonation_contract -v
+        run: python -m unittest TESTS.test_impersonation_contract TESTS.test_impersonation_active_expiry -v
       - name: Verify real Redis command faults and exact ACL restoration
         run: python TESTS/adapters/redis_faults.py --output quality-reports/go-migration/impersonation-redis-fault-controls
       - name: Verify native and versioned impersonation contracts, races and live PostgreSQL checks
@@ -826,6 +826,14 @@ jobs:
         run: |
           npm ci --prefix UI
           node UI/scripts/test-permissions-component.mjs
+      - name: Verify packaged category SIGTERM, expired drain and recovery
+        run: |
+          python -m unittest TESTS.adapters.go.test_payment_category_shutdown_image TESTS.test_payment_category_shutdown_oracle -v
+          python TESTS/adapters/go/payment_category_shutdown_image.py \
+            --image "$(cat quality-reports/go-migration/impersonation-browser-build/image-id)" \
+            --expected-revision "$GITHUB_SHA" \
+            --build-receipt quality-reports/go-migration/impersonation-browser-build/results.json \
+            --output quality-reports/go-migration/payment-category-shutdown-image
       - name: Verify collaborator list, pagination and denied access on both backends
         run: |
           python -m unittest TESTS.adapters.django.collaborator_list_browser TESTS.test_collaborator_browser_checkpoints -v
@@ -890,3 +898,5 @@ jobs:
             quality-reports/go-migration/collaborator-browser/v*/browser.json
             quality-reports/go-migration/collaborator-browser/v*/validation.json
             quality-reports/go-migration/collaborator-browser-ui/provenance.json
+            quality-reports/go-migration/payment-category-shutdown-image/results.json
+            quality-reports/go-migration/payment-category-shutdown-image/http-results.json

@@ -51,6 +51,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
         paths.add(ROOT / 'TESTS/adapters/django/impersonation_effects.py')
         if concurrency_requested:
             paths.add(ROOT / 'TESTS/adapters/django/impersonation_concurrency.py')
+            paths.add(ROOT / 'TESTS/test_impersonation_active_expiry.py')
         if versioned:
             paths.update(ROOT / relative for relative in ('TESTS/adapters/caddy.py', 'selfhost/caddy/Caddyfile', 'UI/Dockerfile'))
         result = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(paths)}
@@ -658,6 +659,10 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
                 go_base=base if go_runtime else None, users=users, tokens=tokens,
                 descriptions=descriptions, associations=associations, address=address, observe=observe)
             assert concurrency['requested'] and concurrency['success'] and concurrency['cleanup_verified'] and concurrency['source_stable']
+            pairings = 4 if go_runtime else 1
+            assert len(concurrency['cases']) == 8 * pairings
+            assert concurrency['expiry_case_count'] == 2 * pairings
+            assert len(concurrency['expected_expiry_cases']) == 2 * pairings
     finally:
         try:
             runtime_stack.close()

@@ -1,11 +1,12 @@
-"""Native Go process-shutdown acceptance for admitted payment-category DELETE.
+"""Go process-shutdown acceptance for admitted payment-category DELETE.
 
 The two cases use real PostgreSQL row-lock waiters. They do not replace the
 server clock, timeout, process, listener or database transaction. This helper
 proves the observable owned-process, socket and PostgreSQL outcomes. It does
 not instrument the internal ``server.Close()`` call in the drain-timeout branch.
-Django process shutdown, packaged/Caddy shutdown, wider operations and
-interruption/switching remain unproven.
+The default runtime is native; an injected packaged runtime uses these same
+behavioral assertions. Django/Caddy shutdown, wider operations and interruption/
+switching remain unproven.
 """
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -95,6 +96,33 @@ def _utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+class AuditClock:
+    """Capture authored audit bounds in one declared wall-clock domain.
+
+    Drain deadlines continue to use time.monotonic. The default reader preserves
+    the native oracle's host UTC clock; packaged adapters supply an actual clock
+    in the server's Linux kernel and retain each boundary sample as evidence.
+    """
+    def __init__(self, read=None, source=None):
+        if read is None:
+            assert source is None
+            read = lambda: datetime.now(timezone.utc)
+            source = {'kind': 'host_utc', 'reader': 'datetime.now(timezone.utc)'}
+        else:
+            assert isinstance(source, dict) and source, 'Injected audit clock needs provenance'
+        self.read = read
+        self.evidence = {'source': dict(source), 'samples': []}
+
+    def __call__(self, boundary):
+        value = self.read()
+        assert isinstance(value, datetime) and value.utcoffset() is not None, (
+            'Audit clock must return a timezone-aware datetime', boundary,
+        )
+        value = value.astimezone(timezone.utc)
+        self.evidence['samples'].append({'boundary': boundary, 'timestamp': value.isoformat()})
+        return value
+
+
 def _category_id(number):
     assert 197000 <= number <= 197999
     return f'00000000-0000-4000-8000-{number:012d}'
@@ -179,8 +207,16 @@ def _wait(predicate, description, timeout, not_before=None):
 
 
 def run(*, work, log, tool_env, address, owner_id, association_id, token, snapshot,
-        evidence_path):
+        evidence_path, server_factory=None, database_guard=None, listener_probe=None,
+        request_headers=None, runtime_kind="native", audit_clock=None):
     import psycopg2
+
+    assert runtime_kind in ("native", "packaged")
+    server_factory = server_factory or native_server
+    database_guard = database_guard or _private_database_guard
+    request_headers = dict(request_headers or {})
+    binary_prefix = runtime_kind + "_binary"
+    audit_clock = audit_clock or AuditClock()
 
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
@@ -196,7 +232,10 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
     owner_id, association_id = str(owner_id), str(association_id)
     evidence = {
         'success': False,
-        'scope': 'native Go payment-category DELETE process shutdown on private PostgreSQL',
+        'scope': runtime_kind + ' Go payment-category DELETE process shutdown on private PostgreSQL',
+        'runtime_kind': runtime_kind,
+        'authored_request_headers': request_headers,
+        'audit_clock': audit_clock.evidence,
         'contract': (
             'observable owned process, HTTP socket, PostgreSQL backend and persisted state; '
             'the internal drain-timeout server.Close() call is not instrumented'
@@ -211,7 +250,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
         'interruption_and_switching_proven': False,
         'cleanup_verified': False,
         'source_stable': False,
-        'native_binary_all_four_matches': False,
+        binary_prefix + '_all_four_matches': False,
         'processes': [],
         'source_sha256': _source_hashes(),
         'started_at': _utc_now(),
@@ -219,7 +258,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
     _write_evidence(evidence_path, evidence)
 
     database = settings.DATABASES['default']
-    _private_database_guard(work, database)
+    database_guard(work, database)
     initial_snapshot = snapshot()
     assert len(initial_snapshot) == MODEL_COUNT, (
         'caller must supply the complete managed snapshot', len(initial_snapshot),
@@ -262,11 +301,11 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
         process = None
         record = None
         try:
-            with native_server(
+            with server_factory(
                 work, log, tool_env, address, process_observer=observe,
             ) as runtime:
                 assert len(observed) == 1, (
-                    'native server must expose exactly one owned process after readiness'
+                    'server factory must expose exactly one owned process after readiness'
                 )
                 process, record = observed[0]
                 assert all(
@@ -384,6 +423,8 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
         return row
 
     def listen_closed(port):
+        if listener_probe is not None:
+            return listener_probe(port)
         try:
             connection = socket.create_connection(('127.0.0.1', port), timeout=.25)
         except OSError as error:
@@ -705,17 +746,17 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
             cleanup = None
             cleanup_failures = []
             try:
-                with observed_server('graceful-native') as (
+                with observed_server('graceful-' + runtime_kind) as (
                     runtime, process, process_record,
                 ):
                     target = urlsplit(runtime['base_url'])
                     blocker, blocker_identity = blocker_connection(category_id)
                     delete_cid = cid_prefix + '-delete'
-                    request_started = datetime.now(timezone.utc)
+                    request_started = audit_clock('graceful.request_started')
                     future = executor.submit(
                         Client(runtime['base_url'], token, timeout=35).request,
                         'DELETE', f'/payment/category/{category_id}/delete', None,
-                        {'X-Correlation-ID': delete_cid},
+                        {**request_headers, 'X-Correlation-ID': delete_cid},
                     )
                     waiter = wait_category_lock(
                         blocker_identity, 'graceful DELETE category lock',
@@ -745,11 +786,11 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
                     assert release_at - signal_at < 20, (
                         'blocker was not released comfortably before 25s drain'
                     )
-                    release_dt = datetime.now(timezone.utc)
+                    release_dt = audit_clock('graceful.blocker_release_before')
                     blocker.rollback()
                     case['blocker_released_at'] = _utc_now()
                     status, response = future.result(timeout=15)
-                    delete_completed = datetime.now(timezone.utc)
+                    delete_completed = audit_clock('graceful.delete_completed')
                     assert (status, response) == (
                         200, {'msg': 'payment category deleted'},
                     ), (status, response)
@@ -795,18 +836,18 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
             recovery_cleanup = None
             recovery_cleanup_failures = []
             try:
-                with observed_server('graceful-recovery-native') as (
+                with observed_server('graceful-recovery-' + runtime_kind) as (
                     runtime, recovery_process, process_record,
                 ):
-                    recovery_started = datetime.now(timezone.utc)
+                    recovery_started = audit_clock('graceful.recovery_started')
                     status, response = Client(
                         runtime['base_url'], token, timeout=15,
                     ).request(
                         'PATCH', f'/payment/category/{category_id}/update',
                         {'name': 'Shutdown recovered'},
-                        {'X-Correlation-ID': recovery_cid},
+                        {**request_headers, 'X-Correlation-ID': recovery_cid},
                     )
-                    completed = datetime.now(timezone.utc)
+                    completed = audit_clock('graceful.recovery_completed')
                     assert status == 200 and response['data']['name'] == 'Shutdown recovered', (
                         status, response,
                     )
@@ -862,17 +903,17 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
             cleanup = None
             cleanup_failures = []
             try:
-                with observed_server('expired-native') as (
+                with observed_server('expired-' + runtime_kind) as (
                     runtime, process, process_record,
                 ):
                     target = urlsplit(runtime['base_url'])
                     blocker, blocker_identity = blocker_connection(category_id)
                     abandoned_cid = cid_prefix + '-abandoned'
-                    request_started = datetime.now(timezone.utc)
+                    request_started = audit_clock('expired.request_started')
                     future = executor.submit(
                         Client(runtime['base_url'], token, timeout=40).request,
                         'DELETE', f'/payment/category/{category_id}/delete', None,
-                        {'X-Correlation-ID': abandoned_cid},
+                        {**request_headers, 'X-Correlation-ID': abandoned_cid},
                     )
                     waiter = wait_category_lock(
                         blocker_identity, 'expired DELETE category lock',
@@ -986,7 +1027,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
                     case['successful_http_response_before_blocker_release'] = False
 
                     blocker.rollback()
-                    completed = datetime.now(timezone.utc)
+                    completed = audit_clock('expired.blocker_released')
                     case['blocker_released_at'] = completed.isoformat()
                     late_commit = _wait(
                         lambda: snapshot() != seeded or None,
@@ -1055,17 +1096,17 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
             recovery_cleanup = None
             recovery_cleanup_failures = []
             try:
-                with observed_server('expired-recovery-native') as (
+                with observed_server('expired-recovery-' + runtime_kind) as (
                     runtime, recovery_process, process_record,
                 ):
-                    recovery_started = datetime.now(timezone.utc)
+                    recovery_started = audit_clock('expired.recovery_started')
                     status, response = Client(
                         runtime['base_url'], token, timeout=15,
                     ).request(
                         'DELETE', f'/payment/category/{category_id}/delete', None,
-                        {'X-Correlation-ID': recovery_cid},
+                        {**request_headers, 'X-Correlation-ID': recovery_cid},
                     )
-                    completed = datetime.now(timezone.utc)
+                    completed = audit_clock('expired.recovery_completed')
                     assert (status, response) == (
                         200, {'msg': 'payment category deleted'},
                     ), (status, response)
@@ -1127,7 +1168,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
                 failures.append(case['failure'])
             _write_evidence(evidence_path, evidence)
             print(
-                f'native Go payment-category shutdown {name}: '
+                f'{runtime_kind} Go payment-category shutdown {name}: '
                 f'{"PASS" if case["success"] else "FAIL"}',
                 flush=True,
             )
@@ -1136,7 +1177,7 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
         assert snapshot_restored, 'shutdown helper did not restore the caller snapshot'
         if failures:
             raise AssertionError(
-                f'payment-category native shutdown failures: {failures}'
+                f'payment-category {runtime_kind} shutdown failures: {failures}'
             )
         evidence['success'] = True
     except BaseException as failure:
@@ -1234,11 +1275,11 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
         native_binary_sha256 = None
         if len(process_records) != 4:
             provenance_failures.append(
-                f'expected four owned native processes, observed {len(process_records)}'
+                f'expected four owned {runtime_kind} processes, observed {len(process_records)}'
             )
         elif len(binary_hashes) != 1:
             provenance_failures.append(
-                f'native processes used {len(binary_hashes)} distinct binary hashes'
+                f'{runtime_kind} processes used {len(binary_hashes)} distinct binary hashes'
             )
         else:
             native_binary = Path(process_records[0]['binary'])
@@ -1249,12 +1290,12 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
             )
             if not all_four_match:
                 provenance_failures.append(
-                    'not all four native processes used the recorded binary'
+                    'not all four processes used the recorded binary'
                 )
         evidence.update({
-            'native_binary': str(native_binary) if native_binary is not None else None,
-            'native_binary_sha256': native_binary_sha256,
-            'native_binary_all_four_matches': all_four_match,
+            binary_prefix: str(native_binary) if native_binary is not None else None,
+            binary_prefix + '_sha256': native_binary_sha256,
+            binary_prefix + '_all_four_matches': all_four_match,
             'process_count': len(process_records),
         })
         if native_binary is not None and native_binary_sha256 is not None:
@@ -1265,10 +1306,10 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
                 provenance_failures.append(
                     f'native_binary_hash_end: {type(failure).__name__}: {failure}'
                 )
-            evidence['native_binary_sha256_after'] = binary_after
+            evidence[binary_prefix + '_sha256_after'] = binary_after
             if binary_after != native_binary_sha256:
                 provenance_failures.append(
-                    'recorded native binary changed before acceptance'
+                    'recorded binary changed before acceptance'
                 )
 
         if provenance_failures:
@@ -1287,7 +1328,9 @@ def run(*, work, log, tool_env, address, owner_id, association_id, token, snapsh
     return _jsonable(evidence)
 
 
-def run_fixture(work, log, tool_env, address):
+def run_fixture(work, log, tool_env, address, *, server_factory=None,
+                database_guard=None, listener_probe=None, request_headers=None,
+                runtime_kind="native", evidence_path=None, audit_clock=None):
     """Seed only the identities needed to run the two shutdown cases."""
     from auditlog.context import disable_auditlog
     from django.apps import apps
@@ -1298,12 +1341,13 @@ def run_fixture(work, log, tool_env, address):
     from application.models import SportAssociation, User
 
     work = Path(work)
-    evidence_path = (
+    database_guard = database_guard or _private_database_guard
+    evidence_path = Path(evidence_path) if evidence_path is not None else (
         ROOT
         / 'quality-reports/go-migration/payment-category-shutdown/http-results.json'
     )
     database = settings.DATABASES['default']
-    _private_database_guard(work, database)
+    database_guard(work, database)
 
     models = sorted(
         (
@@ -1397,6 +1441,9 @@ def run_fixture(work, log, tool_env, address):
             token=str(access),
             snapshot=managed_snapshot,
             evidence_path=evidence_path,
+            server_factory=server_factory, database_guard=database_guard,
+            listener_probe=listener_probe, request_headers=request_headers,
+            runtime_kind=runtime_kind, audit_clock=audit_clock,
         )
     except BaseException as failure:
         run_failure = failure
@@ -1468,6 +1515,9 @@ def run_fixture(work, log, tool_env, address):
         'scope': (
             'standalone native Go payment-category DELETE shutdown fixture; '
             'full payment-category, Django, packaged/Caddy and wider-operation parity remain unproven'
+            if runtime_kind == 'native' else
+            'standalone packaged Go payment-category DELETE shutdown fixture; '
+            'full payment-category, Django/Caddy and wider-operation parity remain unproven'
         ),
         'complete_payment_category_parity': False,
     }

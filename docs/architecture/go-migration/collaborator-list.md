@@ -157,3 +157,12 @@ only observed Django coexistence dependencies: manifest, logo, export-active,
 dashboard/staffboard and two WebSocket paths. This does not establish those
 dependencies in Go, installed backend activation, other collaborator workflows
 or complete route verification. Earlier failed fixture attempts are retained.
+
+Hosted run `40230170255` also passes this complete browser slice. Its Linux/amd64
+image is `sha256:f7d3e195e39c94e8449ced63ec13fd5a5a462a0fb1338cb659c087641e48ca31`,
+actual PR merge revision `2df2f5c9c7c97ce567a0f8fccec87b8aa5711831`, and server
+`1e4c746e6d5ba1cd5d1328684ebcfa94275b72d1ff37571a331cc18451b1d585`.
+The parent compares all 454 reference hashes and 852 recorded Go inputs with no
+differences. Both versions pass, including cleanup and source/UI stability.
+Downloaded evidence remains in `parallel-delivery-20261025/profile-browser-ci-797d1991/`;
+its merge revision is not relabeled as a task-branch commit.
