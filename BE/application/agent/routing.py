@@ -93,15 +93,15 @@ _OUTPUT_ACTION_START = re.compile(
     r'fallo|crealo|esportalo|general[oi])\b'
 )
 _OUTPUT_MI_ACTION_START = re.compile(
-    r'^(?:mi|ci)\s+(?:crei|generi|prepari|esporti|salvi|scarichi|invii|mandi)\b'
+    r'^(?:mi|ci)\s+(?:crei|generi|prepari|esporti|salvi|scarichi)\b'
 )
 _OUTPUT_ASSISTED_ACTION_START = re.compile(
     r'^(?:aiutami|mi\s+aiuti|mi\s+serve\s+aiuto|ho\s+bisogno\s+di\s+aiuto)\s+(?:a|per)\s+'
-    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare)\b'
 )
 _OUTPUT_POLITE_INFINITIVE_START = re.compile(
     r'^(?:puoi|potresti|mi\s+puoi|mi\s+potresti)\s+'
-    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare)\b'
 )
 _EMBEDDED_OUTPUT_COMMAND = re.compile(
     r'\b(?:fammi|dammi|crea|creami|genera|generami|prepara|preparami|esporta|esportami|'

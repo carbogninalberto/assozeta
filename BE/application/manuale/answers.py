@@ -90,7 +90,7 @@ _MANUAL_REFERENCE_CUE = re.compile(
     r'^(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
     r'|\b(?:il|lo|la|i|gli|le|nel|nello|nella|sul|sullo|sulla|dal|dallo|dalla|del|dello|della|dei|degli|delle)\s+'
     r'(?:manuale|documentazione|istruzioni|tutorial)\b'
-    r"|\b(?:una|la)\s+guida\s+(?:per|su|d['’]uso|dell['’]utente|utente)\b"
+    r"|\buna\s+guida\b|\bla\s+guida\s+(?:per|su|d['’]uso|dell['’]utente|utente)\b"
 )
 _DATA_QUERY_CUE = re.compile(
     r'\b(?:quanti|quante|quanto|quanta|quali|quando|chi|totale|saldo|importo|'
