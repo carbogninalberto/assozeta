@@ -67,16 +67,22 @@ class GoComposeTests(unittest.TestCase):
             migration, api = services['migrate-go'], services['api-go']
             for field in ('image', 'user', 'read_only', 'security_opt'):
                 self.assertEqual(migration[field], api[field], field)
-            self.assertEqual(api['environment']['GO_LOGO_SPOOL_DIR'], '/var/cache/assozeta-logo')
+            http_spools = {
+                'GO_LOGO_SPOOL_DIR': '/var/cache/assozeta-logo',
+                'GO_MESSAGE_LIST_SPOOL_DIR': '/var/cache/assozeta-message-list',
+            }
             self.assertEqual(migration['environment'], {
                 name: value for name, value in api['environment'].items()
-                if name != 'GO_LOGO_SPOOL_DIR'})
+                if name not in http_spools})
             self.assertEqual(migration['volumes'], [
-                volume for volume in api['volumes'] if volume['target'] != '/var/cache/assozeta-logo'])
-            spool = [volume for volume in api['volumes'] if volume['target'] == '/var/cache/assozeta-logo']
-            self.assertEqual(len(spool), 1)
-            self.assertEqual(spool[0]['type'], 'volume')
-            self.assertNotIn('source', spool[0])
+                volume for volume in api['volumes'] if volume['target'] not in http_spools.values()])
+            for variable, target in http_spools.items():
+                self.assertEqual(api['environment'][variable], target)
+                self.assertNotIn(variable, migration['environment'])
+                spool = [volume for volume in api['volumes'] if volume['target'] == target]
+                self.assertEqual(len(spool), 1)
+                self.assertEqual(spool[0]['type'], 'volume')
+                self.assertNotIn('source', spool[0])
             self.assertEqual(migration['entrypoint'], ['/app/migrate'])
             self.assertEqual(migration['profiles'], ['tools'])
             self.assertEqual(migration['restart'], 'no')
