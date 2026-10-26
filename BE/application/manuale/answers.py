@@ -68,9 +68,9 @@ _PLATFORM_OPS = (
     r'salvo|inviare|invio|invia'
 )
 _PLATFORM_TERMS = (
-    r'report|export|esportazione|pagament[oi]|soci[oi]|iscrizion[ei]|certificat[oi]|'
-    r'tesser[ae]|cors[oi]|bilanci[oi]|fattur[ae]|ricevut[ae]|presenz[ae]|carnet|'
-    r'calendari[oi]|comunicazion[ei]|modul[oi]|tag|registro|contabilita|contabilità|'
+    r'report|export|esportazione|pagament[oi]|soc(?:io|i)|iscrizion[ei]|certificat[oi]|'
+    r'tesser[ae]|cors[oi]|bilanc(?:io|i)|fattur[ae]|ricevut[ae]|presenz[ae]|carnet|'
+    r'calendar(?:io|i)|comunicazion[ei]|modul[oi]|tag|registro|contabilita|contabilità|'
     r'bonific[oi]|quota|quote|dashboard|bacheca|impostazion[ei]|ann[oi]\s+(?:sportivo|fiscale)'
 )
 _HOW_TO_CUE = re.compile(
@@ -86,16 +86,35 @@ _DEFINITION_CUE = re.compile(
     r"\b(?:che\s+cos['’]?è|che\s+cos['’]?e|cos['’]?è|cos['’]?e|che\s+cosa\s+(?:e|è)|cosa\s+significa|cosa\s+vuol\s+dire|"
     r'a\s+cosa\s+serve)\b'
 )
+_MANUAL_REFERENCE_CUE = re.compile(
+    r'^(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
+    r'|\b(?:il|lo|la|i|gli|le|nel|nello|nella|sul|sullo|sulla|dal|dallo|dalla|del|dello|della|dei|degli|delle)\s+'
+    r'(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
+    r'|\b(?:cerca|apri|leggi|mostrami|trovami)\b.{0,30}\b(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
+)
+_DATA_QUERY_CUE = re.compile(
+    r'\b(?:quanti|quante|quanto|quanta|quali|quando|chi|totale|saldo|importo|'
+    r'elenco|lista|incassat[oi]|pagat[oi]|insolut[oi]|scadut[oi]|attiv[oi])\b'
+)
+_PROCEDURAL_CUE = re.compile(
+    r'\b(?:qual\s+(?:e|è)\s+(?:la\s+procedura|il\s+modo)|quali\s+passaggi|'
+    r'cosa\s+devo\s+fare\s+per|come\s+funziona)\b'
+)
 
 
 def is_manual_question(message):
     """Route explicit procedural help; ordinary data/action requests keep their path."""
     message = message.lower().strip()
-    if re.search(r'\b(manuale|documentazione|istruzioni|tutorial|guida)\b', message):
+    if _MANUAL_REFERENCE_CUE.search(message):
         return True
     if _HOW_TO_CUE.search(message):
         return True
-    if _EXPLANATION_CUE.search(message) and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message):
+    if (_PROCEDURAL_CUE.search(message)
+            and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message)):
+        return True
+    if (_EXPLANATION_CUE.search(message)
+            and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message)
+            and not _DATA_QUERY_CUE.search(message)):
         return True
     if _DEFINITION_CUE.search(message) and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message):
         return True

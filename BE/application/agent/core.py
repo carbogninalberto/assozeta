@@ -6,6 +6,7 @@ import asyncio
 import html
 import json
 import logging
+import re
 
 from django.conf import settings
 
@@ -40,6 +41,10 @@ from application.mcp_server.server import (
 logger = logging.getLogger(__name__)
 
 MAX_MESSAGE_LENGTH = 2000
+_FOLLOW_UP_ANSWER = re.compile(
+    r'\?|\b(?:quale|quali|specifica|indica|dimmi|preferisci|vuoi|confermi)\b',
+    re.I,
+)
 
 # Map tool names to their Python functions
 TOOL_FUNCTIONS = {
@@ -89,6 +94,11 @@ def _truncate_tool_result(result: str, max_length: int = 15000) -> str:
     if len(result) <= max_length:
         return result
     return result[:max_length] + '\n\n... [risultato troncato, usa filtri più specifici o limit per ridurre i dati]'
+
+
+def _answer_requires_follow_up(text: str) -> bool:
+    """Keep continuation state only when the assistant asks for user input."""
+    return bool(text and _FOLLOW_UP_ANSWER.search(text))
 
 
 class Agent:
@@ -248,21 +258,30 @@ class Agent:
         self.last_route = route
         logger.info('Agent request route: %s (%s)', route.intent.value, route.reason)
 
-        if route.intent == Intent.ACTION:
+        ai_enabled = self.provider is not None
+        if route.intent == Intent.ACTION or (route.intent == Intent.AMBIGUOUS and ai_enabled):
             self._pending_action = True
         elif route.intent != Intent.AMBIGUOUS:
             self._pending_action = False
 
-        ai_enabled = self.provider is not None
         manual_available = await self._manual_is_available()
+        saved_reports_enabled = bool(self.user_id)
 
         if route.intent == Intent.CAPABILITIES:
-            answer = capability_answer(ai_enabled=ai_enabled, manual_available=manual_available)
+            answer = capability_answer(
+                ai_enabled=ai_enabled,
+                manual_available=manual_available,
+                saved_reports_enabled=saved_reports_enabled,
+            )
             await self._send_direct_answer(answer)
             return
 
         if route.intent == Intent.CONVERSATION:
-            capabilities = capability_answer(ai_enabled=ai_enabled, manual_available=manual_available)
+            capabilities = capability_answer(
+                ai_enabled=ai_enabled,
+                manual_available=manual_available,
+                saved_reports_enabled=saved_reports_enabled,
+            )
             normalized = route.query.casefold()
             if any(word in normalized for word in ('grazie', 'perfetto', 'ottimo', 'capito', 'va bene', 'ok')):
                 answer = f'Prego. {capabilities}'
@@ -274,6 +293,7 @@ class Agent:
             return
 
         if route.intent == Intent.ACTION and not ai_enabled:
+            self._pending_action = False
             answer = manual_only_action_answer(manual_available=manual_available)
             await self._send_direct_answer(answer)
             return
@@ -302,6 +322,7 @@ class Agent:
             )
 
             if response.finish_reason == 'error':
+                self._pending_action = False
                 logger.error(f"LLM error: {response.content}")
                 await self.callback.on_error(
                     "Si e' verificato un problema temporaneo. Riprova tra qualche secondo."
@@ -389,6 +410,7 @@ class Agent:
                         tools=[],  # No tools — forces text response
                         on_chunk=self.callback.on_message_chunk,
                     )
+                    self._pending_action = _answer_requires_follow_up(forced.content)
                     if forced.content:
                         await self.callback.on_message_end()
                         self.messages.append({
@@ -407,10 +429,14 @@ class Agent:
                         'role': 'assistant',
                         'content': response.content,
                     })
+                    self._pending_action = _answer_requires_follow_up(response.content)
+                else:
+                    self._pending_action = False
                 break
 
         else:
             # Max iterations reached
+            self._pending_action = False
             await self.callback.on_error(
                 'Ho raggiunto il limite massimo di operazioni. '
                 'Prova a riformulare la richiesta in modo più specifico.'

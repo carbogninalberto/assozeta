@@ -29,16 +29,27 @@ class RequestRoutingTests(SimpleTestCase):
             'Mi serve aiuto': Intent.CAPABILITIES,
             'Che report posso creare?': Intent.CAPABILITIES,
             'Cosa posso esportare?': Intent.CAPABILITIES,
+            'Aiutami a esportare i pagamenti di gennaio in PDF': Intent.ACTION,
+            'Mi aiuti a creare un report dei soci?': Intent.ACTION,
+            'Ho bisogno di aiuto: come posso assegnare un tag?': Intent.MANUAL_FAQ,
             'ciao': Intent.CONVERSATION,
             'grazie mille': Intent.CONVERSATION,
             'Come posso creare un report PDF?': Intent.MANUAL_FAQ,
             'Dove trovo le ricevute?': Intent.MANUAL_FAQ,
             "Cos'è una ricevuta?": Intent.MANUAL_FAQ,
+            'Cerca nel manuale come creare un tag': Intent.MANUAL_FAQ,
+            'Mostrami la documentazione sui pagamenti': Intent.MANUAL_FAQ,
+            'Sai dirmi quanti pagamenti ho incassato a gennaio?': Intent.ACTION,
+            'Mi spieghi il totale dei pagamenti di gennaio?': Intent.ACTION,
+            'Spiegami quali pagamenti sono insoluti': Intent.ACTION,
             'Crea un report PDF dei pagamenti di gennaio': Intent.ACTION,
             'Puoi generarmi un file Excel dei soci?': Intent.ACTION,
             'Puoi farmi un report dei soci?': Intent.ACTION,
             'Mi fai un report dei soci?': Intent.ACTION,
             'Vorrei i pagamenti di gennaio': Intent.ACTION,
+            'Crea un report con una guida introduttiva': Intent.ACTION,
+            'Esporta la documentazione dei soci': Intent.ACTION,
+            'Esporta i pagamenti del corso Guida sicura': Intent.ACTION,
             'Qual è il totale dei pagamenti?': Intent.ACTION,
             'Quanti soci hanno pagato questo mese?': Intent.ACTION,
             'Mostrami la copertura del manuale': Intent.MANUAL_DIAGNOSTIC,
@@ -89,8 +100,24 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         self.assertIn("dati dell'associazione", answer)
         self.assertIn('export e report', answer)
         self.assertIn('manuale', answer)
+        self.assertNotIn('report salvati', answer)
         self.assertNotIn('search_manual', answer)
         self.assertNotIn('query_data', answer)
+
+    def test_saved_report_capability_requires_trusted_user(self):
+        callback = AsyncMock()
+        agent = Agent(
+            'association',
+            'Aurora',
+            object(),
+            callback,
+            user_id='trusted-user',
+            manual_available=True,
+        )
+
+        asyncio.run(agent.process_message('Cosa sai fare?'))
+
+        self.assertIn('consultare i report salvati', callback.on_message_chunk.call_args.args[0])
 
     def test_capability_answer_does_not_claim_unavailable_manual(self):
         callback = AsyncMock()
@@ -141,6 +168,40 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         callback.on_message_end.assert_awaited_once()
         callback.on_done.assert_awaited_once()
         self.assertEqual(agent.last_route.intent, Intent.ACTION)
+
+    def test_help_with_explicit_operation_reaches_the_action_loop(self):
+        callback = AsyncMock()
+        provider = RecordingProvider([LLMResponse(content='Preparo i pagamenti richiesti.')])
+        agent = Agent('association', 'Aurora', provider, callback, manual_available=True)
+
+        asyncio.run(agent.process_message(
+            'Aiutami a esportare i pagamenti di gennaio in PDF',
+        ))
+
+        self.assertEqual(agent.last_route.intent, Intent.ACTION)
+        self.assertEqual(len(provider.calls), 1)
+        callback.on_tool_call.assert_not_awaited()
+
+    def test_help_with_explicit_faq_operation_reaches_verified_manual(self):
+        callback = AsyncMock()
+        provider = RecordingProvider([])
+        agent = Agent('association', 'Aurora', provider, callback, manual_available=True)
+        recorded = []
+
+        def search_manual(**kwargs):
+            recorded.append(kwargs)
+            return {'status': 'no_evidence', 'results': []}
+
+        with patch.dict(TOOL_FUNCTIONS, {'search_manual': search_manual}), \
+             patch('instance.restore.locking.coordinated_sync', side_effect=lambda function: function):
+            asyncio.run(agent.process_message(
+                'Ho bisogno di aiuto: come posso assegnare un tag?',
+            ))
+
+        self.assertEqual(agent.last_route.intent, Intent.MANUAL_FAQ)
+        self.assertEqual(provider.calls, [])
+        callback.on_tool_call.assert_awaited_once()
+        self.assertEqual(recorded[0]['sport_association_id'], 'association')
 
     def test_faq_question_stays_on_verified_manual_route_even_with_provider(self):
         callback = AsyncMock()
@@ -195,6 +256,49 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         callback.on_tool_call.assert_not_awaited()
         callback.on_done.assert_awaited()
 
+    def test_ambiguous_clarification_preserves_user_confirmation(self):
+        callback = AsyncMock()
+        provider = RecordingProvider([
+            LLMResponse(content='Preparo un PDF dei pagamenti. Va bene?'),
+            LLMResponse(content='Ho preparato il PDF dei pagamenti.'),
+        ])
+        agent = Agent('association', 'Aurora', provider, callback, manual_available=True)
+
+        asyncio.run(agent.process_message('Report dei pagamenti'))
+        self.assertEqual(agent.last_route.intent, Intent.AMBIGUOUS)
+        self.assertTrue(agent._pending_action)
+        asyncio.run(agent.process_message('ok'))
+
+        self.assertEqual(agent.last_route.reason, 'action_follow_up')
+        self.assertEqual(len(provider.calls), 2)
+        self.assertFalse(agent._pending_action)
+
+    def test_completed_action_clears_pending_state_before_acknowledgment(self):
+        callback = AsyncMock()
+        provider = RecordingProvider([
+            LLMResponse(tool_calls=[ToolCall('call-1', 'list_reports', {})]),
+            LLMResponse(content='Ho preparato il report richiesto.'),
+        ])
+        agent = Agent(
+            'association',
+            'Aurora',
+            provider,
+            callback,
+            user_id='trusted-user',
+            manual_available=True,
+        )
+
+        with patch.dict(TOOL_FUNCTIONS, {'list_reports': lambda **kwargs: {'reports': [], 'count': 0}}), \
+             patch('instance.restore.locking.coordinated_sync', side_effect=lambda function: function):
+            asyncio.run(agent.process_message('Crea un report dei pagamenti.'))
+        self.assertFalse(agent._pending_action)
+        callback.reset_mock()
+        asyncio.run(agent.process_message('perfetto'))
+
+        self.assertEqual(agent.last_route.intent, Intent.CONVERSATION)
+        self.assertEqual(len(provider.calls), 2)
+        self.assertTrue(callback.on_message_chunk.call_args.args[0].startswith('Prego.'))
+
     def test_deferred_export_and_saved_report_are_delivered_once(self):
         callback = AsyncMock()
         export = {
@@ -229,6 +333,7 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         callback.on_export_ready.assert_awaited_once_with(export)
         callback.on_report_saved.assert_awaited_once_with(saved)
         callback.on_done.assert_awaited_once()
+        self.assertFalse(agent._pending_action)
 
     def test_prompt_injection_text_cannot_change_route_or_inject_tool_arguments(self):
         callback = AsyncMock()

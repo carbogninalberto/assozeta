@@ -58,7 +58,11 @@ class ManualAnswerTests(unittest.TestCase):
         for action in ('Crea un report PDF dei pagamenti',
                        'Mi serve un report dei soci',
                        'Come stai?',
-                       'Quali bilanci sono pubblicati?'):
+                       'Quali bilanci sono pubblicati?',
+                       'Sai dirmi quanti pagamenti ho incassato a gennaio?',
+                       'Mi spieghi il totale dei pagamenti di gennaio?',
+                       'Spiegami quali pagamenti sono insoluti',
+                       'Esporta i pagamenti del corso Guida sicura'):
             self.assertFalse(answers.is_manual_question(action), action)
 
     def test_payment_and_receipt_how_to_questions_route_to_manual_without_capturing_data_queries(self):

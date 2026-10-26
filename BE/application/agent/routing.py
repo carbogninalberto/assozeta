@@ -40,8 +40,15 @@ _CAPABILITY_PATTERNS = (
     re.compile(r'\bquali\s+sono\s+le\s+(?:tue\s+)?(?:capacita|capacità|funzioni)\b'),
     re.compile(r'\b(?:come|in\s+cosa)\s+puoi\s+aiutarmi\b'),
     re.compile(r'\b(?:per|a)\s+cosa\s+puoi\s+aiutarmi\b'),
-    re.compile(r'\b(?:aiutami|mi\s+aiuti|come\s+posso\s+(?:essere\s+)?aiutato)\b'),
-    re.compile(r'\b(?:mi\s+serve|ho\s+bisogno\s+di|avrei\s+bisogno\s+di)\s+(?:un\s+)?aiuto\b'),
+    re.compile(
+        r'^(?:(?:per\s+favore|gentilmente)\s+)?(?:aiutami|mi\s+aiuti)'
+        r'(?:\s+(?:con|su)\s+(?:cosa|qualcosa))?(?:\s+per\s+favore)?[!.?\s]*$'
+    ),
+    re.compile(
+        r'^(?:mi\s+serve|ho\s+bisogno\s+di|avrei\s+bisogno\s+di)\s+(?:un\s+)?aiuto'
+        r'(?:\s+per\s+favore)?[!.?\s]*$'
+    ),
+    re.compile(r'^come\s+posso\s+(?:essere\s+)?aiutato[?.!\s]*$'),
     re.compile(r'\b(?:chi\s+sei|sei\s+un\s+(?:bot|assistente))\b'),
     re.compile(r'\bwhat\s+can\s+you\s+do\b'),
     re.compile(r'^(?:ciao[,\s]*)?(?:puoi|mi\s+puoi|sai)\s+aiutarmi(?:\s+(?:con|su)\s+cosa)?[?.!\s]*$'),
@@ -67,9 +74,44 @@ _MI_ACTION_START = re.compile(
     r'^(?:mi|ci)\s+(?:fai|dai|crei|generi|prepari|esporti|salvi|scarichi|invii|mandi|'
     r'mostri|dici|fornisci)\b'
 )
+_ASSISTED_ACTION_START = re.compile(
+    r'^(?:aiutami|mi\s+aiuti|mi\s+serve\s+aiuto|ho\s+bisogno\s+di\s+aiuto)\s+(?:a|per)\s+'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare|mostrare|'
+    r'elencare|calcolare|trovare|cercare|analizzare|confrontare)\b'
+)
+_POLITE_INFINITIVE_ACTION_START = re.compile(
+    r'^(?:puoi|potresti|mi\s+puoi|mi\s+potresti)\s+'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare|mostrare|'
+    r'elencare|calcolare|trovare|cercare|analizzare|confrontare)\b'
+)
+_OUTPUT_ACTION_START = re.compile(
+    r'^(?:(?:per\s+favore|gentilmente)[,\s]+)?'
+    r'(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai|riesci\s+a)\s+)?'
+    r'(?:fammi|farmi|fai|dammi|darmi|crea|creami|crearmi|genera|generami|generarmi|'
+    r'prepara|preparami|prepararmi|esporta|esportami|esportarmi|salva|salvami|salvarmi|'
+    r'scarica|scaricami|scaricarmi|invia|inviami|inviarmi|manda|mandami|mandarmi|'
+    r'fornisci|forniscimi|fallo|crealo|esportalo|general[oi])\b'
+)
+_OUTPUT_MI_ACTION_START = re.compile(
+    r'^(?:mi|ci)\s+(?:fai|dai|crei|generi|prepari|esporti|salvi|scarichi|invii|mandi|fornisci)\b'
+)
+_OUTPUT_ASSISTED_ACTION_START = re.compile(
+    r'^(?:aiutami|mi\s+aiuti|mi\s+serve\s+aiuto|ho\s+bisogno\s+di\s+aiuto)\s+(?:a|per)\s+'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
+)
+_OUTPUT_POLITE_INFINITIVE_START = re.compile(
+    r'^(?:puoi|potresti|mi\s+puoi|mi\s+potresti)\s+'
+    r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
+)
+_DATA_NOUNS = (
+    r'soc(?:io|i)|pagament[oi]|iscrizion[ei]|cors[oi]|certificat[oi]|ricevut[ae]|'
+    r'fattur[ae]|presenz[ae]|carnet|bilanc(?:io|i)|report|export|esportazion[ei]|'
+    r'comunicazion[ei]|modul[oi]|tag|registro'
+)
 _QUERY_START = re.compile(
     r'^(?:(?:per\s+favore|gentilmente)[,\s]+)?'
     r'(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai|riesci\s+a)\s+)?'
+    r'(?:(?:dirmi|dire|spiegarmi)\s+)?'
     r'(?:quanti|quante|quanto|quanta|chi|quando|quali|ci\s+sono|'
     r'qual\s+(?:e|è)\s+(?:il|la|lo|i|gli|le)|'
     r'cosa\s+(?:ho|abbiamo|risulta|sono)|che\s+(?:cosa\s+)?(?:ho|abbiamo|risulta|sono)|'
@@ -85,9 +127,13 @@ _REPORT_ACTION = re.compile(
 )
 _DATA_REQUEST = re.compile(
     r'^(?:voglio|vorrei|mi\s+serve|mi\s+servono|ho\s+bisogno\s+di|avrei\s+bisogno\s+di)\b.{0,80}'
-    r'\b(?:soci[oi]|pagament[oi]|iscrizion[ei]|cors[oi]|certificat[oi]|ricevut[ae]|'
-    r'fattur[ae]|presenz[ae]|carnet|bilanci[oi]|report|export|esportazion[ei]|'
-    r'comunicazion[ei]|modul[oi]|tag|registro)\b'
+    r'\b(?:' + _DATA_NOUNS + r')\b'
+)
+_DATA_EXPLANATION_START = re.compile(
+    r'^(?:mi\s+spieghi|spiegami)\s+'
+    r'(?:(?:il|lo|la|i|gli|le)\s+(?:totale|saldo|importo|elenco|lista|dati|'
+    r'andamento|riepilogo|numero)\b|(?:quanti|quante|quanto|quanta|quali|quando|chi)\b|'
+    r'(?:' + _DATA_NOUNS + r')\b)'
 )
 _FOLLOW_UP_PARAMETER = re.compile(
     r'^(?:(?:s[iì]|certo|ok|va\s+bene|perfetto|procedi|fallo|esportalo|crealo|generalo|'
@@ -122,8 +168,19 @@ def is_conversation_message(message: str) -> bool:
 def is_action_request(message: str) -> bool:
     normalized = _normalized_for_matching(message)
     return bool(_ACTION_START.search(normalized) or _MI_ACTION_START.search(normalized)
+                or _ASSISTED_ACTION_START.search(normalized)
+                or _POLITE_INFINITIVE_ACTION_START.search(normalized)
                 or _QUERY_START.search(normalized) or _DATA_REQUEST.search(normalized)
+                or _DATA_EXPLANATION_START.search(normalized)
                 or _REPORT_ACTION.search(normalized))
+
+
+def is_output_action_request(message: str) -> bool:
+    normalized = _normalized_for_matching(message)
+    return bool(_OUTPUT_ACTION_START.search(normalized)
+                or _OUTPUT_MI_ACTION_START.search(normalized)
+                or _OUTPUT_ASSISTED_ACTION_START.search(normalized)
+                or _OUTPUT_POLITE_INFINITIVE_START.search(normalized))
 
 
 def is_action_follow_up(message: str) -> bool:
@@ -137,6 +194,8 @@ def route_message(message: str, *, has_pending_action: bool = False) -> Route:
         return Route(Intent.MANUAL_DIAGNOSTIC, query, 'manual_diagnostic')
     if is_capability_question(query):
         return Route(Intent.CAPABILITIES, query, 'capabilities')
+    if is_output_action_request(query):
+        return Route(Intent.ACTION, query, 'action')
     if is_manual_question(query):
         return Route(Intent.MANUAL_FAQ, query, 'manual_faq')
     if has_pending_action and is_action_follow_up(query):
@@ -148,15 +207,17 @@ def route_message(message: str, *, has_pending_action: bool = False) -> Route:
     return Route(Intent.AMBIGUOUS, query, 'ambiguous')
 
 
-def capability_answer(*, ai_enabled: bool, manual_available: bool) -> str:
+def capability_answer(*, ai_enabled: bool, manual_available: bool,
+                      saved_reports_enabled: bool = False) -> str:
     """Describe only capabilities that can actually run in this session."""
     if ai_enabled:
         abilities = [
             "cercare e riepilogare i dati dell'associazione",
             'rispondere a domande sui dati',
             'preparare export e report',
-            'consultare i report salvati',
         ]
+        if saved_reports_enabled:
+            abilities.append('consultare i report salvati')
         if manual_available:
             abilities.append('consultare le istruzioni verificate del manuale')
         return ('In base alle autorizzazioni del tuo account, posso '
