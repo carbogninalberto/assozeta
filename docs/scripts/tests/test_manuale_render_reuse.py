@@ -204,6 +204,22 @@ class RenderReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['pages']['docs/one']['origin']['release'], 'offline-baseline-release')
         self.assertEqual(state['release'], 'offline-target-release')
 
+    def test_non_capture_asset_change_rerenders_only_its_page(self):
+        for fixture in (self.baseline, self.target):
+            asset = 'images/diagram.svg'
+            write(fixture['manual'], asset, b'<svg>old</svg>')
+            report = json.loads((fixture['run'] / 'compile.json').read_text())
+            report['pages'][0]['assets'] = {asset: render_reuse.file_hash(fixture['manual'], asset)}
+            write(fixture['run'], 'compile.json', report)
+        write(self.target['manual'], asset, b'<svg>new</svg>')
+        report = json.loads((self.target_run / 'compile.json').read_text())
+        report['pages'][0]['assets'][asset] = render_reuse.file_hash(self.target['manual'], asset)
+        write(self.target_run, 'compile.json', report)
+        plan = render_reuse.plan_render_reuse(self.target['state'], self.baseline_run)
+        self.assertEqual(plan['fresh_pages'], ['docs/one'])
+        self.assertEqual(plan['reused_pages'], ['docs/two'])
+        self.assertIn('page-local-assets-changed', plan['rejected_pages'][0]['reasons'][0])
+
     def test_renderer_inputs_are_deterministic_and_missing_tools_fail(self):
         first = render_reuse.renderer_inputs(self.target['state'])
         self.assertEqual(first, render_reuse.renderer_inputs(self.target['state']))

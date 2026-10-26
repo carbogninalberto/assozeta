@@ -33,7 +33,10 @@ MAX_ARCHIVE_BYTES = 4 * 1024 ** 3
 MAX_JSON_BYTES = 128 * 1024 ** 2
 HASH = re.compile(r'[a-f0-9]{64}\Z')
 REVISION = re.compile(r'(?:[a-f0-9]{40}|[a-f0-9]{64})\Z')
-PRIVATE_NAMES = {'browser-input.json', 'execution.log', 'preview.log', 'diagnostics.json'}
+PRIVATE_NAMES = {'browser-input.json', 'execution.log', 'preview.log', 'diagnostics.json',
+                 '.npmrc', '.pypirc', '.netrc', '.pgpass', 'auth.json', 'credentials',
+                 'credentials.json', 'service-account.json', 'kubeconfig',
+                 'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519'}
 PRIVATE_SUFFIXES = ('.pem', '.key', '.p12', '.pfx')
 
 
@@ -485,6 +488,13 @@ def _validate_evaluated_evidence(run, state, *, require_source_repositories=Fals
                 or not isinstance(page.get('compiled_sha256'), str)
                 or not HASH.fullmatch(page['compiled_sha256'])):
             raise ValueError('Compile evidence differs from generated manual bytes: ' + relative)
+        assets = page.get('assets', {})
+        if not isinstance(assets, dict):
+            raise ValueError('Compile evidence has invalid local assets')
+        for asset, expected in assets.items():
+            if not isinstance(expected, str) or not HASH.fullmatch(expected) or index.file_digest(owned(manual, asset)) != expected:
+                raise ValueError('Compiled local asset changed: ' + asset)
+            manual_files.add(asset)
 
     if render.get('status') != 'passed' or not isinstance(render.get('pages'), list):
         raise ValueError('Render evidence is not a successful complete evaluation')

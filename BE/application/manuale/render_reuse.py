@@ -328,6 +328,12 @@ def _page_facts(manifest_page, state, compile_page):
             'screenshots': recorded,
             'displayed_screenshots': [image['path'] for image in displayed],
         })
+    local_assets = compile_page.get('assets', {})
+    if not isinstance(local_assets, dict):
+        raise RenderReuseError('invalid-compiled-assets: ' + identifier)
+    for relative, expected in local_assets.items():
+        if not isinstance(expected, str) or not HASH.fullmatch(expected) or file_hash(state['manual'], relative) != expected:
+            raise RenderReuseError('compiled-asset-changed: ' + identifier)
     citation_anchors = {}
     for section in sections:
         anchor = section.get('citation_anchor')
@@ -343,6 +349,7 @@ def _page_facts(manifest_page, state, compile_page):
         'section_records': section_records,
         'screenshot_hashes': dict(sorted(screenshot_hashes.items())),
         'citation_anchors': citation_anchors,
+        'local_assets': dict(sorted(local_assets.items())),
     }
 
 
@@ -434,6 +441,7 @@ def _record_for_page(report_path, report_sha256, origin, facts, layout_hashes,
     dependencies = {
         'page_path': facts['path'],
         'page_sha256': facts['page_sha256'],
+        'local_assets': facts['local_assets'],
         'section_ids': facts['section_ids'],
         'section_records': facts['section_records'],
         'screenshot_hashes': facts['screenshot_hashes'],
@@ -508,6 +516,8 @@ def _compare_target(entry, facts, inputs):
         raise RenderReuseError('page-path-changed')
     if dependencies.get('page_sha256') != facts['page_sha256']:
         raise RenderReuseError('page-mdx-changed')
+    if dependencies.get('local_assets', {}) != facts['local_assets']:
+        raise RenderReuseError('page-local-assets-changed')
     if dependencies.get('section_ids') != facts['section_ids']:
         raise RenderReuseError('section-identities-changed')
     if dependencies.get('section_records') != facts['section_records']:
@@ -679,6 +689,7 @@ def _validate_origin_entry(state, page, entry, facts):
             or not isinstance(origin.get('release'), str) or not origin['release']):
         raise RenderReuseError('invalid-origin-identity: ' + page)
     if (entry['dependencies'].get('page_sha256') != facts['page_sha256']
+            or entry['dependencies'].get('local_assets', {}) != facts['local_assets']
             or entry['dependencies'].get('section_ids') != facts['section_ids']
             or entry['dependencies'].get('section_records') != facts['section_records']
             or entry['dependencies'].get('screenshot_hashes') != facts['screenshot_hashes']

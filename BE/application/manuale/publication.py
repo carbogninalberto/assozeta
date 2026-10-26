@@ -136,6 +136,9 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     if state.get('render_reuse'):
         manual_bindings.update({path.removeprefix('manual/'): expected
             for path, expected in read_json(run, 'render-inputs.json').items() if path.startswith('manual/')})
+        for page in read_json(run, 'compile.json')['pages']:
+            if page['page'] in verified_pages:
+                manual_bindings.update(page.get('assets', {}))
     manual_bindings['.manuale-evidence.json'] = file_digest(owned(generated_manual, '.manuale-evidence.json'))
     for page in verified_pages:
         record = rendered[page]
