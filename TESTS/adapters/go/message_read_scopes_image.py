@@ -22,6 +22,7 @@ from TESTS.adapters.django import message_read_scopes as adapter
 from TESTS.adapters.django import message_session_lifecycle as lifecycle
 from TESTS.contracts import test_message_read_scopes as contract
 from TESTS.adapters.go.payment_category_image import DATABASE, LABEL, ImageFixture
+from TESTS.adapters.go.message_image_execution import begin_cleanup
 from TESTS.adapters.go.read_route_locales_image import (
     LICENSE_PATH, _container_bytes, license_evidence, verify_binary_digest,
 )
@@ -364,6 +365,7 @@ def execute_workloads(reuse, proof, work, log, tools, build, report, private_val
             evidence['service_cleanup']['go'] = 'stopped'
         evidence['runtime_executed'] = True
     finally:
+        begin_cleanup()
         evidence['fixture_cleanup'] = adapter.cleanup_steps((
             ('private_fixture_removed', lambda: adapter.remove_private_fixture(private_fixture)),
             ('fixture_rows_removed', lambda: adapter.shared.delete_created(fixture) if fixture is not None else True),
@@ -443,6 +445,7 @@ def main(argv=None):
                         execute_workloads(reuse, proof, work, log, tools, build, report, private_values)
                     report['packaged_checks_passed'] = True
                 finally:
+                    begin_cleanup()
                     # Helpers attempt each cleanup independently; failure never
                     # becomes success even if a later cleanup attempt succeeds.
                     try:

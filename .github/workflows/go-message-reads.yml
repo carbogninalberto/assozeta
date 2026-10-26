@@ -194,3 +194,115 @@ jobs:
           name: go-message-read-scopes
           path: quality-reports/go-migration/message-read-scopes/results.json
           if-no-files-found: ignore
+
+  message-image:
+    name: Packaged message scopes and warm sessions
+    runs-on: ubuntu-24.04
+    # Build + full packaged acceptance has its own cold-cache budget. All native,
+    # browser and query gates above remain required independent jobs.
+    timeout-minutes: 90
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Default checkout preserves the tested PR merge SHA when applicable.
+          persist-credentials: false
+
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install packaged oracle dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python - <<'PY'
+          from TESTS.adapters.django.production_runtime import require_production_python
+          require_production_python()
+          PY
+
+      - name: Verify image build and packaged runner rejection controls offline
+        run: |
+          python -m unittest -v TESTS.adapters.go.test_message_image_build
+          python -m unittest -v TESTS.adapters.go.test_message_image_execution
+          python -m unittest -v TESTS.adapters.go.test_message_read_scopes_image
+
+      - name: Pull packaged acceptance fixture images
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          caddy = re.search(r'^FROM (caddy:\S+) AS production$',
+                            Path('UI/Dockerfile').read_text(), re.MULTILINE).group(1)
+          for image in ('postgres:16-alpine', 'redis:7-alpine', caddy):
+              subprocess.run(['docker', 'pull', image], check=True, timeout=300)
+          PY
+
+      - name: Build clean exact checkout Go image
+        run: |
+          python -m TESTS.adapters.go.message_image_build \
+            --expected-revision "$(git --no-replace-objects rev-parse HEAD)" \
+            --output quality-reports/go-migration/message-image-build
+
+      - name: Verify actual packaged message scopes and warm-session invalidation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          from TESTS.adapters.go.message_read_scopes_image import verify_build_receipt
+          from TESTS.adapters.go.message_image_execution import run_packaged
+          directory = Path('quality-reports/go-migration/message-image-build')
+          revision = subprocess.check_output(['git', '--no-replace-objects', 'rev-parse', 'HEAD'], text=True, timeout=30).strip()
+          build = json.loads((directory / 'results.json').read_bytes())
+          if build.get('source_revision') != revision or build.get('cleanup_verified') is not True:
+              raise SystemExit('Packaged build provenance failed')
+          verify_build_receipt(build, directory / 'source', build['image_id'], revision)
+          raise SystemExit(run_packaged([
+              '--image', build['image_id'], '--expected-revision', revision,
+              '--build-receipt', str(directory / 'results.json'),
+              '--go-source', str(directory / 'source'),
+              '--postgres', 'postgres:16-alpine', '--redis', 'redis:7-alpine',
+              '--output', 'quality-reports/go-migration/message-read-scopes-image',
+          ], deadline=1500, cleanup_grace=180))
+          PY
+
+      # Only redacted receipts leave this job. Frozen source, private build logs,
+      # copied binaries and tokenized fixtures are never artifact upload inputs.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-image-build
+          path: quality-reports/go-migration/message-image-build/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-read-scopes-image
+          path: quality-reports/go-migration/message-read-scopes-image/results.json
+          if-no-files-found: ignore

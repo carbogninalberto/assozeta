@@ -25,7 +25,7 @@ const reviewed = {
   "BE/application/views/payment_views.py": "23bc385b80772d57f9eb32739860ed287fbe7106c0168a9e584221ca13beeb71",
   "BE/application/serializers/payment_serializers.py": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
-  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e",
+  "BE/application/signals.py": "5db3be8a3db1f261492491b2f69c52de3d722b9ccb65b7e20f246a0ad2b39d72",
   "BE/application/views/supplier_views.py": "a332d25f18ba6b713cf75785aa58194bdf1165e313f8c3981efd33f3d3628321",
   "UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte": "05845d83a87bccabdf06c33a7cef340d146030056e6209f629da5f3ed9f92d0f",
   "UI/src/routes/accounting/suppliers-and-customers/detail/sections/Info.svelte": "424373aefff1e91347540e0c6f6236fd0a8bafc7e1859e559c3d3420b88602e6",

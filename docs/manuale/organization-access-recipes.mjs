@@ -26,7 +26,7 @@ const reviewed = {
   "BE/application/serializers/collaborators_serializers.py": "a79281391ff5d528e8e61fb693c47ac9f3711d181a1765a178f659495c3ec09f",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
-  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
+  "BE/application/signals.py": "5db3be8a3db1f261492491b2f69c52de3d722b9ccb65b7e20f246a0ad2b39d72"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","href=\"/#/profile\"",35],

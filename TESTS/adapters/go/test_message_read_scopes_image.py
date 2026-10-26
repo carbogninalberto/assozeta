@@ -1,11 +1,12 @@
 """Offline controls only: synthetic receipts never establish image acceptance."""
 import copy
-from contextlib import contextmanager, redirect_stderr, redirect_stdout
+from contextlib import ExitStack, contextmanager, redirect_stderr, redirect_stdout
 import inspect
 import io
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import tempfile
@@ -14,6 +15,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from TESTS.adapters.go import message_read_scopes_image as image
+from TESTS.adapters.go import message_image_execution as execution
 from TESTS.adapters.django import message_read_scopes_runtime as runtime
 from TESTS.contracts import test_message_read_scopes as scopes
 from TESTS.test_message_read_scopes import synthetic_lifecycle_receipt
@@ -488,6 +490,189 @@ class PackagedControls(unittest.TestCase):
                 image.main(['--image', 'go:latest', '--expected-revision', REVISION,
                             '--build-receipt', 'missing', '--output', str(output)])
             self.assertFalse(output.exists())
+
+
+class CleanupCancellationControls(unittest.TestCase):
+    """Actual runner teardown control flow; all service operations are offline."""
+
+    def exercise(self, boundary, sig, *, business_index=1, removal_failure=False,
+                 startup_failure=False):
+        from TESTS.adapters.django import message_reads_runtime as reuse
+        from TESTS.adapters.django import historical_read_cache as cache
+
+        attempted, finished, timers, handlers, proofs = [], [], [], {}, []
+        delivered = False
+
+        def operation(name):
+            nonlocal delivered
+            attempted.append(name)
+            if name == boundary and not delivered and (
+                    name != 'business' or attempted.count('business') == business_index):
+                delivered = True
+                handlers[sig](sig, None)
+                # Repeated external cancellation cannot abort this operation.
+                handlers[signal.SIGINT](signal.SIGINT, None)
+                handlers[signal.SIGTERM](signal.SIGTERM, None)
+            finished.append(name)
+            return True
+
+        raw = Mock()
+        raw.close.side_effect = lambda: operation('redis_client')
+        connections = SimpleNamespace(close_all=lambda: operation('db_connections'))
+        override = Mock()
+        override.disable.side_effect = lambda: operation('cache_override')
+        modules = {'django.db': SimpleNamespace(connections=connections),
+            'django.test.utils': SimpleNamespace(override_settings=Mock(return_value=override)),
+            'redis': SimpleNamespace(Redis=Mock(return_value=raw))}
+        fixture = {'tokens': {}, 'sessions': {}, 'runtime': {'cases': [{}]}}
+        guard = lambda: {'pid': 123, 'instance': 456, 'running': True}
+
+        @contextmanager
+        def django_application(*args, liveness_observer, **kwargs):
+            liveness_observer(guard)
+            yield 'http://offline.invalid', object(), 9000
+
+        @contextmanager
+        def server(*args):
+            yield {'base_url': 'http://offline.invalid', 'proxy_upstream': 'offline:8000',
+                   runtime.LIFECYCLE_GUARD: guard}
+
+        @contextmanager
+        def gateway(*args, **kwargs):
+            yield 'http://offline.invalid', 'fixture', {'image_id': IMAGE, 'container_id': 'd' * 64}
+
+        def start(proof, *args):
+            proofs.append(proof)
+            proof.image_id, proof.redis_port, proof.postgres_port = IMAGE, 1234, 5432
+            proof.containers = ['owned-postgres', 'owned-redis', 'owned-server']
+            proof.network_created = True
+            (proof.output / 'services.log').touch()
+
+            def docker(*args, **kwargs):
+                if args[0] == 'inspect':
+                    operation('image_inspect')
+                    payload = [{'Config': {'Labels': {image.LABEL: proof.identifier}}}]
+                elif args[:2] == ('network', 'inspect'):
+                    payload = [{'Labels': {image.LABEL: proof.identifier}}]
+                elif args[0] == 'rm':
+                    operation(args[-1])
+                    payload = None
+                elif args[:2] == ('network', 'rm'):
+                    operation('owned-network')
+                    payload = None
+                else:
+                    payload = None
+                failed = removal_failure and args[0] == 'rm' and args[-1] == 'owned-server'
+                return SimpleNamespace(returncode=int(failed),
+                    stdout=json.dumps(payload) if payload else '', stderr='')
+            proof.docker = docker
+            if startup_failure:
+                raise RuntimeError('offline partial startup')
+
+        with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
+            work = Path(directory)
+            output = work / 'fresh'
+            build = work / 'build.json'
+            build.write_text(json.dumps({'success': True, 'source_stable': True, 'image_id': IMAGE,
+                'source_revision': REVISION, 'server_sha256': BINARY, 'source_sha256': {}}))
+            replacements = (
+                (execution.signal, 'signal', lambda number, handler: handlers.update({number: handler})),
+                (execution.signal, 'getsignal', lambda _: signal.SIG_DFL),
+                (execution.signal, 'getitimer', lambda _: (0.0, 0.0)),
+                (execution.signal, 'setitimer', lambda *args: timers.append(args)),
+                (image, 'source_hashes', lambda: {}), (image, 'go_source_hashes', lambda _: {}),
+                (image.MessageImageFixture, 'start_services', start),
+                (image.MessageImageFixture, 'verified_server', server),
+                (reuse, 'private_environment', lambda *args: ({}, set())),
+                (reuse, 'apply_private_environment', lambda _: None),
+                (reuse, 'initialize_django_apps', lambda: (object(), None)),
+                (reuse, 'cache_override', lambda _: {}),
+                (reuse, 'migrate_full_schema', lambda _: {'applied_migrations': 547,
+                    'remaining_plan': 0, 'mode': 'full-migration-history'}),
+                (image.adapter, 'snapshot_state', lambda _: 'baseline'),
+                (cache, 'snapshot_historical_read_cache', lambda _: 'baseline'),
+                (image.adapter, 'seed_fixture', lambda *args: fixture),
+                (image.adapter, 'remove_private_fixture', lambda _: operation('private_fixture')),
+                (image.adapter.shared, 'delete_created', lambda _: operation('fixture_rows')),
+                (image.adapter, 'restore_cache', lambda *args: operation('cache_restored')),
+                (reuse, 'django_application', django_application),
+                (runtime, 'run_workloads', lambda *args: operation('business')),
+                (image, 'gateway_liveness_guard', lambda *args: guard),
+                (image, 'owned_image_caddy', gateway), (reuse, 'owned_caddy', gateway),
+                (runtime, 'misroute_control', lambda *args: {'rejected': True}),
+                (reuse, 'remove_sensitive_files', lambda *args: operation('sensitive_files')),
+                # Isolate cancellation's failure override from acceptance schema.
+                (image, 'acceptance', lambda _: True), (image, 'runtime_acceptance', lambda _: True),
+            )
+            for target, name, replacement in replacements:
+                stack.enter_context(patch.object(target, name, new=replacement))
+            stack.enter_context(patch.dict(sys.modules, modules))
+            stack.enter_context(patch('TESTS.http_client.poll'))
+            stack.enter_context(patch('socket.socket', side_effect=AssertionError('offline socket')))
+            stack.enter_context(patch('subprocess.Popen', side_effect=AssertionError('offline process')))
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            code = execution.run_packaged(['--image', IMAGE, '--expected-revision', REVISION,
+                '--build-receipt', str(build), '--output', str(output)],
+                deadline=20, cleanup_grace=7, runner=image.main)
+            result = json.loads((output / 'results.json').read_text())
+            self.assertTrue(delivered, attempted)
+            self.assertEqual(code, 1)
+            self.assertFalse(result['success'])
+            self.assertTrue(result['execution']['interrupted'])
+            self.assertEqual(result['execution']['reason'],
+                {signal.SIGALRM: 'deadline', signal.SIGINT: 'sigint', signal.SIGTERM: 'sigterm'}[sig])
+            self.assertFalse(result['execution']['escalated'])
+            self.assertEqual([name for name in attempted if name.startswith('owned-')],
+                             ['owned-server', 'owned-redis', 'owned-postgres', 'owned-network'])
+            self.assertEqual([name for name in finished if name.startswith('owned-')],
+                             ['owned-server', 'owned-redis', 'owned-postgres', 'owned-network'])
+            self.assertEqual(proofs[0].cleanup_verified, not removal_failure)
+            self.assertEqual(timers, [(signal.ITIMER_REAL, 20), (signal.ITIMER_REAL, 7),
+                                      (signal.ITIMER_REAL, 0)])
+            self.assertTrue(result['private_directory_removed'])
+            self.assertEqual(result['cleanup_verified'], not removal_failure)
+            self.assertEqual(result['cleanup_errors'], ['cleanup.image-failed'] if removal_failure else [])
+            if startup_failure:
+                self.assertNotIn('business', attempted)
+                self.assertEqual(result['errors'], ['image.execution-failed', 'execution.interrupted'])
+            elif boundary == 'business':
+                self.assertEqual(attempted.count('business'), business_index)
+                self.assertEqual(finished.count('business'), business_index - 1)
+                self.assertIn('image.execution-failed', result['errors'])
+            else:
+                self.assertEqual(attempted.count('business'), 4)
+                self.assertEqual(result['errors'], ['execution.interrupted'])
+                self.assertTrue(result['runtime']['fixture_cleanup']['verified'])
+                self.assertTrue(result['runtime']['resource_cleanup']['verified'])
+            expected = ('sensitive_files',) if startup_failure else (
+                'private_fixture', 'fixture_rows', 'cache_restored', 'redis_client',
+                'cache_override', 'sensitive_files')
+            for name in expected:
+                self.assertIn(name, finished)
+            return result
+
+    def test_first_cancellation_in_each_terminal_cleanup_finishes_all_removal_attempts(self):
+        for boundary in ('private_fixture', 'redis_client', 'sensitive_files', 'image_inspect'):
+            for sig in (signal.SIGALRM, signal.SIGINT, signal.SIGTERM):
+                with self.subTest(boundary=boundary, sig=sig):
+                    self.exercise(boundary, sig)
+
+    def test_business_cancellation_still_unwinds_before_remaining_workloads(self):
+        for index in range(1, 5):
+            for sig in (signal.SIGALRM, signal.SIGINT, signal.SIGTERM):
+                with self.subTest(index=index, sig=sig):
+                    self.exercise('business', sig, business_index=index)
+
+    def test_first_cancellation_in_outer_cleanup_after_partial_startup_finishes_removals(self):
+        for boundary in ('sensitive_files', 'image_inspect'):
+            for sig in (signal.SIGALRM, signal.SIGINT, signal.SIGTERM):
+                with self.subTest(boundary=boundary, sig=sig):
+                    self.exercise(boundary, sig, startup_failure=True)
+
+    def test_cleanup_cancellation_preserves_removal_failure_and_attempts_later_resources(self):
+        for sig in (signal.SIGALRM, signal.SIGINT, signal.SIGTERM):
+            with self.subTest(sig=sig):
+                self.exercise('image_inspect', sig, removal_failure=True)
 
 
 if __name__ == '__main__':

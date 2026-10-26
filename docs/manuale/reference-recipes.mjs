@@ -15,7 +15,7 @@ const reviewed = {
   "BE/instance/restore/views.py": "279a0a03b75681534b84944c09a684fa14402ff3b6e57da222e6619f70da6c0a",
   "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c",
   "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
-  "BE/application/signals.py": "e72989b5e66c51b5a480f3f6a8f86a6cac47747421fd3970aa83949b1fbed49e"
+  "BE/application/signals.py": "5db3be8a3db1f261492491b2f69c52de3d722b9ccb65b7e20f246a0ad2b39d72"
 };
 const contracts = [
   ["BE/application/management/commands/seed_selfhost.py","class Command(BaseCommand):",6],
