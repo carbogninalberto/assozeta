@@ -1871,7 +1871,7 @@ def run_versioned(
 
 
 @contextmanager
-def owned_caddy(report, private_log, django, golang, *, service="caddy"):
+def owned_caddy(report, private_log, django, golang, *, service="caddy", pull_policy=None):
     """Track each proxy independently, including verified container removal."""
     from TESTS.adapters.django import historical_read_routes
     from TESTS.adapters.caddy import proxy
@@ -1884,6 +1884,7 @@ def owned_caddy(report, private_log, django, golang, *, service="caddy"):
     try:
         gateway, image = stack.enter_context(proxy(
             django, golang, private_log, container_observer=container.update,
+            **({"pull_policy": pull_policy} if pull_policy is not None else {}),
         ))
         assert container.get("container_id"), "Owned Caddy identity was not observed"
         historical_read_routes.service_state(report, service, "running")

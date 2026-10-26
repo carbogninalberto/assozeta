@@ -36,10 +36,15 @@ model saves/signals. Additional intentional corrections are explicit:
   Go rejects foreign selected references, using the separate preparation contract.
 - Saving an already archived, soft-deleted payment or invoice generates a false
   full-field UPDATE audit with previous values `None`. The default manager cannot
-  find the old row. Its index fallback also misses auditlog's in-memory tuple
-  changes (JSON readback produces lists). The oracle confirms both false events
-  and absent indexes. Go uses actual stored values and logs only real deltas,
-  with direct association indexes even for changed historical linked rows.
+  find the old row. The association resolver accepts both auditlog's in-memory
+  tuple changes and persisted JSON lists, so each false event must have exactly
+  one index linked to that event and its stored association, with resolution path
+  `changes_json.sport_association` and the frozen execution timestamp. Persisted
+  changes must independently resolve to the same association and fallback path.
+  The oracle counts these indexes alongside the normal direct indexes. Go uses
+  actual stored values and logs only real deltas, with direct association indexes
+  even for changed historical linked rows. Correctly indexing the Django false
+  events does not correct their audit contents or make them expected Go events.
 - Django can commit earlier saves/audits before a later failure. Go commits all
   subscription/payment/invoice fields, audit/index rows and fenced job completion
   together, or rolls them all back, including preceding pages.
@@ -80,10 +85,14 @@ The production-Python adapter requires thirteen PostgreSQL groups under the race
 detector. Ten authored model scenarios check exact whole-row readback, fourteen
 normal audit/index events, historical false-audit characterization, shared links,
 leap/custom/retained dates, inactive/deleted owners and associations, and disabled
-auto-archive scopes. Django can
-resave Go-written rows; the fixture isolates only the confirmed legacy historical
-audit defect. Additional groups cover optional links, invalid envelopes/calendars,
-strict fiscal boundaries, foreign ownership, each write/audit/index failure,
+auto-archive scopes. The Django run additionally requires two historical false
+events and their two fallback indexes, for sixteen total indexes; the Go run
+requires only the fourteen real events and direct indexes. Django can resave
+Go-written rows; the fixture checks the same exact fallback indexes for the two
+historical false events before deleting those events and their cascading indexes
+and requiring the complete snapshot to be unchanged. Additional groups cover
+optional links, invalid envelopes/calendars, strict fiscal boundaries, foreign
+ownership, each write/audit/index failure,
 stale completion, cancellation/pool recovery, overlapping jobs, real executor
 heartbeat, failure on page two, and truthful historical linked audits.
 
@@ -96,5 +105,11 @@ association and user indexes. These fixtures claim no general latency improvemen
 Run `TESTS/adapters/django/accounts.py --only subscription-auto-archive` with the
 production Python environment. Full accounts and `--only task-bodies` include it.
 Evidence is under `quality-reports/go-migration/subscription-auto-archive/`.
+Offline negative controls run with
+`python -m unittest TESTS.test_subscription_auto_archive_index -v`. They exercise
+the adapter's index assertions with synthetic rows, rejecting missing, duplicate,
+mislinked, foreign, mistimed or incorrectly resolved indexes and incorrect total
+counts. They do not run production signals, model saves, PostgreSQL or Go and do
+not establish runtime acceptance.
 These are current-model fixtures; historical migrations, restored archives,
 production registration/scheduling and backend activation remain separate gates.

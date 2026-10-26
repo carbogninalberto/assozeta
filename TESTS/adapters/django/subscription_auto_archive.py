@@ -14,6 +14,30 @@ from .accounts import ROOT
 from .scoped_resources import uid
 
 
+def _check_audit_indexes(entries, ghost_entries, expected, indexes_for_entry,
+                         resolve_association, now, index_count_delta):
+    """Check archive index evidence; callbacks read actual ORM rows at runtime."""
+    for entry in entries:
+        model = entry.content_type.model
+        source = next(r for r in expected['application.' + model.capitalize()]
+                      if str(r[model + '_id']) == entry.object_pk)
+        indexes = list(indexes_for_entry(entry))
+        assert len(indexes) == 1, ('wrong index count', model, entry.object_pk, len(indexes))
+        index = indexes[0]
+        path = 'changes_json.sport_association' if entry in ghost_entries else 'direct'
+        assert index.log_entry_id == entry.pk, ('wrong index log entry', model, entry.object_pk)
+        assert index.sport_association_id == source['sport_association_id'], ('wrong index association', model, entry.object_pk)
+        assert index.resolution_path == path, ('wrong index resolution', model, entry.object_pk)
+        assert index.created_at == now, ('wrong index timestamp', model, entry.object_pk)
+        if entry in ghost_entries:
+            # Signals accept auditlog's tuples; persisted changes reload as lists.
+            # Require the stored index as well as independent readback resolution.
+            resolved, resolved_path = resolve_association(entry)
+            assert resolved is not None and str(resolved.pk) == str(source['sport_association_id']) and resolved_path == path, (
+                'wrong historical readback resolution', model, entry.object_pk)
+    assert index_count_delta == len(entries), ('wrong total index count', index_count_delta, len(entries))
+
+
 def run(work, log, tool_env):
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
@@ -23,6 +47,7 @@ def run(work, log, tool_env):
     from application import tasks
     from application.models import User, SportAssociation, Subscription, Payment, PaymentCategory, Invoice
     from application.models.audit_models import AuditLogIndex
+    from application.signals import resolve_sport_association_for_log_entry
 
     output=ROOT/'quality-reports/go-migration/subscription-auto-archive'
     output.mkdir(parents=True,exist_ok=True)
@@ -120,20 +145,10 @@ def run(work, log, tool_env):
                 assert entry.object_repr==f'{model.capitalize()} object ({entry.object_pk})'
                 assert entry.action==LogEntry.Action.UPDATE and entry.timestamp==now and entry.changes_text==''
                 assert all(getattr(entry,key) is None for key in ('object_id','actor_id','actor_email','cid','serialized_data','additional_data','remote_addr','remote_port'))
-                indexes=list(AuditLogIndex.objects.filter(log_entry=entry))
-                if entry in ghost_entries:
-                    assert not indexes,'legacy historical fallback unexpectedly indexed'
-                    # During the signal auditlog supplies tuple changes, while the
-                    # fallback accepts only lists; JSON readback changes tuples to lists.
-                    from application.signals import resolve_sport_association_for_log_entry
-                    resolved,path=resolve_sport_association_for_log_entry(entry)
-                    assert str(resolved.pk)==str(associations[0].pk) and path=='changes_json.sport_association'
-                    continue
-                assert len(indexes)==1,('missing index',model,entry.object_pk,entry.changes)
-                index=indexes[0]
-                source=next(r for r in expected['application.'+model.capitalize()] if str(r[model+'_id'])==entry.object_pk)
-                assert index.sport_association_id==source['sport_association_id'] and index.resolution_path=='direct' and index.created_at==now
-            assert len(after['application.AuditLogIndex'])-len(before['application.AuditLogIndex'])==len(real_entries)
+            _check_audit_indexes(entries,ghost_entries,expected,
+                lambda entry:AuditLogIndex.objects.filter(log_entry=entry),
+                resolve_sport_association_for_log_entry,now,
+                len(after['application.AuditLogIndex'])-len(before['application.AuditLogIndex']))
         message=call();assert '[DEPLOY TASK] OK!' in message,message
         check(legacy=True)
         # Repeating the repaired task produces no additional audit or row changes.
@@ -174,7 +189,9 @@ def run(work, log, tool_env):
         fixture=work/'subscription-auto-archive.json'
         fixture.write_text(json.dumps(dict(Now=now.isoformat(),Rows=rows,Audits=len(expected_logs),Owner=str(users[0].pk),OtherAssociation=str(associations[1].pk))))
         (output/'django-oracle.json').write_text(json.dumps(dict(success=True,model_cases=len(rows),audit_count=len(expected_logs),
-            repairs=['aware UTC clock','diagnostic uses subscription primary key'],null_payment_legacy_partial_write=True,null_invoice_legacy_partial_write=True,false_historical_audits=2,missing_historical_indexes=2,policy=policy),indent=2)+'\n')
+            repairs=['aware UTC clock','diagnostic uses subscription primary key'],null_payment_legacy_partial_write=True,null_invoice_legacy_partial_write=True,
+            false_historical_audits=2,missing_historical_indexes=0,historical_index_count=2,
+            historical_index_resolution='changes_json.sport_association',policy=policy),indent=2)+'\n')
         print(f'Django archive body: {len(rows)} authored cases and {len(expected_logs)} exact audits after two explicit repairs; optional-payment partial failure confirmed',flush=True)
         completed=subprocess.run(['go','test','-race','-tags=subscriptionarchiveintegration','./internal/service','-run','^TestSubscriptionAutoArchivePostgres$','-json'],
             cwd=ROOT/'BE_GO',env={**tool_env,'ASSOZETA_ARCHIVE_FIXTURE':str(fixture),
@@ -194,15 +211,21 @@ def run(work, log, tool_env):
         passed={e.get('Test') for e in events if e['Action']=='pass' and '/' in e.get('Test','')}
         assert passed==expected_names and not any(e['Action']=='skip' for e in events),'missing or skipped archive scenario'
         check()
-        # Django can save all Go-written archived objects without another audit.
+        # Re-save preserves rows; only the historical false audits recur.
         stable=snapshot();known_logs=set(LogEntry.objects.values_list('pk',flat=True))
-        for model in (Subscription,Payment,Invoice):
-            for obj in model._base_manager.filter(archived=True):
-                if model is Subscription and str(obj.pk)==rows[4]['ID']:continue
-                obj.save()
+        with patch('django.utils.timezone.datetime',wraps=datetime) as audit_clock:
+            audit_clock.now.return_value=now
+            for model in (Subscription,Payment,Invoice):
+                for obj in model._base_manager.filter(archived=True):
+                    if model is Subscription and str(obj.pk)==rows[4]['ID']:continue
+                    obj.save()
         added=list(LogEntry.objects.exclude(pk__in=known_logs))
-        assert {(e.content_type.model,e.object_pk) for e in added}=={('payment',str(payments[9].pk)),('invoice',str(invoices[9].pk))}
+        assert len(added)==2 and {(e.content_type.model,e.object_pk) for e in added}=={('payment',str(payments[9].pk)),('invoice',str(invoices[9].pk))}
         assert all(all(change[0]=='None' for change in e.changes.values()) for e in added)
+        _check_audit_indexes(added,added,expected,
+            lambda entry:AuditLogIndex.objects.filter(log_entry=entry),
+            resolve_sport_association_for_log_entry,now,
+            AuditLogIndex.objects.count()-len(stable['application.AuditLogIndex']))
         with disable_auditlog():LogEntry.objects.filter(pk__in=[e.pk for e in added]).delete()
         assert snapshot()==stable,'Django re-save changed Go-written archive values beyond confirmed historical audit defect'
         (output/'body-results.json').write_text(json.dumps(dict(success=True,scenario_groups=len(names),model_cases=len(rows)),indent=2)+'\n')

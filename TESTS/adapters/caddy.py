@@ -13,7 +13,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 @contextlib.contextmanager
-def proxy(django, golang, log, *, operations=None, network=None, network_alias=None, container_observer=None):
+def proxy(django, golang, log, *, operations=None, network=None, network_alias=None, container_observer=None, pull_policy=None):
+    if pull_policy not in (None, 'never'):
+        raise ValueError('Unsupported proxy pull policy')
     if network_alias and not network:
         raise ValueError('A proxy network alias requires an owned Docker network')
     image = re.search(r'^FROM (caddy:\S+) AS production$',
@@ -41,7 +43,8 @@ def proxy(django, golang, log, *, operations=None, network=None, network_alias=N
             return subprocess.run(['docker', *args], check=True, stdout=subprocess.PIPE,
                                   stderr=log, timeout=120).stdout.decode().strip()
         try:
-            docker('run', '--rm', '-d', '--name', name,
+            docker('run', *(['--pull=never'] if pull_policy == 'never' else []),
+                   '--rm', '-d', '--name', name,
                    *(['--network', network] if network else []),
                    *(['--network-alias', network_alias] if network_alias else []),
                    '--add-host', 'host.docker.internal:host-gateway',
