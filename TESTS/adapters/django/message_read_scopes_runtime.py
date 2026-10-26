@@ -11,10 +11,12 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 
 from TESTS.adapters.django import message_read_scopes as adapter
+from TESTS.adapters.django import message_session_lifecycle as lifecycle
 from TESTS.contracts import test_message_read_scopes as contract
 
 ROOT = adapter.ROOT
@@ -28,6 +30,9 @@ OWNED_SOURCES = (
 FIXTURE_CLEANUP = ('private_fixture_removed', 'fixture_rows_removed',
                    'managed_state_restored', 'cache_restored')
 HASH = re.compile(r'[0-9a-f]{64}\Z')
+LIFECYCLE_GUARD = 'message_session_lifecycle_process'
+CADDY_INSPECT_FORMAT = ('{"Id":{{json .Id}},"State":{"Running":{{json .State.Running}},'
+                        '"StartedAt":{{json .State.StartedAt}}},"RestartCount":{{json .RestartCount}}}')
 
 
 def require_assertions():
@@ -115,6 +120,18 @@ def acceptance(report):
                 need(result['models'] == 128 and set(result['checks']) == {'response', 'state', 'cache', 'attribution'}
                      and all(value is True for value in result['checks'].values()), 'receipt.observation')
                 need(_hash(result['state_sha256']) and _hash(result['cache_sha256']), 'receipt.hash')
+        need(tuple(workload['label'] for workload in report['lifecycle_workloads'])
+             == expected_labels(report['versioned']), 'receipt.lifecycle-labels')
+        need(all(lifecycle.acceptance(workload) for workload in report['lifecycle_workloads']),
+             'receipt.lifecycle')
+        for scopes_workload, lifecycle_workload in zip(
+                report['workloads'], report['lifecycle_workloads'], strict=True):
+            baseline = lifecycle_workload['baseline']
+            # Each adjacent pair shares the exact fixture/cache baseline. Bind
+            # every scopes observation to it, including the final scopes read.
+            need(all(result['state_sha256'] == baseline['state_sha256']
+                     and result['cache_sha256'] == baseline['cache_sha256']
+                     for result in scopes_workload['cases']), 'receipt.paired-baseline')
         if report['versioned']:
             misroute = report['misroute_control']
             need(misroute['rejected'] is True and misroute['actual_django_events'] == 1
@@ -124,6 +141,86 @@ def acceptance(report):
         return True
     except (AssertionError, KeyError, TypeError, ValueError, RuntimeError, OSError):
         return False
+
+
+def go_liveness_guard(process):
+    """Use the Popen actually observed by the existing native factory."""
+    pid = process.pid
+
+    def guard():
+        return {'pid': pid, 'instance': id(process),
+                'running': bool(process.poll() is None and process.pid == pid)}
+
+    return guard
+
+
+def inspect_owned_caddy(container_id):
+    """Inspect only bounded private identity fields; never publish Docker output."""
+    from TESTS.adapters.django import message_reads_runtime as reuse
+    contract.require(_hash(container_id), 'lifecycle.gateway-id')
+    inspected = subprocess.run(
+        ['docker', 'inspect', '--type', 'container', '--format', CADDY_INSPECT_FORMAT, container_id],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=5,
+        env=reuse.sanitized_tool_environment(),
+    )
+    contract.require(inspected.returncode == 0 and len(inspected.stdout) <= 8192,
+                     'lifecycle.gateway-inspect')
+    return json.loads(inspected.stdout)
+
+
+def _caddy_identity(value, container_id):
+    contract.require(type(value) is dict and set(value) == {'Id', 'State', 'RestartCount'},
+                     'lifecycle.gateway-fields')
+    state = value['State']
+    contract.require(value['Id'] == container_id and type(state) is dict
+                     and set(state) == {'Running', 'StartedAt'} and state['Running'] is True,
+                     'lifecycle.gateway-running')
+    started = state['StartedAt']
+    contract.require(type(started) is str and re.fullmatch(
+        r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z', started)
+        and not started.startswith('0001-') and type(value['RestartCount']) is int
+        and value['RestartCount'] >= 0, 'lifecycle.gateway-start')
+    return (container_id, started, value['RestartCount'])
+
+
+def caddy_liveness_guard(backend_guard, container_id, *, inspector=None):
+    """Bind backend handles and the existing owned container without managing it.
+
+    Injection is for offline controls only. The runner always uses Docker inspect.
+    """
+    inspect = inspect_owned_caddy if inspector is None else inspector
+    try:
+        contract.require(_hash(container_id), 'lifecycle.gateway-id')
+        backend = lifecycle._process(backend_guard)
+        identity = _caddy_identity(inspect(container_id), container_id)
+        instance = int(hashlib.sha256(json.dumps(
+            [backend['instance'], backend['pid'], *identity], separators=(',', ':'),
+        ).encode()).hexdigest(), 16) or 1
+    except BaseException:
+        raise AssertionError('lifecycle.gateway-guard') from None
+
+    def guard():
+        running = False
+        try:
+            current_backend = lifecycle._process(backend_guard)
+            current_identity = _caddy_identity(inspect(container_id), container_id)
+            running = current_backend == backend and current_identity == identity
+        except BaseException:
+            pass
+        return {'pid': backend['pid'], 'instance': instance, 'running': running}
+
+    return guard
+
+
+def run_workloads(label, backend, base_url, fixture, apps, raw, observer, guard, report):
+    """Adjacent scopes/lifecycle workloads, sharing the same service and baseline."""
+    adapter.run_workload(label, backend, base_url, fixture, apps, raw, observer,
+                         workloads=report['workloads'])
+    lifecycle_fixture = dict(fixture)
+    lifecycle_fixture[LIFECYCLE_GUARD] = guard
+    result = lifecycle.run_workload(label, backend, base_url, lifecycle_fixture, apps, raw, observer)
+    report['lifecycle_workloads'].append(result)
+    contract.require(lifecycle.acceptance(result), 'lifecycle.workload-failed')
 
 
 def misroute_control(case, base_url, observer, fixture, apps, raw):
@@ -171,7 +268,7 @@ def go_service(reuse, report, work, log, tool_environment, redis_port, versioned
                                     'codec_sha256': reuse.sha256_file(executable.with_name('image-codec'))}
             contract.require(source_hashes() == report['go_build_source_sha256'], 'go.build-source-drift')
             report['service_cleanup']['go'] = 'running'
-            yield native
+            yield {**native, LIFECYCLE_GUARD: go_liveness_guard(process)}
     finally:
         if process is not None:
             try:
@@ -216,22 +313,35 @@ def execute_private(reuse, args, report, private_output, private_values, tool_en
                 fixture = adapter.seed_fixture(apps, private_fixture, raw)
                 private_values.update(fixture['tokens'].values())
                 private_values.update(fixture['sessions'].values())
-                with reuse.django_application(report, args.versioned, None) as (django_base, observer, django_port):
-                    adapter.run_workload('django-native', 'django', django_base, fixture, apps, raw, observer,
-                                         workloads=report['workloads'])
+                django_guard = None
+
+                def remember_django_guard(guard):
+                    nonlocal django_guard
+                    django_guard = guard
+
+                with reuse.django_application(report, args.versioned, None,
+                        liveness_observer=remember_django_guard) as (django_base, observer, django_port):
+                    run_workloads('django-native', 'django', django_base, fixture, apps, raw, observer,
+                                  django_guard, report)
                     with go_service(reuse, report, work, log, tool_environment,
                                     redis_port, args.versioned) as native:
-                        adapter.run_workload('go-native', 'go', native['base_url'], fixture, apps, raw, observer,
-                                             workloads=report['workloads'])
+                        run_workloads('go-native', 'go', native['base_url'], fixture, apps, raw, observer,
+                                      native.get(LIFECYCLE_GUARD), report)
                         if args.versioned:
                             django_upstream = f'host.docker.internal:{django_port}'
                             with reuse.owned_caddy(report, log, django_upstream, native['proxy_upstream']) as (gateway, image, container):
                                 image_id = container['image_id'].removeprefix('sha256:')
                                 contract.require(_hash(image_id), 'caddy.image-binding')
                                 report['caddy_image_sha256'] = image_id
+                                # Capture both guards before either workload; a restart
+                                # between v1 and v2 must not establish a new baseline.
+                                gateway_guards = {
+                                    'django': caddy_liveness_guard(django_guard, container.get('container_id')),
+                                    'go': caddy_liveness_guard(native.get(LIFECYCLE_GUARD), container.get('container_id')),
+                                }
                                 for label, backend, version in (('caddy-v1', 'django', 'v1'), ('caddy-v2', 'go', 'v2')):
-                                    adapter.run_workload(label, backend, gateway+'/api/'+version, fixture, apps, raw, observer,
-                                                         workloads=report['workloads'])
+                                    run_workloads(label, backend, gateway+'/api/'+version, fixture, apps, raw,
+                                                  observer, gateway_guards[backend], report)
                             with reuse.owned_caddy(report, log, django_upstream, django_upstream,
                                                   service='caddy-misroute') as (gateway, _, __):
                                 report['misroute_control'] = misroute_control(fixture['runtime']['cases'][0],
@@ -261,7 +371,7 @@ def main(argv=None):
     # A fresh public destination is mandatory; never overwrite another acceptance.
     args.output.mkdir(parents=True, exist_ok=False)
     report = {'success': False, 'runtime_executed': False, 'versioned': args.versioned,
-              'errors': [], 'cleanup_errors': [], 'workloads': [],
+              'errors': [], 'cleanup_errors': [], 'workloads': [], 'lifecycle_workloads': [],
               'complete_message_family_parity': False, 'cleanup_verified': False,
               'service_cleanup': dict.fromkeys(('django', 'go', 'postgres', 'redis', 'caddy', 'caddy-misroute'), 'not_started')}
     original_environment = dict(os.environ)
@@ -302,7 +412,7 @@ def main(argv=None):
         report['success'] = acceptance(report)
         # Restrict public receipt to codes, counts, statuses, booleans and hashes.
         # The reused lifetime helper can add private startup diagnostic paths.
-        allowed = {'success', 'runtime_executed', 'versioned', 'errors', 'cleanup_errors', 'workloads',
+        allowed = {'success', 'runtime_executed', 'versioned', 'errors', 'cleanup_errors', 'workloads', 'lifecycle_workloads',
             'complete_message_family_parity', 'cleanup_verified', 'service_cleanup', 'python',
             'service_binary_sha256', 'source_sha256', 'source_sha256_after', 'go_build_source_sha256',
             'schema', 'fixture_cleanup', 'resource_cleanup', 'sensitive_cleanup', 'owned_directory_removed',

@@ -1190,8 +1190,25 @@ def count_postgres_statements(statements):
     }
 
 
+def django_liveness_guard(server, thread, observer):
+    """Retain the actual ASGI handles for the entire caller-owned lifetime."""
+    pid = os.getpid()
+    instance = int(hashlib.sha256(
+        f"{pid}:{id(server)}:{id(thread)}:{id(observer)}".encode()
+    ).hexdigest(), 16) or 1
+
+    def guard():
+        return {"pid": pid, "instance": instance, "running": bool(
+            os.getpid() == pid and thread.is_alive() and server.started
+            and not server.should_exit and not server.force_exit
+            and server.config.app is observer
+        )}
+
+    return guard
+
+
 @contextmanager
-def django_application(report, versioned, queries):
+def django_application(report, versioned, queries, *, liveness_observer=None):
     import uvicorn
     from TESTS.adapters.django import historical_read_routes
     from TESTS.http_client import poll
@@ -1208,15 +1225,20 @@ def django_application(report, versioned, queries):
         access_log=False,
     ))
     thread = threading.Thread(target=server.run, daemon=True)
+    guard = django_liveness_guard(server, thread, observer)
+    thread_started = False
     historical_read_routes.service_state(report, "django", "start_attempted")
     try:
         thread.start()
+        thread_started = True
         poll(
             lambda: server.started and thread.is_alive(),
             bool,
             timeout=25,
         )
         historical_read_routes.service_state(report, "django", "running")
+        if liveness_observer is not None:
+            liveness_observer(guard)
         port = server.servers[0].sockets[0].getsockname()[1]
         yield f"http://127.0.0.1:{port}", observer, port
     except BaseException:
@@ -1224,7 +1246,8 @@ def django_application(report, versioned, queries):
         raise
     finally:
         server.should_exit = True
-        thread.join(timeout=25)
+        if thread_started:
+            thread.join(timeout=25)
         stopped = not thread.is_alive()
         historical_read_routes.service_state(
             report, "django", "stopped" if stopped else "cleanup_failed"

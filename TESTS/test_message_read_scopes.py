@@ -17,6 +17,8 @@ from TESTS.contracts import test_message_read_scopes as contract
 from TESTS.adapters.django import message_read_scopes as adapter
 from TESTS.adapters.django import message_read_scopes_runtime as runtime
 from TESTS.adapters.django import message_reads as shared
+from TESTS.adapters.django import message_session_lifecycle as lifecycle
+from TESTS.contracts import test_message_session_lifecycle as lifecycle_contract
 from TESTS.adapters.django import historical_read_cache as cache
 
 
@@ -29,6 +31,215 @@ def cache_fixture():
         b':1:impersonation:v1:private': cache.HistoricalReadCacheEntry(b'string', b'session-dump', 4000000000000),
     }
     return cache.HistoricalReadCacheSnapshot(MappingProxyType(entries)), contrasts
+
+
+def synthetic_lifecycle_receipt(label):
+    """Shape control only; this provides no actual runtime/process evidence."""
+    source = lifecycle_contract.load_source()
+    baseline = {'models': 128, 'cache_keys': 4, 'state_sha256': 'a' * 64, 'cache_sha256': 'b' * 64}
+    report = {'label': label, 'backend': lifecycle_contract.LABELS[label],
+        'source_sha256': lifecycle_contract.source_hashes(),
+        'manifest_sha256': lifecycle_contract.source_digest(source), 'success': True, 'failure': None,
+        'baseline': baseline, 'process_sha256': 'c' * 64, 'scenarios': [],
+        'restoration': lifecycle_contract.restoration_receipt(baseline)}
+    for scenario in source['scenarios']:
+        result = {'scenario': scenario['name'], 'process_sha256': report['process_sha256'],
+            'phases': [], 'transition': {'code': scenario['transition'], 'removed_keys': 1,
+                'unchanged_keys': 3, 'models': 128, 'state_sha256': baseline['state_sha256'],
+                'cache_sha256': 'd' * 64, 'checks': dict.fromkeys(('state', 'cache', 'process'), True)},
+            'restoration': lifecycle_contract.restoration_receipt(baseline)}
+        for index, phase in enumerate(scenario['phases']):
+            result['phases'].append({'phase': 'denied' if index else 'warm', 'case': phase['name'],
+                'status': phase['status'], 'check': phase['check'],
+                'checks': dict.fromkeys(('response', 'state', 'cache', 'attribution', 'process'), True),
+                'models': 128, 'state_sha256': baseline['state_sha256'],
+                'cache_sha256': 'd' * 64 if index else baseline['cache_sha256'],
+                'authored_sha256': lifecycle_contract.source_digest(phase),
+                'process_sha256': report['process_sha256']})
+        report['scenarios'].append(result)
+    return report
+
+
+class LifecycleGuardControls(unittest.TestCase):
+    """Offline handles and injected inspection; never actual process proof."""
+
+    def process(self):
+        process = SimpleNamespace(pid=123, returncode=None)
+        process.poll = Mock(side_effect=lambda: process.returncode)
+        return process
+
+    def container(self):
+        return {'Id': 'a' * 64, 'State': {'Running': True, 'StartedAt': '2026-10-26T01:02:03.123456789Z'},
+                'RestartCount': 0}
+
+    def test_native_guard_retains_observed_process_and_detects_exit_or_pid_change(self):
+        process = self.process()
+        guard = runtime.go_liveness_guard(process)
+        self.assertEqual(guard(), {'pid': process.pid, 'instance': id(process), 'running': True})
+        process.returncode = 0
+        self.assertFalse(guard()['running'])
+        process.returncode, process.pid = None, 124
+        self.assertFalse(guard()['running'])
+        self.assertGreaterEqual(process.poll.call_count, 2)
+
+    def test_caddy_composes_backend_and_each_live_inspection_without_exposing_identity(self):
+        backend = runtime.go_liveness_guard(self.process())
+        inspection = self.container()
+        inspector = Mock(side_effect=lambda value: copy.deepcopy(inspection))
+        guard = runtime.caddy_liveness_guard(backend, inspection['Id'], inspector=inspector)
+        evidence = guard()
+        self.assertTrue(evidence['running'])
+        self.assertEqual(evidence['pid'], backend()['pid'])
+        self.assertNotEqual(evidence['instance'], backend()['instance'])
+        self.assertGreater(evidence['instance'], 0)
+        self.assertEqual(inspector.call_count, 2)
+        self.assertEqual(set(evidence), {'pid', 'instance', 'running'})
+        self.assertEqual(guard(), evidence)
+        other = runtime.caddy_liveness_guard(backend, inspection['Id'], inspector=lambda _: {
+            **inspection, 'RestartCount': 1})
+        self.assertNotEqual(other()['instance'], evidence['instance'])
+
+    def test_caddy_rejects_death_restart_replacement_and_inspector_failure(self):
+        for change in ('id', 'running', 'started', 'restart', 'backend', 'pid', 'exception', 'malformed'):
+            process, inspection = self.process(), self.container()
+            inspector = Mock(side_effect=lambda _: copy.deepcopy(inspection))
+            guard = runtime.caddy_liveness_guard(runtime.go_liveness_guard(process), inspection['Id'], inspector=inspector)
+            if change == 'id': inspection['Id'] = 'b' * 64
+            if change == 'running': inspection['State']['Running'] = False
+            if change == 'started': inspection['State']['StartedAt'] = '2026-10-26T01:03:03Z'
+            if change == 'restart': inspection['RestartCount'] += 1
+            if change == 'backend': process.returncode = 0
+            if change == 'pid': process.pid += 1
+            if change == 'exception': inspector.side_effect = RuntimeError('private-docker-output')
+            if change == 'malformed': inspection['State'] = None
+            with self.subTest(change=change):
+                result = guard()
+                self.assertIs(result['running'], False)
+                self.assertNotIn('private', json.dumps(result))
+
+    def test_caddy_constructor_fails_closed_on_partial_or_invalid_setup(self):
+        for change in ('id', 'missing', 'not-running', 'start', 'restart', 'inspect', 'backend'):
+            inspection = self.container()
+            backend = runtime.go_liveness_guard(self.process())
+            inspector = Mock(return_value=inspection)
+            if change == 'id': inspection['Id'] = 'b' * 64
+            if change == 'missing': inspection.pop('State')
+            if change == 'not-running': inspection['State']['Running'] = False
+            if change == 'start': inspection['State']['StartedAt'] = ''
+            if change == 'restart': inspection['RestartCount'] = True
+            if change == 'inspect': inspector.side_effect = RuntimeError('private-inspect-error')
+            if change == 'backend': backend = None
+            with self.subTest(change=change), self.assertRaisesRegex(AssertionError, '^lifecycle.gateway-guard$'):
+                runtime.caddy_liveness_guard(backend, 'a' * 64, inspector=inspector)
+
+    def test_default_caddy_inspector_uses_bounded_argv_and_sanitized_environment(self):
+        inspection = self.container()
+        completed = SimpleNamespace(returncode=0, stdout=json.dumps(inspection).encode())
+        with patch.dict(os.environ, {'PATH': '/owned/tools', 'DOCKER_HOST': 'private',
+                                     'AWS_SECRET_ACCESS_KEY': 'private'}, clear=True), \
+             patch.object(runtime.subprocess, 'run', return_value=completed) as run:
+            guard = runtime.caddy_liveness_guard(runtime.go_liveness_guard(self.process()), inspection['Id'])
+            self.assertTrue(guard()['running'])
+        self.assertEqual(run.call_count, 2)
+        for call in run.call_args_list:
+            argv = call.args[0]
+            self.assertEqual(argv[:5], ['docker', 'inspect', '--type', 'container', '--format'])
+            self.assertEqual(argv[-1], inspection['Id'])
+            self.assertIn('StartedAt', argv[5])
+            self.assertIn('RestartCount', argv[5])
+            self.assertEqual(call.kwargs['env'], {'PATH': '/owned/tools'})
+            self.assertEqual(call.kwargs['timeout'], 5)
+            self.assertEqual(call.kwargs['stderr'], subprocess.DEVNULL)
+            self.assertFalse(call.kwargs.get('shell', False))
+        with patch.object(runtime.subprocess, 'run') as run, self.assertRaises(AssertionError):
+            runtime.inspect_owned_caddy('invalid; private')
+        run.assert_not_called()
+
+    def test_actual_inspection_boundary_rejects_timeout_nonzero_invalid_or_oversize_json(self):
+        good = SimpleNamespace(returncode=0, stdout=json.dumps(self.container()).encode())
+        for bad in (SimpleNamespace(returncode=1, stdout=b'private-docker-error'),
+                    SimpleNamespace(returncode=0, stdout=b'private-invalid-json'),
+                    SimpleNamespace(returncode=0, stdout=b' ' * 8193),
+                    SimpleNamespace(returncode=0, stdout=b'{}'),
+                    subprocess.TimeoutExpired('docker', 5, output=b'private-docker-error')):
+            with self.subTest(bad=type(bad).__name__), \
+                 patch.object(runtime.subprocess, 'run', return_value=good) as run:
+                backend = runtime.go_liveness_guard(self.process())
+                guard = runtime.caddy_liveness_guard(backend, 'a' * 64)
+                run.side_effect = bad if isinstance(bad, BaseException) else None
+                run.return_value = bad
+                self.assertFalse(guard()['running'])
+                with self.assertRaisesRegex(AssertionError, '^lifecycle.gateway-guard$') as caught:
+                    runtime.caddy_liveness_guard(backend, 'a' * 64)
+                self.assertNotIn('private', str(caught.exception))
+
+    def test_go_context_yields_copy_with_guard_and_closes_on_success_failure_or_missing_observation(self):
+        from TESTS.adapters.django import message_reads_runtime as reuse
+        from TESTS.adapters.go import payment_category_server
+        for failure in (None, 'body', 'observation', 'setup'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                work = Path(directory)
+                executable = work / 'server'
+                executable.write_bytes(b'offline-artifact')
+                executable.with_name('image-codec').write_bytes(b'offline-codec')
+                process = self.process()
+                process.args = [str(executable)]
+                native = {'base_url': 'offline', 'proxy_upstream': 'offline-upstream', 'metadata': {}}
+                events, guards = [], []
+                @contextmanager
+                def factory(*args, process_observer, **kwargs):
+                    if failure != 'observation':
+                        process_observer(process)
+                    try:
+                        if failure == 'setup':
+                            raise RuntimeError('offline-setup')
+                        yield native
+                    finally:
+                        events.append('factory-cleanup')
+                        process.returncode = 0
+                report = {'service_cleanup': {}}
+                with patch.object(payment_category_server, 'native_server', new=factory), \
+                     patch('socket.socket', side_effect=AssertionError('socket forbidden')):
+                    try:
+                        with runtime.go_service(reuse, report, work, io.StringIO(), {}, 1, False) as result:
+                            self.assertIsNot(result, native)
+                            self.assertEqual(set(result), set(native) | {runtime.LIFECYCLE_GUARD})
+                            self.assertNotIn(runtime.LIFECYCLE_GUARD, native)
+                            guard = result[runtime.LIFECYCLE_GUARD]
+                            self.assertEqual(guard()['instance'], id(process))
+                            self.assertTrue(guard()['running'])
+                            guards.append(guard)
+                            if failure == 'body':
+                                raise RuntimeError('offline-body')
+                    except (RuntimeError, AssertionError) as error:
+                        if failure is None:
+                            raise
+                        self.assertIs(type(error), AssertionError if failure == 'observation' else RuntimeError)
+                        self.assertEqual(str(error), 'go.process' if failure == 'observation' else 'offline-' + failure)
+                    else:
+                        self.assertIsNone(failure)
+                self.assertEqual(events, ['factory-cleanup'])
+                if failure == 'observation':
+                    self.assertEqual(report['service_cleanup']['go'], 'start_attempted')
+                else:
+                    self.assertEqual(report['service_cleanup']['go'], 'stopped')
+                    self.assertEqual(report['go_artifact']['process_exit'], 0)
+                for guard in guards:
+                    self.assertFalse(guard()['running'])
+
+    def test_failed_lifecycle_receipt_is_recorded_before_fixed_failure(self):
+        fixture = {'private': object()}
+        report = {'workloads': [], 'lifecycle_workloads': []}
+        failed = {'label': 'django-native', 'success': False}
+        with patch.object(adapter, 'run_workload') as scopes_workload, \
+             patch.object(lifecycle, 'run_workload', return_value=failed) as lifecycle_workload:
+            with self.assertRaisesRegex(AssertionError, '^lifecycle.workload-failed$'):
+                runtime.run_workloads('django-native', 'django', 'offline', fixture, None, None, None,
+                                      lambda: None, report)
+        self.assertEqual(report['lifecycle_workloads'], [failed])
+        scopes_workload.assert_called_once()
+        lifecycle_workload.assert_called_once()
+        self.assertNotIn('message_session_lifecycle_process', fixture)
 
 
 class ManifestControls(unittest.TestCase):
@@ -205,7 +416,7 @@ class RuntimeControls(unittest.TestCase):
 
     def test_main_owns_build_environment_before_private_execution_and_restores_ambient(self):
         from TESTS.adapters.django import message_reads_runtime as reuse
-        from TESTS.adapters.django import production_runtime
+        production_runtime = importlib.import_module('TESTS.adapters.django.production_runtime')
         applied = []
         with tempfile.TemporaryDirectory() as directory, \
              patch.dict(os.environ, self.adversarial_build_environment(), clear=True):
@@ -219,6 +430,159 @@ class RuntimeControls(unittest.TestCase):
         execute.assert_called_once()
         self.assert_owned_build_environment(execute.call_args.args[-1])
         self.assertEqual(applied, [execute.call_args.args[-1]])
+
+    def test_preflight_mock_targets_imported_module_despite_stale_package_attribute(self):
+        package = importlib.import_module('TESTS.adapters.django')
+        importlib.import_module('TESTS.adapters.django.production_runtime')
+        stale = SimpleNamespace(require_production_python=lambda: self.fail('stale module used'))
+        with patch.object(package, 'production_runtime', stale):
+            self.test_main_owns_build_environment_before_private_execution_and_restores_ambient()
+
+    def test_integrated_workloads_share_contexts_and_cleanup_after_success_or_lifecycle_failure(self):
+        for failure in (None, 'django-native', 'go-native', 'caddy-v1', 'caddy-v2', 'gateway-setup', 'guard-missing', 'gateway-between-labels'):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                work = Path(directory)
+                events, inspected = [], []
+                raw = SimpleNamespace(ping=lambda: True, close=lambda: events.append('redis-client'))
+                override = SimpleNamespace(enable=lambda: events.append('override-on'),
+                    disable=lambda: events.append('override-off'))
+                connections = SimpleNamespace(close_all=lambda: events.append('db-close'))
+                modules = {'django.db': SimpleNamespace(connections=connections),
+                    'django.test.utils': SimpleNamespace(override_settings=lambda **kw: override),
+                    'redis': SimpleNamespace(Redis=lambda **kw: raw)}
+                snapshot, _ = cache_fixture()
+                fixture, apps, observer = {'baseline_cache': snapshot, 'tokens': {}, 'sessions': {},
+                                          'runtime': {'cases': [{}]}}, object(), object()
+                fixture['baseline_state'] = {'original': []}
+                backend_processes = [SimpleNamespace(pid=123, returncode=None), SimpleNamespace(pid=124, returncode=None)]
+                for process in backend_processes:
+                    process.poll = lambda process=process: process.returncode
+                django_guard, go_guard = [runtime.go_liveness_guard(p) for p in backend_processes]
+                guards = []
+                @contextmanager
+                def owned(*args):
+                    try:
+                        with (work / 'private-log').open('w') as log:
+                            yield work, 1, log
+                    finally:
+                        events.append('database-stop')
+                @contextmanager
+                def django(*args, liveness_observer):
+                    if failure != 'guard-missing':
+                        liveness_observer(django_guard)
+                    events.append('django-start')
+                    try:
+                        yield 'offline-django', observer, 1234
+                    finally:
+                        backend_processes[0].returncode = 0
+                        events.append('django-stop')
+                @contextmanager
+                def golang(*args):
+                    events.append('go-start')
+                    try:
+                        yield {'base_url': 'offline-go', 'proxy_upstream': 'offline-go-upstream',
+                               runtime.LIFECYCLE_GUARD: go_guard}
+                    finally:
+                        backend_processes[1].returncode = 0
+                        events.append('go-stop')
+                @contextmanager
+                def caddy(*args, service='caddy'):
+                    events.append(service + '-start')
+                    try:
+                        yield 'offline-gateway', 'image', {'image_id': 'sha256:' + 'f' * 64, 'container_id': 'a' * 64}
+                    finally:
+                        events.append(service + '-stop')
+                gateway_inspection = LifecycleGuardControls().container()
+                def inspect(identifier):
+                    inspected.append(identifier)
+                    if failure == 'gateway-setup':
+                        raise RuntimeError('private-inspect-error')
+                    return copy.deepcopy(gateway_inspection)
+                def scopes_workload(label, backend, base, value, actual_apps, actual_raw, actual_observer, *, workloads):
+                    self.assertIs(value, fixture)
+                    self.assertIs(actual_apps, apps)
+                    self.assertIs(actual_raw, raw)
+                    self.assertIs(actual_observer, observer)
+                    events.append('scopes:' + label)
+                    workloads.append({'label': label})
+                def lifecycle_workload(label, backend, base, value, actual_apps, actual_raw, actual_observer):
+                    self.assertIs(value['baseline_cache'], snapshot)
+                    self.assertIs(value['baseline_state'], fixture['baseline_state'])
+                    self.assertIs(actual_apps, apps)
+                    self.assertIs(actual_raw, raw)
+                    self.assertIs(actual_observer, observer)
+                    self.assertEqual(events[-1], 'scopes:' + label)
+                    events.append('lifecycle:' + label)
+                    guard = value[runtime.LIFECYCLE_GUARD]
+                    restarted = failure == 'gateway-between-labels' and label == 'caddy-v2'
+                    if failure != 'guard-missing':
+                        self.assertEqual(guard()['running'], not restarted)
+                        guards.append(guard)
+                    receipt = synthetic_lifecycle_receipt(label)
+                    if label == failure or failure == 'guard-missing' or restarted:
+                        receipt['success'] = False
+                    if failure == 'gateway-between-labels' and label == 'caddy-v1':
+                        gateway_inspection['RestartCount'] += 1
+                    return receipt
+                reuse = SimpleNamespace(owned_message_database=owned,
+                    private_environment=lambda *args: ({}, set()), apply_private_environment=lambda env: None,
+                    initialize_django_apps=lambda: (apps, None), cache_override=lambda port: {},
+                    migrate_full_schema=lambda log: {'applied_migrations': 547},
+                    django_application=django, owned_caddy=caddy)
+                report = {'workloads': [], 'lifecycle_workloads': []}
+                with patch.dict(sys.modules, modules), patch.object(runtime, 'go_service', new=golang), \
+                     patch.object(adapter, 'snapshot_state', return_value={'original': []}), \
+                     patch.object(cache, 'snapshot_historical_read_cache', return_value=snapshot), \
+                     patch.object(adapter, 'seed_fixture', return_value=fixture), \
+                     patch.object(adapter.shared, 'delete_created', return_value=True), \
+                     patch.object(adapter, 'restore_cache', side_effect=lambda *a: events.append('cache-restored')), \
+                     patch.object(adapter, 'run_workload', side_effect=scopes_workload), \
+                     patch.object(lifecycle, 'run_workload', side_effect=lifecycle_workload), \
+                     patch.object(runtime, 'inspect_owned_caddy', side_effect=inspect), \
+                     patch.object(runtime, 'misroute_control', return_value={}), \
+                     patch('socket.socket', side_effect=AssertionError('socket forbidden')):
+                    if failure is None:
+                        runtime.execute_private(reuse, SimpleNamespace(versioned=True), report, work, set(), {})
+                        self.assertTrue(report['runtime_executed'])
+                        self.assertEqual([v['label'] for v in report['lifecycle_workloads']], list(runtime.expected_labels(True)))
+                    else:
+                        code = 'lifecycle.gateway-guard' if failure == 'gateway-setup' else 'lifecycle.workload-failed'
+                        with self.assertRaisesRegex(AssertionError, '^' + code + '$'):
+                            runtime.execute_private(reuse, SimpleNamespace(versioned=True), report, work, set(), {})
+                        self.assertNotIn('runtime_executed', report)
+                self.assertNotIn(runtime.LIFECYCLE_GUARD, fixture)
+                self.assertTrue(report['fixture_cleanup']['verified'])
+                self.assertTrue(report['resource_cleanup']['verified'])
+                self.assertIn('cache-restored', events)
+                self.assertIn('django-stop', events)
+                if 'go-start' in events: self.assertIn('go-stop', events)
+                if 'caddy-start' in events: self.assertIn('caddy-stop', events)
+                self.assertEqual(events[-4:], ['redis-client', 'db-close', 'override-off', 'database-stop'])
+                for guard in guards:
+                    self.assertFalse(guard()['running'])
+                if inspected: self.assertTrue(all(identifier == 'a' * 64 for identifier in inspected))
+
+    def test_public_main_keeps_lifecycle_receipts_on_failure_and_redacts_private_error(self):
+        from TESTS.adapters.django import message_reads_runtime as reuse
+        production = importlib.import_module('TESTS.adapters.django.production_runtime')
+        failed = synthetic_lifecycle_receipt('django-native')
+        failed['success'] = False
+        def execute(reuse, args, report, *rest):
+            report['lifecycle_workloads'].append(failed)
+            raise RuntimeError('private Docker SQL token')
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'fresh'
+            with patch.object(production, 'require_production_python', return_value={'python': '3.13.16'}), \
+                 patch.object(reuse, 'service_binary_paths', return_value={}), \
+                 patch.object(runtime, 'execute_private', side_effect=execute), \
+                 patch('sys.stdout', new=io.StringIO()):
+                self.assertEqual(runtime.main(['--output', str(output)]), 1)
+            published = (output / 'results.json').read_text()
+            receipt = json.loads(published)
+        self.assertEqual(receipt['lifecycle_workloads'], [failed])
+        self.assertEqual(receipt['errors'], [{'check': 'unknown'}])
+        self.assertFalse(receipt['complete_message_family_parity'])
+        self.assertNotIn('private Docker', published)
 
     def test_source_binding_covers_owned_and_reused_inputs(self):
         hashes = runtime.source_hashes()
@@ -424,7 +788,7 @@ class RuntimeControls(unittest.TestCase):
             self.assertNotIn('private-token', json.dumps(workloads))
 
     def test_main_unknown_private_exception_is_not_published(self):
-        from TESTS.adapters.django import production_runtime
+        production_runtime = importlib.import_module('TESTS.adapters.django.production_runtime')
         environment = dict(os.environ)
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'fresh'
@@ -460,12 +824,15 @@ class RuntimeControls(unittest.TestCase):
                       'psql', 'redis-server', 'go') + (('docker',) if versioned else ()), 'f' * 64),
                   'service_cleanup': dict.fromkeys(('django', 'go', 'postgres', 'redis') +
                        (('caddy', 'caddy-misroute') if versioned else ()), 'stopped'),
-                  'workloads': [], 'complete_message_family_parity': False}
+                  'workloads': [], 'lifecycle_workloads': [], 'complete_message_family_parity': False}
         for label in runtime.expected_labels(versioned):
+            report['lifecycle_workloads'].append(synthetic_lifecycle_receipt(label))
+            baseline = report['lifecycle_workloads'][-1]['baseline']
             report['workloads'].append({'label': label, 'success': True, 'cases': [
                 {'case': case['name'], 'status': case['status'], 'check': case['check'],
                  'checks': dict.fromkeys(('response', 'state', 'cache', 'attribution'), True),
-                 'models': 128, 'state_sha256': 'c' * 64, 'cache_sha256': 'd' * 64}
+                 'models': 128, 'state_sha256': baseline['state_sha256'],
+                 'cache_sha256': baseline['cache_sha256']}
                 for case in cases]})
         if versioned:
             report['caddy_image_sha256'] = 'f' * 64
@@ -497,6 +864,26 @@ class RuntimeControls(unittest.TestCase):
                 with self.subTest(versioned=versioned, change=change):
                     self.assertFalse(runtime.acceptance(changed))
 
+    def test_lifecycle_receipts_require_exact_labels_order_cases_and_acceptance(self):
+        report = self.candidate(True)
+        self.assertTrue(runtime.acceptance(report))
+        for change in ('missing-field', 'missing-label', 'order', 'duplicate', 'missing-phase',
+                       'reordered-scenario', 'failed', 'missing-guard', 'gateway-restart', 'extra-private'):
+            changed = copy.deepcopy(report)
+            receipt = changed['lifecycle_workloads'][0]
+            if change == 'missing-field': changed.pop('lifecycle_workloads')
+            if change == 'missing-label': changed['lifecycle_workloads'].pop()
+            if change == 'order': changed['lifecycle_workloads'].reverse()
+            if change == 'duplicate': changed['lifecycle_workloads'][-1] = receipt
+            if change == 'missing-phase': receipt['scenarios'][0]['phases'].pop()
+            if change == 'reordered-scenario': receipt['scenarios'].reverse()
+            if change == 'failed': receipt['success'] = False
+            if change == 'missing-guard': receipt['process_sha256'] = None
+            if change == 'gateway-restart': changed['lifecycle_workloads'][2]['scenarios'][0]['phases'][1]['checks']['process'] = False
+            if change == 'extra-private': receipt['private'] = 'private'
+            with self.subTest(change=change):
+                self.assertFalse(runtime.acceptance(changed))
+
     def test_versioned_needs_actual_rejected_misroute(self):
         report = self.candidate(True)
         for change in ('missing', 'accepted', 'no-events', 'state'):
@@ -506,6 +893,38 @@ class RuntimeControls(unittest.TestCase):
             if change == 'no-events': changed['misroute_control']['actual_django_events'] = 0
             if change == 'state': changed['misroute_control']['state'] = False
             self.assertFalse(runtime.acceptance(changed))
+
+    def test_every_scopes_case_must_match_its_paired_lifecycle_baseline(self):
+        report = self.candidate(True)
+        self.assertTrue(runtime.acceptance(report))
+        for label_index, label in enumerate(runtime.expected_labels(True)):
+            for field in ('state_sha256', 'cache_sha256'):
+                for case_index in (0, 19, 37, 'all'):
+                    changed = copy.deepcopy(report)
+                    cases = changed['workloads'][label_index]['cases']
+                    for case in cases if case_index == 'all' else [cases[case_index]]:
+                        case[field] = 'e' * 64
+                    with self.subTest(label=label, field=field, case=case_index):
+                        self.assertFalse(runtime.acceptance(changed))
+
+    def test_internally_valid_lifecycle_baseline_cannot_disagree_with_paired_scopes(self):
+        report = self.candidate(False)
+        self.assertTrue(runtime.acceptance(report))
+        for label_index, label in enumerate(runtime.expected_labels(False)):
+            for field in ('state_sha256', 'cache_sha256'):
+                changed = copy.deepcopy(report)
+                receipt = changed['lifecycle_workloads'][label_index]
+                receipt['baseline'][field] = 'e' * 64
+                receipt['restoration'][field] = 'e' * 64
+                for scenario in receipt['scenarios']:
+                    scenario['restoration'][field] = 'e' * 64
+                    scenario['phases'][0][field] = 'e' * 64
+                    if field == 'state_sha256':
+                        scenario['transition'][field] = 'e' * 64
+                        scenario['phases'][1][field] = 'e' * 64
+                with self.subTest(label=label, field=field):
+                    self.assertTrue(lifecycle.acceptance(receipt))
+                    self.assertFalse(runtime.acceptance(changed))
 
     def test_cleanup_python_tool_and_artifact_evidence_cannot_be_asserted_away(self):
         report = self.candidate(True)

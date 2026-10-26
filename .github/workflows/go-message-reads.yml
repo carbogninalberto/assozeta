@@ -10,9 +10,10 @@ jobs:
   message-reads:
     name: Message reads on Django and Go
     runs-on: ubuntu-24.04
-    # The focused runtime is short, but hosted setup, dependency installation,
-    # the Go build, a 547-migration fixture and both transports need headroom.
-    timeout-minutes: 20
+    # Includes locked UI/browser installs, Chromium, a sourcemapped Vite build,
+    # native codec/Go builds, and four independent full-547-migration runtimes.
+    # Keep each acceptance gate; allow cold hosted caches and browser deadlines.
+    timeout-minutes: 60
     env:
       LC_ALL: C
       LANG: C
@@ -26,6 +27,14 @@ jobs:
         with:
           go-version-file: BE_GO/go.mod
           cache-dependency-path: BE_GO/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            UI/package-lock.json
+            selfhost/tests/browser/package-lock.json
 
       - name: Read production Python version
         id: production-python
@@ -68,6 +77,21 @@ jobs:
           subprocess.run(['docker', 'pull', image], check=True)
           PY
 
+      - name: Install locked UI and pinned browser dependencies
+        run: |
+          npm ci --prefix UI
+          npm ci --prefix selfhost/tests/browser
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+
+      - name: Populate offline native build dependencies
+        working-directory: BE_GO
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+        run: go mod download all
+
       - name: Verify portable fixture and strict query observation controls
         run: |
           python -m unittest -v \
@@ -76,6 +100,18 @@ jobs:
             TESTS.test_message_reads_repository \
             TESTS.test_go_query_observation \
             TESTS.contracts.test_message_reads.MessageReadsManifestControls
+
+      - name: Verify browser build, transport and authorization rejection controls offline
+        id: message-controls
+        # Separate interpreters keep existing import-side-effect/mock controls
+        # from sharing cached module objects across these independent suites.
+        run: |
+          python -m unittest -v TESTS.test_message_browser_build
+          python -m unittest -v TESTS.test_message_reads_browser
+          python -m unittest -v TESTS.test_message_reads_browser_runtime
+          python -m unittest -v TESTS.test_message_read_scopes
+          python -m unittest -v TESTS.test_message_session_lifecycle
+          python -m unittest -v TESTS.test_http_client
 
       - name: Compare native and versioned messages, query budgets and concurrent reads
         run: |
@@ -87,6 +123,47 @@ jobs:
         run: |
           python -m TESTS.adapters.go.message_reads_repository \
             --output quality-reports/go-migration/message-reads-repository
+
+      - name: Build unchanged UI and native message-browser inputs offline
+        id: message-browser-build
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' }}
+        run: |
+          python -m TESTS.adapters.django.message_browser_build \
+            --output quality-reports/go-migration/message-browser-build
+
+      - name: Verify unchanged saved-message browser workflow on v1 and v2
+        if: ${{ !cancelled() && steps.message-browser-build.outcome == 'success' }}
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_reads_browser_runtime \
+            --ui-dir quality-reports/go-migration/message-browser-build/artifact \
+            --build-observation quality-reports/go-migration/message-browser-build/build-observation.json \
+            --go-binary quality-reports/go-migration/message-browser-build/server \
+            --image-codec quality-reports/go-migration/message-browser-build/image-codec \
+            --go-build-record quality-reports/go-migration/message-browser-build/go-build-record.json \
+            --playwright-module selfhost/tests/browser/node_modules/@playwright/test \
+            --output quality-reports/go-migration/message-reads-browser
+
+      - name: Verify authorization and warm-session invalidation on native and versioned backends
+        # An independent browser/build failure must not hide scopes results.
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' }}
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_read_scopes_runtime \
+            --versioned \
+            --output quality-reports/go-migration/message-read-scopes
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -100,4 +177,20 @@ jobs:
         with:
           name: go-message-reads-repository
           path: quality-reports/go-migration/message-reads-repository/results.json
+          if-no-files-found: ignore
+
+      # Publish only the runtimes' redacted results, never copied build sources,
+      # dependency maps, sourcemaps, build/service logs or tokenized fixtures.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-browser
+          path: quality-reports/go-migration/message-reads-browser/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-read-scopes
+          path: quality-reports/go-migration/message-read-scopes/results.json
           if-no-files-found: ignore

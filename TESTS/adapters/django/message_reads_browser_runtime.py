@@ -32,9 +32,12 @@ from TESTS.adapters.django import message_reads_browser as browser
 from TESTS.adapters.django import message_reads_runtime as runtime
 
 ROOT = browser.ROOT
+NODE_RUNNER = 'TESTS/browser/message-reads-runner.mjs'
 OWNED = (
+    'TESTS/adapters/django/message_browser_build.py',
+    'TESTS/test_message_browser_build.py',
     'TESTS/adapters/django/message_reads_browser_runtime.py',
-    'TESTS/browser/message-reads-runner.mjs',
+    NODE_RUNNER,
     'TESTS/test_message_reads_browser_runtime.py',
 )
 MAX_FRAME = 4 * 1024 * 1024
@@ -894,7 +897,7 @@ def run_node(*, node, module, work, private_log, environment, input_data,
         temporary = work / 'browser-temp'
         temporary.mkdir(mode=0o700)
         child_environment = dict(environment, TMPDIR=str(temporary), TMP=str(temporary), TEMP=str(temporary))
-        process = subprocess.Popen([str(node), str(ROOT / OWNED[1]),
+        process = subprocess.Popen([str(node), str(ROOT / NODE_RUNNER),
             '--input', str(credentials), '--playwright-module', str(module),
             '--probe-origin', probe_origin], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=private_log, cwd=work, env=child_environment, start_new_session=True, bufsize=0)

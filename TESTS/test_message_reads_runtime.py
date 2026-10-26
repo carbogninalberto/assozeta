@@ -78,6 +78,105 @@ class FakeRedis:
                 for key, row in self.entries.items()]
 
 
+class DjangoLivenessControls(unittest.TestCase):
+    """Handle doubles exercise plumbing only; no live process proof is claimed."""
+
+    def handles(self):
+        observer = object()
+        server = SimpleNamespace(started=False, should_exit=False, force_exit=False, run=lambda: None,
+            config=SimpleNamespace(app=observer),
+            servers=[SimpleNamespace(sockets=[SimpleNamespace(getsockname=lambda: ('127.0.0.1', 1234))])])
+        thread = SimpleNamespace(alive=False)
+        thread.is_alive = lambda: thread.alive
+        return server, thread, observer
+
+    def test_guard_tracks_actual_handles_before_start_during_run_and_after_stop(self):
+        server, thread, observer = self.handles()
+        guard = runtime.django_liveness_guard(server, thread, observer)
+        before = guard()
+        self.assertEqual(before['pid'], os.getpid())
+        self.assertGreater(before['instance'], 0)
+        self.assertIs(before['running'], False)
+        thread.alive = server.started = True
+        live = guard()
+        self.assertIs(live['running'], True)
+        self.assertEqual({k: live[k] for k in ('pid', 'instance')},
+                         {k: before[k] for k in ('pid', 'instance')})
+        for flag in ('should_exit', 'force_exit'):
+            setattr(server, flag, True)
+            self.assertIs(guard()['running'], False)
+            setattr(server, flag, False)
+        server.config.app = object()
+        self.assertIs(guard()['running'], False)
+        server.config.app = observer
+        with mock.patch.object(runtime.os, 'getpid', return_value=live['pid'] + 1):
+            self.assertIs(guard()['running'], False)
+        thread.alive = False
+        self.assertIs(guard()['running'], False)
+        other = runtime.django_liveness_guard(*self.handles())
+        self.assertNotEqual(other()['instance'], live['instance'])
+
+    def run_context(self, *, callback=None, startup_failure=False, body_failure=False):
+        from TESTS import http_client
+        server, thread, observer = self.handles()
+        events = []
+        def start():
+            events.append('start')
+            if startup_failure:
+                raise RuntimeError('offline-start')
+            thread.alive = server.started = True
+        def join(timeout):
+            self.assertTrue(server.should_exit)
+            events.append('join')
+            thread.alive = False
+        thread.start, thread.join = start, join
+        modules = {'uvicorn': SimpleNamespace(Config=lambda *a, **kw: None,
+                    Server=lambda config: server),
+                   'django.core.asgi': SimpleNamespace(get_asgi_application=lambda: object())}
+        report = {'service_cleanup': {}}
+        with mock.patch.dict(sys.modules, modules), \
+             mock.patch.object(runtime.oracle, 'AsgiObserver', return_value=observer), \
+             mock.patch.object(runtime.threading, 'Thread', return_value=thread), \
+             mock.patch.object(http_client, 'poll', side_effect=lambda get, *a, **kw: self.assertTrue(get())), \
+             mock.patch('socket.socket', side_effect=AssertionError('socket forbidden')):
+            kwargs = {} if callback is None else {'liveness_observer': callback}
+            try:
+                with runtime.django_application(report, False, None, **kwargs) as value:
+                    self.assertEqual(value, ('http://127.0.0.1:1234', observer, 1234))
+                    if body_failure:
+                        raise RuntimeError('offline-body')
+            finally:
+                self.assertEqual(report['service_cleanup']['django'], 'stopped')
+                self.assertFalse(thread.alive)
+        return events
+
+    def test_original_context_tuple_and_default_call_remain_compatible(self):
+        self.assertEqual(self.run_context(), ['start', 'join'])
+
+    def test_callback_receives_live_guard_that_dies_on_cleanup(self):
+        guards = []
+        def remember(guard):
+            self.assertTrue(guard()['running'])
+            guards.append(guard)
+        self.run_context(callback=remember)
+        self.assertFalse(guards[0]()['running'])
+
+    def test_callback_and_body_failure_still_stop_owned_thread(self):
+        guards = []
+        def broken(guard):
+            guards.append(guard)
+            raise RuntimeError('offline-callback')
+        with self.assertRaisesRegex(RuntimeError, '^offline-callback$'):
+            self.run_context(callback=broken)
+        self.assertFalse(guards[0]()['running'])
+        with self.assertRaisesRegex(RuntimeError, '^offline-body$'):
+            self.run_context(body_failure=True)
+
+    def test_start_failure_does_not_join_unstarted_thread_or_mask_original(self):
+        with self.assertRaisesRegex(RuntimeError, '^offline-start$'):
+            self.run_context(startup_failure=True)
+
+
 class SeedControls(unittest.TestCase):
     def test_all_owned_list_rows_and_the_empty_delivery_row_are_seeded(self):
         fixture = adapter.load_authored_manifest()

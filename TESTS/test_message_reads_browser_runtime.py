@@ -1152,11 +1152,13 @@ class CleanupAndChildTests(unittest.TestCase):
     def test_child_launch_failure_removes_credentials(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            with patch.object(harness.subprocess, 'Popen', side_effect=OSError('launch failed')):
+            with patch.object(harness.subprocess, 'Popen', side_effect=OSError('launch failed')) as launch:
                 with self.assertRaises(OSError):
                     harness.run_node(node=Path('/node'), module=Path('/module'), work=root,
                         private_log=io.StringIO(), environment={}, input_data={'password': 'SECRET'},
                         checkpoint=harness.Checkpoints(lambda *_: state()), probe_origin='http://127.0.0.1:9')
+            self.assertEqual(launch.call_args.args[0][1],
+                str(harness.ROOT / 'TESTS/browser/message-reads-runner.mjs'))
             self.assertFalse((root / 'browser-input.json').exists())
 
     def test_cleanup_escalates_terminated_child_and_reaps_browser_group(self):

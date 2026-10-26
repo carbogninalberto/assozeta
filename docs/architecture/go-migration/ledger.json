@@ -14542,7 +14542,12 @@
         "TESTS/test_message_reads_runtime.py",
         "TESTS/test_go_query_observation.py",
         "TESTS/test_message_reads_manifest.py",
-        ".github/workflows/go-message-reads.yml"
+        ".github/workflows/go-message-reads.yml",
+        "TESTS/adapters/django/message_reads_browser_runtime.py",
+        "TESTS/adapters/django/message_read_scopes_runtime.py",
+        "TESTS/contracts/test_message_session_lifecycle.py",
+        "TESTS/adapters/django/message_session_lifecycle.py",
+        "TESTS/test_message_session_lifecycle.py"
       ],
       "evidence": [
         {
@@ -14558,11 +14563,37 @@
           "result": "passed",
           "artifact": "quality-reports/go-migration/message-observed-http-r3/results.json",
           "receipt_sha256": "6c74d56aef929ebd3f4ae734cc72a113e3b82ba274a55ff5504d1c2a62660f2e"
+        },
+        {
+          "revision": "20014ae5; exact source and UI/native artifact manifests in receipt",
+          "result": "passed bounded unchanged-UI workflow; no realtime or second-page acceptance",
+          "artifact": "quality-reports/go-migration/message-browser-live-r10/results.json",
+          "receipt_sha256": "ff62e09fe608777664b69ebd4cdbb2f154bff32e7a275769b38afc403bba8c9e"
+        },
+        {
+          "revision": "20014ae5 plus exact 1452 source hashes in receipt",
+          "result": "historical live pass; independent review required restoration/receipt corrections, superseded by source-bound r2",
+          "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r1/results.json",
+          "receipt_sha256": "03e08fdf7653b50552acd69d62624217ba6ca121130f789b38c9e31ab56608fa"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.message_reads_browser_runtime with exact owned-build-r3 artifacts",
+          "revision": "20014ae5 plus exact source/artifact manifests in receipt; final integrated candidate",
+          "result": "passed bounded v1/v2 browser workflow, 1203 exact source inputs and full cleanup",
+          "artifact": "quality-reports/go-migration/message-browser-owned-live-r3/results.json",
+          "receipt_sha256": "85947fa190906c3009b5c858b159108aa355add4eae682370ca5ccd9b0c25090"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.message_read_scopes_runtime --versioned",
+          "revision": "20014ae5 plus exact source/artifact manifests in receipt; final integrated candidate",
+          "result": "passed corrected 38-case/2-scenario workload on all four runtimes, 1454 exact source inputs and full cleanup",
+          "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r2/results.json",
+          "receipt_sha256": "1764141815a7a8d1ccd0a4d49d3c6e7b79b10a3e475ea19728470569f85123f1"
         }
       ],
       "notes": [
         "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
-        "Live unchanged-frontend acceptance, packaged/installed lifecycle and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical raw receipts are not relabeled for later builds."
+        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Packaged/installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds."
       ]
     },
     {
@@ -14659,7 +14690,12 @@
         "TESTS/test_message_reads_runtime.py",
         "TESTS/test_go_query_observation.py",
         "TESTS/test_message_reads_manifest.py",
-        ".github/workflows/go-message-reads.yml"
+        ".github/workflows/go-message-reads.yml",
+        "TESTS/adapters/django/message_reads_browser_runtime.py",
+        "TESTS/adapters/django/message_read_scopes_runtime.py",
+        "TESTS/contracts/test_message_session_lifecycle.py",
+        "TESTS/adapters/django/message_session_lifecycle.py",
+        "TESTS/test_message_session_lifecycle.py"
       ],
       "evidence": [
         {
@@ -14675,11 +14711,37 @@
           "result": "passed",
           "artifact": "quality-reports/go-migration/message-observed-http-r3/results.json",
           "receipt_sha256": "6c74d56aef929ebd3f4ae734cc72a113e3b82ba274a55ff5504d1c2a62660f2e"
+        },
+        {
+          "revision": "20014ae5; exact source and UI/native artifact manifests in receipt",
+          "result": "passed bounded unchanged-UI workflow; no realtime or second-page acceptance",
+          "artifact": "quality-reports/go-migration/message-browser-live-r10/results.json",
+          "receipt_sha256": "ff62e09fe608777664b69ebd4cdbb2f154bff32e7a275769b38afc403bba8c9e"
+        },
+        {
+          "revision": "20014ae5 plus exact 1452 source hashes in receipt",
+          "result": "historical live pass; independent review required restoration/receipt corrections, superseded by source-bound r2",
+          "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r1/results.json",
+          "receipt_sha256": "03e08fdf7653b50552acd69d62624217ba6ca121130f789b38c9e31ab56608fa"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.message_reads_browser_runtime with exact owned-build-r3 artifacts",
+          "revision": "20014ae5 plus exact source/artifact manifests in receipt; final integrated candidate",
+          "result": "passed bounded v1/v2 browser workflow, 1203 exact source inputs and full cleanup",
+          "artifact": "quality-reports/go-migration/message-browser-owned-live-r3/results.json",
+          "receipt_sha256": "85947fa190906c3009b5c858b159108aa355add4eae682370ca5ccd9b0c25090"
+        },
+        {
+          "command": "python -m TESTS.adapters.django.message_read_scopes_runtime --versioned",
+          "revision": "20014ae5 plus exact source/artifact manifests in receipt; final integrated candidate",
+          "result": "passed corrected 38-case/2-scenario workload on all four runtimes, 1454 exact source inputs and full cleanup",
+          "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r2/results.json",
+          "receipt_sha256": "1764141815a7a8d1ccd0a4d49d3c6e7b79b10a3e475ea19728470569f85123f1"
         }
       ],
       "notes": [
         "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
-        "Live unchanged-frontend acceptance, packaged/installed lifecycle and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical raw receipts are not relabeled for later builds."
+        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Packaged/installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds."
       ]
     },
     {
