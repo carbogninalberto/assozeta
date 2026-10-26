@@ -852,7 +852,15 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         exited, diagnostic = go_waiter.communicate(timeout=20)
         assert go_waiter.returncode == 0 and exited.strip() == '0', 'Packaged migration did not finish successfully after lock release'
         go_waiter = None
-        assert not capture(running_go)
+        # Process exit notification can precede Docker's running-list update.
+        # Require the same absence the recovery guard checks before restarting.
+        deadline = time.monotonic() + 10
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not capture(running_go, timeout=remaining):
+                break
+            time.sleep(min(0.1, remaining))
+        assert not capture(running_go, timeout=5), 'Go migration is still listed as running after successful exit'
         command(['docker', 'start', runner_container])
         await_runner_version('2.0.2')
         assert assert_interrupted_gate(interrupted_go)['failed_stage'] == 'migrating'

@@ -14510,7 +14510,11 @@
         "BE_GO/internal/handler/message_mutations_locale_test.go",
         "BE_GO/internal/service/message_mutations_test.go",
         "BE_GO/internal/service/message_mutations_integration_test.go",
-        "BE_GO/internal/repository/model_audit_integration_test.go"
+        "BE_GO/internal/repository/model_audit_integration_test.go",
+        "TESTS/adapters/django/message_mutations_acceptance.py",
+        "TESTS/test_message_mutations_acceptance.py",
+        "TESTS/adapters/go/message_mutation_lifecycle.py",
+        "TESTS/test_message_mutation_lifecycle.py"
       ],
       "evidence": [
         {
@@ -14530,11 +14534,23 @@
           "result": "passed102Django audit resolver/view and tuple/list deletion regressions",
           "artifact": "quality-reports/go-migration/message-audit-resolver-regression-r1/results.json",
           "receipt_sha256": "226d9fbcfa1c75079d490ac45f641efbea2e8a54dcddd710a1555313ac8e2980"
+        },
+        {
+          "revision": "703c29b89384fd201b4c6ad170c9c5c0fa7c9be2; all1485sourceinputs matched committed index",
+          "result": "Maintained CLI passed119cases on nativeDjango/nativeGo/Caddyv1/v2; exact effects, source/artifact/process provenance, misroute rejection and cleanup. Independent review corrections included; realPG SIGTERM/timer lock controls verify failed receipts and owned cleanup.",
+          "artifact": "quality-reports/go-migration/message-mutations-maintained-cli-r2/results.json",
+          "receipt_sha256": "d8cd091dd4fccc69ae9da0bbc0cc294c3ea7ee3a3d3e115d2e7b81b60f07d160"
+        },
+        {
+          "revision": "703c29b89384fd201b4c6ad170c9c5c0fa7c9be2; all1485sourceinputs matched committed index",
+          "result": "Actual CREATE/DELETE HTTP disconnects and CREATE graceful SIGTERM drain passed; exact owner-row lock/transaction survival, canonical fixture, complete response framing, full128model/Redis effects after clean exit0, fixture/source/artifact/cleanup verified.",
+          "artifact": "quality-reports/go-migration/message-mutations-lifecycle-http-r2/results.json",
+          "receipt_sha256": "f0420d43f3f51c6aae98db6e2cc5b5a38a4a14ba99c5b17f7d88e0adcd842628"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: maintained CLI/CI packaging, mutation browser workflows, route-level drain/disconnect acceptance, broader performance and installed activation/rollback remain open. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: hosted CI, mutation packaging/browser workflows, broader performance and installed activation/rollback remain open. Other communication/send/workflow routes are separate scope."
       ]
     },
     {
@@ -14722,7 +14738,11 @@
         "BE_GO/internal/handler/message_mutations_locale_test.go",
         "BE_GO/internal/service/message_mutations_test.go",
         "BE_GO/internal/service/message_mutations_integration_test.go",
-        "BE_GO/internal/repository/model_audit_integration_test.go"
+        "BE_GO/internal/repository/model_audit_integration_test.go",
+        "TESTS/adapters/django/message_mutations_acceptance.py",
+        "TESTS/test_message_mutations_acceptance.py",
+        "TESTS/adapters/go/message_mutation_lifecycle.py",
+        "TESTS/test_message_mutation_lifecycle.py"
       ],
       "evidence": [
         {
@@ -14742,11 +14762,23 @@
           "result": "passed102Django audit resolver/view and tuple/list deletion regressions",
           "artifact": "quality-reports/go-migration/message-audit-resolver-regression-r1/results.json",
           "receipt_sha256": "226d9fbcfa1c75079d490ac45f641efbea2e8a54dcddd710a1555313ac8e2980"
+        },
+        {
+          "revision": "703c29b89384fd201b4c6ad170c9c5c0fa7c9be2; all1485sourceinputs matched committed index",
+          "result": "Maintained CLI passed119cases on nativeDjango/nativeGo/Caddyv1/v2; exact effects, source/artifact/process provenance, misroute rejection and cleanup. Independent review corrections included; realPG SIGTERM/timer lock controls verify failed receipts and owned cleanup.",
+          "artifact": "quality-reports/go-migration/message-mutations-maintained-cli-r2/results.json",
+          "receipt_sha256": "d8cd091dd4fccc69ae9da0bbc0cc294c3ea7ee3a3d3e115d2e7b81b60f07d160"
+        },
+        {
+          "revision": "703c29b89384fd201b4c6ad170c9c5c0fa7c9be2; all1485sourceinputs matched committed index",
+          "result": "Actual CREATE/DELETE HTTP disconnects and CREATE graceful SIGTERM drain passed; exact owner-row lock/transaction survival, canonical fixture, complete response framing, full128model/Redis effects after clean exit0, fixture/source/artifact/cleanup verified.",
+          "artifact": "quality-reports/go-migration/message-mutations-lifecycle-http-r2/results.json",
+          "receipt_sha256": "f0420d43f3f51c6aae98db6e2cc5b5a38a4a14ba99c5b17f7d88e0adcd842628"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: maintained CLI/CI packaging, mutation browser workflows, route-level drain/disconnect acceptance, broader performance and installed activation/rollback remain open. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: hosted CI, mutation packaging/browser workflows, broader performance and installed activation/rollback remain open. Other communication/send/workflow routes are separate scope."
       ]
     },
     {

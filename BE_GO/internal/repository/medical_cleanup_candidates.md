@@ -60,9 +60,25 @@ Go behavior:
   after irreversible file deletion and rolls back all database changes/audits.
   Recovery cannot be implemented by treating SQL rollback as file rollback.
 
-The legacy audit events above have no new association index; setup audits and all
-preexisting managed rows are separately preserved. The fixture snapshots include
-auto-created M2M tables. File effects use real `FileSystemStorage` in disposable
+The cascaded association archive DELETE produces exactly one new association
+index, linked to that archive's DELETE audit and its original association (the
+foreign association in this fixture), with resolution path
+`changes_json.sport_association`. The deleted archive cannot use its registered
+direct resolver; its audit changes retain the old association UUID. The signal
+accepts auditlog's in-memory tuple as well as the list returned by JSON readback.
+Document and MedicalCertificate have no direct association FK and this background
+task has no audit actor, so their DELETE audits remain unindexed. The other
+thirteen scenarios require no new indexes, including rollback/failure cases.
+The oracle freezes audit clock defaults and requires the archive audit and index
+timestamps to equal that clock, an exact audit link, original association,
+fallback path and fresh UUIDv4, while preserving every field of every prior index.
+Offline negative controls in `TESTS/test_medical_orphan_cleanup_indexes.py`
+reject the former missing-index state, wrong links/associations/paths/timestamps,
+prior-index mutations and extra indexes. These controls exercise the actual
+snapshot assertion; they do not replace full production-Python accounts evidence.
+Setup audits and all preexisting managed rows are separately preserved. The
+fixture snapshots include auto-created M2M tables. File effects use real
+`FileSystemStorage` in disposable
 folders; storage failure is injected at that boundary. This is not S3/MinIO proof.
 The actual upload helper uses a live cache grant; cleanup leaves it unchanged.
 An age-only rule is not established as sufficient protection for pending uploads.

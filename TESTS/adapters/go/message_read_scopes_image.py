@@ -141,7 +141,7 @@ def gateway_liveness_guard(backend_guard, container_id):
 
 
 @contextmanager
-def owned_image_caddy(report, log, django, golang, *, network):
+def owned_image_caddy(report, log, django, golang, *, network, pull_policy=None):
     """Compose the existing network-aware proxy lifetime without shared edits.
 
     ImageFixture owns the network. This adapter only observes the Caddy owned by
@@ -154,7 +154,8 @@ def owned_image_caddy(report, log, django, golang, *, network):
     body_error = None
     try:
         gateway, image = stack.enter_context(proxy(
-            django, golang, log, network=network, container_observer=container.update))
+            django, golang, log, network=network, container_observer=container.update,
+            **({"pull_policy": pull_policy} if pull_policy is not None else {})))
         need(_hash(container.get('container_id')), 'image.gateway-identity')
         report['service_cleanup']['caddy'] = 'running'
         yield gateway, image, container

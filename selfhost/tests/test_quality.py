@@ -1,4 +1,5 @@
 """Quality automation selection, host routing and evidence contracts."""
+import ast
 import json
 import os
 from pathlib import Path
@@ -7,11 +8,110 @@ import socket
 import subprocess
 import sys
 import threading
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
 import quality_support
 import select_rehearsal
+
+
+class GoMigrationInterruptionTests(unittest.TestCase):
+    """Run the smoke's actual exit-to-restart block without Docker/services."""
+
+    @classmethod
+    def setUpClass(cls):
+        path = Path(__file__).with_name('application-update-smoke.py')
+        tree = ast.parse(path.read_text())
+        run = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'run')
+        body = next(node for node in run.body if isinstance(node, ast.Try)).body
+        start = next(i for i, node in enumerate(body) if isinstance(node, ast.Assign)
+                     and isinstance(node.value, ast.Call)
+                     and ast.unparse(node.value.func) == 'go_waiter.communicate')
+        stop = next(i for i in range(start, len(body)) if isinstance(body[i], ast.Expr)
+                    and ast.unparse(body[i]) == "command(['docker', 'start', runner_container])")
+        cls.block = compile(ast.Module(body=body[start:stop + 1], type_ignores=[]), str(path), 'exec')
+
+    def scenario(self, listing, *, migration_exit='0', wait_returncode=0, inspection_error=None):
+        # Process exit is already available while the daemon's list view can
+        # independently lag, stay populated, or fail. No actual time elapses.
+        now, sleeps, inspections, commands = [0.0], [], [], []
+        outputs = iter(listing)
+        running_go = ['docker', 'ps', '-q', '--filter',
+                      'label=com.docker.compose.project=assozeta-update-test-0123456789',
+                      '--filter', 'label=com.docker.compose.service=migrate-go',
+                      '--filter', 'label=com.docker.compose.oneoff=True']
+
+        def capture(args, **kwargs):
+            self.assertEqual(args, running_go)
+            inspections.append(kwargs)
+            if inspection_error is not None:
+                raise inspection_error
+            return next(outputs, listing[-1])
+
+        def sleep(delay):
+            self.assertGreater(delay, 0)
+            self.assertLessEqual(delay, 0.1)
+            sleeps.append(delay)
+            now[0] += delay
+
+        def communicate(timeout):
+            self.assertEqual(timeout, 20)
+            return migration_exit + '\n', ''
+
+        return {'go_waiter': SimpleNamespace(returncode=wait_returncode, communicate=communicate),
+                'capture': capture, 'running_go': running_go, 'runner_container': 'owned-runner',
+                'command': commands.append, 'time': SimpleNamespace(monotonic=lambda: now[0], sleep=sleep),
+                '_now': now, '_sleeps': sleeps, '_inspections': inspections, '_commands': commands}
+
+    def test_exit_zero_waits_for_delayed_running_list_before_restart(self):
+        state = self.scenario(['go-oneoff', 'go-oneoff', '', ''])
+        exec(self.block, state)
+        self.assertGreater(len(state['_sleeps']), 0)
+        self.assertEqual(state['_commands'], [['docker', 'start', 'owned-runner']])
+
+    def test_already_absent_oneoff_needs_no_sleep(self):
+        state = self.scenario([''])
+        exec(self.block, state)
+        self.assertEqual(state['_sleeps'], [])
+        self.assertEqual(state['_commands'], [['docker', 'start', 'owned-runner']])
+
+    def test_final_absence_assertion_rejects_a_new_running_observation(self):
+        state = self.scenario(['', 'different-go-oneoff'])
+        with self.assertRaises(AssertionError):
+            exec(self.block, state)
+        self.assertEqual(state['_commands'], [])
+
+    def test_persistent_or_replacement_oneoff_cannot_pass_or_restart_runner(self):
+        for listing in (['go-oneoff'], ['go-oneoff', 'different-go-oneoff']):
+            with self.subTest(listing=listing):
+                state = self.scenario(listing)
+                with self.assertRaises(AssertionError):
+                    exec(self.block, state)
+                self.assertEqual(state['_commands'], [])
+                self.assertGreaterEqual(state['_now'][0], 10)
+                self.assertLessEqual(state['_now'][0], 10.1)
+
+    def test_failed_migration_or_wait_client_cannot_reach_poll_or_restart(self):
+        for result in ({'migration_exit': '42'}, {'migration_exit': ''}, {'wait_returncode': 1}):
+            with self.subTest(result=result):
+                state = self.scenario([''], **result)
+                with self.assertRaisesRegex(AssertionError, 'did not finish successfully'):
+                    exec(self.block, state)
+                self.assertEqual(state['_inspections'], [])
+                self.assertEqual(state['_commands'], [])
+
+    def test_inspection_errors_and_hangs_fail_before_restart_with_bounded_query(self):
+        query = ['docker', 'ps']
+        for error in (subprocess.CalledProcessError(1, query), subprocess.TimeoutExpired(query, 10)):
+            with self.subTest(error=type(error).__name__):
+                state = self.scenario([''], inspection_error=error)
+                with self.assertRaises(type(error)):
+                    exec(self.block, state)
+                self.assertEqual(state['_commands'], [])
+                self.assertIn('timeout', state['_inspections'][0])
+                self.assertGreater(state['_inspections'][0]['timeout'], 0)
+                self.assertLessEqual(state['_inspections'][0]['timeout'], 10)
 
 
 class QualityTests(unittest.TestCase):

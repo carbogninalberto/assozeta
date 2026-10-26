@@ -8,9 +8,45 @@ import io
 import json
 from unittest.mock import patch
 from types import SimpleNamespace
+from uuid import UUID
 
 from .accounts import ROOT
 from .scoped_resources import uid
+
+
+def _check_audit_indexes(kind, entries, before, after, now):
+    """Require only the archive DELETE's source-derived fallback index."""
+    label = 'application.AuditLogIndex'
+    prior_ids = {row['audit_log_index_id'] for row in before[label]}
+    retained = [row for row in after[label] if row['audit_log_index_id'] in prior_ids]
+    assert retained == before[label], (kind, 'preexisting index changed')
+    added = [row for row in after[label] if row['audit_log_index_id'] not in prior_ids]
+    assert len(added) == int(kind == 'archive'), (kind, 'unexpected deletion indexes', added)
+    if kind != 'archive':
+        return
+
+    # The archive has a direct association FK; MedicalCertificate and Document
+    # do not. The task has no actor. Once the archive is deleted, only its old
+    # association in audit changes can resolve it (tuples in memory, lists on read).
+    sources = before['application.SportAssociationDocumentsArchive']
+    assert len(sources) == 1, (kind, 'wrong archive source count')
+    source = sources[0]
+    archive_entries = [entry for entry in entries
+                       if entry.content_type.app_label == 'application'
+                       and entry.content_type.model == 'sportassociationdocumentsarchive']
+    assert len(archive_entries) == 1, (kind, 'wrong archive audit count')
+    entry = archive_entries[0]
+    assert entry.object_pk == str(source['sport_association_documents_archive_id']), (kind, 'wrong archive audit object')
+    changes = entry.changes.get('sport_association')
+    assert isinstance(changes, (list, tuple)) and list(changes) == [str(source['sport_association_id']), 'None'], (kind, 'wrong archive audit association')
+    assert entry.timestamp == now, (kind, 'wrong archive audit timestamp')
+    index = added[0]
+    assert UUID(str(index['audit_log_index_id'])).version == 4, (kind, 'invalid generated index UUID')
+    assert index == dict(audit_log_index_id=index['audit_log_index_id'],
+                         log_entry_id=entry.pk,
+                         sport_association_id=source['sport_association_id'],
+                         resolution_path='changes_json.sport_association',
+                         created_at=now), (kind, 'wrong archive deletion index', index)
 
 
 def run(work, log, tool_env):
@@ -28,7 +64,6 @@ def run(work, log, tool_env):
     from application.models import User, SportAssociation, Subscription, MedicalCertificate, Invoice
     from application.models.subscriptions_models import AssociateImportDraft
     from application.models.user_models import SportAssociationDocumentsArchive
-    from application.models.audit_models import AuditLogIndex
     from application.services.subscription_service import MedicalCertificateService
     from docmanager.models import Document
 
@@ -65,7 +100,9 @@ def run(work, log, tool_env):
             return super().delete(name)
     def call(storage):
         captured=io.StringIO()
-        with patch.object(tasks,'default_storage',storage),patch.object(tasks,'STORAGE_DIR',''),redirect_stdout(captured),CaptureQueriesContext(connection) as queries:
+        # Freeze audit defaults only; the task's storage/deletion logic is real.
+        with patch.object(tasks,'default_storage',storage),patch.object(tasks,'STORAGE_DIR',''),patch('django.utils.timezone.datetime',wraps=datetime) as audit_clock,redirect_stdout(captured),CaptureQueriesContext(connection) as queries:
+            audit_clock.now.return_value=now
             assert tasks.auto_delete_orphan_medical_certificate.run() is None
         gc.collect()
         return captured.getvalue(),len(queries)
@@ -164,7 +201,7 @@ def run(work, log, tool_env):
                 assert all(getattr(entry,k) is None for k in ('actor_id','actor_email','cid','remote_addr','remote_port','serialized_data','additional_data'))
             assert observed==expected_audits,(name,observed,expected_audits)
             assert [r for r in after['auditlog.LogEntry'] if r['id'] in {b['id'] for b in before['auditlog.LogEntry']}]==before['auditlog.LogEntry'],(name,'preexisting audit changed')
-            assert after['application.AuditLogIndex']==before['application.AuditLogIndex'],(name,'unexpected deletion indexes')
+            _check_audit_indexes(kind,entries,before,after,now)
             results.append(dict(name=name,queries=queries,removed=removed,file_removed=file_removed,audits=observed,error=error))
             print('Django medical cleanup:',name,'passed',flush=True)
         task=tasks.auto_delete_orphan_medical_certificate

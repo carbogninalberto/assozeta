@@ -343,6 +343,14 @@ class PackagedControls(unittest.TestCase):
             self.assertEqual(inspect_container.call_args.args[0], ['docker', 'inspect', 'd'*64])
         self.assertEqual(calls[0][:2], ('host.docker.internal:123', 'category-api:8000'))
         self.assertEqual(calls[0][2]['network'], 'owned-net')
+        self.assertNotIn('pull_policy', calls[0][2])
+        with patch.object(caddy, 'proxy', new=proxy), \
+             patch.object(image.subprocess, 'run', return_value=Mock(returncode=1)):
+            with image.owned_image_caddy(report, io.StringIO(), 'django:8000',
+                    'category-api:8000', network='owned-net', pull_policy='never'):
+                pass
+        self.assertEqual(calls[1][2]['pull_policy'], 'never')
+        self.assertEqual(report['service_cleanup']['caddy'], 'stopped')
 
     def test_owned_network_proxy_cleanup_failure_or_missing_identity_rejects(self):
         from TESTS.adapters import caddy
