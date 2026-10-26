@@ -131,7 +131,7 @@ Reproduce from `BE_GO` without services/network, using the cached toolchain:
 export GOMAXPROCS=2 GOFLAGS=-p=1 GOPROXY=off GOSUMDB=off
 export GOTOOLCHAIN=local GOWORK=off
 export GOCACHE="$PWD/../quality-reports/go-build-cache"
-GO_BIN=/Users/alberto/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.12.darwin-arm64/bin/go
+GO_BIN=${GO_BIN:-go} # Go 1.25.12, already installed on PATH
 "$GO_BIN" test ./internal/config ./internal/repository ./internal/service ./internal/handler ./internal/dto \
   -run 'Test(MessageReads|MessageListSpool)' -count=1 -v
 "$GO_BIN" test -race ./internal/config ./internal/repository ./internal/handler \

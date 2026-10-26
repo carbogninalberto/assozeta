@@ -101,7 +101,7 @@ Local TDD used the existing Node executable with no installs, services, browser,
 or network:
 
 ```sh
-/Users/alberto/.nvm/versions/node/v22.19.0/bin/node --test selfhost/tests/browser/sso-initial-diagnostics.test.mjs selfhost/tests/browser/sso-fixture-navigation.test.mjs
+node --test selfhost/tests/browser/sso-initial-diagnostics.test.mjs selfhost/tests/browser/sso-fixture-navigation.test.mjs
 ```
 
 Baseline: 9 passing tests. Initial RED: 7 failures/3 passes against the old

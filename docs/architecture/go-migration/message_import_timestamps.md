@@ -159,8 +159,8 @@ pytest-django/pytest-timeout are absent, so use the Django runner below.
 With the parent's synthetic settings and private DB connection already supplied:
 
 ```sh
-ROOT=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go-message-import-sol
-PY=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python
+ROOT=$(git rev-parse --show-toplevel)
+PY=${PYTHON_BIN:-python3}
 cd "$ROOT"
 env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$ROOT:$ROOT/BE" \
   DJANGO_SETTINGS_MODULE=TESTS.adapters.django.settings \
