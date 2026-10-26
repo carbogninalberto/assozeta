@@ -15045,7 +15045,8 @@
         "TESTS/test_message_reads_repository.py",
         "TESTS/test_message_list_spool_config.py",
         "TESTS/test_message_list_spool_image.py",
-        "TESTS/test_local_docker_endpoint.py"
+        "TESTS/test_local_docker_endpoint.py",
+        "TESTS/test_message_list_spool_faults.py"
       ],
       "evidence": [
         {
@@ -15107,6 +15108,12 @@
           "result": "Parent phase1 accepted and independently revalidated: three complete 1152-row responses of75806816bytes; two observed concurrent unlinked ext4 disk spools; nonroot readonly package and full cleanup.54 focused offline controls pass. Cancellation, storage failures, peak memory and complete family acceptance remain open.",
           "artifact": "quality-reports/go-migration/message-list-spool-image-r2/results.json",
           "receipt_sha256": "4136618c7b001b87859fe624e0bf58e40141ced4d65c3ee516ffe5fcbbfcef46"
+        },
+        {
+          "revision": "07148adf3b01c5865bf3fc4e43b5997314d3de4b packaged image; exact source/driver bindings in parent receipt",
+          "result": "Bounded packaged post-header abandonment and spool-create permission denial pass, with actual descriptor release, exact generic500, mode restoration, same-process full recovery and complete cleanup. Parent independently revalidated provenance and validators. Does not establish DB-inflight cancellation, ENOSPC/read/write failures or complete message-family acceptance.",
+          "artifact": "quality-reports/go-migration/message-list-spool-faults-image-r1/faults.json",
+          "receipt_sha256": "4b6a8929c7f3157f71ef7a8dd65e2f3d99742bcd6d0c44b6ae5ac7add8a6f157"
         }
       ],
       "notes": [
