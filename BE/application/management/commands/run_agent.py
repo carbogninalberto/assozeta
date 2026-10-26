@@ -42,6 +42,8 @@ class Command(BaseCommand):
             self.stderr.write('Il bot AI è disattivato per questa istanza.')
             return
         provider = AIProvider(api_key=config['api_key'], model=config['model'], base_url=config['base_url'])
+        from application.manuale.availability import manual_available
+        manual_is_available = await asyncio.to_thread(manual_available)
         callback = CLICallback()
         agent = Agent(
             sport_association_id=str(sa.sport_association_id),
@@ -49,6 +51,7 @@ class Command(BaseCommand):
             provider=provider,
             callback=callback,
             ai_config=config,
+            manual_available=manual_is_available,
         )
 
         self.stdout.write(self.style.SUCCESS(

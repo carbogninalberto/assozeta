@@ -53,21 +53,73 @@ def manual_evidence_problem(result):
             return 'irrelevant_instructions'
     return None
 
+_PLATFORM_OPS = (
+    r'creare|creo|crea|aggiungere|aggiungo|aggiunge|assegnare|assegno|assegna|'
+    r'modificare|modifico|modifica|configurare|configuro|configura|importare|importo|'
+    r'esportare|esporto|registrare|registro|abilitare|abilito|eliminare|elimino|'
+    r'incassare|incasso|incassa|approvare|approvo|approva|scaricare|scarico|scarica|'
+    r'pubblicare|pubblico|pubblica|annullare|annullo|annulla|gestire|gestisco|trovare|'
+    r'trovo|cercare|cerco|cerca|svuotare|svuoto|svuota|cancellare|cancello|archiviare|'
+    r'archivio|archivia|ripristinare|ripristino|ripristina|correggere|correggo|corregge|'
+    r'copiare|copio|copia|controllare|controllo|controlla|cambiare|cambio|cambia|'
+    r'personalizzare|personalizzo|personalizza|ridimensionare|ridimensiono|ridimensiona|'
+    r'impostare|imposto|imposta|segnare|segno|segna|rimuovere|rimuovo|rimuove|'
+    r'generare|genero|genera|stampare|stampo|caricare|carico|invitare|invito|salvare|'
+    r'salvo|inviare|invio|invia'
+)
+_PLATFORM_TERMS = (
+    r'report|export|esportazione|pagament[oi]|soc(?:io|i)|iscrizion[ei]|certificat[oi]|'
+    r'tesser[ae]|cors[oi]|bilanc(?:io|i)|fattur[ae]|ricevut[ae]|presenz[ae]|carnet|'
+    r'calendar(?:io|i)|comunicazion[ei]|modul[oi]|tag|registro|contabilita|contabilità|'
+    r'bonific[oi]|quota|quote|dashboard|bacheca|impostazion[ei]|ann[oi]\s+(?:sportivo|fiscale)'
+)
+_HOW_TO_CUE = re.compile(
+    r'\b(?:come|dove)\s+(?:(?:si\s+fa|posso\s+fare|faccio|posso|devo|fa|si|fare)\s+(?:a\s+|per\s+)?)?'
+    r'(?:' + _PLATFORM_OPS + r')\b'
+)
+_EXPLANATION_CUE = re.compile(
+    r'\b(?:spiegami|spiega|spiegarmi|mi\s+spieghi|vorrei\s+capire|ho\s+bisogno\s+di\s+capire|'
+    r'sai\s+dirmi|qual\s+(?:e|è)\s+(?:la\s+procedura|il\s+modo)|quali\s+passaggi|'
+    r'cosa\s+devo\s+fare\s+per|come\s+funziona)\b'
+)
+_DEFINITION_CUE = re.compile(
+    r"\b(?:che\s+cos['’]?è|che\s+cos['’]?e|cos['’]?è|cos['’]?e|che\s+cosa\s+(?:e|è)|cosa\s+significa|cosa\s+vuol\s+dire|"
+    r'a\s+cosa\s+serve)\b'
+)
+_MANUAL_REFERENCE_CUE = re.compile(
+    r'^(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
+    r'|\b(?:il|lo|la|i|gli|le|nel|nello|nella|sul|sullo|sulla|dal|dallo|dalla|del|dello|della|dei|degli|delle)\s+'
+    r'(?:manuale|documentazione|istruzioni|tutorial)\b'
+    r"|\buna\s+guida\b|\bla\s+guida\s+(?:per|su|d['’]uso|dell['’]utente|utente)\b"
+)
+_DATA_QUERY_CUE = re.compile(
+    r'\b(?:quanti|quante|quanto|quanta|quali|quando|chi|totale|saldo|importo|'
+    r'elenco|lista|numero|conteggio|somma|media|dati|risultati|riepilogo|andamento|'
+    r'incassat[oi]|pagat[oi]|insolut[oi]|scadut[oi]|attiv[oi])\b'
+)
+_PROCEDURAL_CUE = re.compile(
+    r'\b(?:qual\s+(?:e|è)\s+(?:la\s+procedura|il\s+modo)|quali\s+passaggi|'
+    r'cosa\s+devo\s+fare\s+per|come\s+funziona)\b'
+)
+
+
 def is_manual_question(message):
-    """Route explicit how-to requests; ordinary data questions keep their agent path."""
+    """Route explicit procedural help; ordinary data/action requests keep their path."""
     message = message.lower().strip()
-    return bool(re.search(r'\b(manuale|istruzioni|tutorial|guida per)\b', message)
-                or re.search(r'\b(come|dove)\s+(?:posso\s+|devo\s+|si\s+|faccio\s+a\s+)?'
-                             r'(creare|creo|crea|aggiungere|aggiungo|aggiunge|assegnare|assegno|assegna|modificare|modifico|modifica|configurare|configuro|configura|'
-                             r'importare|importo|esportare|esporto|registrare|registro|abilitare|abilito|eliminare|elimino|'
-                             r'incassare|incasso|incassa|approvare|approvo|approva|scaricare|scarico|scarica|'
-                             r'pubblicare|pubblico|pubblica|annullare|annullo|annulla|'
-                             r'gestire|gestisco|trovare|trovo|cercare|cerco|cerca|svuotare|svuoto|svuota|cancellare|cancello|'
-                             r'archiviare|archivio|archivia|ripristinare|ripristino|ripristina|'
-                             r'correggere|correggo|corregge|copiare|copio|copia|controllare|controllo|controlla|'
-                             r'cambiare|cambio|cambia|personalizzare|personalizzo|personalizza|ridimensionare|ridimensiono|ridimensiona|'
-                             r'impostare|imposto|imposta|segnare|segno|segna|rimuovere|rimuovo|rimuove|'
-                             r'generare|genero|genera|stampare|stampo|caricare|carico|invitare|invito|salvare|salvo|inviare|invio|invia)\b', message))
+    if _MANUAL_REFERENCE_CUE.search(message):
+        return True
+    if _HOW_TO_CUE.search(message):
+        return True
+    if (_PROCEDURAL_CUE.search(message)
+            and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message)):
+        return True
+    if (_EXPLANATION_CUE.search(message)
+            and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message)
+            and not _DATA_QUERY_CUE.search(message)):
+        return True
+    if _DEFINITION_CUE.search(message) and re.search(r'\b(?:' + _PLATFORM_TERMS + r')\b', message):
+        return True
+    return False
 
 
 def is_manual_diagnostic_question(message):

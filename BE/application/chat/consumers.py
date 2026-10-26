@@ -221,6 +221,7 @@ class AgentConsumer(AsyncJsonWebsocketConsumer):
             callback=callback,
             ai_config=self.ai_config,
             user_id=str(self.user.user_id),
+            manual_available=self.manual_available,
         )
 
     async def disconnect(self, close_code):
