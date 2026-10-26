@@ -26,6 +26,29 @@ and Redis/API processes, forces dependency failures/recovery and removes its own
 resources. It requires Go, PostgreSQL binaries, Redis, OpenSSL, a C compiler,
 `pkg-config`, libjpeg, zlib and libwebp/libwebpdemux. Missing dependencies fail.
 
+The server's optional `--query-observation-file /private/new-file.jsonl` flag
+records bounded request-level pgx query diagnostics. It is disabled by default.
+The destination must not exist; the server creates it with mode `0600` and refuses
+existing files and symlinks. Each response receives a generated
+`X-Query-Observation-ID`; the JSONL stream contains only generated IDs and
+counters, never SQL, parameters, credentials, or client-supplied labels.
+
+Diagnostics stop accepting output at 64 MiB. Drain the server normally and require
+successful termination, all expected request summaries, and a final complete
+footer before using the evidence. Failed shutdown aborts the file without a
+completion footer because outstanding callbacks may still be running. Missing
+callbacks, late work, query errors, output failures, or unfinished requests
+invalidate completion. The counters cover pgx Query/QueryRow/Exec and driver
+connect/reset/Ping operations. Reset-probe decisions preserve pgx’s default
+idle threshold; they attest attempts, not wire commands. Reconcile them with
+independent PostgreSQL logs. Batches, CopyFrom, and other direct PgConn operations
+remain outside this observation path.
+The flag does not itself prove endpoint parity or per-request wire-query budgets.
+A background database/sql replacement connection can lack a request context;
+this invalidates the diagnostic footer instead of assigning it to a waiting
+request. Normal request processing is unchanged; incomplete diagnostics must
+not be accepted as query-cost evidence.
+
 Redis readiness uses one atomic `EVAL` to write, read and delete a unique
 `assozeta:go:readiness:*` key. Successful probes preserve all existing keys and
 expiry times, including during concurrent probes. Redis ACLs must permit `EVAL`,

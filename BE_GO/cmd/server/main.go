@@ -60,8 +60,9 @@ func main() {
 		os.Exit(1)
 	}
 }
-func run() error {
+func run() (runErr error) {
 	envFile := flag.String("env-file", "", "optional path to the existing deployment .env")
+	queryObservationFile := flag.String("query-observation-file", "", "optional new private JSONL file for bounded query diagnostics")
 	flag.Parse()
 	cfg, err := config.Load(*envFile)
 	if err != nil {
@@ -73,7 +74,20 @@ func run() error {
 	}
 	// Transaction poolers cannot retain prepared statements across transactions.
 	dbConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
-	db := sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	queryObserver, closeQueryObservation, err := openQueryObservation(*queryObservationFile)
+	if err != nil {
+		return err
+	}
+	defer func() { runErr = errors.Join(runErr, closeQueryObservation(runErr == nil)) }()
+	if queryObserver != nil {
+		dbConfig.Tracer = queryObserver
+	}
+	var db *sqlx.DB
+	if queryObserver != nil {
+		db = sqlx.NewDb(ownedpgx.OpenObservedDB(*dbConfig, queryObserver), "pgx")
+	} else {
+		db = sqlx.NewDb(ownedpgx.OpenDB(*dbConfig), "pgx")
+	}
 	defer db.Close()
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)
@@ -175,7 +189,7 @@ func run() error {
 	e.HideBanner = true
 	e.HidePort = true
 	// Django's CORS middleware admits preflight before URL resolution/session.
-	e.Pre(handler.InstanceBootstrapLocale(), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
+	e.Pre(middleware.QueryObservation(queryObserver), handler.InstanceBootstrapLocale(), middleware.DjangoCORS(cfg.CORSAllowAll, cfg.CORSAllowedOrigins), middleware.DjangoRestoreAdmission(restoreAdmission), middleware.DjangoSecurityHeaders())
 	// Caddy strips the external API prefix; register only upstream paths here.
 	e.Any("/collaborators/list", collaboratorListHandler.Read, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
