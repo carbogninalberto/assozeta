@@ -133,6 +133,24 @@ def make_identity_guard(proof, expected_process):
     return observe
 
 
+def register_recovery(proof, container):
+    """Persist only the owned ID before a restore request can need teardown.
+
+    The outer escalation callback reads this fresh public receipt, so recovery
+    survives expiry during helper cleanup or Docker shutdown, not only after it.
+    The normal completed gate replaces this provisional unsuccessful document.
+    """
+    receipt = proof.restore_failure_receipt
+    need(isinstance(receipt, Path) and receipt.is_file() and not receipt.is_symlink()
+         and type(container) is str and len(container) == 64
+         and all(character in '0123456789abcdef' for character in container), 'recovery-input')
+    current = json.loads(receipt.read_bytes())
+    need(type(current) is dict and current.get('success') is False, 'recovery-fresh-receipt')
+    with defer_interruption():
+        receipt.write_text(json.dumps(dict(success=False, cleanup_verified=False,
+            private_directory_removed=False, errors=[], recovery=dict(container_id=container))) + '\n')
+
+
 def _abort_unquiesced(*, receipt=None, container=None):
     """Fail closed if Docker cannot prove stop: never unwind into fixture reset.
 
@@ -199,6 +217,7 @@ def run_controls(*, apps, database, raw, base_url, process_guard, proof, work,
     expected_process = image.lifecycle._process(process_guard)
     identity_guard = make_identity_guard(proof, expected_process)
     identity = identity_guard(timeout=5)
+    register_recovery(proof, identity[0]['id'])
 
     def guard():
         return identity_guard(timeout=5)[1]

@@ -61,6 +61,15 @@ with PID zero before the fixture resets DB/cache/sequences. A failed stop tries
 KILL and independently rechecks. Subsequent fixture/server cleanup cannot make
 uncertain exec cleanup verified again.
 
+Immediately after pinning the container identity, before opening any restore
+control request, the runner records the immutable ID in a provisional public
+receipt with unsuccessful/unverified flags. The outer cleanup-grace escalation
+therefore retains `recovery.container_id` even when it expires during helper
+cleanup or Docker shutdown. Normal completion replaces this provisional receipt.
+A child-process control proves expiry exits 124 with the ID and without fixture
+reset. The provisional write never copies private in-memory evidence and refuses
+to replace an already successful receipt.
+
 If Docker cannot establish quiescence, the runner marks command cleanup
 unverified and exits 124 immediately, before automatic fixture reset. This is a
 fail-closed last resort: it replaces this invocation's initial public receipt

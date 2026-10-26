@@ -161,6 +161,9 @@ class CompositionControls(unittest.TestCase):
 
         @contextmanager
         def fixture_context(apps, work, raw, *, cleanup_receipt):
+            recovery = json.loads(proof.restore_failure_receipt.read_text())
+            self.assertEqual(recovery['recovery'], {'container_id': H})
+            self.assertIs(recovery['success'], False)
             self.assertEqual((apps, raw), ('apps', 'raw'))
             paths.append(work)
             fixture = dict(tokens={'owner': 'private-token'}, sessions={'owner': 'private-session'})
@@ -210,6 +213,8 @@ class CompositionControls(unittest.TestCase):
              patch.object(image.adapter, 'fixture_context', fixture_context), \
              patch.object(image, 'baseline', side_effect=lambda *a: initial.copy()), \
              patch.object(image, 'measure_address', return_value=('192.0.2.5', address)):
+            proof.restore_failure_receipt = Path(directory) / 'results.json'
+            proof.restore_failure_receipt.write_text('{"success": false}')
             arguments = dict(apps='apps', database='default-database', raw='raw',
                 base_url='http://127.0.0.1:8002', process_guard=guard, proof=proof,
                 work=Path(directory), private_values=private, binary=H)
@@ -249,6 +254,53 @@ class CompositionControls(unittest.TestCase):
 
 
 class ShutdownControls(unittest.TestCase):
+    def test_recovery_registration_rejects_successful_or_invalid_target_without_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'results.json'
+            proof = SimpleNamespace(restore_failure_receipt=receipt)
+            for contents, container in [('{"success": true}', H), ('{"success": false}', 'mutable-name')]:
+                receipt.write_text(contents)
+                with self.assertRaises(AssertionError):
+                    restore.register_recovery(proof, container)
+                self.assertEqual(receipt.read_text(), contents)
+
+    def test_cleanup_grace_expiry_retains_registered_recovery_before_reset(self):
+        program = '''
+from contextlib import contextmanager
+from pathlib import Path
+from types import SimpleNamespace
+import signal, sys
+from TESTS.adapters.go import message_restore_image as restore
+from TESTS.adapters.go.message_image_execution import ExecutionDeadline, fail_receipt
+receipt = Path(sys.argv[2])
+proof = SimpleNamespace(restore_failure_receipt=receipt, identifier='owner', image_id='sha256:'+'a'*64)
+restore.register_recovery(proof, 'a'*64)
+@contextmanager
+def fixture():
+    try: yield
+    finally: Path(sys.argv[1]).write_text('UNSAFE RESET')
+with ExecutionDeadline(10, 1, on_escalation=lambda state: fail_receipt(receipt, state, code='execution.cleanup-grace-expired')) as control:
+    def commands(*args, **kwargs):
+        control.begin_cleanup()
+        control._handle(signal.SIGALRM, None)
+    commands.cleanup_verified = True
+    proof.commands = commands
+    with fixture():
+        restore.quiesce(proof, ({'id':'a'*64}, {}, (1,2)))
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            reset, receipt = Path(directory) / 'reset', Path(directory) / 'results.json'
+            receipt.write_text('{"success": false}')
+            child = subprocess.run([sys.executable, '-B', '-c', program, str(reset), str(receipt)],
+                                   capture_output=True, timeout=10)
+            self.assertEqual(child.returncode, 124)
+            self.assertFalse(reset.exists())
+            public = json.loads(receipt.read_text())
+            self.assertIs(public['success'], False)
+            self.assertIs(public['cleanup_verified'], False)
+            self.assertEqual(public['recovery'], {'container_id': H})
+            self.assertEqual(public['errors'], ['execution.cleanup-grace-expired'])
+
     def stopped(self):
         return dict(Id=H, Image=IID, Config={'Labels': {image.packaged.LABEL: 'owner'}},
             State={'Running': False, 'Pid': 0})
