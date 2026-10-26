@@ -1320,44 +1320,143 @@ def prepare_browser_identities(apps, work, *, consumer='reads'):
 
 
 @contextmanager
-def owned_django(report, *, liveness_observer=None):
+def _installed_connection_observer(observer, report):
+    """Keep both the original failure and a failing diagnostic detach visible."""
+    if observer is None:
+        yield
+        return
+    original = None
+    try:
+        with observer.installed():
+            try:
+                yield
+            except BaseException as error:
+                original = error
+                raise
+    except BaseException as error:
+        if original is not None and error is not original:
+            report['service_cleanup']['django'] = 'cleanup_failed'
+            raise BaseExceptionGroup('django observation detach failed', [original, error]) from None
+        if original is None:
+            report['service_cleanup']['django'] = 'cleanup_failed'
+        raise
+    # A diagnostic context must never suppress application errors/cancellation.
+    if original is not None:
+        raise original
+
+
+def _stop_observed_django(server, thread, observer, report, original):
+    """Attempt independent cleanup steps before detaching the opt-in observer."""
+    errors = []
+    def attempt(operation):
+        try:
+            operation()
+        except BaseException as error:
+            errors.append(error)
+    server.should_exit = True
+    attempt(lambda: thread.join(timeout=15))
+    if thread.is_alive():
+        server.force_exit = True
+        attempt(lambda: thread.join(timeout=10))
+    for listener in getattr(server, 'servers', []):
+        for item in listener.sockets or []:
+            attempt(item.close)
+    if thread.is_alive():
+        errors.append(HarnessError('django-thread-cleanup-failed'))
+    else:
+        attempt(lambda: observer.wait_idle(include_websockets=True))
+    report['service_cleanup']['django'] = 'cleanup_failed' if errors else 'stopped'
+    if errors:
+        if original is not None:
+            errors.insert(0, original)
+        if len(errors) == 1:
+            raise errors[0]
+        raise BaseExceptionGroup('django observation cleanup failed', errors) from None
+
+
+@contextmanager
+def owned_django(report, *, liveness_observer=None, connection_observer=None):
     """Own Django; optionally expose its actual ready handles through a guard."""
     import uvicorn
     from core.asgi import application
     from TESTS.http_client import poll
 
-    observer = CompleteAsgiObserver(application)
-    server = uvicorn.Server(uvicorn.Config(observer, host='127.0.0.1', port=0,
-        lifespan='off', access_log=False, log_level='critical', timeout_graceful_shutdown=5))
-    thread = threading.Thread(target=server.run)
-    report['service_cleanup']['django'] = 'start_attempted'
-    try:
-        thread.start()
-        poll(lambda: server.started and thread.is_alive(), bool, timeout=25)
-        report['service_cleanup']['django'] = 'running'
-        if liveness_observer is not None:
-            liveness_observer(runtime.django_liveness_guard(server, thread, observer))
-        yield observer, server.servers[0].sockets[0].getsockname()[1]
-    finally:
-        server.should_exit = True
-        thread.join(timeout=15)
-        if thread.is_alive():
-            server.force_exit = True
-            thread.join(timeout=10)
-        for listener in getattr(server, 'servers', []):
-            for item in listener.sockets or []:
-                item.close()
-        report['service_cleanup']['django'] = 'stopped' if not thread.is_alive() else 'cleanup_failed'
-        require(not thread.is_alive(), 'django-thread-cleanup-failed')
+    with _installed_connection_observer(connection_observer, report):
+        observed_application = (application if connection_observer is None else
+                                connection_observer.wrap(application))
+        observer = CompleteAsgiObserver(observed_application)
+        server = uvicorn.Server(uvicorn.Config(observer, host='127.0.0.1', port=0,
+            lifespan='off', access_log=False, log_level='critical', timeout_graceful_shutdown=5))
+        thread = threading.Thread(target=server.run)
+        report['service_cleanup']['django'] = 'start_attempted'
+        original = None
+        try:
+            thread.start()
+            poll(lambda: server.started and thread.is_alive(), bool, timeout=25)
+            report['service_cleanup']['django'] = 'running'
+            if liveness_observer is not None:
+                liveness_observer(runtime.django_liveness_guard(server, thread, observer))
+            yield observer, server.servers[0].sockets[0].getsockname()[1]
+        except BaseException as error:
+            original = error
+            raise
+        finally:
+            if connection_observer is not None:
+                _stop_observed_django(server, thread, observer, report, original)
+            else:
+                server.should_exit = True
+                thread.join(timeout=15)
+                if thread.is_alive():
+                    server.force_exit = True
+                    thread.join(timeout=10)
+                for listener in getattr(server, 'servers', []):
+                    for item in listener.sockets or []:
+                        item.close()
+                report['service_cleanup']['django'] = 'stopped' if not thread.is_alive() else 'cleanup_failed'
+                require(not thread.is_alive(), 'django-thread-cleanup-failed')
+
+
+def _query_observation_paths(work, summary, connections):
+    """Validate destinations only; the child exclusively creates both files."""
+    require((summary is None) == (connections is None), 'query-observation-files-required')
+    if summary is None:
+        return None
+    root = Path(work).resolve(strict=True)
+    require(root.is_dir(), 'query-observation-work-directory')
+    paths = []
+    for value in (summary, connections):
+        path = Path(value)
+        if not path.is_absolute():
+            path = Path(work) / path
+        resolved = path.resolve()
+        require(resolved != root and resolved.is_relative_to(root), 'query-observation-file-outside-work')
+        require(resolved not in (root / 'message-browser-go', root / 'image-codec'),
+                'query-observation-file-artifact-conflict')
+        # Check the original spelling too: resolve alone would hide symlinks.
+        current = path.absolute()
+        while True:
+            require(not current.is_symlink(), 'query-observation-file-symlink')
+            if current in (root, Path(work).absolute()):
+                break
+            require(current != current.parent, 'query-observation-file-outside-work')
+            current = current.parent
+        require(path.parent.is_dir(), 'query-observation-file-parent-missing')
+        require(not path.exists(), 'query-observation-file-must-be-fresh')
+        paths.append(resolved)
+    require(paths[0] != paths[1], 'query-observation-files-must-be-distinct')
+    return paths
 
 
 @contextmanager
 def owned_go(work, executable, codec, environment, private_log, report, native_build,
-             *, liveness_observer=None):
+             *, liveness_observer=None, query_observation_file=None,
+             query_connection_observation_file=None):
     """Own Go; optionally expose the actual ready Popen through its guard."""
     from TESTS.http_client import poll
     from TESTS.adapters.go.message_image_execution import defer_interruption
 
+    observation_paths = _query_observation_paths(work, query_observation_file,
+                                                 query_connection_observation_file)
     # Reserve then release a private port; readiness must come from this child.
     with socket.socket() as reservation:
         reservation.bind(('127.0.0.1', 0))
@@ -1374,11 +1473,16 @@ def owned_go(work, executable, codec, environment, private_log, report, native_b
     child_env = dict(environment, GO_LISTEN_ADDR=f'127.0.0.1:{port}',
                      ASSOZETA_LOGIN_JPEG_CODEC=str(codec_target))
     process = None
+    command = [str(target)]
+    if observation_paths is not None:
+        command.extend(['--query-observation-file', str(observation_paths[0]),
+                        '--query-connection-observation-file', str(observation_paths[1])])
     report['service_cleanup']['go'] = 'start_attempted'
+    original = None
     try:
         # Register the returned handle before cancellation can unwind the owner.
         with defer_interruption():
-            process = subprocess.Popen([str(target)], cwd=work, env=child_env,
+            process = subprocess.Popen(command, cwd=work, env=child_env,
                 stdout=private_log, stderr=subprocess.STDOUT, start_new_session=True)
         def ready():
             require(process.poll() is None, 'owned-go-exited')
@@ -1399,11 +1503,41 @@ def owned_go(work, executable, codec, environment, private_log, report, native_b
             from TESTS.adapters.django.message_read_scopes_runtime import go_liveness_guard
             liveness_observer(go_liveness_guard(process))
         yield port
+    except BaseException as error:
+        original = error
+        raise
     finally:
-        if process is not None:
-            stop_child(process)
-        report['service_cleanup']['go'] = 'stopped'
-        require(sha(target) == sha(executable) and sha(codec_target) == sha(codec), 'running-binary-drift')
+        if observation_paths is None:
+            if process is not None:
+                stop_child(process)
+            report['service_cleanup']['go'] = 'stopped'
+            require(sha(target) == sha(executable) and sha(codec_target) == sha(codec), 'running-binary-drift')
+        else:
+            errors = []
+            if process is not None:
+                try:
+                    stop_child(process)
+                except BaseException as error:
+                    errors.append(error)
+                try:
+                    require(process.poll() is not None, 'go-process-cleanup-failed')
+                    # Both diagnostic sinks Sync/Close during normal exit. A
+                    # footer alone cannot prove these final writes succeeded.
+                    require(process.poll() == 0, 'go-observation-finalization-failed')
+                except BaseException as error:
+                    errors.append(error)
+            try:
+                require(sha(target) == sha(executable) and sha(codec_target) == sha(codec),
+                        'running-binary-drift')
+            except BaseException as error:
+                errors.append(error)
+            report['service_cleanup']['go'] = 'cleanup_failed' if errors else 'stopped'
+            if errors:
+                if original is not None:
+                    errors.insert(0, original)
+                if len(errors) == 1:
+                    raise errors[0]
+                raise BaseExceptionGroup('go observation cleanup failed', errors) from None
 
 
 class FixtureRestore:

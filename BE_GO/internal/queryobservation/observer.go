@@ -78,12 +78,13 @@ type query struct {
 	owner   *Observer
 	request *request
 	ended   bool
+	binding connectionBinding
 }
 
 // Observer serializes accounting and JSONL writes. Its memory consists of
-// counters and context-owned request/query/driver tokens; it retains no completed-ID
-// map. Methods may run concurrently. A writer must not call back into Observer.
-// The zero value is not usable; construct with New.
+// counters, context-owned tokens, and optional active connection indexes; it
+// retains no completed-ID map. Methods may run concurrently. A writer must not
+// call back into Observer. Construct with New or NewWithConnectionEvents.
 type Observer struct {
 	mu                     sync.Mutex
 	writer                 io.Writer
@@ -102,6 +103,7 @@ type Observer struct {
 	closeErr               error
 	closed                 bool
 	invalidated            bool
+	connections            *connectionEvents
 }
 
 var _ pgx.QueryTracer = (*Observer)(nil)
@@ -133,6 +135,10 @@ func New(w io.Writer, runID string) (*Observer, error) {
 func (o *Observer) Begin(ctx context.Context) (context.Context, string, func()) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
+	if o.connections != nil && ctx == nil {
+		ctx = context.Background()
+		o.connectionViolationLocked()
+	}
 	o.sequence++
 	r := &request{owner: o, sequence: o.sequence, id: o.runID + "-" + strconv.FormatUint(o.sequence, 10),
 		activeAtStart: o.sequence - o.requestFinishes}
@@ -148,16 +154,22 @@ func (o *Observer) Begin(ctx context.Context) (context.Context, string, func()) 
 			o.violationLocked(r, func(c *counters) { c.ForeignContexts++ })
 		}
 	}
+	o.connectionEventLocked("request_begin", r, nil, 0, false, !o.closed)
 	return context.WithValue(ctx, requestKey{}, r), r.id, func() { o.finish(r) }
 }
 
-// TraceQueryStart deliberately ignores both connection identity and data. Each
-// callback counts, even when the context is missing, foreign, finished or reused.
-func (o *Observer) TraceQueryStart(ctx context.Context, _ *pgx.Conn, _ pgx.TraceQueryStartData) context.Context {
+// TraceQueryStart ignores data. Connection attribution is enabled only by
+// NewWithConnectionEvents; New continues to accept nil/synthetic connections.
+// Each callback counts, including missing, foreign, finished or reused contexts.
+func (o *Observer) TraceQueryStart(ctx context.Context, conn *pgx.Conn, _ pgx.TraceQueryStartData) context.Context {
 	o.mu.Lock()
 	defer o.mu.Unlock()
+	if o.connections != nil && ctx == nil {
+		ctx = context.Background()
+	}
 	o.counts.QueryStarts++
 	q := &query{owner: o}
+	defer func() { o.connectionStartLocked(ctx, conn, q) }()
 	if o.closed {
 		o.afterCloseLocked()
 		return context.WithValue(ctx, queryKey{}, q)
@@ -190,9 +202,13 @@ func (o *Observer) TraceQueryStart(ctx context.Context, _ *pgx.Conn, _ pgx.Trace
 
 // TraceQueryEnd counts every callback and error, including unknown/duplicate
 // ends. Only the original query token can release its active-query count.
-func (o *Observer) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
+func (o *Observer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryEndData) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
+	if o.connections != nil && ctx == nil {
+		ctx = context.Background()
+	}
+	defer func() { o.connectionEndLocked(ctx, conn, data.Err != nil) }()
 	o.counts.QueryEnds++
 	if data.Err != nil {
 		o.counts.QueryErrors++
@@ -256,6 +272,8 @@ func (o *Observer) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.Trac
 func (o *Observer) finish(r *request) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
+	valid := !r.finished && r.active == 0 && r.activeDriver == 0 && clean(r.counts)
+	defer func() { o.connectionEventLocked("request_finish", r, nil, 0, false, valid) }()
 	o.finishCalls++
 	if o.closed {
 		o.afterCloseLocked()
@@ -313,12 +331,20 @@ func (o *Observer) Close() error {
 	}
 	o.closed = true
 	f := o.recordLocked("footer")
-	f.Complete = clean(o.counts) && f.ActiveRequests == 0 && f.ActiveQueries == 0 && f.ActiveDriverOperations == 0 && o.summaries == o.sequence && o.finishCalls == o.requestFinishes && o.sinkErr == nil
+	f.Complete = clean(o.counts) && f.ActiveRequests == 0 && f.ActiveQueries == 0 && f.ActiveDriverOperations == 0 && o.summaries == o.sequence && o.finishCalls == o.requestFinishes && o.sinkErr == nil && o.connectionsCleanLocked()
 	if !f.Complete {
 		o.closeErr = ErrIncomplete
 	}
 	o.writeLocked(f)
 	o.closeErr = errors.Join(o.closeErr, o.sinkErr)
+	if o.connections != nil {
+		o.writeConnectionLocked(o.connectionRecordLocked("footer", nil, nil, 0, false, f.Complete && o.sinkErr == nil))
+		o.closeErr = errors.Join(o.closeErr, o.connections.sinkErr)
+		// Closed observers retain no active-connection index. Context tokens
+		// still reject late callbacks; they cannot repair finalization.
+		clear(o.connections.byConn)
+		clear(o.connections.byPID)
+	}
 	return o.closeErr
 }
 
@@ -331,6 +357,10 @@ func (o *Observer) afterCloseLocked() {
 	o.invalidated = true
 	o.writeLocked(o.recordLocked("invalidated"))
 	o.closeErr = errors.Join(o.closeErr, ErrClosed, o.sinkErr)
+	if o.connections != nil {
+		o.writeConnectionLocked(o.connectionRecordLocked("invalidated", nil, nil, 0, false, false))
+		o.closeErr = errors.Join(o.closeErr, o.connections.sinkErr)
+	}
 }
 
 func (o *Observer) writeLocked(v record) bool {

@@ -63,6 +63,7 @@ func main() {
 func run() (runErr error) {
 	envFile := flag.String("env-file", "", "optional path to the existing deployment .env")
 	queryObservationFile := flag.String("query-observation-file", "", "optional new private JSONL file for bounded query diagnostics")
+	queryConnectionObservationFile := flag.String("query-connection-observation-file", "", "optional new private connection JSONL file; requires query-observation-file")
 	flag.Parse()
 	cfg, err := config.Load(*envFile)
 	if err != nil {
@@ -74,7 +75,7 @@ func run() (runErr error) {
 	}
 	// Transaction poolers cannot retain prepared statements across transactions.
 	dbConfig.DefaultQueryExecMode = pgx.QueryExecModeExec
-	queryObserver, closeQueryObservation, err := openQueryObservation(*queryObservationFile)
+	queryObserver, closeQueryObservation, err := openQueryObservationFiles(*queryObservationFile, *queryConnectionObservationFile)
 	if err != nil {
 		return err
 	}

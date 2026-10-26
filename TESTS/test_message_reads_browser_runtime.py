@@ -1105,6 +1105,7 @@ class OwnedServiceGuardTests(unittest.TestCase):
                 thread.start.side_effect = start
                 thread.join.side_effect = join
                 def config(app, **kwargs):
+                    self.assertIs(app.application, application)
                     server.config = SimpleNamespace(app=app)
                     return server.config
                 def ready(predicate, expected, **kwargs):
@@ -1234,6 +1235,292 @@ class OwnedServiceGuardTests(unittest.TestCase):
                 self.assertEqual(events[-1], 'stop')
                 connection.close.assert_called_once_with()
                 reservation.bind.assert_called_once_with(('127.0.0.1', 0))
+                for guard in guards: self.assertFalse(guard()['running'])
+
+
+class ConnectionOwnerTests(unittest.TestCase):
+    """Synthetic ownership controls: no observer implementation or live service."""
+
+    @contextmanager
+    def django_owner(self, *, failure=None, cleanup_failure=None, detach_failure=None):
+        events = []
+        application, wrapped = object(), object()
+        listener = Mock()
+        listener.getsockname.return_value = ('127.0.0.1', 1234)
+        listener.close.side_effect = lambda: events.append('close')
+        server = SimpleNamespace(started=False, should_exit=False, force_exit=False,
+            run=Mock(), servers=[SimpleNamespace(sockets=[listener])])
+        thread = Mock()
+        thread.is_alive.return_value = False
+        def start():
+            events.append('start')
+            server.started = True
+            thread.is_alive.return_value = True
+            if failure == 'start': raise ValueError('start failure')
+        def join(timeout):
+            events.append('join')
+            self.assertTrue(server.should_exit)
+            if cleanup_failure != 'live': thread.is_alive.return_value = False
+            if cleanup_failure == 'join': raise ValueError('join failure')
+        thread.start.side_effect, thread.join.side_effect = start, join
+        @contextmanager
+        def installed():
+            events.append('install')
+            try: yield
+            finally:
+                events.append('detach')
+                if detach_failure is not None: raise detach_failure
+        def wrap(app):
+            self.assertIs(app, application)
+            events.append('wrap')
+            return wrapped
+        connection_observer = SimpleNamespace(installed=installed, wrap=wrap,
+            snapshot=lambda: {'detached': events[-1] == 'detach'})
+        def config(app, **kwargs):
+            self.assertIsInstance(app, harness.CompleteAsgiObserver)
+            self.assertIs(app.application, wrapped)
+            events.append('config')
+            server.config = SimpleNamespace(app=app)
+            if failure == 'config': raise ValueError('config failure')
+            return server.config
+        def ready(*args, **kwargs):
+            events.append('ready')
+            if failure == 'ready': raise ValueError('ready failure')
+        def drain(*args, **kwargs):
+            events.append('drain')
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(kwargs, {'include_websockets': True})
+            if cleanup_failure == 'drain': raise harness.HarnessError('asgi-window-incomplete')
+        report = {'service_cleanup': {}}
+        modules = {'uvicorn': SimpleNamespace(Config=config, Server=lambda _: server),
+                   'core.asgi': SimpleNamespace(application=application)}
+        with patch.dict(sys.modules, modules), \
+             patch.object(harness.threading, 'Thread', return_value=thread), \
+             patch('TESTS.http_client.poll', side_effect=ready), \
+             patch.object(harness.CompleteAsgiObserver, 'wait_idle', side_effect=drain), \
+             patch.object(harness.socket, 'socket', side_effect=AssertionError('no sockets')):
+            yield SimpleNamespace(events=events, report=report, observer=connection_observer,
+                server=server, thread=thread, listener=listener)
+
+    def test_connection_observer_encloses_start_yield_stop_and_complete_drain(self):
+        with self.django_owner() as fixture:
+            guards = []
+            with harness.owned_django(fixture.report, connection_observer=fixture.observer,
+                                     liveness_observer=guards.append) as result:
+                self.assertIs(result[0], fixture.server.config.app)
+                self.assertEqual(result[1], 1234)
+                self.assertTrue(guards[0]()['running'])
+                fixture.events.append('yield')
+            self.assertFalse(guards[0]()['running'])
+            self.assertEqual(fixture.events, ['install', 'wrap', 'config', 'start', 'ready',
+                                             'yield', 'join', 'close', 'drain', 'detach'])
+            self.assertTrue(fixture.observer.snapshot()['detached'])
+            self.assertEqual(fixture.report['service_cleanup']['django'], 'stopped')
+
+    def test_connection_observer_failure_and_cancellation_stop_before_detach(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionInterrupted
+        for stage in ('config', 'start', 'ready', 'liveness', 'body', 'cancel'):
+            with self.subTest(stage=stage), self.django_owner(failure=stage) as fixture:
+                original = ExecutionInterrupted() if stage == 'cancel' else ValueError(stage)
+                def liveness(_):
+                    if stage == 'liveness': raise original
+                with self.assertRaises(BaseException) as caught:
+                    with harness.owned_django(fixture.report, connection_observer=fixture.observer,
+                                             liveness_observer=liveness):
+                        if stage in ('body', 'cancel'): raise original
+                if stage in ('body', 'cancel', 'liveness'): self.assertIs(caught.exception, original)
+                self.assertEqual(fixture.events[-1], 'detach')
+                if stage != 'config':
+                    self.assertFalse(fixture.thread.is_alive())
+                    self.assertLess(fixture.events.index('join'), fixture.events.index('detach'))
+                    self.assertIn('drain', fixture.events)
+
+    def test_connection_observer_cleanup_errors_remain_visible_with_original(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionInterrupted
+        def leaves(error):
+            if isinstance(error, BaseExceptionGroup):
+                return [leaf for child in error.exceptions for leaf in leaves(child)]
+            return [error]
+        for failure in ('live', 'join', 'drain'):
+            with self.subTest(failure=failure), self.django_owner(cleanup_failure=failure) as fixture:
+                original = ExecutionInterrupted()
+                with self.assertRaises(BaseExceptionGroup) as caught:
+                    with harness.owned_django(fixture.report, connection_observer=fixture.observer):
+                        raise original
+                self.assertIn(original, leaves(caught.exception))
+                self.assertGreaterEqual(len(leaves(caught.exception)), 2)
+                self.assertEqual(fixture.report['service_cleanup']['django'], 'cleanup_failed')
+                fixture.listener.close.assert_called_once()
+                self.assertEqual(fixture.events[-1], 'detach')
+
+    def test_connection_observer_detach_failure_keeps_original_cancellation(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionInterrupted
+        original, detach = ExecutionInterrupted(), ValueError('detach failed')
+        with self.django_owner(detach_failure=detach) as fixture:
+            with self.assertRaises(BaseExceptionGroup) as caught:
+                with harness.owned_django(fixture.report, connection_observer=fixture.observer):
+                    raise original
+            self.assertEqual(caught.exception.exceptions, (original, detach))
+            self.assertIn('drain', fixture.events)
+
+    @contextmanager
+    def go_owner(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            work = root / 'work'
+            work.mkdir()
+            executable, codec = root / 'server', root / 'codec'
+            executable.write_bytes(b'offline server')
+            codec.write_bytes(b'offline codec')
+            native = {'artifacts': {'server': harness.sha(executable), 'image-codec': harness.sha(codec)}}
+            process = SimpleNamespace(pid=os.getpid(), poll=Mock(return_value=None))
+            reservation = Mock()
+            reservation.__enter__ = Mock(return_value=reservation)
+            reservation.__exit__ = Mock(return_value=False)
+            reservation.getsockname.return_value = ('127.0.0.1', 1234)
+            report, events = {'service_cleanup': {}}, []
+            def stop(child):
+                self.assertIs(child, process)
+                events.append('stop')
+                process.poll.return_value = 0
+            with patch.object(harness.socket, 'socket', return_value=reservation) as sockets, \
+                 patch.object(harness.subprocess, 'Popen', return_value=process) as launched, \
+                 patch('TESTS.http_client.poll') as ready, \
+                 patch.object(harness, 'stop_child', side_effect=stop):
+                def owner(**options):
+                    return harness.owned_go(work, executable, codec, {}, io.StringIO(), report,
+                                            native, **options)
+                yield SimpleNamespace(root=root, work=work, owner=owner, launch=launched,
+                    socket=sockets, process=process, report=report, events=events, ready=ready)
+
+    def test_go_connection_destinations_rejected_before_spawn(self):
+        cases = ('summary-only', 'connections-only', 'alias', 'dot-alias', 'outside',
+                 'existing-file', 'existing-directory', 'symlink', 'dangling-symlink',
+                 'parent-symlink', 'internal-symlink', 'symlink-dotdot', 'missing-parent', 'work-itself',
+                 'server-artifact', 'codec-artifact')
+        for case in cases:
+            with self.subTest(case=case), self.go_owner() as fixture:
+                work = fixture.work
+                summary, connections = work / 'summary.jsonl', work / 'connections.jsonl'
+                if case == 'summary-only': connections = None
+                if case == 'connections-only': summary = None
+                if case == 'alias': connections = summary
+                if case == 'dot-alias': connections = work / 'sub/../summary.jsonl'; (work / 'sub').mkdir()
+                if case == 'outside': connections = fixture.root / 'outside.jsonl'
+                if case == 'existing-file': connections.write_text('keep existing')
+                if case == 'existing-directory': connections.mkdir()
+                if case in ('symlink', 'dangling-symlink'):
+                    target = work / 'other'
+                    if case == 'symlink': target.write_text('keep target')
+                    connections.symlink_to(target)
+                if case in ('parent-symlink', 'internal-symlink', 'symlink-dotdot'):
+                    target = fixture.root if case == 'parent-symlink' else work / 'real'
+                    if case != 'parent-symlink': target.mkdir()
+                    (work / 'link').symlink_to(target, target_is_directory=True)
+                    connections = work / ('link/../connections.jsonl' if case == 'symlink-dotdot'
+                                          else 'link/connections.jsonl')
+                if case == 'missing-parent': connections = work / 'absent/connections.jsonl'
+                if case == 'work-itself': connections = work
+                if case == 'server-artifact': connections = work / 'message-browser-go'
+                if case == 'codec-artifact': connections = work / 'image-codec'
+                with self.assertRaises(harness.HarnessError):
+                    with fixture.owner(query_observation_file=summary,
+                                       query_connection_observation_file=connections):
+                        self.fail('invalid destinations yielded')
+                fixture.launch.assert_not_called()
+                fixture.socket.assert_not_called()
+                self.assertEqual(fixture.report, {'service_cleanup': {}})
+                if case == 'existing-file': self.assertEqual(connections.read_text(), 'keep existing')
+
+    def test_go_connection_shutdown_cannot_report_stopped_for_live_child(self):
+        with self.go_owner() as fixture, patch.object(harness, 'stop_child'):
+            with self.assertRaisesRegex(harness.HarnessError, 'go-process-cleanup-failed'):
+                with fixture.owner(query_observation_file=fixture.work / 'summary.jsonl',
+                        query_connection_observation_file=fixture.work / 'connections.jsonl'):
+                    pass
+            self.assertEqual(fixture.report['service_cleanup']['go'], 'cleanup_failed')
+
+    def test_go_connection_shutdown_rejects_failed_finalization_and_forced_exit(self):
+        for exit_code in (1, -signal.SIGKILL, -signal.SIGTERM):
+            with self.subTest(exit_code=exit_code), self.go_owner() as fixture:
+                def stop(process):
+                    process.poll.return_value = exit_code
+                with patch.object(harness, 'stop_child', side_effect=stop):
+                    with self.assertRaisesRegex(harness.HarnessError, 'go-observation-finalization-failed'):
+                        with fixture.owner(query_observation_file=fixture.work / 'summary.jsonl',
+                                query_connection_observation_file=fixture.work / 'connections.jsonl'):
+                            pass
+                self.assertEqual(fixture.report['service_cleanup']['go'], 'cleanup_failed')
+
+    def test_go_connection_cleanup_error_preserves_original_cancellation(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionInterrupted
+        for fail_stop in (False, True):
+            with self.subTest(fail_stop=fail_stop), self.go_owner() as fixture:
+                original, cleanup = ExecutionInterrupted(), ValueError('stop failed')
+                with patch.object(harness, 'stop_child', side_effect=cleanup if fail_stop else None):
+                    with self.assertRaises(BaseExceptionGroup) as caught:
+                        with fixture.owner(query_observation_file=fixture.work / 'summary.jsonl',
+                                query_connection_observation_file=fixture.work / 'connections.jsonl'):
+                            raise original
+                self.assertIs(caught.exception.exceptions[0], original)
+                if fail_stop: self.assertIs(caught.exception.exceptions[1], cleanup)
+                self.assertEqual(fixture.report['service_cleanup']['go'], 'cleanup_failed')
+
+    def test_go_connection_destinations_are_exact_fixed_flags_and_server_owned(self):
+        for relative in (False, True):
+            with self.subTest(relative=relative), self.go_owner() as fixture:
+                summary = fixture.work / 'summary.jsonl'
+                connections = fixture.work / 'connections.jsonl'
+                with fixture.owner(query_observation_file=summary.name if relative else summary,
+                        query_connection_observation_file=connections.name if relative else connections) as port:
+                    self.assertEqual(port, 1234)
+                    args, kwargs = fixture.launch.call_args
+                    self.assertEqual(args, ([str(fixture.work / 'message-browser-go'),
+                        '--query-observation-file', str(summary),
+                        '--query-connection-observation-file', str(connections)],))
+                    self.assertEqual(kwargs['cwd'], fixture.work)
+                    self.assertTrue(kwargs['start_new_session'])
+                    self.assertEqual(set(kwargs['env']), {'GO_LISTEN_ADDR', 'ASSOZETA_LOGIN_JPEG_CODEC'})
+                    self.assertFalse(summary.exists())
+                    self.assertFalse(connections.exists())
+                self.assertEqual(fixture.events, ['stop'])
+                self.assertEqual(fixture.report['service_cleanup']['go'], 'stopped')
+
+    def test_go_connection_options_preserve_acquisition_cancellation_and_binary_guard(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionDeadline, ExecutionInterrupted
+        for mode in ('cancel', 'drift'):
+            with self.subTest(mode=mode), self.go_owner() as fixture:
+                def launch(*args, **kwargs):
+                    if mode == 'cancel': signal.raise_signal(signal.SIGTERM)
+                    return fixture.process
+                fixture.launch.side_effect = launch
+                with ExecutionDeadline(20, 5), self.assertRaises(
+                        ExecutionInterrupted if mode == 'cancel' else harness.HarnessError):
+                    with fixture.owner(query_observation_file=fixture.work / 'summary.jsonl',
+                            query_connection_observation_file=fixture.work / 'connections.jsonl'):
+                        (fixture.work / 'message-browser-go').write_bytes(b'changed')
+                self.assertEqual(fixture.events, ['stop'])
+                self.assertIsNotNone(fixture.process.poll())
+                if mode == 'cancel': fixture.ready.assert_not_called()
+
+    def test_go_connection_options_preserve_ready_liveness_and_body_failures(self):
+        for stage in ('ready', 'liveness', 'body'):
+            with self.subTest(stage=stage), self.go_owner() as fixture:
+                original = ValueError(stage)
+                guards = []
+                if stage == 'ready': fixture.ready.side_effect = original
+                def observe(guard):
+                    self.assertTrue(guard()['running'])
+                    guards.append(guard)
+                    if stage == 'liveness': raise original
+                with self.assertRaises(ValueError) as caught:
+                    with fixture.owner(query_observation_file=fixture.work / 'summary.jsonl',
+                            query_connection_observation_file=fixture.work / 'connections.jsonl',
+                            liveness_observer=observe):
+                        raise original
+                self.assertIs(caught.exception, original)
+                self.assertEqual(fixture.events, ['stop'])
+                self.assertEqual(fixture.report['service_cleanup']['go'], 'stopped')
                 for guard in guards: self.assertFalse(guard()['running'])
 
 
