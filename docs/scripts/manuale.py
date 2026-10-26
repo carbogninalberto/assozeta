@@ -201,8 +201,22 @@ def reuse_inputs(state, args):
             shared_manual = [path for path in manual_changed if not path.endswith('.mdx')
                              and not path.startswith('images/')]
             input_decisions = []
-            affected = affected_recipes(recipe_registry(Path(state['application'])), changed, shared_manual,
+            current_registry = recipe_registry(Path(state['application']))
+            selected_changes = list(changed)
+            registry_affected = []
+            if 'docs/manuale/recipes.json' in selected_changes:
+                previous_registry = recipe_registry(Path(previous['application']))
+                shared_keys = ('format', 'shared_dependencies', 'non_capture_dependencies')
+                if all(previous_registry.get(key) == current_registry.get(key) for key in shared_keys):
+                    previous_recipes = {recipe['id']: recipe for recipe in previous_registry['recipes']}
+                    registry_affected = [recipe['id'] for recipe in current_registry['recipes']
+                                         if previous_recipes.get(recipe['id']) != recipe]
+                    selected_changes.remove('docs/manuale/recipes.json')
+                    input_decisions.append({'path': 'docs/manuale/recipes.json', 'scope': 'application',
+                        'reason': 'generated-registry; compare individual recipe contracts', 'recipes': registry_affected})
+            affected = affected_recipes(current_registry, selected_changes, shared_manual,
                                         root=Path(state['application']), decisions=input_decisions)
+            affected = sorted(set(affected) | set(registry_affected))
             fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
             probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
                                            baseline, stage=False)

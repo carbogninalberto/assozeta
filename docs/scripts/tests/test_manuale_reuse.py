@@ -201,6 +201,38 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(self.state['cache']['mode'], 'automatic')
         self.assertEqual((self.run / 'unit-members.json').read_bytes(), (self.old_run / 'unit-members.json').read_bytes())
 
+    def test_generated_registry_metadata_does_not_invalidate_unchanged_recipe_contracts(self):
+        relative = 'docs/manuale/recipes.json'
+        registry = json.loads((self.code / relative).read_text())
+        registry['reference_dependencies'] = ['BE/reference-only.py']
+        write(self.code, relative, registry)
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        args = SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                               reuse_evidence=str(self.old_run))
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], [])
+        self.assertEqual(self.state['evidence_reuse']['reused_recipes'], ['unit-members'])
+        decision = self.state['cache']['decisions'][0]['input_decisions'][0]
+        self.assertIn('individual recipe contracts', decision['reason'])
+        self.assertEqual(decision['recipes'], [])
+
+    def test_generated_registry_recipe_change_still_requires_its_fresh_capture(self):
+        relative = 'docs/manuale/recipes.json'
+        registry = json.loads((self.code / relative).read_text())
+        registry['recipes'][0]['version'] += 1
+        write(self.code, relative, registry)
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        args = SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                               reuse_evidence=str(self.old_run))
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+        self.assertEqual(self.state['evidence_reuse']['reused_recipes'], [])
+        self.assertEqual(self.state['cache']['decisions'][0]['affected_recipes'], ['unit-members'])
+
     def test_ci_optional_baseline_failure_explains_fresh_fallback(self):
         self.state['manual_repository'] = str(self.root / 'manual-source')
         self.old['status'] = 'failed'
