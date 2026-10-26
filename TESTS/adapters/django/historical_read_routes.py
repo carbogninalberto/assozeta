@@ -647,6 +647,7 @@ def preserve_startup_diagnostics(work, output, report):
 @contextmanager
 def owned_database(output, report):
     """Own every process and directory; never connect to a developer database."""
+    from TESTS.adapters.go.message_image_execution import defer_interruption
     postgres = shutil.which('postgres')
     if not postgres:
         matches = sorted(Path('/opt/homebrew/opt').glob('postgresql*/bin/postgres'))
@@ -654,10 +655,15 @@ def owned_database(output, report):
     redis_binary = shutil.which('redis-server')
     assert postgres and redis_binary and shutil.which('go'), 'Native PostgreSQL, Redis and Go required'
     binaries = Path(postgres).parent
-    work = Path(tempfile.mkdtemp(prefix='az-history-', dir='/tmp')).resolve()
+    work = None
     started = False
     redis_process = None
     try:
+        # Allocation precedes startup/yield. Keep recovery discoverable even if
+        # startup and its stop attempt both fail, or cancellation arrives here.
+        with defer_interruption():
+            work = Path(tempfile.mkdtemp(prefix='az-history-', dir='/tmp')).resolve()
+            report['recovery_directory'] = str(work)
         with (output / 'services.log').open('w') as log:
             def command(args, **kwargs):
                 return subprocess.run([str(arg) for arg in args], check=True, timeout=120,
@@ -679,10 +685,11 @@ def owned_database(output, report):
                 with socket.socket() as reservation:
                     reservation.bind(('127.0.0.1', 0))
                     redis_port = reservation.getsockname()[1]
-                redis_process = subprocess.Popen([redis_binary, '--bind', '127.0.0.1',
-                    '--port', str(redis_port), '--save', '', '--appendonly', 'no',
-                    '--requirepass', 'synthetic-identity-only', '--dir', str(work)],
-                    stdout=log, stderr=subprocess.STDOUT)
+                with defer_interruption():
+                    redis_process = subprocess.Popen([redis_binary, '--bind', '127.0.0.1',
+                        '--port', str(redis_port), '--save', '', '--appendonly', 'no',
+                        '--requirepass', 'synthetic-identity-only', '--dir', str(work)],
+                        stdout=log, stderr=subprocess.STDOUT)
                 service_state(report, 'redis', 'running')
                 yield work, redis_port, log
             finally:
@@ -704,9 +711,11 @@ def owned_database(output, report):
                     service_state(report, 'postgres', 'stopped' if started else 'not_started')
     finally:
         states = report.get('service_cleanup', {})
-        if all(states.get(name) in ('not_started', 'stopped') for name in ('postgres', 'redis')):
+        if work is not None and all(states.get(name) in ('not_started', 'stopped') for name in ('postgres', 'redis')):
             shutil.rmtree(work)
             report['owned_directory_removed'] = not work.exists()
+            if report['owned_directory_removed']:
+                report.pop('recovery_directory', None)
 
 
 def verify_imported_archive(archive, contract, models, storage):

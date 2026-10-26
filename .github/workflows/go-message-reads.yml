@@ -11,9 +11,10 @@ jobs:
     name: Message reads on Django and Go
     runs-on: ubuntu-24.04
     # Includes locked UI/browser installs, Chromium, a sourcemapped Vite build,
-    # native codec/Go builds, and four independent full-547-migration runtimes.
-    # Keep each acceptance gate; allow cold hosted caches and browser deadlines.
-    timeout-minutes: 60
+    # native codec/Go builds, and independent full-547-migration runtimes.
+    # Keep the original 60m for existing gates/cold caches, plus 30m for mutation
+    # acceptance (1500s + 180s cleanup < 30m), 3m upload and 2m offline controls.
+    timeout-minutes: 95
     env:
       LC_ALL: C
       LANG: C
@@ -112,6 +113,7 @@ jobs:
           python -m unittest -v TESTS.test_message_mutations_browser
           python -m unittest -v TESTS.test_message_mutations_browser_runtime
           python -m unittest -v TESTS.test_message_mutations_browser_denials
+          python -m unittest -v TESTS.test_message_mutations_browser_acceptance
           node --test TESTS/browser/message-mutations.test.mjs
           python -m unittest -v TESTS.test_message_read_scopes
           python -m unittest -v TESTS.test_message_session_lifecycle
@@ -154,6 +156,31 @@ jobs:
             --playwright-module selfhost/tests/browser/node_modules/@playwright/test \
             --output quality-reports/go-migration/message-reads-browser
 
+      - name: Verify actual saved-message mutations and HTTP denials on v1 and v2
+        id: message-mutations-browser
+        # Run sequentially with the same unchanged built inputs. An independent
+        # read failure must not skip this gate; its own failure fails the job.
+        if: ${{ !cancelled() && steps.message-controls.outcome == 'success' && steps.message-browser-build.outcome == 'success' }}
+        # Leave 120s beyond the CLI's 1500s deadline + 180s protected cleanup.
+        timeout-minutes: 30
+        env:
+          GOFLAGS: '-p=1'
+          GOWORK: 'off'
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          python -m TESTS.adapters.django.message_mutations_browser_acceptance \
+            --ui-dir "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/artifact" \
+            --build-observation "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/build-observation.json" \
+            --playwright-module "$GITHUB_WORKSPACE/selfhost/tests/browser/node_modules/@playwright/test" \
+            --go-binary "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/server" \
+            --image-codec "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/image-codec" \
+            --go-build-record "$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build/go-build-record.json" \
+            --output "$GITHUB_WORKSPACE/quality-reports/go-migration/message-mutations-browser" \
+            --timeout 360 --deadline 1500 --cleanup-grace 180
+
       - name: Verify authorization and warm-session invalidation on native and versioned backends
         # An independent browser/build failure must not hide scopes results.
         if: ${{ !cancelled() && steps.message-controls.outcome == 'success' }}
@@ -190,6 +217,14 @@ jobs:
         with:
           name: go-message-reads-browser
           path: quality-reports/go-migration/message-reads-browser/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        timeout-minutes: 3
+        with:
+          name: go-message-mutations-browser
+          path: quality-reports/go-migration/message-mutations-browser/results.json
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4

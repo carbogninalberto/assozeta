@@ -545,7 +545,7 @@ class HostedWorkflowControls(unittest.TestCase):
                      'Verify unchanged saved-message browser workflow on v1 and v2',
                      'Verify authorization and warm-session invalidation on native and versioned backends'):
             self.assertIn(gate, native)
-        self.assertIn('timeout-minutes: 60', native)
+        self.assertIn('timeout-minutes: 95', native)
         self.assertIn('timeout-minutes: 90', image)
         self.assertIn('persist-credentials: false', image)
         self.assertIn('contents: read', text)
@@ -569,6 +569,52 @@ class HostedWorkflowControls(unittest.TestCase):
         paths = [line.strip()[6:] for line in image.splitlines() if line.strip().startswith('path: ')]
         self.assertEqual(paths, ['quality-reports/go-migration/message-image-build/results.json',
                                  'quality-reports/go-migration/message-read-scopes-image/results.json'])
+
+    def test_mutation_browser_gate_reuses_inputs_and_cannot_be_hidden_by_failed_reads(self):
+        import shlex
+
+        text = (Path(__file__).resolve().parents[3] / '.github/workflows/go-message-reads.yml').read_text()
+        native, _ = text.split('  message-image:\n', 1)
+        steps = native.split('      - ')
+        gates = [step for step in steps if 'id: message-mutations-browser\n' in step]
+        self.assertEqual(len(gates), 1, 'Require exactly one actual mutation browser gate')
+        gate, = gates
+        condition = next(line.strip() for line in gate.splitlines() if line.strip().startswith('if:'))
+        self.assertEqual(condition, "if: ${{ !cancelled() && steps.message-controls.outcome == 'success' && steps.message-browser-build.outcome == 'success' }}")
+        self.assertIn('timeout-minutes: 30\n', gate)
+        self.assertNotIn('continue-on-error:', native)
+        self.assertNotIn('concurrency:', text)
+        command = gate.split('run: |\n', 1)[1].replace('\\\n', ' ')
+        build = '$GITHUB_WORKSPACE/quality-reports/go-migration/message-browser-build'
+        self.assertEqual(shlex.split(command), [
+            'python', '-m', 'TESTS.adapters.django.message_mutations_browser_acceptance',
+            '--ui-dir', build + '/artifact',
+            '--build-observation', build + '/build-observation.json',
+            '--playwright-module', '$GITHUB_WORKSPACE/selfhost/tests/browser/node_modules/@playwright/test',
+            '--go-binary', build + '/server', '--image-codec', build + '/image-codec',
+            '--go-build-record', build + '/go-build-record.json',
+            '--output', '$GITHUB_WORKSPACE/quality-reports/go-migration/message-mutations-browser',
+            '--timeout', '360', '--deadline', '1500', '--cleanup-grace', '180',
+        ])
+        controls, = [step for step in steps if 'id: message-controls\n' in step]
+        self.assertIn('          python -m unittest -v TESTS.test_message_mutations_browser_acceptance\n', controls)
+        self.assertLess(native.index('id: message-controls\n'), native.index('id: message-browser-build\n'))
+        self.assertLess(native.index('id: message-browser-build\n'), native.index('id: message-mutations-browser\n'))
+        self.assertLess(native.index('Verify unchanged saved-message browser workflow'), native.index('id: message-mutations-browser\n'))
+        uploads = [step for step in steps if step.startswith('uses: actions/upload-artifact@')]
+        paths = [line.strip()[6:] for step in uploads for line in step.splitlines()
+                 if line.strip().startswith('path: ')]
+        self.assertEqual(paths, [
+            'quality-reports/go-migration/message-reads-http/results.json',
+            'quality-reports/go-migration/message-reads-repository/results.json',
+            'quality-reports/go-migration/message-reads-browser/results.json',
+            'quality-reports/go-migration/message-mutations-browser/results.json',
+            'quality-reports/go-migration/message-read-scopes/results.json',
+        ])
+        upload, = [step for step in uploads if 'name: go-message-mutations-browser\n' in step]
+        self.assertIn('if: always()\n', upload)
+        self.assertIn('timeout-minutes: 3\n', upload)
+        self.assertIn('if-no-files-found: ignore\n', upload)
 
 
 if __name__ == '__main__':

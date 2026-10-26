@@ -1,10 +1,12 @@
 """Offline controls only: no sockets, service startup, installed browser or Django."""
 import copy
+import dis
 from contextlib import contextmanager, ExitStack, nullcontext
 from email.message import Message
 import io
 import json
 import os
+import signal
 from pathlib import Path
 import subprocess
 import sys
@@ -1003,6 +1005,83 @@ class NotificationPrerequisiteTests(unittest.TestCase):
 
 class OwnedServiceGuardTests(unittest.TestCase):
     """Offline owner handles only; these controls establish no live acceptance."""
+
+    def test_node_acquisition_cancellation_reaps_child_and_closes_handles(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionDeadline, ExecutionInterrupted
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            process = SimpleNamespace(stdin=Mock(), stdout=Mock())
+            def launch(*args, **kwargs):
+                signal.raise_signal(signal.SIGTERM)
+                return process
+            with patch.object(harness.subprocess, 'Popen', side_effect=launch), \
+                 patch.object(harness, 'stop_child') as stopped, \
+                 patch.object(harness.selectors, 'DefaultSelector') as selector, ExecutionDeadline(20, 5):
+                with self.assertRaises(ExecutionInterrupted):
+                    harness.run_node(node=Path('/offline/node'), module=Path('/offline/module'),
+                        work=root, private_log=io.StringIO(), environment={}, input_data={},
+                        checkpoint=Mock(), probe_origin='http://offline.invalid')
+            stopped.assert_called_once_with(process)
+            process.stdin.close.assert_called_once()
+            process.stdout.close.assert_called_once()
+            selector.return_value.close.assert_called_once()
+            self.assertFalse((root / 'browser-input.json').exists())
+
+    def test_sigterm_at_popen_return_registers_and_reaps_child_before_reset(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionDeadline, ExecutionInterrupted
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            executable, codec = root / 'server', root / 'codec'
+            executable.write_bytes(b'offline server')
+            codec.write_bytes(b'offline codec')
+            native = {'artifacts': {'server': harness.sha(executable), 'image-codec': harness.sha(codec)}}
+            process = SimpleNamespace(poll=Mock(return_value=None))
+            launched, interrupted, events = False, False, []
+            owner_code = harness.owned_go.__wrapped__.__code__
+            instructions = {op.offset: op for op in dis.get_instructions(owner_code)}
+            def trace(frame, event, arg):
+                nonlocal interrupted
+                if frame.f_code is owner_code:
+                    frame.f_trace_opcodes = True
+                    op = instructions.get(frame.f_lasti)
+                    if (event == 'opcode' and launched and not interrupted and
+                            op.opname in ('STORE_FAST', 'STORE_DEREF') and op.argval == 'process'):
+                        interrupted = True
+                        signal.raise_signal(signal.SIGTERM)
+                return trace
+            def launch(*args, **kwargs):
+                nonlocal launched
+                launched = True
+                return process
+            def stop(actual):
+                self.assertIs(actual, process)
+                events.append('stop')
+                process.poll.return_value = 0
+            reservation = Mock()
+            reservation.__enter__ = Mock(return_value=reservation)
+            reservation.__exit__ = Mock(return_value=False)
+            reservation.getsockname.return_value = ('127.0.0.1', 1234)
+            report = {'service_cleanup': {}}
+            previous_trace = sys.gettrace()
+            try:
+                with patch.object(harness.socket, 'socket', return_value=reservation), \
+                     patch.object(harness.subprocess, 'Popen', side_effect=launch), \
+                     patch.object(harness, 'stop_child', side_effect=stop) as stopped, \
+                     patch('TESTS.http_client.poll') as ready, ExecutionDeadline(20, 5):
+                    sys.settrace(trace)
+                    with self.assertRaises(ExecutionInterrupted):
+                        with harness.owned_go(root, executable, codec, {}, io.StringIO(), report, native):
+                            self.fail('cancelled acquisition yielded')
+                    sys.settrace(previous_trace)
+                    self.assertTrue(interrupted, 'exact Popen return boundary was not reached')
+                    stopped.assert_called_once_with(process)
+                    ready.assert_not_called()
+                    self.assertIsNotNone(process.poll(), 'reset must never follow an unregistered live child')
+                    self.assertEqual(report['service_cleanup']['go'], 'stopped')
+                    events.extend(('login-reset', 'fixture-reset'))
+            finally:
+                sys.settrace(previous_trace)
+            self.assertEqual(events, ['stop', 'login-reset', 'fixture-reset'])
 
     def test_django_guard_binds_ready_handles_and_callback_failure_cleans_up(self):
         for mode in ('default', 'observe', 'callback-fails'):

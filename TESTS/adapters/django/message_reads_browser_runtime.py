@@ -408,7 +408,9 @@ def module_fingerprints(directory):
             require(not path.is_symlink(), 'playwright-package-symlink')
             if path.is_file():
                 result[package.name + '/' + str(path.relative_to(package))] = sha(path)
-    return {'version': data['version'], 'files': result}
+    # Public receipts sort JSON keys. Canonicalize only this file-map producer;
+    # json_digest also hashes evidence where sequence/order is significant.
+    return {'version': data['version'], 'files': dict(sorted(result.items()))}
 
 
 def consumer_routes(consumer='reads'):
@@ -1092,6 +1094,7 @@ def stop_child(process):
 
 def run_node(*, node, module, work, private_log, environment, input_data,
              checkpoint, probe_origin, timeout=360, consumer='reads'):
+    from TESTS.adapters.go.message_image_execution import defer_interruption
     require(consumer in ('reads', 'mutations'), 'unknown-browser-consumer')
     credentials = work / 'browser-input.json'
     process = None
@@ -1102,11 +1105,12 @@ def run_node(*, node, module, work, private_log, environment, input_data,
         temporary = work / 'browser-temp'
         temporary.mkdir(mode=0o700)
         child_environment = dict(environment, TMPDIR=str(temporary), TMP=str(temporary), TEMP=str(temporary))
-        process = subprocess.Popen([str(node), str(ROOT / NODE_RUNNER),
-            '--input', str(credentials), '--playwright-module', str(module),
-            '--probe-origin', probe_origin, *(['--consumer', consumer] if consumer != 'reads' else [])],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=private_log, cwd=work, env=child_environment, start_new_session=True, bufsize=0)
+        with defer_interruption():
+            process = subprocess.Popen([str(node), str(ROOT / NODE_RUNNER),
+                '--input', str(credentials), '--playwright-module', str(module),
+                '--probe-origin', probe_origin, *(['--consumer', consumer] if consumer != 'reads' else [])],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=private_log, cwd=work, env=child_environment, start_new_session=True, bufsize=0)
         selector.register(process.stdout, selectors.EVENT_READ)
         deadline, pending, result = time.monotonic() + timeout, bytearray(), None
         browser_binary = None
@@ -1352,6 +1356,7 @@ def owned_go(work, executable, codec, environment, private_log, report, native_b
              *, liveness_observer=None):
     """Own Go; optionally expose the actual ready Popen through its guard."""
     from TESTS.http_client import poll
+    from TESTS.adapters.go.message_image_execution import defer_interruption
 
     # Reserve then release a private port; readiness must come from this child.
     with socket.socket() as reservation:
@@ -1371,8 +1376,10 @@ def owned_go(work, executable, codec, environment, private_log, report, native_b
     process = None
     report['service_cleanup']['go'] = 'start_attempted'
     try:
-        process = subprocess.Popen([str(target)], cwd=work, env=child_env,
-            stdout=private_log, stderr=subprocess.STDOUT, start_new_session=True)
+        # Register the returned handle before cancellation can unwind the owner.
+        with defer_interruption():
+            process = subprocess.Popen([str(target)], cwd=work, env=child_env,
+                stdout=private_log, stderr=subprocess.STDOUT, start_new_session=True)
         def ready():
             require(process.poll() is None, 'owned-go-exited')
             try:

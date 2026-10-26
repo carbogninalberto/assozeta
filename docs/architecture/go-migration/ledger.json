@@ -14526,7 +14526,10 @@
         "TESTS/test_message_mutations_browser_runtime.py",
         "TESTS/test_message_mutations_browser_denials.py",
         "TESTS/browser/message-mutations.mjs",
-        "TESTS/browser/message-mutations.test.mjs"
+        "TESTS/browser/message-mutations.test.mjs",
+        "TESTS/adapters/django/message_mutations_browser_acceptance.py",
+        "TESTS/test_message_mutations_browser_acceptance.py",
+        "BE/communications/tests/test_message_delete_concurrency.py"
       ],
       "evidence": [
         {
@@ -14582,11 +14585,48 @@
           "result": "Actual unchanged-frontend browser workflows passed on fresh Django v1 and Go v2 fixtures: 24 checkpoints and 26 original correlated responses each; three actors create/delete/reload and restricted actor gets established unmapped LIST403 with inline error/no data or mutation controls. Four separate actual HTTP mutation denials per version passed before browser execution. Full128model/Redis, process/peer/ASGI, source/build/native/browser provenance and cleanup verified. No permission/fixture/application behavior changed. Earlier r1-r8 failures retained. Maintained browser CLI and hosted live gate remain open.",
           "artifact": "quality-reports/go-migration/message-mutations-browser-live-r10/results.json",
           "receipt_sha256": "2dc54573144eee1778f7586081568fa13603fcc9e36cbdd753b4321d8d505505"
+        },
+        {
+          "revision": "778cd38ab23cbe20f9e60c98c9ba30032b29e6bc plus exact 1479-file source graph; parent independently matched current integrated inputs",
+          "result": "Maintained browser CLI exited0; parent independently loaded and validated actual persisted JSON after canonical digest and lifecycle repairs. Fresh v1/v2 each passed24 UI checkpoints/26 original correlated responses and4 separately authored HTTP mutation denials; full128model/rawDB1 effects, artifacts and cleanup passed. 253 production-Python runner/shared lifecycle regression controls passed. Earlier CLI-r1 exit0/persisted-receipt failure is retained and not accepted. Hosted execution of this new CLI remains pending.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-cli-r2/results.json",
+          "receipt_sha256": "a1ed5cc3a405f41dc40af08416c7f95b9033302b9aa8bd7a7e16fa09c5310895"
+        },
+        {
+          "revision": "CI merge f2aab5df90f88603389d5ed7462d26d7ae36e862 for head778cd38ab23cbe20f9e60c98c9ba30032b29e6bc; identical trees;1678 runtime input hashes independently matched",
+          "result": "Hosted amd64 packaged mutation job121524328209 and all22 application CI40308716041 jobs passed. Parent independently accepted exact immutable-image receipt against clean merge checkout:119cases on4transports plus4restore controls, source/artifact andcleanup checks. Separate manual recipe-alignment failure remains; this is not evidence for subsequent uncommitted changes.",
+          "artifact": "quality-reports/go-migration/mutation-ci-778/runtime/results.json",
+          "receipt_sha256": "111de28127e5148c800c76141dfd2c78efde111be15d69130dd285fb4fd7564c"
+        },
+        {
+          "revision": "778cd38 plus exact current source graph in diagnostic receipt; no reference correction integrated yet",
+          "result": "Parent actual concurrent DELETE characterization reproduced Django200/200 with2DELETE audits carrying the2actual request correlations and2matching indexes for one message/2delivery cascade. Parent independently reparsed complete original HTTP wire and inspected128model/private evidence. Go characterization rejected a legitimate waiter with no permanent XID; probe repair pending. Catalog-to-request transaction binding is missing; full concurrency acceptance withheld. Parent stopped services before reset; final cleanup/source checks passed.",
+          "artifact": "quality-reports/go-migration/message-delete-concurrency-live-r3/results.json",
+          "receipt_sha256": "b88d4c3d9fa230e42ab276b999e1f74b98eb7078d74c33a152d0dd312cd05659"
+        },
+        {
+          "revision": "778cd38 plus final integrated runner/reference batch;1479 source hashes matched after fresh standalone execution",
+          "result": "Maintained browser CLI passed against corrected Django DELETE reference and unchanged Go: v1/v2 each24UI checkpoints/26original correlated responses plus4separate HTTP mutation denials. Parent independently validated persisted JSON and all current inputs; fullstate/cache/artifact/service cleanup passed. This supersedes earlier local browser evidence only for this exact input graph; hosted new CLI execution still pending.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-cli-r3/results.json",
+          "receipt_sha256": "7bbfb656a1391a9deafdc541ee27e49fb55e5301345e4004e91e1f8d9210966c"
+        },
+        {
+          "revision": "778cd38 plus final integrated runner/reference batch;1506 exact source inputs independently matched",
+          "result": "Maintained mutation CLI passed119authored cases on nativeDjango/nativeGo/Caddyv1/v2 after Django concurrent-delete correction. Parent independently validated persisted receipt; full128model/rawDB1 effects,547migrations, binary/source bindings, actual misroute rejection and all six owned service lifetimes/cleanup passed. This does not establish complete concurrency attribution or full-family acceptance.",
+          "artifact": "quality-reports/go-migration/message-mutations-reference-versioned-r1/results.json",
+          "receipt_sha256": "f089f4c554b8ebae8ccefd674ab0444c246f7546370585e5e22e34d2dfcf57ea"
+        },
+        {
+          "revision": "Old view3749d8e76d79f9d57371b67a6a40db3c90013713543dcf2978aa4077a3b9955b -> corrected viewd9cd631494b3a8d84917c80f246022b2aa1f9ea9f914ce1b95e84d47a3f68d83; identical test8d593a564db49368482b1a2b74361ac16428a6db6d7ad201ccd71fb293186461",
+          "result": "Actual PostgreSQL regression RED on oldview:200/200 with2audits/2indexes. Scoped SELECT FOR UPDATE and not-found decision moved inside atomic_audit_mutation; unchanged test plus deletion/atomicity suites GREEN10tests. Two actual request connection PIDs observed blocked on controller lock chain; one200/one404, exactlyonewinningCID audit/index, sixmodel exactretention and rollback regressions pass. Source and cleanup verified. Independent native HTTP128model/catalog-to-request attribution remains separate.",
+          "artifact": "quality-reports/go-migration/message-delete-reference-green-r1/results.json",
+          "receipt_sha256": "55434fb5522e2869850476d0e170cedf9aa7dad19b4a4b16de43ba90fa4d3b49"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: maintained browser CLI/hosted live gate, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: hosted maintained browser CLI execution, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope.",
+        "Concurrent DELETE reference defect is confirmed: duplicate success/audit/index. Bounded correction and unchanged actual before/after PostgreSQL regression passed; independent HTTP request-to-transaction attribution remains an acceptance gap."
       ]
     },
     {
@@ -14790,7 +14830,9 @@
         "TESTS/test_message_mutations_browser_runtime.py",
         "TESTS/test_message_mutations_browser_denials.py",
         "TESTS/browser/message-mutations.mjs",
-        "TESTS/browser/message-mutations.test.mjs"
+        "TESTS/browser/message-mutations.test.mjs",
+        "TESTS/adapters/django/message_mutations_browser_acceptance.py",
+        "TESTS/test_message_mutations_browser_acceptance.py"
       ],
       "evidence": [
         {
@@ -14846,11 +14888,35 @@
           "result": "Actual unchanged-frontend browser workflows passed on fresh Django v1 and Go v2 fixtures: 24 checkpoints and 26 original correlated responses each; three actors create/delete/reload and restricted actor gets established unmapped LIST403 with inline error/no data or mutation controls. Four separate actual HTTP mutation denials per version passed before browser execution. Full128model/Redis, process/peer/ASGI, source/build/native/browser provenance and cleanup verified. No permission/fixture/application behavior changed. Earlier r1-r8 failures retained. Maintained browser CLI and hosted live gate remain open.",
           "artifact": "quality-reports/go-migration/message-mutations-browser-live-r10/results.json",
           "receipt_sha256": "2dc54573144eee1778f7586081568fa13603fcc9e36cbdd753b4321d8d505505"
+        },
+        {
+          "revision": "778cd38ab23cbe20f9e60c98c9ba30032b29e6bc plus exact 1479-file source graph; parent independently matched current integrated inputs",
+          "result": "Maintained browser CLI exited0; parent independently loaded and validated actual persisted JSON after canonical digest and lifecycle repairs. Fresh v1/v2 each passed24 UI checkpoints/26 original correlated responses and4 separately authored HTTP mutation denials; full128model/rawDB1 effects, artifacts and cleanup passed. 253 production-Python runner/shared lifecycle regression controls passed. Earlier CLI-r1 exit0/persisted-receipt failure is retained and not accepted. Hosted execution of this new CLI remains pending.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-cli-r2/results.json",
+          "receipt_sha256": "a1ed5cc3a405f41dc40af08416c7f95b9033302b9aa8bd7a7e16fa09c5310895"
+        },
+        {
+          "revision": "CI merge f2aab5df90f88603389d5ed7462d26d7ae36e862 for head778cd38ab23cbe20f9e60c98c9ba30032b29e6bc; identical trees;1678 runtime input hashes independently matched",
+          "result": "Hosted amd64 packaged mutation job121524328209 and all22 application CI40308716041 jobs passed. Parent independently accepted exact immutable-image receipt against clean merge checkout:119cases on4transports plus4restore controls, source/artifact andcleanup checks. Separate manual recipe-alignment failure remains; this is not evidence for subsequent uncommitted changes.",
+          "artifact": "quality-reports/go-migration/mutation-ci-778/runtime/results.json",
+          "receipt_sha256": "111de28127e5148c800c76141dfd2c78efde111be15d69130dd285fb4fd7564c"
+        },
+        {
+          "revision": "778cd38 plus final integrated runner/reference batch;1479 source hashes matched after fresh standalone execution",
+          "result": "Maintained browser CLI passed against corrected Django DELETE reference and unchanged Go: v1/v2 each24UI checkpoints/26original correlated responses plus4separate HTTP mutation denials. Parent independently validated persisted JSON and all current inputs; fullstate/cache/artifact/service cleanup passed. This supersedes earlier local browser evidence only for this exact input graph; hosted new CLI execution still pending.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-cli-r3/results.json",
+          "receipt_sha256": "7bbfb656a1391a9deafdc541ee27e49fb55e5301345e4004e91e1f8d9210966c"
+        },
+        {
+          "revision": "778cd38 plus final integrated runner/reference batch;1506 exact source inputs independently matched",
+          "result": "Maintained mutation CLI passed119authored cases on nativeDjango/nativeGo/Caddyv1/v2 after Django concurrent-delete correction. Parent independently validated persisted receipt; full128model/rawDB1 effects,547migrations, binary/source bindings, actual misroute rejection and all six owned service lifetimes/cleanup passed. This does not establish complete concurrency attribution or full-family acceptance.",
+          "artifact": "quality-reports/go-migration/message-mutations-reference-versioned-r1/results.json",
+          "receipt_sha256": "f089f4c554b8ebae8ccefd674ab0444c246f7546370585e5e22e34d2dfcf57ea"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: maintained browser CLI/hosted live gate, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: hosted maintained browser CLI execution, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
       ]
     },
     {

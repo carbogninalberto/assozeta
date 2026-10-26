@@ -242,14 +242,14 @@ def communication_messages_delete(request, message_id):
     request.user.is_sport_association()
     is_valid_uuid(message_id)
 
-    # get the message and its message transactions
-    message = Message.objects.filter(
-        sport_association=request.user.sport_association,
-        message_id=message_id,
-    ).first()
-    if not message:
-        return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
     with atomic_audit_mutation():
+        # Serialize lookup and deletion so a concurrent loser observes absence.
+        message = Message.objects.select_for_update().filter(
+            sport_association=request.user.sport_association,
+            message_id=message_id,
+        ).first()
+        if not message:
+            return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
         message.delete()
 
     return Response({'msg': 'message deleted.'}, status.HTTP_200_OK)
