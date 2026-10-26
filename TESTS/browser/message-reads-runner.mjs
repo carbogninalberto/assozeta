@@ -6,9 +6,10 @@ import {readFile, stat} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {resolve, isAbsolute} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {exercise, forwardContained, readCompleteBody, classifyRequest, ROUTE_STAGES,
+import {exercise as exerciseReads, forwardContained, readCompleteBody, classifyRequest, ROUTE_STAGES,
     NETWORK_CATEGORIES, DIAGNOSTIC_PATHS, RESOURCE_TYPES, NAVIGATION_STATES,
     WORKFLOW_STEPS, CONTROL_FIELDS} from './message-reads.mjs';
+import {MUTATION_FAILURE_KINDS, validMutationLocation} from './message-mutations.mjs';
 
 const ACTORS = ['owner', 'full_collaborator', 'foreign_owner', 'restricted_collaborator'];
 const ORDER = ACTORS.flatMap(actor => (actor === 'restricted_collaborator'
@@ -83,10 +84,35 @@ export function sanitizedExerciseFailures(rows) {
     return result;
 }
 
-export function childFailure(stage, error, diagnostics) {
+export function sanitizedMutationDiagnostics(value) {
+    const exact = (item, keys) => item && typeof item === 'object' && !Array.isArray(item)
+        && Object.keys(item).length === keys.length && Object.keys(item).every(key => keys.includes(key));
+    const invalidLocation = {actor: null, action: 'initialization', step: 'mutation-initialization'};
+    const invalid = () => ({workflow_failure: {...invalidLocation}, failure_count: 1, failures_truncated: false,
+        failures: [{kind: 'invalid-mutation-diagnostic', ...invalidLocation}]});
+    if (!exact(value, ['workflow_failure', 'failure_count', 'failures_truncated', 'failures'])
+        || !validMutationLocation(value.workflow_failure)
+        || !Number.isInteger(value.failure_count) || value.failure_count < 1 || value.failure_count > 1000000
+        || value.failures_truncated !== (value.failure_count > 16)
+        || !Array.isArray(value.failures) || value.failures.length !== Math.min(value.failure_count, 16)) return invalid();
+    for (const row of value.failures) {
+        if (!exact(row, ['kind', 'actor', 'action', 'step']) || !MUTATION_FAILURE_KINDS.includes(row.kind)
+            || !validMutationLocation({actor: row.actor, action: row.action, step: row.step})) return invalid();
+    }
+    if (!['actor', 'action', 'step'].every(key => value.workflow_failure[key] === value.failures[0][key])) return invalid();
+    return {workflow_failure: {...value.workflow_failure}, failure_count: value.failure_count,
+        failures_truncated: value.failures_truncated, failures: value.failures.map(row => ({...row}))};
+}
+
+export function childFailure(stage, error, diagnostics, consumer = 'reads') {
+    assert(['reads', 'mutations'].includes(consumer), 'Unknown fixed consumer');
     const safeStage = Object.hasOwn(FAILURE_CODES, stage) ? stage : 'startup';
     const result = {type: 'failure', stage: safeStage, code: FAILURE_CODES[safeStage],
         error_class: ERROR_CLASSES.includes(error?.name) ? error.name : 'Other'};
+    if (safeStage === 'browser-exercise' && consumer === 'mutations') {
+        result.mutation_diagnostics = sanitizedMutationDiagnostics(diagnostics);
+        return result;
+    }
     if (safeStage === 'browser-exercise' && diagnostics) {
         result.workflow_step = WORKFLOW_STEPS.includes(diagnostics.workflow_step)
             ? diagnostics.workflow_step : 'context-initialization';
@@ -216,7 +242,64 @@ export function requiredLoginCookie(values) {
         && /^[1-9][0-9]*$/.test(attributes.get('max-age') || '');
 }
 
-export function createBridge({readable, send, timeoutMs = 30000}) {
+// ACKs are flat JSON objects with scalar values. Decode member names before
+// comparing them: JSON.parse on the whole object would silently keep the last
+// duplicate, including names spelled with equivalent Unicode escapes. Containers
+// (including nested result envelopes) are outside this protocol and fail closed.
+function decodeAck(raw) {
+    let cursor = 0;
+    const whitespace = () => {
+        while (cursor < raw.length && /[ \t\r\n]/.test(raw[cursor])) cursor++;
+    };
+    const string = () => {
+        assert(raw[cursor] === '"', 'Expected ack JSON string');
+        const start = cursor++;
+        while (cursor < raw.length) {
+            const char = raw[cursor++];
+            if (char === '\\') cursor++;
+            else if (char === '"') return JSON.parse(raw.slice(start, cursor));
+        }
+        throw new SyntaxError('Unterminated ack JSON string');
+    };
+    const scalar = () => {
+        if (raw[cursor] === '"') return string();
+        assert(raw[cursor] !== '{' && raw[cursor] !== '[', 'Ack values must be scalars');
+        const start = cursor;
+        while (cursor < raw.length && !/[ \t\r\n,}]/.test(raw[cursor])) cursor++;
+        return JSON.parse(raw.slice(start, cursor));
+    };
+    whitespace();
+    assert(raw[cursor++] === '{', 'Expected ack JSON object');
+    whitespace();
+    const entries = [], keys = new Set();
+    if (raw[cursor] !== '}') {
+        while (true) {
+            const key = string();
+            assert(!keys.has(key), 'Duplicate ack key');
+            keys.add(key);
+            whitespace();
+            assert(raw[cursor++] === ':', 'Expected ack JSON colon');
+            whitespace();
+            entries.push([key, scalar()]);
+            whitespace();
+            if (raw[cursor] === '}') break;
+            assert(raw[cursor++] === ',', 'Expected ack JSON comma');
+            whitespace();
+        }
+    }
+    cursor++;
+    whitespace();
+    assert(cursor === raw.length, 'Trailing ack JSON input');
+    return Object.fromEntries(entries);
+}
+
+export function createBridge({readable, send, timeoutMs = 30000, consumer = 'reads'}) {
+    assert(['reads', 'mutations'].includes(consumer), 'Unknown fixed consumer');
+    const mutations = consumer === 'mutations';
+    const order = mutations ? ACTORS.flatMap(actor => (actor === ACTORS.at(-1)
+        ? ['login', 'read', 'closed']
+        : ['login', 'read', 'create', 'create_reload', 'delete', 'delete_reload', 'closed'])
+        .map(action => ({actor, action}))) : ORDER;
     let pending = null, buffer = '', ended = false, sequence = 0, ready = false, closures = 0;
     const fail = error => {
         ended = true;
@@ -235,7 +318,7 @@ export function createBridge({readable, send, timeoutMs = 30000}) {
                 const end = buffer.indexOf('\n');
                 const raw = buffer.slice(0, end);
                 buffer = buffer.slice(end + 1);
-                const frame = JSON.parse(raw);
+                const frame = decodeAck(raw);
                 assert(pending && !ended, 'Unsolicited ack');
                 const expected = pending.kind === 'ready'
                     ? {type: 'ready_ack', success: true}
@@ -256,6 +339,7 @@ export function createBridge({readable, send, timeoutMs = 30000}) {
     readable.on('error', onError);
     async function request(kind, payload) {
         assert(!pending && !ended, 'Single outstanding checkpoint required');
+        assert(Buffer.byteLength(JSON.stringify(payload)) <= 4 * 1024 * 1024 - 1, 'Checkpoint frame bound');
         return await new Promise((resolve, reject) => {
             const timer = setTimeout(() => fail(new Error('Parent ack deadline')), timeoutMs);
             pending = {kind, seq: payload.seq, timer, resolve, reject};
@@ -270,18 +354,30 @@ export function createBridge({readable, send, timeoutMs = 30000}) {
             ready = true;
         },
         async checkpoint(row) {
-            assert(ready && sequence < ORDER.length, 'Checkpoint before ready/after completion');
-            assert.deepEqual(row, ORDER[sequence], 'Checkpoint order differs');
-            sequence++;
-            return await request('checkpoint', {type: 'checkpoint', seq: sequence, ...row});
+            if (!mutations) {
+                assert(ready && sequence < ORDER.length, 'Checkpoint before ready/after completion');
+                assert.deepEqual(row, ORDER[sequence], 'Checkpoint order differs');
+                sequence++;
+                return await request('checkpoint', {type: 'checkpoint', seq: sequence, ...row});
+            }
+            try {
+                assert(ready && sequence < order.length, 'Checkpoint before ready/after completion');
+                assert.deepEqual({actor: row.actor, action: row.action}, order[sequence], 'Checkpoint order differs');
+                assert(Array.isArray(row.requests), 'Missing private requests');
+                const next = sequence + 1;
+                const ack = await request('checkpoint', {type: 'checkpoint', seq: next, payload: row});
+                assert(!ended, 'Parent disappeared during checkpoint');
+                sequence = next;
+                return {...ack, checkpoint: sequence};
+            } catch (error) { fail(error); throw error; }
         },
         async contextClosed(actor) {
-            assert(ready && actor === ACTORS[closures] && sequence === [2, 5, 8, 10][closures],
+            assert(!mutations && ready && actor === ACTORS[closures] && sequence === [2, 5, 8, 10][closures],
                 'Context closure order differs');
             closures++;
             return await request('context', {type: 'context_closed', seq: closures, actor});
         },
-        complete() { assert(ready && !pending && !ended && sequence === ORDER.length && closures === 4); },
+        complete() { assert(ready && !pending && !ended && sequence === order.length && (mutations || closures === 4)); },
         close() {
             fail(new Error('Bridge closed'));
             readable.off('data', onData);
@@ -361,11 +457,12 @@ export async function validateTransport(browser, origin) {
 function options(argv) {
     const result = {};
     for (let i = 0; i < argv.length; i += 2) {
-        assert(['--input', '--playwright-module', '--probe-origin'].includes(argv[i]));
+        assert(['--input', '--playwright-module', '--probe-origin', '--consumer'].includes(argv[i]));
         assert(argv[i + 1] && !Object.hasOwn(result, argv[i]));
         result[argv[i]] = argv[i + 1];
     }
-    assert.equal(Object.keys(result).length, 3);
+    assert.equal(Object.keys(result).length, result['--consumer'] === undefined ? 3 : 4);
+    assert(['reads', 'mutations'].includes(result['--consumer'] || 'reads'));
     return result;
 }
 
@@ -382,7 +479,9 @@ async function run(argv, status, send) {
     assert.match(packageData.version, /^\d+\.\d+\.\d+$/);
     const binary = playwright.chromium.executablePath();
     const browserBinary = {path: binary, sha256: digest(await readFile(binary))};
-    const bridge = createBridge({readable: process.stdin, send});
+    const consumer = args['--consumer'] || 'reads';
+    const exercise = consumer === 'reads' ? exerciseReads : (await import('./message-mutations.mjs')).exercise;
+    const bridge = createBridge({readable: process.stdin, send, consumer});
     let browser, browserClosed = false, receipt, transport;
     const cookies = [];
     const shutdown = async () => {
@@ -416,7 +515,7 @@ async function run(argv, status, send) {
                 context.close = (...options) => {
                     closing ||= (async () => {
                         await close(...options);
-                        await bridge.contextClosed(actor);
+                        if (consumer === 'reads') await bridge.contextClosed(actor);
                     })();
                     return closing;
                 };
@@ -424,16 +523,21 @@ async function run(argv, status, send) {
             },
         };
         status.stage = 'browser-exercise';
-        status.workflow_step = 'context-initialization';
+        status.workflow_step = consumer === 'mutations' ? 'mutation-initialization' : 'context-initialization';
         status.response_checks = [];
         receipt = await exercise({browser: observedBrowser, expect: playwright.expect, input,
-            onWorkflowStep: step => {status.workflow_step = step;},
+            onWorkflowStep: (step, location) => {
+                status.workflow_step = step;
+                if (consumer === 'mutations') status.mutation_location = {...location, step};
+            },
             onResponseCheck: (actor, check) => {
                 status.failure_step ||= 'response-observation';
                 if (!status.response_checks.some(row => row.actor === actor && row.check === check))
                     status.response_checks.push({actor, check});
             },
-            onForwardedResponse: async (actor, request, response) => {
+            onForwardedResponse: async (...values) => {
+                const [actor, request, response] = consumer === 'reads' ? values
+                    : [ACTORS[actorIndex - 1], ...values];
                 let forwardedStep = 'response-observation';
                 try {
                     const observation = await forwardedLoginCookie(actor, input, request, response);
@@ -449,11 +553,14 @@ async function run(argv, status, send) {
         assert.equal(receipt.success, true, 'Browser exercise failed');
         bridge.complete();
     } catch (error) {
-        status.failure = childFailure(status.stage, error,
+        status.failure = childFailure(status.stage, error, consumer === 'mutations'
+            ? {workflow_failure: receipt?.workflow_failure || status.mutation_location,
+                failures: receipt?.failures, failure_count: receipt?.failure_count,
+                failures_truncated: receipt?.failures_truncated} :
             {workflow_step: status.failure_step || receipt?.workflow_failure?.step || status.workflow_step,
             controls_mismatches: status.failure_step ? [] : receipt?.workflow_failure?.controls_mismatches,
             failures: receipt?.failures, response_checks: status.response_checks,
-            network_diagnostics: receipt?.network_diagnostics});
+            network_diagnostics: receipt?.network_diagnostics}, consumer);
         throw error;
     } finally {
         try {

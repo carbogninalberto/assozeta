@@ -837,6 +837,327 @@ class AttributionTests(unittest.TestCase):
                     harness.attribution_for(receipt, events, django)
 
 
+class NotificationPrerequisiteTests(unittest.TestCase):
+    @contextmanager
+    def preparation(self, existing=()):
+        """Offline ORM boundary: never initialize Django, Redis or a service."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows, audit_events, audit_disabled = list(existing), [], []
+
+            @contextmanager
+            def disable_auditlog():
+                audit_disabled.append(True)
+                try:
+                    yield
+                finally:
+                    audit_disabled.pop()
+
+            def create(**values):
+                self.assertEqual(values, {'broadcast_name': 'all_notifications'})
+                self.assertTrue(audit_disabled, 'Fixture creation must suppress auditlog')
+                rows.append(values['broadcast_name'])
+                if not audit_disabled:
+                    audit_events.append(values)
+                return SimpleNamespace(pk='generated-uuid', **values)
+
+            broadcasts = Mock(spec=['exists', 'create', 'values_list'])
+            broadcasts.exists.side_effect = lambda: bool(rows)
+            broadcasts.create.side_effect = create
+            broadcasts.values_list.side_effect = lambda *a, **kw: list(rows)
+            users = Mock(spec=['get', 'filter'])
+            users.get.side_effect = lambda **kw: SimpleNamespace(username='fixture-' + kw['pk'])
+            associations = Mock(spec=['get', 'filter'])
+            associations.get.side_effect = lambda **kw: SimpleNamespace(pk=kw['user_id'])
+            cards = Mock(spec=['get_or_create'])
+            instance = Mock(spec=['exists', 'create'])
+            instance.exists.return_value = False
+            cached_manager = object()
+            service = SimpleNamespace(_manager=cached_manager, get_manager=Mock(
+                side_effect=AssertionError('Must not initialize or reset the notification manager')))
+            modules = {
+                'auditlog.context': SimpleNamespace(disable_auditlog=disable_auditlog),
+                'django.contrib.auth.hashers': SimpleNamespace(
+                    make_password=lambda value, **kw: 'pbkdf2_sha256$' + value,
+                    check_password=lambda value, encoded: encoded == 'pbkdf2_sha256$' + value),
+                'django.utils': SimpleNamespace(timezone=harness.datetime),
+                'application.models': SimpleNamespace(User=SimpleNamespace(original_objects=users),
+                    SportAssociation=SimpleNamespace(original_objects=associations),
+                    SportAssociationMembershipCardConfiguration=SimpleNamespace(objects=cards)),
+                'instance.models': SimpleNamespace(InstanceConfiguration=SimpleNamespace(
+                    objects=instance, SETUP_PROVENANCE_IMPORT='import')),
+                'application.serializers.auth_serializers': SimpleNamespace(
+                    UserAuthSerializer=lambda user: SimpleNamespace(data={'requires_welcome': False})),
+                'django.conf': SimpleNamespace(settings=SimpleNamespace(MEDIA_ROOT=root)),
+                'notifications.models': SimpleNamespace(
+                    NotificationsBroadcast=SimpleNamespace(objects=broadcasts)),
+                'notifications.services': SimpleNamespace(NotificationService=service),
+            }
+            with patch.dict(sys.modules, modules):
+                yield SimpleNamespace(rows=rows, broadcasts=broadcasts, users=users,
+                    audit_events=audit_events, service=service, cached_manager=cached_manager,
+                    logo=root / 'instance/logo.png',
+                    prepare=lambda **kw: harness.prepare_browser_identities(None, root, **kw))
+
+    def test_mutations_prepare_exact_canonical_broadcast_before_baseline_without_audit(self):
+        from TESTS.adapters.django import message_mutations_browser as authored
+        with self.preparation() as fixture:
+            self.assertEqual(fixture.rows, [], 'Fresh fixture lacks notification startup row')
+            identities = fixture.prepare(consumer='mutations')
+            self.assertEqual(fixture.rows, ['all_notifications'])
+            fixture.broadcasts.create.assert_called_once_with(broadcast_name='all_notifications')
+            fixture.broadcasts.values_list.assert_called_once_with('broadcast_name', flat=True)
+            self.assertEqual(fixture.audit_events, [])
+            self.assertEqual({actor: row['user_id'] for actor, row in identities.items()},
+                {actor: authored.authored_spec()['actors'][actor]['user_id']
+                 for actor in harness.browser.ACTORS})
+            self.assertTrue(fixture.logo.is_file())
+
+    def test_each_restored_fixture_is_prepared_even_with_existing_cached_manager(self):
+        with self.preparation() as fixture:
+            for version in ('v1', 'v2'):
+                with self.subTest(version=version):
+                    try:
+                        fixture.prepare(consumer='mutations')
+                        self.assertEqual(fixture.rows, ['all_notifications'])
+                        self.assertIs(fixture.service._manager, fixture.cached_manager)
+                        fixture.service.get_manager.assert_not_called()
+                    finally:
+                        # Parent restores seeded DB and removes its exact owned logo.
+                        fixture.rows.clear()
+                        fixture.logo.unlink(missing_ok=True)
+            self.assertEqual(fixture.broadcasts.create.call_count, 2)
+
+    def test_same_fixture_cannot_be_prepared_twice(self):
+        with self.preparation() as fixture:
+            fixture.prepare(consumer='mutations')
+            with self.assertRaisesRegex(harness.HarnessError, 'unexpected-notification-broadcasts'):
+                fixture.prepare(consumer='mutations')
+            fixture.broadcasts.create.assert_called_once_with(broadcast_name='all_notifications')
+            self.assertEqual(fixture.rows, ['all_notifications'])
+
+    def test_default_and_explicit_reads_preserve_existing_preparation(self):
+        for kwargs in ({}, {'consumer': 'reads'}):
+            with self.subTest(kwargs=kwargs), self.preparation(['unrelated']) as fixture:
+                identities = fixture.prepare(**kwargs)
+                self.assertEqual(fixture.rows, ['unrelated'])
+                self.assertEqual(fixture.broadcasts.mock_calls, [])
+                self.assertEqual(set(identities), set(harness.browser.ACTORS))
+                self.assertEqual(fixture.users.filter.call_count, 4)
+                self.assertTrue(fixture.logo.is_file())
+                fixture.service.get_manager.assert_not_called()
+
+    def test_preexisting_broadcasts_fail_without_deletion_or_identity_changes(self):
+        for existing in (['all_notifications'], ['unknown'], [None], ['all_notifications', 'unknown']):
+            with self.subTest(existing=existing), self.preparation(existing) as fixture:
+                with self.assertRaisesRegex(harness.HarnessError, 'unexpected-notification-broadcasts'):
+                    fixture.prepare(consumer='mutations')
+                self.assertEqual(fixture.rows, existing)
+                fixture.broadcasts.create.assert_not_called()
+                fixture.users.filter.assert_not_called()
+                self.assertFalse(fixture.logo.exists())
+
+    def test_preparation_asserts_exact_resulting_broadcast_state(self):
+        with self.preparation() as fixture:
+            fixture.broadcasts.create.side_effect = lambda **kw: fixture.rows.append('wrong-name')
+            with self.assertRaisesRegex(harness.HarnessError, 'notification-prerequisite-state'):
+                fixture.prepare(consumer='mutations')
+            fixture.users.filter.assert_not_called()
+
+    def test_absent_startup_prerequisite_still_fails_strict_login_projection(self):
+        user_id = harness.browser.authored_spec()['actors']['owner']['user_id']
+        before = state()
+        before['models']['application.User'] = before['models'].pop('model.0')
+        before['models']['notifications.NotificationsBroadcast'] = before['models'].pop('model.1')
+        before['models']['auditlog.LogEntry'] = before['models'].pop('model.2')
+        before['models']['application.User'] = [{'user_id': {'type': 'uuid', 'value': user_id},
+            'last_login': None, 'username': 'OWNER', 'password': 'pbkdf2_sha256$unchanged'}]
+        started = harness.datetime(2026, 10, 26, 1, 0, tzinfo=harness.timezone.utc)
+        for prepared in (False, True):
+            with self.subTest(prepared=prepared):
+                baseline = copy.deepcopy(before['models'])
+                broadcast = {'broadcast_name': 'all_notifications'}
+                if prepared:
+                    baseline['notifications.NotificationsBroadcast'] = [broadcast]
+                after = copy.deepcopy(baseline)
+                after['application.User'][0]['last_login'] = {
+                    'type': 'datetime', 'value': '2026-10-26T01:00:01Z'}
+                if not prepared:
+                    after['notifications.NotificationsBroadcast'] = [broadcast]
+                    after['auditlog.LogEntry'] = [{'action': 0, 'object_repr': 'NotificationsBroadcast'}]
+                args = ({'models': baseline}, {'models': after}, user_id,
+                        started, started + harness.timedelta(seconds=2))
+                if prepared:
+                    self.assertTrue(harness.validate_login_projection(*args)['other_model_fields_preserved'])
+                    for model in ('notifications.NotificationsBroadcast', 'auditlog.LogEntry'):
+                        changed = copy.deepcopy(after)
+                        changed[model].append({'unexpected': True})
+                        with self.subTest(model=model), self.assertRaisesRegex(
+                                harness.HarnessError, 'undeclared-login-model-change'):
+                            harness.validate_login_projection({'models': baseline}, {'models': changed},
+                                user_id, started, started + harness.timedelta(seconds=2))
+                else:
+                    with self.assertRaisesRegex(harness.HarnessError, 'undeclared-login-model-change'):
+                        harness.validate_login_projection(*args)
+
+
+class OwnedServiceGuardTests(unittest.TestCase):
+    """Offline owner handles only; these controls establish no live acceptance."""
+
+    def test_django_guard_binds_ready_handles_and_callback_failure_cleans_up(self):
+        for mode in ('default', 'observe', 'callback-fails'):
+            with self.subTest(mode=mode):
+                events, guards = [], []
+                listener = Mock()
+                listener.getsockname.return_value = ('127.0.0.1', 0)
+                application = object()
+                server = SimpleNamespace(started=False, should_exit=False, force_exit=False,
+                    run=Mock(), servers=[SimpleNamespace(sockets=[listener])])
+                thread = Mock()
+                thread.is_alive.return_value = False
+                def start():
+                    events.append('start')
+                    server.started = True
+                    thread.is_alive.return_value = True
+                def join(timeout):
+                    events.append('join')
+                    self.assertTrue(server.should_exit)
+                    thread.is_alive.return_value = False
+                thread.start.side_effect = start
+                thread.join.side_effect = join
+                def config(app, **kwargs):
+                    server.config = SimpleNamespace(app=app)
+                    return server.config
+                def ready(predicate, expected, **kwargs):
+                    self.assertTrue(predicate())
+                    self.assertIs(expected, bool)
+                    events.append('ready')
+                report = {'service_cleanup': {}}
+                def observe(guard):
+                    self.assertEqual(events, ['start', 'ready'])
+                    self.assertEqual(report['service_cleanup']['django'], 'running')
+                    self.assertTrue(guard()['running'])
+                    self.assertEqual(guard()['pid'], os.getpid())
+                    baseline = guard()
+                    for attr in ('should_exit', 'force_exit'):
+                        setattr(server, attr, True)
+                        self.assertFalse(guard()['running'])
+                        setattr(server, attr, False)
+                    server.config.app = application
+                    self.assertFalse(guard()['running'])
+                    server.config.app = observed[0]
+                    thread.is_alive.return_value = False
+                    self.assertFalse(guard()['running'])
+                    thread.is_alive.return_value = True
+                    server.started = False
+                    self.assertFalse(guard()['running'])
+                    server.started = True
+                    self.assertEqual(guard(), baseline)
+                    guards.append(guard)
+                    events.append('observe')
+                    if mode == 'callback-fails':
+                        raise ValueError('callback failure')
+                observed = []
+                def make_server(configuration):
+                    observed.append(configuration.app)
+                    return server
+                modules = {'uvicorn': SimpleNamespace(Config=config, Server=make_server),
+                    'core.asgi': SimpleNamespace(application=application)}
+                with ExitStack() as patches:
+                    patches.enter_context(patch.dict(sys.modules, modules))
+                    patches.enter_context(patch.object(harness.threading, 'Thread', return_value=thread))
+                    patches.enter_context(patch('TESTS.http_client.poll', side_effect=ready))
+                    if mode == 'default':
+                        patches.enter_context(patch.object(harness.runtime, 'django_liveness_guard',
+                            side_effect=AssertionError('default must not construct guard')))
+                    options = {} if mode == 'default' else {'liveness_observer': observe}
+                    def run():
+                        with harness.owned_django(report, **options) as result:
+                            self.assertIs(result[0], observed[0])
+                            self.assertEqual(result[1], listener.getsockname.return_value[1])
+                            self.assertEqual(events[-1], 'ready' if mode == 'default' else 'observe')
+                            self.assertNotEqual(mode, 'callback-fails', 'callback failure must prevent yield')
+                            events.append('yield')
+                    if mode == 'callback-fails':
+                        with self.assertRaisesRegex(ValueError, '^callback failure$'): run()
+                    else: run()
+                self.assertEqual(report['service_cleanup']['django'], 'stopped')
+                thread.join.assert_called_once_with(timeout=15)
+                listener.close.assert_called_once_with()
+                self.assertEqual(events[-1], 'join')
+                for guard in guards: self.assertFalse(guard()['running'])
+
+    def test_go_guard_binds_ready_popen_and_callback_failure_reaps_it(self):
+        from TESTS.adapters.django import message_read_scopes_runtime as scopes
+        for mode in ('default', 'observe', 'callback-fails'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                executable, codec = root / 'server', root / 'codec'
+                executable.write_bytes(b'offline server input')
+                codec.write_bytes(b'offline codec input')
+                native = {'artifacts': {'server': harness.sha(executable), 'image-codec': harness.sha(codec)}}
+                # Bind the factory to this exact mocked Popen handle. Its pid is
+                # the real test-process pid, never an invented live identity.
+                process = SimpleNamespace(pid=os.getpid(), poll=Mock(return_value=None))
+                reservation = Mock()
+                reservation.__enter__ = Mock(return_value=reservation)
+                reservation.__exit__ = Mock(return_value=False)
+                reservation.getsockname.return_value = ('127.0.0.1', 0)
+                connection = Mock()
+                connection.getresponse.return_value = SimpleNamespace(status=200, read=Mock())
+                events, guards = [], []
+                def launch(*args, **kwargs):
+                    self.assertEqual(args[0], [str(root / 'message-browser-go')])
+                    events.append('launch')
+                    return process
+                def ready(predicate, expected, **kwargs):
+                    self.assertTrue(predicate())
+                    self.assertIs(expected, bool)
+                    events.append('ready')
+                def stop(actual):
+                    self.assertIs(actual, process)
+                    events.append('stop')
+                    process.poll.return_value = 0
+                report = {'service_cleanup': {}}
+                def observe(guard):
+                    self.assertEqual(events, ['launch', 'ready'])
+                    self.assertEqual(report['service_cleanup']['go'], 'running')
+                    baseline = guard()
+                    self.assertEqual(baseline, {'pid': process.pid, 'instance': id(process), 'running': True})
+                    process.poll.return_value = 0
+                    self.assertFalse(guard()['running'])
+                    process.poll.return_value = None
+                    self.assertEqual(guard(), baseline)
+                    guards.append(guard)
+                    events.append('observe')
+                    if mode == 'callback-fails': raise ValueError('callback failure')
+                with ExitStack() as patches:
+                    patches.enter_context(patch.object(harness.socket, 'socket', return_value=reservation))
+                    patches.enter_context(patch.object(harness.http.client, 'HTTPConnection', return_value=connection))
+                    patches.enter_context(patch.object(harness.subprocess, 'Popen', side_effect=launch))
+                    patches.enter_context(patch('TESTS.http_client.poll', side_effect=ready))
+                    patches.enter_context(patch.object(harness, 'stop_child', side_effect=stop))
+                    if mode == 'default':
+                        patches.enter_context(patch.object(scopes, 'go_liveness_guard',
+                            side_effect=AssertionError('default must not construct guard')))
+                    options = {} if mode == 'default' else {'liveness_observer': observe}
+                    def run():
+                        with harness.owned_go(root, executable, codec, {}, io.StringIO(), report, native,
+                                              **options) as port:
+                            self.assertEqual(port, reservation.getsockname.return_value[1])
+                            self.assertEqual(events[-1], 'ready' if mode == 'default' else 'observe')
+                            self.assertNotEqual(mode, 'callback-fails', 'callback failure must prevent yield')
+                            events.append('yield')
+                    if mode == 'callback-fails':
+                        with self.assertRaisesRegex(ValueError, '^callback failure$'): run()
+                    else: run()
+                self.assertEqual(report['service_cleanup']['go'], 'stopped')
+                self.assertEqual(events[-1], 'stop')
+                connection.close.assert_called_once_with()
+                reservation.bind.assert_called_once_with(('127.0.0.1', 0))
+                for guard in guards: self.assertFalse(guard()['running'])
+
+
 class CleanupAndChildTests(unittest.TestCase):
     def test_owned_http_listener_activates_burst_backlog_and_cleans_up_without_sockets(self):
         # Keep the real TCPServer.server_activate/listen path; replace only the

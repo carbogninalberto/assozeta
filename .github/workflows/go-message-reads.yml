@@ -109,6 +109,10 @@ jobs:
           python -m unittest -v TESTS.test_message_browser_build
           python -m unittest -v TESTS.test_message_reads_browser
           python -m unittest -v TESTS.test_message_reads_browser_runtime
+          python -m unittest -v TESTS.test_message_mutations_browser
+          python -m unittest -v TESTS.test_message_mutations_browser_runtime
+          python -m unittest -v TESTS.test_message_mutations_browser_denials
+          node --test TESTS/browser/message-mutations.test.mjs
           python -m unittest -v TESTS.test_message_read_scopes
           python -m unittest -v TESTS.test_message_session_lifecycle
           python -m unittest -v TESTS.test_http_client

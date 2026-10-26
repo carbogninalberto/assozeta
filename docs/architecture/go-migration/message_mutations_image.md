@@ -270,7 +270,28 @@ without proving the original cause or replacing expiry with deletion. Parent
 validation passed 154 affected controls and actionlint; independent review found
 no actionable issue and tested additional expiry failure paths.
 
-Hosted mutation CI is wired into Go quality; its result is pending. This receipt
+This local receipt
 does not establish hosted amd64 acceptance, complete restore-job execution,
 browser mutations, installed activation/rollback or full family parity.
 The declarations remain implementing.
+
+## Hosted Linux/amd64 evidence at b629dbe2
+
+Application CI [40297687108](https://github.com/carbogninalberto/assozeta/actions/runs/40297687108)
+and packaged mutation job `121488397554` passed. The tested merge was
+`0c0026bd6abc564be4581b521334918178b10baf`; its tree is identical to PR head
+`b629dbe22857838e4b65cec1110f4d00b1389abc`. The parent independently ran receipt
+acceptance against a clean checkout of that exact merge and matched all 1672
+runtime inputs. This is separate evidence from the earlier arm64 run.
+
+The immutable image was
+`sha256:b73fe1563e944837d58c47de8cb342f49cfb59629e7bc97bb84d1b5b32db0311`.
+All 119 cases passed on each of the four transports, along with all four actual
+packaged CREATE/DELETE restore controls and verified cleanup. The downloaded
+redacted receipt is `quality-reports/go-migration/mutation-ci-b629/runtime/results.json`,
+SHA-256 `ada1fae2dd3ba3de9d5cc3dc272ced2ba90bbd2a28ba0fdacbfd9739663f5c20`.
+The parent check is `mutation-ci-b629/parent-verification.json` in the same evidence root.
+
+This does not establish browser acceptance, complete restore-job execution,
+installed activation/rollback or full family parity. Declaration status remains
+implementing. The separate manual recipe-binding failures are still unresolved.

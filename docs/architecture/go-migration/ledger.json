@@ -14518,7 +14518,15 @@
         "TESTS/adapters/go/message_mutations_image.py",
         "TESTS/test_message_mutations_image.py",
         "TESTS/adapters/go/message_image_process.py",
-        "TESTS/adapters/go/test_message_image_process.py"
+        "TESTS/adapters/go/test_message_image_process.py",
+        "TESTS/adapters/django/message_mutations_browser.py",
+        "TESTS/adapters/django/message_mutations_browser_runtime.py",
+        "TESTS/adapters/django/message_mutations_browser_denials.py",
+        "TESTS/test_message_mutations_browser.py",
+        "TESTS/test_message_mutations_browser_runtime.py",
+        "TESTS/test_message_mutations_browser_denials.py",
+        "TESTS/browser/message-mutations.mjs",
+        "TESTS/browser/message-mutations.test.mjs"
       ],
       "evidence": [
         {
@@ -14562,11 +14570,23 @@
           "result": "119 cases passed on each of Django-native, packaged Go and Caddy v1/v2, plus four real packaged CREATE/DELETE restore lease/running-job controls. Exact128model/Redis effects, owner blocking, two actual busy probes per lease case, full schema/process/source/misroute/cleanup checks passed. Independent receipt acceptance passed. Earlier a3ad fixture setup failure retained; root cause unproved. Hosted amd64 and browser/installed acceptance remain separate.",
           "artifact": "quality-reports/go-migration/message-restore-image-9057352-r1/results.json",
           "receipt_sha256": "51e5f676e6ae8e29dc204adec5c86fcac1e726c6767bf81dc66f333f09ce5d91"
+        },
+        {
+          "revision": "CI merge 0c0026bd6abc564be4581b521334918178b10baf for PR head b629dbe22857838e4b65cec1110f4d00b1389abc; identical trees; 1672 exact runtime inputs independently matched",
+          "result": "Hosted Linux/amd64 job 121488397554 in application CI 40297687108 passed 119 cases on each of four transports plus all four real packaged CREATE/DELETE restore controls. Parent independently reran receipt acceptance against the exact clean CI merge checkout; source/artifact and cleanup verified. Browser, full restore-job lifecycle, installed switching and full-family acceptance remain separate.",
+          "artifact": "quality-reports/go-migration/mutation-ci-b629/runtime/results.json",
+          "receipt_sha256": "ada1fae2dd3ba3de9d5cc3dc272ced2ba90bbd2a28ba0fdacbfd9739663f5c20"
+        },
+        {
+          "revision": "b629dbe22857838e4b65cec1110f4d00b1389abc plus exact 1229-file runtime graph in receipt; parent matched every input after integration",
+          "result": "Actual unchanged-frontend browser workflows passed on fresh Django v1 and Go v2 fixtures: 24 checkpoints and 26 original correlated responses each; three actors create/delete/reload and restricted actor gets established unmapped LIST403 with inline error/no data or mutation controls. Four separate actual HTTP mutation denials per version passed before browser execution. Full128model/Redis, process/peer/ASGI, source/build/native/browser provenance and cleanup verified. No permission/fixture/application behavior changed. Earlier r1-r8 failures retained. Maintained browser CLI and hosted live gate remain open.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-live-r10/results.json",
+          "receipt_sha256": "2dc54573144eee1778f7586081568fa13603fcc9e36cbdd753b4321d8d505505"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: hosted mutation-image CI, mutation browser workflows, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: maintained browser CLI/hosted live gate, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
       ]
     },
     {
@@ -14762,7 +14782,15 @@
         "TESTS/adapters/go/message_mutations_image.py",
         "TESTS/test_message_mutations_image.py",
         "TESTS/adapters/go/message_image_process.py",
-        "TESTS/adapters/go/test_message_image_process.py"
+        "TESTS/adapters/go/test_message_image_process.py",
+        "TESTS/adapters/django/message_mutations_browser.py",
+        "TESTS/adapters/django/message_mutations_browser_runtime.py",
+        "TESTS/adapters/django/message_mutations_browser_denials.py",
+        "TESTS/test_message_mutations_browser.py",
+        "TESTS/test_message_mutations_browser_runtime.py",
+        "TESTS/test_message_mutations_browser_denials.py",
+        "TESTS/browser/message-mutations.mjs",
+        "TESTS/browser/message-mutations.test.mjs"
       ],
       "evidence": [
         {
@@ -14806,11 +14834,23 @@
           "result": "119 cases passed on each of Django-native, packaged Go and Caddy v1/v2, plus four real packaged CREATE/DELETE restore lease/running-job controls. Exact128model/Redis effects, owner blocking, two actual busy probes per lease case, full schema/process/source/misroute/cleanup checks passed. Independent receipt acceptance passed. Earlier a3ad fixture setup failure retained; root cause unproved. Hosted amd64 and browser/installed acceptance remain separate.",
           "artifact": "quality-reports/go-migration/message-restore-image-9057352-r1/results.json",
           "receipt_sha256": "51e5f676e6ae8e29dc204adec5c86fcac1e726c6767bf81dc66f333f09ce5d91"
+        },
+        {
+          "revision": "CI merge 0c0026bd6abc564be4581b521334918178b10baf for PR head b629dbe22857838e4b65cec1110f4d00b1389abc; identical trees; 1672 exact runtime inputs independently matched",
+          "result": "Hosted Linux/amd64 job 121488397554 in application CI 40297687108 passed 119 cases on each of four transports plus all four real packaged CREATE/DELETE restore controls. Parent independently reran receipt acceptance against the exact clean CI merge checkout; source/artifact and cleanup verified. Browser, full restore-job lifecycle, installed switching and full-family acceptance remain separate.",
+          "artifact": "quality-reports/go-migration/mutation-ci-b629/runtime/results.json",
+          "receipt_sha256": "ada1fae2dd3ba3de9d5cc3dc272ced2ba90bbd2a28ba0fdacbfd9739663f5c20"
+        },
+        {
+          "revision": "b629dbe22857838e4b65cec1110f4d00b1389abc plus exact 1229-file runtime graph in receipt; parent matched every input after integration",
+          "result": "Actual unchanged-frontend browser workflows passed on fresh Django v1 and Go v2 fixtures: 24 checkpoints and 26 original correlated responses each; three actors create/delete/reload and restricted actor gets established unmapped LIST403 with inline error/no data or mutation controls. Four separate actual HTTP mutation denials per version passed before browser execution. Full128model/Redis, process/peer/ASGI, source/build/native/browser provenance and cleanup verified. No permission/fixture/application behavior changed. Earlier r1-r8 failures retained. Maintained browser CLI and hosted live gate remain open.",
+          "artifact": "quality-reports/go-migration/message-mutations-browser-live-r10/results.json",
+          "receipt_sha256": "2dc54573144eee1778f7586081568fa13603fcc9e36cbdd753b4321d8d505505"
         }
       ],
       "notes": [
         "Confirmed Django corrections: missing DELETE404, atomic mutation/audit rollback, fresh tuple/list association resolution. Do not reproduce prior unsafe behavior for parity.",
-        "No fully verified declaration claim: hosted mutation-image CI, mutation browser workflows, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
+        "No fully verified declaration claim: maintained browser CLI/hosted live gate, complete restore-job lifecycle, broader performance and installed activation/rollback remain open. Bounded local and hosted packaging evidence is recorded separately. Other communication/send/workflow routes are separate scope."
       ]
     },
     {

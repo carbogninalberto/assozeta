@@ -26,6 +26,7 @@ import sys
 import tempfile
 import threading
 import time
+import zlib
 from urllib.parse import unquote, urlsplit
 
 from TESTS.adapters.django import message_reads_browser as browser
@@ -38,6 +39,9 @@ OWNED = (
     'TESTS/test_message_browser_build.py',
     'TESTS/adapters/django/message_reads_browser_runtime.py',
     NODE_RUNNER,
+    # The shared bridge statically imports the inert mutation diagnostic vocabulary.
+    'TESTS/browser/message-mutations.mjs',
+    'TESTS/browser/message-mutations.test.mjs',
     'TESTS/test_message_reads_browser_runtime.py',
 )
 MAX_FRAME = 4 * 1024 * 1024
@@ -80,6 +84,64 @@ NETWORK_CATEGORIES = {'other', 'redirect-blocked', 'response-disposed', 'target-
 RESOURCE_TYPES = {'document', 'stylesheet', 'image', 'media', 'font', 'script', 'texttrack',
                   'xhr', 'fetch', 'eventsource', 'websocket', 'manifest', 'other'}
 NAVIGATION_STATES = {'unobserved', 'login', 'root', 'messages', 'denied', 'other'}
+
+
+# Separate mutation vocabulary; the existing read diagnostic schema stays closed.
+MUTATION_WORKFLOW_STEPS = {
+    'mutation-initialization', 'mutation-input-validation', 'mutation-context-initialization',
+    'mutation-context-routing', 'mutation-page-initialization', 'mutation-login-navigation',
+    'mutation-login-form', 'mutation-login-submit', 'mutation-login-redirect',
+    'mutation-login-dashboard', 'mutation-login-session', 'mutation-login-notice',
+    'mutation-login-network-idle', 'mutation-login-contract',
+    'mutation-restricted-create-absence', 'mutation-restricted-delete-disabled',
+    'mutation-restricted-mutation-absence',
+    'mutation-sidebar-navigation', 'mutation-list-navigation', 'mutation-list-body',
+    'mutation-list-loading', 'mutation-list-page-size', 'mutation-list-row-count',
+    'mutation-list-row-contents', 'mutation-list-forbidden-absence', 'mutation-list-controls',
+    'mutation-create-open', 'mutation-create-form', 'mutation-create-submit',
+    'mutation-created-row', 'mutation-create-reload', 'mutation-created-row-persistence',
+    'mutation-delete-open', 'mutation-delete-confirmation', 'mutation-delete-submit',
+    'mutation-deleted-row-absence', 'mutation-delete-reload',
+    'mutation-barrier-drain', 'mutation-checkpoint', 'mutation-context-close',
+    'mutation-final-counts', 'mutation-cleanup-drain',
+}
+MUTATION_ACTIONS = {'initialization', 'login', 'read', 'create', 'create_reload',
+                    'delete', 'delete_reload', 'closed'}
+MUTATION_FAILURE_KINDS = {'invalid-mutation-diagnostic', 'unexpected-request',
+    *('unexpected-request-' + category for category in
+      ('fragment', 'redirect', 'origin', 'query', 'list', 'login', 'api', 'static', 'page')),
+    'unexpected-websocket', 'request-failed', 'request-or-response-failed', 'pageerror',
+    'download', 'popup', 'workflow-failed', 'context-close-failed', 'incomplete-cleanup',
+    'route-redirect-blocked',
+    *('route-' + stage + '-failed' for stage in ('fetch', 'observe', 'fulfill', 'dispose', 'abort', 'headers')),
+    *('response-' + check + '-failed' for check in ('pairing', 'classification', 'body-completion',
+        'backend', 'static-status', 'static-body', 'api-status', 'content-type', 'json', 'mutation-body'))}
+
+
+def validate_mutation_diagnostics(value):
+    code = 'browser-mutation-diagnostic-protocol'
+    def location(row):
+        return (isinstance(row, dict) and set(row) == {'actor', 'action', 'step'} and
+                isinstance(row['step'], str) and row['step'] in MUTATION_WORKFLOW_STEPS and
+                isinstance(row['action'], str) and row['action'] in MUTATION_ACTIONS and
+                ((row['actor'] is None and row['action'] == 'initialization') or
+                 (isinstance(row['actor'], str) and row['actor'] in browser.ACTORS and
+                  row['action'] != 'initialization' and
+                  (row['action'] in {'login', 'read', 'closed'} if row['actor'] == 'restricted_collaborator'
+                   else True))))
+    require(isinstance(value, dict) and set(value) ==
+            {'workflow_failure', 'failure_count', 'failures_truncated', 'failures'}, code)
+    count = value['failure_count']
+    require(location(value['workflow_failure']) and type(count) is int and 1 <= count <= 1000000 and
+            type(value['failures_truncated']) is bool and value['failures_truncated'] == (count > 16) and
+            isinstance(value['failures'], list) and len(value['failures']) == min(count, 16), code)
+    for row in value['failures']:
+        require(isinstance(row, dict) and set(row) == {'kind', 'actor', 'action', 'step'} and
+                isinstance(row['kind'], str) and row['kind'] in MUTATION_FAILURE_KINDS and
+                location({key: row[key] for key in ('actor', 'action', 'step')}), code)
+    require(value['workflow_failure'] == {key: value['failures'][0][key]
+                                        for key in ('actor', 'action', 'step')}, code)
+    return copy.deepcopy(value)
 
 
 def validate_network_diagnostics(value):
@@ -144,8 +206,19 @@ def public_error(stage, error):
                and error.child_failure is not None else {})}
 
 
-def validate_child_failure(frame):
+def validate_child_failure(frame, *, consumer='reads'):
     base = {'type', 'stage', 'code', 'error_class'}
+    require(consumer in ('reads', 'mutations'), 'browser-failure-protocol')
+    if isinstance(frame, dict) and 'mutation_diagnostics' in frame:
+        require(consumer == 'mutations' and set(frame) == base | {'mutation_diagnostics'} and
+                frame['type'] == 'failure' and frame['stage'] == 'browser-exercise' and
+                frame['code'] == CHILD_FAILURE_CODES['browser-exercise'] and
+                isinstance(frame['error_class'], str) and frame['error_class'] in CHILD_ERROR_CLASSES,
+                'browser-failure-protocol')
+        return {key: frame[key] for key in ('stage', 'code', 'error_class')} | {
+            'mutation_diagnostics': validate_mutation_diagnostics(frame['mutation_diagnostics'])}
+    require(consumer == 'reads' or isinstance(frame, dict) and set(frame) == base,
+            'browser-failure-protocol')
     diagnostics = {'workflow_step', 'exercise_failures'}
     extended = diagnostics | {'failure_count', 'failures_truncated', 'response_checks'}
     keys = set(frame) - {'controls_mismatches'} if isinstance(frame, dict) else set()
@@ -338,8 +411,54 @@ def module_fingerprints(directory):
     return {'version': data['version'], 'files': result}
 
 
-def route_target(target, method, *, version, artifacts, upgrade=False):
+def consumer_routes(consumer='reads'):
+    require(consumer in ('reads', 'mutations', 'mutation-denials'), 'unknown-browser-consumer')
+    if consumer == 'mutation-denials':
+        from TESTS.adapters.django import message_mutations_browser as mutations
+        return {'/api' + case['path']: case['method']
+                for case in mutations.authored_spec()['denials']}
+    selected = dict(browser.SELECTED_ROUTES)
+    if consumer == 'mutations':
+        from TESTS.adapters.django import message_mutations_browser as mutations
+        selected['/api/communications/messages/add'] = 'POST'
+        spec = mutations.authored_spec()
+        for actor in mutations.READERS:
+            selected['/api' + spec['actors'][actor]['delete']['path']] = 'DELETE'
+    return selected
+
+
+def correlated_route(path, consumer='reads'):
+    selected = consumer_routes(consumer)
+    if consumer == 'mutation-denials':
+        return '/api' + path in selected
+    return path == browser.UPSTREAM_PATH or (consumer == 'mutations' and
+        (path == '/oauth2/login' or selected.get('/api' + path) in ('POST', 'DELETE')))
+
+
+def validate_correlation(cid, route, consumer='reads'):
+    consumer_routes(consumer)
+    if consumer == 'mutation-denials':
+        from TESTS.adapters.django import message_mutations_browser as mutations
+        version = {'django-v1': 'v1', 'go-v2': 'v2'}.get(route.get('backend'), r'v[12]')
+        # Bind the actor/action to an authored denial on this exact route.
+        # Preserve the existing mutation CID format, without allowing UI actions.
+        patterns = [f'message-mutations-{version}-{case["actor"]}-'
+                    + ('create' if case['method'] == 'POST' else 'delete') + r'-[1-9][0-9]*'
+                    for case in mutations.authored_spec()['denials'] if case['path'] == route['path']]
+        require(bool(cid) and any(re.fullmatch(pattern, cid) for pattern in patterns),
+                'invalid-denial-correlation')
+        return
+    pattern = (r'message-browser-v[12]-(owner|full_collaborator|foreign_owner)-(read|reload)-[1-9][0-9]*'
+        if consumer == 'reads' else
+        r'message-mutations-v[12]-(owner|full_collaborator|foreign_owner|restricted_collaborator)-'
+        r'(login|read|create|create_reload|delete|delete_reload)-[1-9][0-9]*')
+    require(not cid or re.fullmatch(pattern, cid), 'invalid-correlation')
+    require(bool(cid) == correlated_route(route['path'], consumer), 'missing-or-extra-correlation')
+
+
+def route_target(target, method, *, version, artifacts, upgrade=False, consumer='reads'):
     """Pure exact-path policy; reject ambiguous decoding and all SPA fallbacks."""
+    selected = consumer_routes(consumer)
     require(version in ('v1', 'v2'), 'route-version')
     require(isinstance(target, str) and target.startswith('/') and
             not target.startswith('//') and all(ord(c) > 32 and ord(c) < 127 for c in target),
@@ -355,6 +474,11 @@ def route_target(target, method, *, version, artifacts, upgrade=False):
     require('\\' not in path and '%' not in path and '\x00' not in path and
             not any(part in ('.', '..', '') for part in parts), 'ambiguous-path')
     require(path == parsed.path, 'encoded-path-not-allowed')
+    if consumer == 'mutation-denials':
+        # Python-only HTTP companion: no bootstrap, assets, queries or tunnels,
+        # even if a caller supplies a nonempty artifact allowlist.
+        require(not upgrade and '?' not in target and '#' not in target and path in selected,
+                'denial-route-not-allowed')
     if upgrade:
         require(method == 'GET' and path in browser.WEBSOCKET_ROUTES, 'websocket-not-allowed')
         require(not parsed.query or (path == '/ws/notifications/' and re.fullmatch(
@@ -362,8 +486,8 @@ def route_target(target, method, *, version, artifacts, upgrade=False):
             'websocket-query-not-allowed')
         return {'kind': 'websocket', 'backend': 'django-websocket', 'path': path}
     require(path not in browser.WEBSOCKET_ROUTES, 'websocket-upgrade-required')
-    if path in browser.SELECTED_ROUTES:
-        require(method == browser.SELECTED_ROUTES[path], 'selected-method-not-allowed')
+    if path in selected:
+        require(method == selected[path], 'selected-method-not-allowed')
         require(not parsed.query, 'selected-query-not-allowed')
         return {'kind': 'selected', 'backend': 'django-v1' if version == 'v1' else 'go-v2',
                 'path': path.removeprefix('/api')}
@@ -383,6 +507,8 @@ def route_target(target, method, *, version, artifacts, upgrade=False):
                 'path': path.removeprefix('/api')}
     require(method == 'GET' and not path.startswith(('/api/', '/instance-')),
             'unknown-api-or-method')
+    if consumer == 'mutations':
+        require(not parsed.query or parsed.query == 'v=0', 'mutation-static-query-not-allowed')
     name = 'index.html' if path == '/' else path[1:]
     require(name in artifacts, 'unknown-static-path')
     # Cache-busting static queries are forwarded nowhere and are never logged.
@@ -408,9 +534,10 @@ def actual_backend(peer, django_port, go_port, *, websocket=False, coexistence=F
 
 
 class ProxyJournal:
-    """No URLs, queries, headers, credentials, request bodies or raw errors."""
+    """Public events exclude raw data; private_traffic is parent-only bytes."""
     def __init__(self):
         self.events, self.failures = [], []
+        self.private_traffic = []
         self.lock = threading.Lock()
         self.active_http = 0
         self.checkpointing = False
@@ -420,6 +547,13 @@ class ProxyJournal:
     def record(self, row):
         with self.lock:
             self.events.append(copy.deepcopy(row))
+
+    def record_private(self, row):
+        with self.lock:
+            require(len(self.private_traffic) < 26 and
+                    row['cid'] not in [item['cid'] for item in self.private_traffic],
+                    'private-traffic-bound-or-duplicate')
+            self.private_traffic.append(copy.deepcopy(row))
 
     def fail(self, code):
         with self.lock:
@@ -445,7 +579,30 @@ class ProxyJournal:
                 self.checkpointing = False
 
 
-def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal):
+def observed_body(wire, headers):
+    """Independent decoded bytes plus strict complete bounded wire framing.
+
+    Playwright exposes decoded bodies. Retain original wire bytes privately too;
+    never compare a gzip stream's digest with a browser's decoded JSON digest.
+    """
+    require(isinstance(wire, bytes) and len(wire) <= MAX_BODY, 'observed-wire-bound')
+    encodings = [value.lower().strip() for key, value in headers if key.lower() == 'content-encoding']
+    require(len(encodings) <= 1, 'observed-encoding-duplicate')
+    if not encodings or encodings == ['identity']:
+        return wire
+    require(encodings == ['gzip'], 'observed-encoding-unsupported')
+    decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    try:
+        body = decoder.decompress(wire, MAX_BODY + 1)
+    except zlib.error:
+        raise HarnessError('observed-gzip-invalid') from None
+    require(len(body) <= MAX_BODY and decoder.eof and not decoder.unused_data and
+            not decoder.unconsumed_tail, 'observed-gzip-incomplete-or-bound')
+    return body
+
+
+def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal, consumer='reads'):
+    consumer_routes(consumer)
     class Handler(BaseHTTPRequestHandler):
         protocol_version = 'HTTP/1.1'
 
@@ -487,6 +644,10 @@ def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal):
         def do_POST(self):
             self.dispatch()
 
+        if consumer in ('mutations', 'mutation-denials'):
+            def do_DELETE(self):
+                self.dispatch()
+
         def dispatch(self):
             connection = None
             with journal.lock:
@@ -501,7 +662,7 @@ def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal):
                 upgrade = self.headers.get('Upgrade', '').lower() == 'websocket'
                 require(not self.headers.get('Upgrade') or upgrade, 'unsupported-upgrade')
                 route = route_target(self.path, self.command, version=version,
-                                     artifacts=artifacts, upgrade=upgrade)
+                                     artifacts=artifacts, upgrade=upgrade, consumer=consumer)
                 require(not self.headers.get('Transfer-Encoding'), 'request-transfer-encoding')
                 lengths = self.headers.get_all('Content-Length', [])
                 require(len(lengths) <= 1 and (not lengths or lengths[0].isdigit()), 'request-length')
@@ -529,10 +690,7 @@ def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal):
                     self.websocket(route)
                 else:
                     cid = self.headers.get('X-Correlation-ID', '')
-                    require(not cid or re.fullmatch(
-                        r'message-browser-v[12]-(owner|full_collaborator|foreign_owner)-(read|reload)-[1-9][0-9]*', cid),
-                        'invalid-correlation')
-                    require(bool(cid) == (route['path'] == browser.UPSTREAM_PATH), 'missing-or-extra-correlation')
+                    validate_correlation(cid, route, consumer)
                     port = go_port if route['backend'] == 'go-v2' else django_port
                     connection = http.client.HTTPConnection('127.0.0.1', port, timeout=30)
                     connection.connect()
@@ -568,6 +726,12 @@ def proxy_handler(*, ui, artifacts, version, django_port, go_port, journal):
                     data = response.read(MAX_BODY + 1)
                     require(len(data) <= MAX_BODY and response.isclosed() and
                             response.length in (0, None), 'response-body-bound-or-incomplete')
+                    if consumer in ('mutations', 'mutation-denials') and cid:
+                        # Private complete bytes independently observed at the real HTTP
+                        # boundary. Never add these to publishable journal.events.
+                        journal.record_private(dict(row, body=observed_body(data, response_headers),
+                            wire_body=data, response_headers=response_headers, request_body=body,
+                            headers=dict(response_headers), complete=True))
                     self.send_response_only(response.status)
                     for key, value in clean_headers(response_headers, response=True):
                         self.send_header(key, value)
@@ -757,13 +921,8 @@ def transport_probe():
         yield origin, counts
 
 
-def attribution_for(receipt, events, django_events):
-    """Consume complete proxy/ASGI windows; never derive routing from JS headers."""
-    selected = [row for row in events if row['path'] == browser.UPSTREAM_PATH]
-    responses = [row for row in receipt['responses'] if row['path'] == browser.LIST_PATH]
-    require(len(selected) == len(responses) == 6, 'extra-or-missing-list-traffic')
-    require([row['cid'] for row in selected] == [row['cid'] for row in responses],
-            'unobserved-list-correlation')
+def verify_proxy_asgi_window(events, django_events):
+    """Require complete exact HTTP attribution, including coexistence traffic."""
     allowed_django = {(row['method'], row['path'], row['cid'], row['status'])
                       for row in events if row['backend'] in ('django-v1', 'django-coexistence')}
     require(all((row['method'], row['path'], row['cid'], row['status']) in allowed_django and
@@ -775,6 +934,16 @@ def attribution_for(receipt, events, django_events):
     signature = lambda row: (row['method'], row['path'], row['cid'], row['status'])
     require(Counter(map(signature, expected_events)) == Counter(map(signature, django_events)),
             'django-window-multiplicity')
+
+
+def attribution_for(receipt, events, django_events):
+    """Consume complete proxy/ASGI windows; never derive routing from JS headers."""
+    selected = [row for row in events if row['path'] == browser.UPSTREAM_PATH]
+    responses = [row for row in receipt['responses'] if row['path'] == browser.LIST_PATH]
+    require(len(selected) == len(responses) == 6, 'extra-or-missing-list-traffic')
+    require([row['cid'] for row in selected] == [row['cid'] for row in responses],
+            'unobserved-list-correlation')
+    verify_proxy_asgi_window(events, django_events)
     result = []
     for response, row in zip(responses, selected):
         backend = 'django-v1' if receipt['version'] == 'v1' else 'go-v2'
@@ -791,13 +960,26 @@ def attribution_for(receipt, events, django_events):
 
 class Checkpoints:
     """A single request/ack outstanding; snapshot completes before acknowledgment."""
-    def __init__(self, snapshot, closed_snapshot=None):
+    def __init__(self, snapshot, closed_snapshot=None, *, consumer='reads'):
+        require(consumer in ('reads', 'mutations'), 'unknown-browser-consumer')
+        self.consumer, self.failed = consumer, False
+        if consumer == 'mutations':
+            from TESTS.adapters.django.message_mutations_browser import CHECKPOINTS
+            self.order = CHECKPOINTS
+        else:
+            self.order = browser.CHECKPOINTS
         self.snapshot = snapshot
         self.closed_snapshot = closed_snapshot
         self.states = []
         self.closed = []
 
     def receive(self, frame):
+        if self.consumer == 'mutations':
+            try:
+                return self._receive_mutation(frame)
+            except BaseException:
+                self.failed = True
+                raise
         index = len(self.states)
         require(set(frame) == {'type', 'seq', 'actor', 'action'} and
                 frame['type'] == 'checkpoint' and type(frame['seq']) is int and
@@ -809,11 +991,33 @@ class Checkpoints:
         self.states.append(dict(state, actor=frame['actor'], action=frame['action']))
         return {'type': 'ack', 'seq': frame['seq'], 'success': True}
 
+    def _receive_mutation(self, frame):
+        index = len(self.states)
+        require(not self.failed and isinstance(frame, dict) and
+                set(frame) == {'type', 'seq', 'payload'} and frame['type'] == 'checkpoint' and
+                type(frame['seq']) is int and frame['seq'] == index + 1 and index < len(self.order),
+                'checkpoint-protocol')
+        payload = frame['payload']
+        actor, action = self.order[index]
+        fields = {'actor', 'action', 'requests'} | ({'identity'} if action == 'login' else
+            {'denied'} if action == 'denied' else set() if action == 'closed' else {'view'})
+        require(isinstance(payload, dict) and set(payload) == fields and
+                (payload['actor'], payload['action']) == (actor, action) and
+                isinstance(payload['requests'], list), 'checkpoint-order-or-payload')
+        state = self.snapshot(copy.deepcopy(payload))
+        require(set(state) == {'models', 'cache'} and len(state['models']) == 128,
+                'checkpoint-snapshot-scope')
+        self.states.append(dict(state, actor=actor, action=action))
+        if action == 'closed':
+            self.closed.append({'actor': actor, 'observed_after_context_close': True})
+        return {'type': 'ack', 'seq': frame['seq'], 'success': True}
+
     def complete(self):
-        require(len(self.states) == len(browser.CHECKPOINTS), 'missing-checkpoints')
+        require(not self.failed and len(self.states) == len(self.order), 'missing-checkpoints')
         require(len(self.closed) == len(browser.ACTORS), 'missing-context-close-proof')
 
     def context_closed(self, frame):
+        require(self.consumer == 'reads', 'unexpected-context-close-frame')
         index = len(self.closed)
         require(set(frame) == {'type', 'seq', 'actor'} and frame['type'] == 'context_closed' and
                 type(frame['seq']) is int and frame['seq'] == index + 1 and
@@ -887,7 +1091,8 @@ def stop_child(process):
 
 
 def run_node(*, node, module, work, private_log, environment, input_data,
-             checkpoint, probe_origin, timeout=360):
+             checkpoint, probe_origin, timeout=360, consumer='reads'):
+    require(consumer in ('reads', 'mutations'), 'unknown-browser-consumer')
     credentials = work / 'browser-input.json'
     process = None
     child_failure = None
@@ -899,7 +1104,8 @@ def run_node(*, node, module, work, private_log, environment, input_data,
         child_environment = dict(environment, TMPDIR=str(temporary), TMP=str(temporary), TEMP=str(temporary))
         process = subprocess.Popen([str(node), str(ROOT / NODE_RUNNER),
             '--input', str(credentials), '--playwright-module', str(module),
-            '--probe-origin', probe_origin], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            '--probe-origin', probe_origin, *(['--consumer', consumer] if consumer != 'reads' else [])],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=private_log, cwd=work, env=child_environment, start_new_session=True, bufsize=0)
         selector.register(process.stdout, selectors.EVENT_READ)
         deadline, pending, result = time.monotonic() + timeout, bytearray(), None
@@ -922,7 +1128,7 @@ def run_node(*, node, module, work, private_log, environment, input_data,
                 frame = json.loads(raw_frame, object_pairs_hook=unique_object)
                 require(result is None, 'browser-frame-after-result')
                 if frame.get('type') == 'failure':
-                    child_failure = validate_child_failure(frame)
+                    child_failure = validate_child_failure(frame, consumer=consumer)
                     raise HarnessError('browser-child-failed', child_failure=child_failure)
                 elif frame.get('type') == 'ready':
                     require(browser_binary is None and not checkpoint.states and
@@ -1044,8 +1250,9 @@ def observe_closed_state(observer, snapshot, baseline, contrasts, *, timeout=10)
     return current, {'models': models, 'cache': cache}
 
 
-def prepare_browser_identities(apps, work):
-    """Modify only the owned fixture, before taking any workflow baseline."""
+def prepare_browser_identities(apps, work, *, consumer='reads'):
+    """Prepare the owned fixture before baseline; mutations also seed notification startup."""
+    require(consumer in ('reads', 'mutations'), 'unknown-browser-consumer')
     from auditlog.context import disable_auditlog
     from django.contrib.auth.hashers import check_password, make_password
     from django.utils import timezone
@@ -1055,8 +1262,21 @@ def prepare_browser_identities(apps, work):
     import secrets
 
     identities = {}
-    spec = browser.authored_spec()
+    if consumer == 'mutations':
+        from TESTS.adapters.django import message_mutations_browser as authored
+    else:
+        authored = browser
+    spec = authored.authored_spec()
     with disable_auditlog():
+        if consumer == 'mutations':
+            from notifications.models import NotificationsBroadcast
+            # NotificationManager lazily creates this audited row at startup.
+            # Seed each fresh fixture directly: its service manager can remain
+            # cached after the parent restores the previous fixture's database.
+            require(not NotificationsBroadcast.objects.exists(), 'unexpected-notification-broadcasts')
+            NotificationsBroadcast.objects.create(broadcast_name='all_notifications')
+            require(list(NotificationsBroadcast.objects.values_list('broadcast_name', flat=True)) ==
+                    ['all_notifications'], 'notification-prerequisite-state')
         for actor in browser.ACTORS:
             identifier = spec['actors'][actor]['user_id']
             user = User.original_objects.get(pk=identifier)
@@ -1096,7 +1316,8 @@ def prepare_browser_identities(apps, work):
 
 
 @contextmanager
-def owned_django(report):
+def owned_django(report, *, liveness_observer=None):
+    """Own Django; optionally expose its actual ready handles through a guard."""
     import uvicorn
     from core.asgi import application
     from TESTS.http_client import poll
@@ -1110,6 +1331,8 @@ def owned_django(report):
         thread.start()
         poll(lambda: server.started and thread.is_alive(), bool, timeout=25)
         report['service_cleanup']['django'] = 'running'
+        if liveness_observer is not None:
+            liveness_observer(runtime.django_liveness_guard(server, thread, observer))
         yield observer, server.servers[0].sockets[0].getsockname()[1]
     finally:
         server.should_exit = True
@@ -1125,7 +1348,9 @@ def owned_django(report):
 
 
 @contextmanager
-def owned_go(work, executable, codec, environment, private_log, report, native_build):
+def owned_go(work, executable, codec, environment, private_log, report, native_build,
+             *, liveness_observer=None):
+    """Own Go; optionally expose the actual ready Popen through its guard."""
     from TESTS.http_client import poll
 
     # Reserve then release a private port; readiness must come from this child.
@@ -1163,6 +1388,9 @@ def owned_go(work, executable, codec, environment, private_log, report, native_b
                 return False
         poll(ready, bool, timeout=30)
         report['service_cleanup']['go'] = 'running'
+        if liveness_observer is not None:
+            from TESTS.adapters.django.message_read_scopes_runtime import go_liveness_guard
+            liveness_observer(go_liveness_guard(process))
         yield port
     finally:
         if process is not None:
