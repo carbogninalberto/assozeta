@@ -191,7 +191,7 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         for name, layout in (
             ('renders/heading.png', {'section': 'elenco', 'kind': 'heading'}),
             ('renders/image.png', {'section': 'elenco', 'kind': 'image',
-                                   'checkpoint': 'unit-list', 'image': frame['path']}),
+                                   'checkpoint': 'unit-list', 'image': frame['path'], 'master': frame['master']['path']}),
         ):
             target = f.old_run / name
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -412,6 +412,36 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '[Oo]nly a complete passed capture baseline'):
             self.export()
         self.assertEqual(previous.read_bytes(), b'previous-cache')
+
+    def test_render_sealing_distinguishes_supporting_captures_from_displayed_images(self):
+        f = self.fixture
+        manifest = copy.deepcopy(f.manifest)
+        manifest['pages'][0]['sections'][0]['displayed_screenshots'] = []
+        # A FAQ can cite a complete workflow while displaying none of its images.
+        (f.old_manual / 'docs/members.mdx').write_text(f.editorial)
+        source_hash = fixtures.manual_index.file_digest(f.old_manual / 'docs/members.mdx')
+        compiled = {'docs/members.mdx': {'source_sha256': source_hash}}
+        render = json.loads((f.old_run / 'render.json').read_text())
+        render['pages'][0].update(source_sha256=source_hash, images=[])
+        render['pages'][0]['layouts'] = render['pages'][0]['layouts'][:1]
+        self.assertEqual(cache._validate_render_evidence(
+            f.old_run, f.old, manifest, compiled, render, {'docs/members'}), {'renders/heading.png'})
+        # Retained supporting evidence is still integrity checked even when hidden.
+        image = f.old_manual / f.report['screenshots'][0]['path']
+        image.write_bytes(b'corrupt retained supporting evidence')
+        with self.assertRaisesRegex(ValueError, 'target-screenshot-changed'):
+            cache._validate_render_evidence(f.old_run, f.old, manifest, compiled, render, {'docs/members'})
+
+    def test_render_sealing_rejects_missing_displayed_images_or_layouts(self):
+        f = self.fixture
+        compiled = {'docs/members.mdx': json.loads((f.old_run / 'compile.json').read_text())['pages'][0]}
+        original = json.loads((f.old_run / 'render.json').read_text())
+        for field, value in (('images', []), ('layouts', original['pages'][0]['layouts'][:1])):
+            with self.subTest(field=field):
+                render = copy.deepcopy(original)
+                render['pages'][0][field] = value
+                with self.assertRaisesRegex(ValueError, 'Render evidence'):
+                    cache._validate_render_evidence(f.old_run, f.old, f.manifest, compiled, render, {'docs/members'})
 
     def test_evaluation_reader_render_and_compile_must_bind_the_sealed_corpus(self):
         f = self.fixture

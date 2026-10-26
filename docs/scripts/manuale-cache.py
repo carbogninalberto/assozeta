@@ -358,6 +358,35 @@ def _chunk_screenshot_paths(chunk):
     return paths
 
 
+def _validate_render_evidence(run, state, manifest, compiled, render, verified_pages):
+    """Check actual rendered sections and displayed images, retaining all capture proof."""
+    sys.path.insert(0, str(ROOT / 'BE'))
+    from application.manuale.render_reuse import _page_facts, _inspect_page_record, RenderReuseError
+    if render.get('status') != 'passed' or not isinstance(render.get('pages'), list):
+        raise ValueError('Render evidence is not a successful complete evaluation')
+    rendered = {}
+    for page in render['pages']:
+        if (not isinstance(page, dict) or not isinstance(page.get('page'), str)
+                or page['page'] in rendered):
+            raise ValueError('Render evidence contains a duplicate or invalid page')
+        rendered[page['page']] = page
+    if set(rendered) != verified_pages:
+        raise ValueError('Render evidence does not cover exactly the verified corpus pages')
+    manifest_pages = {page['path']: page for page in manifest['pages']}
+    layout_proofs = set()
+    for relative in sorted(verified_pages):
+        manual_page = relative + '.mdx'
+        try:
+            facts = _page_facts(manifest_pages[manual_page], state, compiled[manual_page])
+            layouts = _inspect_page_record(rendered[relative], facts, run)
+        except RenderReuseError as exc:
+            raise ValueError('Render evidence differs from generated content: ' + relative + ': ' + str(exc)) from exc
+        if layout_proofs.intersection(layouts):
+            raise ValueError('Render evidence reuses a layout path across different pages')
+        layout_proofs.update(layouts)
+    return layout_proofs
+
+
 def _validate_evaluated_evidence(run, state, *, require_source_repositories=False):
     application_revision, manual_revision = _validate_state(
         state, run=run if require_source_repositories else None,
@@ -496,58 +525,7 @@ def _validate_evaluated_evidence(run, state, *, require_source_repositories=Fals
                 raise ValueError('Compiled local asset changed: ' + asset)
             manual_files.add(asset)
 
-    if render.get('status') != 'passed' or not isinstance(render.get('pages'), list):
-        raise ValueError('Render evidence is not a successful complete evaluation')
-    rendered = {}
-    layout_proofs = set()
-    for page in render['pages']:
-        if not isinstance(page, dict) or page.get('page') in rendered:
-            raise ValueError('Render evidence contains a duplicate or invalid page')
-        rendered[page.get('page')] = page
-    if set(rendered) != verified_pages:
-        raise ValueError('Render evidence does not cover exactly the verified corpus pages')
-    for relative in verified_pages:
-        page = rendered[relative]
-        manual_page = page_files[relative]
-        page_chunks = [chunk for chunk in chunks if chunk.get('page') == relative]
-        expected_anchors = {chunk.get('section') for chunk in page_chunks}
-        expected_images = set().union(*(_chunk_screenshot_paths(chunk) for chunk in page_chunks))
-        anchors = page.get('anchors')
-        images = page.get('images')
-        if (not isinstance(anchors, list) or not isinstance(images, list)
-                or page.get('source_sha256') != index.file_digest(owned(manual, manual_page))
-                or not expected_anchors <= set(anchors)
-                or not expected_images <= set(images)):
-            raise ValueError('Render evidence differs from generated content: ' + relative)
-        expected_layouts = {(chunk.get('section'), 'heading') for chunk in page_chunks}
-        expected_layouts.update((chunk.get('section'), 'image', image)
-                                for chunk in page_chunks for image in _chunk_screenshot_paths(chunk))
-        actual_layouts = set()
-        if not isinstance(page.get('layouts'), list):
-            raise ValueError('Render evidence omits layout artifacts: ' + relative)
-        for layout in page['layouts']:
-            if not isinstance(layout, dict):
-                raise ValueError('Invalid render layout evidence')
-            path = layout.get('path')
-            if (not isinstance(path, str) or not path.startswith('renders/')
-                    or not path.endswith('.png') or path in layout_proofs):
-                raise ValueError('Invalid or duplicate render layout path: ' + repr(path))
-            contents = owned(run, path).read_bytes()
-            try:
-                dimensions = index.png_dimensions(contents)
-            except ValueError as exc:
-                raise ValueError('Render layout is not a valid PNG: ' + path) from exc
-            if (layout.get('sha256') != _digest_bytes(contents)
-                    or layout.get('width') != dimensions['width']
-                    or layout.get('height') != dimensions['height']
-                    or (dimensions['width'], dimensions['height']) != (1920, 1080)):
-                raise ValueError('Render layout bytes or dimensions differ from evidence: ' + path)
-            layout_proofs.add(path)
-            actual_layouts.add((layout.get('section'), layout.get('kind'))
-                               if layout.get('kind') != 'image'
-                               else (layout.get('section'), 'image', layout.get('image')))
-        if actual_layouts != expected_layouts:
-            raise ValueError('Render layouts do not cover exactly the verified page: ' + relative)
+    layout_proofs = _validate_render_evidence(run, state, manifest, compiled, render, verified_pages)
 
     proof_files = {'manifest.json', 'index.json', 'evaluation.json', 'embedded-manual.json',
                    'render.json', 'compile.json'} | scenario_proofs | layout_proofs

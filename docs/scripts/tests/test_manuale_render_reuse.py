@@ -219,6 +219,8 @@ class RenderReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['fresh_pages'], ['docs/one'])
         self.assertEqual(plan['reused_pages'], ['docs/two'])
         self.assertIn('page-local-assets-changed', plan['rejected_pages'][0]['reasons'][0])
+        facts = render_reuse._page_facts(self.target['manifest']['pages'][0], self.target['state'], report['pages'][0])
+        self.assertEqual(facts['path'], 'docs/one.mdx')
 
     def test_sidebar_metadata_change_invalidates_other_page_layouts(self):
         page = Path(self.target['manual']) / 'docs/one.mdx'

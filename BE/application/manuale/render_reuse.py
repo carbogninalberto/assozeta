@@ -345,8 +345,8 @@ def _page_facts(manifest_page, state, compile_page):
     local_assets = compile_page.get('assets', {})
     if not isinstance(local_assets, dict):
         raise RenderReuseError('invalid-compiled-assets: ' + identifier)
-    for relative, expected in local_assets.items():
-        if not isinstance(expected, str) or not HASH.fullmatch(expected) or file_hash(state['manual'], relative) != expected:
+    for asset_path, expected in local_assets.items():
+        if not isinstance(expected, str) or not HASH.fullmatch(expected) or file_hash(state['manual'], asset_path) != expected:
             raise RenderReuseError('compiled-asset-changed: ' + identifier)
     citation_anchors = {}
     for section in sections:
