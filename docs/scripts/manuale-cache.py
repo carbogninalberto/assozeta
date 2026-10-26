@@ -38,6 +38,10 @@ PRIVATE_NAMES = {'browser-input.json', 'execution.log', 'preview.log', 'diagnost
                  'credentials.json', 'service-account.json', 'kubeconfig',
                  'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519'}
 PRIVATE_SUFFIXES = ('.pem', '.key', '.p12', '.pfx')
+PUBLIC_FRONTEND_COMMAND = ['npm', 'exec', 'vite', 'preview', '--', '--host', '0.0.0.0',
+                           '--port', '5001', '--strictPort']
+PUBLIC_FRONTEND_ENVIRONMENT = {'DEPLOY_ENV': 'development', 'OEM_ENV': 'assozeta',
+                               'ASSOZETA_MANUAL_BUILD': '1'}
 
 
 def _digest_bytes(value):
@@ -626,6 +630,8 @@ def _frontend_members(run, state, members):
     public_environment = {key: value for key, value in environment.items()
                           if key in ('DEPLOY_ENV', 'OEM_ENV', 'ASSOZETA_MANUAL_BUILD', 'NODE_OPTIONS')
                           and isinstance(value, str)}
+    public_override = _validate_public_override(
+        {'services': {'ui': {'command': command, 'environment': public_environment}}})
     staged = {}
     source = Path(state['application']).resolve() / 'UI/dist/public'
     for relative, expected in artifacts.items():
@@ -635,8 +641,7 @@ def _frontend_members(run, state, members):
             raise ValueError('Frontend artifact changed after its recorded build: ' + relative)
         staged['application/UI/dist/public/' + relative] = (path, path.stat().st_mode & 0o777)
     staged['proof/frontend-build.json'] = (recorded, 0o644)
-    staged['proof/compose.override.json'] = (
-        {'services': {'ui': {'command': command, 'environment': public_environment}}}, 0o644)
+    staged['proof/compose.override.json'] = (public_override, 0o644)
     for name, (source_value, mode) in staged.items():
         if name in members:
             raise ValueError('Duplicate frontend cache path: ' + name)
@@ -656,6 +661,14 @@ def _validate_public_override(value):
             or set(environment) - {'DEPLOY_ENV', 'OEM_ENV', 'ASSOZETA_MANUAL_BUILD', 'NODE_OPTIONS'}
             or not all(isinstance(item, str) for item in environment.values())):
         raise ValueError('Portable frontend configuration is invalid')
+    if command != PUBLIC_FRONTEND_COMMAND:
+        raise ValueError('Portable frontend command must match the fixed manual preview command')
+    for key, item in environment.items():
+        if key == 'NODE_OPTIONS':
+            if not re.fullmatch(r'--max-old-space-size=[1-9][0-9]{2,5}', item):
+                raise ValueError('Portable frontend NODE_OPTIONS only supports a bounded heap size')
+        elif item != PUBLIC_FRONTEND_ENVIRONMENT[key]:
+            raise ValueError('Portable frontend environment must match the public manual fixture')
     return value
 
 

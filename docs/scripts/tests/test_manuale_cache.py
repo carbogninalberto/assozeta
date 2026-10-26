@@ -262,7 +262,8 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         write_json(f.old_run, 'compose.override.json', {
             'services': {
                 'ui': {
-                    'command': ['vite', 'preview'],
+                    'command': ['npm', 'exec', 'vite', 'preview', '--', '--host', '0.0.0.0',
+                                '--port', '5001', '--strictPort'],
                     'environment': {
                         'OEM_ENV': 'assozeta',
                         'PRIVATE_FIXTURE_TOKEN': '${PRIVATE_FIXTURE_TOKEN}',
@@ -416,6 +417,26 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '[Oo]nly a complete passed capture baseline'):
             self.export()
         self.assertEqual(previous.read_bytes(), b'previous-cache')
+
+    def test_frontend_export_rejects_private_or_nonportable_runtime_values(self):
+        f = self.fixture
+        original = json.loads((f.old_run / 'compose.override.json').read_text())
+        for change in (
+                {'command': ['/unit-fixture/custom-preview']},
+                {'environment': {'NODE_OPTIONS': '--require ./unit-fixture.js'}},
+                {'environment': {'NODE_OPTIONS': '--max-old-space-size=3072 --require ./unit-fixture.js'}},
+                {'environment': {'DEPLOY_ENV': 'custom-runtime'}}):
+            with self.subTest(change=change):
+                override = copy.deepcopy(original)
+                override['services']['ui'].update(change)
+                write_json(f.old_run, 'compose.override.json', override)
+                with self.assertRaisesRegex(ValueError, 'Portable frontend'):
+                    self.export()
+                self.assertFalse(self.archive.exists())
+                # The same value is rejected at the importer boundary.
+                override['services']['ui']['environment'].pop('PRIVATE_FIXTURE_TOKEN', None)
+                with self.assertRaisesRegex(ValueError, 'Portable frontend'):
+                    cache._validate_public_override(override)
 
     def test_portable_baseline_retains_render_provenance_for_another_release(self):
         from application.manuale import render_reuse
