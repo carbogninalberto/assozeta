@@ -15040,7 +15040,10 @@
         "TESTS/adapters/django/message_session_lifecycle.py",
         "TESTS/test_message_session_lifecycle.py",
         "TESTS/adapters/go/message_read_scopes_image.py",
-        "TESTS/adapters/go/test_message_read_scopes_image.py"
+        "TESTS/adapters/go/test_message_read_scopes_image.py",
+        "TESTS/adapters/go/message_reads_repository.py",
+        "TESTS/test_message_reads_repository.py",
+        "TESTS/test_message_list_spool_config.py"
       ],
       "evidence": [
         {
@@ -15089,12 +15092,19 @@
           "result": "passed parent-run packaged 38-case/2-sequence workload on all four runtimes; full migration/state/cache/process/provenance/nonroot/license and cleanup gates; independent Sol review found no confirmed defects; 112 parent offline controls passed",
           "artifact": "quality-reports/go-migration/message-scopes-image-e9f85627-r2/results.json",
           "receipt_sha256": "9de3c7d85103350eb95096caf626d3baa3e9c7643738553775bb810908f3b0bb"
+        },
+        {
+          "revision": "44dfa053 plus integrated message LIST streaming candidate; exact 1194-input source map and freshly built native artifacts in receipt",
+          "result": "Parent native Django/Go and shipped Caddy v1/v2 pass all30 authored cases each, growth and concurrency/query attribution, state/cache preservation, source stability and cleanup. Full Go vet/race and24 repository/composition controls pass. Separate isolated repository r6 passes4 actual PostgreSQL cases including consumer failure with real later-row lock. Packaged large-response/concurrent disk/cancellation/storage-failure and complete family acceptance remain open.",
+          "artifact": "quality-reports/go-migration/message-list-integrated-http-r1/results.json",
+          "receipt_sha256": "d606654ff9af74d93e3cfd586cd76927f2becfca916f7668759c105014b7f058"
         }
       ],
       "notes": [
         "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
         "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds.",
-        "Bounded packaged authorization and warm-session invalidation passed with clean e9f85627 image sha256:463b1a7ec28cd19ca1d5104ab882367c4dee886d3c04e4cf3e36f20ba0afa16b. This does not verify installed activation, required-manual packaging, query/performance or complete message-family behavior. See message_read_scopes_image.md; native and prior receipts retain their original provenance."
+        "Bounded packaged authorization and warm-session invalidation passed with clean e9f85627 image sha256:463b1a7ec28cd19ca1d5104ab882367c4dee886d3c04e4cf3e36f20ba0afa16b. This does not verify installed activation, required-manual packaging, query/performance or complete message-family behavior. See message_read_scopes_image.md; native and prior receipts retain their original provenance.",
+        "Message LIST now visits one row at a time and stages complete JSON in a private unlinked disk spool before HTTP200; existing full-array/ignored-query behavior preserved. Dedicated nonroot disk volume avoids production /tmp tmpfs. See message_list_memory.md; no status promotion."
       ]
     },
     {
@@ -20704,7 +20714,8 @@
       },
       "tests": [
         "BE/application/tests/test_import_message_timestamps.py",
-        "TESTS/test_historical_message_mutation_fixture.py"
+        "TESTS/test_historical_message_mutation_fixture.py",
+        "BE/instance/tests/test_message_historical_restore.py"
       ],
       "evidence": [
         {
@@ -20712,6 +20723,12 @@
           "result": "Parent actual PostgreSQL RED reproduced nine explicit timestamp overwrites after successful full archive import. Final GREEN41 covers exact/null timestamps, malformed-value rollback, actor/veto/disable/raw audit behavior, real index-hook failure rollback and existing identity/media/folder/streaming imports. Source stable, no skips and owned cleanup passed. This is service-reference evidence only: queued task, scheduler, replacement restore and Go orchestration remain uncharacterized.",
           "artifact": "quality-reports/go-migration/message-import-timestamps-green-r4/results.json",
           "receipt_sha256": "e9ae8ac8e273cca1a5a8a811acb4851c03085031fd2ceacb09c0c9cb617912e7"
+        },
+        {
+          "revision": "44dfa053 plus bounded historical-message replacement tests;424 exact Python/fixture input hashes",
+          "result": "Parent actual PostgreSQL5-case reference execution passes historical replacement, repeated replacement/completed-operation redelivery, recovery export/reimport, real audit/index hook rollback and exact sent_on constraint rollback with staged-media cleanup. Separate17-case module passes fractional/offset/audit preservation. No queued task, crash/resume, dual-runtime admission or Go restore acceptance; status remains uncharacterized.",
+          "artifact": "quality-reports/go-migration/message-historical-restore-r1/results.json",
+          "receipt_sha256": "e618f01c8d6b4838370f867de708b9dd3163b554b4cfff9f8c14b4aa0bb43fbd"
         }
       ],
       "notes": [

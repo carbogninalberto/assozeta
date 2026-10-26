@@ -172,7 +172,7 @@ func run() (runErr error) {
 	paymentCategoryOperations := paymentcategorylifecycle.New()
 	paymentCategoriesHandler := handler.NewPaymentCategoriesHandler(service.NewPaymentCategories(repository.NewPaymentCategories(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
-	messageReadsHandler := handler.NewMessageReadsHandler(service.NewMessageReads(repository.NewMessageReads(db)), service.NewActorAuthentication(accounts, tokens), identities)
+	messageReadsHandler := handler.NewMessageReadsHandler(service.NewMessageReads(repository.NewMessageReads(db)), service.NewActorAuthentication(accounts, tokens), identities, handler.WithMessageListSpoolDirectory(cfg.MessageListSpoolDirectory))
 	messageMutationsHandler := handler.NewMessageMutationsHandler(service.NewMessageMutations(repository.NewMessageMutations(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	collaboratorListHandler := handler.NewCollaboratorListHandler(service.NewCollaboratorList(repository.NewCollaboratorList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	impersonationHandler := handler.NewImpersonationManagementHandler(service.NewImpersonationManagement(accounts, repository.NewImpersonationManagement(db), sessions, time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)

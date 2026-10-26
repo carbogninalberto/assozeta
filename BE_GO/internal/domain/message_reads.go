@@ -39,6 +39,8 @@ type MessageTransactionReadRecord struct {
 }
 
 type MessageReadStore interface {
-	ListMessages(context.Context, string) ([]MessageReadRecord, error)
+	// VisitMessages synchronously visits each authorized LIST row in database order.
+	// A consumer error stops iteration and releases the cursor. Records are not retained.
+	VisitMessages(context.Context, string, func(MessageReadRecord) error) error
 	MessageTransactions(context.Context, string, string) ([]MessageTransactionReadRecord, error)
 }

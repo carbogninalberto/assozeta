@@ -261,3 +261,29 @@ with no skips in `message-import-offsets-r1/results.json`. All recorded source
 inputs match the integrated source, with owned service and directory cleanup.
 These are reference-import checks; complete historical restore/recovery and Go
 parity remain unverified.
+
+
+## Bounded replacement and recovery execution
+
+The parent subsequently ran all five tests in
+`instance.tests.test_message_historical_restore` against disposable PostgreSQL
+with full migrations. `message-historical-restore-r1/results.json` records five
+passes, no errors/failures/skips, 424 unchanged source bindings matching the
+integrated source, and verified private service/directory cleanup. Receipt SHA-256:
+`e618f01c8d6b4838370f867de708b9dd3163b554b4cfff9f8c14b4aa0bb43fbd`.
+
+These tests call the real replacement executor after authenticated upload/start;
+only Celery dispatch is suppressed so the parent can execute the operation
+synchronously. They cover the fixed historical message/delivery graph, exact
+timestamps/nulls and IDs under the documented local owner/association mapping,
+attachment bytes, retained installation/unrelated records, and audit/index effects.
+Repeated replacement and completed-operation redelivery preserve the expected
+state. Recovery export followed by replacement reimport restores the independent
+historical source values. An exception after an actual create audit/index and the
+actual PostgreSQL `sent_on` NOT NULL violation both prove database rollback and
+staged-media cleanup while retaining the durable safety backup.
+
+This closes the specific historical-message replacement/recovery specimen gap
+identified in the main-alignment review. It does not prove crashed-worker resume,
+Go restore execution, concurrent dual-API/worker admission, all historical models,
+or the complete restore and switching requirements.

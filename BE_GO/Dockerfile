@@ -33,6 +33,10 @@ RUN mkdir -p /app/manuale && chown 10001:10001 /app/manuale && chmod 0750 /app/m
 # free of VOLUME declarations so other commands do not create implicit volumes.
 RUN mkdir -p /var/cache/assozeta-logo && \
     chown 10001:10001 /var/cache/assozeta-logo && chmod 0700 /var/cache/assozeta-logo
+# Message LIST stages complete responses on its own disk volume. Docker copies
+# these ownership/mode bits into a fresh anonymous volume at first mount.
+RUN mkdir -p /var/cache/assozeta-message-list && \
+    chown 10001:10001 /var/cache/assozeta-message-list && chmod 0700 /var/cache/assozeta-message-list
 COPY --chown=0:0 release-manual/ /app/release-manual/
 RUN printf '%s\n' "$VERSION" > /app/VERSION && \
     printf '%s\n' "$CODE_REVISION" > /app/CODE_REVISION && \

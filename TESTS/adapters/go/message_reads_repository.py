@@ -40,6 +40,7 @@ EXPECTED_TESTS = frozenset({
     "TestMessageRepositoryHydrationLive",
     "TestMessageRepositoryExecutedPlansLive",
     "TestMessageRepositoryBlockedCancellationLive",
+    "TestMessageRepositoryConsumerFailurePendingRowsLive",
 })
 OWNED_SOURCES = (
     "BE_GO/internal/repository/message_reads_integration_test.go",
@@ -50,7 +51,7 @@ GO_SOURCE = OWNED_SOURCES[0]
 # Go testing indents locations by four spaces. Do not search arbitrary text,
 # accept paths/other filenames, or convert unbounded attacker-controlled ints.
 GO_SOURCE_LINE = re.compile(r"\A[ \t]{0,8}message_reads_integration_test\.go:([1-9][0-9]{0,5}):")
-MAX_FAILURE_LINES = 8  # Per known failed test; at most 24 locations overall.
+MAX_FAILURE_LINES = 8  # Per known failed test; at most 32 locations overall.
 HEX = re.compile(r"[0-9a-f]{64}\Z")
 RELATIONS = {"application_sportassociation", "communications_message",
              "communications_messagetransaction"}
@@ -138,7 +139,7 @@ def number(value, *, maximum=10**8):
 
 def validate_receipts(receipts):
     """Closed schema: unknown strings/keys/raw EXPLAIN diagnostics cannot upload."""
-    exact_keys(receipts, {"hydration", "plans", "cancellation"})
+    exact_keys(receipts, {"hydration", "plans", "cancellation", "consumer_failure"})
     assert receipts["hydration"] == {
         "own_messages": 4, "own_transactions": 4, "foreign_messages": 1,
         "empty_details": 5, "missing_owners": 5, "literal_and_null_fields": True,
@@ -154,6 +155,18 @@ def validate_receipts(receipts):
     assert cancellation["pool_in_use_after_followup"] == 0
     assert cancellation["followup_rows"] == 4
     number(cancellation["return_ms"], maximum=2000)
+    consumer = receipts["consumer_failure"]
+    expected = {
+        "list_sql_wrapped_for_pending_control": True, "first_row_bytes": 131072,
+        "consumer_calls": 1, "later_row_lock_wait_observed": True,
+        "blocker_held_at_return": True, "consumer_error_preserved": True,
+        "caller_context_live_at_return": True, "backend_idle_or_gone": True,
+        "pool_in_use_at_return": 0, "pool_in_use_after_followup": 0, "followup_rows": 4,
+    }
+    exact_keys(consumer, {*expected, "return_ms"})
+    for key, value in expected.items():
+        assert type(consumer[key]) is type(value) and consumer[key] == value
+    assert type(consumer["return_ms"]) is int and 0 <= consumer["return_ms"] < 2000
     plans = receipts["plans"]
     exact_keys(plans, {"indexes", "stages", "planner_forced", "executed_sql_traced"})
     assert plans["planner_forced"] is False and plans["executed_sql_traced"] is True
@@ -271,7 +284,7 @@ def run_go(work, environment, private_log):
                                 source_sha256=go_source_hash)
     try:
         receipts = validate_receipts({name: json.loads((receipt_dir / (name + ".json")).read_text())
-                                      for name in ("hydration", "plans", "cancellation")})
+                                      for name in ("hydration", "plans", "cancellation", "consumer_failure")})
     except (AssertionError, ValueError, OSError, TypeError) as error:
         raise AcceptanceFailure("go-receipts") from error
     return {"passed": passed, "binary_sha256": binary_hash, "receipts": receipts}

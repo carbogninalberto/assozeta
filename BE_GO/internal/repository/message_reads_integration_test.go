@@ -238,7 +238,7 @@ func TestMessageRepositoryHydrationLive(t *testing.T) {
 		t.Fatal(err)
 	}
 	repo := NewMessageReads(tx)
-	rows, err := repo.ListMessages(ctx, messageID(700001))
+	rows, err := collectMessageReads(ctx, repo, messageID(700001))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -269,7 +269,7 @@ func TestMessageRepositoryHydrationLive(t *testing.T) {
 			t.Fatal("empty/foreign/unsupported/missing detail leaked", id, err)
 		}
 	}
-	foreign, err := repo.ListMessages(ctx, messageID(700007))
+	foreign, err := collectMessageReads(ctx, repo, messageID(700007))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,14 +279,14 @@ func TestMessageRepositoryHydrationLive(t *testing.T) {
 		t.Fatal(err)
 	}
 	messageEqual(t, foreignDetail, []domain.MessageTransactionReadRecord{{ID: messageUUID(703004), MessageID: messageUUID(702004), Recipient: "foreign@example.test", SentOn: messageTime(10, 30, 0, 0)}})
-	empty, err := repo.ListMessages(ctx, messageID(760000))
+	empty, err := collectMessageReads(ctx, repo, messageID(760000))
 	if err != nil || empty == nil || len(empty) != 0 {
 		t.Fatal("empty owned association differs", err)
 	}
 	// Collaborator IDs are deliberately not resolved here. The service accepts
 	// identity.ScopeUser.ID after identity resolution; repository accepts owner.
 	for _, owner := range []int{700002, 700003, 700005, 700006, 799999} {
-		_, err := repo.ListMessages(ctx, messageID(owner))
+		_, err := collectMessageReads(ctx, repo, messageID(owner))
 		if !errors.Is(err, domain.ErrAssociationNotFound) {
 			t.Fatal("owner predicate differs", owner, err)
 		}
@@ -473,7 +473,7 @@ func TestMessageRepositoryExecutedPlansLive(t *testing.T) {
 			base := 770000 + owner*128
 			repo := NewMessageReads(tx)
 			observedCtx := context.WithValue(ctx, messageTraceKey{}, true)
-			rows, err := repo.ListMessages(observedCtx, messageID(760000+owner))
+			rows, err := collectMessageReads(observedCtx, repo, messageID(760000+owner))
 			if err != nil || len(rows) != 128 {
 				t.Fatal("representative list failed", err)
 			}
@@ -541,7 +541,7 @@ func TestMessageRepositoryBlockedCancellationLive(t *testing.T) {
 	readCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	done := make(chan error, 1)
-	go func() { _, err := NewMessageReads(db).ListMessages(readCtx, messageID(700001)); done <- err }()
+	go func() { _, err := collectMessageReads(readCtx, NewMessageReads(db), messageID(700001)); done <- err }()
 	var readerPID int
 	deadline := time.NewTimer(8 * time.Second)
 	defer deadline.Stop()
@@ -603,10 +603,226 @@ func TestMessageRepositoryBlockedCancellationLive(t *testing.T) {
 	}
 	followCtx, stop := context.WithTimeout(ctx, 3*time.Second)
 	defer stop()
-	rows, err := NewMessageReads(db).ListMessages(followCtx, messageID(700001))
+	rows, err := collectMessageReads(followCtx, NewMessageReads(db), messageID(700001))
 	if err != nil || len(rows) != 4 || db.Stats().InUse != 0 {
 		t.Fatal("pool did not recover after cancellation", err)
 	}
 	messageEqual(t, []uuid.UUID{rows[0].ID, rows[1].ID, rows[2].ID, rows[3].ID}, []uuid.UUID{messageUUID(702002), messageUUID(702001), messageUUID(702003), messageUUID(702006)})
 	messageReceipt(t, "cancellation", map[string]any{"lock_wait_observed": true, "blocker_held_at_return": true, "context_canceled": true, "return_ms": elapsed, "pool_in_use_before_release": 0, "pool_in_use_after_followup": 0, "followup_rows": 4})
+}
+
+// Preserve the actual LIST SQL inside a test-only wrapper. pgx v5.9.2 stdlib
+// QueryContext preloads a complete DataRow, and pgproto3.Frontend.Receive reads
+// its entire body before returning. Merely making row one larger than PostgreSQL's
+// 8 KiB send buffer leaves its tail buffered when row two waits on a lock.
+// Row two attempts to flush that tail with 8 KiB of padding before row three
+// takes the lock. Transport backpressure can itself prevent reaching row three;
+// only the observer's real later-row Lock wait proves this control is ready.
+// Parent r5 observed exact-query ClientWrite with 16 KiB padding on the Unix
+// socket. Use one server-buffer-sized padding row and retain the actual Lock
+// proof; neither padding nor socket buffering alone proves pending rows.
+// No production SQL, shared fixtures or schema change. The other three tests
+// still execute unwrapped queries.
+const messagePendingListSQL = `SELECT stream.message_id,stream.sport_association_id,stream.type,
+ repeat('x',CASE WHEN stream.ordinal=1 THEN 131072 ELSE 8192 END)
+ || CASE WHEN stream.ordinal > 2 THEN pg_advisory_xact_lock($2)::text ELSE '' END AS message,
+ stream.subject,stream.created_at
+ FROM (SELECT listed.*,row_number() OVER () AS ordinal FROM (` + messageReadsListSQL + `) listed) stream`
+
+type messagePendingQueryer struct {
+	*sqlx.DB
+	lockKey int64
+}
+
+func (q messagePendingQueryer) QueryxContext(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
+	if query == messageReadsListSQL {
+		return q.DB.QueryxContext(ctx, messagePendingListSQL, args[0], q.lockKey)
+	}
+	return q.DB.QueryxContext(ctx, query, args...)
+}
+
+// Failure-only probe: return aggregate categories, never SQL, DSNs, PIDs or row
+// values. This autocommit observation has a short budget and cannot satisfy the
+// wait proof or extend its deadline. No statistics snapshot spans poll queries.
+func messagePendingDiagnostics(t *testing.T, ctx context.Context, observer *sqlx.DB, blockerPID int) {
+	t.Helper()
+	probeCtx, stop := context.WithTimeout(ctx, 250*time.Millisecond)
+	defer stop()
+	var sample struct {
+		Candidates       int `db:"candidates"`
+		InvisibleQuery   int `db:"invisible_query"`
+		PrefixOnly       int `db:"prefix_only"`
+		OtherQuery       int `db:"other_query"`
+		ExactQuery       int `db:"exact_query"`
+		ExactActive      int `db:"exact_active"`
+		ExactClientWrite int `db:"exact_client_write"`
+		ExactLock        int `db:"exact_lock"`
+		ExactBlocker     int `db:"exact_blocker"`
+		ExactProof       int `db:"exact_proof"`
+		OtherLockBlocker int `db:"other_lock_blocker"`
+		QueryLimitBytes  int `db:"query_limit_bytes"`
+	}
+	err := observer.GetContext(probeCtx, &sample, `SELECT
+ count(*) AS candidates,
+ count(*) FILTER (WHERE query IS NULL OR query='<insufficient privilege>') AS invisible_query,
+ count(*) FILTER (WHERE query<>$1 AND length(query)>0 AND query=left($1,length(query))) AS prefix_only,
+ count(*) FILTER (WHERE query IS DISTINCT FROM $1) AS other_query,
+ count(*) FILTER (WHERE query=$1) AS exact_query,
+ count(*) FILTER (WHERE query=$1 AND state='active') AS exact_active,
+ count(*) FILTER (WHERE query=$1 AND state='active' AND wait_event_type='Client' AND wait_event='ClientWrite') AS exact_client_write,
+ count(*) FILTER (WHERE query=$1 AND state='active' AND wait_event_type='Lock') AS exact_lock,
+ count(*) FILTER (WHERE query=$1 AND $2=ANY(pg_blocking_pids(pid))) AS exact_blocker,
+ count(*) FILTER (WHERE query=$1 AND state='active' AND wait_event_type='Lock' AND $2=ANY(pg_blocking_pids(pid))) AS exact_proof,
+ count(*) FILTER (WHERE query IS DISTINCT FROM $1 AND state='active' AND wait_event_type='Lock' AND $2=ANY(pg_blocking_pids(pid))) AS other_lock_blocker,
+ pg_size_bytes(current_setting('track_activity_query_size'))::int AS query_limit_bytes
+ FROM pg_stat_activity WHERE datname=current_database()
+ AND application_name='message-repository-acceptance' AND pid<>pg_backend_pid() AND pid<>$2`, messagePendingListSQL, blockerPID)
+	if err != nil {
+		t.Log("pending_probe unavailable")
+		return
+	}
+	t.Logf("pending_probe sql_bytes=%d counters=%+v", len(messagePendingListSQL), sample)
+}
+
+func TestMessageRepositoryConsumerFailurePendingRowsLive(t *testing.T) {
+	db, ctx := messagePrivateDB(t, nil) // One slot: a leaked lease blocks followup.
+	control, _ := messagePrivateDB(t, nil)
+	observer, _ := messagePrivateDB(t, nil)
+	blocker, err := control.BeginTxx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer blocker.Rollback()
+	const lockKey int64 = 73610261026
+	var blockerPID int
+	if err = blocker.GetContext(ctx, &blockerPID, "SELECT pg_backend_pid()"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = blocker.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", lockKey); err != nil {
+		t.Fatal(err)
+	}
+	readCtx, cancelRead := context.WithTimeout(ctx, 12*time.Second)
+	first := make(chan struct{})
+	failConsumer := make(chan struct{})
+	done := make(chan struct{})
+	consumerErr := errors.New("first message consumer failed")
+	var result error
+	calls := 0
+	go func() {
+		defer close(done)
+		result = NewMessageReads(messagePendingQueryer{DB: db, lockKey: lockKey}).VisitMessages(readCtx, messageID(700001), func(row domain.MessageReadRecord) error {
+			calls++
+			if calls != 1 || len(row.Message) != 131072 {
+				return errors.New("unexpected pending-control row")
+			}
+			close(first)
+			select {
+			case <-failConsumer:
+				return consumerErr
+			case <-readCtx.Done():
+				return readCtx.Err()
+			}
+		})
+	}()
+	defer func() {
+		cancelRead()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("pending-row worker failed to stop")
+		}
+	}()
+	select {
+	case <-first:
+	case <-done:
+		t.Fatal("query ended before first consumer", result)
+	case <-time.After(3 * time.Second):
+		messagePendingDiagnostics(t, ctx, observer, blockerPID)
+		t.Fatal("first row did not stream before pending rows")
+	}
+	// Prove PostgreSQL is still blocked producing unread later rows, with the
+	// first callback already running. A small fully buffered result cannot pass.
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+	deadline := time.NewTimer(4 * time.Second)
+	defer deadline.Stop()
+	var readerPID int
+	for readerPID == 0 {
+		err = observer.GetContext(ctx, &readerPID, `SELECT COALESCE(min(pid),0) FROM pg_stat_activity
+ WHERE datname=current_database() AND application_name='message-repository-acceptance'
+ AND query=$1 AND state='active' AND wait_event_type='Lock' AND $2=ANY(pg_blocking_pids(pid))`, messagePendingListSQL, blockerPID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if readerPID != 0 {
+			break
+		}
+		select {
+		case <-done:
+			t.Fatal("read ended before pending-row wait proof", result)
+		case <-deadline.C:
+			messagePendingDiagnostics(t, ctx, observer, blockerPID)
+			t.Fatal("later-row advisory lock wait was not observed")
+		case <-ticker.C:
+		}
+	}
+	started := time.Now()
+	close(failConsumer)
+	select {
+	case <-done:
+		if !errors.Is(result, consumerErr) || calls != 1 {
+			t.Fatal("consumer error identity/count lost", result, calls)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("consumer failure drained unread results while blocker held")
+	}
+	elapsed := time.Since(started).Milliseconds()
+	if readCtx.Err() != nil {
+		t.Fatal("return relied on caller deadline/cancellation", readCtx.Err())
+	}
+	if db.Stats().InUse != 0 {
+		t.Fatal("consumer failure retained pool lease")
+	}
+	var held bool
+	if err = observer.GetContext(ctx, &held, `SELECT EXISTS(SELECT 1 FROM pg_locks WHERE pid=$1 AND locktype='advisory' AND granted)`, blockerPID); err != nil || !held {
+		t.Fatal("pending-row blocker released before return proof", err)
+	}
+	cleanupDeadline := time.NewTimer(3 * time.Second)
+	defer cleanupDeadline.Stop()
+	for {
+		var idle bool
+		err = observer.GetContext(ctx, &idle, `SELECT NOT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1
+ AND (state IS DISTINCT FROM 'idle' OR xact_start IS NOT NULL OR wait_event_type='Lock'))`, readerPID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if idle {
+			break
+		}
+		select {
+		case <-cleanupDeadline.C:
+			t.Fatal("failed consumer left backend active/leased")
+		case <-ticker.C:
+		}
+	}
+	// Reuse the pool with the production query while the advisory blocker is
+	// still held. Reconnection is allowed after pgx cancels the unread query.
+	followCtx, stop := context.WithTimeout(ctx, 3*time.Second)
+	defer stop()
+	rows, err := collectMessageReads(followCtx, NewMessageReads(db), messageID(700001))
+	if err != nil || len(rows) != 4 || db.Stats().InUse != 0 {
+		t.Fatal("pool did not recover after consumer failure", err)
+	}
+	messageEqual(t, []uuid.UUID{rows[0].ID, rows[1].ID, rows[2].ID, rows[3].ID}, []uuid.UUID{messageUUID(702002), messageUUID(702001), messageUUID(702003), messageUUID(702006)})
+	if err = blocker.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	messageReceipt(t, "consumer_failure", map[string]any{
+		"list_sql_wrapped_for_pending_control": true, "first_row_bytes": 131072,
+		"consumer_calls": calls, "later_row_lock_wait_observed": true,
+		"blocker_held_at_return": true, "consumer_error_preserved": true,
+		"caller_context_live_at_return": true, "return_ms": elapsed,
+		"backend_idle_or_gone": true, "pool_in_use_at_return": 0,
+		"pool_in_use_after_followup": 0, "followup_rows": 4,
+	})
 }

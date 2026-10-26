@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -24,23 +26,56 @@ func (s *MessageReads) Admit(ctx context.Context, identity domain.ResolvedIdenti
 	return err
 }
 
-func (s *MessageReads) List(ctx context.Context, identity domain.ResolvedIdentity) ([]dto.MessageRead, error) {
+// WriteList preserves the complete-array contract without retaining a result
+// population. The caller owns staging: errors may leave partial bytes in writer.
+func (s *MessageReads) WriteList(ctx context.Context, identity domain.ResolvedIdentity, writer io.Writer) error {
 	if err := ctx.Err(); err != nil {
-		return nil, err
+		return err
 	}
 	owner, err := messageReadsOwner(identity)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	rows, err := s.store.ListMessages(ctx, owner)
+	write := func(value []byte) error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		n, err := writer.Write(value)
+		if err == nil && n != len(value) {
+			return io.ErrShortWrite
+		}
+		if err != nil {
+			return err
+		}
+		return ctx.Err()
+	}
+	if err = write([]byte("[")); err != nil {
+		return err
+	}
+	first := true
+	err = s.store.VisitMessages(ctx, owner, func(row domain.MessageReadRecord) error {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		encoded, err := json.Marshal(dto.MessageReadFromRecord(row))
+		if err != nil {
+			return err
+		}
+		if !first {
+			if err = write([]byte(",")); err != nil {
+				return err
+			}
+		}
+		if err = write(encoded); err != nil {
+			return err
+		}
+		first = false
+		return ctx.Err()
+	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	result := make([]dto.MessageRead, 0, len(rows))
-	for _, row := range rows {
-		result = append(result, dto.MessageReadFromRecord(row))
-	}
-	return result, nil
+	return write([]byte("]\n"))
 }
 
 func (s *MessageReads) Detail(ctx context.Context, identity domain.ResolvedIdentity, identifier string) ([]dto.MessageTransactionRead, error) {

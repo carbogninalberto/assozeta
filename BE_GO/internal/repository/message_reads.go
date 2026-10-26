@@ -17,23 +17,47 @@ func NewMessageReads(db sqlx.QueryerContext) *MessageReads { return &MessageRead
 
 var _ domain.MessageReadStore = (*MessageReads)(nil)
 
-func (r *MessageReads) ListMessages(ctx context.Context, owner string) ([]domain.MessageReadRecord, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
+func (r *MessageReads) VisitMessages(ctx context.Context, owner string, consume func(domain.MessageReadRecord) error) (err error) {
+	if err = ctx.Err(); err != nil {
+		return err
 	}
 	association, err := messageReadsAssociation(ctx, r.db, owner)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	var rows []messageReadRow
-	if err = sqlx.SelectContext(ctx, r.db, &rows, messageReadsListSQL, association); err != nil {
-		return nil, err
+	// Own query cancellation without canceling the caller. pgx Rows.Close drains
+	// unread results, so early failures must cancel before closing the cursor.
+	queryCtx, cancelQuery := context.WithCancel(ctx)
+	defer cancelQuery()
+	rows, err := r.db.QueryxContext(queryCtx, messageReadsListSQL, association)
+	if err != nil {
+		return err
 	}
-	result := make([]domain.MessageReadRecord, 0, len(rows))
-	for _, row := range rows {
-		result = append(result, row.record())
+	defer func() {
+		if err != nil {
+			cancelQuery()
+		}
+		err = errors.Join(err, rows.Close())
+	}()
+	for rows.Next() {
+		if err = ctx.Err(); err != nil {
+			return err
+		}
+		var row messageReadRow
+		if err = rows.StructScan(&row); err != nil {
+			return err
+		}
+		if err = consume(row.record()); err != nil {
+			return err
+		}
+		if err = ctx.Err(); err != nil {
+			return err
+		}
 	}
-	return result, nil
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	return ctx.Err()
 }
 
 func (r *MessageReads) MessageTransactions(ctx context.Context, owner, message string) ([]domain.MessageTransactionReadRecord, error) {

@@ -4,7 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -40,15 +44,24 @@ func (a messageReadsAccountsTest) ByID(_ context.Context, id string) (domain.Acc
 }
 
 type messageReadsStoreHandlerTest struct {
+	visit                  func(context.Context, func(domain.MessageReadRecord) error) error
 	list, detail           []domain.MessageReadRecord
 	transactions           []domain.MessageTransactionReadRecord
 	id                     string
 	listCalls, detailCalls int
 }
 
-func (s *messageReadsStoreHandlerTest) ListMessages(context.Context, string) ([]domain.MessageReadRecord, error) {
+func (s *messageReadsStoreHandlerTest) VisitMessages(ctx context.Context, _ string, consume func(domain.MessageReadRecord) error) error {
 	s.listCalls++
-	return s.list, nil
+	if s.visit != nil {
+		return s.visit(ctx, consume)
+	}
+	for _, row := range s.list {
+		if err := consume(row); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 func (s *messageReadsStoreHandlerTest) MessageTransactions(_ context.Context, _ string, id string) ([]domain.MessageTransactionReadRecord, error) {
 	s.detailCalls++
@@ -302,5 +315,230 @@ func TestMessageReadsImpersonatedAthleteGroupCannotBypassAssociationPermission(t
 	}
 	if store.listCalls != 0 || store.detailCalls != 0 {
 		t.Fatal("group reference/impersonated athlete admission read message data", store)
+	}
+}
+
+type messageListFaultSpool struct {
+	messageListSpool
+	fail   string
+	closed bool
+	reads  int
+	writes int
+	seeks  int
+}
+
+func (s *messageListFaultSpool) Write(p []byte) (int, error) {
+	s.writes++
+	if s.fail == "write" && s.writes == 5 {
+		return 0, errors.New("spool write")
+	}
+	if s.fail == "short write" && s.writes == 5 {
+		return len(p) - 1, nil
+	}
+	return s.messageListSpool.Write(p)
+}
+func (s *messageListFaultSpool) Seek(n int64, w int) (int64, error) {
+	s.seeks++
+	if s.fail == "seek" || (s.fail == "second seek" && s.seeks == 2) {
+		return 0, errors.New("spool seek")
+	}
+	return s.messageListSpool.Seek(n, w)
+}
+func (s *messageListFaultSpool) Read(p []byte) (int, error) {
+	s.reads++
+	if s.fail == "read" && s.reads == 2 {
+		return 0, errors.New("spool read")
+	}
+	return s.messageListSpool.Read(p)
+}
+func (s *messageListFaultSpool) Close() error { s.closed = true; return s.messageListSpool.Close() }
+
+func TestMessageReadsPrivateSpoolCleanupAndPreResponseFailures(t *testing.T) {
+	for _, kind := range []string{"success", "create", "write", "short write", "seek", "second seek", "read", "late store", "cancel"} {
+		t.Run(kind, func(t *testing.T) {
+			dir := t.TempDir()
+			t.Setenv("TMPDIR", dir)
+			tokens := &messageReadsTokensTest{sub: "a1000000-0000-4000-8000-000000700001"}
+			accounts := messageReadsAccountsTest{"a1000000-0000-4000-8000-000000700001": {ID: "a1000000-0000-4000-8000-000000700001", Role: domain.RoleAssociation, Active: true}}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			store := &messageReadsStoreHandlerTest{visit: func(_ context.Context, consume func(domain.MessageReadRecord) error) error {
+				for i := 0; i < 4; i++ {
+					if err := consume(domain.MessageReadRecord{Message: strings.Repeat("x", 20000)}); err != nil {
+						return err
+					}
+				}
+				if kind == "late store" {
+					return errors.New("late rows failure")
+				}
+				if kind == "cancel" {
+					cancel()
+				}
+				return nil
+			}}
+			h := NewMessageReadsHandler(service.NewMessageReads(store), service.NewActorAuthentication(accounts, tokens), service.NewIdentityResolver(accounts, nil, nil, service.NewPermissions(), nil))
+			var spool *messageListFaultSpool
+			h.newListSpool = func() (messageListSpool, error) {
+				if kind == "create" {
+					return nil, errors.New("create failed")
+				}
+				f, err := openMessageListSpool()
+				if err != nil {
+					return nil, err
+				}
+				file := f.(*os.File)
+				info, err := file.Stat()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if info.Mode().Perm() != 0600 {
+					t.Fatalf("permissions: %v", info.Mode())
+				}
+				if _, err = os.Stat(file.Name()); !os.IsNotExist(err) {
+					t.Fatalf("spool should be unlinked immediately: %v", err)
+				}
+				spool = &messageListFaultSpool{messageListSpool: f, fail: kind}
+				return spool, nil
+			}
+			e := echo.New()
+			e.GET("/communications/messages/list", h.List)
+			r := httptest.NewRequest("GET", "/communications/messages/list", nil).WithContext(ctx)
+			r.Header.Set("Authorization", "Bearer valid")
+			w := httptest.NewRecorder()
+			e.ServeHTTP(w, r)
+			if kind == "success" {
+				if w.Code != 200 || !json.Valid(w.Body.Bytes()) {
+					t.Fatal(w.Code, w.Body.String())
+				}
+			} else {
+				if w.Code != 500 || strings.Contains(w.Body.String(), "xxxx") || strings.Contains(w.Body.String(), "spool") {
+					t.Fatalf("partial success: %d %s", w.Code, w.Body.String())
+				}
+			}
+			if kind != "create" && spool == nil {
+				t.Fatal("failure path never created spool")
+			}
+			if spool != nil && !spool.closed {
+				t.Fatal("spool not closed")
+			}
+			entries, err := os.ReadDir(dir)
+			if err != nil || len(entries) != 0 {
+				t.Fatal("spool leaked", entries, err)
+			}
+			if kind == "create" && store.listCalls != 0 {
+				t.Fatal("read despite creation error")
+			}
+		})
+	}
+}
+
+// Response errors after commit must be returned, with the spool still closed.
+type messageListBrokenResponse struct {
+	header http.Header
+	status int
+}
+
+func (w *messageListBrokenResponse) Header() http.Header       { return w.header }
+func (w *messageListBrokenResponse) WriteHeader(status int)    { w.status = status }
+func (w *messageListBrokenResponse) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
+func TestMessageReadsResponseWriteFailureClosesSpool(t *testing.T) {
+	tokens := &messageReadsTokensTest{sub: "a1000000-0000-4000-8000-000000700001"}
+	accounts := messageReadsAccountsTest{"a1000000-0000-4000-8000-000000700001": {ID: "a1000000-0000-4000-8000-000000700001", Role: domain.RoleAssociation, Active: true}}
+	h := NewMessageReadsHandler(service.NewMessageReads(&messageReadsStoreHandlerTest{}), service.NewActorAuthentication(accounts, tokens), service.NewIdentityResolver(accounts, nil, nil, service.NewPermissions(), nil))
+	var spool *messageListFaultSpool
+	h.newListSpool = func() (messageListSpool, error) {
+		f, err := openMessageListSpool()
+		if err != nil {
+			return nil, err
+		}
+		spool = &messageListFaultSpool{messageListSpool: f}
+		return spool, nil
+	}
+	r := httptest.NewRequest("GET", "/communications/messages/list", nil)
+	r.Header.Set("Authorization", "Bearer valid")
+	w := &messageListBrokenResponse{header: make(http.Header)}
+	err := h.List(echo.New().NewContext(r, w))
+	if !errors.Is(err, io.ErrClosedPipe) || spool == nil || !spool.closed {
+		t.Fatal(err, spool)
+	}
+}
+
+// Exercise the public production option with a deliberately unusable native
+// temp directory. Observe the real file without replacing its factory.
+func TestMessageReadsConfiguredSpoolDirectoryAndFailureCleanup(t *testing.T) {
+	for _, kind := range []string{"success", "write", "late store", "missing directory"} {
+		t.Run(kind, func(t *testing.T) {
+			dir := t.TempDir()
+			t.Setenv("TMPDIR", filepath.Join(dir, "unusable-native-temp"))
+			selected := dir
+			if kind == "missing directory" {
+				selected = filepath.Join(dir, "missing")
+			}
+			h, _ := messageListLazyHandler(4, nil)
+			var opened *os.File
+			sentinel := errors.New("consumer spool failure")
+			store := &messageReadsStoreHandlerTest{visit: func(_ context.Context, consume func(domain.MessageReadRecord) error) error {
+				// The descriptor seam observes the configured constructor's factory; it
+				// never chooses a directory or supplies a replacement spool.
+				for i := 0; i < 4; i++ {
+					if err := consume(domain.MessageReadRecord{Message: "payload"}); err != nil {
+						return err
+					}
+				}
+				if kind == "late store" {
+					return sentinel
+				}
+				return nil
+			}}
+			configured := NewMessageReadsHandler(service.NewMessageReads(store), h.actors, h.identities, WithMessageListSpoolDirectory(selected))
+			factory := configured.newListSpool
+			configured.newListSpool = func() (messageListSpool, error) {
+				spool, err := factory()
+				if err != nil {
+					return nil, err
+				}
+				opened = spool.(*os.File)
+				if filepath.Dir(opened.Name()) != selected {
+					t.Fatal("configured spool directory ignored")
+				}
+				info, err := opened.Stat()
+				if err != nil || info.Mode().Perm() != 0600 {
+					t.Fatal("private file mode lost", err)
+				}
+				if _, err := os.Stat(opened.Name()); !os.IsNotExist(err) {
+					t.Fatal("spool not immediately unlinked", err)
+				}
+				if kind == "write" {
+					return &messageListFaultSpool{messageListSpool: spool, fail: "write"}, nil
+				}
+				return spool, nil
+			}
+			e := echo.New()
+			e.GET("/communications/messages/list", configured.List)
+			r := httptest.NewRequest("GET", "/communications/messages/list", nil)
+			r.Header.Set("Authorization", "Bearer valid")
+			w := httptest.NewRecorder()
+			e.ServeHTTP(w, r)
+			if kind == "success" {
+				if w.Code != 200 || !json.Valid(w.Body.Bytes()) || !strings.Contains(w.Body.String(), "payload") {
+					t.Fatal(w.Code, w.Body.String())
+				}
+			} else if w.Code != 500 || strings.Contains(w.Body.String(), "payload") || strings.Contains(w.Body.String(), selected) {
+				t.Fatal("pre-response failure leaked", w.Code, w.Body.String())
+			}
+			if kind == "missing directory" {
+				if opened != nil || store.listCalls != 0 {
+					t.Fatal("failed creation read data or opened a spool")
+				}
+			} else if opened == nil {
+				t.Fatal("configured spool never opened")
+			} else if _, err := opened.Stat(); !errors.Is(err, os.ErrClosed) {
+				t.Fatal("spool descriptor leaked", err)
+			}
+			entries, err := os.ReadDir(dir)
+			if err != nil || len(entries) != 0 {
+				t.Fatal("spool path leaked", entries, err)
+			}
+		})
 	}
 }

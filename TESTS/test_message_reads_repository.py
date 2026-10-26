@@ -140,7 +140,7 @@ raise SystemExit(93)
                           for line in range(1, 40))
             events.append({"Action": "fail", "Test": name})
         diagnostic = self.failure_diagnostic(events)
-        self.assertEqual(len(diagnostic["failed_locations"]), 3)
+        self.assertEqual(len(diagnostic["failed_locations"]), 4)
         for location in diagnostic["failed_locations"]:
             self.assertEqual(location["lines"], list(range(1, runner.MAX_FAILURE_LINES + 1)))
 
@@ -253,6 +253,13 @@ raise SystemExit(93)
             stages.append({"owners": owners, "messages": 6 + owners * 128,
                            "transactions": 6 + owners * 128, "plans": plans})
         return {
+            "consumer_failure": {
+                "list_sql_wrapped_for_pending_control": True, "first_row_bytes": 131072,
+                "consumer_calls": 1, "later_row_lock_wait_observed": True,
+                "blocker_held_at_return": True, "consumer_error_preserved": True,
+                "caller_context_live_at_return": True, "return_ms": 100,
+                "backend_idle_or_gone": True, "pool_in_use_at_return": 0,
+                "pool_in_use_after_followup": 0, "followup_rows": 4},
             "hydration": {"own_messages": 4, "own_transactions": 4, "foreign_messages": 1,
                           "empty_details": 5, "missing_owners": 5, "literal_and_null_fields": True,
                           "resolved_owner_boundary": True},
@@ -263,6 +270,34 @@ raise SystemExit(93)
                              "pool_in_use_before_release": 0, "pool_in_use_after_followup": 0,
                              "followup_rows": 4},
         }
+
+    def test_consumer_failure_test_and_receipt_are_mandatory(self):
+        self.assertIn('TestMessageRepositoryConsumerFailurePendingRowsLive', runner.EXPECTED_TESTS)
+        receipt = self.safe_receipts()
+        self.assertIs(runner.validate_receipts(receipt), receipt)
+        del receipt['consumer_failure']
+        with self.assertRaises(AssertionError):
+            runner.validate_receipts(receipt)
+
+    def test_consumer_failure_evidence_rejects_missing_false_extra_and_unbounded_values(self):
+        safe = self.safe_receipts()
+        for key in safe['consumer_failure']:
+            receipt = copy.deepcopy(safe)
+            del receipt['consumer_failure'][key]
+            with self.subTest(missing=key), self.assertRaises(AssertionError):
+                runner.validate_receipts(receipt)
+        mutations = [('private_sql', 'secret'), ('first_row_bytes', 1),
+                     ('consumer_calls', 2), ('return_ms', 2000), ('return_ms', -1),
+                     ('return_ms', float('nan')), ('return_ms', True),
+                     ('pool_in_use_at_return', 1), ('pool_in_use_after_followup', 1),
+                     ('followup_rows', 0)]
+        mutations += [(key, False) for key, value in safe['consumer_failure'].items()
+                      if value is True]
+        for key, value in mutations:
+            receipt = copy.deepcopy(safe)
+            receipt['consumer_failure'][key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(AssertionError):
+                runner.validate_receipts(receipt)
 
     def test_safe_sequential_scans_are_reported_without_index_use_claim(self):
         receipt = self.safe_receipts()
