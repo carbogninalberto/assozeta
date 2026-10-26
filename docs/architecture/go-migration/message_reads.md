@@ -599,6 +599,85 @@ The receipt records 1,170 source inputs and native server SHA-256
 `3269b276860fc5cc9841f1d1d86a1b41bdbe3dba06e99b2d47e4343b2cf81deb`.
 Full integrated Go race tests, vet and formatting checks passed with unchanged
 Go source. A dedicated `go-message-reads.yml` job runs the controls and actual
-versioned matrix on Linux; its workflow syntax passed actionlint 1.7.7. Hosted
-results for the new commit remain pending. Browser harness work remains local
-and unaccepted; the two route declarations stay `implementing`.
+versioned matrix on Linux; its workflow syntax passed actionlint 1.7.7.
+
+Hosted application run [40252476299](https://github.com/carbogninalberto/assozeta/actions/runs/40252476299)
+completed successfully for `c5afde51944dc9df582521dc6b0cffbe9a6967e5`.
+Its message job `121347218049` passed all four 30-case matrices. The parent
+independently matched all 1,170 receipt source hashes to that committed tree;
+source stability, cleanup and bounded HTTP acceptance passed. The downloaded
+`go-message-reads-http` receipt SHA-256 is
+`358797bae1653d84e960c36e46904509c7f7715e735992ac96616cf8826bee64`.
+This Linux result does not establish browser, installed lifecycle or complete
+message-family acceptance. Both route declarations remain `implementing`.
+
+## Browser acceptance still open, 2026-10-26
+
+The local browser candidate now binds the executed Go server and image codec to
+396 compiler and builder source inputs through the independent native build
+record. Context-close acknowledgments wait for actual Django WebSocket ASGI
+applications to finish before comparing all managed models and complete DB1
+state; a final comparison follows all browser contexts. These controls have
+passed focused offline checks, but need successful live execution and review.
+Independent review of the second candidate reproduced two remaining negative-test
+gaps: deleting a previously compiled input was not rejected by the subset source
+comparison, and matching empty login-cookie digests could pass. Both require
+correction; the synthetic cookie transport probe does not prove that ordinary
+login issued its expected cookie. Socket-free review confirmed that delayed
+WebSocket completion, late model/cache writes and malformed close messages fail.
+
+The second parent-owned application run, `message-browser-live-r2`, reached a
+real owner login (HTTP 200) on Django/v1, then failed before its first durable
+checkpoint. Its receipt reports `browser-exercise-failed` with `AssertionError`,
+zero checkpoints and no proxy failure codes. Source and binary stability passed;
+all owned services stopped, and full database/cache restoration and private-file
+cleanup passed. No application browser acceptance is claimed. The worker is
+adding bounded, allowlisted workflow failure detail because the current child
+failure frame does not identify the failed assertion. No raw credentials,
+response bodies or private logs are retained as public diagnostics.
+
+## Repository integration candidate, 2026-10-26
+
+The parent ran `message-repository-live-r1` against all 547 Django migrations in
+an owned PostgreSQL/Redis fixture. The native hydration and blocked-query
+cancellation tests passed; `TestMessageRepositoryExecutedPlansLive` failed, so
+the runner returned exit 1 and no repository acceptance. Exact source stability,
+all 128 managed-model snapshots, complete cache restoration, service shutdown
+and private-output cleanup passed. The failure report identifies the test but
+not its assertion; safe source-location diagnostics are being added before the
+next attempt. The candidate remains local and unverified. Its 13 offline runner
+controls do not substitute for successful real query-plan evidence.
+
+The second parent run, `message-repository-live-r2`, passed all three native tests
+with the race-enabled test executable. Inspection of pinned pgx 5.9.2 found that
+its `database/sql` adapter prepends `QueryResultFormatsByOID` before the query
+tracer runs. The test tracer now removes only that typed driver option and keeps
+every SQL argument; controls cover both forms and copied-slice ownership. The
+prior plan failure is retained as failed evidence, not relabeled.
+
+Actual plans cover 8/24/48 owners with 1,030/3,078/6,150 messages and the same
+number of deliveries, using eight executed-query plans per stage. Natural plans
+showed six index-scan nodes and four sequential-scan nodes at each stage; planner
+settings were not forced. The cancellation test observed a real table-lock wait,
+canceled while the blocker remained held, confirmed the reader pool had no
+occupied slot, then released the blocker and successfully read all four expected
+rows. This is bounded fixture evidence, not a production performance claim.
+
+All 1,173 source hashes matched the parent checkout before and after the run.
+Receipt SHA-256:
+`a094f6578311e843868cf4fee9d586d5d0483729c297d9ca70e01edf73c3d40c`.
+Test executable SHA-256:
+`749fd1e2d3680f2ac03b5993a306906c03015f342821c8e9135bef5419ce3c40`.
+All managed models and DB1 were restored, services stopped, and private output
+removed. Twenty offline controls pass, including rejection of optimized Python
+and bounded source-bound failure locations. The message CI job now runs this
+repository check and retains its separate receipt; hosted verification of this
+addition is pending. Browser and full-family acceptance remain open.
+
+The final CLI-control revision was replayed as `message-repository-live-r3`; all
+three real tests and cleanup passed again. All 1,173 recorded inputs match the
+publication candidate exactly. Its receipt SHA-256 is
+`c8e7ef6e6b67ad0b723d203d0fdfd4520aea1bc4c710f69e62aa5abc0e557059`,
+and its test executable SHA-256 is
+`749fd1e2d3680f2ac03b5993a306906c03015f342821c8e9135bef5419ce3c40`.
+The optimized-mode control now exercises the module CLI entry point directly.

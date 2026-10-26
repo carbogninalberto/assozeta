@@ -73,6 +73,7 @@ jobs:
           python -m unittest -v \
             TESTS.test_message_reads_runtime \
             TESTS.test_message_reads_manifest \
+            TESTS.test_message_reads_repository \
             TESTS.test_go_query_observation \
             TESTS.contracts.test_message_reads.MessageReadsManifestControls
 
@@ -82,9 +83,21 @@ jobs:
             --versioned \
             --output quality-reports/go-migration/message-reads-http
 
+      - name: Verify real repository plans, hydration and blocked cancellation
+        run: |
+          python -m TESTS.adapters.go.message_reads_repository \
+            --output quality-reports/go-migration/message-reads-repository
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: go-message-reads-http
           path: quality-reports/go-migration/message-reads-http/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-repository
+          path: quality-reports/go-migration/message-reads-repository/results.json
           if-no-files-found: ignore
