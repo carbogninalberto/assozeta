@@ -248,3 +248,29 @@ to obtain the full passing rerun.
 This is local Linux/arm64 packaged evidence for the named commit, not evidence
 for a newer image, hosted amd64, blocked-mutation restore exclusion, running-job
 admission, browser mutations, installed switching/rollback or full family parity.
+
+## Packaged restore controls at 9057352f
+
+The parent passed the complete 119-case workload on all four transports plus
+all four real CREATE/DELETE restore controls at exact commit
+`9057352f34a0b5813bf40ef34b625170ce02d619`, using immutable Linux/arm64 image
+`sha256:421ea634d8d99d192ecd373938f583bccc0f580b550ac05452187eb8700241ce`.
+Each lease case observed two busy exclusive-lock probes while the actual mutation
+was blocked; running-job cases denied mutations without effects. Full 128-model/
+Redis state, schema, process/binary, misroute, source and cleanup checks passed.
+Independent receipt acceptance passed.
+
+Receipt: `quality-reports/go-migration/message-restore-image-9057352-r1/results.json`;
+SHA-256 `51e5f676e6ae8e29dc204adec5c86fcac1e726c6767bf81dc66f333f09ce5d91`.
+
+The earlier `a3adff4` run failed at `fixture.session-absent` before Go workloads;
+its failed receipt remains retained and the session label was not captured.
+Redis-clock expiry fixes an independently reproduced host-offset failure mode,
+without proving the original cause or replacing expiry with deletion. Parent
+validation passed 154 affected controls and actionlint; independent review found
+no actionable issue and tested additional expiry failure paths.
+
+Hosted mutation CI is wired into Go quality; its result is pending. This receipt
+does not establish hosted amd64 acceptance, complete restore-job execution,
+browser mutations, installed activation/rollback or full family parity.
+The declarations remain implementing.
