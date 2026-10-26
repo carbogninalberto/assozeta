@@ -1,7 +1,7 @@
 """Offline negative controls; no HTTP/DB acceptance is inferred from these tests."""
 import ast
 import copy
-from contextlib import nullcontext
+from contextlib import contextmanager
 import io
 import json
 from pathlib import Path
@@ -20,8 +20,37 @@ def deletion_handler():
     node = next(node for node in tree.body if isinstance(node, ast.FunctionDef)
                 and node.name == 'communication_messages_delete')
     node.decorator_list = []
-    namespace = {'Message': SimpleNamespace(objects=Mock()), 'is_valid_uuid': Mock(),
-                 'atomic_audit_mutation': nullcontext,
+    events = []
+    active = False
+
+    @contextmanager
+    def atomic_mutation():
+        nonlocal active
+        active = True
+        events.append('enter')
+        try:
+            yield
+        finally:
+            active = False
+            events.append('exit')
+
+    def inside_transaction(event, result=None):
+        if not active:
+            raise AssertionError(f'{event} outside mutation transaction')
+        events.append(event)
+        return result
+
+    message = Mock(spec=['delete'])
+    message.delete.side_effect = lambda: inside_transaction('delete')
+    queryset = Mock(spec=['filter', 'first'])
+    queryset.filter.side_effect = lambda **kwargs: inside_transaction('filter', queryset)
+    queryset.first.side_effect = lambda: inside_transaction('first', queryset.first.return_value)
+    queryset.first.return_value = message
+    manager = Mock(spec=['select_for_update'])
+    manager.select_for_update.side_effect = lambda: inside_transaction('lock', queryset)
+    namespace = {'Message': SimpleNamespace(objects=manager), 'is_valid_uuid': Mock(),
+                 'atomic_audit_mutation': atomic_mutation,
+                 'queryset': queryset, 'message': message, 'events': events,
                  'Response': lambda data, status: (status, data),
                  'status': SimpleNamespace(HTTP_200_OK=200, HTTP_404_NOT_FOUND=404)}
     exec(compile(ast.Module(body=[node], type_ignores=[]), 'actual-delete-handler', 'exec'), namespace)
@@ -31,27 +60,35 @@ def deletion_handler():
 class DeletionHandlerRegression(unittest.TestCase):
     def test_missing_scoped_message_is_404(self):
         namespace = deletion_handler()
-        namespace['Message'].objects.filter.return_value.first.return_value = None
+        namespace['queryset'].first.return_value = None
         request = SimpleNamespace(user=Mock(sport_association='owner-association'))
         result = namespace['communication_messages_delete'](request, 'absent-uuid')
         self.assertEqual(result, (404, {'msg': 'message not found.'}))
-        namespace['Message'].objects.filter.assert_called_once_with(
+        namespace['Message'].objects.select_for_update.assert_called_once_with()
+        namespace['queryset'].filter.assert_called_once_with(
             sport_association='owner-association', message_id='absent-uuid')
+        namespace['message'].delete.assert_not_called()
+        self.assertEqual(namespace['events'], ['enter', 'lock', 'filter', 'first', 'exit'])
 
     def test_existing_deletes_once(self):
         namespace = deletion_handler()
-        message = namespace['Message'].objects.filter.return_value.first.return_value
+        message = namespace['message']
         request = SimpleNamespace(user=Mock(sport_association='owner-association'))
         self.assertEqual(namespace['communication_messages_delete'](request, 'present-uuid'),
                          (200, {'msg': 'message deleted.'}))
         message.delete.assert_called_once_with()
+        namespace['Message'].objects.select_for_update.assert_called_once_with()
+        namespace['queryset'].filter.assert_called_once_with(
+            sport_association='owner-association', message_id='present-uuid')
+        self.assertEqual(namespace['events'], ['enter', 'lock', 'filter', 'first', 'delete', 'exit'])
 
     def test_uuid_failure_precedes_query(self):
         namespace = deletion_handler()
         namespace['is_valid_uuid'].side_effect = ValueError('invalid UUID')
         with self.assertRaises(ValueError):
             namespace['communication_messages_delete'](SimpleNamespace(user=Mock()), 'bad')
-        namespace['Message'].objects.filter.assert_not_called()
+        namespace['Message'].objects.select_for_update.assert_not_called()
+        self.assertEqual(namespace['events'], [])
 
 
 class PortableMutationControls(unittest.TestCase):
