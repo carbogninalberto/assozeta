@@ -27,6 +27,7 @@ from TESTS.adapters.django import message_read_scopes as scopes
 from TESTS.adapters.django import message_session_lifecycle as lifecycle
 from TESTS.adapters.go import message_read_scopes_image as packaged
 from TESTS.adapters.go import message_image_build as builder
+from TESTS.adapters.go import message_restore_image as restore_image
 from TESTS.adapters.go.message_image_process import executing_server_guard
 from TESTS.adapters.go.message_image_execution import (
     ExecutionDeadline, begin_cleanup, defer_interruption, fail_receipt,
@@ -104,6 +105,12 @@ def source_hashes():
     paths.update(ROOT / name for name in (
         'TESTS/adapters/go/message_mutations_image.py', 'TESTS/test_message_mutations_image.py',
         'docs/architecture/go-migration/message_mutations_image.md',
+        'TESTS/adapters/go/message_restore_image.py', 'TESTS/test_message_restore_image.py',
+        'docs/architecture/go-migration/message_restore_image.md',
+        'TESTS/adapters/go/message_mutation_restore.py', 'TESTS/test_message_mutation_restore.py',
+        'docs/architecture/go-migration/message_mutation_restore.md',
+        'TESTS/adapters/go/message_restore_lock_probe.py', 'TESTS/test_message_restore_lock_probe.py',
+        'docs/architecture/go-migration/message_restore_lock_probe.md',
         'UI/Dockerfile', 'selfhost/caddy/Caddyfile'))
     result.update({path.relative_to(ROOT).as_posix(): digest(path) for path in sorted(paths)})
     result.update(packaged.go_source_hashes(ROOT))
@@ -259,6 +266,7 @@ def runtime_acceptance(report):
                      and all(hashed(observed[key]) for key in (
                          'state_before_sha256', 'state_after_sha256', 'cache_sha256')), 'receipt.observation')
         native_go = report['workloads'][1]
+        need(restore_image.receipt_valid(report['restore_controls'], native_go), 'receipt.restore-controls')
         need(executing_evidence_valid(report['executing_server'], native_go['go_binary_sha256'],
                                       native_go['process_sha256']), 'receipt.executing-server')
         control = report['misroute_control']
@@ -433,11 +441,12 @@ class MutationImageFixture(packaged.MessageImageFixture):
         need(self.cleanup_verified, 'mutation-image.command-cleanup')
 
 
-def _linux_lock_identity(proof, guard):
+def _linux_lock_identity(proof, guard, *, info=None):
     """Bind the real default-user server, configured mount and synthetic inode."""
     from django.conf import settings
     container = proof.identifier + '-server'
-    info = proof.inspect(container)
+    if info is None:
+        info = proof.inspect(container)
     identity = packaged._container_identity(info, proof.image_id, proof.identifier)
     operations = Path(proof.work).resolve() / 'image-operations'
     lock = operations / 'lifecycle.lock'
@@ -732,6 +741,10 @@ def execute_workloads(reuse, proof, work, log, tools, build, report, private_val
                 run_endpoint('go-packaged', 'go', server['base_url'], go_guard,
                     apps, raw, observer, work, evidence, private_values, proof=proof,
                     binary=server['metadata']['server_sha256'])
+                evidence['restore_controls'] = restore_image.run_controls(
+                    apps=apps, database=connections['default'], raw=raw, base_url=server['base_url'],
+                    process_guard=go_guard, proof=proof, work=work, private_values=private_values,
+                    binary=server['metadata']['server_sha256'])
                 django_upstream = f'host.docker.internal:{django_port}'
                 with _owned(packaged.owned_image_caddy(evidence, log, django_upstream,
                         server['proxy_upstream'], network=proof.network, pull_policy='never')) as (gateway, _, caddy):
@@ -864,6 +877,7 @@ def execute_private(args, source, report, control, work, log, remove_work):
         # Register independent teardown before starting any owned service.
         with defer_interruption():
             proof = MutationImageFixture(args.image, args.expected_revision, work, work / 'private-logs', log)
+            proof.restore_failure_receipt = args.output / 'results.json'
         report['_go_source'] = source
         report['preflight_images'] = preflight_images(proof, args.postgres, args.redis, tools)
         evidence['preflight_caddy_image_sha256'] = report['preflight_images']['caddy'].removeprefix('sha256:')

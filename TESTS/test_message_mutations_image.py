@@ -12,7 +12,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from TESTS.adapters.go import message_mutations_image as image
 
@@ -84,6 +84,7 @@ def process_transcript():
 
 
 def runtime_receipt():
+    from TESTS.test_message_restore_image import receipt as restore_receipt
     source = image.contract.load_source()
     workloads = []
     for label, backend in image.ENDPOINTS:
@@ -103,6 +104,7 @@ def runtime_receipt():
         source_sha256={'source': H}, source_sha256_at_server_start={'source': H},
         source_sha256_after={'source': H}, schema=image.SCHEMA.copy(),
         audit_resolvers_after_migration=True,
+        restore_controls=restore_receipt(),
         mutation_schema={'orm_cascade': 'communications.MessageTransaction.message',
             'sql_cascade': False, 'message_audited': True, 'delivery_audited': False,
             'references': [{'name': 'delivery_message_fk', 'table': 'communications_messagetransaction', 'delete_action': 'a',
@@ -170,6 +172,7 @@ class Receipts(unittest.TestCase):
         self.assertTrue(image.runtime_acceptance(report))
         controls = [
             lambda r: r['workloads'][1]['cases'].pop(),
+            lambda r: r.pop('restore_controls', None),
             lambda r: r['workloads'][2]['cases'].reverse(),
             lambda r: r['workloads'][0]['cases'][0].update(models=127),
             lambda r: r['workloads'][3]['cases'][0]['checks'].update(audit=False),
@@ -430,6 +433,13 @@ class OracleComposition(unittest.TestCase):
         for name in ('TESTS/adapters/go/message_image_process.py', 'TESTS/adapters/go/test_message_image_process.py'):
             self.assertEqual(manifest[name], image.digest(image.ROOT / name))
 
+    def test_restore_integration_and_frozen_dependencies_are_bound_in_runtime_graph(self):
+        manifest = image.source_hashes()
+        for helper in ('message_restore_image', 'message_mutation_restore', 'message_restore_lock_probe'):
+            for name in ('TESTS/adapters/go/' + helper + '.py', 'TESTS/test_' + helper + '.py',
+                         'docs/architecture/go-migration/' + helper + '.md'):
+                self.assertEqual(manifest[name], image.digest(image.ROOT / name))
+
     def _exercise_orchestration(self, schema_change=None, process_change=None, bootstrap_failure=None):
         from TESTS.adapters.django import message_reads_runtime as reuse
         identity = {'pid': 42, 'instance': 123, 'running': True}
@@ -486,6 +496,18 @@ class OracleComposition(unittest.TestCase):
             self.assertIs(report['runtime'].get('audit_resolvers_after_migration'), True)
             events.append(label)
 
+        def restore_controls(**kwargs):
+            self.assertNotIn('go-stopped', events)
+            self.assertEqual(events[-1], 'go-packaged')
+            self.assertEqual(kwargs['base_url'], 'http://127.0.0.1:8002')
+            self.assertIs(kwargs['proof'], proof)
+            self.assertIs(kwargs['process_guard'], endpoint.call_args.args[3])
+            self.assertIs(kwargs['raw'], redis.return_value)
+            from django.db import connections
+            self.assertIs(kwargs['database'], connections['default'])
+            events.append('restore-controls')
+            return runtime_receipt()['restore_controls']
+
         @contextmanager
         def server(*args):
             try:
@@ -509,7 +531,7 @@ class OracleComposition(unittest.TestCase):
              patch.object(reuse, 'migrate_full_schema', side_effect=migrate_schema) as migrate, \
              patch.object(image.adapter, 'schema_evidence', side_effect=inspect_schema), \
              patch.object(reuse, 'django_application', django), \
-             patch('django.db.connections.close_all') as close, \
+             patch('django.db.connections', new_callable=MagicMock) as db_connections, \
              patch.object(image, 'configure_database_bounds', create=True), \
              patch('django.test.utils.override_settings') as override, \
              patch('redis.Redis') as redis, patch('TESTS.http_client.poll'), \
@@ -518,6 +540,7 @@ class OracleComposition(unittest.TestCase):
              patch.object(reuse, 'owned_caddy', caddy), \
              patch.object(image.packaged, 'gateway_liveness_guard', return_value=guard) as gateway_guard, \
              patch.object(image, 'run_endpoint', side_effect=workload) as endpoint, \
+             patch.object(image.restore_image, 'run_controls', side_effect=restore_controls) as restores, \
              patch.object(image, 'misroute_control', return_value={'rejected': True}) as misroute:
             if schema_change is None and process_change is None and bootstrap_failure is None:
                 image.execute_workloads(reuse, proof, Path(directory), io.StringIO(), {}, build_receipt(), report, set())
@@ -530,6 +553,7 @@ class OracleComposition(unittest.TestCase):
             self.assertIsNot(report['runtime'].get('audit_resolvers_after_migration'), True)
             self.assertFalse(report['runtime'].get('runtime_executed', False))
             endpoint.assert_not_called()
+            restores.assert_not_called()
             misroute.assert_not_called()
             proof.docker.assert_not_called()
             redis.assert_not_called()
@@ -538,7 +562,7 @@ class OracleComposition(unittest.TestCase):
             self.assertTrue(report['runtime']['resource_cleanup']['verified'])
             self.assertEqual(report['runtime']['resource_cleanup']['results'], dict.fromkeys(image.RESOURCES, True))
             override.return_value.disable.assert_called_once()
-            self.assertEqual(close.call_count, 2)
+            self.assertEqual(db_connections.close_all.call_count, 2)
             return
         audit.resolvers.setup_audit_resolvers.assert_called_once_with()
         audit.content_types.objects.get_for_model.assert_called_once_with(audit.message)
@@ -552,6 +576,8 @@ class OracleComposition(unittest.TestCase):
             self.assertEqual(proof.docker.call_count, 1 if process_change in ('start-digest', 'permission') else 2)
             return
         self.assertEqual(proof.docker.call_count, 2)
+        restores.assert_called_once()
+        self.assertIn('restore-controls', events)
         for call in proof.docker.call_args_list:
             self.assertEqual(call.args[:4], ('exec', 'owned-server', 'sh', '-c'))
             self.assertNotIn('--user', call.args)
@@ -577,11 +603,11 @@ class OracleComposition(unittest.TestCase):
         migrate.assert_called_once()
         self.assertEqual(report['runtime'].get('runtime_executed', False), schema_change is None)
         self.assertEqual(events, ['migration', 'resolver-setup', 'resolver-lookup', 'schema-before',
-            'django-start', 'django-native', 'go-packaged', 'caddy-v1', 'caddy-v2', 'go-stopped', 'schema-after'])
+            'django-start', 'django-native', 'go-packaged', 'restore-controls', 'caddy-v1', 'caddy-v2', 'go-stopped', 'schema-after'])
         self.assertTrue(report['runtime']['resource_cleanup']['verified'])
         redis.return_value.close.assert_called_once()
         override.return_value.disable.assert_called_once()
-        self.assertEqual(close.call_count, 2)
+        self.assertEqual(db_connections.close_all.call_count, 2)
 
     def test_endpoint_uses_published_oracle_and_removes_private_observations_on_failure(self):
         guard = lambda: {'pid': 42, 'instance': 123, 'running': True}
@@ -1100,6 +1126,7 @@ class EntryPoint(unittest.TestCase):
 
                 def execute(reuse, proof, work, log, tools, build, report, private_values):
                     native('workload')
+                    self.assertEqual(proof.restore_failure_receipt, output / 'results.json')
                     os.environ['MUTATION_TEST_TRANSIENT'] = 'owned'
                     private_values.add('sensitive-token')
                     if failure == 'execution':
@@ -1235,7 +1262,8 @@ class OwnedTransitions(unittest.TestCase):
                         mocks.enter_context(patch.object(image, 'configure_database_bounds'))
                         mocks.enter_context(patch.object(reuse, 'migrate_full_schema', return_value=image.SCHEMA.copy()))
                         mocks.enter_context(patch.object(image.adapter, 'schema_evidence', return_value=runtime_receipt()['mutation_schema']))
-                        close = mocks.enter_context(patch('django.db.connections.close_all'))
+                        connections = mocks.enter_context(patch('django.db.connections', new_callable=MagicMock))
+                        close = connections.close_all
                         override = mocks.enter_context(patch('django.test.utils.override_settings'))
                         redis = mocks.enter_context(patch('redis.Redis'))
                         mocks.enter_context(patch('TESTS.http_client.poll'))
@@ -1245,6 +1273,7 @@ class OwnedTransitions(unittest.TestCase):
                         mocks.enter_context(patch.object(image, 'source_hashes', return_value={'source': H}))
                         mocks.enter_context(patch.object(image.packaged, 'gateway_liveness_guard', return_value=guard))
                         endpoint = mocks.enter_context(patch.object(image, 'run_endpoint'))
+                        mocks.enter_context(patch.object(image.restore_image, 'run_controls'))
                         misroute = mocks.enter_context(patch.object(image, 'misroute_control'))
                         control = ExecutionDeadline(10, 2)
                         with control:

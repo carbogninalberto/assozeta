@@ -33,7 +33,7 @@ jobs:
           predicate-quantifier: every
           filters: |
             golang:
-              - '{BE_GO/**,BE/**,TESTS/**,selfhost/caddy/Caddyfile,UI/Dockerfile,docs/architecture/go-migration/**,.github/workflows/go-quality.yml,.github/workflows/pull-request-quality.yml}'
+              - '{BE_GO/**,BE/**,TESTS/**,selfhost/caddy/Caddyfile,UI/Dockerfile,docs/architecture/go-migration/**,.github/workflows/go-*.yml,.github/workflows/pull-request-quality.yml}'
               - '!**/*.md'
             backend:
               - '{BE/**,TESTS/**,run_tests.sh,selfhost/compose.dev.yml,selfhost/bin/assozeta,selfhost/config/**,selfhost/.env*,.github/workflows/selfhost-quality.yml,.github/actions/prepare-storage/**,.github/workflows/pull-request-quality.yml}'

@@ -1,0 +1,158 @@
+name: Packaged saved-message mutation compatibility
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  message-mutations:
+    name: Saved-message mutations on Django, packaged Go and Caddy v1/v2
+    runs-on: ubuntu-24.04
+    # Step ceilings total 118 minutes, including uploads. Build: 2100s + 180s
+    # cleanup within 40m. Runtime: 1500s + 180s cleanup within 30m. Leave cold
+    # dependency/image preparation its own budget; never truncate acceptance.
+    timeout-minutes: 120
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        timeout-minutes: 5
+        with:
+          # Preserve the tested PR merge HEAD; never build a different branch SHA.
+          persist-credentials: false
+
+      - name: Require Linux amd64 and read production Python version
+        id: production-python
+        timeout-minutes: 1
+        run: |
+          python3 - <<'PY'
+          import os
+          import platform
+          from TESTS.adapters.django.production_runtime import production_python_version
+          if platform.system() != 'Linux' or platform.machine() != 'x86_64':
+              raise SystemExit('Packaged mutation CI requires Linux amd64')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        timeout-minutes: 5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install locked packaged oracle dependencies
+        timeout-minutes: 15
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python - <<'PY'
+          from TESTS.adapters.django.production_runtime import require_production_python
+          require_production_python()
+          PY
+
+      - name: Verify mutation, provenance, process and admission controls offline
+        timeout-minutes: 10
+        # Independent interpreters isolate the existing import/mock controls.
+        # These controls are required, but cannot substitute for the real gate.
+        run: |
+          python -m unittest -v TESTS.test_message_mutations
+          python -m unittest -v TESTS.test_message_mutations_acceptance
+          python -m unittest -v TESTS.test_message_mutation_lifecycle
+          python -m unittest -v TESTS.test_message_mutation_admission_transport
+          python -m unittest -v TESTS.test_message_mutation_restore
+          python -m unittest -v TESTS.test_message_restore_lock_probe
+          python -m unittest -v TESTS.test_message_restore_image
+          python -m unittest -v TESTS.adapters.go.test_message_image_build
+          python -m unittest -v TESTS.adapters.go.test_message_image_execution
+          python -m unittest -v TESTS.adapters.go.test_message_image_process
+          python -m unittest -v TESTS.test_message_mutations_image
+
+      - name: Cache packaged acceptance fixture images before no-pull execution
+        timeout-minutes: 6
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          caddy = re.search(r'^FROM (caddy:\S+) AS production$',
+                            Path('UI/Dockerfile').read_text(), re.MULTILINE).group(1)
+          for image in ('postgres:16-alpine', 'redis:7-alpine', caddy):
+              subprocess.run(['docker', 'pull', image], check=True, timeout=100)
+          PY
+
+      - name: Build exact tracked checkout with the production Go image recipe
+        timeout-minutes: 40
+        # The builder freezes every tracked BE_GO input from Git blobs and uses
+        # BE_GO/Dockerfile's Go 1.25.12/dependency locks, not a native substitute.
+        run: |
+          python -m TESTS.adapters.go.message_image_build \
+            --expected-revision "$(git --no-replace-objects rev-parse HEAD)" \
+            --output quality-reports/go-migration/message-mutations-image-build \
+            --deadline 2100 --cleanup-grace 180
+
+      - name: Require real independent 119-case mutation acceptance on all four transports
+        timeout-minutes: 30
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          from TESTS.adapters.go.message_mutations_image import acceptance, verify_build_receipt
+          directory = Path('quality-reports/go-migration/message-mutations-image-build')
+          output = Path('quality-reports/go-migration/message-mutations-image')
+          revision = subprocess.check_output(
+              ['git', '--no-replace-objects', 'rev-parse', 'HEAD'], text=True, timeout=30).strip()
+          build = json.loads((directory / 'results.json').read_bytes())
+          verify_build_receipt(build, directory / 'source', build['image_id'], revision)
+          metadata, = json.loads(subprocess.check_output(
+              ['docker', 'image', 'inspect', build['image_id']], timeout=30))
+          if (metadata['Id'], metadata['Os'], metadata['Architecture']) != (build['image_id'], 'linux', 'amd64'):
+              raise SystemExit('Packaged mutation image must be Linux amd64')
+          # Invoke the actual mutation CLI: the shared execution wrapper defaults
+          # to read scopes and is deliberately not the entry point for this gate.
+          subprocess.run([
+              sys.executable, '-m', 'TESTS.adapters.go.message_mutations_image',
+              '--image', build['image_id'], '--expected-revision', revision,
+              '--build-receipt', str(directory / 'results.json'),
+              '--go-source', str(directory / 'source'),
+              '--postgres', 'postgres:16-alpine', '--redis', 'redis:7-alpine',
+              '--output', str(output), '--deadline', '1500', '--cleanup-grace', '180',
+          ], check=True)
+          report = json.loads((output / 'results.json').read_bytes())
+          if report.get('success') is not True or not acceptance(report) or report['image']['platform'] != 'linux/amd64':
+              raise SystemExit('Packaged mutation acceptance failed')
+          PY
+
+      # Always retain existing redacted receipts, including failures. Missing
+      # files are not fabricated or treated as evidence; prior failures persist.
+      # Never upload the frozen source, private fixtures, logs, binaries or DBs.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        timeout-minutes: 3
+        with:
+          name: go-message-mutations-image-build
+          path: quality-reports/go-migration/message-mutations-image-build/results.json
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        timeout-minutes: 3
+        with:
+          name: go-message-mutations-image
+          path: quality-reports/go-migration/message-mutations-image/results.json
+          if-no-files-found: ignore

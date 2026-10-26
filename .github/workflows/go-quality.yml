@@ -12,6 +12,10 @@ jobs:
     name: Message read HTTP and query compatibility
     uses: ./.github/workflows/go-message-reads.yml
 
+  message-mutations:
+    name: Packaged saved-message mutation compatibility
+    uses: ./.github/workflows/go-message-mutations.yml
+
   historical-read:
     name: Historical import and read compatibility
     uses: ./.github/workflows/go-historical-read.yml
