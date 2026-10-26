@@ -2,12 +2,13 @@
 
 ## Manuale incluso nelle release
 
-Il workflow `manuale-release.yml`, richiamato dalla pubblicazione delle immagini,
-esegue catture, rendering, lettore e valutazione MCP/assistente sulla revisione
-applicativa della release e sulla sua versione esatta. Il repository sorgente è
-`Bakney/manuale`; `MANUAL_REF` può selezionare il riferimento mantenuto, con
-`add/manuale-release` come default. Il clone registra il commit risolto. Non
-servono credenziali di scrittura, un provider AI o un deploy Mintlify.
+Il workflow `manuale-release.yml` richiama `manuale-verify.yml`: verifica i
+contenuti interessati e riusa prove compatibili, poi controlla lettore,
+MCP/assistente, pacchetto e avvio sulla revisione e versione esatte. La verifica
+completa resta obbligatoria nei casi indicati nella politica in fondo a questa
+pagina. Il repository sorgente è `Bakney/manuale`, fissato allo SHA immutabile
+in `docs/manuale/source.json`. Non servono credenziali di scrittura, un provider
+AI o un deploy Mintlify.
 
 Il nuovo comando `manuale-release.py --bundle` riproduce l'indice dalle prove
 valutate e produce `runtime/index.json`, schermate PNG e `runtime/bundle.json`.
@@ -323,13 +324,11 @@ non sostituiscono la prova completa del flusso. Contratti delle fonti o simboli
 cambiati possono interrompere il lavoro con diagnostica esplicita; l’indice
 valido precedente resta conservato, soggetto ai suoi controlli di compatibilità.
 
-In CI `workflow_dispatch.edit_content` è disattivato per impostazione
-predefinita. `MANUAL_AUTO_EDIT=true` abilita l’opzione solo per push o esecuzioni
-programmate sul ramo predefinito dell’applicazione. Un dispatch editoriale deve
-usare quel ramo e omettere `manual_ref` oppure scegliere esattamente il valore
-fidato di `MANUAL_REF` (in sua assenza, `add/manuale-release`). Pull request e
-`repository_dispatch` eseguono soltanto la verifica, senza modello o chiave
-editoriale, anche quando la variabile automatica è attiva.
+In CI `workflow_dispatch.edit_content` richiede una scelta esplicita sul ramo
+predefinito. Il dispatch editoriale deve omettere `manual_ref` oppure scegliere
+esattamente lo SHA fidato di `docs/manuale/source.json`. Push, pianificazione,
+PR e `repository_dispatch` verificano senza modello o chiave editoriale.
+`MANUAL_AUTO_EDIT` non attiva più riscritture durante normali fix o release.
 
 Il workflow usa soltanto un CLI già disponibile e fallisce esplicitamente se
 l’editing è richiesto ma il CLI manca. Il runner CI ospitato non è una promessa
@@ -599,10 +598,12 @@ Il goal e i criteri di consegna correnti sono in
 Il modello CI del repository manuale è
 [`ci/notify-assozeta.yml`](./ci/notify-assozeta.yml); token, esecuzione GitHub e
 pubblicazione del sito richiedono ancora l’integrazione prevista.
-In Assozeta, la variabile repository `MANUAL_REF` seleziona la revisione della
-stesura da verificare quando non è fornito un input manuale o un dispatch.
-Il ramo locale deve essere reso disponibile al runner GitHub prima di usare
-questa configurazione; nessun bundle locale viene pubblicato automaticamente.
+La revisione editoriale predefinita è il commit completo in `docs/manuale/source.json`.
+Aggiornare questo file con una PR dopo la revisione della stesura. Un dispatch può
+indicare un altro SHA completo; rami e tag mutabili sono rifiutati. Ogni esecuzione
+clona quel commit in un checkout indipendente: due release contemporanee non
+possono cambiare reciprocamente la stesura. `MANUAL_REF` non seleziona più gli
+input di verifica o di release.
 
 Il secret `ASSOZETA_DISPATCH_TOKEN` appartiene al repository manuale: per il
 dispatch verso Assozeta, usare un token fine-grained limitato al repository
@@ -676,3 +677,53 @@ che resta soggetto ai controlli di compatibilità.
 La scoperta editoriale include tutte le 507 sezioni originali: 505 hanno contratti delle sorgenti; due sezioni su infrastruttura e conformità restano lacune esterne senza una prova ricavabile dal codice. Questo inventario non verifica le procedure. Il run completo considera tutte le sezioni supportate, comprese quelle senza uno scenario di cattura. La modalità incrementale considera le dipendenze applicative e le pagine MDX cambiate. Ogni estratto di codice viene letto una volta e inviato una volta per batch; il runner riduce i batch quando il contenuto supera il limite del prompt.
 
 I testi modificati senza un binding completo della procedura rimangono in attesa di prova, anche quando la bozza passa a un altro checkout o una cattura parziale riesce. Le affermazioni esterne o non supportate restano lacune esplicite: cambiare la sorgente non le rende verificabili dal modello. `editorial/manual.patch`, `editorial/tooling.patch` e `editorial/report.json` rendono le modifiche rivedibili; i log del modello restano privati. Il rapporto registra il numero di batch, le sorgenti ispezionate e le lacune esterne, senza attestare catture reali.
+
+
+## Verifica condizionale in CI e release
+
+`manuale-verify.yml` è il flusso riutilizzabile unico per PR, main e release.
+Separare la verifica costosa dei contenuti dalla confezione del pacchetto:
+
+| Modifica | Contenuti | Controlli sempre eseguiti |
+| --- | --- | --- |
+| Sorgenti senza consumatori nelle procedure, test applicativi, nuova versione o SHA con input compatibili | Riutilizzo delle catture e dei rendering compatibili | Compilazione, catalogo/indice, MCP/assistente, lettore, autorizzazioni, pacchetto esatto e avvio/riavvio dell'appliance |
+| Comportamento documentato o MDX | Nuove catture per i workflow interessati; rendering delle pagine cambiate | Gli stessi controlli sul risultato completo |
+| Infrastruttura manuale, fixture/dipendenze condivise, packaging, avvio/aggiornamento, sorgenti di produzione sconosciute | Verifica completa | Anche rehearsal storico da v1.0.17, aggiornamento/rollback e guasti |
+| Baseline assente/non ammissibile, verifica settimanale, `force_full` | Verifica completa | Anche rehearsal storico |
+
+La selezione usa `recipes.json`, gli import effettivi delle ricette, i contratti
+editoriali e gli hash delle sorgenti; non usa una chiave globale basata sullo SHA.
+Le sorgenti dichiarate in `non_capture_dependencies` sono prive di procedure
+catturate: i relativi riferimenti vengono comunque ricostruiti e validati. Una
+dipendenza esplicita di una ricetta prevale su questa esclusione. Aggiungere un
+nuovo percorso di produzione senza dichiararne i consumatori resta conservativo.
+I rendering controllano separatamente MDX, immagini, ancore, PNG di layout,
+configurazione e implementazione del renderer. Un cambiamento di prosa può
+richiedere un rendering senza ripetere una procedura già compatibile.
+
+La baseline persistente è l'artifact `manuale-verified-baseline` (90 giorni),
+con un archivio formato 2. Il runner interroga le API GitHub e accetta solo
+workflow approvati dello stesso repository, interamente conclusi con successo,
+con sorgenti già accettate nel ramo predefinito. Le prove di una PR diventano
+riutilizzabili dopo il merge; un artifact caricato prima di un job fallito non è
+ammissibile. Sono verificati il digest GitHub del download, l'inventario completo,
+i byte Git, i rapporti riusciti, il corpus, fixture, tooling, PNG e provenienza.
+Nessun codice del cache viene eseguito durante l'importazione. Archivi mancanti,
+vecchi, corrotti o non fidati producono una motivazione e verifiche nuove; il
+primo passaggio dal vecchio formato richiede quindi una verifica completa.
+
+Le prove riutilizzate mantengono ID, revisioni, versione, report e immagini della
+verifica originale. Solo il nuovo indice/pacchetto e i nuovi controlli runtime
+appartengono alla release corrente. Il bundle deve sempre superare il validatore
+runtime con lo SHA applicativo e la versione esatti. Non modificare i report
+originali per farli apparire appena verificati.
+
+I job mostrano separatamente ammissione, selezione, cattura, compilazione,
+rendering, runtime, packaging e appliance. `ci-plan.json` spiega i workflow
+riusati, nuovi e gli input senza effetti; `render-reuse.json` spiega le pagine;
+`ci-results.json` conta catture/rendering evitati e `timings.json` misura le fasi.
+Il lunedì resta una verifica completa. Per forzarla usare `force_full` nel
+workflow manuale/release oppure `force_full_manual` nella pubblicazione immagini.
+I test applicativi e le verifiche ordinarie di release/upgrade restano invariati.
+Il comando locale `manuale.py verify-release` mantiene il rehearsal completo;
+`--no-cache` forza anche la ricattura. Non usare `--allow-dirty` per release.

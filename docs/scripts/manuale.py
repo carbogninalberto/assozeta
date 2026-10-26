@@ -167,7 +167,8 @@ def reuse_inputs(state, args):
     cold = getattr(args, 'no_cache', False)
     state.setdefault('selection', {})
     explicit = getattr(args, 'reuse_evidence', None)
-    candidates = ([{'run': explicit, 'evidence': True}] if explicit else
+    candidates = ([{'run': explicit, 'evidence': True,
+                    'frontend': (Path(explicit) / 'frontend-build.json').is_file()}] if explicit else
                   [] if cold else cached_runs(state['manual_repository']))
     state['cache'] = {'mode': 'disabled' if cold else 'explicit' if explicit else 'automatic', 'decisions': []}
     helper = None
@@ -187,13 +188,26 @@ def reuse_inputs(state, args):
             previous_hashes = capture_input_hashes(previous['application'])
             changed = sorted(relative for relative in previous_hashes.keys() | target_hashes.keys()
                              if previous_hashes.get(relative) != target_hashes.get(relative))
-            affected = affected_recipes(recipe_registry(Path(state['application'])), changed,
-                                        root=Path(state['application']))
+            manual_changed = []
+            old_manual = previous.get('manual_input', {}).get('revision')
+            new_manual = state.get('manual_input', {}).get('revision')
+            if old_manual and new_manual and old_manual != new_manual:
+                try:
+                    manual_changed = git(state['manual_repository'], 'diff', '--name-only', old_manual, new_manual).splitlines()
+                except subprocess.CalledProcessError:
+                    manual_changed = ['unknown-authoring-revision']
+            # Per-section editorial bindings decide whether MDX changes need a
+            # capture. This preserves the reviewed wording-only reuse path.
+            shared_manual = [path for path in manual_changed if not path.endswith('.mdx')
+                             and not path.startswith('images/')]
+            input_decisions = []
+            affected = affected_recipes(recipe_registry(Path(state['application'])), changed, shared_manual,
+                                        root=Path(state['application']), decisions=input_decisions)
             fresh = sorted(set(affected) | set(state['selected_recipes'] if force_selected else []))
             probe = helper.build_reuse_plan({**state, 'selected_recipes': fresh},
                                            baseline, stage=False)
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
-            if explicit:
+            if explicit and not getattr(args, 'baseline_optional', False):
                 raise
             state['cache']['decisions'].append({'run': candidate['run'], 'result': 'unavailable', 'reason': str(exc)})
             continue
@@ -202,6 +216,7 @@ def reuse_inputs(state, args):
         state['cache']['decisions'].append({'run': baseline, 'result': 'checked',
                                            'retained': len(probe['reused_recipes']), 'rejected': probe.get('rejected', []),
                                            'changed_inputs': changed, 'affected_recipes': affected})
+        state['cache']['decisions'][-1].update(input_decisions=input_decisions, changed_manual=manual_changed)
         if explicit or len(probe['reused_recipes']) == maximum_retained:
             break
     complete = getattr(args, 'command', '') in ('run', 'build', 'verify-release')
@@ -211,6 +226,8 @@ def reuse_inputs(state, args):
                                      if recipe['id'] not in retained]
     if chosen:
         baseline, probe = chosen
+        for decision in state['cache']['decisions']:
+            decision['selected'] = decision.get('run') == baseline
         # Stage only after the read-only compatibility probe; a staging integrity
         # failure must stop this run, never silently fall through to another cache.
         plan = helper.build_reuse_plan(state, baseline, stage=True, eligible_recipes=probe['reused_recipes'])
@@ -303,9 +320,19 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
         selected.update(matches)
 
     for relative in changed:
-        if relative.startswith(('docs/scripts/tests/', 'BE/application/tests/', 'BE/tests/')) or (
+        if relative == 'docs/manuale/source.json':
+            record(relative, 'application', 'immutable-authoring-pin; content checked independently', [])
+            continue
+        if relative.startswith('docs/scripts/tests/') or (relative.startswith('BE/') and '/tests/' in relative) or (
                 relative.startswith('UI/') and re.search(r'\.(?:test|spec)\.[cm]?[jt]sx?$', relative)):
             record(relative, 'application', 'test-only', [])
+            continue
+        if (relative.startswith('selfhost/tests/')
+                and not relative.startswith(('selfhost/tests/browser/manuale/', 'selfhost/tests/manual-release-smoke'))
+                and relative not in ('selfhost/tests/browser/package.json', 'selfhost/tests/browser/package-lock.json',
+                                     'selfhost/tests/browser/playwright.manual.config.mjs')
+                and not any(relative in dependencies for dependencies in tooling.values())):
+            record(relative, 'application', 'independent-application-test; ordinary quality checks retained', [])
             continue
         if relative.startswith(('docs/manuale/', 'selfhost/')) and Path(relative).suffix.lower() in ('.md', '.mdx', '.txt'):
             matches = [recipe['id'] for recipe in registry['recipes']
@@ -315,14 +342,22 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
         local_tool = relative.startswith(TOOL_MODULE_ROOTS) and relative.endswith(TOOL_MODULE_SUFFIXES)
         if local_tool and relative not in SHARED_TOOL_MODULES:
             matches = [identifier for identifier in all_ids if relative in tooling[identifier]]
+            if not matches and relative in registry.get('reference_modules', []):
+                record(relative, 'application', 'reviewed-reference; regenerate prose contracts', [])
+                continue
             record(relative, 'application', 'registered-recipe-tooling' if matches else 'unknown-tooling', matches or all_ids)
+            continue
+        matches = [recipe['id'] for recipe in registry['recipes']
+                   if any(relative.startswith(prefix) for prefix in recipe['dependencies'])]
+        if not matches and any(relative.startswith(prefix) for prefix in registry.get('non_capture_dependencies', [])):
+            record(relative, 'application', 'declared-reference-only; runtime checks still required', [])
             continue
         if relative in SHARED_TOOL_MODULES or any(relative.startswith(prefix) for prefix in registry['shared_dependencies']):
             record(relative, 'application', 'shared-dependency', all_ids)
             continue
-        matches = [recipe['id'] for recipe in registry['recipes']
-                   if any(relative.startswith(prefix) for prefix in recipe['dependencies'])]
-        if not matches and relative.startswith(('BE/', 'UI/')):
+        if not matches and relative in registry.get('reference_dependencies', []):
+            record(relative, 'application', 'reviewed-reference; regenerate prose contracts', [])
+        elif not matches and relative.startswith(('BE/', 'UI/')):
             record(relative, 'application', 'unknown-production-dependency', all_ids)
         else:
             record(relative, 'application', 'registered-dependency' if matches else 'unrelated', matches)
@@ -729,6 +764,10 @@ def prepare(args):
         tooling.append('docs/scripts/manuale-registry.mjs')
     if (application / 'docs/scripts/manuale-project.mjs').is_file():
         tooling.append('docs/scripts/manuale-project.mjs')
+    for relative in ('docs/scripts/manuale-ci.py', 'docs/scripts/manuale-policy.py',
+                     'BE/application/manuale/render_reuse.py'):
+        if (application / relative).is_file():
+            tooling.append(relative)
     state['tooling_hashes'] = {relative: sha(application / relative) for relative in sorted(set(tooling))}
     # Selection above describes actual input changes. Generated authoring files
     # must not expand an incremental run or alter manual_input provenance.
@@ -1026,7 +1065,35 @@ def index(state):
 
 
 def verify(state, after_render=None):
+    validate_tooling(state)
     run = Path(state['run'])
+    # Load the verifier from this trusted runner, never from a downloaded cache.
+    sys.path.insert(0, str(ROOT / 'BE'))
+    from application.manuale.render_reuse import plan_render_reuse, validate_render_reuse
+    plan = plan_render_reuse(state, state.get('reuse_evidence'))
+    manifest = json.loads((run / 'manifest.json').read_text())
+    for page in manifest['pages']:
+        retained = plan['pages'].get(page['path'].removesuffix('.mdx'))
+        if retained:
+            for section in page['sections']:
+                if section['id'] in retained['citation_anchors']:
+                    section['citation_anchor'] = retained['citation_anchors'][section['id']]
+    write_json(run / 'manifest.json', manifest)
+    validate_render_reuse(state)
+    print(f"Render decision: {len(plan['fresh_pages'])} fresh pages, {len(plan['reused_pages'])} retained pages", flush=True)
+    if not plan['fresh_pages']:
+        write_json(run / 'render.json', {
+            'status': 'passed', 'mode': 'retained-only', 'cli': 'mint@4.2.955',
+            'fresh_pages': [], 'reused_pages': plan['reused_pages'],
+            'checks': ['original successful render evidence revalidated against exact current content'],
+            'pages': [plan['pages'][page]['render'] for page in plan['reused_pages']],
+        })
+        validate_render_reuse(state)
+        state['status'] = 'rendered'
+        write_json(run / 'run.json', state)
+        if after_render:
+            after_render()
+        return
     preview = run / 'preview'
     if preview.exists():
         shutil.rmtree(preview)
@@ -1057,6 +1124,7 @@ def verify(state, after_render=None):
             execute(['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/verify.mjs')], run,
                     'Verify MDX, image loading, and citation anchors in the actual Mintlify renderer',
                     env={**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}, cwd=state['application'])
+            validate_render_reuse(state)
             state['status'] = 'rendered'
             write_json(run / 'run.json', state)
             if after_render:
@@ -1130,7 +1198,8 @@ def export(state):
             if (run / directory).exists():
                 shutil.copytree(run / directory, destination / directory, dirs_exist_ok=True)
     for relative in ('run.json', 'manifest.json', 'coverage.json', 'source-catalog.json', 'index.json', 'evaluation.json', 'render.json',
-                     'evidence-reuse.json', 'authoring-preflight.json', 'workflow-coverage.json',
+                     'evidence-reuse.json', 'render-reuse.json', 'render-inputs.json',
+                     'authoring-preflight.json', 'workflow-coverage.json',
                      'tags-create-assign.json', 'manual-preview.png', 'variance.json', 'frontend-build.json',
                      'embedded-manual.json', 'embedded-manual.png', 'runtime-preflight.json',
                      'compile.json', 'build.json', 'timings.json'):
@@ -1141,6 +1210,8 @@ def export(state):
         source = run / (recipe['id'] + '.json')
         if source.exists():
             shutil.copy2(source, destination / source.name)
+    if (run / 'render-origins').exists():
+        shutil.copytree(run / 'render-origins', destination / 'render-origins', dirs_exist_ok=True)
     if (run / 'renders').exists():
         target = destination / 'renders'
         target.mkdir(exist_ok=True)
@@ -1197,7 +1268,7 @@ def verify_release(state, args):
         write_json(run / 'release-verification.json', report)
 
 
-def main():
+def argument_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['doctor', 'prepare', 'build', 'start', 'capture', 'generate', 'verify', 'index', 'evaluate', 'export', 'cleanup', 'install-dev', 'run', 'verify-release'])
     parser.add_argument('--run', help='Resume the recorded run directory')
@@ -1228,6 +1299,11 @@ def main():
     parser.add_argument('--editor-max-sections', type=int, default=12, help='Sections per editorial batch, 1..24')
     parser.add_argument('--keep-services', action='store_true')
     parser.add_argument('--install-dev', action='store_true', help='Install the completed verification in the existing development API without seeding its data')
+    return parser
+
+
+def main():
+    parser = argument_parser()
     args = parser.parse_args()
     if args.command == 'verify-release' and (args.allow_dirty or args.edit_content or args.install_dev):
         parser.error('verify-release requires committed inputs without editorial generation or development installation')

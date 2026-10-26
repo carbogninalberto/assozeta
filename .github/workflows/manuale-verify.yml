@@ -1,0 +1,195 @@
+name: Verify and package compatible manual
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        required: true
+        type: string
+      manual_revision:
+        description: Optional immutable authoring revision; defaults to the committed source pin
+        type: string
+        default: ''
+      force_full:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    name: Select, verify and package manual content
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      historical_rehearsal: ${{ steps.plan.outputs.historical_rehearsal }}
+      manual_revision: ${{ steps.pin.outputs.manual_revision }}
+    env:
+      RELEASE_VERSION: ${{ inputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: docs/manuale/requirements-offline.txt
+      - name: Pin immutable manual authoring input
+        id: pin
+        env:
+          MANUAL_REVISION: ${{ inputs.manual_revision }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py pin
+          --manual-repo "$RUNNER_TEMP/manuale"
+          --manual-revision "$MANUAL_REVISION"
+          --output "$RUNNER_TEMP/manual-source.json"
+      - uses: ./.github/actions/prepare-storage
+      - name: Install verifier dependencies
+        run: |
+          python3 -m pip install -r docs/manuale/requirements-offline.txt
+          npm --prefix selfhost/tests/browser ci
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+      - name: Check verifier and runtime contracts
+        run: |
+          python3 docs/scripts/manuale.py doctor
+          python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
+          node --test selfhost/tests/browser/manuale/*.test.mjs
+      - name: Admit a successful trusted baseline
+        if: ${{ !inputs.force_full }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py baseline
+          --manual-repo "$RUNNER_TEMP/manuale"
+          --output "$RUNNER_TEMP/manuale-baseline"
+      - name: Explain fresh, reused and unaffected work
+        id: plan
+        env:
+          FORCE_FULL: ${{ inputs.force_full }}
+        run: |
+          options=()
+          if [[ "$FORCE_FULL" == true ]]; then options+=(--force-full); fi
+          python3 docs/scripts/manuale-ci.py prepare \
+            --manual-repo "$RUNNER_TEMP/manuale" --baseline "$RUNNER_TEMP/manuale-baseline" \
+            --release "$RELEASE_VERSION" --output "$RUNNER_TEMP/manuale-run" "${options[@]}"
+      - name: Capture only workflows requiring fresh evidence
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase capture
+      - name: Compile complete content and verify source evidence
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase compile
+      - name: Verify changed pages and retain compatible render evidence
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase render
+      - name: Check current reader, access control, MCP and assistant
+        run: python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase runtime
+      - name: Bind package to the exact application revision and release
+        run: >-
+          python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
+          --phase package --package-output "$RUNNER_TEMP/manuale-package"
+      - name: Remove only this run's fixture services
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/manuale-run/run.json" ]]; then
+            python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run" --phase cleanup
+          fi
+      - name: Seal verified reusable baseline
+        run: >-
+          python3 docs/scripts/manuale-ci.py phase --run "$RUNNER_TEMP/manuale-run"
+          --phase baseline --output "$RUNNER_TEMP/manuale-baseline.tar.gz"
+      - name: Retain candidate baseline for successful-run admission
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-verified-baseline
+          path: ${{ runner.temp }}/manuale-baseline.tar.gz
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
+      - name: Upload exact runtime package
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-release-runtime
+          path: ${{ runner.temp }}/manuale-package/runtime/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 14
+      - name: Export sanitized diagnostics
+        if: always()
+        run: python3 docs/scripts/manuale-diagnostics.py --run "$RUNNER_TEMP/manuale-run"
+      - name: Retain decisions, timings and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-verification
+          path: |
+            ${{ runner.temp }}/manual-source.json
+            ${{ runner.temp }}/baseline-admission.json
+            ${{ runner.temp }}/manuale-run/ci-plan.json
+            ${{ runner.temp }}/manuale-run/ci-results.json
+            ${{ runner.temp }}/manuale-run/timings.json
+            ${{ runner.temp }}/manuale-run/coverage.json
+            ${{ runner.temp }}/manuale-run/render.json
+            ${{ runner.temp }}/manuale-run/render-reuse.json
+            ${{ runner.temp }}/manuale-run/evaluation.json
+            ${{ runner.temp }}/manuale-run/embedded-manual.json
+            ${{ runner.temp }}/manuale-run/export/
+            ${{ runner.temp }}/manuale-run/diagnostics-public/
+            ${{ runner.temp }}/manuale-package/publication-plan.json
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 30
+
+  appliance:
+    name: ${{ needs.verify.outputs.historical_rehearsal == 'true' && 'Historical appliance rehearsal' || 'Package startup, reader and access checks' }}
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: selfhost/tests/browser/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: ./.github/actions/prepare-storage
+        with:
+          legacy: ${{ needs.verify.outputs.historical_rehearsal }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-runtime
+          path: ${{ runner.temp }}/manuale-runtime
+      - name: Install package verification dependencies
+        run: |
+          python3 -m pip install -r docs/manuale/requirements-offline.txt
+          npm --prefix selfhost/tests/browser ci
+          npm exec --prefix selfhost/tests/browser -- playwright install --with-deps chromium
+      - name: Verify the exact packaged release on an isolated appliance
+        env:
+          RELEASE_VERSION: ${{ inputs.release }}
+          CHECK_SCOPE: ${{ needs.verify.outputs.historical_rehearsal == 'true' && 'full' || 'compatibility' }}
+        run: >-
+          python3 selfhost/tests/manual-release-smoke.py "$RUNNER_TEMP/manuale-runtime"
+          "$RELEASE_VERSION" --scope "$CHECK_SCOPE" --previous-release 1.0.17
+      - name: Retain appliance results and phase timings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuale-release-evidence
+          path: |
+            quality-reports/manual-release/
+            !quality-reports/manual-release/private-execution.log
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 30

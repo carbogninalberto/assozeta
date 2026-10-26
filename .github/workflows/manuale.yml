@@ -9,10 +9,16 @@ on:
       - 'docs/scripts/manuale*'
       - 'docs/scripts/tests/test_manuale*.py'
       - 'skills/assozeta-manuale/**'
-      - 'selfhost/tests/browser/**'
-      - 'selfhost/compose.dev.yml'
-      - 'selfhost/bin/assozeta'
+      - 'selfhost/**'
+      - '.github/actions/prepare-storage/**'
       - '.github/workflows/manuale.yml'
+      - '.github/workflows/manuale-verify.yml'
+      - '.github/workflows/manuale-release.yml'
+      - '.github/workflows/publish-images.yml'
+      - 'selfhost/tests/manual-release-smoke*'
+      - 'TESTS/contracts/test_manual.py'
+      - 'TESTS/browser/manual-release.mjs'
+      - 'TESTS/mcp/manual.py'
   push:
     branches: [main, add/manuale]
     paths:
@@ -22,15 +28,25 @@ on:
       - 'docs/scripts/manuale*'
       - 'docs/scripts/tests/test_manuale*.py'
       - 'skills/assozeta-manuale/**'
-      - 'selfhost/tests/browser/**'
-      - 'selfhost/compose.dev.yml'
-      - 'selfhost/bin/assozeta'
+      - 'selfhost/**'
+      - '.github/actions/prepare-storage/**'
       - '.github/workflows/manuale.yml'
+      - '.github/workflows/manuale-verify.yml'
+      - '.github/workflows/manuale-release.yml'
+      - '.github/workflows/publish-images.yml'
+      - 'selfhost/tests/manual-release-smoke*'
+      - 'TESTS/contracts/test_manual.py'
+      - 'TESTS/browser/manual-release.mjs'
+      - 'TESTS/mcp/manual.py'
   workflow_dispatch:
     inputs:
       manual_ref:
-        description: Manual branch, tag, or commit (defaults to MANUAL_REF, then add/manuale-release)
+        description: Full immutable manual revision (defaults to docs/manuale/source.json)
         type: string
+      force_full:
+        description: Ignore compatible evidence and run full verification plus historical appliance rehearsal
+        type: boolean
+        default: false
       edit_content:
         description: Draft bounded MDX edits with an installed authenticated Codex CLI (trusted default branch only)
         type: boolean
@@ -42,6 +58,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: manuale-${{ github.event.pull_request.number || github.ref }}
@@ -49,6 +66,15 @@ concurrency:
 
 jobs:
   verify:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.edit_content) }}
+    uses: ./.github/workflows/manuale-verify.yml
+    with:
+      release: ${{ format('manual-verification-{0}', github.sha) }}
+      manual_revision: ${{ inputs.manual_ref || github.event.client_payload.manual_revision || '' }}
+      force_full: ${{ github.event_name == 'schedule' || inputs.force_full || false }}
+
+  editorial:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.edit_content }}
     runs-on: ubuntu-24.04
     # A complete run measured ~70 min on hosted runners: ~39 min for 60 sequential
     # captures, then generation, rendering, retrieval and embedded-reader checks.
@@ -75,21 +101,19 @@ jobs:
           APPLICATION_REF: ${{ github.ref }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           EDIT_REQUESTED: ${{ inputs.edit_content || false }}
-          AUTO_EDIT: ${{ vars.MANUAL_AUTO_EDIT }}
           DISPATCH_MANUAL_REF: ${{ inputs.manual_ref }}
-          TRUSTED_MANUAL_REF: ${{ vars.MANUAL_REF || 'add/manuale-release' }}
         run: |
           python3 - <<'PY'
-          import os
+          import json, os
           event = os.environ['EVENT_NAME']
           default_ref = 'refs/heads/' + os.environ['DEFAULT_BRANCH']
           trusted_application = os.environ['APPLICATION_REF'] == default_ref
           dispatch_edit = event == 'workflow_dispatch' and os.environ['EDIT_REQUESTED'] == 'true'
-          auto_edit = event in ('push', 'schedule') and os.environ['AUTO_EDIT'] == 'true'
-          trusted_manual = not os.environ['DISPATCH_MANUAL_REF'] or os.environ['DISPATCH_MANUAL_REF'] == os.environ['TRUSTED_MANUAL_REF']
+          pinned = json.load(open('docs/manuale/source.json'))['revision']
+          trusted_manual = not os.environ['DISPATCH_MANUAL_REF'] or os.environ['DISPATCH_MANUAL_REF'] == pinned
           if dispatch_edit and not (trusted_application and trusted_manual):
-              raise SystemExit('Content editing requires the default application branch and the configured trusted MANUAL_REF; run plain verification for other dispatch inputs.')
-          enabled = (dispatch_edit or auto_edit) and trusted_application and trusted_manual
+              raise SystemExit('Content editing requires the default application branch and the committed immutable manual pin; run plain verification for other dispatch inputs.')
+          enabled = dispatch_edit and trusted_application and trusted_manual
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('enabled=' + str(enabled).lower() + '\n')
           PY
@@ -103,41 +127,17 @@ jobs:
       - name: Install the offline index test dependency
         run: python3 -m pip install -r docs/manuale/requirements-offline.txt
       - uses: ./.github/actions/prepare-storage
-      - name: Fetch the public manual at the requested revision
+      - name: Pin immutable authoring input
         env:
-          MANUAL_REF: ${{ inputs.manual_ref || github.event.client_payload.manual_revision || vars.MANUAL_REF || 'add/manuale-release' }}
-        run: |
-          python3 - <<'PY'
-          import os, pathlib, re, subprocess
-          reference = os.environ['MANUAL_REF']
-          if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', reference):
-              raise SystemExit('Invalid manual revision')
-          manual = pathlib.Path(os.environ['RUNNER_TEMP']) / 'manuale'
-          subprocess.run(['git', 'clone', 'https://github.com/Bakney/manuale.git', str(manual)], check=True)
-          subprocess.run(['git', '-C', str(manual), 'fetch', 'origin', reference], check=True)
-          subprocess.run(['git', '-C', str(manual), 'checkout', '--detach', 'FETCH_HEAD'], check=True)
-          PY
+          MANUAL_REVISION: ${{ inputs.manual_ref || '' }}
+        run: >-
+          python3 docs/scripts/manuale-ci.py pin --manual-repo "$RUNNER_TEMP/manuale"
+          --manual-revision "$MANUAL_REVISION" --output "$RUNNER_TEMP/manual-source.json"
       - name: Install browser dependencies
         run: |
           npm --prefix selfhost/tests/browser ci
           cd selfhost/tests/browser
           npx playwright install --with-deps chromium
-      - name: Restore a trusted complete capture baseline
-        id: manual-cache
-        uses: actions/cache/restore@v5
-        continue-on-error: true
-        with:
-          path: quality-reports/manuale-cache.tar.gz
-          key: manual-captures-v1-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: manual-captures-v1-${{ runner.os }}-${{ runner.arch }}-
-      - name: Import portable evidence for target-side compatibility checks
-        if: steps.manual-cache.outputs.cache-matched-key != ''
-        continue-on-error: true
-        run: |
-          python3 docs/scripts/manuale-cache.py import \
-            --archive quality-reports/manuale-cache.tar.gz \
-            --output quality-reports/manuale-baseline \
-            --manual-repo "$RUNNER_TEMP/manuale"
       - name: Check runtime access before source verification
         # Report missing runtime before the larger source verification batch.
         # The full runner repeats the bounded check against its current session.
@@ -146,16 +146,6 @@ jobs:
         run: python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
       - name: Verify browser capture helpers and dropdown behavior
         run: node --test selfhost/tests/browser/manuale/*.test.mjs
-      - name: Run isolated fixtures, captures, rendering, evidence, MCP, and agent verification
-        if: steps.editor-mode.outputs.enabled != 'true'
-        env:
-          BASE_REVISION: ${{ github.event.pull_request.base.sha }}
-        run: |
-          arguments=(--manual-repo "$RUNNER_TEMP/manuale" --output "$GITHUB_WORKSPACE/quality-reports/manuale-ci")
-          if [[ -n "$BASE_REVISION" ]]; then
-            arguments+=(--changed-since "$BASE_REVISION")
-          fi
-          python3 docs/scripts/manuale.py run "${arguments[@]}"
       - name: Draft bounded content, then run the same real verification
         if: steps.editor-mode.outputs.enabled == 'true'
         env:
@@ -165,20 +155,6 @@ jobs:
             --manual-repo "$RUNNER_TEMP/manuale" \
             --output "$GITHUB_WORKSPACE/quality-reports/manuale-ci" \
             --edit-content --editor-timeout 180 --editor-max-sections 12
-      - name: Export the complete baseline without credentials or runtime state
-        id: manual-cache-export
-        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.editor-mode.outputs.enabled != 'true'
-        continue-on-error: true
-        run: |
-          python3 docs/scripts/manuale-cache.py export \
-            --run quality-reports/manuale-ci --archive quality-reports/manuale-cache.tar.gz
-      - name: Save verified default-branch captures for future incremental runs
-        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && steps.manual-cache-export.outcome == 'success'
-        uses: actions/cache/save@v5
-        continue-on-error: true
-        with:
-          path: quality-reports/manuale-cache.tar.gz
-          key: manual-captures-v1-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}
       - name: Retain verified artifacts and explicit coverage gaps
         if: always()
         run: |
