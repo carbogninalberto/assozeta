@@ -14547,7 +14547,9 @@
         "TESTS/adapters/django/message_read_scopes_runtime.py",
         "TESTS/contracts/test_message_session_lifecycle.py",
         "TESTS/adapters/django/message_session_lifecycle.py",
-        "TESTS/test_message_session_lifecycle.py"
+        "TESTS/test_message_session_lifecycle.py",
+        "TESTS/adapters/go/message_read_scopes_image.py",
+        "TESTS/adapters/go/test_message_read_scopes_image.py"
       ],
       "evidence": [
         {
@@ -14589,11 +14591,19 @@
           "result": "passed corrected 38-case/2-scenario workload on all four runtimes, 1454 exact source inputs and full cleanup",
           "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r2/results.json",
           "receipt_sha256": "1764141815a7a8d1ccd0a4d49d3c6e7b79b10a3e475ea19728470569f85123f1"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.message_read_scopes_image with immutable image and original build receipt",
+          "revision": "e9f856278ad80909cc374fff7ea32fc6555cc9f9 image; 1626 exact committed inputs plus three new runner/test/documentation inputs bound in receipt",
+          "result": "passed parent-run packaged 38-case/2-sequence workload on all four runtimes; full migration/state/cache/process/provenance/nonroot/license and cleanup gates; independent Sol review found no confirmed defects; 112 parent offline controls passed",
+          "artifact": "quality-reports/go-migration/message-scopes-image-e9f85627-r2/results.json",
+          "receipt_sha256": "9de3c7d85103350eb95096caf626d3baa3e9c7643738553775bb810908f3b0bb"
         }
       ],
       "notes": [
         "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
-        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Packaged/installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds."
+        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds.",
+        "Bounded packaged authorization and warm-session invalidation passed with clean e9f85627 image sha256:463b1a7ec28cd19ca1d5104ab882367c4dee886d3c04e4cf3e36f20ba0afa16b. This does not verify installed activation, required-manual packaging, query/performance or complete message-family behavior. See message_read_scopes_image.md; native and prior receipts retain their original provenance."
       ]
     },
     {
@@ -14695,7 +14705,9 @@
         "TESTS/adapters/django/message_read_scopes_runtime.py",
         "TESTS/contracts/test_message_session_lifecycle.py",
         "TESTS/adapters/django/message_session_lifecycle.py",
-        "TESTS/test_message_session_lifecycle.py"
+        "TESTS/test_message_session_lifecycle.py",
+        "TESTS/adapters/go/message_read_scopes_image.py",
+        "TESTS/adapters/go/test_message_read_scopes_image.py"
       ],
       "evidence": [
         {
@@ -14737,11 +14749,19 @@
           "result": "passed corrected 38-case/2-scenario workload on all four runtimes, 1454 exact source inputs and full cleanup",
           "artifact": "quality-reports/go-migration/message-scopes-lifecycle-live-r2/results.json",
           "receipt_sha256": "1764141815a7a8d1ccd0a4d49d3c6e7b79b10a3e475ea19728470569f85123f1"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.message_read_scopes_image with immutable image and original build receipt",
+          "revision": "e9f856278ad80909cc374fff7ea32fc6555cc9f9 image; 1626 exact committed inputs plus three new runner/test/documentation inputs bound in receipt",
+          "result": "passed parent-run packaged 38-case/2-sequence workload on all four runtimes; full migration/state/cache/process/provenance/nonroot/license and cleanup gates; independent Sol review found no confirmed defects; 112 parent offline controls passed",
+          "artifact": "quality-reports/go-migration/message-scopes-image-e9f85627-r2/results.json",
+          "receipt_sha256": "9de3c7d85103350eb95096caf626d3baa3e9c7643738553775bb810908f3b0bb"
         }
       ],
       "notes": [
         "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
-        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Packaged/installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds."
+        "Bounded unchanged-frontend and warm-session invalidation acceptance passed with exact historical source/artifact binding. Installed lifecycle, unbounded legacy result size and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical receipts are not relabeled for later builds.",
+        "Bounded packaged authorization and warm-session invalidation passed with clean e9f85627 image sha256:463b1a7ec28cd19ca1d5104ab882367c4dee886d3c04e4cf3e36f20ba0afa16b. This does not verify installed activation, required-manual packaging, query/performance or complete message-family behavior. See message_read_scopes_image.md; native and prior receipts retain their original provenance."
       ]
     },
     {
