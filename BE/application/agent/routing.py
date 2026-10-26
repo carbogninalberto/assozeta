@@ -89,7 +89,7 @@ _OUTPUT_ACTION_START = re.compile(
     r'(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai|riesci\s+a)\s+)?'
     r'(?:crea|creami|crearmi|genera|generami|generarmi|'
     r'prepara|preparami|prepararmi|esporta|esportami|esportarmi|salva|salvami|salvarmi|'
-    r'scarica|scaricami|scaricarmi|invia|inviami|inviarmi|manda|mandami|mandarmi|'
+    r'scarica|scaricami|scaricarmi|'
     r'fallo|crealo|esportalo|general[oi])\b'
 )
 _OUTPUT_MI_ACTION_START = re.compile(
@@ -104,7 +104,8 @@ _OUTPUT_POLITE_INFINITIVE_START = re.compile(
     r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
 )
 _EMBEDDED_OUTPUT_COMMAND = re.compile(
-    r'\b(?:fammi|dammi|crea|genera|prepara|esporta|salva|scarica|invia|manda)\b',
+    r'\b(?:fammi|dammi|crea|creami|genera|generami|prepara|preparami|esporta|esportami|'
+    r'salva|salvami|scarica|scaricami|invia|inviami|manda|mandami|mostra|mostrami)\b',
     re.I,
 )
 _DATA_NOUNS = (
@@ -135,7 +136,7 @@ _DATA_REQUEST = re.compile(
 )
 _DATA_EXPLANATION_START = re.compile(
     r'^(?:mi\s+spieghi|spiegami)\s+'
-    r'(?:(?:il|lo|la|i|gli|le)\s+(?:totale|saldo|importo|elenco|lista|dati|'
+    r"(?:(?:il|lo|la|l['’]|i|gli|le)\s*(?:totale|saldo|importo|elenco|lista|dati|"
     r'andamento|riepilogo|numero)\b|(?:quanti|quante|quanto|quanta|quali|quando|chi)\b|'
     r'(?:' + _DATA_NOUNS + r')\b)'
 )
@@ -143,7 +144,7 @@ _QUANTIFIED_DATA_START = re.compile(
     r'^(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai)\s+)?'
     r'(?:(?:dirmi|dire|spiegarmi)\s+)?'
     r'(?:il|lo|la|i|gli|le)\s+'
-    r'(?:numero|totale|saldo|importo|conteggio|somma|media|elenco|lista|dati|riepilogo)\b'
+    r'(?:numero|totale|saldo|importo|conteggio|somma|media|elenco|lista|dati|riepilogo|andamento)\b'
 )
 _FOLLOW_UP_PARAMETER = re.compile(
     r'^(?:(?:s[iì]|certo|ok|va\s+bene|perfetto|procedi|fallo|esportalo|crealo|generalo|'

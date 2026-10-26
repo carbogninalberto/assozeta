@@ -45,6 +45,8 @@ class RequestRoutingTests(SimpleTestCase):
             'Sai dirmi il numero di soci?': Intent.ACTION,
             'Mi spieghi il totale dei pagamenti di gennaio?': Intent.ACTION,
             'Mi spieghi il numero di iscrizioni di gennaio?': Intent.ACTION,
+            'Mi spieghi il riepilogo dei pagamenti di gennaio?': Intent.ACTION,
+            "Mi spieghi l'andamento delle iscrizioni di gennaio?": Intent.ACTION,
             'Spiegami quali pagamenti sono insoluti': Intent.ACTION,
             'Crea un report PDF dei pagamenti di gennaio': Intent.ACTION,
             'Puoi generarmi un file Excel dei soci?': Intent.ACTION,
@@ -58,9 +60,13 @@ class RequestRoutingTests(SimpleTestCase):
             'Quanti iscritti ci sono nel corso La Guida?': Intent.ACTION,
             'Mostrami i soci con cognome Guida': Intent.ACTION,
             'Cosa puoi fare? Esporta i pagamenti di gennaio in PDF.': Intent.ACTION,
+            'Cosa puoi fare? Esportami i pagamenti di gennaio in PDF.': Intent.ACTION,
+            'Cosa puoi fare? Mostrami i soci.': Intent.ACTION,
             'Dimmi cosa sai fare e crea un report dei soci': Intent.ACTION,
             'Come posso creare un report e cosa posso esportare?': Intent.MANUAL_FAQ,
             'Cosa puoi fare per creare un report?': Intent.CAPABILITIES,
+            'Inviami le istruzioni per creare un report': Intent.MANUAL_FAQ,
+            'Mandami una guida per esportare i pagamenti': Intent.MANUAL_FAQ,
             'Qual è il totale dei pagamenti?': Intent.ACTION,
             'Quanti soci hanno pagato questo mese?': Intent.ACTION,
             'Mostrami la copertura del manuale': Intent.MANUAL_DIAGNOSTIC,
@@ -93,6 +99,8 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         for answer in (
             'Per quale periodo vuoi il report?',
             'Conferma con un ok per procedere.',
+            'Per procedere, conferma con un ok.',
+            'Se va bene, conferma con un ok.',
             'Scegli il formato del report.',
         ):
             self.assertTrue(_answer_requires_follow_up(answer), answer)
@@ -100,6 +108,7 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
             'Ho preparato il report richiesto.',
             'La colonna indica il totale incassato.',
             'Non posso modificare i pagamenti. Il manuale indica come farlo.',
+            'Ho creato il report «Chi ha pagato?».',
         ):
             self.assertFalse(_answer_requires_follow_up(answer), answer)
 

@@ -94,7 +94,7 @@ _MANUAL_REFERENCE_CUE = re.compile(
 )
 _DATA_QUERY_CUE = re.compile(
     r'\b(?:quanti|quante|quanto|quanta|quali|quando|chi|totale|saldo|importo|'
-    r'elenco|lista|numero|conteggio|somma|media|dati|risultati|'
+    r'elenco|lista|numero|conteggio|somma|media|dati|risultati|riepilogo|andamento|'
     r'incassat[oi]|pagat[oi]|insolut[oi]|scadut[oi]|attiv[oi])\b'
 )
 _PROCEDURAL_CUE = re.compile(

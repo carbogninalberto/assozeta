@@ -63,6 +63,8 @@ class ManualAnswerTests(unittest.TestCase):
                        'Sai dirmi il numero di soci?',
                        'Mi spieghi il totale dei pagamenti di gennaio?',
                        'Mi spieghi il numero di iscrizioni di gennaio?',
+                       'Mi spieghi il riepilogo dei pagamenti di gennaio?',
+                       "Mi spieghi l'andamento delle iscrizioni di gennaio?",
                        'Spiegami quali pagamenti sono insoluti',
                        'Esporta i pagamenti del corso Guida sicura',
                        'Quanti iscritti ci sono nel corso La Guida?',

@@ -42,8 +42,10 @@ logger = logging.getLogger(__name__)
 
 MAX_MESSAGE_LENGTH = 2000
 _FOLLOW_UP_ANSWER = re.compile(
-    r'\?|(?:^|[\n.!?]\s*)(?:quale|quali|specifica|indica|dimmi|preferisci|vuoi|'
-    r'conferma|confermi|scegli|seleziona)\b',
+    r'\?\s*$|(?:^|[\n.!?]\s*)(?:quale|quali|specifica|indica|dimmi|preferisci|vuoi|'
+    r'conferma|confermi|scegli|seleziona)\b|'
+    r'\b(?:per\s+procedere|se\s+va\s+bene|prima\s+di\s+procedere|per\s+continuare)'
+    r'[,\s]+(?:conferma|dimmi|specifica|scegli|seleziona)\b',
     re.I | re.M,
 )
 
