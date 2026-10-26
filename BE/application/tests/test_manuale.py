@@ -372,7 +372,7 @@ class ManualIndexTests(SimpleTestCase):
         self.assertNotIn('Applica', callback.on_message_chunk.call_args.args[0])
         callback.on_manual_section.assert_not_called()
 
-    def test_unconfigured_agent_uses_only_verified_manual_search_for_bare_queries(self):
+    def test_unconfigured_agent_keeps_manual_search_for_ambiguous_queries(self):
         from application.agent.core import Agent
         output = self.root / 'index.json'
         promote(self.index().value, output)
@@ -384,7 +384,8 @@ class ManualIndexTests(SimpleTestCase):
             callback.on_tool_call.assert_awaited_with('search_manual', {'query': 'creare tag'})
             callback.reset_mock()
             asyncio.run(agent.process_message('teletrasporto satellitare'))
-            self.assertIn('Non ho trovato', callback.on_message_chunk.call_args.args[0])
+            self.assertIn('Non sono riuscito', callback.on_message_chunk.call_args.args[0])
+            self.assertIn("serve l'AI configurata", callback.on_message_chunk.call_args.args[0])
             callback.on_manual_section.assert_not_called()
 
     def test_actual_websocket_callback_emits_reviewed_markdown_before_ending_the_answer(self):

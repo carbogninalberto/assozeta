@@ -13,8 +13,15 @@ from application.agent.callbacks import AgentCallback
 from application.manuale.answers import manual_section_attachment
 from application.agent.prompts import get_system_prompt
 from application.agent.providers.base import LLMProvider, LLMResponse
+from application.agent.routing import (
+    Intent,
+    ambiguous_manual_answer,
+    capability_answer,
+    manual_only_action_answer,
+    route_message,
+)
 from application.manuale.tools import (MANUAL_TOOL_FUNCTIONS, MANUAL_TOOL_NAMES, MANUAL_TOOL_PARAMETERS,
-                                      grounded_answer, is_manual_question, is_manual_diagnostic_question, manual_diagnostic_answer)
+                                      grounded_answer, manual_diagnostic_answer)
 from application.mcp_server.server import (
     TOOL_DEFINITIONS,
     tool_get_schema,
@@ -64,12 +71,17 @@ TOOLS_FOR_LLM = [
 ]
 
 
-def _sanitize_input(text: str) -> str:
-    """Sanitize user input: strip, truncate, escape HTML."""
+def _bound_input(text: str) -> str:
+    """Bound untrusted input before classification and tool use."""
     text = text.strip()
     if len(text) > MAX_MESSAGE_LENGTH:
         text = text[:MAX_MESSAGE_LENGTH]
-    return html.escape(text)
+    return text
+
+
+def _sanitize_input(text: str) -> str:
+    """Sanitize user input: strip, truncate, escape HTML."""
+    return html.escape(_bound_input(text))
 
 
 def _truncate_tool_result(result: str, max_length: int = 15000) -> str:
@@ -90,6 +102,7 @@ class Agent:
         callback: AgentCallback,
         user_id: str = None,
         ai_config: dict = None,
+        manual_available: bool = None,
     ):
         self.sport_association_id = str(sport_association_id)
         self.sport_association_name = sport_association_name
@@ -99,9 +112,12 @@ class Agent:
         ai_config = ai_config or {}
         self.max_iterations = ai_config.get('max_iterations') or getattr(settings, 'MCP_AGENT_MAX_ITERATIONS', 10)
         self.history_cap = ai_config.get('history_cap') or getattr(settings, 'MCP_AGENT_HISTORY_CAP', 50)
+        self._manual_available = manual_available
 
         self._schema_cache = None
         self._recent_tool_calls = []  # Track recent tool call signatures for loop detection
+        self._pending_action = False
+        self.last_route = None
 
         # Initialize message history with system prompt
         self.messages = [
@@ -114,6 +130,8 @@ class Agent:
     def clear_history(self):
         """Reset conversation history, keeping only the system prompt."""
         self.messages = [self.messages[0]]
+        self._pending_action = False
+        self.last_route = None
         # Keep schema cache across history clears
 
     def _trim_history(self):
@@ -182,6 +200,26 @@ class Agent:
 
             return json.dumps({'error': error_msg})
 
+    async def _manual_is_available(self) -> bool:
+        if self._manual_available is None:
+            from application.manuale.availability import manual_available
+            try:
+                self._manual_available = bool(await asyncio.to_thread(manual_available))
+            except Exception:
+                logger.warning('Manual availability check failed')
+                self._manual_available = False
+        return self._manual_available
+
+    async def _send_direct_answer(self, answer: str, *, attachment: dict = None) -> None:
+        self.messages.append({'role': 'assistant', 'content': answer})
+        await self.callback.on_message_chunk(answer)
+        if attachment:
+            on_manual_section = getattr(self.callback, 'on_manual_section', None)
+            if on_manual_section:
+                await on_manual_section(attachment)
+        await self.callback.on_message_end()
+        await self.callback.on_done()
+
     async def process_message(self, user_message: str) -> None:
         """Process a user message through the agent loop.
 
@@ -193,7 +231,8 @@ class Agent:
         5. Repeats until LLM is done or max iterations reached
         """
         # Sanitize and add user message
-        sanitized = _sanitize_input(user_message)
+        bounded_message = _bound_input(user_message)
+        sanitized = html.escape(bounded_message)
         self.messages.append({
             'role': 'user',
             'content': sanitized,
@@ -205,22 +244,53 @@ class Agent:
         pending_report_saves: list[dict] = []
         await self.callback.on_status('thinking')
 
-        if self.provider is None or is_manual_diagnostic_question(user_message) or is_manual_question(user_message):
+        route = route_message(bounded_message, has_pending_action=self._pending_action)
+        self.last_route = route
+        logger.info('Agent request route: %s (%s)', route.intent.value, route.reason)
+
+        if route.intent == Intent.ACTION:
+            self._pending_action = True
+        elif route.intent != Intent.AMBIGUOUS:
+            self._pending_action = False
+
+        ai_enabled = self.provider is not None
+        manual_available = await self._manual_is_available()
+
+        if route.intent == Intent.CAPABILITIES:
+            answer = capability_answer(ai_enabled=ai_enabled, manual_available=manual_available)
+            await self._send_direct_answer(answer)
+            return
+
+        if route.intent == Intent.CONVERSATION:
+            capabilities = capability_answer(ai_enabled=ai_enabled, manual_available=manual_available)
+            normalized = route.query.casefold()
+            if any(word in normalized for word in ('grazie', 'perfetto', 'ottimo', 'capito', 'va bene', 'ok')):
+                answer = f'Prego. {capabilities}'
+            elif any(word in normalized for word in ('arrivederci', 'a presto', 'buona giornata')):
+                answer = f'A presto. {capabilities}'
+            else:
+                answer = f'Ciao! {capabilities}'
+            await self._send_direct_answer(answer)
+            return
+
+        if route.intent == Intent.ACTION and not ai_enabled:
+            answer = manual_only_action_answer(manual_available=manual_available)
+            await self._send_direct_answer(answer)
+            return
+
+        if route.intent in (Intent.MANUAL_DIAGNOSTIC, Intent.MANUAL_FAQ) or (
+                route.intent == Intent.AMBIGUOUS and not ai_enabled):
             await self.callback.on_status('querying')
-            diagnostic = is_manual_diagnostic_question(user_message)
+            diagnostic = route.intent == Intent.MANUAL_DIAGNOSTIC
             tool = 'get_manual_gaps' if diagnostic else 'search_manual'
-            arguments = {} if diagnostic else {'query': user_message}
+            arguments = {} if diagnostic else {'query': route.query}
             await self.callback.on_tool_call(tool, arguments)
             result = json.loads(await self._execute_tool(tool, arguments))
             answer = manual_diagnostic_answer(result) if diagnostic else grounded_answer(result)
-            self.messages.append({'role': 'assistant', 'content': answer})
-            await self.callback.on_message_chunk(answer)
+            if route.intent == Intent.AMBIGUOUS and not result.get('results'):
+                answer = ambiguous_manual_answer()
             attachment = None if diagnostic else manual_section_attachment(result)
-            on_manual_section = getattr(self.callback, 'on_manual_section', None)
-            if attachment and on_manual_section:
-                await on_manual_section(attachment)
-            await self.callback.on_message_end()
-            await self.callback.on_done()
+            await self._send_direct_answer(answer, attachment=attachment)
             return
 
         for iteration in range(self.max_iterations):

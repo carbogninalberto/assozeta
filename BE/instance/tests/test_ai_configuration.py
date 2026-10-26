@@ -140,6 +140,8 @@ class AIConfigurationTests(TestCase):
                 await consumer.connect()
                 provider.assert_not_called()
                 self.assertIsNone(consumer.agent.provider)
+                self.assertTrue(consumer.manual_available)
+                self.assertTrue(consumer.agent._manual_available)
                 consumer.accept.assert_awaited_once()
                 consumer.close.assert_not_awaited()
                 self.assertIn('manuale', consumer.send_json.call_args.args[0]['content'])

@@ -47,6 +47,20 @@ class ManualAnswerTests(unittest.TestCase):
                          'Quali bilanci sono pubblicati?'):
             self.assertFalse(answers.is_manual_question(question), question)
 
+    def test_faq_explanations_route_to_manual_but_actions_do_not(self):
+        for question in ('Come si fa a creare un report?',
+                         'Mi spieghi come funzionano i carnet?',
+                         "Che cos'è un carnet?",
+                         "Cos'è una ricevuta?",
+                         'A cosa serve il registro presenze?',
+                         'Quali passaggi servono per pubblicare un modulo?'):
+            self.assertTrue(answers.is_manual_question(question), question)
+        for action in ('Crea un report PDF dei pagamenti',
+                       'Mi serve un report dei soci',
+                       'Come stai?',
+                       'Quali bilanci sono pubblicati?'):
+            self.assertFalse(answers.is_manual_question(action), action)
+
     def test_payment_and_receipt_how_to_questions_route_to_manual_without_capturing_data_queries(self):
         for question in ('Come posso incassare un pagamento?', 'Come approvo un pagamento?',
                          'Dove posso scaricare una ricevuta?',
