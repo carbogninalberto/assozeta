@@ -181,9 +181,9 @@ was absent in this checkout; this owned document contains the worker handoff.
 
 ## Exact parent invocation
 
-Use production Python
-`/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python`
-in the parent's already configured private migrated database/Redis process. Supply
+Select the already installed production Python 3.13.16 executable via the
+user-supplied `PRODUCTION_PYTHON` environment variable and run from the repository
+root in the parent's already configured private migrated database/Redis process. Supply
 actual running Django/Go ports and a `CompleteAsgiObserver` on Django. Call:
 
 The existing resource owners accept optional keyword-only

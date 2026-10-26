@@ -105,12 +105,13 @@ files or receipts.
 ## Parent execution
 
 With the parent-owned fixture already running and its validated DSN inherited
-through the environment, run from the repository root:
+through the environment, run from the repository root with already installed
+Go 1.25.12 selected by `PATH`:
 
 ```sh
 export GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local GOWORK=off GOMAXPROCS=2 GOFLAGS=-p=1
 export GOCACHE=/private/tmp/assozeta-query-connection-live-tests-gocache
-GO=/Users/alberto/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.12.darwin-arm64/bin/go
+GO=go
 "$GO" -C BE_GO test -race -tags=queryobservationintegration \
   ./internal/queryobservation -run '^TestConnectionEventsPostgreSQL$' -count=1 -timeout=3m
 ```
@@ -120,13 +121,14 @@ evidence. This command deliberately selects the new suite. Existing
 `TestQueryObservationPostgreSQL` and `TestObservedDriverPostgreSQLRequests`
 remain separate parent checks.
 
-Offline compilation, with no fixture use:
+Offline compilation from the repository root with the same Go selected by
+`PATH`, with no fixture use:
 
 ```sh
 env -u ASSOZETA_QUERY_OBSERVATION_DSN GOPROXY=off GOSUMDB=off \
   GOTOOLCHAIN=local GOWORK=off GOMAXPROCS=2 GOFLAGS=-p=1 \
   GOCACHE=/private/tmp/assozeta-query-connection-live-tests-gocache \
-  /Users/alberto/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.12.darwin-arm64/bin/go \
+  go \
   -C BE_GO test -tags=queryobservationintegration ./internal/queryobservation -run '^$'
 ```
 

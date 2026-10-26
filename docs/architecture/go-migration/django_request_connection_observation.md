@@ -217,19 +217,19 @@ persistence/private files, parser/runtime wiring and actual acceptance results.
 
 ## Offline RED/GREEN evidence
 
-The prescribed production Python is
-`/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python`
-(Python 3.13.16, Django 5.2.18, asgiref 3.8.1).
+Set `PRODUCTION_PYTHON` to the user-supplied executable path of the already
+installed production runtime (Python 3.13.16, Django 5.2.18, asgiref 3.8.1).
 
 Initial RED: the test module failed with ModuleNotFoundError before this adapter
 existed. Behavioral RED during review: copied execution contexts or replaced
 Django context dicts could prematurely end a live query; the new test failed
 `True is not false`. Token provenance and exact-context matching fixed this.
 
-Run the bounded suite:
+Run the bounded suite from the repository root:
 
-```text
-<production-python> -m unittest TESTS.test_django_request_connection_observation -v
+```sh
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+"$PRODUCTION_PYTHON" -m unittest TESTS.test_django_request_connection_observation -v
 ```
 
 Repair RED: the original 31 tests passed, but caught downstream send failures and

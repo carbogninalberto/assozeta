@@ -60,10 +60,12 @@ failures, and invalid/incomplete/aborted drains. I/O faults are injected only at
 the filesystem boundary. Tests use no listeners, database, or fabricated PID
 attribution.
 
+From the repository root, select already installed Go 1.25.12 via `PATH`:
+
 ```sh
 export GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local GOWORK=off GOMAXPROCS=2 GOFLAGS=-p=1
 export GOCACHE=/private/tmp/assozeta-query-connection-gocache
-GO=/Users/alberto/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.12.darwin-arm64/bin/go
+GO=go
 "$GO" -C BE_GO test -race ./cmd/server
 ```
 

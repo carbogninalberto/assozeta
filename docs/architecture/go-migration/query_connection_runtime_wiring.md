@@ -121,10 +121,12 @@ overlap, same-message DELETE attribution, or acceptance.
 
 ## Offline controls and handoff
 
-Run with the prescribed cached production runtime:
+Run from the repository root with `PRODUCTION_PYTHON` set to the already
+installed production Python 3.13.16 executable:
 
-```text
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -m unittest TESTS.test_message_reads_browser_runtime
+```sh
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+"$PRODUCTION_PYTHON" -m unittest TESTS.test_message_reads_browser_runtime
 ```
 
 New controls use mocked servers, threads, sockets, Popen handles and observer

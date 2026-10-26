@@ -184,21 +184,28 @@ configuration bounds retain host UTC. These clock domains are not combined and
 no broad time tolerance is introduced.
 
 Parent runtime examples, from the integrated checkout after building and
-recording the corrected immutable image (substitute its exact ID and revision):
+recording the corrected immutable image. Set `PRODUCTION_PYTHON` to the already
+installed Python 3.13.16 executable, and supply the same immutable image ID, full
+source revision, matching build receipt and frozen source directory for both orders:
 
 ```sh
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python \
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+: "${IMAGE_ID:?Set IMAGE_ID to the exact sha256 image ID}"
+: "${REVISION:?Set REVISION to the full source revision}"
+: "${BUILD_RECEIPT:?Set BUILD_RECEIPT to the matching build receipt path}"
+: "${FROZEN_GO_SOURCE:?Set FROZEN_GO_SOURCE to the frozen source directory}"
+"$PRODUCTION_PYTHON" \
   TESTS/adapters/go/historical_read_image.py \
-  --image sha256:<exact-image-id> --expected-revision <full-source-revision> \
-  --build-receipt /absolute/path/build-receipt.json \
-  --go-source /absolute/path/frozen-root --first-backend django \
+  --image "$IMAGE_ID" --expected-revision "$REVISION" \
+  --build-receipt "$BUILD_RECEIPT" \
+  --go-source "$FROZEN_GO_SOURCE" --first-backend django \
   --output quality-reports/go-migration/historical-image-django-first
 
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python \
+"$PRODUCTION_PYTHON" \
   TESTS/adapters/go/historical_read_image.py \
-  --image sha256:<same-exact-image-id> --expected-revision <same-full-source-revision> \
-  --build-receipt /absolute/path/build-receipt.json \
-  --go-source /absolute/path/frozen-root --first-backend go \
+  --image "$IMAGE_ID" --expected-revision "$REVISION" \
+  --build-receipt "$BUILD_RECEIPT" \
+  --go-source "$FROZEN_GO_SOURCE" --first-backend go \
   --output quality-reports/go-migration/historical-image-go-first
 ```
 

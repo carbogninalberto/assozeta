@@ -147,12 +147,16 @@ create/use Django's `test_assozeta_contract_message_delete_concurrency` database
 its test fixtures. Existing parent preparation must supply the full migrated
 reference schema; do not disable migrations to obtain a passing result.
 
-First copy only the new test into the unchanged old ROOT:
+From the isolated assignment checkout, first copy only the new test into the
+unchanged reference checkout. Supply `REFERENCE_ROOT` and `PATCH_ROOT` as absolute
+paths to those distinct checkouts, and `PRODUCTION_PYTHON` as the absolute path to
+the already installed production Python 3.13.16 executable; these paths remain
+valid after changing directory:
 
 ```sh
-ROOT=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go
-WORK=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go-message-delete-reference-sol
-PY=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python
+ROOT=${REFERENCE_ROOT:?Set REFERENCE_ROOT to the unchanged reference checkout root}
+WORK=${PATCH_ROOT:?Set PATCH_ROOT to the isolated assignment checkout root}
+PY=${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}
 cp "$WORK/BE/communications/tests/test_message_delete_concurrency.py" "$ROOT/BE/communications/tests/test_message_delete_concurrency.py"
 cd "$ROOT"
 env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$ROOT:$ROOT/BE" \

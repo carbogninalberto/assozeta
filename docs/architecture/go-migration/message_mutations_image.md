@@ -9,8 +9,11 @@ reuses only six small helpers published with the native CLI at
 `check_caddy_image`, plus `verify_observations` as authorized by the coordinator.
 It never calls that CLI's main, build or workload acceptance.
 
+Run from the repository root with `PRODUCTION_PYTHON` set to the already installed
+Python 3.13.16 executable.
+
 ```sh
-PY=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python
+PY=${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}
 "$PY" -m TESTS.adapters.go.message_image_build \
   --expected-revision "$REV" --output "$BUILD"
 # IMAGE_ID is results.json image_id from that builder; BUILD/source is frozen context.

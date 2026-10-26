@@ -121,16 +121,17 @@ unchanged, and only the reviewed views hash differs in the source map.
 
 ## Offline RED/GREEN and rejection checks
 
-Existing Node: `/Users/alberto/.nvm/versions/node/v22.19.0/bin/node`.
-Existing Python:
-`/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python`.
-No installs were performed. Commands ran in the isolated assignment tree.
+Recorded execution used already installed Node v22.19.0 and Python 3.13.16.
+No installs were performed. Commands ran in the isolated assignment tree. The
+portable forms below run from the repository root with that Node selected by
+`PATH` and `PRODUCTION_PYTHON` set to the corresponding installed Python executable.
 
-Before editing the recipe, the following command exited 1 after 8 tests:
+Before editing the recipe, the recorded command exited 1 after 8 tests:
 5 passed and 3 errored.
 
 ```sh
-PATH=/Users/alberto/.nvm/versions/node/v22.19.0/bin:$PATH PYTHONDONTWRITEBYTECODE=1 /Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -m unittest docs.scripts.tests.test_manuale_audit_dependencies docs.scripts.tests.test_manuale_authored -v
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+PYTHONDONTWRITEBYTECODE=1 "$PRODUCTION_PYTHON" -m unittest docs.scripts.tests.test_manuale_audit_dependencies docs.scripts.tests.test_manuale_authored -v
 ```
 
 Failures were:
@@ -146,7 +147,7 @@ After the reviewed pin change, the same two suites plus existing recipe
 validation tests exited 0: **12 tests passed**.
 
 ```sh
-PATH=/Users/alberto/.nvm/versions/node/v22.19.0/bin:$PATH PYTHONDONTWRITEBYTECODE=1 /Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -m unittest docs.scripts.tests.test_manuale_audit_dependencies docs.scripts.tests.test_manuale_authored docs.scripts.tests.test_manuale_references -v
+PYTHONDONTWRITEBYTECODE=1 "$PRODUCTION_PYTHON" -m unittest docs.scripts.tests.test_manuale_audit_dependencies docs.scripts.tests.test_manuale_authored docs.scripts.tests.test_manuale_references -v
 ```
 
 Additional in-memory Node assertions passed without changing any source file:

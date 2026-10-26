@@ -39,10 +39,12 @@ checkpoints, identity preparation and the Python-to-Node launcher accept only
 
 ## Exact parent invocation
 
-Use the already configured private production-Python process:
+Use the already configured private production-Python process. Set
+`PRODUCTION_PYTHON` to the already installed Python 3.13.16 executable; shell
+commands below run from the repository root.
 
-```text
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python
+```sh
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
 ```
 
 Parent owns fully migrated private PostgreSQL/Redis DB1, actual running Django/Go
@@ -170,13 +172,13 @@ control still proves that a missing canonical route cannot open even the private
 database connection. Reproduce the policy and preflight checks:
 
 ```sh
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m unittest TESTS.test_message_mutations_browser_denials.DenialPolicyTests TESTS.test_message_mutations_browser_denials.DenialCompanionTests.test_missing_authored_route_blocks_before_proxy_or_http
+"$PRODUCTION_PYTHON" -B -m unittest TESTS.test_message_mutations_browser_denials.DenialPolicyTests TESTS.test_message_mutations_browser_denials.DenialCompanionTests.test_missing_authored_route_blocks_before_proxy_or_http
 ```
 
 Focused GREEN command:
 
 ```sh
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m unittest TESTS.test_message_mutations_browser_denials
+"$PRODUCTION_PYTHON" -B -m unittest TESTS.test_message_mutations_browser_denials
 ```
 
 Sixteen tests cover all eight positive case/version compositions using the real
@@ -200,7 +202,7 @@ hook rejecting all `socket.*` events in the main test process (153 tests passed,
 Regression command (153 tests passed with the specified production Python):
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 /Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m unittest TESTS.test_message_mutations_browser_denials TESTS.test_message_mutations_browser TESTS.test_message_mutations_browser_runtime TESTS.test_message_reads_browser_runtime TESTS.test_message_reads_browser TESTS.test_message_mutations
+PYTHONDONTWRITEBYTECODE=1 "$PRODUCTION_PYTHON" -B -m unittest TESTS.test_message_mutations_browser_denials TESTS.test_message_mutations_browser TESTS.test_message_mutations_browser_runtime TESTS.test_message_reads_browser_runtime TESTS.test_message_reads_browser TESTS.test_message_mutations
 ```
 
 Parent independent review and actual v1/v2 HTTP runs remain required.

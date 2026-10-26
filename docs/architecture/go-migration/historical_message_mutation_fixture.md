@@ -16,12 +16,14 @@ it follows that helper's canonical JSON and deterministic ZIP style independentl
 
 ## Binding and inspected historical source
 
-The source was inspected using `git show` against the exact commit in the local
-`/Users/alberto/Desktop/Bakney/Workdir/django-bakney-sport` object database, never
-by reading that repository's working-tree files:
+The source was inspected using `git show` against the exact commit in the
+historical source repository's object database, never by reading its working-tree
+files. For the portable command form, set `HISTORICAL_SOURCE_ROOT` to a local
+checkout containing that pinned Git object:
 
-```text
-git -C /Users/alberto/Desktop/Bakney/Workdir/django-bakney-sport \
+```sh
+: "${HISTORICAL_SOURCE_ROOT:?Set HISTORICAL_SOURCE_ROOT to the historical source checkout}"
+git -C "$HISTORICAL_SOURCE_ROOT" \
   show 0058de5909734bdd0f00867abbdb723649de4238:communications/models.py
 ```
 
@@ -210,10 +212,13 @@ invent it or repair the reference; detail-route behavior requires parent review.
 
 ## Focused offline verification
 
-Tests were written before the helper/JSON implementation. Initial RED used:
+Tests were written before the helper/JSON implementation. Portable form of the
+initial RED command, from the repository root with `PRODUCTION_PYTHON` set to the
+already installed Python 3.13.16 executable:
 
-```text
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -m unittest TESTS.test_historical_message_mutation_fixture -v
+```sh
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+"$PRODUCTION_PYTHON" -m unittest TESTS.test_historical_message_mutation_fixture -v
 ```
 
 It exited `1` with a loader ImportError for the missing new helper (one loader

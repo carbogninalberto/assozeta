@@ -238,11 +238,15 @@ EOF, invalid chunk boundaries/termination, ambiguous headers and size limits.
 Virtual-clock controls cover on-time success and observations exactly at and
 beyond the lock, completion, listener, survival, exit, snapshot and read bounds.
 
-In this isolated tree, explicitly supply the parent's contract file read-only:
+From the isolated checkout root, explicitly supply the parent's contract file
+read-only. Set `PARENT_CHECKOUT` to the absolute root of the integrated parent
+checkout and `PRODUCTION_PYTHON` to the already installed Python 3.13.16 executable:
 
 ```sh
-MESSAGE_MUTATIONS_PORTABLE_CONTRACT=/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/TESTS/contracts/test_message_mutations.py \
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python \
+: "${PARENT_CHECKOUT:?Set PARENT_CHECKOUT to the integrated parent checkout root}"
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+MESSAGE_MUTATIONS_PORTABLE_CONTRACT="$PARENT_CHECKOUT/TESTS/contracts/test_message_mutations.py" \
+"$PRODUCTION_PYTHON" \
 -m unittest TESTS.test_message_mutation_lifecycle
 ```
 

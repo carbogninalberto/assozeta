@@ -103,12 +103,15 @@ owned child reaped, repeated signals, handler/timer restoration, and grace-expir
 cleanup honesty. The cursor lock model proves parameter/order handling only;
 it does not establish actual PostgreSQL lock behavior.
 
-Parent commands after integrating the frozen files (each output must be fresh):
+Parent commands from the repository root after integrating the frozen files
+(each output must be fresh). Set `PRODUCTION_PYTHON` to the already installed
+Python 3.13.16 executable:
 
 ```sh
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m unittest TESTS.test_message_mutations_acceptance TESTS.test_caddy_cleanup -v
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m TESTS.adapters.django.message_mutations_acceptance --output /tmp/message-mutations-corrected-native --deadline 1500 --cleanup-grace 180
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -B -m TESTS.adapters.django.message_mutations_acceptance --output /tmp/message-mutations-corrected-versioned --versioned --deadline 1500 --cleanup-grace 180
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+"$PRODUCTION_PYTHON" -B -m unittest TESTS.test_message_mutations_acceptance TESTS.test_caddy_cleanup -v
+"$PRODUCTION_PYTHON" -B -m TESTS.adapters.django.message_mutations_acceptance --output /tmp/message-mutations-corrected-native --deadline 1500 --cleanup-grace 180
+"$PRODUCTION_PYTHON" -B -m TESTS.adapters.django.message_mutations_acceptance --output /tmp/message-mutations-corrected-versioned --versioned --deadline 1500 --cleanup-grace 180
 ```
 
 Parent fault controls must also verify actual PostgreSQL `SHOW statement_timeout`

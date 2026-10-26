@@ -442,8 +442,12 @@ Parent integration, fresh actual PG/HTTP execution and review remain required.
 
 ## Offline verification and handoff limits
 
+Portable form of the recorded command, from the repository root. Set
+`PRODUCTION_PYTHON` to the already installed Python 3.13.16 executable.
+
 ```sh
-PYTHONDONTWRITEBYTECODE=1 /Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python -m unittest TESTS.test_message_mutation_concurrency TESTS.test_message_connection_attribution -q
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+PYTHONDONTWRITEBYTECODE=1 "$PRODUCTION_PYTHON" -m unittest TESTS.test_message_mutation_concurrency TESTS.test_message_connection_attribution -q
 ```
 
 The initial 67 methods passed before editing. Initial new-suite RED was an absent

@@ -191,12 +191,13 @@ drains it while preserving violations and rejection. Normal successful flow
 still drains and accepts. Cancellation/deadline causes and sticky sink error
 identities remain unchanged.
 
-Offline worker commands use the cached toolchain and an authorized writable cache:
+Portable forms of the offline worker commands, from the repository root, use
+already installed Go 1.25.12 selected by `PATH` and an authorized writable cache:
 
 ```sh
 export GOPROXY=off GOSUMDB=off GOTOOLCHAIN=local GOWORK=off GOMAXPROCS=2 GOFLAGS=-p=1
 export GOCACHE=/private/tmp/assozeta-query-connection-gocache
-GO=/Users/alberto/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.12.darwin-arm64/bin/go
+GO=go
 "$GO" -C BE_GO test -race ./internal/queryobservation ./internal/database
 "$GO" -C BE_GO test -race ./internal/middleware ./cmd/server -run '^TestQueryObservation'
 "$GO" -C BE_GO test -tags=queryobservationintegration ./internal/queryobservation -run '^$'

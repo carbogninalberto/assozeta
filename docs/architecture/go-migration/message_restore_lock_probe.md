@@ -153,10 +153,12 @@ the offline mocks or a reason to weaken the consumer helper.
 
 ## Offline TDD and parent runtime checks
 
-Run with the supplied offline Python 3.13.16, without bytecode:
+Run from the repository root with the supplied offline Python 3.13.16, without
+bytecode. Set `PRODUCTION_PYTHON` to that already installed executable:
 
 ```sh
-/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/python31316/bin/python \
+: "${PRODUCTION_PYTHON:?Set PRODUCTION_PYTHON to the installed production Python}"
+"$PRODUCTION_PYTHON" \
   -B -m unittest -v TESTS.test_message_restore_lock_probe
 ```
 
@@ -185,8 +187,8 @@ Parent reports actual component checks passed for its earlier immutable
 image at default UID `10001:10001`: idle acquisition/release, held-lock contention
 twice, acquisition after release, bad FD nonzero with diagnostics, permission
 failure not classified as contention, and missing path not created. The owned
-container was removed. Parent receipt:
-`/Users/alberto/Desktop/Bakney/Workdir/assozeta-go/quality-reports/go-migration/restore-linux-protocol-r1/results.json`.
+container was removed. Parent receipt (relative to the parent checkout):
+`quality-reports/go-migration/restore-linux-protocol-r1/results.json`.
 The script remains unchanged with SHA256
 `78ca083813a4cdf60f1c693c114e7b7cdd9e6676980412a0dae0c33610aa3ecd`.
 These are parent-reported component checks, not actual Go HTTP restore
