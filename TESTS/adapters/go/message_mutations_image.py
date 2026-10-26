@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 import time
@@ -56,6 +57,31 @@ EXPECTED_CASES = 119
 BUILD_KEYS = ('success', 'source_stable', 'tracked_context_exact', 'cleanup_verified',
               'private_directory_removed', 'source_revision', 'packaged_revision',
               'image_id', 'source_sha256', 'server_sha256', 'errors', 'cleanup_errors')
+
+# Constant image-side protocol. Only the shell holds FD 9 while reading stdin;
+# no background child can inherit it. Alpine ash's timed builtin also bounds a
+# stranded exec if Docker fails to forward EOF after the client disappears.
+LINUX_LOCK_SCRIPT = r'''set -eu
+exec 9<> /operations/lifecycle.lock
+/usr/bin/flock -x -n 9
+printf 'MUTATION_LOCK_READY\n'
+IFS= read -r -t 60 release || exit 77
+[ "$release" = MUTATION_LOCK_RELEASE ] || exit 78
+/usr/bin/flock -u 9
+exec 9>&-
+printf 'MUTATION_LOCK_RELEASED\n'
+'''
+LINUX_LOCK_PROBE = r'''set -eu
+exec 9<> /operations/lifecycle.lock
+/usr/bin/flock -x -n 9
+/usr/bin/flock -u 9
+exec 9>&-
+printf 'MUTATION_LOCK_REACQUIRED\n'
+'''
+LOCK_READY = b'MUTATION_LOCK_READY\n'
+LOCK_RELEASED = b'MUTATION_LOCK_RELEASED\n'
+LOCK_START_TIMEOUT = 5
+LOCK_EXIT_TIMEOUT = 5
 
 
 def require_assertions():
@@ -191,6 +217,7 @@ def runtime_acceptance(report):
         need(report['schema'] == SCHEMA and mutation_schema_valid(report['mutation_schema'])
              and report['mutation_schema_after'] == report['mutation_schema']
              and mutation_schema_valid(report['mutation_schema_after']), 'receipt.schema')
+        need(report['audit_resolvers_after_migration'] is True, 'receipt.audit-resolver')
         need(report['python']['python'] == '3.13.16' and hashed(report['python']['sha256']), 'receipt.python')
         need(all(report[key] is True for key in ('cleanup_verified', 'private_directory_removed',
                                                 'environment_restored')), 'receipt.cleanup')
@@ -406,6 +433,123 @@ class MutationImageFixture(packaged.MessageImageFixture):
         need(self.cleanup_verified, 'mutation-image.command-cleanup')
 
 
+def _linux_lock_identity(proof, guard):
+    """Bind the real default-user server, configured mount and synthetic inode."""
+    from django.conf import settings
+    container = proof.identifier + '-server'
+    info = proof.inspect(container)
+    identity = packaged._container_identity(info, proof.image_id, proof.identifier)
+    operations = Path(proof.work).resolve() / 'image-operations'
+    lock = operations / 'lifecycle.lock'
+    need(operations.is_dir() and not operations.is_symlink()
+         and lock.is_file() and not lock.is_symlink()
+         and Path(settings.DATA_RESTORE_LOCK_PATH).resolve() == lock, 'mutation-image.linux-lock-path')
+    mounts = [row for row in info['Mounts'] if row['Destination'] == '/operations']
+    need(len(mounts) == 1 and mounts[0]['Type'] == 'bind' and mounts[0]['RW'] is True
+         and Path(mounts[0]['Source']).resolve() == operations, 'mutation-image.linux-lock-mount')
+    paths = [value for value in info['Config']['Env'] if value.startswith('DATA_RESTORE_LOCK_PATH=')]
+    need(paths == ['DATA_RESTORE_LOCK_PATH=/operations/lifecycle.lock'],
+         'mutation-image.linux-lock-config')
+    stat = lock.stat()
+    return identity, lifecycle._process(guard), (stat.st_dev, stat.st_ino)
+
+
+@contextmanager
+def linux_locked_admission(proof, guard):
+    """Own one actual Linux lock; prove readiness before HTTP and release after.
+
+    Docker exec output never reaches public FDs. A nonzero exit, expired lease,
+    malformed protocol or failed same-container reacquisition cannot pass.
+    """
+    initial = _linux_lock_identity(proof, guard)
+    container = initial[0]['id']  # Pin exec to this owned immutable container ID.
+    process, acquired = None, False
+    with ExitStack() as files:
+        with defer_interruption():
+            output = files.enter_context(tempfile.TemporaryFile(dir=proof.work))
+            errors = files.enter_context(tempfile.TemporaryFile(dir=proof.work))
+        try:
+            with defer_interruption():
+                process = subprocess.Popen(['docker', 'exec', '-i', container, 'sh', '-c', LINUX_LOCK_SCRIPT],
+                    stdin=subprocess.PIPE, stdout=output, stderr=errors, start_new_session=True)
+            until = time.monotonic() + LOCK_START_TIMEOUT
+            while True:
+                content = os.pread(output.fileno(), len(LOCK_READY) + 1, 0)
+                need(process.poll() is None, 'mutation-image.linux-lock-start-exit')
+                if content == LOCK_READY:
+                    acquired = True
+                    break
+                need(LOCK_READY.startswith(content), 'mutation-image.linux-lock-readiness')
+                need(time.monotonic() < until, 'mutation-image.linux-lock-start-timeout')
+                time.sleep(0.02)
+            need(_linux_lock_identity(proof, guard) == initial,
+                 'mutation-image.linux-lock-identity')
+            yield
+        finally:
+            # Cover startup failure/cancellation too. Do not declare terminal
+            # runner cleanup for a per-case context that normally continues.
+            with defer_interruption():
+                cleanup_errors, protocol_error = [], False
+                if process is not None:
+                    try:
+                        live = process.poll() is None
+                        protocol_error = acquired and not live
+                        if process.stdin is not None:
+                            stream, process.stdin = process.stdin, None
+                            try:
+                                if live:
+                                    stream.write(b'MUTATION_LOCK_RELEASE\n')
+                                    stream.flush()
+                            finally:
+                                # EOF is also an emergency release path. Detach
+                                # the closed stream before stop_group.communicate.
+                                stream.close()
+                        process.wait(timeout=LOCK_EXIT_TIMEOUT)
+                        if acquired:
+                            protocol_error |= (process.returncode != 0 or
+                                os.pread(output.fileno(), len(LOCK_READY + LOCK_RELEASED) + 1, 0)
+                                != LOCK_READY + LOCK_RELEASED)
+                    except (OSError, subprocess.SubprocessError):
+                        protocol_error = True
+                        # A lost client may leave an exec not yet observable by
+                        # a point probe. Do not certify that uncertain lifetime.
+                        cleanup_errors.append('transport')
+                    finally:
+                        # Reaping Docker's client alone never proves its group
+                        # or the container-side exec released the Linux lock.
+                        try:
+                            proof.commands.stop_group(process)
+                        except BaseException:
+                            cleanup_errors.append('group')
+                try:
+                    released = proof.commands(['docker', 'exec', container, 'sh', '-c', LINUX_LOCK_PROBE],
+                        timeout=LOCK_EXIT_TIMEOUT)
+                    need(released == b'MUTATION_LOCK_REACQUIRED\n', 'mutation-image.linux-lock-probe')
+                except BaseException:
+                    cleanup_errors.append('reacquire')
+                try:
+                    need(_linux_lock_identity(proof, guard) == initial,
+                         'mutation-image.linux-lock-identity')
+                except BaseException:
+                    cleanup_errors.append('identity')
+                if cleanup_errors:
+                    proof.commands.cleanup_verified = False
+                    need(False, 'mutation-image.linux-lock-cleanup-unverified')
+                need(not protocol_error, 'mutation-image.linux-lock-child-exit')
+
+
+def image_admission_controller(proof, guard):
+    @contextmanager
+    def control(case, fixture):
+        if case.get('admission') == 'locked':
+            with linux_locked_admission(proof, guard):
+                yield
+        else:
+            with adapter.admission_control(case, fixture):
+                yield
+    return control
+
+
 def baseline(apps, raw):
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     state = scopes.snapshot_state(apps)
@@ -427,12 +571,16 @@ def run_endpoint(label, backend, base, guard, apps, raw, observer, work, report,
     observation = work / 'observations-0.jsonl'
     workload = None
     started = time.time()
+    admission = {}
+    if backend == 'go':
+        need(proof is not None, 'mutation-image.linux-lock-owner')
+        admission['admission_controller'] = image_admission_controller(proof, guard)
     try:
         with adapter.fixture_context(apps, work / ('fixture-' + label), raw, cleanup_receipt=cleanup) as fixture:
             private_values.update(fixture['tokens'].values())
             private_values.update(fixture['sessions'].values())
             workload = adapter.run_workload(label, backend, base, fixture, apps, raw, observer,
-                remote_addr=address, process_guard=guard, observations_path=observation)
+                remote_addr=address, process_guard=guard, observations_path=observation, **admission)
             effects = workload.pop('normalized_effects')
             need(len(effects) == EXPECTED_CASES, 'mutation-image.effects119')
             for effect in effects:
@@ -547,6 +695,14 @@ def execute_workloads(reuse, proof, work, log, tools, build, report, private_val
             override.enable()
         evidence['schema'] = reuse.migrate_full_schema(log)
         need(evidence['schema'] == SCHEMA, 'mutation-image.migrations547')
+        # AppConfig.ready ran before this fresh database had content types.
+        from application.audit_resolvers import setup_audit_resolvers, get_resolver, direct_resolver
+        from django.contrib.contenttypes.models import ContentType
+        from communications.models import Message
+        setup_audit_resolvers()
+        need(get_resolver(ContentType.objects.get_for_model(Message)) is direct_resolver,
+             'mutation-image.audit-resolver')
+        evidence['audit_resolvers_after_migration'] = True
         evidence['mutation_schema'] = adapter.schema_evidence()
         need(mutation_schema_valid(evidence['mutation_schema']), 'mutation-image.schema-before')
         with defer_interruption():
@@ -588,6 +744,7 @@ def execute_workloads(reuse, proof, work, log, tools, build, report, private_val
                         guard = packaged.gateway_liveness_guard(backend_guard, caddy['container_id'])
                         run_endpoint(label, backend, gateway + '/api/' + version, guard,
                             apps, raw, observer, work, evidence, private_values,
+                            proof=proof if backend == 'go' else None,
                             binary=server['metadata']['server_sha256'])
                 with _owned(reuse.owned_caddy(evidence, log, django_upstream, django_upstream,
                         service='caddy-misroute', pull_policy='never')) as (gateway, _, caddy):

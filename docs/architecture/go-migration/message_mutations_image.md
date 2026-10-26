@@ -45,6 +45,17 @@ The packaged Go configuration already sets a 10-second connection timeout.
 Independent Redis, database and cache finalizers exist before Django setup;
 partial initialization and a failing finalizer still attempt the other cleanups.
 
+This fresh-database fixture runs `django.setup()` before content types exist, so
+`AppConfig.ready()` cannot populate the audit resolver registry at that point.
+After all 547 migrations, the runner calls the production
+`setup_audit_resolvers()` and requires
+`get_resolver(ContentType.objects.get_for_model(Message)) is direct_resolver`
+before starting HTTP or any workload, matching the native CLI bootstrap.
+Only then does it record `runtime.audit_resolvers_after_migration = true`, which
+`runtime_acceptance` requires. Missing or different resolvers abort and still
+run resource cleanup. The exact audit-index contract remains `resolution_path`
+equal to `direct`; the fallback `changes_json.sport_association` fails the oracle.
+
 The runner composes the published image fixture, its binary/license/container
 verification, owned Caddy lifetimes, mutation `fixture_context` and
 `run_workload`, complete historical DB1 cache snapshots and full migration
@@ -121,7 +132,43 @@ The inherited server mounts its own `image-operations` directory at `/operations
 While that lifetime is active, the runner points Django at the same host-side
 `lifecycle.lock`. Only this empty synthetic lock is mode 0666, so both the parent
 and image UID 10001 can open it. Credentials and raw observations remain private
-and 0600. The authored locked CREATE/DELETE cases verify actual shared admission.
+and 0600. On macOS, a Darwin `fcntl.flock` on this bind-mounted host file does
+not hold the Linux kernel lock used by Go. The parent's diagnostic reached Go's
+locked CREATE and returned 401 instead of the required admission-first 503.
+Sharing the path alone did not establish the fixture's intended contention.
+
+For both Go transports, `run_endpoint` therefore passes an explicit
+`admission_controller` to the published `adapter.run_workload`. Only `locked`
+cases enter the small image-side context. Missing/`None` and `pending` modes
+delegate to the published `admission_control`; native Django and Caddy v1 retain
+the default callback. Authored statuses, precedence, effects and production code
+are unchanged. Caddy v2 receives the same owned Go fixture as direct Go.
+
+The context inspects the default-user owned server's immutable identity, live
+process, actual `/operations` bind source, configured lock path and host inode.
+It starts `docker exec -i` pinned to that container ID, with a constant `sh -c`
+script and an owned stdin pipe. The script opens FD 9 on
+`/operations/lifecycle.lock`, obtains exclusive nonblocking `/usr/bin/flock`,
+then emits a fixed readiness sentinel. HTTP cannot begin before this sentinel
+and another stable identity check. Readiness has a five-second deadline.
+The shell waits for a fixed release line; EOF exits and closes the lock too.
+Alpine ash's 60-second timed read bounds a stranded exec if Docker fails to
+forward EOF after its client dies. EOF, expiry, a nonzero child exit or malformed
+output cannot pass the normal release protocol.
+
+Ownership assignment and teardown defer cancellation. Release closes stdin and
+waits at most five seconds for the client, then uses the existing
+`builder.Commands.stop_group` to verify removal of its owned process group.
+Every attempted launch, including failed readiness and cancellation, is followed
+by an actual exclusive nonblocking reacquisition in the same container, with a
+fixed success sentinel and a bounded command. A final inspection must find the
+same live server, process, mount and lock inode. Failed or ambiguous transport
+cleanup, failed reacquisition or identity drift marks command cleanup unverified
+and fails the runner. Stopping the server is not a substitute for lock release.
+All helper stdout/stderr stays in private temporary files or the existing private
+command capture; scripts contain no interpolated credentials or environment.
+There is no host-lock fallback, root override, installation or new executable
+mount. The actual image must supply `/usr/bin/flock` and ash's timed read.
 
 Offline verification uses the exact production Python and never launches services:
 
@@ -130,11 +177,20 @@ Offline verification uses the exact production Python and never launches service
 ```
 
 Offline tests are negative controls and composition checks, not runtime evidence.
-They include partial Django setup, simulated blocked migration/new-session
+They include migration → resolver setup/identity check → HTTP/workload ordering,
+missing/wrong resolver and bootstrap failures before HTTP with resource cleanup,
+the required resolver receipt flag, partial Django setup, simulated blocked migration/new-session
 defaults, actual child Python writes to inherited native FDs, missing images
 before any execution, no-pull container arguments, failing independent
 finalizers, and SIGTERM during each service's startup and teardown and diagnostic
 ownership transitions. They run without DB, Docker, HTTP services or installs.
+Linux-lock controls use private child Python protocol simulations, with no host
+flock substitute: readiness failure/timeout, contention, nonzero or hung child,
+unreleased lock, failed reacquisition, mount/configuration/identity drift and
+SIGTERM during startup/teardown. An authored locked CREATE reaches the new
+callback through the actual endpoint and workload functions before HTTP; both
+Go transports select the override and both Django transports keep the default.
+These simulations cannot establish Linux lock contention or Docker EOF behavior.
 A parent must execute the recipe against the final committed source revision to
 establish packaged mutation acceptance. Existing native/versioned passes do not
 satisfy this gate.

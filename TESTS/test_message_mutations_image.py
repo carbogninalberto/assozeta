@@ -25,6 +25,38 @@ def cleanup(names):
     return {'verified': True, 'results': dict.fromkeys(names, True), 'errors': []}
 
 
+@contextmanager
+def audit_resolver_fixture(events=None, failure=None):
+    """Fresh registry: only post-migration setup makes Message resolve directly."""
+    events = [] if events is None else events
+    message, content_type = object(), object()
+    direct = Mock(return_value=('association', 'direct'))
+    # Same return value is insufficient: the runtime must require identity.
+    wrong = Mock(return_value=('association', 'direct'))
+    registry = {}
+
+    def setup():
+        events.append('resolver-setup')
+        if failure == 'setup':
+            raise RuntimeError('private resolver setup failure')
+        if failure != 'missing':
+            registry[content_type] = wrong if failure == 'wrong' else direct
+
+    def lookup(value):
+        events.append('resolver-lookup')
+        return registry.get(value)
+
+    resolvers = SimpleNamespace(setup_audit_resolvers=Mock(side_effect=setup),
+        get_resolver=Mock(side_effect=lookup), direct_resolver=direct)
+    content_types = SimpleNamespace(objects=Mock())
+    content_types.objects.get_for_model.return_value = content_type
+    with patch.dict(sys.modules, {
+            'application.audit_resolvers': resolvers,
+            'django.contrib.contenttypes.models': SimpleNamespace(ContentType=content_types),
+            'communications.models': SimpleNamespace(Message=message)}):
+        yield SimpleNamespace(resolvers=resolvers, content_types=content_types, message=message)
+
+
 def build_receipt():
     return dict(success=True, source_stable=True, tracked_context_exact=True,
         cleanup_verified=True, private_directory_removed=True, errors=[], cleanup_errors=[],
@@ -70,6 +102,7 @@ def runtime_receipt():
         complete_message_family_parity=False, errors=[], cleanup_errors=[],
         source_sha256={'source': H}, source_sha256_at_server_start={'source': H},
         source_sha256_after={'source': H}, schema=image.SCHEMA.copy(),
+        audit_resolvers_after_migration=True,
         mutation_schema={'orm_cascade': 'communications.MessageTransaction.message',
             'sql_cascade': False, 'message_audited': True, 'delivery_audited': False,
             'references': [{'name': 'delivery_message_fk', 'table': 'communications_messagetransaction', 'delete_action': 'a',
@@ -176,6 +209,16 @@ class Receipts(unittest.TestCase):
             with self.subTest(control=index):
                 self.assertFalse(image.runtime_acceptance(changed))
         self.assertFalse(image.runtime_acceptance({'success': True}))
+
+    def test_runtime_requires_exact_postmigration_resolver_receipt(self):
+        for value in (False, None, 1, 'true', 'missing'):
+            with self.subTest(value=value):
+                report = runtime_receipt()
+                if value == 'missing':
+                    report.pop('audit_resolvers_after_migration')
+                else:
+                    report['audit_resolvers_after_migration'] = value
+                self.assertFalse(image.runtime_acceptance(report))
 
     def test_decoy_index_and_wrong_referenced_column_are_rejected(self):
         valid = runtime_receipt()['mutation_schema']
@@ -367,6 +410,11 @@ class OracleComposition(unittest.TestCase):
     def test_orchestration_uses_four_exact_transports_and_real_misroute_helper(self):
         self._exercise_orchestration()
 
+    def test_migration_or_resolver_failure_stops_before_http_and_still_cleans_up(self):
+        for failure in ('migration', 'setup', 'missing', 'wrong'):
+            with self.subTest(failure=failure):
+                self._exercise_orchestration(bootstrap_failure=failure)
+
     def test_schema_is_reinspected_after_packaged_stop_and_drift_rejected(self):
         for change in ('drop-fk', 'drop-index', 'extra-index', 'wrong-reference'):
             with self.subTest(change=change):
@@ -382,7 +430,7 @@ class OracleComposition(unittest.TestCase):
         for name in ('TESTS/adapters/go/message_image_process.py', 'TESTS/adapters/go/test_message_image_process.py'):
             self.assertEqual(manifest[name], image.digest(image.ROOT / name))
 
-    def _exercise_orchestration(self, schema_change=None, process_change=None):
+    def _exercise_orchestration(self, schema_change=None, process_change=None, bootstrap_failure=None):
         from TESTS.adapters.django import message_reads_runtime as reuse
         identity = {'pid': 42, 'instance': 123, 'running': True}
         guard = lambda: dict(identity)
@@ -397,6 +445,12 @@ class OracleComposition(unittest.TestCase):
             schema_after['indexes'].append({'name': 'extra', 'table': 'other', 'definition': 'CREATE INDEX extra ON other(id)'})
         elif schema_change == 'wrong-reference':
             schema_after['references'][0]['definition'] = schema_after['references'][0]['definition'].replace('REFERENCES communications_message(message_id)', 'REFERENCES communications_message(other_id)')
+
+        def migrate_schema(log):
+            events.append('migration')
+            if bootstrap_failure == 'migration':
+                raise RuntimeError('private migration failure')
+            return image.SCHEMA.copy()
 
         def inspect_schema():
             if 'schema-before' not in events:
@@ -424,8 +478,13 @@ class OracleComposition(unittest.TestCase):
 
         @contextmanager
         def django(report, versioned, queries, *, liveness_observer):
+            events.append('django-start')
             liveness_observer(guard)
             yield 'http://127.0.0.1:8001', 'actual-observer', 8001
+
+        def workload(label, *args, **kwargs):
+            self.assertIs(report['runtime'].get('audit_resolvers_after_migration'), True)
+            events.append(label)
 
         @contextmanager
         def server(*args):
@@ -443,10 +502,11 @@ class OracleComposition(unittest.TestCase):
         proof.verified_server = server
         report = {'runtime': {'preflight_caddy_image_sha256': H, 'source_sha256': {'source': H}, 'service_cleanup': dict.fromkeys(image.SERVICES, 'not_started')}}
         with tempfile.TemporaryDirectory() as directory, \
+             audit_resolver_fixture(events, bootstrap_failure) as audit, \
              patch.object(reuse, 'private_environment', return_value=({}, set())), \
              patch.object(reuse, 'apply_private_environment'), \
              patch.object(reuse, 'initialize_django_apps', return_value=('apps', None)), \
-             patch.object(reuse, 'migrate_full_schema', return_value=image.SCHEMA.copy()) as migrate, \
+             patch.object(reuse, 'migrate_full_schema', side_effect=migrate_schema) as migrate, \
              patch.object(image.adapter, 'schema_evidence', side_effect=inspect_schema), \
              patch.object(reuse, 'django_application', django), \
              patch('django.db.connections.close_all') as close, \
@@ -457,13 +517,33 @@ class OracleComposition(unittest.TestCase):
              patch.object(image.packaged, 'owned_image_caddy', caddy), \
              patch.object(reuse, 'owned_caddy', caddy), \
              patch.object(image.packaged, 'gateway_liveness_guard', return_value=guard) as gateway_guard, \
-             patch.object(image, 'run_endpoint') as endpoint, \
+             patch.object(image, 'run_endpoint', side_effect=workload) as endpoint, \
              patch.object(image, 'misroute_control', return_value={'rejected': True}) as misroute:
-            if schema_change is None and process_change is None:
+            if schema_change is None and process_change is None and bootstrap_failure is None:
                 image.execute_workloads(reuse, proof, Path(directory), io.StringIO(), {}, build_receipt(), report, set())
             else:
                 with self.assertRaises((AssertionError, RuntimeError)):
                     image.execute_workloads(reuse, proof, Path(directory), io.StringIO(), {}, build_receipt(), report, set())
+        if bootstrap_failure is not None:
+            self.assertEqual(events, ['migration'] + ([] if bootstrap_failure == 'migration' else
+                ['resolver-setup'] + ([] if bootstrap_failure == 'setup' else ['resolver-lookup'])))
+            self.assertIsNot(report['runtime'].get('audit_resolvers_after_migration'), True)
+            self.assertFalse(report['runtime'].get('runtime_executed', False))
+            endpoint.assert_not_called()
+            misroute.assert_not_called()
+            proof.docker.assert_not_called()
+            redis.assert_not_called()
+            self.assertEqual(calls, [])
+            self.assertEqual(report['runtime']['service_cleanup'], dict.fromkeys(image.SERVICES, 'not_started'))
+            self.assertTrue(report['runtime']['resource_cleanup']['verified'])
+            self.assertEqual(report['runtime']['resource_cleanup']['results'], dict.fromkeys(image.RESOURCES, True))
+            override.return_value.disable.assert_called_once()
+            self.assertEqual(close.call_count, 2)
+            return
+        audit.resolvers.setup_audit_resolvers.assert_called_once_with()
+        audit.content_types.objects.get_for_model.assert_called_once_with(audit.message)
+        audit.resolvers.get_resolver.assert_called_once_with(audit.content_types.objects.get_for_model.return_value)
+        self.assertEqual(events[:5], ['migration', 'resolver-setup', 'resolver-lookup', 'schema-before', 'django-start'])
         if process_change is not None:
             self.assertFalse(report['runtime'].get('runtime_executed', False))
             self.assertFalse(report['runtime'].get('executing_server', {}).get('verified', False))
@@ -496,7 +576,8 @@ class OracleComposition(unittest.TestCase):
         self.assertFalse(redis.call_args.kwargs['decode_responses'])
         migrate.assert_called_once()
         self.assertEqual(report['runtime'].get('runtime_executed', False), schema_change is None)
-        self.assertEqual(events, ['schema-before', 'go-stopped', 'schema-after'])
+        self.assertEqual(events, ['migration', 'resolver-setup', 'resolver-lookup', 'schema-before',
+            'django-start', 'django-native', 'go-packaged', 'caddy-v1', 'caddy-v2', 'go-stopped', 'schema-after'])
         self.assertTrue(report['runtime']['resource_cleanup']['verified'])
         redis.return_value.close.assert_called_once()
         override.return_value.disable.assert_called_once()
@@ -646,6 +727,277 @@ class OracleComposition(unittest.TestCase):
                 with self.assertRaises(AssertionError):
                     image.check_revision(commands, REV)
             self.assertFalse((root / 'runtime-blobs').exists())
+
+
+class LinuxAdmissionTransport(unittest.TestCase):
+    # A private child models the Docker transport protocol, never a host flock.
+    CHILD = r'''
+import os, pathlib, sys, time
+mode, marker = sys.argv[1], pathlib.Path(sys.argv[2])
+if mode == 'contended':
+    sys.exit(73)
+marker.touch()
+if mode != 'timeout':
+    os.write(1, b'WRONG\n' if mode == 'bad-ready' else b'MUTATION_LOCK_READY\n')
+if mode == 'early-exit':
+    marker.unlink()
+    sys.exit(74)
+line = sys.stdin.buffer.readline()
+if mode == 'hang-exit':
+    time.sleep(30)
+if mode != 'unreleased':
+    marker.unlink()
+os.write(1, b'MUTATION_LOCK_RELEASED\n')
+os.write(2, b'PRIVATE_LOCK_CHILD_STDERR\n')
+sys.exit(75 if mode == 'exit-nonzero' else 0)
+'''
+
+    @contextmanager
+    def transport(self, mode='ok', *, cancel=None, change=None):
+        with tempfile.TemporaryDirectory() as directory:
+            work = Path(directory).resolve()
+            operations = work / 'image-operations'
+            operations.mkdir()
+            (operations / 'lifecycle.lock').touch(mode=0o666)
+            marker = work / 'simulated-linux-owner'
+            identity = {'pid': 42, 'instance': 123, 'running': True}
+            guard = lambda: dict(identity)
+            info = {'Id': H, 'Image': IID, 'RestartCount': 0,
+                'State': {'Running': True, 'Pid': 42, 'StartedAt': '2026-10-26T01:02:03Z'},
+                'Config': {'User': '10001:10001',
+                    'Labels': {image.packaged.LABEL: 'owned'},
+                    'Env': ['DATA_RESTORE_LOCK_PATH=/operations/lifecycle.lock']},
+                'Mounts': [{'Type': 'bind', 'Source': str(operations),
+                    'Destination': '/operations', 'RW': True}]}
+            if change == 'mount':
+                info['Mounts'][0]['Source'] = str(work / 'wrong')
+            if change == 'env':
+                info['Config']['Env'] = ['DATA_RESTORE_LOCK_PATH=/wrong']
+            proof = SimpleNamespace(work=work, identifier='owned', image_id=IID,
+                inspect=Mock(side_effect=lambda name: copy.deepcopy(info)))
+            real_commands = image.builder.Commands(work)
+            commands = Mock(cleanup_verified=True)
+            proof.commands = commands
+            def stop_group(process):
+                if cancel == 'teardown':
+                    os.kill(os.getpid(), signal.SIGTERM)
+                real_commands.stop_group(process)
+            commands.stop_group.side_effect = stop_group
+            events, children, calls = [], [], []
+            real_popen = subprocess.Popen
+
+            def launch(args, **kwargs):
+                calls.append(args)
+                self.assertEqual(args[:3], ['docker', 'exec', '-i'])
+                self.assertEqual(args[3], H)
+                self.assertEqual(args[4:6], ['sh', '-c'])
+                self.assertEqual(args[6], image.LINUX_LOCK_SCRIPT)
+                self.assertTrue(kwargs['start_new_session'])
+                self.assertIs(kwargs['stdin'], subprocess.PIPE)
+                self.assertNotIn('--user', args)
+                child = real_popen([sys.executable, '-c', self.CHILD, mode, str(marker)], **kwargs)
+                children.append(child)
+                events.append('spawned')
+                if cancel == 'startup':
+                    os.kill(os.getpid(), signal.SIGTERM)
+                return child
+
+            def probe(args, **kwargs):
+                events.append('reacquire')
+                self.assertEqual(args, ['docker', 'exec', H, 'sh', '-c', image.LINUX_LOCK_PROBE])
+                self.assertGreater(kwargs['timeout'], 0)
+                self.assertFalse(marker.exists(), 'simulated lock still held')
+                if change == 'probe-failed':
+                    raise RuntimeError('private probe failure')
+                if change == 'probe-output':
+                    return b'PRIVATE_NOT_PROOF\n'
+                if change == 'process':
+                    identity['instance'] += 1
+                if change == 'container':
+                    info['State']['StartedAt'] = '2026-10-26T01:02:04Z'
+                if change == 'lock-file':
+                    (operations / 'lifecycle.lock').unlink()
+                    (operations / 'lifecycle.lock').mkdir()
+                return b'MUTATION_LOCK_REACQUIRED\n'
+
+            commands.side_effect = probe
+            with patch.object(image.subprocess, 'Popen', side_effect=launch), \
+                 patch.object(image, 'LOCK_START_TIMEOUT', 0.4), \
+                 patch.object(image, 'LOCK_EXIT_TIMEOUT', 0.4), \
+                 patch('django.conf.settings', SimpleNamespace(DATA_RESTORE_LOCK_PATH=str(operations / 'lifecycle.lock'))):
+                try:
+                    yield proof, guard, events, marker, calls
+                finally:
+                    for child in children:
+                        self.assertIsNotNone(child.poll(), 'owned child was not reaped')
+                        self.assertFalse(real_commands.group_exists(child.pid))
+                    self.assertTrue(all(child.stdin is None or child.stdin.closed for child in children))
+
+    def test_linux_acquisition_brackets_body_and_reacquires_after_release(self):
+        with self.transport() as (proof, guard, events, marker, calls):
+            with image.linux_locked_admission(proof, guard):
+                self.assertTrue(marker.exists())
+                events.append('body')
+            self.assertEqual(events, ['spawned', 'body', 'reacquire'])
+            self.assertFalse(marker.exists())
+            self.assertTrue(proof.commands.cleanup_verified)
+            proof.commands.stop_group.assert_called_once()
+            self.assertGreaterEqual(proof.inspect.call_count, 3)
+            self.assertEqual(len(calls), 1)
+
+    def test_readiness_timeout_contention_and_child_exit_fail_without_body_or_fallback(self):
+        for mode in ('bad-ready', 'timeout', 'contended', 'early-exit', 'exit-nonzero'):
+            with self.subTest(mode=mode), self.transport(mode) as (proof, guard, events, marker, _), \
+                 patch.object(image.adapter, 'admission_control') as host:
+                with self.assertRaises((AssertionError, RuntimeError)):
+                    with image.linux_locked_admission(proof, guard):
+                        events.append('body')
+                if mode in ('bad-ready', 'timeout', 'contended'):
+                    self.assertNotIn('body', events)
+                self.assertIn('reacquire', events)
+                self.assertFalse(marker.exists())
+                host.assert_not_called()
+
+    def test_unreleased_lock_failed_probe_or_identity_marks_cleanup_unverified(self):
+        for mode, change in (('unreleased', None), ('hang-exit', None), ('ok', 'probe-failed'), ('ok', 'probe-output'),
+                             ('ok', 'process'), ('ok', 'container'), ('ok', 'lock-file')):
+            with self.subTest(mode=mode, change=change), self.transport(mode, change=change) as (proof, guard, events, _, _):
+                with self.assertRaisesRegex(AssertionError, 'mutation-image.linux-lock-cleanup-unverified'):
+                    with image.linux_locked_admission(proof, guard):
+                        events.append('body')
+                self.assertIn('reacquire', events)
+                self.assertFalse(proof.commands.cleanup_verified)
+
+    def test_wrong_mount_or_lock_configuration_never_starts_exec(self):
+        for change in ('mount', 'env'):
+            with self.subTest(change=change), self.transport(change=change) as (proof, guard, events, marker, calls):
+                with self.assertRaises(AssertionError):
+                    with image.linux_locked_admission(proof, guard):
+                        self.fail('bad lock binding entered body')
+                self.assertEqual(calls, [])
+
+    def test_cancellation_startup_and_teardown_keeps_ownership_until_release_probe(self):
+        from TESTS.adapters.go.message_image_execution import ExecutionInterrupted
+        for phase in ('startup', 'teardown'):
+            with self.subTest(phase=phase), self.transport(cancel=phase) as (proof, guard, events, marker, _):
+                control = image.ExecutionDeadline(10, 3)
+                with control, self.assertRaises(ExecutionInterrupted):
+                    with image.linux_locked_admission(proof, guard):
+                        events.append('body')
+                self.assertEqual(control.reason, 'sigterm')
+                self.assertIn('reacquire', events)
+                self.assertFalse(marker.exists())
+                if phase == 'startup':
+                    self.assertNotIn('body', events)
+                self.assertTrue(proof.commands.cleanup_verified)
+
+    def test_none_and_pending_delegate_to_published_host_controller(self):
+        events = []
+        fixture = object()
+        @contextmanager
+        def host(case, actual_fixture):
+            self.assertIs(actual_fixture, fixture)
+            events.append(case.get('admission'))
+            yield
+        with patch.object(image.adapter, 'admission_control', side_effect=host) as default, \
+             patch.object(image, 'linux_locked_admission') as linux:
+            controller = image.image_admission_controller(None, None)
+            for case in ({}, {'admission': None}, {'admission': 'pending'}):
+                with controller(case, fixture):
+                    pass
+            self.assertEqual(events, [None, None, 'pending'])
+            self.assertEqual(default.call_count, 3)
+            linux.assert_not_called()
+
+    def test_actual_authored_locked_case_enters_callback_before_http_and_preserves_503(self):
+        from TESTS.adapters.django import historical_read_cache as cache
+        class BeforeHTTP(Exception):
+            pass
+        case = next(row for row in image.contract.load_source()['cases']
+                    if row['name'] == 'message-mutations-restore-locked-create')
+        self.assertEqual(case['status'], 503)
+        fixture = {'runtime': {'cases': [case]}, 'baseline_state': {},
+                   'baseline_cache': None, 'contrasts': {}, 'tokens': {}, 'sessions': {}}
+        @contextmanager
+        def failure(*args):
+            yield
+        @contextmanager
+        def fixture_context(*args, **kwargs):
+            yield fixture
+        with self.transport() as (proof, guard, events, marker, _), ExitStack() as mocks:
+            def before_http(*args):
+                # First call supplies initial baseline; the next is inside the
+                # actual oracle's admission block, before its HTTP call.
+                if marker.exists():
+                    events.append('oracle-inside-lock')
+                    raise BeforeHTTP()
+                return {}
+            for obj, name, kwargs in (
+                (image.adapter, 'require_private_database', {}),
+                (image.adapter.contract, 'validate_runtime', {}),
+                (image.adapter.shared, 'assert_state_unchanged', {}),
+                (image.adapter.shared, 'assert_cache_unchanged', {}),
+                (image.adapter.scopes, 'snapshot_state', {'side_effect': before_http}),
+                (cache, 'snapshot_historical_read_cache', {'return_value': None}),
+                (image.adapter, 'failure_control', {'side_effect': failure}),
+                (image.adapter, 'fixture_context', {'side_effect': fixture_context}),
+                (image, 'baseline', {'return_value': {}}),
+                (image, 'measure_address', {'return_value': ('127.0.0.1', {})}),
+            ):
+                mocks.enter_context(patch.object(obj, name, **kwargs))
+            host = mocks.enter_context(patch.object(image.adapter, 'admission_control',
+                side_effect=AssertionError('host lock must not serve Go')))
+            http = mocks.enter_context(patch.object(image.adapter.contract, 'assert_case'))
+            with self.assertRaises(BeforeHTTP):
+                image.run_endpoint('go-packaged', 'go', 'http://offline.invalid', guard,
+                    None, None, SimpleNamespace(), proof.work,
+                    {'observations_cleanup': {'results': {}}}, set(), proof=proof, binary=H)
+            self.assertEqual(events, ['spawned', 'oracle-inside-lock', 'reacquire'])
+            http.assert_not_called()
+            host.assert_not_called()
+            self.assertFalse(marker.exists())
+
+    def test_endpoint_passes_override_only_to_go_for_both_direct_and_caddy_transports(self):
+        class StopOracle(Exception):
+            pass
+        fixture = {'tokens': {}, 'sessions': {}}
+        @contextmanager
+        def fixture_context(*args, **kwargs):
+            yield fixture
+        @contextmanager
+        def linux(proof, guard):
+            yield
+        for label, backend in image.ENDPOINTS:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as directory, ExitStack() as mocks:
+                proof, guard = object(), lambda: {'pid': 42, 'instance': 123, 'running': True}
+                owner = mocks.enter_context(patch.object(image, 'linux_locked_admission', side_effect=linux))
+                host = mocks.enter_context(patch.object(image.adapter, 'admission_control'))
+                for obj, name, kwargs in (
+                    (image, 'baseline', {'return_value': {}}),
+                    (image, 'measure_address', {'return_value': ('127.0.0.1', {})}),
+                    (image.adapter, 'fixture_context', {'side_effect': fixture_context}),
+                ):
+                    mocks.enter_context(patch.object(obj, name, **kwargs))
+                def oracle(*args, **kwargs):
+                    if backend == 'go':
+                        self.assertTrue(callable(kwargs['admission_controller']))
+                        case = next(row for row in image.contract.load_source()['cases']
+                                    if row['name'] == 'message-mutations-restore-locked-delete')
+                        with kwargs['admission_controller'](case, fixture):
+                            pass
+                    else:
+                        self.assertNotIn('admission_controller', kwargs)
+                    raise StopOracle()
+                mocks.enter_context(patch.object(image.adapter, 'run_workload', side_effect=oracle))
+                with self.assertRaises(StopOracle):
+                    image.run_endpoint(label, backend, 'http://offline.invalid', guard,
+                        None, None, None, Path(directory), {'observations_cleanup': {'results': {}}},
+                        set(), proof=proof)
+                if backend == 'go':
+                    owner.assert_called_once_with(proof, guard)
+                else:
+                    owner.assert_not_called()
+                host.assert_not_called()
 
 
 class EntryPoint(unittest.TestCase):
@@ -876,6 +1228,7 @@ class OwnedTransitions(unittest.TestCase):
                     proof = SimpleNamespace(redis_port=123, postgres_port=456, network='owned', verified_server=server,
                         identifier='owned', docker=Mock(return_value=SimpleNamespace(returncode=0, stdout=transcript(values))))
                     with ExitStack() as mocks:
+                        mocks.enter_context(audit_resolver_fixture())
                         mocks.enter_context(patch.object(reuse, 'private_environment', return_value=({}, set())))
                         mocks.enter_context(patch.object(reuse, 'apply_private_environment'))
                         mocks.enter_context(patch.object(reuse, 'initialize_django_apps', return_value=('apps', None)))
@@ -941,6 +1294,7 @@ class OwnedTransitions(unittest.TestCase):
                     if len(db_closes) > 1:
                         close('db_connections')
                 with patch.object(reuse, 'private_environment', return_value=({}, set())), \
+                     audit_resolver_fixture(), \
                      patch.object(reuse, 'apply_private_environment'), \
                      patch.object(reuse, 'initialize_django_apps', return_value=('apps', None)), \
                      patch.object(image, 'configure_database_bounds'), \

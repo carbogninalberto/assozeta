@@ -321,14 +321,19 @@ def admission_control(case, fixture):
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer, *, remote_addr,
-                 process_guard, observations_path=None):
+                 process_guard, observations_path=None, admission_controller=None):
     """Actual HTTP requests, exact complete state/cache effects, and ASGI attribution.
 
     Parent owns a guard tied to the actual process and independently measured proxy
     client address; a response header alone is never attribution evidence.
+    A packaged adapter may supply its actual Linux lock transport. The default
+    remains the host-side controller; expectations and effect checks are shared.
     """
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
     require_private_database()
+    if admission_controller is None:
+        admission_controller = admission_control
+    contract.require(callable(admission_controller), 'runtime.admission-controller')
     contract.validate_runtime(fixture['runtime'])
     contract.require(backend in ('django', 'go') and callable(process_guard), 'runtime.explicit-backend-guard')
     initial_guard = copy.deepcopy(process_guard())
@@ -344,7 +349,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer, *, remo
         Path(observations_path).chmod(0o600)
     try:
         for case in fixture['runtime']['cases']:
-            with failure_control(case, fixture), admission_control(case, fixture):
+            with failure_control(case, fixture), admission_controller(case, fixture):
                 before, cache_before = scopes.snapshot_state(apps), snapshot_historical_read_cache(raw)
                 sequences_before = sequence_snapshot()
                 cursor, started = observer.cursor(), time.time()
