@@ -15047,7 +15047,8 @@
         "TESTS/test_message_list_spool_image.py",
         "TESTS/test_local_docker_endpoint.py",
         "TESTS/test_message_list_spool_faults.py",
-        "TESTS/test_message_list_spool_faults_runtime.py"
+        "TESTS/test_message_list_spool_faults_runtime.py",
+        "TESTS/test_message_list_query_cancellation.py"
       ],
       "evidence": [
         {
@@ -15121,6 +15122,12 @@
           "result": "Reproducible combined driver passes actual packaged phase1 and bounded faults, independently revalidated with original build/phase1 bytes and exact live source; final cleanup passes.98 parent offline controls pass without skips. Remaining DB-inflight cancellation and disk-fault scope unchanged; no family status promotion.",
           "artifact": "quality-reports/go-migration/message-list-spool-runtime-image-r1/faults.json",
           "receipt_sha256": "a17d3f0e573d2ef45cdda9252a0ee287f2f38d137ea67b2b3dc88b3d59cc9555"
+        },
+        {
+          "revision": "07148adf3b01c5865bf3fc4e43b5997314d3de4b image; exact frozen helper/driver sources in parent verification",
+          "result": "Packaged exact-query cancellation passes: unique PostgreSQL lock waiter and live spool observed; backend and descriptor released in 317ms before blocker rollback; full same-process recovery and final cleanup pass. Parent independently revalidated source/build/query/receipt bindings and response hashes.58 parent offline controls pass. Disk-fault coverage and whole-family acceptance remain incomplete.",
+          "artifact": "quality-reports/go-migration/message-list-query-cancel-image-r1/query-cancellation.json",
+          "receipt_sha256": "4bfa65ed0f9fcba65a9c408118f0bfa45a497b007e815e22dad37cfa66c1bb95"
         }
       ],
       "notes": [
