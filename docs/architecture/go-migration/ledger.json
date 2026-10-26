@@ -15046,7 +15046,8 @@
         "TESTS/test_message_list_spool_config.py",
         "TESTS/test_message_list_spool_image.py",
         "TESTS/test_local_docker_endpoint.py",
-        "TESTS/test_message_list_spool_faults.py"
+        "TESTS/test_message_list_spool_faults.py",
+        "TESTS/test_message_list_spool_faults_runtime.py"
       ],
       "evidence": [
         {
@@ -15114,6 +15115,12 @@
           "result": "Bounded packaged post-header abandonment and spool-create permission denial pass, with actual descriptor release, exact generic500, mode restoration, same-process full recovery and complete cleanup. Parent independently revalidated provenance and validators. Does not establish DB-inflight cancellation, ENOSPC/read/write failures or complete message-family acceptance.",
           "artifact": "quality-reports/go-migration/message-list-spool-faults-image-r1/faults.json",
           "receipt_sha256": "4b6a8929c7f3157f71ef7a8dd65e2f3d99742bcd6d0c44b6ae5ac7add8a6f157"
+        },
+        {
+          "revision": "07148adf3b01c5865bf3fc4e43b5997314d3de4b image; driver/source bindings in frozen parent receipt",
+          "result": "Reproducible combined driver passes actual packaged phase1 and bounded faults, independently revalidated with original build/phase1 bytes and exact live source; final cleanup passes.98 parent offline controls pass without skips. Remaining DB-inflight cancellation and disk-fault scope unchanged; no family status promotion.",
+          "artifact": "quality-reports/go-migration/message-list-spool-runtime-image-r1/faults.json",
+          "receipt_sha256": "a17d3f0e573d2ef45cdda9252a0ee287f2f38d137ea67b2b3dc88b3d59cc9555"
         }
       ],
       "notes": [
