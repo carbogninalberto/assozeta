@@ -182,6 +182,19 @@ def restore_cache(raw, original):
     return True
 
 
+def expire_fixture_session(raw, key):
+    """Expire via Redis's own clock, including when it runs in another VM.
+
+    Keep real PEXPIREAT semantics; never substitute deletion or relax absence
+    checks because the host and Redis wall clocks differ.
+    """
+    seconds, microseconds = raw.time()
+    contract.require(type(seconds) is int and seconds >= 0
+                     and type(microseconds) is int and 0 <= microseconds < 1_000_000,
+                     'fixture.redis-clock')
+    return raw.pexpireat(key, seconds * 1000 + microseconds // 1000 - 1)
+
+
 def seed_fixture(apps, private_work, raw):
     """Reuse the authored message seed; add only this slice's identities/references.
 
@@ -242,7 +255,7 @@ def seed_fixture(apps, private_work, raw):
             cache.set(key, record, SESSION_TTL)
             contract.require(cache.get(key) == record and raw.type(raw_key) == b'string', 'fixture.session-serializer')
             if label == 'expired':
-                raw.pexpireat(raw_key, int(time.time() * 1000) - 1)
+                expire_fixture_session(raw, raw_key)
             if label == 'revoked':
                 cache.delete(key)
             if label in ('expired', 'revoked'):

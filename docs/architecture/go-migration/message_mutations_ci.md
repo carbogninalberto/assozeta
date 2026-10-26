@@ -52,7 +52,7 @@ CREATE/DELETE lease retention while the mutation is blocked and CREATE/DELETE
 denial while a restore job is running. Each has a fresh fixture and the same
 packaged process, full state/cache and cleanup checks.
 
-All eleven offline suites run in separate interpreters before image preparation:
+Offline suites run in separate interpreters before image preparation:
 mutation contract controls, mutation CLI acceptance, mutation lifecycle,
 admission transport, image builder, execution deadlines, executing-process
 identity, packaged mutation controls, restore helper, Linux lock probe and restore
@@ -60,6 +60,10 @@ integration. A passing mock/offline suite cannot
 skip the real CLI. CLI nonzero exit, missing/malformed receipts, failed independent
 acceptance, interruption or unverified cleanup fails the gate. There is no
 `continue-on-error`, receipt fabrication or receipt-only shortcut.
+
+Focused fixture-clock and warm-session controls also require real expiry
+semantics using Redis's clock. Host clock offsets must not leave an expired
+fixture session live; deletion is not a substitute for expiry.
 
 The job has a 120-minute ceiling; all explicit step ceilings sum to 118 minutes.
 Preparation and offline controls have 42 minutes combined. The builder has a

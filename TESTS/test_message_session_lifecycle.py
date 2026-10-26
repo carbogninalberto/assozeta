@@ -45,6 +45,9 @@ class OfflineRedis:
             self.transition_hook(self)
         return int(existed)
 
+    def time(self):
+        return (1000, 123456)
+
     def pexpireat(self, key, when):
         self.commands.append(('PEXPIREAT', key, when))
         return bool(self._remove(key))
@@ -138,7 +141,7 @@ class LifecycleControls(unittest.TestCase):
                 restores = [command for command in self.raw.commands if command[0] == 'RESTORE']
                 self.assertTrue(any(command[1:] == (KEY, ENTRY.expires_at_ms,
                     ENTRY.serialized_value, True, True) for command in restores))
-                self.assertTrue(any(command[0] == 'PEXPIREAT' and command[2] < 4000000000000
+                self.assertTrue(any(command[0] == 'PEXPIREAT' and command[2] == 1000122
                                     for command in self.raw.commands))
                 self.assertEqual([command[0] for command in self.raw.commands
                                   if command[0] in ('DEL', 'PEXPIREAT')], ['DEL', 'PEXPIREAT'])

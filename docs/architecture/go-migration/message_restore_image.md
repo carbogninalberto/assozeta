@@ -6,6 +6,14 @@ The existing packaged mutation acceptance runner now requires all four frozen
 or probe dependencies fail the gate; there is no skip flag or native substitute.
 Actual execution and final committed-source/image validation remain parent work.
 
+Expired-session fixtures use Redis `TIME` to calculate their `PEXPIREAT`
+deadline, preserving actual expiry and strict absence checks when Redis runs
+in a separate VM. A failed run at `a3adff4` stopped during Go fixture setup
+at `fixture.session-absent`, before its Go workload or restore controls. That
+receipt remains failed; clock-offset reproduction demonstrates a fixture
+failure mode, not which session caused the original failure. A fresh exact-source
+image and complete runtime gate are required after the correction.
+
 `message_restore_image.run_controls` executes immediately after direct Go's
 119 cases, inside the same owned packaged Go server lifetime and before Caddy
 and the final executing-server observation. Each call receives one new existing

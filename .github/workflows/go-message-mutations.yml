@@ -73,6 +73,7 @@ jobs:
           python -m unittest -v TESTS.test_message_mutations_acceptance
           python -m unittest -v TESTS.test_message_mutation_lifecycle
           python -m unittest -v TESTS.test_message_mutation_admission_transport
+          python -m unittest -v TESTS.test_message_read_scopes.FixtureExpiryClockControls TESTS.test_message_session_lifecycle.LifecycleControls.test_valid_synthetic_sequences_require_all_four_reads_and_restore_exact_expiry
           python -m unittest -v TESTS.test_message_mutation_restore
           python -m unittest -v TESTS.test_message_restore_lock_probe
           python -m unittest -v TESTS.test_message_restore_image

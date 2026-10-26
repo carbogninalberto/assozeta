@@ -213,7 +213,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
                     count = raw.delete(key)
                     contract.require(type(count) is int and count == 1, 'transition.delete-count')
                 else:
-                    expired = raw.pexpireat(key, time.time_ns() // 1_000_000 - 1)
+                    expired = scopes.expire_fixture_session(raw, key)
                     contract.require(expired is True or type(expired) is int and expired == 1, 'transition.expire-count')
                 _boundary(apps, raw, baseline, changed, fixture['contrasts'], guard, process)
                 result['transition'] = {'code': scenario['transition'], 'removed_keys': 1,

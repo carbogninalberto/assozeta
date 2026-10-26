@@ -959,5 +959,41 @@ assert not any(name.startswith(('django', 'application', 'uvicorn', 'redis')) fo
         self.assertEqual(result.returncode, 0, result.stderr)
 
 
+class FixtureExpiryClockControls(unittest.TestCase):
+    def test_invalid_or_unavailable_server_clock_never_mutates_session(self):
+        for clock in [(-1, 0), (1000, -1), (True, 0), (1000, 1_000_000)]:
+            with self.subTest(clock=clock):
+                raw = SimpleNamespace(time=Mock(return_value=clock), pexpireat=Mock(), delete=Mock())
+                with self.assertRaises(AssertionError):
+                    adapter.expire_fixture_session(raw, b'owned-session')
+                raw.pexpireat.assert_not_called()
+                raw.delete.assert_not_called()
+        raw.time.side_effect = RuntimeError('clock unavailable')
+        with self.assertRaises(RuntimeError):
+            adapter.expire_fixture_session(raw, b'owned-session')
+        raw.pexpireat.assert_not_called()
+        raw.delete.assert_not_called()
+
+    def test_expiry_uses_server_clock_with_ahead_or_behind_host(self):
+        class RedisClock:
+            def __init__(self):
+                self.live = True
+                self.calls = []
+            def time(self):
+                return (1000, 123456)
+            def pexpireat(self, key, deadline):
+                self.calls.append((key, deadline))
+                existed = self.live
+                if deadline <= 1000123:
+                    self.live = False
+                return existed
+        for host_time in (1060, 940):
+            with self.subTest(host_time=host_time), patch.object(adapter.time, 'time', return_value=host_time):
+                raw = RedisClock()
+                self.assertIs(adapter.expire_fixture_session(raw, b'owned-session'), True)
+                self.assertFalse(raw.live)
+                self.assertEqual(raw.calls, [(b'owned-session', 1000122)])
+
+
 if __name__ == '__main__':
     unittest.main()
