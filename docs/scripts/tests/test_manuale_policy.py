@@ -49,6 +49,12 @@ class ManualPolicyTests(unittest.TestCase):
         self.assertFalse(result['historical_rehearsal'])
         self.assertIn('authentication and authorization', result['runtime_checks'])
 
+    def test_independent_browser_unit_tests_do_not_recapture_workflows(self):
+        result = self.decision_for(['selfhost/tests/browser/manuale/frame.test.mjs'])
+        self.assertEqual(result['mode'], 'reuse')
+        self.assertEqual(result['fresh_workflows'], [])
+        self.assertEqual(result['reused_workflows'], self.ids)
+
     def test_documented_export_change_only_selects_its_consumers(self):
         result = self.decision_for(['BE/application/services/export_service.py'])
         self.assertEqual(result['mode'], 'affected')
@@ -59,7 +65,8 @@ class ManualPolicyTests(unittest.TestCase):
     def test_infrastructure_shared_fixtures_and_unknown_production_require_full(self):
         for path in ('BE/application/manuale/bundle.py', 'selfhost/bin/assozeta',
                      'BE/application/management/commands/seed_manuale.py',
-                     'selfhost/tests/browser/manuale/frame.mjs', 'BE/application/unknown.py',
+                     'selfhost/tests/browser/manuale/frame.mjs', 'selfhost/tests/browser/manuale/actor-session.mjs',
+                     'BE/application/unknown.py',
                      '.github/workflows/manuale-verify.yml', 'docs/manuale/requirements-offline.txt',
                      '.github/actions/prepare-storage/action.yml'):
             with self.subTest(path=path):

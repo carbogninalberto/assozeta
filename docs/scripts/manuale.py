@@ -327,6 +327,11 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
                 relative.startswith('UI/') and re.search(r'\.(?:test|spec)\.[cm]?[jt]sx?$', relative)):
             record(relative, 'application', 'test-only', [])
             continue
+        if (relative.startswith('selfhost/tests/browser/')
+                and re.search(r'\.(?:test|spec)\.[cm]?[jt]sx?$', relative)
+                and not any(relative in dependencies for dependencies in tooling.values())):
+            record(relative, 'application', 'test-only', [])
+            continue
         if (relative.startswith('selfhost/tests/')
                 and not relative.startswith(('selfhost/tests/browser/manuale/', 'selfhost/tests/manual-release-smoke'))
                 and relative not in ('selfhost/tests/browser/package.json', 'selfhost/tests/browser/package-lock.json',
@@ -345,7 +350,9 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
             if not matches and relative in registry.get('reference_modules', []):
                 record(relative, 'application', 'reviewed-reference; regenerate prose contracts', [])
                 continue
-            record(relative, 'application', 'registered-recipe-tooling' if matches else 'unknown-tooling', matches or all_ids)
+            reason = ('shared-dependency' if set(matches) == set(all_ids) else
+                      'registered-recipe-tooling' if matches else 'unknown-tooling')
+            record(relative, 'application', reason, matches or all_ids)
             continue
         matches = [recipe['id'] for recipe in registry['recipes']
                    if any(relative.startswith(prefix) for prefix in recipe['dependencies'])]
