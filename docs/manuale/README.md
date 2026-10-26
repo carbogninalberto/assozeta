@@ -733,3 +733,10 @@ workflow manuale/release oppure `force_full_manual` nella pubblicazione immagini
 I test applicativi e le verifiche ordinarie di release/upgrade restano invariati.
 Il comando locale `manuale.py verify-release` mantiene il rehearsal completo;
 `--no-cache` forza anche la ricattura. Non usare `--allow-dirty` per release.
+
+Il controllo preventivo dei sorgenti portabili avviene prima della cattura: file
+privati o collegamenti simbolici impediscono la creazione della baseline. La
+configurazione npm pubblica già versionata (`UI/.npmrc`) è ammessa soltanto con
+il flag booleano `legacy-peer-deps`, viene ripristinata dal bundle Git verificato
+e non entra nei file copiati dell’archivio. Configurazioni npm aggiuntive,
+credenziali o percorsi locali vengono rifiutati.

@@ -137,6 +137,28 @@ def _git(repo, *arguments, text=False):
     return result.stdout.strip() if text else result.stdout
 
 
+def validate_application_sources(application):
+    """Validate portable source before capture; return copied overlay members.
+
+    The repository's public npm install flag is restored only from the exact
+    Git bundle. Never accept arbitrary npm configuration or an archive overlay
+    for a credential-sensitive filename.
+    """
+    application = Path(application).resolve()
+    sources = {}
+    for relative in sorted(filter(None, _git(application, 'ls-files', '-z').decode().split('\0'))):
+        if relative == 'UI/.npmrc':
+            path = owned(application, 'UI') / '.npmrc'
+            if (path.is_symlink() or not path.is_file() or path.stat().st_size > 64
+                    or not re.fullmatch(rb'legacy-peer-deps=(?:true|false)(?:\r?\n)?', path.read_bytes())):
+                raise ValueError('Tracked npm configuration must contain only the public legacy-peer-deps flag')
+            continue
+        path = owned(application, relative)
+        if path.is_file():
+            sources[relative] = path
+    return sources
+
+
 def _check_clean_repository(repo, revision, label):
     repo = Path(repo).resolve()
     if not repo.is_dir():
@@ -696,6 +718,8 @@ def export_cache(run, output):
     run = Path(run).resolve()
     output = Path(output).resolve()
     state = _read_json(owned(run, 'run.json'), 'run.json')
+    application = Path(state['application']).resolve()
+    sources = validate_application_sources(application)
     validated = _validate_evaluated_evidence(run, state, require_source_repositories=True)
     proof_files = validated['proof_files']
     manual_files = validated['manual_files']
@@ -714,14 +738,8 @@ def export_cache(run, output):
         if not path.is_file():
             raise ValueError('Generated manual file disappeared after validation: ' + relative)
         members['manual/' + relative] = (path, path.stat().st_mode & 0o777)
-    application = Path(state['application']).resolve()
-    tracked = _git(application, 'ls-files', '-z').decode().split('\0')
-    for relative in sorted(filter(None, tracked)):
-        path = owned(application, relative)
-        if path.is_symlink():
-            raise ValueError('Tracked symlinks cannot enter a portable cache: ' + relative)
-        if path.is_file() and not path.is_symlink():
-            members['application/' + relative] = (path, path.stat().st_mode & 0o777)
+    for relative, path in sources.items():
+        members['application/' + relative] = (path, path.stat().st_mode & 0o777)
     _frontend_members(run, state, members)
     if len(members) + 2 > MAX_MEMBERS:
         raise ValueError('Capture cache exceeds the supported member count')
@@ -935,10 +953,7 @@ def _verify_git_overlay(application, revision):
                 if not line[3:].startswith('quality-reports/')]
     if relevant:
         raise ValueError('Imported application files differ from the hash-validated committed bundle')
-    for relative in filter(None, _git(application, 'ls-files', '-z').decode().split('\0')):
-        path = owned(application, relative)
-        if path.is_symlink():
-            raise ValueError('Imported application contains a tracked symlink: ' + relative)
+    validate_application_sources(application)
 
 
 def _verify_member_scope(result, state, inventory, validated):
@@ -946,9 +961,7 @@ def _verify_member_scope(result, state, inventory, validated):
     expected.update('proof/' + relative for relative in validated['proof_files'])
     expected.update('manual/' + relative for relative in validated['manual_files'])
     application = result / 'application'
-    for relative in filter(None, _git(application, 'ls-files', '-z').decode().split('\0')):
-        if (application / relative).is_file():
-            expected.add('application/' + relative)
+    expected.update('application/' + relative for relative in validate_application_sources(application))
     if validated['frontend']:
         expected.update(validated['frontend_artifacts'])
         expected.update({'proof/frontend-build.json', 'proof/compose.override.json'})

@@ -71,6 +71,8 @@ def pin(args, policy):
 
 
 def prepare(args, runner, policy):
+    sources = module('manuale-cache').validate_application_sources(ROOT)
+    print(f'Portable source preflight passed: {len(sources)} overlay files; public npm flag restored from Git.', flush=True)
     parameters = ['run', '--manual-repo', args.manual_repo, '--output', args.output, '--release', args.release]
     if args.force_full:
         parameters += ['--no-cache']

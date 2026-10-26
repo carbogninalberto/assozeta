@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -40,6 +42,16 @@ class ManualPolicyTests(unittest.TestCase):
         state['evidence_reuse']['reused_recipes'] = [item for item in self.ids if item not in fresh]
         state['cache']['decisions'][0].update(changed_inputs=paths, input_decisions=decisions)
         return policy.verification_decision(state)
+
+    def test_source_portability_preflight_stops_before_run_preparation(self):
+        ci = module('manuale-ci')
+        cache = module('manuale-cache')
+        with patch.object(ci, 'module', return_value=cache), patch.object(
+                cache, 'validate_application_sources', side_effect=ValueError('private tracked source')):
+            run = Mock()
+            with self.assertRaisesRegex(ValueError, 'private tracked source'):
+                ci.prepare(SimpleNamespace(), run, policy)
+            run.prepare.assert_not_called()
 
     def test_unrelated_restore_fix_reuses_all_procedures(self):
         result = self.decision_for(['BE/instance/restore/relations.py', 'BE/application/tests/test_restore.py'])

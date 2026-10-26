@@ -55,10 +55,11 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         for code in (f.old_code, f.code):
             fixtures.write(code, '.gitignore',
                            'UI/dist/\n.env*\nbrowser-input.json\nexecution.log\npreview.log\n')
+            fixtures.write(code, 'UI/.npmrc', 'legacy-peer-deps=true\n')
             fixtures.write(code, 'selfhost/compose.dev.yml', 'services: {}\n')
             for name in ('compile.mjs', 'verify.mjs'):
                 fixtures.write(code, 'selfhost/tests/browser/manuale/' + name, '// Offline renderer identity fixture\n')
-            fixtures.command(code, 'add', '.gitignore', 'selfhost/compose.dev.yml',
+            fixtures.command(code, 'add', '.gitignore', 'UI/.npmrc', 'selfhost/compose.dev.yml',
                              'selfhost/tests/browser/manuale/compile.mjs', 'selfhost/tests/browser/manuale/verify.mjs')
             fixtures.command(code, 'commit', '-qm', 'Cache fixture public build configuration')
         self.application_revision = fixtures.command(f.old_code, 'rev-parse', 'HEAD')
@@ -317,6 +318,7 @@ class VerifiedPortableCacheTests(unittest.TestCase):
             inventory = {item['path']: item for item in cache_json['members']}
             self.assertEqual(set(inventory) | {'cache.json'}, names)
             self.assertIn('application.bundle', inventory)
+            self.assertNotIn('application/UI/.npmrc', inventory)
             self.assertIn('proof/index.json', inventory)
             self.assertIn('proof/source-catalog.json', inventory)
             self.assertIn('proof/evaluation.json', inventory)
@@ -341,6 +343,7 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         original_capture = (f.old_run / 'captures/images/unit-members/1.png').read_bytes()
         restored = f.root / 'restored'
         cache.import_cache(self.archive, restored, f.root / 'manual-source', register=False)
+        self.assertEqual((restored / 'application/UI/.npmrc').read_text(), 'legacy-peer-deps=true\n')
         self.assertEqual((restored / 'unit-members.json').read_bytes(), original_report)
         self.assertEqual((restored / 'captures/images/unit-members/1.png').read_bytes(), original_capture)
         imported = json.loads((restored / 'run.json').read_text())
@@ -361,6 +364,23 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         self.assertEqual(plan['reused_recipes'], ['unit-members'], plan['rejected'])
         self.assertEqual(plan['recipes']['unit-members']['origin']['capture_id'], 'unit-capture')
         fixtures.reuse.validate_reuse_plan(f.state)
+
+    def test_source_preflight_rejects_private_npm_configuration_before_evidence_validation(self):
+        path = self.fixture.old_code / 'UI/.npmrc'
+        for content in ('legacy-peer-deps=true\nregistry=https://example.invalid\n',
+                        '//example.invalid/:_authToken=<fixture-placeholder>\n',
+                        'legacy-peer-deps=true\nuserconfig=/fixture/private\n'):
+            with self.subTest(content=content), patch.object(cache, '_validate_evaluated_evidence') as validate:
+                path.write_text(content)
+                with self.assertRaisesRegex(ValueError, 'only the public legacy-peer-deps flag'):
+                    self.export()
+                validate.assert_not_called()
+        path.unlink()
+        path.symlink_to(self.fixture.old_code / '.gitignore')
+        with self.assertRaisesRegex(ValueError, 'only the public legacy-peer-deps flag'):
+            cache.validate_application_sources(self.fixture.old_code)
+        with self.assertRaisesRegex(ValueError, 'Private configuration'):
+            cache.owned(self.fixture.old_code, 'UI/.npmrc')
 
     def test_named_output_directory_preserves_independent_run_identity(self):
         f = self.fixture
