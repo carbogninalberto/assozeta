@@ -1,0 +1,90 @@
+name: Message read HTTP and query compatibility
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  message-reads:
+    name: Message reads on Django and Go
+    runs-on: ubuntu-24.04
+    # The focused runtime is short, but hosted setup, dependency installation,
+    # the Go build, a 547-migration fixture and both transports need headroom.
+    timeout-minutes: 20
+    env:
+      LC_ALL: C
+      LANG: C
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: BE_GO/go.mod
+          cache-dependency-path: BE_GO/go.sum
+
+      - name: Read production Python version
+        id: production-python
+        run: |
+          python3 - <<'PY'
+          import os
+          from TESTS.adapters.django.production_runtime import production_python_version
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={production_python_version()}\n')
+          PY
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.production-python.outputs.version }}
+          cache: pip
+          cache-dependency-path: |
+            BE/requirements.txt
+            TESTS/adapters/django/requirements-credentials.txt
+            TESTS/contracts/requirements-qr.txt
+
+      - name: Install message integration dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
+          sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
+          sudo locale-gen
+          python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+          python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
+          python TESTS/adapters/django/production_runtime.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import subprocess
+          image = re.search(
+              r'^FROM (caddy:\S+) AS production$',
+              Path('UI/Dockerfile').read_text(encoding='utf-8'),
+              re.MULTILINE,
+          ).group(1)
+          subprocess.run(['docker', 'pull', image], check=True)
+          PY
+
+      - name: Verify portable fixture and strict query observation controls
+        run: |
+          python -m unittest -v \
+            TESTS.test_message_reads_runtime \
+            TESTS.test_message_reads_manifest \
+            TESTS.test_go_query_observation \
+            TESTS.contracts.test_message_reads.MessageReadsManifestControls
+
+      - name: Compare native and versioned messages, query budgets and concurrent reads
+        run: |
+          python TESTS/adapters/django/message_reads_runtime.py \
+            --versioned \
+            --output quality-reports/go-migration/message-reads-http
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-message-reads-http
+          path: quality-reports/go-migration/message-reads-http/results.json
+          if-no-files-found: ignore

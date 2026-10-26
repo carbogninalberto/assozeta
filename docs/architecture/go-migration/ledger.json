@@ -14498,25 +14498,72 @@
         "target": "communication_messages_detail",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_reads.go",
+        "BE_GO/internal/dto/message_reads.go",
+        "BE_GO/internal/repository/message_reads.go",
+        "BE_GO/internal/service/message_reads.go",
+        "BE_GO/internal/handler/message_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "existing actor authentication, identity resolution and Django-session audit middleware",
+        "existing communications_message and communications_messagetransaction tables",
+        "Source-authored portable fixture; disposable full-schema PostgreSQL/Redis and native/versioned Django/Go runtime."
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/messages/<str:message_id>/detail",
+          "/api/v2/communications/messages/<str:message_id>/detail",
+          "/api/communications/messages/<str:message_id>/detail"
+        ],
+        "request": "GET/OPTIONS with existing bearer/session and scope headers; list ignores legacy query/group filters; detail accepts the existing message identifier path. Unsupported methods retain permission/authentication precedence.",
+        "response": "Authored list/detail JSON fields, nullable values, timestamps and escaping are specified independently in TESTS/fixtures/message_reads.json; OPTIONS metadata and error envelopes retain Django behavior.",
+        "errors": "Portable matrix covers anonymous/forged scope, restricted collaborators, athletes, missing/deleted association, foreign/empty/malformed identifiers, unsupported type, content negotiation and unsupported methods.",
+        "authentication": "Existing bearer/session admission; anonymous and forged-scope precedence preserved.",
+        "permissions": "Resolved association role and existing collaborator permission registry before method dispatch.",
+        "resource_scope": "Message association belongs to resolved scope owner; EMAIL/INSIDE_APP types only, including transaction detail joins.",
+        "side_effects": "Parent actual HTTP run verifies read-only state across all 128 managed models, audit rows and exact Redis values/absolute expirations; fixture/service cleanup restored original state.",
+        "transaction": "No business mutation. Successful reads use three business queries including authentication, with separately attested bounded driver reset probes; rejected POST reads include exact restore-admission/account checks. Unbounded legacy result size remains a performance gap.",
+        "execution_owner": "Django remains workflow owner; Go read implementation is under acceptance."
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE_GO/internal/dto/message_reads_test.go",
+        "BE_GO/internal/handler/message_reads_test.go",
+        "BE_GO/internal/service/message_reads_test.go",
+        "BE_GO/internal/repository/message_reads_test.go",
+        "TESTS/contracts/test_message_reads.py",
+        "TESTS/adapters/django/message_reads_runtime.py",
+        "TESTS/test_message_reads_runtime.py",
+        "TESTS/test_go_query_observation.py",
+        "TESTS/test_message_reads_manifest.py",
+        ".github/workflows/go-message-reads.yml"
+      ],
+      "evidence": [
+        {
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/message-observed-http-r2",
+          "revision": "569e79ee plus exact source_sha256 and go_artifact manifests in the immutable receipt",
+          "result": "bounded HTTP/query checks passed parent review; raw run retains temporary parent-review blocker",
+          "artifact": "quality-reports/go-migration/message-observed-http-r2/parent-review.json",
+          "receipt_sha256": "b6e40e8f6f436bfa8a2ef4cd5239c4c3b78d4d539026e1b569556a71e2ba7893"
+        },
+        {
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/message-observed-http-r3",
+          "revision": "569e79ee plus exact 1170 source hashes and native artifact manifests in receipt",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-observed-http-r3/results.json",
+          "receipt_sha256": "6c74d56aef929ebd3f4ae734cc72a113e3b82ba274a55ff5504d1c2a62660f2e"
+        }
+      ],
+      "notes": [
+        "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
+        "Live unchanged-frontend acceptance, packaged/installed lifecycle and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical raw receipts are not relabeled for later builds."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/messages/add -> communication_messages_add",
@@ -14568,25 +14615,72 @@
         "target": "communication_messages_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/message_reads.go",
+        "BE_GO/internal/dto/message_reads.go",
+        "BE_GO/internal/repository/message_reads.go",
+        "BE_GO/internal/service/message_reads.go",
+        "BE_GO/internal/handler/message_reads.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "existing actor authentication, identity resolution and Django-session audit middleware",
+        "existing communications_message and communications_messagetransaction tables",
+        "Source-authored portable fixture; disposable full-schema PostgreSQL/Redis and native/versioned Django/Go runtime."
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/messages/list",
+          "/api/v2/communications/messages/list",
+          "/api/communications/messages/list"
+        ],
+        "request": "GET/OPTIONS with existing bearer/session and scope headers; list ignores legacy query/group filters; detail accepts the existing message identifier path. Unsupported methods retain permission/authentication precedence.",
+        "response": "Authored list/detail JSON fields, nullable values, timestamps and escaping are specified independently in TESTS/fixtures/message_reads.json; OPTIONS metadata and error envelopes retain Django behavior.",
+        "errors": "Portable matrix covers anonymous/forged scope, restricted collaborators, athletes, missing/deleted association, foreign/empty/malformed identifiers, unsupported type, content negotiation and unsupported methods.",
+        "authentication": "Existing bearer/session admission; anonymous and forged-scope precedence preserved.",
+        "permissions": "Resolved association role and existing collaborator permission registry before method dispatch.",
+        "resource_scope": "Message association belongs to resolved scope owner; EMAIL/INSIDE_APP types only, including transaction detail joins.",
+        "side_effects": "Parent actual HTTP run verifies read-only state across all 128 managed models, audit rows and exact Redis values/absolute expirations; fixture/service cleanup restored original state.",
+        "transaction": "No business mutation. Successful reads use three business queries including authentication, with separately attested bounded driver reset probes; rejected POST reads include exact restore-admission/account checks. Unbounded legacy result size remains a performance gap.",
+        "execution_owner": "Django remains workflow owner; Go read implementation is under acceptance."
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE_GO/internal/dto/message_reads_test.go",
+        "BE_GO/internal/handler/message_reads_test.go",
+        "BE_GO/internal/service/message_reads_test.go",
+        "BE_GO/internal/repository/message_reads_test.go",
+        "TESTS/contracts/test_message_reads.py",
+        "TESTS/adapters/django/message_reads_runtime.py",
+        "TESTS/test_message_reads_runtime.py",
+        "TESTS/test_go_query_observation.py",
+        "TESTS/test_message_reads_manifest.py",
+        ".github/workflows/go-message-reads.yml"
+      ],
+      "evidence": [
+        {
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/message-observed-http-r2",
+          "revision": "569e79ee plus exact source_sha256 and go_artifact manifests in the immutable receipt",
+          "result": "bounded HTTP/query checks passed parent review; raw run retains temporary parent-review blocker",
+          "artifact": "quality-reports/go-migration/message-observed-http-r2/parent-review.json",
+          "receipt_sha256": "b6e40e8f6f436bfa8a2ef4cd5239c4c3b78d4d539026e1b569556a71e2ba7893"
+        },
+        {
+          "command": "python TESTS/adapters/django/message_reads_runtime.py --versioned --output quality-reports/go-migration/message-observed-http-r3",
+          "revision": "569e79ee plus exact 1170 source hashes and native artifact manifests in receipt",
+          "result": "passed",
+          "artifact": "quality-reports/go-migration/message-observed-http-r3/results.json",
+          "receipt_sha256": "6c74d56aef929ebd3f4ae734cc72a113e3b82ba274a55ff5504d1c2a62660f2e"
+        }
+      ],
+      "notes": [
+        "Four 30-case portable workloads passed on native Django/Go and real Caddy v1/v2. Growth 8/24/48, eight truly overlapping same-owner requests with exact three-query budgets, additive distinct-owner reads, complete 83-request observation footer and cleanup/source checks passed. See message_reads.md.",
+        "Live unchanged-frontend acceptance, packaged/installed lifecycle and broader performance requirements remain open; no verified declaration or complete message-family claim. Historical raw receipts are not relabeled for later builds."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/send/email -> configuration_send_email",

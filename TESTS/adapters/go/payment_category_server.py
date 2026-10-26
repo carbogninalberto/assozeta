@@ -12,7 +12,7 @@ from TESTS.http_client import Client, poll
 
 
 @contextmanager
-def native_server(work, log, tool_env, address, *, versioned=False, process_observer=None):
+def native_server(work, log, tool_env, address, *, versioned=False, process_observer=None, query_observation=False):
     from django.conf import settings
 
     executable = work / 'payment-categories-server'
@@ -39,7 +39,11 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET',
         )},
     }
-    process = subprocess.Popen([str(executable)], cwd=work, env=environment,
+    command = [str(executable)]
+    observation_path = work / "query-observations.jsonl" if query_observation else None
+    if observation_path is not None:
+        command.extend(["--query-observation-file", str(observation_path)])
+    process = subprocess.Popen(command, cwd=work, env=environment,
                                stdout=log, stderr=subprocess.STDOUT)
     base = f'http://127.0.0.1:{http_port}'
     try:
@@ -54,8 +58,11 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         poll(ready, bool, timeout=30)
         if process_observer is not None:
             process_observer(process)
-        yield {'base_url': base, 'proxy_upstream': f'host.docker.internal:{http_port}',
-               'network': None, 'metadata': {'kind': 'native-built-server'}}
+        runtime = {'base_url': base, 'proxy_upstream': f'host.docker.internal:{http_port}',
+                   'network': None, 'metadata': {'kind': 'native-built-server'}}
+        if observation_path is not None:
+            runtime['query_observation_path'] = observation_path
+        yield runtime
     finally:
         if process.poll() is None:
             process.terminate()
@@ -64,3 +71,5 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)
+        if observation_path is not None and process.returncode != 0:
+            raise RuntimeError('Go query observation server did not finalize successfully')

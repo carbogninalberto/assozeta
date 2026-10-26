@@ -209,7 +209,7 @@ canonical public logo, four impersonation-management routes and collaborator
 listing. CORS, restore
 admission and security headers are composed explicitly.
 Most business endpoints remain unimplemented. The ledger has **514 declarations:
-4 deprecated, 44 implementing, 6 requiring review and 460 uncharacterized; none
+4 deprecated, 46 implementing, 6 requiring review and 458 uncharacterized; none
 is verified**. Runtime discovery resolves 408 HTTP patterns, four WebSocket paths,
 42 tasks, 112 models and 15 MCP schemas. Discovery is not implementation evidence.
 

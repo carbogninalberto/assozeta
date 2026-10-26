@@ -8,6 +8,10 @@ permissions:
   contents: read
 
 jobs:
+  message-reads:
+    name: Message read HTTP and query compatibility
+    uses: ./.github/workflows/go-message-reads.yml
+
   historical-read:
     name: Historical import and read compatibility
     uses: ./.github/workflows/go-historical-read.yml
