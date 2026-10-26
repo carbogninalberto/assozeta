@@ -137,6 +137,7 @@ class Archive:
                     or self.manifest.get('association', {}).get('denomination') != self.association.get('denomination')):
                 raise RestoreError('Il manifest non corrisponde all’associazione esportata.')
             self._normalize_legacy_invoices()
+            self._normalize_legacy_tutors()
             self._validate_graph()
             for entry in entries:
                 if entry.is_dir() or not entry.filename.startswith('files/'):
@@ -190,6 +191,72 @@ class Archive:
                 'date': date.isoformat(),
             })
         self.records['SportAssociationDocumentsArchive'].extend(self.legacy_document_links)
+
+    def _normalize_legacy_tutors(self):
+        # Keep the imported member graph self-contained. Unreferenced foreign
+        # anagrafiche are irrelevant; referenced tutors become local records.
+        from uuid import UUID
+        from application.models.user_models import Associate
+
+        associates = self.records['Associate']
+        member_ids = {str(row.get('associate_id')) for row in associates
+                      if not row.get('sport_association_id')
+                      or str(row['sport_association_id']) == self.association_id}
+        tutor_ids = {str(row.get('tutor_id')) for row in self.records['AssociateTutorRelation']
+                     if str(row.get('associate_id')) in member_ids}
+        referenced_ids = set()
+        for _, model in AssociationImportService.IMPORT_ORDER:
+            fields = [field.attname for field in model._meta.concrete_fields
+                      if field.is_relation and field.related_model is Associate]
+            m2m_fields = ['_m2m_' + field.name for field in model._meta.many_to_many
+                          if field.related_model is Associate]
+            for row in self.records.get(model.__name__, []):
+                referenced_ids.update(str(row[field]) for field in fields if row.get(field))
+                for field in m2m_fields:
+                    referenced_ids.update(str(value) for value in row.get(field, []))
+
+        deleted_field = Associate._meta.get_field('deleted')
+        tax_field = Associate._meta.get_field('tax_code')
+        active_tax_codes = {
+            tax_field.to_python(row['tax_code']).upper(): str(row['associate_id'])
+            for row in associates if str(row.get('associate_id')) in member_ids
+            and not deleted_field.to_python(row.get('deleted', False))
+            and row.get('tax_code') is not None
+        }
+        self.reassigned_tutor_ids = set()
+        self.ignored_tutor_ids = set()
+        self.tutor_overrides = {}
+        self.tutor_reassignments = []
+        # Local members retain their tax codes. If foreign tutors share a code,
+        # UUID order picks the keeper consistently, independent of ZIP row order.
+        for row in sorted(associates, key=lambda row: str(row.get('associate_id'))):
+            identity = str(row.get('associate_id'))
+            association = row.get('sport_association_id')
+            if not association or str(association) == self.association_id:
+                continue
+            if identity not in referenced_ids:
+                self.ignored_tutor_ids.add(identity)
+                continue
+            if identity not in tutor_ids:
+                continue  # Other referenced foreign records still fail validation.
+            UUID(str(association))
+            overrides = {'sport_association_id': self.association_id}
+            detail = {'associate_id': identity, 'source_association_id': str(association),
+                      'name': ' '.join(str(row.get(field) or '') for field in ('first_name', 'last_name')).strip()}
+            tax_code = tax_field.to_python(row.get('tax_code'))
+            if tax_code is not None and not deleted_field.to_python(row.get('deleted', False)):
+                conflict = active_tax_codes.get(tax_code.upper())
+                if conflict:
+                    overrides['tax_code'] = None
+                    detail.update(original_tax_code=tax_code, conflicting_associate_id=conflict)
+                else:
+                    active_tax_codes[tax_code.upper()] = identity
+            row.update(overrides)
+            self.reassigned_tutor_ids.add(identity)
+            self.tutor_overrides[identity] = overrides
+            self.tutor_reassignments.append(detail)
+        self.records['Associate'] = [row for row in associates
+                                     if str(row.get('associate_id')) not in self.ignored_tutor_ids]
 
     def _validate_graph(self):
         classes = {m.__name__: m for _, m in AssociationImportService.IMPORT_ORDER}
@@ -253,5 +320,8 @@ class Archive:
                                if name not in ('BillingPlan', 'PreviewAndCustomFeatures')),
                 'files': len(self.media), 'missing_media': self.missing_media,
                 'legacy_invoices': len(self.legacy_document_links),
+                'reassigned_tutors': len(self.reassigned_tutor_ids),
+                'tutor_tax_code_conflicts': sum('original_tax_code' in row for row in self.tutor_reassignments),
+                'tutor_reassignment_details': self.tutor_reassignments,
                 'missing_relations': len(self.missing_relations),
                 'missing_relation_details': self.missing_relations}

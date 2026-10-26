@@ -7,7 +7,9 @@ const reviewed = {
   "BE/core/authentication.py": "4ea4b9041f1c19aef3105fa9518edb3fb880d1deddef46be7dff701c7a3da3d2",
   "BE/application/views/two_fa_views.py": "ac0542429d0b1216eeb00c19dd30aed8f8691395b11b0ca0d2618a7f60719d5e",
   "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
-  "BE/instance/restore/views.py": "90de3a76030be2dc67d06e5a369c2c9faf17214a25927a308ea333d3f5e64b5a",
+  // Reviewed: tutor conflict details remain in the owner-only, no-store report;
+  // public previews expose counts only. Restore authorization is unchanged.
+  "BE/instance/restore/views.py": "279a0a03b75681534b84944c09a684fa14402ff3b6e57da222e6619f70da6c0a",
   "BE/application/views/auth_views.py": "ff45ee9f1e2665b0ab19e7ae832834a481256e4ff266d7d0cec3860a5854975c"
 };
 const contracts = [

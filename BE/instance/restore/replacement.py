@@ -123,6 +123,13 @@ class ReplacementImporter(AssociationImportService):
         return self.association
 
     def _create_model_instance(self, model_class, data):
+        # import_all streams the original ZIP again, so apply the validated
+        # tutor reassignment before resolving foreign keys or missing links.
+        if model_class.__name__ == 'Associate':
+            identity = str(data.get('associate_id'))
+            if identity in self.archive.ignored_tutor_ids:
+                return None
+            data = {**data, **self.archive.tutor_overrides.get(identity, {})}
         data = self._normalize_optional_links(model_class, data)
         if model_class is User:
             # Global feature definitions remain local. The setup importer also

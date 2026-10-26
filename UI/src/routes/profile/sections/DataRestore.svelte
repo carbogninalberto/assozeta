@@ -35,6 +35,7 @@
         groups[key].rows.push(row);
         return groups;
     }, {}));
+    $: tutorConflicts = (relationReport?.tutor_reassignments || []).filter(row => 'original_tax_code' in row);
     let file;
     let fileInput;
     let dragOver = false;
@@ -207,7 +208,7 @@
             const url = URL.createObjectURL(await response.blob());
             const link = document.createElement('a');
             link.href = url;
-            link.download = kind === 'backup' ? `backup-prima-del-ripristino-${op.id}.zip` : `relazioni-mancanti-${op.id}.json`;
+            link.download = kind === 'backup' ? `backup-prima-del-ripristino-${op.id}.zip` : `rapporto-backup-${op.id}.json`;
             link.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (e) { error = e.message; }
@@ -344,12 +345,27 @@
                         {selected.preview.skipped_records.PreviewAndCustomFeatures || 0} abilitazioni commerciali.
                         Le funzioni dell'associazione sono disponibili senza un abbonamento software.</InstanceAlert>
                 {/if}
-                {#if selected.preview.missing_relations}
+                {#if selected.preview.missing_relations || selected.preview.reassigned_tutors}
                     <details class="report-section" open={review}>
-                    <summary><span>Rapporto del backup</span><span class="report-count">{selected.preview.missing_relations} collegamenti da verificare</span></summary>
+                    <summary><span>Rapporto del backup</span><span class="report-count">
+                        {#if selected.preview.missing_relations || selected.preview.tutor_tax_code_conflicts}
+                            {(selected.preview.missing_relations || 0) + (selected.preview.tutor_tax_code_conflicts || 0)} dati da verificare
+                        {:else}Tutori assegnati: {selected.preview.reassigned_tutors}{/if}
+                    </span></summary>
+                    {#if selected.preview.missing_relations}
                     <InstanceAlert tone="warning">Il backup contiene {selected.preview.missing_relations} collegamenti opzionali
                         a dati non inclusi. Il ripristino conserva i record e gli allegati inclusi,
                         lasciando vuoti questi collegamenti. Gli identificativi originali restano nel rapporto.</InstanceAlert>
+                    {/if}
+                    {#if selected.preview.reassigned_tutors}
+                        <InstanceAlert>Tutori assegnati a questa associazione: {selected.preview.reassigned_tutors},
+                            conservando i collegamenti con gli iscritti.</InstanceAlert>
+                    {/if}
+                    {#if selected.preview.tutor_tax_code_conflicts}
+                        <InstanceAlert tone="warning">Per {selected.preview.tutor_tax_code_conflicts} {selected.preview.tutor_tax_code_conflicts === 1 ? 'tutore' : 'tutori'} il codice fiscale
+                            è già utilizzato da un’altra anagrafica attiva. Le persone e i collegamenti vengono conservati;
+                            il codice fiscale del tutore resta vuoto e il valore originale è disponibile nel rapporto.</InstanceAlert>
+                    {/if}
                     <button class="btn btn-light mb-3" disabled={busy || reportLoading} on:click={() => showReport(selected)}>
                         {reportLoading ? 'Caricamento rapporto…' : reportOperationId === selected.id && relationReport ? 'Nascondi rapporto' : 'Visualizza rapporto'}
                     </button>
@@ -357,8 +373,10 @@
                         loading={downloading === `${selected.id}:missing-relations`} on:click={() => download(selected, 'missing-relations')} /></div>
                     {#if reportOperationId === selected.id && relationReport}
                         <div class="relation-report mb-3" aria-label="Rapporto relazioni mancanti">
+                            {#if reportGroups.length}
                             <p>I record elencati sono presenti nel backup; manca soltanto il dato a cui punta il collegamento.
                                 Gli ID permettono di identificarli per una verifica successiva.</p>
+                            {/if}
                             {#each reportGroups as group}
                                 <details class="border rounded p-3 mb-2">
                                     <summary>{modelLabels[group.model] || group.model} → {fieldLabels[group.field] || group.field}
@@ -371,6 +389,15 @@
                                     {#if group.rows.length > 100}<p>Mostrati i primi 100 record. Il download contiene il rapporto completo.</p>{/if}
                                 </details>
                             {/each}
+                            {#each tutorConflicts.slice(0, 100) as tutor}
+                                <div class="border rounded p-3 mb-2">
+                                    <strong>{tutor.name || 'Tutore'}</strong>
+                                    <p>Codice fiscale originale da verificare: <code>{tutor.original_tax_code}</code></p>
+                                </div>
+                            {/each}
+                            {#if tutorConflicts.length > 100}
+                                <p>Mostrati i primi 100 tutori. Il download contiene il rapporto completo.</p>
+                            {/if}
                         </div>
                     {/if}
                     </details>
@@ -412,7 +439,7 @@
                     <div class="recovery-caption"><strong>{new Date(op.created_at).toLocaleString('it-IT')}</strong><span>{labels[op.stage] || op.stage}</span></div>
                     <div class="recovery-downloads">
                         <RestoreDownloadButton disabled={busy} loading={downloading === `${op.id}:backup`} on:click={() => download(op)} />
-                        {#if op.preview.missing_relations}
+                        {#if op.preview.missing_relations || op.preview.reassigned_tutors}
                             <RestoreDownloadButton kind="missing-relations" disabled={busy} loading={downloading === `${op.id}:missing-relations`}
                                 on:click={() => download(op, 'missing-relations')} />
                         {/if}
