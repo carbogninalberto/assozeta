@@ -20702,11 +20702,22 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "BE/application/tests/test_import_message_timestamps.py",
+        "TESTS/test_historical_message_mutation_fixture.py"
+      ],
+      "evidence": [
+        {
+          "revision": "a694aa16 plus exact source-bound importer correction and independent fixed legacy message fixture",
+          "result": "Parent actual PostgreSQL RED reproduced nine explicit timestamp overwrites after successful full archive import. Final GREEN41 covers exact/null timestamps, malformed-value rollback, actor/veto/disable/raw audit behavior, real index-hook failure rollback and existing identity/media/folder/streaming imports. Source stable, no skips and owned cleanup passed. This is service-reference evidence only: queued task, scheduler, replacement restore and Go orchestration remain uncharacterized.",
+          "artifact": "quality-reports/go-migration/message-import-timestamps-green-r4/results.json",
+          "receipt_sha256": "e9ae8ac8e273cca1a5a8a811acb4851c03085031fd2ceacb09c0c9cb617912e7"
+        }
+      ],
       "notes": [
         "Shared operational foundation now exists in BE_GO/internal/repository/jobs.go, with separate additive migration history and real PostgreSQL transactional/lease/deduplication/crash/query tests (TESTS/adapters/go/jobs.py). This task is NOT wired to it or implemented by that evidence. Task arguments, retry/rate/timeouts, side effects, restore admission and executor/scheduler ownership still require task-specific characterization and implementation. See BE_GO/internal/repository/jobs.md.",
-        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/."
+        "The generic Go JobExecutor now provides explicit service/version dispatch, heartbeat cancellation, bounded slots and cooperative drain with ordinary-job restore admission before claim. Thirteen real PostgreSQL executor groups and thirteen actual Django CoordinatedTask/Go admission comparisons pass, preserving maintenance retry budget and original publication time. This task body, argument/retry/rate/timeout policy and scheduler/process ownership are still not implemented or verified by that foundation. See BE_GO/internal/service/job_executor.md; evidence under quality-reports/go-migration/job-executor/.",
+        "Bounded message timestamp preservation reference correction documented in message_import_timestamps.md. No task-status promotion: actual queue/job/recovery lifecycle and other historical automatic fields remain open."
       ]
     },
     {
