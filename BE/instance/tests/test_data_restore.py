@@ -917,6 +917,68 @@ class RestoreTests(TransactionTestCase):
         self.config.refresh_from_db()
         self.assertEqual(self.config.primary_association_id, self.association.pk)
 
+    def test_foreign_tutors_are_reassigned_to_local_association_with_links_preserved(self):
+        from application.models.user_models import AssociateTutorRelation
+
+        self.source_association = str(uuid.uuid4())
+        members = [str(uuid.uuid4()) for _ in range(4)]
+        tutors = [str(uuid.uuid4()) for _ in range(2)]
+        foreign_associations = [str(uuid.uuid4()) for _ in tutors]
+        links = [(member, tutors[0] if index < 3 else tutors[1])
+                 for index, member in enumerate(members)]
+        content = self.archive({
+            'Associate': [
+                {'associate_id': member, 'sport_association_id': self.source_association}
+                for member in members
+            ] + [
+                {'associate_id': tutor, 'sport_association_id': foreign_associations[index],
+                 'first_name': f'Tutor {index}', 'deleted': bool(index)}
+                for index, tutor in enumerate(tutors)
+            ],
+            'AssociateTutorRelation': [
+                {'id': index + 1, 'associate_id': member, 'tutor_id': tutor, 'is_primary': True}
+                for index, (member, tutor) in enumerate(links)
+            ],
+        })
+        op = self.upload(content)
+        self.assertEqual(op.preview['missing_relations'], 0)
+        self.start(op)
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        for index, tutor in enumerate(tutors):
+            restored = Associate._base_manager.get(pk=tutor)
+            self.assertEqual(restored.sport_association_id, self.association.pk)
+            self.assertEqual(restored.first_name, f'Tutor {index}')
+            self.assertEqual(restored.deleted, bool(index))
+        self.assertEqual({(str(row.associate_id), str(row.tutor_id), row.is_primary)
+                          for row in AssociateTutorRelation.objects.all()},
+                         {(member, tutor, True) for member, tutor in links})
+        self.assertEqual(list(SportAssociation.original_objects.values_list('pk', flat=True)),
+                         [self.association.pk])
+        with zipfile.ZipFile(io.BytesIO(content)) as zf:
+            original = json.loads(zf.read('data/07_associates.json'))[-2:]
+        self.assertEqual([row['sport_association_id'] for row in original], foreign_associations)
+
+    def test_foreign_records_without_a_tutor_link_to_an_imported_member_are_rejected(self):
+        foreign_association, member, tutor = [str(uuid.uuid4()) for _ in range(3)]
+        samples = [
+            {'Associate': [{'associate_id': tutor, 'sport_association_id': foreign_association}]},
+            {'Associate': [
+                {'associate_id': member, 'sport_association_id': foreign_association},
+                {'associate_id': tutor, 'sport_association_id': foreign_association},
+            ], 'AssociateTutorRelation': [{'id': 1, 'associate_id': member, 'tutor_id': tutor}]},
+            {'Tags': [{'tag_id': str(uuid.uuid4()), 'sport_association_id': foreign_association}]},
+        ]
+        for extra in samples:
+            with self.subTest(models=list(extra)):
+                response = self.client.post(self.endpoint, {
+                    'file': SimpleUploadedFile('foreign.zip', self.archive(extra)),
+                }, format='multipart')
+                self.assertEqual(response.status_code, 400, response.data)
+                self.assertIn('un’altra associazione', response.data['error'])
+        self.assertFalse(DataRestore.objects.exists())
+
     def test_external_many_to_many_reference_is_preserved(self):
         from docmanager.models import Document
         from application.models.user_models import SportAssociationDocumentsArchive, Instructor

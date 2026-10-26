@@ -51,6 +51,12 @@ exports produce an error rather than a partial merge. Billing plans and global
 feature definitions are not replaced. Initial-setup imports retain their existing
 behavior.
 
+Legacy tutors linked to members of the exported association can carry another
+association's ID. Restore assigns these tutors exclusively to the local
+association, preserving their identifiers, tutor links and deleted state. Other
+records referencing a foreign association are still rejected. The uploaded ZIP
+is not modified.
+
 Bakney's retired `SportAssociationInvoices` records are converted to association
 document archive entries, retaining their identifiers, invoice dates and linked
 PDFs. The preview reports this conversion. They do not replace local billing data.

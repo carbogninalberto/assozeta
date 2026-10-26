@@ -137,6 +137,7 @@ class Archive:
                     or self.manifest.get('association', {}).get('denomination') != self.association.get('denomination')):
                 raise RestoreError('Il manifest non corrisponde all’associazione esportata.')
             self._normalize_legacy_invoices()
+            self._normalize_legacy_tutors()
             self._validate_graph()
             for entry in entries:
                 if entry.is_dir() or not entry.filename.startswith('files/'):
@@ -190,6 +191,26 @@ class Archive:
                 'date': date.isoformat(),
             })
         self.records['SportAssociationDocumentsArchive'].extend(self.legacy_document_links)
+
+    def _normalize_legacy_tutors(self):
+        # Bakney exports can include tutors owned by another association. Bring
+        # only tutors of the exported association's members into this graph;
+        # all other foreign association references remain invalid.
+        from uuid import UUID
+
+        associates = self.records['Associate']
+        member_ids = {str(row.get('associate_id')) for row in associates
+                      if str(row.get('sport_association_id')) == self.association_id}
+        tutor_ids = {str(row.get('tutor_id')) for row in self.records['AssociateTutorRelation']
+                     if str(row.get('associate_id')) in member_ids}
+        self.reassigned_tutor_ids = set()
+        for row in associates:
+            identity = str(row.get('associate_id'))
+            association = row.get('sport_association_id')
+            if identity in tutor_ids and association and str(association) != self.association_id:
+                UUID(str(association))  # Still reject malformed source identities.
+                row['sport_association_id'] = self.association_id
+                self.reassigned_tutor_ids.add(identity)
 
     def _validate_graph(self):
         classes = {m.__name__: m for _, m in AssociationImportService.IMPORT_ORDER}
