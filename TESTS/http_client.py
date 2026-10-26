@@ -1,4 +1,8 @@
-"""Standard-library HTTP client; no backend or ORM imports."""
+"""Standard-library contract client; redirects are returned, never followed.
+
+Callers observe the original status/body/headers and credentials stay on the
+requested backend. Contracts requiring a redirect must assert that response.
+"""
 import json
 import time
 import urllib.error
@@ -6,11 +10,17 @@ import urllib.request
 import uuid
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 class Client:
     def __init__(self, base_url, token=None, timeout=15):
         self.base_url = base_url.rstrip('/')
         self.token = token
         self.timeout = timeout
+        self._opener = urllib.request.build_opener(NoRedirect())
 
     def request(self, method, path, data=None, headers=None, raw=False, include_headers=False):
         headers = dict(headers or {})
@@ -21,7 +31,7 @@ class Client:
             headers['Content-Type'] = 'application/json'
         request = urllib.request.Request(self.base_url + path, data=data, headers=headers, method=method)
         try:
-            response = urllib.request.urlopen(request, timeout=self.timeout)
+            response = self._opener.open(request, timeout=self.timeout)
         except urllib.error.HTTPError as error:
             response = error
         with response:

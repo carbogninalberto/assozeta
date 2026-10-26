@@ -155,6 +155,39 @@ not write business, audit or cache state.
 
 ## Evidence status
 
+The current parent candidate passes the unchanged-UI browser workflow and the
+additional 38-case impersonation/ownership matrix. These are bounded acceptance
+results, not full message-family or migration completion. The route declarations
+remain `implementing`. Earlier failed browser receipts below remain failed.
+
+`message-browser-live-r10` completed all 11 checkpoints on both v1 and v2:
+ordinary login, message reads and reloads for owner/full collaborator/foreign
+owner, and the restricted collaborator's UI denial. Each version made six
+selected list requests, recorded four ordinary login cookie checks and four
+context-close proofs, and preserved all 128 managed models and complete DB1
+state outside the explicitly checked login effects. All 1,201 source hashes
+matched the final candidate; UI/native artifacts stayed unchanged and owned
+resources were cleaned up. Receipt SHA-256:
+`ff62e09fe608777664b69ebd4cdbb2f154bff32e7a275769b38afc403bba8c9e`.
+
+The harness now handles the unchanged dashboard's exact widget query strings
+through named Django coexistence routes and uses a 128-entry listener backlog
+for asset bursts. Unknown queries and redirects remain rejected. Visible table
+headings are expected in uppercase because the existing theme transforms their
+DOM text; the application UI was not changed. The final candidate passed 112
+combined browser, scope and HTTP-client controls. The four-row browser fixture
+does not exercise a second page; external integrations/font parity are excluded,
+and zero completed WebSocket applications means no realtime protocol acceptance.
+
+The separate authorization result and its limits are documented in
+[message_read_scopes.md](message_read_scopes.md). The repository gate also passed
+on Linux at `6df96652`, with all 1,173 recorded inputs matching that commit;
+application CI run `40255723634` passed. Manual and release/manual runs
+`40255723596` and `40255723744` still failed on the companion manual's stale
+`docs/manuale/content-recipes.mjs` binding. Browser CI integration, warm-session
+revocation/expiry, larger-dataset performance and release/package acceptance are
+still outstanding.
+
 The authored portable matrix is
 `TESTS/fixtures/message_reads.json`. Expected HTTP bodies and statuses are never
 replaced with values observed from Django or Go. The Django adapter loads that
