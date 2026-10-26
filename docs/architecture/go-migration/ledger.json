@@ -15043,7 +15043,9 @@
         "TESTS/adapters/go/test_message_read_scopes_image.py",
         "TESTS/adapters/go/message_reads_repository.py",
         "TESTS/test_message_reads_repository.py",
-        "TESTS/test_message_list_spool_config.py"
+        "TESTS/test_message_list_spool_config.py",
+        "TESTS/test_message_list_spool_image.py",
+        "TESTS/test_local_docker_endpoint.py"
       ],
       "evidence": [
         {
@@ -15098,6 +15100,13 @@
           "result": "Parent native Django/Go and shipped Caddy v1/v2 pass all30 authored cases each, growth and concurrency/query attribution, state/cache preservation, source stability and cleanup. Full Go vet/race and24 repository/composition controls pass. Separate isolated repository r6 passes4 actual PostgreSQL cases including consumer failure with real later-row lock. Packaged large-response/concurrent disk/cancellation/storage-failure and complete family acceptance remain open.",
           "artifact": "quality-reports/go-migration/message-list-integrated-http-r1/results.json",
           "receipt_sha256": "d606654ff9af74d93e3cfd586cd76927f2becfca916f7668759c105014b7f058"
+        },
+        {
+          "command": "python -m TESTS.adapters.go.message_list_spool_image with original immutable build receipt and explicit validated local Unix socket",
+          "revision": "07148adf3b01c5865bf3fc4e43b5997314d3de4b image; harness/runtime source digest 68cf1ed7ec40f446f6621c92f4833e98ac791e94844f671c12b8c1621a705a82",
+          "result": "Parent phase1 accepted and independently revalidated: three complete 1152-row responses of75806816bytes; two observed concurrent unlinked ext4 disk spools; nonroot readonly package and full cleanup.54 focused offline controls pass. Cancellation, storage failures, peak memory and complete family acceptance remain open.",
+          "artifact": "quality-reports/go-migration/message-list-spool-image-r2/results.json",
+          "receipt_sha256": "4136618c7b001b87859fe624e0bf58e40141ced4d65c3ee516ffe5fcbbfcef46"
         }
       ],
       "notes": [
