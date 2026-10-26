@@ -221,3 +221,30 @@ current restore controls exercise queued jobs and a pre-held lock. They do not
 verify restore exclusion throughout a blocked packaged mutation or the
 running-job barrier. Those coordinator-owned gaps prevent a full mutation
 lifecycle or complete message-family acceptance claim.
+
+## Parent execution at `7b8b0d97`
+
+The full parent run passed all 119 authored cases on each of native Django,
+packaged Go, Caddy v1 and Caddy v2. The receipt binds the exact 1,663-file
+runtime graph to commit `7b8b0d97a3600fd5f42c5aa70b4d6f91b779d622` and image
+`sha256:3a5e37ac67f74c37fa9f0e7228d2e3f17ef33f5fcc032dd271e6d2119b779022`.
+Full migration/schema, 128-model/Redis effects, independent observation replay,
+Linux locked admission, executing binary/listener probes, successful-mutation
+misroute rejection and owned-resource cleanup passed. Parent offline controls
+passed 164 tests on Python 3.13.16.
+
+Receipt: `quality-reports/go-migration/message-mutations-image-7b8b0-full-r2/results.json`;
+SHA-256 `f7d0051b1b1d2981187578bcb5ebb0f4dbc53c21b9e61c30aa9e2707004eac58`.
+The parent driver observed exceptions only; it did not replace or skip workload
+functions. No exceptions were observed.
+
+The preceding full run (`message-mutations-image-7b8b0-r1`) failed before
+completing Caddy v2; its failed receipt remains retained. The isolated v2
+diagnostic then passed 119 cases, followed by the unchanged full rerun above.
+The initial failure's cause is unresolved; the isolated diagnostic is not
+counted as full acceptance. Neither production code nor timeouts were changed
+to obtain the full passing rerun.
+
+This is local Linux/arm64 packaged evidence for the named commit, not evidence
+for a newer image, hosted amd64, blocked-mutation restore exclusion, running-job
+admission, browser mutations, installed switching/rollback or full family parity.
