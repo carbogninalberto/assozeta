@@ -60,9 +60,13 @@ class ManualAnswerTests(unittest.TestCase):
                        'Come stai?',
                        'Quali bilanci sono pubblicati?',
                        'Sai dirmi quanti pagamenti ho incassato a gennaio?',
+                       'Sai dirmi il numero di soci?',
                        'Mi spieghi il totale dei pagamenti di gennaio?',
+                       'Mi spieghi il numero di iscrizioni di gennaio?',
                        'Spiegami quali pagamenti sono insoluti',
-                       'Esporta i pagamenti del corso Guida sicura'):
+                       'Esporta i pagamenti del corso Guida sicura',
+                       'Quanti iscritti ci sono nel corso La Guida?',
+                       'Mostrami i soci con cognome Guida'):
             self.assertFalse(answers.is_manual_question(action), action)
 
     def test_payment_and_receipt_how_to_questions_route_to_manual_without_capturing_data_queries(self):

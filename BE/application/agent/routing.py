@@ -87,13 +87,13 @@ _POLITE_INFINITIVE_ACTION_START = re.compile(
 _OUTPUT_ACTION_START = re.compile(
     r'^(?:(?:per\s+favore|gentilmente)[,\s]+)?'
     r'(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai|riesci\s+a)\s+)?'
-    r'(?:fammi|farmi|fai|dammi|darmi|crea|creami|crearmi|genera|generami|generarmi|'
+    r'(?:crea|creami|crearmi|genera|generami|generarmi|'
     r'prepara|preparami|prepararmi|esporta|esportami|esportarmi|salva|salvami|salvarmi|'
     r'scarica|scaricami|scaricarmi|invia|inviami|inviarmi|manda|mandami|mandarmi|'
-    r'fornisci|forniscimi|fallo|crealo|esportalo|general[oi])\b'
+    r'fallo|crealo|esportalo|general[oi])\b'
 )
 _OUTPUT_MI_ACTION_START = re.compile(
-    r'^(?:mi|ci)\s+(?:fai|dai|crei|generi|prepari|esporti|salvi|scarichi|invii|mandi|fornisci)\b'
+    r'^(?:mi|ci)\s+(?:crei|generi|prepari|esporti|salvi|scarichi|invii|mandi)\b'
 )
 _OUTPUT_ASSISTED_ACTION_START = re.compile(
     r'^(?:aiutami|mi\s+aiuti|mi\s+serve\s+aiuto|ho\s+bisogno\s+di\s+aiuto)\s+(?:a|per)\s+'
@@ -102,6 +102,10 @@ _OUTPUT_ASSISTED_ACTION_START = re.compile(
 _OUTPUT_POLITE_INFINITIVE_START = re.compile(
     r'^(?:puoi|potresti|mi\s+puoi|mi\s+potresti)\s+'
     r'(?:creare|generare|preparare|esportare|salvare|scaricare|inviare|mandare)\b'
+)
+_EMBEDDED_OUTPUT_COMMAND = re.compile(
+    r'\b(?:fammi|dammi|crea|genera|prepara|esporta|salva|scarica|invia|manda)\b',
+    re.I,
 )
 _DATA_NOUNS = (
     r'soc(?:io|i)|pagament[oi]|iscrizion[ei]|cors[oi]|certificat[oi]|ricevut[ae]|'
@@ -134,6 +138,12 @@ _DATA_EXPLANATION_START = re.compile(
     r'(?:(?:il|lo|la|i|gli|le)\s+(?:totale|saldo|importo|elenco|lista|dati|'
     r'andamento|riepilogo|numero)\b|(?:quanti|quante|quanto|quanta|quali|quando|chi)\b|'
     r'(?:' + _DATA_NOUNS + r')\b)'
+)
+_QUANTIFIED_DATA_START = re.compile(
+    r'^(?:(?:puoi|potresti|mi\s+puoi|mi\s+potresti|sai)\s+)?'
+    r'(?:(?:dirmi|dire|spiegarmi)\s+)?'
+    r'(?:il|lo|la|i|gli|le)\s+'
+    r'(?:numero|totale|saldo|importo|conteggio|somma|media|elenco|lista|dati|riepilogo)\b'
 )
 _FOLLOW_UP_PARAMETER = re.compile(
     r'^(?:(?:s[iì]|certo|ok|va\s+bene|perfetto|procedi|fallo|esportalo|crealo|generalo|'
@@ -172,6 +182,7 @@ def is_action_request(message: str) -> bool:
                 or _POLITE_INFINITIVE_ACTION_START.search(normalized)
                 or _QUERY_START.search(normalized) or _DATA_REQUEST.search(normalized)
                 or _DATA_EXPLANATION_START.search(normalized)
+                or _QUANTIFIED_DATA_START.search(normalized)
                 or _REPORT_ACTION.search(normalized))
 
 
@@ -187,20 +198,36 @@ def is_action_follow_up(message: str) -> bool:
     return bool(_FOLLOW_UP_PARAMETER.fullmatch(_normalized_for_matching(message)))
 
 
+def _without_greeting(message: str) -> str:
+    normalized = normalize_message(message)
+    return re.sub(
+        r'^(?:ciao|salve|buongiorno|buonasera|buon\s+pomeriggio|ehi|hey|hello|hi)[,\s]+',
+        '',
+        normalized,
+        count=1,
+        flags=re.I,
+    )
+
+
 def route_message(message: str, *, has_pending_action: bool = False) -> Route:
     """Return one explicit route while keeping ambiguous input recoverable."""
     query = normalize_message(message)
-    if is_manual_diagnostic_question(query):
+    routing_query = _without_greeting(query) or query
+    if is_manual_diagnostic_question(routing_query):
         return Route(Intent.MANUAL_DIAGNOSTIC, query, 'manual_diagnostic')
-    if is_capability_question(query):
-        return Route(Intent.CAPABILITIES, query, 'capabilities')
-    if is_output_action_request(query):
+    if is_output_action_request(routing_query):
         return Route(Intent.ACTION, query, 'action')
-    if is_manual_question(query):
+    if is_manual_question(routing_query):
         return Route(Intent.MANUAL_FAQ, query, 'manual_faq')
-    if has_pending_action and is_action_follow_up(query):
+    if is_capability_question(routing_query):
+        if _EMBEDDED_OUTPUT_COMMAND.search(routing_query):
+            return Route(Intent.ACTION, query, 'mixed_action')
+        return Route(Intent.CAPABILITIES, query, 'capabilities')
+    if _EMBEDDED_OUTPUT_COMMAND.search(routing_query):
+        return Route(Intent.ACTION, query, 'mixed_action')
+    if has_pending_action and is_action_follow_up(routing_query):
         return Route(Intent.ACTION, query, 'action_follow_up')
-    if is_action_request(query):
+    if is_action_request(routing_query):
         return Route(Intent.ACTION, query, 'action')
     if is_conversation_message(query):
         return Route(Intent.CONVERSATION, query, 'conversation')

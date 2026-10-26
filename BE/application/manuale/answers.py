@@ -89,12 +89,13 @@ _DEFINITION_CUE = re.compile(
 _MANUAL_REFERENCE_CUE = re.compile(
     r'^(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
     r'|\b(?:il|lo|la|i|gli|le|nel|nello|nella|sul|sullo|sulla|dal|dallo|dalla|del|dello|della|dei|degli|delle)\s+'
-    r'(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
-    r'|\b(?:cerca|apri|leggi|mostrami|trovami)\b.{0,30}\b(?:manuale|documentazione|istruzioni|tutorial|guida)\b'
+    r'(?:manuale|documentazione|istruzioni|tutorial)\b'
+    r"|\b(?:una|la)\s+guida\s+(?:per|su|d['’]uso|dell['’]utente|utente)\b"
 )
 _DATA_QUERY_CUE = re.compile(
     r'\b(?:quanti|quante|quanto|quanta|quali|quando|chi|totale|saldo|importo|'
-    r'elenco|lista|incassat[oi]|pagat[oi]|insolut[oi]|scadut[oi]|attiv[oi])\b'
+    r'elenco|lista|numero|conteggio|somma|media|dati|risultati|'
+    r'incassat[oi]|pagat[oi]|insolut[oi]|scadut[oi]|attiv[oi])\b'
 )
 _PROCEDURAL_CUE = re.compile(
     r'\b(?:qual\s+(?:e|è)\s+(?:la\s+procedura|il\s+modo)|quali\s+passaggi|'

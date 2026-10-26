@@ -39,8 +39,12 @@ class RequestRoutingTests(SimpleTestCase):
             "Cos'è una ricevuta?": Intent.MANUAL_FAQ,
             'Cerca nel manuale come creare un tag': Intent.MANUAL_FAQ,
             'Mostrami la documentazione sui pagamenti': Intent.MANUAL_FAQ,
+            'Dammi le istruzioni per creare un report': Intent.MANUAL_FAQ,
+            'Ho bisogno di una guida per creare un report': Intent.MANUAL_FAQ,
             'Sai dirmi quanti pagamenti ho incassato a gennaio?': Intent.ACTION,
+            'Sai dirmi il numero di soci?': Intent.ACTION,
             'Mi spieghi il totale dei pagamenti di gennaio?': Intent.ACTION,
+            'Mi spieghi il numero di iscrizioni di gennaio?': Intent.ACTION,
             'Spiegami quali pagamenti sono insoluti': Intent.ACTION,
             'Crea un report PDF dei pagamenti di gennaio': Intent.ACTION,
             'Puoi generarmi un file Excel dei soci?': Intent.ACTION,
@@ -50,6 +54,13 @@ class RequestRoutingTests(SimpleTestCase):
             'Crea un report con una guida introduttiva': Intent.ACTION,
             'Esporta la documentazione dei soci': Intent.ACTION,
             'Esporta i pagamenti del corso Guida sicura': Intent.ACTION,
+            'Ciao, esporta la documentazione dei soci': Intent.ACTION,
+            'Quanti iscritti ci sono nel corso La Guida?': Intent.ACTION,
+            'Mostrami i soci con cognome Guida': Intent.ACTION,
+            'Cosa puoi fare? Esporta i pagamenti di gennaio in PDF.': Intent.ACTION,
+            'Dimmi cosa sai fare e crea un report dei soci': Intent.ACTION,
+            'Come posso creare un report e cosa posso esportare?': Intent.MANUAL_FAQ,
+            'Cosa puoi fare per creare un report?': Intent.CAPABILITIES,
             'Qual è il totale dei pagamenti?': Intent.ACTION,
             'Quanti soci hanno pagato questo mese?': Intent.ACTION,
             'Mostrami la copertura del manuale': Intent.MANUAL_DIAGNOSTIC,
@@ -76,6 +87,22 @@ class RequestRoutingTests(SimpleTestCase):
 
 
 class AgentRoutingIntegrationTests(SimpleTestCase):
+    def test_follow_up_detection_distinguishes_questions_from_ordinary_prose(self):
+        from application.agent.core import _answer_requires_follow_up
+
+        for answer in (
+            'Per quale periodo vuoi il report?',
+            'Conferma con un ok per procedere.',
+            'Scegli il formato del report.',
+        ):
+            self.assertTrue(_answer_requires_follow_up(answer), answer)
+        for answer in (
+            'Ho preparato il report richiesto.',
+            'La colonna indica il totale incassato.',
+            'Non posso modificare i pagamenti. Il manuale indica come farlo.',
+        ):
+            self.assertFalse(_answer_requires_follow_up(answer), answer)
+
     def test_capability_question_answers_without_manual_search_or_provider(self):
         callback = AsyncMock()
         agent = Agent('association', 'Aurora', None, callback, manual_available=True)
@@ -298,6 +325,27 @@ class AgentRoutingIntegrationTests(SimpleTestCase):
         self.assertEqual(agent.last_route.intent, Intent.CONVERSATION)
         self.assertEqual(len(provider.calls), 2)
         self.assertTrue(callback.on_message_chunk.call_args.args[0].startswith('Prego.'))
+
+    def test_failed_or_cancelled_action_does_not_leave_stale_pending_state(self):
+        class FailingProvider:
+            def __init__(self, error):
+                self.error = error
+
+            async def chat_stream(self, **kwargs):
+                raise self.error
+
+        for error in (RuntimeError('provider failed'), asyncio.CancelledError()):
+            with self.subTest(error=type(error).__name__):
+                agent = Agent(
+                    'association',
+                    'Aurora',
+                    FailingProvider(error),
+                    AsyncMock(),
+                    manual_available=True,
+                )
+                with self.assertRaises(type(error)):
+                    asyncio.run(agent.process_message('Esporta i pagamenti in PDF'))
+                self.assertFalse(agent._pending_action)
 
     def test_deferred_export_and_saved_report_are_delivered_once(self):
         callback = AsyncMock()

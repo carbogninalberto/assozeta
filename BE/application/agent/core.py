@@ -42,8 +42,9 @@ logger = logging.getLogger(__name__)
 
 MAX_MESSAGE_LENGTH = 2000
 _FOLLOW_UP_ANSWER = re.compile(
-    r'\?|\b(?:quale|quali|specifica|indica|dimmi|preferisci|vuoi|confermi)\b',
-    re.I,
+    r'\?|(?:^|[\n.!?]\s*)(?:quale|quali|specifica|indica|dimmi|preferisci|vuoi|'
+    r'conferma|confermi|scegli|seleziona)\b',
+    re.I | re.M,
 )
 
 # Map tool names to their Python functions
@@ -231,6 +232,14 @@ class Agent:
         await self.callback.on_done()
 
     async def process_message(self, user_message: str) -> None:
+        """Process a message and discard unresolved state on cancellation/errors."""
+        try:
+            await self._process_message(user_message)
+        except (asyncio.CancelledError, Exception):
+            self._pending_action = False
+            raise
+
+    async def _process_message(self, user_message: str) -> None:
         """Process a user message through the agent loop.
 
         This is the main entry point. It:
