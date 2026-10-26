@@ -290,7 +290,7 @@
         "file": "BE/application/management/commands/run_agent.py",
         "line": 6,
         "symbol": "run_agent",
-        "sha256": "d66dedfd710aa6ad11d09b6d9f88c409a216d93f2da326ad7aeb0af3ab83cd15"
+        "sha256": "1b04785b48eb38d1e23522731e5437e8b7cb3eaf4b74c75612450e79819b3a5c"
       },
       "source_present": true,
       "declaration": {
@@ -298,7 +298,7 @@
           "BaseCommand"
         ]
       },
-      "status": "uncharacterized",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
