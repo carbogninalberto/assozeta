@@ -25,7 +25,9 @@ from .downloads import download_token, valid_download_token, stream_backup
 
 
 def public_operation(op):
-    return {'id': str(op.id), 'state': op.state, 'stage': op.stage, 'preview': {k: v for k, v in op.preview.items() if k != 'missing_relation_details'},
+    return {'id': str(op.id), 'state': op.state, 'stage': op.stage, 'preview': {
+                k: v for k, v in op.preview.items()
+                if k not in ('missing_relation_details', 'tutor_reassignment_details')},
             'error': op.error, 'created_at': op.created_at, 'updated_at': op.updated_at,
             'has_recovery_backup': bool(op.backup_path), 'attempts': op.attempts, 'progress': snapshot(op),
             'download_token': download_token(op) if op.backup_path else None}
@@ -145,8 +147,9 @@ class DataRestoreActionView(DataRestoreView):
             response = HttpResponse(json.dumps({
                 'operation_id': str(op.id), 'source_sha256': op.sha256,
                 'missing_relations': op.preview.get('missing_relation_details', []),
+                'tutor_reassignments': op.preview.get('tutor_reassignment_details', []),
             }, indent=2), content_type='application/json')
-            response['Content-Disposition'] = f'attachment; filename="relazioni-mancanti-{op.id}.json"'
+            response['Content-Disposition'] = f'attachment; filename="rapporto-backup-{op.id}.json"'
             return response
         if action == 'status':
             return Response(public_operation(op))

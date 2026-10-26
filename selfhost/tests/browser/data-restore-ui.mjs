@@ -90,7 +90,11 @@ try {
             if (endpoint.endsWith('/download')) return route.continue();
             if (request.method() === 'GET' && endpoint.endsWith('/missing-relations')) {
                 relationReports++;
-                return route.fulfill({contentType: 'application/json', json: {missing_relations: [{model:'MedicalCertificate', field:'user_id', record_id:'certificate-original-id', target_id:'missing-user-id'}]}});
+                return route.fulfill({contentType: 'application/json', json: {
+                    missing_relations: [{model:'MedicalCertificate', field:'user_id', record_id:'certificate-original-id', target_id:'missing-user-id'}],
+                    tutor_reassignments: [{associate_id:'tutor-original-id', name:'Tutore di esempio',
+                        original_tax_code:'RSSMRA80A01H501U', conflicting_associate_id:'member-original-id'}],
+                }});
             }
             if (request.method() === 'GET' && endpoint.endsWith('/backups')) {
                 const cursor = new URL(request.url()).searchParams.get('before');
@@ -107,7 +111,7 @@ try {
             if (endpoint.endsWith('/data-restore')) {
                 if (failUpload) return route.fulfill({status:400, json:{error:'Export incompleto: file mancante.'}});
                 op = {id:'fixture-restore', state:'review', stage:'validated', created_at:'2026-09-23T12:00:00Z',
-                    preview:{association:'Associazione Bakney', export_date:'2026-09-23T12:00:00Z', records:1234, files:80, missing_media:2, missing_relations:58, legacy_invoices:3}, has_recovery_backup:false};
+                    preview:{association:'Associazione Bakney', export_date:'2026-09-23T12:00:00Z', records:1234, files:80, missing_media:2, missing_relations:58, legacy_invoices:3, reassigned_tutors:2, tutor_tax_code_conflicts:1}, has_recovery_backup:false};
                 return route.fulfill({status:201, json:op});
             }
             if (endpoint.endsWith('/start')) {
@@ -163,13 +167,24 @@ try {
         await expect(page.getByRole('heading',{name:'Backup verificato',exact:true})).toBeVisible();
         await expect(page.getByText('Le 3 fatture del servizio Bakney', {exact:false})).toBeVisible();
         await expect(page.getByText('Il backup contiene 58 collegamenti opzionali', {exact:false})).toBeVisible();
-        await page.getByRole('button',{name:'Scarica rapporto relazioni mancanti',exact:true}).click();
+        await expect(page.getByText('Tutori assegnati a questa associazione: 2', {exact:false})).toBeVisible();
+        await expect(page.getByText('Per 1 tutore il codice fiscale', {exact:false})).toBeVisible();
+        await page.getByRole('button',{name:'Scarica rapporto del backup',exact:true}).click();
         await expect.poll(()=>relationReports).toBe(1);
         await page.getByRole('button',{name:'Visualizza rapporto',exact:true}).click();
         await expect(page.getByText('Certificati medici → Utente', {exact:false})).toBeVisible();
         await page.locator('summary').filter({hasText:'Certificati medici'}).click();
         await expect(page.getByText('certificate-original-id',{exact:true})).toBeVisible();
         await expect(page.getByText('missing-user-id',{exact:true})).toBeVisible();
+        await expect(page.getByText('Tutore di esempio',{exact:true})).toBeVisible();
+        await expect(page.getByText('RSSMRA80A01H501U',{exact:true})).toBeVisible();
+        // Tutor conflicts must remain visible even when there are no missing links.
+        op.preview.missing_relations = 0;
+        await page.clock.runFor(4000);
+        await expect(page.getByText('Il backup contiene 58 collegamenti opzionali', {exact:false})).not.toBeVisible();
+        await expect(page.getByText('Per 1 tutore il codice fiscale', {exact:false})).toBeVisible();
+        op.preview.missing_relations = 58;
+        await page.clock.runFor(4000);
         const warningIcon = page.locator('.alert-light-warning .alert-icon').first();
         await expect(warningIcon).toHaveCSS('color', 'rgb(154, 103, 0)');
         const confirm = page.getByRole('button',{name:'Sostituisci i dati',exact:true});

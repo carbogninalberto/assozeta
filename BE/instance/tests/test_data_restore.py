@@ -928,11 +928,12 @@ class RestoreTests(TransactionTestCase):
                  for index, member in enumerate(members)]
         content = self.archive({
             'Associate': [
-                {'associate_id': member, 'sport_association_id': self.source_association}
-                for member in members
+                {'associate_id': member, 'sport_association_id': self.source_association,
+                 'tax_code': 'RSSMRA80A01H501U' if index == 0 else None}
+                for index, member in enumerate(members)
             ] + [
                 {'associate_id': tutor, 'sport_association_id': foreign_associations[index],
-                 'first_name': f'Tutor {index}', 'deleted': bool(index)}
+                 'first_name': f'Tutor {index}', 'deleted': bool(index), 'tax_code': 'rssmra80a01h501u'}
                 for index, tutor in enumerate(tutors)
             ],
             'AssociateTutorRelation': [
@@ -942,6 +943,10 @@ class RestoreTests(TransactionTestCase):
         })
         op = self.upload(content)
         self.assertEqual(op.preview['missing_relations'], 0)
+        self.assertEqual(op.preview['reassigned_tutors'], 2)
+        self.assertEqual(op.preview['tutor_tax_code_conflicts'], 1)
+        status = self.client.get(f'{self.endpoint}/{op.id}/status')
+        self.assertNotIn('tutor_reassignment_details', status.data['preview'])
         self.start(op)
         execute(op.pk)
         op.refresh_from_db()
@@ -951,6 +956,8 @@ class RestoreTests(TransactionTestCase):
             self.assertEqual(restored.sport_association_id, self.association.pk)
             self.assertEqual(restored.first_name, f'Tutor {index}')
             self.assertEqual(restored.deleted, bool(index))
+            self.assertEqual(restored.tax_code, 'rssmra80a01h501u' if index else None)
+        self.assertEqual(Associate.objects.get(pk=members[0]).tax_code, 'RSSMRA80A01H501U')
         self.assertEqual({(str(row.associate_id), str(row.tutor_id), row.is_primary)
                           for row in AssociateTutorRelation.objects.all()},
                          {(member, tutor, True) for member, tutor in links})
@@ -959,11 +966,63 @@ class RestoreTests(TransactionTestCase):
         with zipfile.ZipFile(io.BytesIO(content)) as zf:
             original = json.loads(zf.read('data/07_associates.json'))[-2:]
         self.assertEqual([row['sport_association_id'] for row in original], foreign_associations)
+        report = self.client.get(f'{self.endpoint}/{op.id}/missing-relations')
+        self.assertEqual(report['Cache-Control'], 'no-store')
+        details = json.loads(report.content)['tutor_reassignments']
+        conflict = next(row for row in details if 'original_tax_code' in row)
+        self.assertEqual(conflict['associate_id'], tutors[0])
+        self.assertEqual(conflict['original_tax_code'], 'rssmra80a01h501u')
+        self.assertEqual(conflict['conflicting_associate_id'], members[0])
+        # Repeating the same import must preserve the graph again, including
+        # recovery export of the deleted tutor's relationships.
+        repeated = self.start(self.upload(content))
+        execute(repeated.pk)
+        repeated.refresh_from_db()
+        self.assertEqual(repeated.state, 'completed', repeated.error)
+        self.assertEqual(AssociateTutorRelation.objects.count(), 4)
+        self.assertEqual(repeated.preview['tutor_reassignment_details'], details)
+        self.client.force_authenticate(User.objects.create_user(username='unrelated-reviewer'))
+        self.assertIn(self.client.get(f'{self.endpoint}/{op.id}/missing-relations').status_code, (403, 404))
+
+    def test_unreferenced_foreign_tutors_are_omitted_without_skipped_warnings(self):
+        member, tutor = [str(uuid.uuid4()) for _ in range(2)]
+        op = self.start(self.upload(self.archive({'Associate': [
+            {'associate_id': member, 'sport_association_id': self.source_association},
+            {'associate_id': tutor, 'sport_association_id': str(uuid.uuid4())},
+        ]})))
+        self.assertEqual(op.preview['skipped_records'], {})
+        self.assertEqual(op.preview['reassigned_tutors'], 0)
+        self.assertEqual(op.preview['tutor_tax_code_conflicts'], 0)
+        execute(op.pk)
+        op.refresh_from_db()
+        self.assertEqual(op.state, 'completed', op.error)
+        self.assertTrue(Associate.objects.filter(pk=member).exists())
+        self.assertFalse(Associate._base_manager.filter(pk=tutor).exists())
+
+    def test_foreign_tutor_tax_code_resolution_does_not_depend_on_archive_order(self):
+        member = str(uuid.uuid4())
+        tutors = sorted(str(uuid.uuid4()) for _ in range(2))
+        foreign = str(uuid.uuid4())
+        tutor_rows = [{'associate_id': tutor, 'sport_association_id': foreign,
+                       'tax_code': 'RSSMRA80A01H501U'} for tutor in tutors]
+        for ordered_tutors in (tutor_rows, list(reversed(tutor_rows))):
+            op = self.start(self.upload(self.archive({
+                'Associate': [{'associate_id': member, 'sport_association_id': self.source_association}] + ordered_tutors,
+                'AssociateTutorRelation': [{'id': index + 1, 'associate_id': member, 'tutor_id': tutor}
+                                           for index, tutor in enumerate(tutors)],
+            })))
+            execute(op.pk)
+            op.refresh_from_db()
+            self.assertEqual(op.state, 'completed', op.error)
+            self.assertEqual(Associate.objects.get(pk=tutors[0]).tax_code, 'RSSMRA80A01H501U')
+            self.assertIsNone(Associate.objects.get(pk=tutors[1]).tax_code)
 
     def test_foreign_records_without_a_tutor_link_to_an_imported_member_are_rejected(self):
         foreign_association, member, tutor = [str(uuid.uuid4()) for _ in range(3)]
         samples = [
-            {'Associate': [{'associate_id': tutor, 'sport_association_id': foreign_association}]},
+            {'Associate': [{'associate_id': tutor, 'sport_association_id': foreign_association}],
+             'Subscription': [{'subscription_id': str(uuid.uuid4()), 'associate_id': tutor,
+                               'sport_association_id': self.source_association}]},
             {'Associate': [
                 {'associate_id': member, 'sport_association_id': foreign_association},
                 {'associate_id': tutor, 'sport_association_id': foreign_association},

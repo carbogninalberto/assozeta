@@ -54,8 +54,15 @@ behavior.
 Legacy tutors linked to members of the exported association can carry another
 association's ID. Restore assigns these tutors exclusively to the local
 association, preserving their identifiers, tutor links and deleted state. Other
-records referencing a foreign association are still rejected. The uploaded ZIP
-is not modified.
+referenced records belonging to a foreign association are still rejected.
+Unreferenced foreign anagrafiche are omitted without a skipped-record warning.
+If an active tutor's tax code conflicts with an active member, the member keeps
+it and the tutor's tax-code field is cleared. The original value and both record
+identifiers remain in the downloadable backup report. Conflicts between imported
+tutors use UUID order so the result does not depend on archive ordering. Deleted
+tutors retain their tax codes. No people are merged. Recovery exports retain
+links involving deleted tutors, so the same backup can be restored again.
+The uploaded ZIP is not modified.
 
 Bakney's retired `SportAssociationInvoices` records are converted to association
 document archive entries, retaining their identifiers, invoice dates and linked

@@ -527,7 +527,9 @@ class AssociationExportService:
 
         # AssociateTutorRelation - both associate AND tutor must belong to this association
         if model_name == 'AssociateTutorRelation':
-            associate_ids = Associate.objects.filter(
+            # Recovery must also retain links involving soft-deleted members
+            # or tutors: their Associate records are part of the export too.
+            associate_ids = Associate._base_manager.filter(
                 sport_association=self.sport_association
             ).values_list('associate_id', flat=True)
             # Filter where BOTH associate and tutor are in our association

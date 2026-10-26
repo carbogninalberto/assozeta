@@ -7,10 +7,10 @@
 </script>
 
 <button type="button" class="restore-download" class:backup {disabled} aria-busy={loading}
-    aria-label={backup ? 'Scarica backup di sicurezza' : 'Scarica rapporto relazioni mancanti'} on:click>
+    aria-label={backup ? 'Scarica backup di sicurezza' : 'Scarica rapporto del backup'} on:click>
     <span class="file-icon" aria-hidden="true"><svelte:component this={backup ? FileArchive : FileJson} size={21} /></span>
     <span class="button-copy"><strong>{loading ? 'Download in corso…' : backup ? 'Scarica backup' : 'Scarica rapporto'}</strong>
-        <small>{backup ? 'Copia di sicurezza' : 'Collegamenti mancanti'}</small></span>
+        <small>{backup ? 'Copia di sicurezza' : 'Dati da verificare'}</small></span>
     <span class="file-type" aria-hidden="true">{backup ? 'ZIP' : 'JSON'}</span>
     <span class="download-icon" class:spinning={loading} aria-hidden="true"><svelte:component this={loading ? LoaderCircle : Download} size={17} /></span>
 </button>
