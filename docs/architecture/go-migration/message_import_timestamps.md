@@ -237,3 +237,27 @@ source timestamp rows are the independent oracle used by these tests. Historical
 baseline import-window predictions are not permitted normalizations. This bounded
 correction does not verify other models' automatic fields, complete queued import
 or replacement-restore orchestration, Go restore ownership, or global parity.
+
+
+## Main alignment and timestamp precision checks
+
+After alignment to `main@44800801`, the parent ran the timestamp, identity/media,
+folder, streaming and existing replacement-restore suites against disposable
+PostgreSQL. `message-import-main448-regression-r1/results.json` records **87 tests
+passing without failures, errors or skips**. All 423 recorded source inputs match
+before/after execution; private PostgreSQL/Redis and owned directories were cleaned.
+Receipt SHA-256: `dbd4efda9399ea2156aed6df07effa7fbf61b87dd0016413a5d889ccceefdbee`.
+The existing restore tests do not include the historical message archive, so this
+result does not establish historical message replacement/recovery acceptance.
+
+Three additional checks using two temporary archive variants exercise nonzero microseconds,
+positive/negative non-hour UTC offsets and year rollover. Explicit independently
+authored UTC instants cover all six message/delivery timestamp fields. Persisted
+values, CREATE audit serialization, actor attribution and association indexes are
+checked; a separate enclosing audit-disable case retains exact timestamps without
+new audit/index rows. The fixed historical fixture and all original tests remain
+unchanged. The parent ran the complete expanded timestamp module: **17 tests pass**
+with no skips in `message-import-offsets-r1/results.json`. All recorded source
+inputs match the integrated source, with owned service and directory cleanup.
+These are reference-import checks; complete historical restore/recovery and Go
+parity remain unverified.

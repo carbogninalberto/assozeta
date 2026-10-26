@@ -460,3 +460,137 @@ class MessageTimestampImportBoundaryTests(TestCase):
             self.service.import_all()
         self.assertEqual(len(observed), 1)
         self._assert_rollback(before)
+
+    # Each pair is (archive text, independently authored UTC instant). These
+    # variants belong only to temporary ZIPs; the immutable fixture stays intact.
+    _UTC_FRACTIONAL_TIMESTAMPS = {
+        'messages': {
+            'retained_email': {'created_at': (
+                '2001-01-01T00:00:00.123456Z', '2001-01-01T00:00:00.123456+00:00')},
+            'retained_sms': {'created_at': (
+                '2001-01-02T00:00:00.000001+00:00', '2001-01-02T00:00:00.000001+00:00')},
+            'delete_email': {'created_at': (
+                '2001-01-03T00:00:00.999999Z', '2001-01-03T00:00:00.999999+00:00')},
+        },
+        'deliveries': {
+            'retained_delivery': {
+                'sent_on': ('2001-01-01T00:00:01.234567Z', '2001-01-01T00:00:01.234567+00:00'),
+                'delivered_on': ('2001-01-01T00:00:02.345678Z', '2001-01-01T00:00:02.345678+00:00'),
+                'opened_on': ('2001-01-01T00:01:00.456789Z', '2001-01-01T00:01:00.456789+00:00'),
+                'clicked_on': ('2001-01-01T00:01:01.567891Z', '2001-01-01T00:01:01.567891+00:00'),
+            },
+            'delete_bounced': {
+                'sent_on': ('2001-01-03T00:00:01.678912Z', '2001-01-03T00:00:01.678912+00:00'),
+                'bounced_on': ('2001-01-03T00:00:02.789123Z', '2001-01-03T00:00:02.789123+00:00'),
+            },
+        },
+    }
+    _OFFSET_FRACTIONAL_TIMESTAMPS = {
+        'messages': {
+            'retained_email': {'created_at': (
+                '2001-01-01T00:00:00.123456+05:45', '2000-12-31T18:15:00.123456+00:00')},
+            'retained_sms': {'created_at': (
+                '2000-12-31T23:59:59.000001-03:30', '2001-01-01T03:29:59.000001+00:00')},
+            'delete_email': {'created_at': (
+                '2000-12-31T23:59:59.999999-03:30', '2001-01-01T03:29:59.999999+00:00')},
+        },
+        'deliveries': {
+            'retained_delivery': {
+                'sent_on': ('2001-01-01T00:00:01.234567+05:45', '2000-12-31T18:15:01.234567+00:00'),
+                'delivered_on': ('2001-01-01T00:00:02.345678+05:45', '2000-12-31T18:15:02.345678+00:00'),
+                'opened_on': ('2001-01-01T00:01:00.456789+05:45', '2000-12-31T18:16:00.456789+00:00'),
+                'clicked_on': ('2001-01-01T00:01:01.567891+05:45', '2000-12-31T18:16:01.567891+00:00'),
+            },
+            'delete_bounced': {
+                'sent_on': ('2001-01-01T00:00:01.678912-03:30', '2001-01-01T03:30:01.678912+00:00'),
+                'bounced_on': ('2001-01-01T00:00:02.789123-03:30', '2001-01-01T03:30:02.789123+00:00'),
+            },
+        },
+    }
+
+    def _edit_timestamp_variant(self, variant):
+        for group, section, pk_field in (
+            ('messages', fixture.MESSAGE_SECTION, 'message_id'),
+            ('deliveries', fixture.DELIVERY_SECTION, 'message_transaction_id'),
+        ):
+            replacements = {
+                self.contract['ids'][name]: fields for name, fields in variant[group].items()
+            }
+
+            def edit(rows):
+                for row in rows:
+                    for field, (source_text, _) in replacements.get(row[pk_field], {}).items():
+                        row[field] = source_text
+
+            self._edit_section(section, edit)
+
+    def _assert_timestamp_variant(self, association, variant, *, actor_id=None, audits=True):
+        message_logs = LogEntry.objects.get_for_model(Message)
+        self.assertEqual(message_logs.count(), 4 if audits else 0)
+        self.assertFalse(LogEntry.objects.get_for_model(MessageTransaction).exists())
+        for group, model, pk_field, fields in (
+            ('messages', Message, 'message_id', ('created_at',)),
+            ('deliveries', MessageTransaction, 'message_transaction_id',
+             ('sent_on', 'delivered_on', 'opened_on', 'clicked_on', 'bounced_on')),
+        ):
+            replacements = {
+                self.contract['ids'][name]: values for name, values in variant[group].items()
+            }
+            for source in self.expected[group]:
+                # Read real persisted rows. Unchanged peers and explicit nulls
+                # still use the fixed source expectation, never an import clock.
+                row = model.objects.get(pk=source[pk_field])
+                for field in fields:
+                    with self.subTest(group=group, pk=str(row.pk), field=field):
+                        expected_text = replacements.get(str(row.pk), {}).get(
+                            field, (None, source[field]),
+                        )[1]
+                        expected = (None if expected_text is None
+                                    else datetime.fromisoformat(expected_text))
+                        actual = getattr(row, field)
+                        self.assertEqual(actual, expected)
+                        if expected is not None:
+                            self.assertTrue(timezone.is_aware(actual))
+                            self.assertEqual(actual.microsecond, expected.microsecond)
+                if model is Message and audits:
+                    event = message_logs.get(object_pk=str(row.pk))
+                    self.assertEqual(event.action, LogEntry.Action.CREATE)
+                    self.assertEqual(event.actor_id, actor_id)
+                    self.assertEqual(event.changes['sport_association'], ['None', str(association.pk)])
+                    # auditlog string changes normalize aware datetimes to UTC
+                    # without an offset. Preserve all six fractional digits.
+                    serialized = ('None' if expected is None else str(
+                        expected.astimezone(datetime_timezone.utc).replace(tzinfo=None),
+                    ))
+                    self.assertEqual(event.changes['created_at'], ['None', serialized])
+                    indexes = AuditLogIndex.objects.filter(log_entry=event)
+                    self.assertEqual(indexes.count(), 1)
+                    index = indexes.get()
+                    self.assertEqual(index.sport_association_id, association.pk)
+                    self.assertEqual(index.resolution_path, 'direct')
+
+    def test_utc_microseconds_survive_import_and_create_audit_serialization(self):
+        variant = self._UTC_FRACTIONAL_TIMESTAMPS
+        self._edit_timestamp_variant(variant)
+        self._assert_timestamp_variant(self._import(), variant)
+
+    def test_non_utc_offsets_preserve_instants_microseconds_and_actor_audits(self):
+        variant = self._OFFSET_FRACTIONAL_TIMESTAMPS
+        self._edit_timestamp_variant(variant)
+        actor = User.objects.create_user(
+            username='synthetic-offset-actor', email='offset-actor@example.test',
+        )
+        with set_actor(actor):
+            association = self._import()
+        self._assert_timestamp_variant(association, variant, actor_id=actor.pk)
+
+    def test_offset_microsecond_import_respects_enclosing_audit_disable(self):
+        variant = self._OFFSET_FRACTIONAL_TIMESTAMPS
+        self._edit_timestamp_variant(variant)
+        before_logs = set(LogEntry.objects.values_list('pk', flat=True))
+        before_indexes = set(AuditLogIndex.objects.values_list('pk', flat=True))
+        with disable_auditlog():
+            association = self._import()
+        self._assert_timestamp_variant(association, variant, audits=False)
+        self.assertEqual(set(LogEntry.objects.values_list('pk', flat=True)), before_logs)
+        self.assertEqual(set(AuditLogIndex.objects.values_list('pk', flat=True)), before_indexes)
