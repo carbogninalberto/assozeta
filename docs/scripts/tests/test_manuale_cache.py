@@ -56,7 +56,10 @@ class VerifiedPortableCacheTests(unittest.TestCase):
             fixtures.write(code, '.gitignore',
                            'UI/dist/\n.env*\nbrowser-input.json\nexecution.log\npreview.log\n')
             fixtures.write(code, 'selfhost/compose.dev.yml', 'services: {}\n')
-            fixtures.command(code, 'add', '.gitignore', 'selfhost/compose.dev.yml')
+            for name in ('compile.mjs', 'verify.mjs'):
+                fixtures.write(code, 'selfhost/tests/browser/manuale/' + name, '// Offline renderer identity fixture\n')
+            fixtures.command(code, 'add', '.gitignore', 'selfhost/compose.dev.yml',
+                             'selfhost/tests/browser/manuale/compile.mjs', 'selfhost/tests/browser/manuale/verify.mjs')
             fixtures.command(code, 'commit', '-qm', 'Cache fixture public build configuration')
         self.application_revision = fixtures.command(f.old_code, 'rev-parse', 'HEAD')
         f.state['application_input']['revision'] = fixtures.command(f.code, 'rev-parse', 'HEAD')
@@ -165,6 +168,7 @@ class VerifiedPortableCacheTests(unittest.TestCase):
                 'path': 'docs/members.mdx',
                 'sections': [{
                     'id': 'elenco',
+                    'citation_anchor': 'elenco',
                     'status': 'verified',
                     'kind': 'workflow',
                     'content_sha256': fixtures.manual_index.digest(section['mdx']),
@@ -412,6 +416,36 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '[Oo]nly a complete passed capture baseline'):
             self.export()
         self.assertEqual(previous.read_bytes(), b'previous-cache')
+
+    def test_portable_baseline_retains_render_provenance_for_another_release(self):
+        from application.manuale import render_reuse
+        f = self.fixture
+        render_reuse.plan_render_reuse(f.old)
+        self.export()
+        imported = f.root / 'fresh-runner-import'
+        cache.import_cache(self.archive, imported, f.old_manual, register=False)
+        baseline = json.loads((imported / 'run.json').read_text())
+        render_reuse.validate_render_reuse(baseline)
+
+        target_run = f.root / 'next-release'
+        target = {**baseline, 'run': str(target_run), 'run_id': 'next-release',
+                  'release': 'next-release-version', 'status': 'compiled'}
+        target.pop('render_reuse', None)
+        manifest = json.loads((imported / 'manifest.json').read_text())
+        manifest['metadata']['release'] = target['release']
+        write_json(target_run, 'manifest.json', manifest)
+        write_json(target_run, 'run.json', target)
+        shutil.copy2(imported / 'compile.json', target_run / 'compile.json')
+        plan = render_reuse.plan_render_reuse(target, imported)
+        self.assertEqual(plan['fresh_pages'], [])
+        self.assertEqual(plan['reused_pages'], ['docs/members'])
+        entry = plan['pages']['docs/members']
+        self.assertEqual(entry['origin']['release'], baseline['release'])
+        self.assertEqual(entry['origin']['application_revision'], self.application_revision)
+        self.assertEqual(entry['dependencies']['page_path'], 'docs/members.mdx')
+        self.assertEqual((target_run / entry['original_report']['path']).read_bytes(),
+                         (imported / 'render.json').read_bytes())
+        render_reuse.validate_render_reuse(target)
 
     def test_render_sealing_distinguishes_supporting_captures_from_displayed_images(self):
         f = self.fixture
