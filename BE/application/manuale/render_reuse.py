@@ -97,6 +97,20 @@ def renderer_inputs(state):
                   and not {'.git', 'node_modules'} & set(path.relative_to(manual).parts))
     for relative in sorted(assets):
         inputs['manual/' + relative] = _hash_input(manual, 'manual', relative)
+    # Mintlify's shared sidebar can use another page's frontmatter title/icon.
+    # Bind that metadata globally without making ordinary body edits invalidate
+    # every page. A top-level heading also covers pages without frontmatter.
+    navigation_metadata = {}
+    for page in load(state['run'], 'manifest.json')['pages']:
+        relative = page['path']
+        text = owned(manual, relative).read_text()
+        frontmatter = re.match(r'\A---[ \t]*\r?\n(.*?)\r?\n---(?:\r?\n|$)', text, re.S)
+        heading = re.search(r'^# [^\n]+', text, re.M)
+        navigation_metadata[relative] = {
+            'frontmatter': frontmatter.group(1) if frontmatter else '',
+            'heading': heading.group(0) if heading else '',
+        }
+    inputs['navigation-metadata'] = digest(canonical(navigation_metadata))
     return dict(sorted(inputs.items()))
 
 

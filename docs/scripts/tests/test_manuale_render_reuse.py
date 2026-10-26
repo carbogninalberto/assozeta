@@ -220,6 +220,16 @@ class RenderReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['reused_pages'], ['docs/two'])
         self.assertIn('page-local-assets-changed', plan['rejected_pages'][0]['reasons'][0])
 
+    def test_sidebar_metadata_change_invalidates_other_page_layouts(self):
+        page = Path(self.target['manual']) / 'docs/one.mdx'
+        page.write_text('---\ntitle: Updated shared navigation label\n---\n' + page.read_text())
+        report = json.loads((self.target_run / 'compile.json').read_text())
+        report['pages'][0]['source_sha256'] = render_reuse.file_hash(self.target['manual'], 'docs/one.mdx')
+        write(self.target_run, 'compile.json', report)
+        plan = render_reuse.plan_render_reuse(self.target['state'], self.baseline_run)
+        self.assertEqual(plan['fresh_pages'], ['docs/one', 'docs/two'])
+        self.assertEqual(plan['reused_pages'], [])
+
     def test_renderer_inputs_are_deterministic_and_missing_tools_fail(self):
         first = render_reuse.renderer_inputs(self.target['state'])
         self.assertEqual(first, render_reuse.renderer_inputs(self.target['state']))
