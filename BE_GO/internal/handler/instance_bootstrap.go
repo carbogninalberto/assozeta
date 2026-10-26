@@ -99,6 +99,10 @@ func (h *InstanceBootstrapHandler) read(c echo.Context, endpoint string) error {
 func InstanceBootstrapLocale() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			path := c.Request().URL.Path
+			if path == "/communications/messages/add" || (strings.HasPrefix(path, "/communications/messages/") && strings.HasSuffix(path, "/delete")) {
+				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
+			}
 			if c.Request().URL.Path == "/manuale/sections" || strings.HasPrefix(c.Request().URL.Path, "/manuale/assets/") {
 				c.Response().Writer = &instanceLocaleWriter{ResponseWriter: c.Response().Writer, language: restLanguage(c.Request())}
 			}

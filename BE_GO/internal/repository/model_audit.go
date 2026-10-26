@@ -24,6 +24,12 @@ type modelAuditEntry struct {
 }
 
 func appendModelAudit(ctx context.Context, tx *sqlx.Tx, event modelAuditEntry) error {
+	return appendModelAuditForApp(ctx, tx, "application", event)
+}
+
+// Content types are scoped by both Django application and model. Keep existing
+// callers on application while allowing communications to share audit storage.
+func appendModelAuditForApp(ctx context.Context, tx *sqlx.Tx, appLabel string, event modelAuditEntry) error {
 	changes, err := json.Marshal(event.Changes)
 	if err != nil {
 		return err
@@ -49,8 +55,8 @@ func appendModelAudit(ctx context.Context, tx *sqlx.Tx, event modelAuditEntry) e
  (content_type_id,object_pk,object_id,object_repr,serialized_data,action,changes_text,changes,
  actor_id,cid,remote_addr,remote_port,timestamp,additional_data,actor_email)
  SELECT id,$1,NULL,$2,NULL,$10,'',$3::jsonb,$4::uuid,$5,$6::inet,$7::text::integer,$8,$12::jsonb,$9
- FROM django_content_type WHERE app_label='application' AND model=$11 RETURNING id`,
-		event.Key, event.Representation, string(changes), event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, remotePort, event.At, event.Context.ActorEmail, event.Action, event.Model, additionalData)
+ FROM django_content_type WHERE app_label=$13 AND model=$11 RETURNING id`,
+		event.Key, event.Representation, string(changes), event.Context.ActorID, event.Context.CorrelationID, event.Context.RemoteAddress, remotePort, event.At, event.Context.ActorEmail, event.Action, event.Model, additionalData, appLabel)
 	if errors.Is(err, sql.ErrNoRows) {
 		return errors.New("audit model content type missing")
 	}

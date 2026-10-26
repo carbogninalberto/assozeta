@@ -61,7 +61,8 @@ def resolve_sport_association_for_log_entry(log_entry):
                 # For DELETE actions, new_value is 'None', so we try old_value first
                 sa_data = changes['sport_association']
                 sa_ids_to_try = []
-                if isinstance(sa_data, list):
+                # auditlog emits tuples in memory; JSON reloads yield lists.
+                if isinstance(sa_data, (list, tuple)):
                     # Try old value first (index 0), then new value (index 1)
                     if len(sa_data) > 0:
                         sa_ids_to_try.append(sa_data[0])
