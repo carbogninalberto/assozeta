@@ -125,6 +125,8 @@ class ManualPolicyTests(unittest.TestCase):
             def git(*args):
                 return subprocess.check_output(['git', '-C', str(root), *args], text=True).strip()
             git('init', '-q')
+            git('config', 'user.name', 'Offline Unit Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
             git('commit', '--allow-empty', '-qm', 'Accepted fixture')
             accepted = git('rev-parse', 'HEAD')
             git('update-ref', 'refs/remotes/origin/main', accepted)
