@@ -1,6 +1,9 @@
 // 2FA source re-reviewed: OTP confirmation, QR setup and successful enable/disable
 // remain unchanged. Any audit-index exception rolls back the selected user mutation;
 // locked reads and selected columns preserve concurrent profile changes.
+// Communications views re-reviewed after 639fa127: only DELETE lookup/locking
+// changed; all five cited excerpts remain identical. Review and acceptance limits:
+// docs/architecture/go-migration/message_delete_manual_binding.md.
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const communicationAuthReviewedSources = Object.freeze({
@@ -9,7 +12,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "UI/src/routes/association/communication/messages/modals/Send.svelte": "20aab21730a6af1f44cea41c3b6e2134b7f0d386897c7e81a1686d41c4c0b56b",
     "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
     "BE/communications/models.py": "c87dda8f5fca11218b26cf3f6996090151b50d7bfb88f202b5d0935b40be857f",
-    "BE/communications/views.py": "3749d8e76d79f9d57371b67a6a40db3c90013713543dcf2978aa4077a3b9955b",
+    "BE/communications/views.py": "d9cd631494b3a8d84917c80f246022b2aa1f9ea9f914ce1b95e84d47a3f68d83",
     "BE/application/views/statistic_views.py": "9a97f4e8fac492aff785b6636165a4583510473d057616fd9f2f1e0a9b0693de",
     "BE/communications/serializers.py": "8fcc36f71d436a2cf821604a24dcb7325cbd70dfde2dbf557c8702e48d195f0d",
     "UI/src/routes/association/communication/settings/sections/EmailSMTP.svelte": "878c6421a023d8e0135b8c0e871c20cbc7391aee8268478b22327efabd9128bb",
