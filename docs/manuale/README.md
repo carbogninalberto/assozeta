@@ -70,8 +70,9 @@ Non usa dati o servizi di produzione.
 Le PR che modificano questa integrazione eseguono la stessa pipeline senza
 pubblicare immagini. Per ripeterla senza pubblicare una release, eseguire manualmente
 **Build and rehearse the release manual** sul branch della PR, specificando una
-versione di prova. L'upload del runtime avviene soltanto dopo il successo della
-prova. Una verifica fallita impedisce la pubblicazione delle immagini di release
+versione di prova. Il runtime verificato viene trasferito al job appliance tramite
+un artifact; solo il successo dell'intero workflow ne autorizza l'uso nella
+pubblicazione e rende ammissibile la baseline. Una verifica fallita impedisce la pubblicazione delle immagini di release
 e del manifest di aggiornamento. Le build `edge` da push restano build di sviluppo
 senza il requisito del pacchetto; non sono release installabili tramite manifest.
 
@@ -151,11 +152,13 @@ non sommare i tempi annidati per ricavare la durata totale.
 
 ## Cache delle verifiche CI
 
-Le PR selezionano le dipendenze cambiate rispetto al commit base. La cache conserva
-un run completo prodotto dal branch predefinito; il verificatore ricontrolla ogni
-workflow per la revisione in esame. Una cache assente, scaduta o incompatibile
-porta a una cattura a freddo completa, senza pubblicare solo il sottoinsieme della PR.
-Le PR possono leggere la baseline ma non aggiornano quella condivisa.
+Le PR confrontano gli input correnti con quelli della baseline fidata ammessa,
+anche quando proviene da un altro workflow. Il verificatore ricontrolla ogni
+ricetta e riusa soltanto le prove compatibili. Una baseline assente, scaduta o
+non ammissibile richiede una verifica completa; incompatibilità circoscritte
+richiedono nuove prove per i workflow interessati. Gli artifact delle PR sono
+candidati: diventano riutilizzabili soltanto dopo il successo dell'intero workflow
+e l'accettazione delle sorgenti nel ramo predefinito.
 
 `manuale-cache.py export --run RUN --archive CACHE.tar.gz` crea un archivio
 trasportabile con un bundle Git della revisione applicativa, sorgenti pubbliche,
@@ -693,6 +696,9 @@ Separare la verifica costosa dei contenuti dalla confezione del pacchetto:
 
 La selezione usa `recipes.json`, gli import effettivi delle ricette, i contratti
 editoriali e gli hash delle sorgenti; non usa una chiave globale basata sullo SHA.
+Le modifiche al registro generato confrontano i contratti delle singole ricette:
+i soli metadati dei riferimenti non richiedono nuove catture; cambiamenti ai
+contratti condivisi mantengono la verifica completa.
 Le sorgenti dichiarate in `non_capture_dependencies` sono prive di procedure
 catturate: i relativi riferimenti vengono comunque ricostruiti e validati. Una
 dipendenza esplicita di una ricetta prevale su questa esclusione. Aggiungere un
