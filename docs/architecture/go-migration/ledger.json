@@ -6110,25 +6110,73 @@
         "target": "DocumentArchiveViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_archive.go",
+        "BE_GO/internal/dto/documents_archive.go",
+        "BE_GO/internal/repository/documents_archive.go",
+        "BE_GO/internal/service/documents_archive.go",
+        "BE_GO/internal/handler/documents_archive.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationdocumentsarchive, docmanager_document, application_folder"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/list",
+          "/api/v2/documents/list",
+          "/api/documents/list"
+        ],
+        "request": "Optional ?folder=<id>&page=<n>.",
+        "response": "200 {\"data\": [archive rows], \"pagination\": {...}}.",
+        "errors": "401; 403 registry, impersonation or foreign folder; 500 bad page or folder, athlete or missing association, DELETE dispatch.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.read.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_list_http.json",
+        "TESTS/fixtures/generate_documents_list_http.py",
+        "TESTS/contracts/test_documents_list_http.py",
+        "TESTS/adapters/django/documents_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-archive.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 18/18; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-list-http-red-r1/results.json",
+          "receipt_sha256": "d0a6c3454d436dd8226faa5f96ed0d4a4faa134b75660e66dc173eb2cf91e912"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 18/18 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged state.",
+          "artifact": "quality-reports/go-migration/documents-list-http-versioned-r1/results.json",
+          "receipt_sha256": "54ff5a0997fbbfd554c7d001812ba86992a89c1f5344479a4c99f587c36d84eb"
+        },
+        {
+          "revision": "committing change without the root-level filter",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/documents-list-http-mutation-r1/results.json",
+          "receipt_sha256": "a3b7f855b2b4f686977080c7d6a92bf557c21d2f4f7b05a9cb732422b7b0e597"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports; unordered pages match Django only for the same physical order."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:export-all-data -> export_all_data",
