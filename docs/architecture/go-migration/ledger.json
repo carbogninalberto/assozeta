@@ -7405,25 +7405,70 @@
         "target": "invoice_suppliers_stats",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/supplier_invoice_stats.go",
+        "BE_GO/internal/dto/supplier_invoice_stats.go",
+        "BE_GO/internal/repository/supplier_invoice_stats.go",
+        "BE_GO/internal/service/supplier_invoice_stats.go",
+        "BE_GO/internal/handler/supplier_invoice_stats.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_invoicesuppliers, application_supplierandcustomers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-suppliers/stats",
+          "/api/v2/invoice-suppliers/stats",
+          "/api/invoice-suppliers/stats"
+        ],
+        "request": "No body.",
+        "response": "200 {invoices_total, invoices_paid, invoices_unpaid, invoices_expiring}.",
+        "errors": "401; 403 registry or impersonation; 500 athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.supplierinvoices.read.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_invoice_stats_http.json",
+        "TESTS/fixtures/generate_supplier_invoice_stats_http.py",
+        "TESTS/contracts/test_supplier_invoice_stats_http.py",
+        "TESTS/adapters/django/supplier_invoice_stats_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/supplier-invoice-stats.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 11/11 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-invoice-stats-http-red-r1/results.json",
+          "receipt_sha256": "6f3fd56bf97f082d6e320f894197d65308018d26d1118f8c26cdd3425e390a9b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 11/11 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged state.",
+          "artifact": "quality-reports/go-migration/supplier-invoice-stats-http-versioned-r1/results.json",
+          "receipt_sha256": "d4d7f306eacd6313f61b9619b05edeaa522866cb21daf11dec07c601abcd9e18"
+        },
+        {
+          "revision": "committing change with the untouched sum rendered as float",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/supplier-invoice-stats-http-mutation-r1/results.json",
+          "receipt_sha256": "92017e0cea50ed612560350d6640dc2ebe8716f953e916eab3724beaaaec1932"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including Python int/Decimal sum rendering proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice/<str:uid>/delete -> invoice_delete",

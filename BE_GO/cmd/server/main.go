@@ -182,6 +182,7 @@ func run() (runErr error) {
 	associationListHandler := handler.NewAssociationListHandler(service.NewAssociationList(repository.NewAssociationList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	associationAdminHandler := handler.NewAssociationAdminHandler(service.NewAssociationAdmin(repository.NewAssociationAdmin(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	inconsistenciesHandler := handler.NewInconsistenciesHandler(service.NewInconsistencies(repository.NewInconsistencies(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	supplierInvoiceStatsHandler := handler.NewSupplierInvoiceStatsHandler(service.NewSupplierInvoiceStats(repository.NewSupplierInvoiceStats(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -216,6 +217,7 @@ func run() (runErr error) {
 	e.Any("/statistic/dashboard/layout", dashboardLayoutHandler.Set, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/sport-associations/list", associationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/check-inconsistencies", inconsistenciesHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/invoice-suppliers/stats", supplierInvoiceStatsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/sport-associations/:uid/admin-update", associationAdminHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/list", moduleTemplatesHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/templates/add", moduleTemplatesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
