@@ -1,4 +1,4 @@
-# Staff board — characterized, not implemented
+# Staff board — characterized; document validator ported
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -87,7 +87,43 @@ parity until an explicit, tested interoperability boundary (or single-runtime
 ownership of the notification socket) delivers the invalidation to connected
 clients of either backend, with permission recheck before delivery.
 
-## Required evidence before `implementing`
+## Rich-document validator (ported)
+
+`BE_GO/internal/dto/staff_board_document.go` ports `validate_document` for values
+from the existing Python-faithful `ParseProfileTablesJSON` (insertion order,
+duplicate-key last value, integer precision, preserved lone surrogates).
+`python_json.go` reproduces `json.dumps` defaults (ASCII escaping, `", "`/`": "`
+separators, float `repr`, `Infinity`) for the 14 MiB measure. URL checks port
+the production interpreter's Python 3.13.16 `urlsplit` netloc rules
+(`_check_bracketed_netloc`, IPvFuture, `ipaddress` IPv4/IPv6 with scope IDs,
+NFKC netloc check via `golang.org/x/text`), and text stripping uses Python
+`str.isspace` (including `\x1c`–`\x1f`). An object or array node/mark type
+returns `ErrStaffBoardDocumentUnhashable`, matching Django's uncaught
+`TypeError` (a server error); this is recorded as a candidate bug, not changed.
+
+Evidence:
+
+- `TESTS/fixtures/staff-board-documents.json` holds **139** authored cases,
+  written from the contract by `generate_staff_board_documents.py` (which only
+  computes size padding with the stdlib encoder). Expectations were not observed
+  from Django; one authoring error (hard-break newlines) was found by review and
+  corrected before any run.
+- `python -m TESTS.adapters.django.staff_board_documents` runs every case through
+  Django's real `validate_document` offline: 139/139 match. Controls with a wrong
+  expectation and a one-byte-over size input are both detected.
+- `go test ./internal/dto` runs the same corpus: 139/139 pass, plus Python
+  `json.dumps` number/escape checks. RED was a compile failure on the missing API.
+  Mutations to Go-style whitespace or UTF-8 size measurement fail the corpus.
+- A one-off randomized differential against the real interpreter matched all
+  40,000 generated URLs (5,463 accepted links, 1,468 accepted images) for both
+  link and image modes, and 4,999 float tokens. Generator seeds were 20261027
+  and 4242; the harness was not committed.
+
+Residual gaps: Unicode database versions differ (Python 3.13 uses 15.1; x/text
+v0.32.0 uses 15.0), NFKC over preserved surrogate bytes is untested, and
+`RecursionError` at Python's nesting limit is not reproduced (the 30-level depth
+check runs only after `json.dumps` measures the document).
+
 
 1. An independently authored fixture and portable contract (no Django imports)
    covering transport, validation (including document rejection), authorship,

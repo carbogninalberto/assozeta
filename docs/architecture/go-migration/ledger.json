@@ -15392,7 +15392,10 @@
         "syntax": "path"
       },
       "status": "characterized",
-      "go": [],
+      "go": [
+        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
@@ -15419,10 +15422,18 @@
         "execution_owner": "django"
       },
       "tests": [
-        "BE/communications/tests/test_staff_board.py"
+        "BE/communications/tests/test_staff_board.py",
+        "TESTS/fixtures/staff-board-documents.json",
+        "TESTS/adapters/django/staff_board_documents.py",
+        "BE_GO/internal/dto/staff_board_document_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/staff-board.md"
+        "docs/architecture/go-migration/staff-board.md",
+        {
+          "revision": "current branch plus the committing validator change",
+          "result": "Authored 139-case rich-document corpus: Django validate_document 139/139 and Go port 139/139; randomized interpreter differential 40,000 URLs and 4,999 floats with zero mismatches; Go mutations caught. Component evidence only; no Go route, persistence or realtime.",
+          "artifact": "TESTS/fixtures/staff-board-documents.json"
+        }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
@@ -15444,7 +15455,10 @@
         "syntax": "path"
       },
       "status": "characterized",
-      "go": [],
+      "go": [
+        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/dto/python_json.go"
+      ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
@@ -15471,10 +15485,18 @@
         "execution_owner": "django"
       },
       "tests": [
-        "BE/communications/tests/test_staff_board.py"
+        "BE/communications/tests/test_staff_board.py",
+        "TESTS/fixtures/staff-board-documents.json",
+        "TESTS/adapters/django/staff_board_documents.py",
+        "BE_GO/internal/dto/staff_board_document_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/staff-board.md"
+        "docs/architecture/go-migration/staff-board.md",
+        {
+          "revision": "current branch plus the committing validator change",
+          "result": "Authored 139-case rich-document corpus: Django validate_document 139/139 and Go port 139/139; randomized interpreter differential 40,000 URLs and 4,999 floats with zero mismatches; Go mutations caught. Component evidence only; no Go route, persistence or realtime.",
+          "artifact": "TESTS/fixtures/staff-board-documents.json"
+        }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
