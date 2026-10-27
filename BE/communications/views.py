@@ -90,7 +90,8 @@ def configuration_send_email(request):
     data = request.data
 
     if 'message_id' in data and data['message_id']:
-        message = Message.objects.filter(message_id=data['message_id']).first()
+        message = Message.objects.filter(message_id=data['message_id'],
+                                         sport_association=request.user.sport_association).first()
         if not message:
             return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
         data['message'] = message.message
