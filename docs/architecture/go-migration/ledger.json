@@ -15341,7 +15341,9 @@
       },
       "status": "characterized",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
+        "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
         "BE_GO/internal/service/staff_board.go"
       ],
@@ -15372,6 +15374,7 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
+        "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/go/staff_board_repository.py"
@@ -15388,6 +15391,11 @@
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
           "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
           "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+        },
+        {
+          "revision": "c53658a4 plus the committing handler/route change",
+          "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
+          "artifact": "BE_GO/internal/handler/staff_board_test.go"
         }
       ],
       "notes": [
@@ -15411,11 +15419,13 @@
       },
       "status": "characterized",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
         "BE_GO/internal/dto/staff_board_document.go",
         "BE_GO/internal/dto/staff_board_input.go",
         "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
         "BE_GO/internal/service/staff_board.go"
       ],
@@ -15448,6 +15458,7 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
@@ -15483,6 +15494,11 @@
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
           "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
           "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+        },
+        {
+          "revision": "c53658a4 plus the committing handler/route change",
+          "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
+          "artifact": "BE_GO/internal/handler/staff_board_test.go"
         }
       ],
       "notes": [
@@ -15506,11 +15522,13 @@
       },
       "status": "characterized",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
         "BE_GO/internal/dto/staff_board_document.go",
         "BE_GO/internal/dto/staff_board_input.go",
         "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
         "BE_GO/internal/service/staff_board.go"
       ],
@@ -15543,6 +15561,7 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
@@ -15578,6 +15597,11 @@
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
           "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
           "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+        },
+        {
+          "revision": "c53658a4 plus the committing handler/route change",
+          "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
+          "artifact": "BE_GO/internal/handler/staff_board_test.go"
         }
       ],
       "notes": [
@@ -15601,8 +15625,10 @@
       },
       "status": "characterized",
       "go": [
+        "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
         "BE_GO/internal/service/staff_board.go"
       ],
@@ -15634,6 +15660,7 @@
       "tests": [
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/go/staff_board_repository.py",
@@ -15656,6 +15683,11 @@
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
           "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
           "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+        },
+        {
+          "revision": "c53658a4 plus the committing handler/route change",
+          "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
+          "artifact": "BE_GO/internal/handler/staff_board_test.go"
         }
       ],
       "notes": [

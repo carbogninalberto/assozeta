@@ -174,6 +174,9 @@ func run() (runErr error) {
 	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	messageReadsHandler := handler.NewMessageReadsHandler(service.NewMessageReads(repository.NewMessageReads(db)), service.NewActorAuthentication(accounts, tokens), identities, handler.WithMessageListSpoolDirectory(cfg.MessageListSpoolDirectory))
 	messageMutationsHandler := handler.NewMessageMutationsHandler(service.NewMessageMutations(repository.NewMessageMutations(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), service.UnavailableStaffBoardPublisher{}, time.Now,
+		func(err error) { slog.Warn("staff-board invalidation not delivered", "error", err.Error()) }),
+		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	collaboratorListHandler := handler.NewCollaboratorListHandler(service.NewCollaboratorList(repository.NewCollaboratorList(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	impersonationHandler := handler.NewImpersonationManagementHandler(service.NewImpersonationManagement(accounts, repository.NewImpersonationManagement(db), sessions, time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext)
 	instanceService := service.NewInstanceBootstrap(repository.NewInstanceBootstrap(db), manualSource, service.InstanceBootstrapOptions{
@@ -199,6 +202,10 @@ func run() (runErr error) {
 	e.Any("/communications/messages/:message_id/detail", messageReadsHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/add", messageMutationsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/:message_id/delete", messageMutationsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/staff-board/list", staffBoardHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/staff-board/add", staffBoardHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/staff-board/:staff_board_message_id/update", staffBoardHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/staff-board/:staff_board_message_id/delete", staffBoardHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/healthz", healthHandler.Health, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/readyz", healthHandler.Readiness, middleware.DjangoCSRF(cfg.CSRFTrustedOrigins))
 	e.Any("/oauth2/login", loginHandler.Login, middleware.DjangoSessionAudit(sessionAuthentication), middleware.LoginRateLimit(cfg.RateLimitEnabled, loginRate))

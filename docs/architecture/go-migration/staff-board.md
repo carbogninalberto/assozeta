@@ -1,4 +1,4 @@
-# Staff board — characterized; components, service and repository drafted
+# Staff board — characterized; Go routes registered, HTTP parity unproven
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -201,6 +201,26 @@ persisted. Django then reads, renders (`author_name`, `is_owner`) and saves the
 Go-written row, observes the deletion, and finds every other seeded row
 unchanged. A mutation reversing the list order fails the run. There is still no
 handler, route or realtime publisher.
+
+## Handler and routes
+
+`BE_GO/internal/handler/staff_board.go` registers all four upstream paths in
+the composition root. Admission follows saved messages: identity and
+collaborator permission, `Admit`, OPTIONS metadata (name and docstring
+description measured from the installed DRF views), 405, restore/maintenance
+lifecycle tracking, then the shared Python-faithful body reader. Form bodies
+(urlencoded or multipart) select the serializer's form semantics. DRF field
+errors use the shared localization table plus `json` (`Il valore deve essere un
+JSON valido.` from the installed DRF catalog) and literal `text:` messages.
+Domain errors map to Django's bodies: 404 `message not found.`, the Italian
+author-only 403 messages, DRF permission denial, the UUID 400 list and the
+generic 500 page for the view's uncaught `TypeError` cases. Handler tests use a
+recording service behind the real identity plumbing.
+
+The composition root wires an explicit `UnavailableStaffBoardPublisher`: every
+committed write logs that the invalidation was not delivered. Clients connected
+through Django Channels therefore do **not** refresh after a Go write. That is a
+blocking parity gap, not a silent success.
 
 ## Required evidence before `implementing`
 

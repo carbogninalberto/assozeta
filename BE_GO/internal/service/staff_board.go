@@ -248,3 +248,14 @@ func staffBoardNamesText(body any) (bool, error) {
 
 // ErrStaffBoardUnsupportedBody mirrors Django's uncaught TypeError (HTTP 500).
 var ErrStaffBoardUnsupportedBody = errors.New("staff-board update body does not support membership")
+
+// ErrStaffBoardRealtimeUnavailable marks the missing Go realtime boundary. It
+// is reported after commit and never fails the write; connected clients are
+// not invalidated until a tested cross-runtime delivery exists.
+var ErrStaffBoardRealtimeUnavailable = errors.New("staff-board realtime invalidation is not implemented in Go")
+
+type UnavailableStaffBoardPublisher struct{}
+
+func (UnavailableStaffBoardPublisher) PublishStaffBoardChange(context.Context, string) error {
+	return ErrStaffBoardRealtimeUnavailable
+}
