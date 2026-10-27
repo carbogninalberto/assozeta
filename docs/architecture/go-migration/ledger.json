@@ -11692,25 +11692,69 @@
         "target": "statistic_dashboard_layout",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/dashboard_layout.go",
+        "BE_GO/internal/repository/dashboard_layout.go",
+        "BE_GO/internal/service/dashboard_layout.go",
+        "BE_GO/internal/handler/dashboard_layout.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "bakney_user.dashboard_layout; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/statistic/dashboard/layout",
+          "/api/v2/statistic/dashboard/layout",
+          "/api/statistic/dashboard/layout"
+        ],
+        "request": "JSON or form object; dashboard_layout any JSON value.",
+        "response": "200 {\"data\": \"dashboard layout updated\"}.",
+        "errors": "401; 403 registry or impersonation; 500 non-object body, athlete or missing association, database-rejected value.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.dashboard.read.",
+        "resource_scope": "Impersonation-scoped association of the scope user; writes the acting collaborator or scope user.",
+        "side_effects": "User.dashboard_layout update; User audit entry on change (pre_save) with user/actor association index.",
+        "transaction": "Autocommit; audit entry commits before the update.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/dashboard_layout_http.json",
+        "TESTS/fixtures/generate_dashboard_layout_http.py",
+        "TESTS/contracts/test_dashboard_layout_http.py",
+        "TESTS/adapters/django/dashboard_layout_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/dashboard-layout.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 22/22 after two source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/dashboard-layout-http-red-r1/results.json",
+          "receipt_sha256": "d471733c2997d2731f2cf94fcd7fc73803bb51ef6430a05164f9f3b09f09a35f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 22/22 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact user, audit and index effects.",
+          "artifact": "quality-reports/go-migration/dashboard-layout-http-versioned-r1/results.json",
+          "receipt_sha256": "6683281fd5e14b1d84de96e581a3f6626a94fa49a6ef47492014df96828cfe3f"
+        },
+        {
+          "revision": "committing change with the rejected-value audit discarded",
+          "result": "Mutation control: rolling back the pre_save audit entry fails Go.",
+          "artifact": "quality-reports/go-migration/dashboard-layout-http-mutation-r1/results.json",
+          "receipt_sha256": "40b18c43852c14477eec1e92b8b38d2a05e367f5702b3e1063da91b1809a9a70"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including pre_save audit semantics proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:statistic/report -> statistic_report",
