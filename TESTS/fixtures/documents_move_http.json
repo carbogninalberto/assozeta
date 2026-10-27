@@ -1,0 +1,486 @@
+{
+ "matrix_version": 1,
+ "scope": "Documents archive move authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "folders": [
+  [
+   "a",
+   null,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "f",
+   null,
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "archives": [
+  {
+   "label": "root1",
+   "id": "a1000000-0000-4000-8000-000000840001",
+   "document": "a1000000-0000-4000-8000-000000840002",
+   "token": "a1000000-0000-4000-8000-000000840003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "statuto è.pdf",
+   "date": "2026-09-01",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 1234,
+   "filepath": null
+  },
+  {
+   "label": "root2",
+   "id": "a1000000-0000-4000-8000-000000840004",
+   "document": "a1000000-0000-4000-8000-000000840005",
+   "token": "a1000000-0000-4000-8000-000000840006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "verbale.pdf",
+   "date": "2026-09-02",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": "docs/verbale.pdf"
+  },
+  {
+   "label": "in_a",
+   "id": "a1000000-0000-4000-8000-000000840007",
+   "document": "a1000000-0000-4000-8000-000000840008",
+   "token": "a1000000-0000-4000-8000-000000840009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": "a",
+   "filename": "bilancio.pdf",
+   "date": "2026-09-03",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 0,
+   "filepath": null
+  },
+  {
+   "label": "foreign",
+   "id": "a1000000-0000-4000-8000-000000840010",
+   "document": "a1000000-0000-4000-8000-000000840011",
+   "token": "a1000000-0000-4000-8000-000000840012",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "folder": null,
+   "filename": "estero.pdf",
+   "date": "2026-09-04",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": null
+  }
+ ],
+ "cases": [
+  {
+   "name": "documents-move-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.update"
+   },
+   "effect": null,
+   "body": {
+    "folder": "$folder:a"
+   }
+  },
+  {
+   "name": "documents-move-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-move-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-move-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-move-foreign-archive-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840010/move",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-move-malformed-archive-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/not-a-uuid/move",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-move-foreign-folder-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Cannot move to folder from different sport association."
+   },
+   "effect": null,
+   "body": {
+    "folder": "$folder:f"
+   }
+  },
+  {
+   "name": "documents-move-missing-folder-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "folder": 999999999
+   }
+  },
+  {
+   "name": "documents-move-non-integer-folder-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "folder": "abc"
+   }
+  },
+  {
+   "name": "documents-move-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-move-form-body-unsupported",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "raw_body": "folder=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-move-into-folder",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840001",
+    "folder": "a",
+    "changes": {
+     "folder": [
+      "None",
+      "$folder:a"
+     ]
+    }
+   },
+   "body": {
+    "folder": "$folder:a"
+   }
+  },
+  {
+   "name": "documents-move-same-folder-as-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840001",
+    "folder": "a",
+    "changes": {
+     "folder": [
+      "$folder:a",
+      "$folder:a"
+     ]
+    }
+   },
+   "body": {
+    "folder": "$folder-text:a"
+   }
+  },
+  {
+   "name": "documents-move-same-folder-as-integer",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840001",
+    "folder": "a",
+    "changes": null
+   },
+   "body": {
+    "folder": "$folder:a"
+   }
+  },
+  {
+   "name": "documents-move-to-root",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840001",
+    "folder": null,
+    "changes": {
+     "folder": [
+      "$folder:a",
+      "None"
+     ]
+    }
+   },
+   "body": {
+    "folder": null
+   }
+  },
+  {
+   "name": "documents-move-falsy-to-root",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840007/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840007",
+    "folder": null,
+    "changes": {
+     "folder": [
+      "$folder:a",
+      "None"
+     ]
+    }
+   },
+   "body": {
+    "folder": 0
+   }
+  },
+  {
+   "name": "documents-move-root-to-root",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/move",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "archive": "a1000000-0000-4000-8000-000000840004",
+    "folder": null,
+    "changes": null
+   },
+   "body": {}
+  },
+  {
+   "name": "documents-move-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-move-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/move",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ],
+    "actions": {
+     "POST": {
+      "sport_association_documents_archive_id": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Sport association documents archive id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "document": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Document",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Date"
+      },
+      "folder": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Folder"
+      }
+     }
+    }
+   },
+   "effect": null
+  }
+ ]
+}

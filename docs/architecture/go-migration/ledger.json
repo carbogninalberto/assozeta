@@ -5935,25 +5935,71 @@
         "target": "DocumentArchiveViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_archive.go",
+        "BE_GO/internal/dto/documents_archive.go",
+        "BE_GO/internal/repository/documents_archive.go",
+        "BE_GO/internal/service/documents_archive.go",
+        "BE_GO/internal/handler/documents_archive.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationdocumentsarchive, application_folder; auditlog resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/{pk}/delete",
+          "/api/v2/documents/{pk}/delete",
+          "/api/documents/{pk}/delete"
+        ],
+        "request": "JSON body (JSONParser only).",
+        "response": "204 empty.",
+        "errors": "401; 403 registry, impersonation or foreign folder; 404 Not found. or model 404; 415 non-JSON; 500 bad folder, body, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "Archive row folder update or delete with audit.",
+        "transaction": "Autocommit save/delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_delete_http.json",
+        "TESTS/fixtures/generate_documents_delete_http.py",
+        "TESTS/contracts/test_documents_delete_http.py",
+        "TESTS/adapters/django/documents_delete_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-archive.md",
+        {
+          "revision": "committing change, before Go route",
+          "result": "RED with the route unregistered (code written with the move): Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-delete-http-red-r1/results.json",
+          "receipt_sha256": "5c08709f6f017d769fdea6a2998e4baa98f0996597cd13651c971c966951ea0c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN on native Django, native Go, Caddy /api/v1 and /api/v2 with exact archive, audit and index effects.",
+          "artifact": "quality-reports/go-migration/documents-delete-http-versioned-r2/results.json",
+          "receipt_sha256": "c75e50f857267f54b33329a880057f8b0270ab559375a39a41f5dab75778611f"
+        },
+        {
+          "revision": "committing change with a mutation",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/documents-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "3b4c114b04df6b346abcf874bb08534a72548a70fe827769fda00123ce0019ce"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the archive row delete audit proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/<str:pk>/move -> DocumentArchiveViewSet.as_view({'post': 'move_to_folder'})",
@@ -5970,25 +6016,72 @@
         "target": "DocumentArchiveViewSet.as_view({'post': 'move_to_folder'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_archive.go",
+        "BE_GO/internal/dto/documents_archive.go",
+        "BE_GO/internal/repository/documents_archive.go",
+        "BE_GO/internal/service/documents_archive.go",
+        "BE_GO/internal/handler/documents_archive.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationdocumentsarchive, application_folder; auditlog resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/{pk}/move",
+          "/api/v2/documents/{pk}/move",
+          "/api/documents/{pk}/move"
+        ],
+        "request": "JSON body (JSONParser only).",
+        "response": "200 empty (POST); 204 empty (DELETE deletes the archive row).",
+        "errors": "401; 403 registry, impersonation or foreign folder; 404 Not found. or model 404; 415 non-JSON; 500 bad folder, body, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "Archive row folder update or delete with audit.",
+        "transaction": "Autocommit save/delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_move_http.json",
+        "TESTS/fixtures/generate_documents_move_http.py",
+        "TESTS/contracts/test_documents_move_http.py",
+        "TESTS/adapters/django/documents_move_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-archive.md",
+        {
+          "revision": "committing change, before Go route",
+          "result": "RED: Django passed; Go 404 on the first case before any Go code.",
+          "artifact": "quality-reports/go-migration/documents-move-http-red-r1/results.json",
+          "receipt_sha256": "f5fdcdbf6ecad80a413f382e77c0fd360e70324b802bf9bc7eb4172522028842"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN on native Django, native Go, Caddy /api/v1 and /api/v2 with exact archive, audit and index effects.",
+          "artifact": "quality-reports/go-migration/documents-move-http-versioned-r2/results.json",
+          "receipt_sha256": "0dd82bf4c49dc2f44fbd1bfce2049b5e49cd16b165fd1b4d6f90041e3b9712b8"
+        },
+        {
+          "revision": "committing change with a mutation",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/documents-move-http-mutation-r1/results.json",
+          "receipt_sha256": "55e4974c6da4e4559064c61592462884b85ea9c1a34a02f7af25590ba13d4a1d"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the raw folder value audit proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/<str:pk>/update -> DocumentArchiveViewSet.as_view({'patch': 'update'})",
@@ -6172,6 +6265,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/documents-list-http-mutation-r1/results.json",
           "receipt_sha256": "a3b7f855b2b4f686977080c7d6a92bf557c21d2f4f7b05a9cb732422b7b0e597"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained move/delete: four transports.",
+          "artifact": "quality-reports/go-migration/documents-list-http-versioned-r2/results.json",
+          "receipt_sha256": "1a49d02a4dd2ce2149522efac80062ef9804742a84605357a5d98665c9b94677"
         }
       ],
       "notes": [
