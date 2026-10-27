@@ -18,7 +18,7 @@ from urllib.parse import quote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .index import (EvidenceError, ManualIndex, build_index, canonical, digest,
-                    file_digest, load_source_catalog, promote, seal_index)
+                    file_digest, load_source_catalog, promote, reproduces, seal_index)
 
 
 def owned(root, relative):
@@ -115,7 +115,7 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     for relative, expected in bindings.items():
         verify_blob(application, application_revision, relative, expected)
     rebuilt = build_index(generated_manual, application, manifest, artifact_root=run)
-    if rebuilt['identity'] != original.value['identity']:
+    if not reproduces(rebuilt, original.value):
         raise EvidenceError('Evaluated corpus cannot be reproduced from retained proof')
     # A passed report alone is insufficient: bind the evaluation to the corpus,
     # and rendered pages to the exact generated MDX the final commit will serve.
@@ -254,7 +254,8 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(contents)
         owned(stage, 'source-catalog.json').write_bytes(candidate_catalog_bytes)
-        if build_index(generated_manual if _bundled else manual, application, manifest, artifact_root=stage / 'evidence')['identity'] != original.value['identity']:
+        if not reproduces(build_index(generated_manual if _bundled else manual, application, manifest,
+                                      artifact_root=stage / 'evidence'), original.value):
             raise EvidenceError('Retained proof changed while staging the release')
         load_source_catalog(generated_manual if _bundled else manual, application, candidate_manifest, stage)
         promote(candidate_manifest, stage / 'manifest.json')
