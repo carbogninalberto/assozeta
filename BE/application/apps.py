@@ -15,6 +15,8 @@ class UsersManagerConfig(AppConfig):
         # Reject cross-tenant objects in every writable serializer relation.
         from application.tenant_scope import install
         install()
+        from application import document_scope
+        document_scope.install()
 
         # Setup audit log resolvers and connect signal
         from application.audit_resolvers import setup_audit_resolvers
