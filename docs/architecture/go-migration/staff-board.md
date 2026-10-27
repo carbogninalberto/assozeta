@@ -1,4 +1,4 @@
-# Staff board — characterized; Go routes registered, HTTP parity unproven
+# Staff board — implementing; HTTP parity proven, realtime missing
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -222,7 +222,7 @@ committed write logs that the invalidation was not delivered. Clients connected
 through Django Channels therefore do **not** refresh after a Go write. That is a
 blocking parity gap, not a silent success.
 
-## Authored HTTP sequence (not yet executed)
+## Authored HTTP sequence (executed on four transports)
 
 `TESTS/fixtures/staff_board_http.json` (generator alongside) authors 32 ordered
 cases on the shared identity fixture: list by owner, full and restricted
@@ -233,13 +233,23 @@ plain-text and rich-document creation; update precedence (malformed ID, foreign
 a non-author, author content edit and blank content; author-only and foreign
 delete, a successful delete and its repeat; and a forged impersonation session.
 Shared identity denials were aligned with the measured saved-message fixture
-(`Missing permission: …` for mapped routes, the impersonation messages) before
-any run. Generated IDs and write times use explicit `$new:`/`$now` placeholders.
-No runner exists yet; next it should reuse `message_read_scopes.seed_fixture`,
-`observed_case` attribution and the `message_mutations_acceptance` lifetimes
-for native Django/Go and Caddy v1/v2.
+before any run. Generated IDs and write times use `$new:`/`$now` placeholders.
 
-## Required evidence before `implementing`
+`python -m TESTS.adapters.django.staff_board_http_acceptance --output DIR
+[--versioned]` reuses the private PostgreSQL/Redis, Django ASGI observer, native
+Go server and shipped Caddy lifetimes. Each endpoint gets a fresh fixture. Every
+case asserts the exact status, body and headers (portable
+`TESTS/contracts/test_staff_board_http.py`), the complete 128-model state diff
+(only the authored staff-board change; no audit rows), per-request upstream
+attribution and the unchanged historical cache; cleanup restores rows, cache
+and sequences. Results: native Django and Go each pass 32/32, and the versioned
+run passes 32/32 on native Django, native Go, Caddy `/api/v1` (Django) and
+`/api/v2` (Go), with every service and container stopped afterwards. A mutation
+removing the Go author-only edit check passes Django 32/32 but fails Go with
+HTTP 200 instead of the authored 403. The Go code predates this sequence, so
+there was no HTTP-level RED; sensitivity rests on that mutation.
+
+## Remaining before `verified`
 
 1. An independently authored fixture and portable contract (no Django imports)
    covering transport, validation (including document rejection), authorship,

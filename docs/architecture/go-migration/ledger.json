@@ -15339,7 +15339,7 @@
         "target": "staff_board_messages_delete",
         "syntax": "path"
       },
-      "status": "characterized",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -15377,7 +15377,11 @@
         "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
-        "TESTS/adapters/go/staff_board_repository.py"
+        "TESTS/adapters/django/staff_board_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "TESTS/adapters/go/staff_board_repository.py",
+        "TESTS/contracts/test_staff_board_http.py",
+        "TESTS/fixtures/staff_board_http.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15396,10 +15400,17 @@
           "revision": "c53658a4 plus the committing handler/route change",
           "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
           "artifact": "BE_GO/internal/handler/staff_board_test.go"
+        },
+        {
+          "revision": "5e2b174e plus the committing runner",
+          "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
+          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
         }
       ],
       "notes": [
-        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
+        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
       ]
     },
     {
@@ -15417,7 +15428,7 @@
         "target": "staff_board_messages_update",
         "syntax": "path"
       },
-      "status": "characterized",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -15462,10 +15473,14 @@
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/adapters/django/staff_board_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
         "TESTS/adapters/go/staff_board_repository.py",
+        "TESTS/contracts/test_staff_board_http.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
-        "TESTS/fixtures/staff-board-responses.json"
+        "TESTS/fixtures/staff-board-responses.json",
+        "TESTS/fixtures/staff_board_http.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15499,10 +15514,17 @@
           "revision": "c53658a4 plus the committing handler/route change",
           "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
           "artifact": "BE_GO/internal/handler/staff_board_test.go"
+        },
+        {
+          "revision": "5e2b174e plus the committing runner",
+          "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
+          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
         }
       ],
       "notes": [
-        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
+        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
       ]
     },
     {
@@ -15520,7 +15542,7 @@
         "target": "staff_board_messages_add",
         "syntax": "path"
       },
-      "status": "characterized",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -15565,10 +15587,14 @@
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/adapters/django/staff_board_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
         "TESTS/adapters/go/staff_board_repository.py",
+        "TESTS/contracts/test_staff_board_http.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
-        "TESTS/fixtures/staff-board-responses.json"
+        "TESTS/fixtures/staff-board-responses.json",
+        "TESTS/fixtures/staff_board_http.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15602,10 +15628,17 @@
           "revision": "c53658a4 plus the committing handler/route change",
           "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
           "artifact": "BE_GO/internal/handler/staff_board_test.go"
+        },
+        {
+          "revision": "5e2b174e plus the committing runner",
+          "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
+          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
         }
       ],
       "notes": [
-        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
+        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
       ]
     },
     {
@@ -15623,7 +15656,7 @@
         "target": "staff_board_messages_list",
         "syntax": "path"
       },
-      "status": "characterized",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
@@ -15663,8 +15696,12 @@
         "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
+        "TESTS/adapters/django/staff_board_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
         "TESTS/adapters/go/staff_board_repository.py",
-        "TESTS/fixtures/staff-board-responses.json"
+        "TESTS/contracts/test_staff_board_http.py",
+        "TESTS/fixtures/staff-board-responses.json",
+        "TESTS/fixtures/staff_board_http.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15688,10 +15725,17 @@
           "revision": "c53658a4 plus the committing handler/route change",
           "result": "Go routes registered for /api/v2 with handler unit tests (metadata, 405, JSON/form detection, localized DRF errors, domain error bodies, generic 500). No authored HTTP contract yet; realtime publisher is an explicit unavailable stand-in, so Go writes do not invalidate connected clients.",
           "artifact": "BE_GO/internal/handler/staff_board_test.go"
+        },
+        {
+          "revision": "5e2b174e plus the committing runner",
+          "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
+          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
         }
       ],
       "notes": [
-        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
+        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
       ]
     },
     {
