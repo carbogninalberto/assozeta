@@ -61,7 +61,6 @@
    "updated_at": "2026-10-22T09:00:00Z"
   }
  },
- "index_path": "changes_json.sport_association",
  "cases": [
   {
    "name": "workflow-writes-add-owner",
@@ -137,7 +136,8 @@
        "$now-audit"
       ]
      }
-    }
+    },
+    "index_path": "direct"
    },
    "body": {
     "name": "Benvenuto à",
@@ -223,6 +223,7 @@
       ]
      }
     },
+    "index_path": "direct",
     "fixed_id": "a1000000-0000-4000-8000-000000760009"
    },
    "body": {
@@ -496,7 +497,8 @@
        "$now-audit"
       ]
      }
-    }
+    },
+    "index_path": "direct"
    },
    "body": {
     "name": "Collaboratore"
@@ -655,6 +657,7 @@
    "effect": {
     "kind": "delete",
     "row": "a1000000-0000-4000-8000-000000760001",
+    "index_path": "changes_json.sport_association",
     "audit": {
      "action": 2,
      "actor": "owner",

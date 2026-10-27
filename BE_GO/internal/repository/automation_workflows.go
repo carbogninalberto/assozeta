@@ -91,7 +91,12 @@ func (t *automationWorkflowTransaction) DeleteAutomationWorkflow(ctx context.Con
 }
 
 func (t *automationWorkflowTransaction) AppendAutomationWorkflowAudit(ctx context.Context, event domain.AutomationWorkflowAudit) error {
-	path := "changes_json.sport_association"
+	// The registered direct resolver indexes a live row; after a delete the
+	// row is gone and resolution falls back to the changes JSON.
+	path := "direct"
+	if event.Action == 2 {
+		path = "changes_json.sport_association"
+	}
 	return appendModelAuditForApp(ctx, t.tx, "communications", modelAuditEntry{Model: "automationworkflow", Key: event.ID,
 		Representation: "AutomationWorkflow object (" + event.ID + ")", Action: event.Action, Changes: event.Changes,
 		Context: event.Context, AssociationID: &event.AssociationID, ResolutionPath: &path, At: event.At})

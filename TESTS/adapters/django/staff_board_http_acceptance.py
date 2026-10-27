@@ -61,6 +61,11 @@ def execute(report, tools, private, log):
             override = override_settings(CACHES=reuse.cache_override(port))
             override.enable()
             report['schema'] = reuse.migrate_full_schema(log)
+            # Production processes start on a migrated database, so ready() registers
+            # every audit resolver; this process started before the schema existed.
+            from application.audit_resolvers import SPORT_ASSOCIATION_RESOLVERS, setup_audit_resolvers
+            setup_audit_resolvers()
+            assert 'application.sportassociation' in SPORT_ASSOCIATION_RESOLVERS, 'audit.resolvers'
             from TESTS.adapters.go import go_operational_migrations
             report['go_operational_schema'] = go_operational_migrations.apply(work, {**env, **tools}, log)
             raw = redis.Redis(host='127.0.0.1', port=port, db=1, password=env['REDIS_PASSWORD'],

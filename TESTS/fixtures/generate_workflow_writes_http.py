@@ -2,8 +2,8 @@
 
 Audit expectations follow the characterized auditlog rules: JSON fields as
 json.dumps(sort_keys=True) with ASCII escaping, datetimes as naive UTC
-str(datetime), None values omitted, and the changes_json.sport_association
-index path. ``$new:<label>``/``$now`` bind generated IDs and write times.
+str(datetime), None values omitted, and the registered direct resolver index
+path (changes_json.sport_association after a delete). ``$new:<label>``/``$now`` bind generated IDs and write times.
 Run with ``python3 -I`` and commit the output.
 """
 import json
@@ -46,7 +46,7 @@ def created(label, actor, *, name, tree, enabled=False, description=None, tree_a
     if description is not None:
         changes['description'] = ['None', description]
     return {'kind': 'create', 'label': label, 'values': {'sport_association_id': OWN, 'name': name, 'description': description,
-            'automation_tree': tree, 'enabled': enabled}, 'audit': {'action': 0, 'actor': actor, 'changes': changes}}
+            'automation_tree': tree, 'enabled': enabled}, 'audit': {'action': 0, 'actor': actor, 'changes': changes}, 'index_path': 'direct'}
 
 
 add('add-owner', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': '$new:owner'},
@@ -81,7 +81,7 @@ add('delete-missing-server-error', 'owner', 'DELETE', delete('a1000000-0000-4000
 add('delete-restricted-unmapped', 'restricted_collaborator', 'DELETE', delete('own_delete'), 403, unmapped(delete('own_delete')))
 seed = SEED['own_delete']
 add('delete-owner', 'owner', 'DELETE', delete('own_delete'), 200, {'msg': 'workflow deleted.'},
-    effect={'kind': 'delete', 'row': seed['id'], 'audit': {'action': 2, 'actor': 'owner', 'changes': {
+    effect={'kind': 'delete', 'row': seed['id'], 'index_path': 'changes_json.sport_association', 'audit': {'action': 2, 'actor': 'owner', 'changes': {
         'automation_workflow_id': [seed['id'], 'None'], 'name': [seed['name'], 'None'], 'description': [seed['description'], 'None'],
         'automation_tree': ['[]', 'None'], 'enabled': ['True', 'None'], 'sport_association': [OWN, 'None'],
         'created_at': ['2026-10-20 09:00:00.250000', 'None'], 'updated_at': ['2026-10-21 10:00:00', 'None']}}})
@@ -90,5 +90,5 @@ add('delete-options', 'owner', 'OPTIONS', delete('own_delete'), 200, {'name': 'C
     'renders': ['application/json'], 'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']})
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Workflow add/delete authored sequence with audit effects', 'ids': IDS,
-                              'seed': SEED, 'index_path': 'changes_json.sport_association', 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'seed': SEED, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

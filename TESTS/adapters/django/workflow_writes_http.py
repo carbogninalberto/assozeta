@@ -146,7 +146,7 @@ def assert_effect(case, before, after, bindings, window, source, remote):
     contract.require(len(added_i) == 1 and all(new_i[k] == old_i[k] for k in old_i), 'index.one-row')
     index = new_i[added_i.pop()]
     contract.require(index['log_entry_id'] == event['id'] and index['sport_association_id'] == source['ids']['own_association']
-                     and index['resolution_path'] == source['index_path'], 'index.fields')
+                     and index['resolution_path'] == effect['index_path'], 'index.fields')
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):

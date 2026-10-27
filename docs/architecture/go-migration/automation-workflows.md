@@ -12,14 +12,20 @@ and it now passes 20/20 on native Django, native Go, Caddy `/api/v1` and
 
 **Write evidence (TDD):** two temporary Django probes on a throwaway database
 characterized the audit format (JSON fields as sorted ASCII `json.dumps`,
-naive UTC `str(datetime)` timestamps, `None` omitted, index path
-`changes_json.sport_association` for both create and delete, the acting
+naive UTC `str(datetime)` timestamps, `None` omitted, the acting
 collaborator as audit actor), that a client `automation_workflow_id` is
 writable, and that array, null and form bodies return 500. The authored 27-case
 `TESTS/fixtures/workflow_writes_http.json` then passed on Django on the first
 run, Go failed with 404 before any Go code, and it now passes 27/27 on all four
 transports with exact workflow, audit-entry and index effects. Rendering the
-audit tree without sorted keys fails the run. Go reproduces Django's delete of a
+audit tree without sorted keys fails the run. Correction: those probes and the first
+acceptance run started Django before the schema existed, so no audit resolvers
+were registered and creates were indexed via `changes_json.sport_association`.
+A production process starts on a migrated database and registers the direct
+resolver: creates are indexed `direct`, deletes (row gone) fall back to
+`changes_json.sport_association`. The driver now registers resolvers after
+migrating, the fixture names the path per case, Go writes `direct` for
+creates, and the sequence passes again on all four transports. Go reproduces Django's delete of a
 missing or foreign ID (HTTP 500, no change); that remains a candidate bug for a
 decision.
 
