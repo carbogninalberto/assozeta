@@ -4515,25 +4515,71 @@
         "target": "check_inconsistencies",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/inconsistencies.go",
+        "BE_GO/internal/dto/inconsistencies.go",
+        "BE_GO/internal/repository/inconsistencies.go",
+        "BE_GO/internal/service/inconsistencies.go",
+        "BE_GO/internal/handler/inconsistencies.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and scoped impersonation enforcement",
+        "application_associate, application_associatetutorrelation; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/check-inconsistencies",
+          "/api/v2/check-inconsistencies",
+          "/api/check-inconsistencies"
+        ],
+        "request": "No body; optional X-Group-Id.",
+        "response": "200 {\"inconsistencies\": bool, \"missing_tutors\": [AssociateSerializer]} (unordered).",
+        "errors": "401; 403 administrator without impersonation or scoped athlete impersonation.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry exclusion; identity resolution.",
+        "resource_scope": "Scope user's non-deleted associates (group-aware, impersonation boundary).",
+        "side_effects": "Promotes the first tutor relation to primary when none is, with an audit entry.",
+        "transaction": "Autocommit saves.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/inconsistencies_http.json",
+        "TESTS/fixtures/generate_inconsistencies_http.py",
+        "TESTS/contracts/test_inconsistencies_http.py",
+        "TESTS/adapters/django/inconsistencies_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/inconsistencies_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/inconsistencies.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 12/12 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/inconsistencies-http-red-r1/results.json",
+          "receipt_sha256": "3f35d6d0211049dd40e5a18098abc487b473e54bb008e694df89ac6a95a7f205"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 12/12 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact relation, audit and index effects.",
+          "artifact": "quality-reports/go-migration/inconsistencies-http-versioned-r2/results.json",
+          "receipt_sha256": "3e8db31c111278d0a507112165345b9d2d525562cc82c0be615f0ee96a8accc9"
+        },
+        {
+          "revision": "committing change with the promotion audit skipped",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/inconsistencies-http-mutation-r1/results.json",
+          "receipt_sha256": "67058823bb7b2965394e054bbc1fb446eca2aec4fe31a775b8a4d6cf1ab5f573"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the main-tutor promotion write proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:collaborators/<str:uid>/delete -> collaborators_delete",

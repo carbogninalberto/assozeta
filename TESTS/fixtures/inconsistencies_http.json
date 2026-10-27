@@ -1,0 +1,651 @@
+{
+ "matrix_version": 1,
+ "scope": "check-inconsistencies authored sequence with tutor promotion audit",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associates": {
+  "minor_no_tutor": {
+   "id": "a1000000-0000-4000-8000-000000790001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "2015-06-15",
+   "deleted": false,
+   "group": null,
+   "first_name": "Minore è",
+   "last_name": "Rossi",
+   "email": "minore@example.test",
+   "sex": "M",
+   "tax_code": "RSSMNR15H15H501X",
+   "address": "Via 1",
+   "address_cap": "00100",
+   "address_city": "Roma",
+   "born_city": "Roma",
+   "is_minor": true,
+   "phone": "+39 1",
+   "family_role": "figlio"
+  },
+  "minor_primary_tutor": {
+   "id": "a1000000-0000-4000-8000-000000790002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "2016-01-10",
+   "deleted": false,
+   "group": null,
+   "first_name": "minor_primary_tutor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "minor_secondary_tutor": {
+   "id": "a1000000-0000-4000-8000-000000790003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "2014-03-03",
+   "deleted": false,
+   "group": null,
+   "first_name": "minor_secondary_tutor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "adult_no_tutor": {
+   "id": "a1000000-0000-4000-8000-000000790004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "1990-05-05",
+   "deleted": false,
+   "group": null,
+   "first_name": "adult_no_tutor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "no_born_date": {
+   "id": "a1000000-0000-4000-8000-000000790005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": null,
+   "deleted": false,
+   "group": null,
+   "first_name": "no_born_date",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "deleted_minor": {
+   "id": "a1000000-0000-4000-8000-000000790006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "2015-01-01",
+   "deleted": true,
+   "group": null,
+   "first_name": "deleted_minor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "foreign_minor": {
+   "id": "a1000000-0000-4000-8000-000000790007",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "born_date": "2013-09-09",
+   "deleted": false,
+   "group": null,
+   "first_name": "foreign_minor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "group_minor": {
+   "id": "a1000000-0000-4000-8000-000000790008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "2017-11-11",
+   "deleted": false,
+   "group": "own_group",
+   "first_name": "group_minor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "tutor": {
+   "id": "a1000000-0000-4000-8000-000000790009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "born_date": "1980-02-02",
+   "deleted": false,
+   "group": null,
+   "first_name": "tutor",
+   "last_name": "Rossi",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  }
+ },
+ "relations": [
+  [
+   "minor_primary_tutor",
+   "tutor",
+   true
+  ],
+  [
+   "minor_secondary_tutor",
+   "tutor",
+   false
+  ]
+ ],
+ "cases": [
+  {
+   "name": "inconsistencies-athlete-promotes-secondary-tutor",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "inconsistencies": true,
+    "missing_tutors": [
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790001",
+      "address": "Via 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "born_city": "Roma",
+      "born_date": "2015-06-15",
+      "email": "minore@example.test",
+      "sex": "M",
+      "first_name": "Minore è",
+      "last_name": "Rossi",
+      "is_minor": true,
+      "tax_code": "RSSMNR15H15H501X",
+      "phone": "+39 1",
+      "family_role": "figlio",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790007",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2013-09-09",
+      "email": null,
+      "sex": "A",
+      "first_name": "foreign_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2017-11-11",
+      "email": null,
+      "sex": "A",
+      "first_name": "group_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     }
+    ]
+   },
+   "promotes": true
+  },
+  {
+   "name": "inconsistencies-athlete-repeat-no-effect",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "inconsistencies": true,
+    "missing_tutors": [
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790001",
+      "address": "Via 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "born_city": "Roma",
+      "born_date": "2015-06-15",
+      "email": "minore@example.test",
+      "sex": "M",
+      "first_name": "Minore è",
+      "last_name": "Rossi",
+      "is_minor": true,
+      "tax_code": "RSSMNR15H15H501X",
+      "phone": "+39 1",
+      "family_role": "figlio",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790007",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2013-09-09",
+      "email": null,
+      "sex": "A",
+      "first_name": "foreign_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2017-11-11",
+      "email": null,
+      "sex": "A",
+      "first_name": "group_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     }
+    ]
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-athlete-group-filter",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "inconsistencies": true,
+    "missing_tutors": [
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2017-11-11",
+      "email": null,
+      "sex": "A",
+      "first_name": "group_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     }
+    ]
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-athlete-invalid-group-unfiltered",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {
+    "X-Group-Id": "nope"
+   },
+   "status": 200,
+   "response": {
+    "inconsistencies": true,
+    "missing_tutors": [
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790001",
+      "address": "Via 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "born_city": "Roma",
+      "born_date": "2015-06-15",
+      "email": "minore@example.test",
+      "sex": "M",
+      "first_name": "Minore è",
+      "last_name": "Rossi",
+      "is_minor": true,
+      "tax_code": "RSSMNR15H15H501X",
+      "phone": "+39 1",
+      "family_role": "figlio",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790007",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2013-09-09",
+      "email": null,
+      "sex": "A",
+      "first_name": "foreign_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2017-11-11",
+      "email": null,
+      "sex": "A",
+      "first_name": "group_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     }
+    ]
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-admin-impersonating-athlete",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "inconsistencies": true,
+    "missing_tutors": [
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790001",
+      "address": "Via 1",
+      "address_cap": "00100",
+      "address_city": "Roma",
+      "born_city": "Roma",
+      "born_date": "2015-06-15",
+      "email": "minore@example.test",
+      "sex": "M",
+      "first_name": "Minore è",
+      "last_name": "Rossi",
+      "is_minor": true,
+      "tax_code": "RSSMNR15H15H501X",
+      "phone": "+39 1",
+      "family_role": "figlio",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790007",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2013-09-09",
+      "email": null,
+      "sex": "A",
+      "first_name": "foreign_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     },
+     {
+      "associate_id": "a1000000-0000-4000-8000-000000790008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "2017-11-11",
+      "email": null,
+      "sex": "A",
+      "first_name": "group_minor",
+      "last_name": "Rossi",
+      "is_minor": false,
+      "tax_code": null,
+      "phone": null,
+      "family_role": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "user": "a1000000-0000-4000-8000-000000700004",
+      "family": null
+     }
+    ]
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-owner-no-associates",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "inconsistencies": false,
+    "missing_tutors": []
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "inconsistencies": false,
+    "missing_tutors": []
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-wrong-method",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "promotes": false
+  },
+  {
+   "name": "inconsistencies-options",
+   "actor": "athlete",
+   "method": "OPTIONS",
+   "path": "/check-inconsistencies",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Check Inconsistencies",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "promotes": false
+  }
+ ]
+}
