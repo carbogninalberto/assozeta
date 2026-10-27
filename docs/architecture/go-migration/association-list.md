@@ -23,8 +23,11 @@ Django remains the production execution owner.
   (`get` failures become `null`), and `billing_subscription` from the first
   subscription by primary key, rendered by DRF's `JSONEncoder` (microseconds
   kept).
-- **Performance:** Django runs several queries per row; Go issues one list
-  query with lateral joins. No query-count or timing receipt exists yet.
+- **Performance:** on real PostgreSQL with ORM-seeded rows (each with an
+  onboarding row and a billing subscription), Django's serializer issues 21
+  queries for 5 associations and 421 for 105 (four per row); the Go repository
+  issues exactly one query at both sizes (1 ms and 5 ms on the development
+  host). Receipt: `TESTS/adapters/go/association_list_queries.py`.
 
 ## Evidence (TDD)
 

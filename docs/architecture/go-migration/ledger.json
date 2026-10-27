@@ -11672,7 +11672,9 @@
         "TESTS/fixtures/generate_association_list_http.py",
         "TESTS/contracts/test_association_list_http.py",
         "TESTS/adapters/django/association_list_http.py",
-        "TESTS/adapters/django/staff_board_http_acceptance.py"
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/repository/association_list_integration_test.go",
+        "TESTS/adapters/go/association_list_queries.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/association-list.md",
@@ -11693,10 +11695,16 @@
           "result": "Mutation control: fails Go on the list body.",
           "artifact": "quality-reports/go-migration/association-list-http-mutation-r1/results.json",
           "receipt_sha256": "8cc199d8163f08f8958439dfe9e8863164a787904af3ea15e4c699923608e491"
+        },
+        {
+          "revision": "committing change",
+          "result": "Query count: Django 21/421 queries for 5/105 associations; Go repository exactly 1 at both sizes.",
+          "artifact": "quality-reports/go-migration/association-list-queries-r1/results.json",
+          "receipt_sha256": "13d85212b5a486df288e3ed0fb095dd661069e755107864ea6381691df3c1f0b"
         }
       ],
       "notes": [
-        "Implementing: parity proven on four transports; query-count receipt pending."
+        "Implementing: parity proven on four transports; constant one-query Go repository measured against Django."
       ]
     },
     {
