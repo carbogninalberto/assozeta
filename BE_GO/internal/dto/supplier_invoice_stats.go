@@ -59,3 +59,18 @@ type SupplierInvoiceStats struct {
 	Unpaid   PythonNumber              `json:"invoices_unpaid"`
 	Expiring []SupplierInvoiceExpiring `json:"invoices_expiring"`
 }
+
+type CustomerInvoiceExpiring struct {
+	ExpiryDate string          `json:"payment_expiry_date"`
+	Amount     json.RawMessage `json:"payment_total_amount"`
+	Prefix     *string         `json:"prefix"`
+	Number     *int64          `json:"number"`
+	FiscalYear *int64          `json:"fiscal_year"`
+}
+
+type CustomerInvoiceStats struct {
+	Total    PythonNumber              `json:"invoices_total"`
+	Paid     PythonNumber              `json:"invoices_paid"`
+	Unpaid   PythonNumber              `json:"invoices_unpaid"`
+	Expiring []CustomerInvoiceExpiring `json:"invoices_expiring"`
+}

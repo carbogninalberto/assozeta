@@ -7230,25 +7230,70 @@
         "target": "invoice_customers_stats",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/supplier_invoice_stats.go",
+        "BE_GO/internal/dto/supplier_invoice_stats.go",
+        "BE_GO/internal/repository/supplier_invoice_stats.go",
+        "BE_GO/internal/service/customer_invoice_stats.go",
+        "BE_GO/internal/handler/supplier_invoice_stats.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_customerinvoice"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-customers/stats",
+          "/api/v2/invoice-customers/stats",
+          "/api/invoice-customers/stats"
+        ],
+        "request": "No body.",
+        "response": "200 {invoices_total, invoices_paid, invoices_unpaid, invoices_expiring}.",
+        "errors": "401; 403 registry or impersonation; 500 athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.clientinvoices.read.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/customer_invoice_stats_http.json",
+        "TESTS/fixtures/generate_customer_invoice_stats_http.py",
+        "TESTS/contracts/test_customer_invoice_stats_http.py",
+        "TESTS/adapters/django/customer_invoice_stats_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/supplier-invoice-stats.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 11/11 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/customer-invoice-stats-http-red-r1/results.json",
+          "receipt_sha256": "696185bbe0476179372067c7924423668208fc3a5bb8d84c8f70f49a9dbd0130"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 11/11 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged state.",
+          "artifact": "quality-reports/go-migration/customer-invoice-stats-http-versioned-r1/results.json",
+          "receipt_sha256": "3dc740bc1da2f04890f3d6da9e63e57a07008f596cc2b2b738ed9ef38e6e7359"
+        },
+        {
+          "revision": "committing change listing past-due invoices",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/customer-invoice-stats-http-mutation-r1/results.json",
+          "receipt_sha256": "454a8191dade39e106818a63fd6d764c072a1170fa9ff8fbb791eacfbfea2168"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-suppliers/<str:uid>/delete -> invoice_suppliers_delete",

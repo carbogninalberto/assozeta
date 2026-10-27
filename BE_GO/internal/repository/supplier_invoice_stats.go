@@ -37,3 +37,12 @@ func (r *SupplierInvoiceStats) SupplierInvoices(ctx context.Context, association
  WHERE i.sport_association_id=$1 ORDER BY i.expire_date DESC`, association)
 	return rows, err
 }
+
+var _ domain.CustomerInvoiceStatsStore = (*SupplierInvoiceStats)(nil)
+
+func (r *SupplierInvoiceStats) CustomerInvoices(ctx context.Context, association string) ([]domain.CustomerInvoiceStatRow, error) {
+	rows := []domain.CustomerInvoiceStatRow{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT payment_total_amount::text AS payment_total_amount, paid, payment_expiry_date,
+ prefix, number, fiscal_year FROM application_customerinvoice WHERE sport_association_id=$1 ORDER BY payment_expiry_date DESC`, association)
+	return rows, err
+}
