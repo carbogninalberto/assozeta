@@ -256,6 +256,20 @@ services:
     healthcheck:
       disable: true
 
+  realtime-relay:
+    <<: *backend
+    # Forwards Go realtime outbox events through Django Channels (Go migration 4).
+    command: ["python", "manage.py", "relay_go_realtime"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      disable: true
+
   web:
     image: ${ASSOZETA_WEB_REF:-${ASSOZETA_WEB_IMAGE:-ghcr.io/carbogninalberto/assozeta-web}:${ASSOZETA_VERSION:-latest}}
     environment:

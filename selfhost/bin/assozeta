@@ -863,6 +863,15 @@ prod_optional_go_api() {
     fi
 }
 
+prod_optional_realtime_relay() {
+    # Releases before the Go realtime outbox have no relay service; recovery and
+    # backup of those distributions must not name it.
+    configured_services=$(prod_compose config --services) || return $?
+    if printf '%s\n' "$configured_services" | awk '$0 == "realtime-relay" { found = 1 } END { exit !found }'; then
+        printf 'realtime-relay\n'
+    fi
+}
+
 prod_optional_go_migrator() {
     # Older distributions may contain api-go but no packaged migration command.
     # Detect the tools service instead of invoking a binary absent from the source.
@@ -928,9 +937,10 @@ require_public_readiness() {
 }
 
 require_background_services_running() {
-    running=$(prod_compose ps --status running --services worker beat 2>/dev/null) || return 1
+    relay_service=$(prod_optional_realtime_relay) || return 1
+    running=$(prod_compose ps --status running --services worker beat $relay_service 2>/dev/null) || return 1
 
-    for service in worker beat; do
+    for service in worker beat $relay_service; do
         if printf '%s\n' "$running" | awk -v service="$service" '$0 == service { found=1 } END { exit !found }'; then
             continue
         fi
@@ -950,7 +960,9 @@ stop_prod_data_services() {
     fi
     # Keep Caddy serving the maintenance page while the data services stop.
     go_api_service=$(prod_optional_go_api) || return $?
+    relay_service=$(prod_optional_realtime_relay) || return $?
     set -- api worker beat
+    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     prod_compose stop "$@"
 }
@@ -970,11 +982,12 @@ start_prod_app_services() {
 
     set -- api web
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
+    relay_service=$(prod_optional_realtime_relay) || return $?
     if [ "$force_recreate" = true ]; then
-        prod_compose up -d --force-recreate worker beat || return $?
+        prod_compose up -d --force-recreate worker beat $relay_service || return $?
         prod_compose up -d --wait --force-recreate "$@" || return $?
     else
-        prod_compose up -d worker beat || return $?
+        prod_compose up -d worker beat $relay_service || return $?
         prod_compose up -d --wait "$@" || return $?
     fi
 
@@ -1104,7 +1117,9 @@ status_prod() {
 
 prod_app_services_running() {
     go_api_service=$(prod_optional_go_api) || return 2
+    relay_service=$(prod_optional_realtime_relay) || return 2
     set -- web api worker beat
+    [ -z "$relay_service" ] || set -- "$@" "$relay_service"
     [ -z "$go_api_service" ] || set -- "$@" "$go_api_service"
     running=$(prod_compose ps --status running --services "$@" 2>/dev/null) || return 2
     [ -n "$running" ]

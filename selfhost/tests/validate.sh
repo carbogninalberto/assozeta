@@ -64,7 +64,10 @@ import json, sys
 config = json.load(sys.stdin)
 for service in ("web", "api"):
     assert all("docker.sock" not in mount["target"] for mount in config["services"][service]["volumes"])
-for service in ("api", "worker", "beat", "migrate"):
+relay = config["services"]["realtime-relay"]
+assert relay["command"] == ["python", "manage.py", "relay_go_realtime"] and relay["restart"] == "unless-stopped"
+assert all("docker.sock" not in mount["target"] for mount in relay["volumes"])
+for service in ("api", "worker", "beat", "realtime-relay", "migrate"):
     backend = config["services"][service]
     assert backend["environment"]["MANUAL_INDEX_PATH"] == "/app/manuale/index.json"
     assert any(mount["source"] == "manuale_data" and mount["target"] == "/app/manuale"
