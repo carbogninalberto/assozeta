@@ -30,27 +30,7 @@ type TestimonialInput struct {
 // ParseTestimonialInput follows testimonials_create on the parsed body:
 // Python membership ('text' in data), indexing, then 1 <= score <= 5.
 func ParseTestimonialInput(body any) (TestimonialInput, error) {
-	contains := func(key string) (bool, error) {
-		switch data := body.(type) {
-		case domain.RequestObject:
-			for _, field := range data {
-				if field.Name == key {
-					return true, nil
-				}
-			}
-			return false, nil
-		case []any:
-			for _, item := range data {
-				if text, ok := item.(string); ok && text == key {
-					return true, nil
-				}
-			}
-			return false, nil
-		case string:
-			return strings.Contains(data, key), nil
-		}
-		return false, ErrTestimonialServer
-	}
+	contains := func(key string) (bool, error) { return pythonContains(body, key) }
 	hasText, err := contains("text")
 	if err != nil {
 		return TestimonialInput{}, err
@@ -62,28 +42,102 @@ func ParseTestimonialInput(body any) (TestimonialInput, error) {
 	if !hasText || !hasScore {
 		return TestimonialInput{}, ErrTestimonialMissing
 	}
-	data, ok := body.(domain.RequestObject)
-	if !ok {
+	rawScore, err := pythonIndex(body, "score")
+	if err != nil {
 		return TestimonialInput{}, ErrTestimonialServer
 	}
-	value := func(key string) any {
-		var found any
-		for _, field := range data {
-			if field.Name == key {
-				found = field.Value
-			}
-		}
-		return found
-	}
-	score, err := testimonialScore(value("score"))
+	score, err := testimonialScore(rawScore)
 	if err != nil {
 		return TestimonialInput{}, err
 	}
-	text := value("text")
+	text, _ := pythonIndex(body, "text")
 	if text == nil {
 		return TestimonialInput{}, ErrTestimonialServer
 	}
 	return TestimonialInput{Text: PythonStr(text), Score: score}, nil
+}
+
+// pythonContains is `key in data` for a parsed body: dict keys, list members
+// and substrings; other values raise TypeError.
+func pythonContains(data any, key string) (bool, error) {
+	switch v := data.(type) {
+	case domain.RequestObject:
+		for _, field := range v {
+			if field.Name == key {
+				return true, nil
+			}
+		}
+		return false, nil
+	case []any:
+		for _, item := range v {
+			if text, ok := item.(string); ok && text == key {
+				return true, nil
+			}
+		}
+		return false, nil
+	case string:
+		return strings.Contains(v, key), nil
+	}
+	return false, ErrTestimonialServer
+}
+
+// pythonIndex is data[key] with a string key: the last duplicate's value
+// for a dict, KeyError when absent, TypeError for every other value.
+func pythonIndex(data any, key string) (any, error) {
+	object, ok := data.(domain.RequestObject)
+	if !ok {
+		return nil, ErrTestimonialServer
+	}
+	var found any
+	present := false
+	for _, field := range object {
+		if field.Name == key {
+			found, present = field.Value, true
+		}
+	}
+	if !present {
+		return nil, ErrTestimonialServer
+	}
+	return found, nil
+}
+
+// TestimonialWebhook is the outcome of testimonials_update after the
+// signature check: Created carries the payload's association ID value.
+type TestimonialWebhook struct {
+	Created     bool
+	Association any
+	// Malformed marks a testimonial_created payload whose nested lookup
+	// raised (KeyError or TypeError); the view answers 400.
+	Malformed bool
+}
+
+var ErrTestimonialWebhookType = errors.New("missing type")
+
+// ParseTestimonialWebhook follows the view after the signature: 'type' in
+// data (400 when absent), data['type'] outside the try (raises -> 500), then
+// the nested custom_data lookup inside it.
+func ParseTestimonialWebhook(body any) (TestimonialWebhook, error) {
+	present, err := pythonContains(body, "type")
+	if err != nil {
+		return TestimonialWebhook{}, err
+	}
+	if !present {
+		return TestimonialWebhook{}, ErrTestimonialWebhookType
+	}
+	kind, err := pythonIndex(body, "type")
+	if err != nil {
+		return TestimonialWebhook{}, err
+	}
+	if text, ok := kind.(string); !ok || text != "testimonial_created" {
+		return TestimonialWebhook{}, nil
+	}
+	value := body
+	for _, key := range []string{"data", "new", "endorser", "custom_data", "sport-association-id"} {
+		if value, err = pythonIndex(value, key); err != nil {
+			return TestimonialWebhook{Created: true, Malformed: true}, nil
+		}
+	}
+	return TestimonialWebhook{Created: true, Association: value}, nil
 }
 
 func testimonialScore(value any) (float64, error) {

@@ -109,13 +109,13 @@ def assert_effect(case, before, after, source, remote, sessions):
     contract.require(len(added_a) == 1 and set(old_a) <= set(new_a) and all(new_a[k] == old_a[k] for k in old_a), 'audit.one-entry')
     event = new_a[added_a.pop()]
     users = {str(scalar(u['user_id'])): u for u in before['application.User']}
-    actor = ids[flip['actor']]
+    actor = ids[flip['actor']] if flip['actor'] else None
     content_types = [ct for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application' and ct['model'] == 'sportassociation']
     contract.require(len(content_types) == 1, 'audit.content-type')
     contract.require(event['content_type_id'] == content_types[0]['id'] and event['object_pk'] == target
                      and event['object_repr'] == f'SportAssociation object ({target})' and event['action'] == 1, 'audit.identity')
     contract.require(event['changes'] == flip['changes'], 'audit.changes')
-    contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
+    contract.require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None), 'audit.actor')
     additional = None
     if flip['impersonation']:
         target_user = case['headers']['User-Id']

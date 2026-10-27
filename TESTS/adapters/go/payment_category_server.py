@@ -36,7 +36,7 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             'SECRET_KEY', 'JWT_SECRET_KEY', 'JWT_PUBLIC_KEY',
             'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_STORAGE_BUCKET_NAME',
             'AWS_S3_REGION_NAME', 'AWS_S3_ENDPOINT_URL', 'AWS_LOCATION',
-            'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET',
+            'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', 'SENJA_WEBHOOK_SECRET',
         )},
     }
     command = [str(executable)]

@@ -14168,6 +14168,12 @@
           "result": "Mutation control: index path direct fails Go on index.fields.",
           "artifact": "quality-reports/go-migration/testimonials-http-mutation-r1/results.json",
           "receipt_sha256": "f5e6817b9cd425838a5f1e876441aa27f59b7fa0522981e8178403f5e8865a65"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after shared parser refactor: 38/38 on four transports.",
+          "artifact": "quality-reports/go-migration/testimonials-http-versioned-r2/results.json",
+          "receipt_sha256": "2624bf2ef77ca1337aee348119c6b4c015f7bf9db1c72e0d437877d89daefbf4"
         }
       ],
       "notes": [
@@ -14189,11 +14195,20 @@
         "target": "testimonials_update",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/testimonials.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/internal/repository/testimonials.go",
+        "BE_GO/internal/service/testimonials.go",
+        "BE_GO/internal/handler/testimonials.go",
+        "BE_GO/internal/dto/python_json.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/config/config.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
-        "SENJA_WEBHOOK_SECRET in Go configuration and launcher allowlist",
-        "Compact Python json.dumps port for HMAC input",
+        "SENJA_WEBHOOK_SECRET in the shared environment (Go rejects every signature when unset)",
         "application_sportassociation audit (shared with testimonials/add)"
       ],
       "contract": {
@@ -14216,12 +14231,38 @@
         "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/testimonial_webhook_http.json",
+        "TESTS/fixtures/generate_testimonial_webhook_http.py",
+        "TESTS/contracts/test_testimonial_webhook_http.py",
+        "TESTS/adapters/django/testimonial_webhook_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/testimonials_test.go",
+        "BE_GO/internal/config/config_test.go"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/testimonials.md"
+        "docs/architecture/go-migration/testimonials.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 25/25 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/testimonial-webhook-http-red-r1/results.json",
+          "receipt_sha256": "fe17e84e22bafdb1dc4ab576ec9917e1d76bb8c148bdebe15c1f901d5626520b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact reviewed, audit and index effects.",
+          "artifact": "quality-reports/go-migration/testimonial-webhook-http-versioned-r1/results.json",
+          "receipt_sha256": "fe7e2dfddadf490eeda05b85331a1aea0c740a5a2565875418f4fc5259933c93"
+        },
+        {
+          "revision": "committing change with default json.dumps separators",
+          "result": "Mutation control: signing the default-separator text fails Go.",
+          "artifact": "quality-reports/go-migration/testimonial-webhook-http-mutation-r1/results.json",
+          "receipt_sha256": "434a7ce248df4e9b7c2f7a520b50059ac6c98546a93ff32c2c9720030a8fbfe7"
+        }
       ],
       "notes": [
-        "Characterized from source; no authored sequence yet."
+        "Implementing: signature, payload and reviewed-flag audit parity proven on four transports."
       ]
     },
     {

@@ -42,3 +42,40 @@ func TestTestimonialInputMatchesPython(t *testing.T) {
 		}
 	}
 }
+
+func TestTestimonialWebhookMatchesPython(t *testing.T) {
+	parse := func(raw string) any {
+		value, err := ParseMessageMutationsJSON([]byte(raw))
+		if err != nil {
+			t.Fatal(raw, err)
+		}
+		return value
+	}
+	// Expected values are CPython json.dumps(json.loads(raw), separators=(',', ':')).
+	for raw, want := range map[string]string{
+		`{"z": "Grazie è 😀", "n": 1.50, "e": 1e5, "z": "ultimo", "l": [true, null, -0.0, 10000000000000000000000]}`: `{"z":"ultimo","n":1.5,"e":100000.0,"l":[true,null,-0.0,10000000000000000000000]}`,
+		`"type"`: `"type"`, `null`: `null`, `[]`: `[]`, `{"a": 1e400}`: `{"a":Infinity}`,
+	} {
+		if got := string(PythonJSONDumpsCompact(parse(raw))); got != want {
+			t.Errorf("%s = %s, want %s", raw, got, want)
+		}
+	}
+	created := `{"type": "testimonial_created", "data": {"new": {"endorser": {"custom_data": {"sport-association-id": "x"}}}}}`
+	if got, err := ParseTestimonialWebhook(parse(created)); err != nil || !got.Created || got.Malformed || got.Association != "x" {
+		t.Fatalf("created %#v %v", got, err)
+	}
+	for raw, want := range map[string]TestimonialWebhook{
+		`{"type": "other"}`: {}, `{"type": 1}`: {}, `{"type": "testimonial_created", "data": []}`: {Created: true, Malformed: true},
+		`{"type": "testimonial_created", "data": {"new": "x"}}`: {Created: true, Malformed: true},
+	} {
+		if got, err := ParseTestimonialWebhook(parse(raw)); err != nil || got != want {
+			t.Errorf("%s = %#v %v", raw, got, err)
+		}
+	}
+	for raw, want := range map[string]error{`{"data": {}}`: ErrTestimonialWebhookType, `[]`: ErrTestimonialWebhookType,
+		`["type"]`: ErrTestimonialServer, `"type"`: ErrTestimonialServer, `null`: ErrTestimonialServer, `3`: ErrTestimonialServer} {
+		if _, err := ParseTestimonialWebhook(parse(raw)); !errors.Is(err, want) {
+			t.Errorf("%s = %v, want %v", raw, err, want)
+		}
+	}
+}

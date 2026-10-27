@@ -1,0 +1,507 @@
+{
+ "matrix_version": 1,
+ "scope": "Senja testimonial webhook authored sequence with reviewed-flag audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "index_path": "self",
+ "cases": [
+  {
+   "name": "testimonial-webhook-missing-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "content_type": "application/json",
+   "signature": null,
+   "signed": null,
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-wrong-signature",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "content_type": "application/json",
+   "signature": "0000000000000000000000000000000000000000000000000000000000000000",
+   "signed": null,
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-signature-over-raw-bytes",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-non-ascii-signature-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "content_type": "application/json",
+   "signature": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "signed": null,
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-missing-type",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"data\": {}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"data\":{}}",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-other-type",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_updated\", \"data\": {\"v\": 1}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_updated\",\"data\":{\"v\":1}}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-flips-foreign",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"z\": \"Grazie è 😀\", \"type\": \"testimonial_created\", \"n\": 1.50, \"e\": 1e5, \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}, \"z\": \"ultimo\"}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"z\":\"ultimo\",\"type\":\"testimonial_created\",\"n\":1.5,\"e\":100000.0,\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": {
+     "association": "foreign_association",
+     "actor": null,
+     "changes": {
+      "reviewed": [
+       "False",
+       "True"
+      ]
+     },
+     "impersonation": null
+    }
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-already-reviewed",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"a1000000-0000-4000-8000-000000701002\"}}}}}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-braced-uppercase-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"{A1000000-0000-4000-8000-000000701001}\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"{A1000000-0000-4000-8000-000000701001}\"}}}}}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": {
+     "association": "own_association",
+     "actor": null,
+     "changes": {
+      "reviewed": [
+       "False",
+       "True"
+      ]
+     },
+     "impersonation": null
+    }
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-missing-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000720009\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"a1000000-0000-4000-8000-000000720009\"}}}}}",
+   "status": 404,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-deleted-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"a1000000-0000-4000-8000-000000701003\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"a1000000-0000-4000-8000-000000701003\"}}}}}",
+   "status": 404,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-invalid-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": \"nope\"}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":\"nope\"}}}}}",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-integer-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {\"endorser\": {\"custom_data\": {\"sport-association-id\": 5}}}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{\"endorser\":{\"custom_data\":{\"sport-association-id\":5}}}}}",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-missing-endorser",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": {\"new\": {}}}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":{\"new\":{}}}",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-created-data-list",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_created\", \"data\": []}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_created\",\"data\":[]}",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-empty-list-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "[]",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "[]",
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-list-body-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "[\"type\"]",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "[\"type\"]",
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-string-body-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "\"type\"",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "\"type\"",
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-null-body-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "null",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "null",
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-form-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "type=testimonial_updated",
+   "content_type": "application/x-www-form-urlencoded",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_updated\"}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-authenticated-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_updated\"}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_updated\"}",
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_updated\"}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_updated\"}",
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-restricted-collaborator-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "{\"type\": \"testimonial_updated\"}",
+   "content_type": "application/json",
+   "signature": "valid",
+   "signed": "{\"type\":\"testimonial_updated\"}",
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-wrong-method",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "",
+   "content_type": "application/json",
+   "signature": null,
+   "signed": null,
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonial-webhook-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/testimonials/update",
+   "headers": {},
+   "raw_body": "",
+   "content_type": "application/json",
+   "signature": null,
+   "signed": null,
+   "status": 200,
+   "response": {
+    "name": "Testimonials Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  }
+ ]
+}

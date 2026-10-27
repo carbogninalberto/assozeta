@@ -109,6 +109,12 @@ func messageMutationsError(c echo.Context, err error) error {
 // Match MessageReads negotiation and scoped admission order while preserving
 // Python surrogate code units for MessageInputSerializer validation.
 func messageMutationsIdentity(c echo.Context, actors *service.ActorAuthentication, identities *service.IdentityResolver, method, operation string) (*domain.ResolvedIdentity, error) {
+	return messageMutationsIdentityFor(c, actors, identities, method, operation, false)
+}
+
+// messageMutationsIdentityFor with anonymous=true serves AllowAny views: an
+// unauthenticated request resolves to an identity without a scope user.
+func messageMutationsIdentityFor(c echo.Context, actors *service.ActorAuthentication, identities *service.IdentityResolver, method, operation string, anonymous bool) (*domain.ResolvedIdentity, error) {
 	request := c.Request()
 	c.Response().Header().Set("Allow", method+", OPTIONS")
 	c.Response().Header().Set("Content-Language", restLanguage(request))
@@ -136,7 +142,7 @@ func messageMutationsIdentity(c echo.Context, actors *service.ActorAuthenticatio
 	if err != nil {
 		return nil, restError(c, err)
 	}
-	if identity.ScopeUser == nil {
+	if identity.ScopeUser == nil && !anonymous {
 		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="api"`)
 		return nil, restError(c, &restInputError{Status: 401, Detail: restText(request, "credentials")})
 	}

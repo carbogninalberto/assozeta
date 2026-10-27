@@ -30,9 +30,20 @@ func PythonJSONDumpsSorted(value any) []byte {
 	return []byte(out.String())
 }
 
+// PythonJSONDumpsCompact is json.dumps(value, separators=(',', ':')).
+func PythonJSONDumpsCompact(value any) []byte {
+	var out strings.Builder
+	pythonJSONWriteWith(&out, value, false, ",", ":")
+	return []byte(out.String())
+}
+
 func pythonJSONWrite(out *strings.Builder, value any) { pythonJSONWriteSorted(out, value, false) }
 
 func pythonJSONWriteSorted(out *strings.Builder, value any, sorted bool) {
+	pythonJSONWriteWith(out, value, sorted, ", ", ": ")
+}
+
+func pythonJSONWriteWith(out *strings.Builder, value any, sorted bool, item, key string) {
 	switch v := value.(type) {
 	case nil:
 		out.WriteString("null")
@@ -54,20 +65,20 @@ func pythonJSONWriteSorted(out *strings.Builder, value any, sorted bool) {
 		out.WriteByte('{')
 		for i, field := range v {
 			if i > 0 {
-				out.WriteString(", ")
+				out.WriteString(item)
 			}
 			pythonJSONString(out, field.Name)
-			out.WriteString(": ")
-			pythonJSONWriteSorted(out, field.Value, sorted)
+			out.WriteString(key)
+			pythonJSONWriteWith(out, field.Value, sorted, item, key)
 		}
 		out.WriteByte('}')
 	case []any:
 		out.WriteByte('[')
-		for i, item := range v {
+		for i, element := range v {
 			if i > 0 {
-				out.WriteString(", ")
+				out.WriteString(item)
 			}
-			pythonJSONWriteSorted(out, item, sorted)
+			pythonJSONWriteWith(out, element, sorted, item, key)
 		}
 		out.WriteByte(']')
 	default:

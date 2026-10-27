@@ -34,6 +34,13 @@ func (t *testimonialTransaction) InsertTestimonial(ctx context.Context, row doma
 	return err
 }
 
+func (t *testimonialTransaction) ActiveAssociation(ctx context.Context, id string, scope *string) (bool, error) {
+	var exists bool
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation
+ WHERE sport_association_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR sport_association_id=$2::uuid))`, id, scope)
+	return exists, err
+}
+
 // The view's full-row save changes only reviewed; auditlog logs it only when
 // the stored value was false.
 func (t *testimonialTransaction) MarkAssociationReviewed(ctx context.Context, association string) (bool, error) {

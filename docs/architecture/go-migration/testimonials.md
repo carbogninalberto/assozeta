@@ -1,9 +1,9 @@
-# Testimonials — add implementing with HTTP parity; update (webhook) characterized
+# Testimonials — add and Senja webhook implementing with HTTP parity
 
 `POST testimonials/add` (`testimonials_create`) and `POST testimonials/update`
 (`testimonials_update`, the Senja webhook) are in `BE/application/views/profile_views.py`.
-Add is implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/testimonials.go`);
-update is not. Django remains the production execution owner.
+Both are implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/testimonials.go`).
+Django remains the production execution owner.
 
 ## Add behavior
 
@@ -49,7 +49,7 @@ lookup finds nothing, Go commits the testimonial before returning 500, matching
 Django's autocommit outcome. The update is column-scoped (`reviewed` only)
 where Django saves the full row; see the open staff-board decision.
 
-## Update (webhook), not implemented
+## Update (webhook)
 
 Default authentication, `AllowAny`. No `x-senja-signature` header: 401 with an
 empty body. The signature is HMAC-SHA256 with `SENJA_WEBHOOK_SECRET` over
@@ -60,11 +60,25 @@ order, Python float repr; a form body serializes the QueryDict's value lists);
 `data.new.endorser.custom_data['sport-association-id']`, validates it as a UUID,
 looks up the active association (404 when absent) and saves `reviewed=True`
 (audited as above, anonymous actor); any exception inside returns 400. Other
-types return 200. A Go port needs the secret in its configuration and the
-launcher allowlist, and the compact `json.dumps` port.
+types return 200. Responses without data have an empty body and no
+`Content-Type`. A supplied token is still authenticated and passes identity
+resolution and the collaborator registry.
+
+Go reads `SENJA_WEBHOOK_SECRET` (with django-environ `$NAME` proxies); Django
+refuses to start without it, so an unset secret makes the Go route reject
+every signature rather than sign with an empty key. The signed text is
+`dto.PythonJSONDumpsCompact` of the DRF-compatible parsed body; the
+membership, indexing and nested lookup rules share the add route's ports.
 
 ## Evidence (TDD)
 
+**Webhook:** `TESTS/fixtures/testimonial_webhook_http.json` authors 25 cases;
+the runner signs authored `signed` texts with the private environment's
+secret. Django passed 25/25 on the first run and Go failed with 404 before any
+Go code; it now passes on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`. Signing the default-separator `json.dumps` fails the run.
+
+**Add:**
 `TESTS/fixtures/testimonials_http.json` (generator alongside) authors 38 cases.
 The Django reference run corrected two expectations, each confirmed in source:
 a list body naming both keys passes membership and then fails indexing (500),

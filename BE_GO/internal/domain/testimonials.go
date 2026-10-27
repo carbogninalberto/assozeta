@@ -24,6 +24,9 @@ type TestimonialStore interface {
 
 type TestimonialTransaction interface {
 	AssociationForOwner(context.Context, string, *string) (string, error)
+	// ActiveAssociation reports whether an active association has this ID,
+	// bounded by the impersonation association when one is given.
+	ActiveAssociation(ctx context.Context, id string, scope *string) (bool, error)
 	InsertTestimonial(context.Context, TestimonialWrite) error
 	// MarkAssociationReviewed sets reviewed and reports whether it was false.
 	MarkAssociationReviewed(ctx context.Context, association string) (bool, error)

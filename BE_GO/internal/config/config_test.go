@@ -156,3 +156,18 @@ func TestRequestsCABundleEnvironmentPrecedence(t *testing.T) {
 		}
 	}
 }
+
+func TestSenjaWebhookSecretPresenceAndProxy(t *testing.T) {
+	env := environment()
+	if cfg, err := Parse(env); err != nil || cfg.SenjaWebhookSecret != nil {
+		t.Fatal("absent secret must stay unset", err)
+	}
+	env["SENJA_WEBHOOK_SECRET"], env["SENJA_SOURCE"] = "$SENJA_SOURCE", "proxied-webhook-secret"
+	if cfg, err := Parse(env); err != nil || cfg.SenjaWebhookSecret == nil || *cfg.SenjaWebhookSecret != "proxied-webhook-secret" {
+		t.Fatal("proxied secret differs", err)
+	}
+	env["SENJA_WEBHOOK_SECRET"] = ""
+	if cfg, err := Parse(env); err != nil || cfg.SenjaWebhookSecret == nil || *cfg.SenjaWebhookSecret != "" {
+		t.Fatal("empty secret must stay set", err)
+	}
+}
