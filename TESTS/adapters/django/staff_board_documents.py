@@ -15,6 +15,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[3]
 CORPUS = ROOT / 'TESTS/fixtures/staff-board-documents.json'
 INPUTS = ROOT / 'TESTS/fixtures/staff-board-inputs.json'
+RESPONSES = ROOT / 'TESTS/fixtures/staff-board-responses.json'
 
 
 def load_corpus(path=CORPUS):
@@ -95,6 +96,31 @@ def input_outcome(case):
         return {'errors': json.loads(json.dumps(serializer.errors))}
 
 
+def response_outcome(case):
+    """Project unsaved model instances through the real response serializer."""
+    from datetime import datetime
+    from types import SimpleNamespace
+    from uuid import UUID
+    from rest_framework.utils.encoders import JSONEncoder
+    from application.models import SportAssociation, User
+    from communications.models import StaffBoardMessage
+    from communications.serializers import StaffBoardMessageSerializer
+    record = case['record']
+    association = SportAssociation(sport_association_id=UUID(record['association']['id']),
+        user_id=UUID(record['association']['owner_id']), denomination=record['association']['denomination'])
+    author = None
+    if record['author']:
+        values = record['author']
+        author = User(user_id=UUID(values['id']), first_name=values['first_name'], last_name=values['last_name'],
+                      username=values['username'], avatar_image=values['avatar_image'])
+    message = StaffBoardMessage(staff_board_message_id=UUID(record['id']), sport_association=association, author=author,
+        content=record['content'], document=record['document'], pinned=record['pinned'],
+        created_at=datetime.fromisoformat(record['created_at']), updated_at=datetime.fromisoformat(record['updated_at']))
+    request = SimpleNamespace(user=SimpleNamespace(pk=UUID(case['actor_id'])), collaborator=False)
+    data = StaffBoardMessageSerializer(message, context={'request': request}).data
+    return json.loads(json.dumps(data, cls=JSONEncoder))
+
+
 def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
@@ -106,10 +132,13 @@ def main():
         failures = [case['name'] for case in corpus['cases']
                     if outcome(validate, ValidationError, case) != expected(case)]
         input_failures = [case['name'] for case in inputs['cases'] if input_outcome(case) != case['expect']]
+        responses = json.loads(RESPONSES.read_text())['cases']
+        response_failures = [case['name'] for case in responses if response_outcome(case) != case['expect']]
     print(json.dumps({'check': 'staff-board-documents.django', 'cases': len(corpus['cases']), 'failures': failures,
                       'input_cases': len(inputs['cases']), 'input_failures': input_failures,
-                      'success': not failures and not input_failures}))
-    return 0 if not failures and not input_failures else 1
+                      'response_cases': len(responses), 'response_failures': response_failures,
+                      'success': not failures and not input_failures and not response_failures}))
+    return 0 if not failures and not input_failures and not response_failures else 1
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Staff board — characterized; validator and input serializer ported
+# Staff board — characterized; validator, input and row projection ported
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -145,6 +145,17 @@ expectations were corrected with that citation. Both Django and Go now pass
 72/72, and a mutation removing the form default fails exactly those three cases.
 Form documents containing `NaN`/`Infinity` tokens (accepted by Python
 `json.loads`, rejected by the shared Go parser) remain an explicit gap.
+
+## Row projection (ported)
+
+`BE_GO/internal/dto/staff_board_response.go` projects a
+`domain.StaffBoardMessage` like `StaffBoardMessageSerializer`: deleted authors
+become `Utente eliminato` with null `author`/`author_avatar`; otherwise the
+Python-stripped first/last name, then the association denomination for the
+association owner, then the username; `is_owner` compares the author with the
+acting user; timestamps use DRF's UTC `Z` form. The authored 9-case
+`TESTS/fixtures/staff-board-responses.json` passes through Django's real
+serializer (unsaved model instances, no database) and the Go projection.
 
 ## Required evidence before `implementing`
 

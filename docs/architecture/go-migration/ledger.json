@@ -15393,9 +15393,11 @@
       },
       "status": "characterized",
       "go": [
-        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
-        "BE_GO/internal/dto/staff_board_input.go"
+        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/dto/staff_board_input.go",
+        "BE_GO/internal/dto/staff_board_response.go"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
@@ -15424,10 +15426,12 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
-        "TESTS/fixtures/staff-board-documents.json",
-        "TESTS/adapters/django/staff_board_documents.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
-        "TESTS/fixtures/staff-board-inputs.json"
+        "BE_GO/internal/dto/staff_board_response_test.go",
+        "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/fixtures/staff-board-documents.json",
+        "TESTS/fixtures/staff-board-inputs.json",
+        "TESTS/fixtures/staff-board-responses.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15440,6 +15444,11 @@
           "revision": "current branch plus the committing input-serializer change",
           "result": "Authored 72-case input corpus (JSON add, partial update, form bodies): Django StaffBoardMessageInputSerializer 72/72 after correcting three form expectations explained by DRF default_empty_html; Go port 72/72; form-default mutation caught. Component evidence only.",
           "artifact": "TESTS/fixtures/staff-board-inputs.json"
+        },
+        {
+          "revision": "current branch plus the committing row-projection change",
+          "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
+          "artifact": "TESTS/fixtures/staff-board-responses.json"
         }
       ],
       "notes": [
@@ -15463,9 +15472,11 @@
       },
       "status": "characterized",
       "go": [
-        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
-        "BE_GO/internal/dto/staff_board_input.go"
+        "BE_GO/internal/dto/staff_board_document.go",
+        "BE_GO/internal/dto/staff_board_input.go",
+        "BE_GO/internal/dto/staff_board_response.go"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
@@ -15494,10 +15505,12 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
-        "TESTS/fixtures/staff-board-documents.json",
-        "TESTS/adapters/django/staff_board_documents.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
-        "TESTS/fixtures/staff-board-inputs.json"
+        "BE_GO/internal/dto/staff_board_response_test.go",
+        "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/fixtures/staff-board-documents.json",
+        "TESTS/fixtures/staff-board-inputs.json",
+        "TESTS/fixtures/staff-board-responses.json"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15510,6 +15523,11 @@
           "revision": "current branch plus the committing input-serializer change",
           "result": "Authored 72-case input corpus (JSON add, partial update, form bodies): Django StaffBoardMessageInputSerializer 72/72 after correcting three form expectations explained by DRF default_empty_html; Go port 72/72; form-default mutation caught. Component evidence only.",
           "artifact": "TESTS/fixtures/staff-board-inputs.json"
+        },
+        {
+          "revision": "current branch plus the committing row-projection change",
+          "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
+          "artifact": "TESTS/fixtures/staff-board-responses.json"
         }
       ],
       "notes": [
@@ -15532,7 +15550,10 @@
         "syntax": "path"
       },
       "status": "characterized",
-      "go": [],
+      "go": [
+        "BE_GO/internal/domain/staff_board.go",
+        "BE_GO/internal/dto/staff_board_response.go"
+      ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
@@ -15559,10 +15580,17 @@
         "execution_owner": "django"
       },
       "tests": [
-        "BE/communications/tests/test_staff_board.py"
+        "BE/communications/tests/test_staff_board.py",
+        "BE_GO/internal/dto/staff_board_response_test.go",
+        "TESTS/fixtures/staff-board-responses.json"
       ],
       "evidence": [
-        "docs/architecture/go-migration/staff-board.md"
+        "docs/architecture/go-migration/staff-board.md",
+        {
+          "revision": "current branch plus the committing row-projection change",
+          "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
+          "artifact": "TESTS/fixtures/staff-board-responses.json"
+        }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
