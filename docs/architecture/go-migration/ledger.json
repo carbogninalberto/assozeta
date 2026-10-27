@@ -11587,25 +11587,70 @@
         "target": "sport_association_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_list.go",
+        "BE_GO/internal/dto/association_list.go",
+        "BE_GO/internal/repository/association_list.go",
+        "BE_GO/internal/service/association_list.go",
+        "BE_GO/internal/handler/association_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administrator exemption) and collaborator registry exclusion",
+        "application_sportassociation, bakney_user, application_usersonboarding, billing_subscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/sport-associations/list",
+          "/api/v2/sport-associations/list",
+          "/api/sport-associations/list"
+        ],
+        "request": "No body.",
+        "response": "200 unordered list of SportAssociationToolSerializer rows.",
+        "errors": "401 bare for non-superusers, DRF 401 for anonymous; 403 athlete notes owner; 500 ambiguous notes owner.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Scope user is_superuser; administrator impersonation exemption; registry exclusion.",
+        "resource_scope": "All active associations (impersonation association bound when present).",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_list_http.json",
+        "TESTS/fixtures/generate_association_list_http.py",
+        "TESTS/contracts/test_association_list_http.py",
+        "TESTS/adapters/django/association_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-list.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 10/10 after two source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-list-http-red-r1/results.json",
+          "receipt_sha256": "7f39502904b6d2a0635946af39c1c99498c779348f8003bc7d88174abf033bea"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 10/10 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged state.",
+          "artifact": "quality-reports/go-migration/association-list-http-versioned-r1/results.json",
+          "receipt_sha256": "0accf4e26df60347f74e470b98a6d8917680144dc1124f36e31af98c0ec90b7c"
+        },
+        {
+          "revision": "committing change with onboarding shown for several rows",
+          "result": "Mutation control: fails Go on the list body.",
+          "artifact": "quality-reports/go-migration/association-list-http-mutation-r1/results.json",
+          "receipt_sha256": "8cc199d8163f08f8958439dfe9e8863164a787904af3ea15e4c699923608e491"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports; query-count receipt pending."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:statistic/athlete-dashboard -> statistic_athlete_dashboard",
