@@ -15048,7 +15048,8 @@
         "TESTS/test_local_docker_endpoint.py",
         "TESTS/test_message_list_spool_faults.py",
         "TESTS/test_message_list_spool_faults_runtime.py",
-        "TESTS/test_message_list_query_cancellation.py"
+        "TESTS/test_message_list_query_cancellation.py",
+        "TESTS/test_message_list_query_cancellation_runtime.py"
       ],
       "evidence": [
         {
@@ -15128,6 +15129,12 @@
           "result": "Packaged exact-query cancellation passes: unique PostgreSQL lock waiter and live spool observed; backend and descriptor released in 317ms before blocker rollback; full same-process recovery and final cleanup pass. Parent independently revalidated source/build/query/receipt bindings and response hashes.58 parent offline controls pass. Disk-fault coverage and whole-family acceptance remain incomplete.",
           "artifact": "quality-reports/go-migration/message-list-query-cancel-image-r1/query-cancellation.json",
           "receipt_sha256": "4bfa65ed0f9fcba65a9c408118f0bfa45a497b007e815e22dad37cfa66c1bb95"
+        },
+        {
+          "revision": "07148adf3b01c5865bf3fc4e43b5997314d3de4b image; committed source-bound runner at d32a04a8 plus runner files",
+          "result": "Committed source-bound runner passes actual packaged phase1 and exact-query cancellation in one fixture lifetime: unique lock waiter, 1-byte live spool, backend and descriptor released in 296ms before blocker rollback, same-process 1152-row/75,806,816-byte recovery equal to every phase1 LIST, final cleanup verified. Parent independently re-ran the pure gate with original build/phase1 bytes and fresh source binding; tampered recovery control rejected. 141 offline controls pass without skips. Supersedes the prototype driver; disk-fault scope and whole-family acceptance remain incomplete; no status promotion.",
+          "artifact": "quality-reports/go-migration/message-list-query-runtime-image-r1/query-cancellation.json",
+          "receipt_sha256": "634948af5b35f5cb5c350a009f02c2a08b6148037c7342b928fcbd3adf3b2d7f"
         }
       ],
       "notes": [
