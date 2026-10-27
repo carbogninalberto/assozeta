@@ -239,8 +239,13 @@ run proves the event and its notification appear only after commit, and that a
 rolled-back event leaves no row. The four-transport HTTP run asserts exactly one
 pending event per successful Go write (5 per Go transport), none for Django
 writes or failures, and delivery by the real relay into the staff-board group.
-Remaining: the relay is not yet a service in the self-host compose, so an
-installed system would queue Go events durably until one runs.
+The relay runs as the managed `realtime-relay` self-host service; the CLI and
+updater include it only when the configured distribution defines it. Installed
+evidence at `c422c820` (images rebuilt from a clean tree): the update/recovery
+smoke and the old-controller smoke (including recovery to a v1.0.17
+distribution without a relay) both pass with operational schema 4, and at
+every healthy checkpoint (10 and 9 respectively) an outbox event inserted into
+the installed database was delivered by the running relay.
 
 ## Authored HTTP sequence (executed on four transports)
 

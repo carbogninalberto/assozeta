@@ -15394,7 +15394,7 @@
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
+        "Go realtime outbox (migration 4) and the managed realtime-relay service"
       ],
       "contract": {
         "methods": [
@@ -15452,11 +15452,17 @@
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
           "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
           "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
+        },
+        {
+          "revision": "c422c820 (clean tree, rebuilt images)",
+          "result": "Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9).",
+          "artifact": "quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json",
+          "receipt_sha256": "2b0fbd3cfe1fcaab7d9bee0ddb954eb45b6df470a4c1a527c95f6d58952467de"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
+        "Implementing: HTTP parity and the outbox/relay path are proven, including installed delivery."
       ]
     },
     {
@@ -15492,7 +15498,7 @@
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
+        "Go realtime outbox (migration 4) and the managed realtime-relay service"
       ],
       "contract": {
         "methods": [
@@ -15571,11 +15577,17 @@
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
           "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
           "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
+        },
+        {
+          "revision": "c422c820 (clean tree, rebuilt images)",
+          "result": "Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9).",
+          "artifact": "quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json",
+          "receipt_sha256": "2b0fbd3cfe1fcaab7d9bee0ddb954eb45b6df470a4c1a527c95f6d58952467de"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
+        "Implementing: HTTP parity and the outbox/relay path are proven, including installed delivery."
       ]
     },
     {
@@ -15611,7 +15623,7 @@
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
+        "Go realtime outbox (migration 4) and the managed realtime-relay service"
       ],
       "contract": {
         "methods": [
@@ -15690,11 +15702,17 @@
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
           "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
           "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
+        },
+        {
+          "revision": "c422c820 (clean tree, rebuilt images)",
+          "result": "Installed update/recovery and old-controller smokes pass with schema 4; the managed relay delivered an outbox probe at every healthy checkpoint (10 and 9).",
+          "artifact": "quality-reports/go-migration/installed-realtime-c422c820/recovery/update-recovery.json",
+          "receipt_sha256": "2b0fbd3cfe1fcaab7d9bee0ddb954eb45b6df470a4c1a527c95f6d58952467de"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
+        "Implementing: HTTP parity and the outbox/relay path are proven, including installed delivery."
       ]
     },
     {
