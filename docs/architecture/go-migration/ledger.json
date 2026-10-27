@@ -15135,6 +15135,11 @@
           "result": "Committed source-bound runner passes actual packaged phase1 and exact-query cancellation in one fixture lifetime: unique lock waiter, 1-byte live spool, backend and descriptor released in 296ms before blocker rollback, same-process 1152-row/75,806,816-byte recovery equal to every phase1 LIST, final cleanup verified. Parent independently re-ran the pure gate with original build/phase1 bytes and fresh source binding; tampered recovery control rejected. 141 offline controls pass without skips. Supersedes the prototype driver; disk-fault scope and whole-family acceptance remain incomplete; no status promotion.",
           "artifact": "quality-reports/go-migration/message-list-query-runtime-image-r1/query-cancellation.json",
           "receipt_sha256": "634948af5b35f5cb5c350a009f02c2a08b6148037c7342b928fcbd3adf3b2d7f"
+        },
+        {
+          "revision": "unit tests on f1fbf05b plus BE_GO/internal/handler/message_reads_test.go",
+          "result": "Unit-level errno injection (not packaged OS faults): os.PathError ENOSPC partial write, EIO write, EIO partial pre-commit check read and EIO second seek return Django's exact generic 500 page with no payload or error text; EIO on the first final read, after a committed prefix and with a partial n>0 read return EIO to Echo with HTTP 200 committed exactly once and only an exact spool prefix written. Every case closes the real descriptor, leaves no path and the next request recovers the full body. Mutations removing the pre-commit check or the spool close fail the test. gofmt, go vet ./... and go test -race ./... pass. Actual packaged ENOSPC/EIO remain open; this BE_GO change requires a fresh image build before reusing packaged message-list receipts.",
+          "artifact": "BE_GO/internal/handler/message_reads_test.go"
         }
       ],
       "notes": [

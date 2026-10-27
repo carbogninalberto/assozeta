@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -538,6 +539,180 @@ func TestMessageReadsConfiguredSpoolDirectoryAndFailureCleanup(t *testing.T) {
 			entries, err := os.ReadDir(dir)
 			if err != nil || len(entries) != 0 {
 				t.Fatal("spool path leaked", entries, err)
+			}
+		})
+	}
+}
+
+// Unit-level storage error injection with the concrete errors the operating
+// system returns. This is not evidence of an actual packaged disk fault.
+type messageListStorageFaultSpool struct {
+	messageListSpool
+	fail        string
+	writes      int
+	seeks       int
+	finalReads  int
+	headerAtErr int
+	header      func() int
+}
+
+func messageListStorageError(op string, errno syscall.Errno) error {
+	return &os.PathError{Op: op, Path: "/private/spool/path", Err: errno}
+}
+
+func (s *messageListStorageFaultSpool) Write(p []byte) (int, error) {
+	s.writes++
+	if s.fail == "enospc partial write" && s.writes == 3 {
+		n, _ := s.messageListSpool.Write(p[:len(p)/2])
+		return n, messageListStorageError("write", syscall.ENOSPC)
+	}
+	if s.fail == "eio write" && s.writes == 3 {
+		return 0, messageListStorageError("write", syscall.EIO)
+	}
+	return s.messageListSpool.Write(p)
+}
+
+func (s *messageListStorageFaultSpool) Seek(n int64, w int) (int64, error) {
+	s.seeks++
+	if s.fail == "eio second seek" && s.seeks == 2 {
+		return 0, messageListStorageError("seek", syscall.EIO)
+	}
+	return s.messageListSpool.Seek(n, w)
+}
+
+func (s *messageListStorageFaultSpool) Read(p []byte) (int, error) {
+	switch {
+	case s.seeks == 1 && s.fail == "eio check read partial":
+		n, _ := s.messageListSpool.Read(p[:len(p)/2])
+		return n, messageListStorageError("read", syscall.EIO)
+	case s.seeks == 2:
+		s.finalReads++
+		fail := (s.fail == "eio final first read" && s.finalReads == 1) ||
+			(s.fail == "eio final after prefix" && s.finalReads == 2)
+		if fail {
+			s.headerAtErr = s.header()
+			return 0, messageListStorageError("read", syscall.EIO)
+		}
+		if s.fail == "eio final partial" && s.finalReads == 2 {
+			s.headerAtErr = s.header()
+			n, _ := s.messageListSpool.Read(p[:len(p)/2])
+			return n, messageListStorageError("read", syscall.EIO)
+		}
+	}
+	return s.messageListSpool.Read(p)
+}
+
+type messageListHeaderCountingRecorder struct {
+	*httptest.ResponseRecorder
+	headers int
+}
+
+func (w *messageListHeaderCountingRecorder) WriteHeader(status int) {
+	w.headers++
+	w.ResponseRecorder.WriteHeader(status)
+}
+
+func TestMessageReadsStorageErrnoFaultsPropagateAndRecover(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TMPDIR", dir)
+	tokens := &messageReadsTokensTest{sub: "a1000000-0000-4000-8000-000000700001"}
+	accounts := messageReadsAccountsTest{"a1000000-0000-4000-8000-000000700001": {ID: "a1000000-0000-4000-8000-000000700001", Role: domain.RoleAssociation, Active: true}}
+	store := &messageReadsStoreHandlerTest{visit: func(_ context.Context, consume func(domain.MessageReadRecord) error) error {
+		for i := 0; i < 4; i++ {
+			if err := consume(domain.MessageReadRecord{Message: strings.Repeat("x", 20000)}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}}
+	h := NewMessageReadsHandler(service.NewMessageReads(store), service.NewActorAuthentication(accounts, tokens), service.NewIdentityResolver(accounts, nil, nil, service.NewPermissions(), nil))
+	var (
+		fail     string
+		spool    *messageListStorageFaultSpool
+		file     *os.File
+		returned error
+		w        *messageListHeaderCountingRecorder
+	)
+	h.newListSpool = func() (messageListSpool, error) {
+		f, err := openMessageListSpool()
+		if err != nil {
+			return nil, err
+		}
+		file = f.(*os.File)
+		spool = &messageListStorageFaultSpool{messageListSpool: f, fail: fail, header: func() int { return w.headers }}
+		return spool, nil
+	}
+	e := echo.New()
+	e.GET("/communications/messages/list", func(c echo.Context) error {
+		returned = h.List(c)
+		return returned
+	})
+	serve := func(kind string) {
+		t.Helper()
+		fail, spool, file, returned = kind, nil, nil, nil
+		r := httptest.NewRequest("GET", "/communications/messages/list", nil)
+		r.Header.Set("Authorization", "Bearer valid")
+		w = &messageListHeaderCountingRecorder{ResponseRecorder: httptest.NewRecorder()}
+		e.ServeHTTP(w, r)
+		if spool == nil || file == nil {
+			t.Fatal("spool never opened")
+		}
+		if _, err := file.Stat(); !errors.Is(err, os.ErrClosed) {
+			t.Fatal("spool descriptor not closed", err)
+		}
+		if entries, err := os.ReadDir(dir); err != nil || len(entries) != 0 {
+			t.Fatal("spool path leaked", entries, err)
+		}
+	}
+	serve("success")
+	full := append([]byte(nil), w.Body.Bytes()...)
+	if w.Code != 200 || w.headers != 1 || returned != nil || !json.Valid(full) || len(full) <= 2*(32<<10) {
+		t.Fatal("baseline", w.Code, w.headers, returned, len(full))
+	}
+	for _, kind := range []string{"enospc partial write", "eio write", "eio check read partial", "eio second seek"} {
+		t.Run(kind, func(t *testing.T) {
+			serve(kind)
+			// Before commit, the errno becomes Django's generic 500 page and is
+			// neither returned to Echo nor serialized.
+			if returned != nil {
+				t.Fatalf("handled pre-response failure returned: %v", returned)
+			}
+			body := w.Body.String()
+			if w.Code != 500 || w.headers != 1 || w.Header().Get("Content-Type") != "text/html; charset=utf-8" ||
+				w.Header().Get("Allow") != "" || !strings.HasPrefix(body, "\n<!doctype html>") ||
+				!strings.Contains(body, "<h1>Server Error (500)</h1>") || strings.Contains(body, "xxxx") ||
+				strings.Contains(body, "spool") || strings.Contains(body, "private") || strings.Contains(body, "no space") ||
+				strings.Contains(body, "input/output") {
+				t.Fatalf("pre-response failure leaked: %d %d %s", w.Code, w.headers, body)
+			}
+			serve("success")
+			if w.Code != 200 || returned != nil || string(w.Body.Bytes()) != string(full) {
+				t.Fatal("handler did not recover", w.Code, returned)
+			}
+		})
+	}
+	for _, kind := range []string{"eio final first read", "eio final after prefix", "eio final partial"} {
+		t.Run(kind, func(t *testing.T) {
+			serve(kind)
+			if !errors.Is(returned, syscall.EIO) {
+				t.Fatalf("final-copy storage error not returned: %v", returned)
+			}
+			if spool.headerAtErr != 1 || w.Code != 200 || w.headers != 1 {
+				t.Fatalf("status not committed exactly once before failure: %d %d %d", spool.headerAtErr, w.Code, w.headers)
+			}
+			body := w.Body.Bytes()
+			if len(body) >= len(full) || string(body) != string(full[:len(body)]) {
+				t.Fatalf("final copy appended data beyond the spool prefix: %d of %d", len(body), len(full))
+			}
+			if kind == "eio final first read" && len(body) != 0 {
+				t.Fatal("bytes written before first final read", len(body))
+			}
+			if kind != "eio final first read" && len(body) == 0 {
+				t.Fatal("expected committed prefix before failure")
+			}
+			serve("success")
+			if w.Code != 200 || returned != nil || string(w.Body.Bytes()) != string(full) {
+				t.Fatal("handler did not recover", w.Code, returned)
 			}
 		})
 	}
