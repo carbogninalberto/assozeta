@@ -1,4 +1,4 @@
-# Staff board — characterized; document validator ported
+# Staff board — characterized; validator and input serializer ported
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -124,6 +124,29 @@ v0.32.0 uses 15.0), NFKC over preserved surrogate bytes is untested, and
 `RecursionError` at Python's nesting limit is not reproduced (the 30-level depth
 check runs only after `json.dumps` measures the document).
 
+## Input serializer (ported)
+
+`BE_GO/internal/dto/staff_board_input.go` ports `StaffBoardMessageInputSerializer`
+under DRF 3.17.2, read from the installed source: `CharField` blank check before
+null handling, then max length, null-character and surrogate validators, then
+`validate_content`; `JSONField`; `BooleanField` (which lowercases strings in
+3.17); the root `No data provided` and `Expected a dictionary` errors; per-field
+errors before `validate()`; and form bodies (`Field.get_value`: empty optional
+values are skipped, form documents are parsed as JSON, and a missing `pinned` in
+a non-partial form validates as false via `default_empty_html`). Errors are
+transport-neutral codes shared with payment categories; the handler localizes.
+
+`TESTS/fixtures/staff-board-inputs.json` holds **72** authored cases (JSON add,
+partial update and form bodies). Django's real serializer under English
+translation matched 69 of the first authored expectations. The three
+mismatches were all non-partial form bodies missing `pinned`; the installed
+`Field.get_value` and `BooleanField.default_empty_html` explain them, and those
+expectations were corrected with that citation. Both Django and Go now pass
+72/72, and a mutation removing the form default fails exactly those three cases.
+Form documents containing `NaN`/`Infinity` tokens (accepted by Python
+`json.loads`, rejected by the shared Go parser) remain an explicit gap.
+
+## Required evidence before `implementing`
 
 1. An independently authored fixture and portable contract (no Django imports)
    covering transport, validation (including document rejection), authorship,

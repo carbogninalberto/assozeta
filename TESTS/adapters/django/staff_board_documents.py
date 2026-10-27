@@ -1,4 +1,4 @@
-"""Run the authored staff-board document corpus through Django's real validator.
+"""Run the authored staff-board document and input corpora through real Django code.
 
 Offline component evidence only: no database, cache, HTTP or realtime work.
 Django settings load from the self-host placeholder environment with an
@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
 CORPUS = ROOT / 'TESTS/fixtures/staff-board-documents.json'
+INPUTS = ROOT / 'TESTS/fixtures/staff-board-inputs.json'
 
 
 def load_corpus(path=CORPUS):
@@ -76,17 +77,39 @@ def setup_django(work):
     return validate_document, ValidationError
 
 
+def input_outcome(case):
+    """Validate one authored request body with the real input serializer, in English."""
+    from django.http import QueryDict
+    from django.utils import translation
+    from communications.serializers import StaffBoardMessageInputSerializer
+    if 'form' in case:
+        data = QueryDict(mutable=True)
+        for key, value in case['form']:
+            data.appendlist(key, value)
+    else:
+        data = json.loads(case['body_json'])
+    serializer = StaffBoardMessageInputSerializer(data=data, partial=case['partial'])
+    with translation.override('en'):
+        if serializer.is_valid():
+            return {'valid': json.loads(json.dumps(serializer.validated_data))}
+        return {'errors': json.loads(json.dumps(serializer.errors))}
+
+
 def main():
     from TESTS.adapters.django.production_runtime import require_production_python
     require_production_python()
     corpus = load_corpus()
+    inputs = json.loads(INPUTS.read_text())
+    assert inputs['format'] == 1 and len({case['name'] for case in inputs['cases']}) == len(inputs['cases'])
     with tempfile.TemporaryDirectory(prefix='staff-board-documents-') as work:
         validate, ValidationError = setup_django(work)
         failures = [case['name'] for case in corpus['cases']
                     if outcome(validate, ValidationError, case) != expected(case)]
-    print(json.dumps({'check': 'staff-board-documents.django', 'cases': len(corpus['cases']),
-                      'failures': failures, 'success': not failures}))
-    return 0 if not failures else 1
+        input_failures = [case['name'] for case in inputs['cases'] if input_outcome(case) != case['expect']]
+    print(json.dumps({'check': 'staff-board-documents.django', 'cases': len(corpus['cases']), 'failures': failures,
+                      'input_cases': len(inputs['cases']), 'input_failures': input_failures,
+                      'success': not failures and not input_failures}))
+    return 0 if not failures and not input_failures else 1
 
 
 if __name__ == '__main__':

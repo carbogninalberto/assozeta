@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
 type staffBoardDocumentCase struct {
@@ -111,4 +113,131 @@ func TestPythonJSONDumpsNumbersAndEscapes(t *testing.T) {
 			t.Errorf("%s: got %s want %s", input, got, want)
 		}
 	}
+}
+
+// English DRF messages for the transport-neutral codes; the handler localizes.
+func staffBoardInputMessage(code string) string {
+	switch {
+	case code == "blank":
+		return "This field may not be blank."
+	case code == "null":
+		return "This field may not be null."
+	case code == "string":
+		return "Not a valid string."
+	case code == "boolean":
+		return "Must be a valid boolean."
+	case code == "json":
+		return "Value must be valid JSON."
+	case code == "no-data":
+		return "No data provided"
+	case code == "null-character":
+		return "Null characters are not allowed."
+	case strings.HasPrefix(code, "max:"):
+		return "Ensure this field has no more than " + strings.TrimPrefix(code, "max:") + " characters."
+	case strings.HasPrefix(code, "surrogate:"):
+		return "Surrogate characters are not allowed: U+" + strings.TrimPrefix(code, "surrogate:") + "."
+	case strings.HasPrefix(code, "dictionary:"):
+		return "Invalid data. Expected a dictionary, but got " + strings.TrimPrefix(code, "dictionary:") + "."
+	case strings.HasPrefix(code, "text:"):
+		return strings.TrimPrefix(code, "text:")
+	}
+	return "unknown code " + code
+}
+
+func TestParseStaffBoardMessageInputCorpus(t *testing.T) {
+	raw, err := os.ReadFile("../../../TESTS/fixtures/staff-board-inputs.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var corpus struct {
+		Format int `json:"format"`
+		Cases  []struct {
+			Name     string                     `json:"name"`
+			Partial  bool                       `json:"partial"`
+			BodyJSON *string                    `json:"body_json"`
+			Form     [][2]string                `json:"form"`
+			Expect   map[string]json.RawMessage `json:"expect"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &corpus); err != nil || corpus.Format != 1 || len(corpus.Cases) < 60 {
+		t.Fatal("corpus", err)
+	}
+	for _, c := range corpus.Cases {
+		t.Run(c.Name, func(t *testing.T) {
+			var body any
+			form := c.BodyJSON == nil
+			if form {
+				fields := domain.RequestObject{}
+				for _, pair := range c.Form {
+					replaced := false
+					for i := range fields {
+						if fields[i].Name == pair[0] {
+							fields[i].Value, replaced = pair[1], true
+						}
+					}
+					if !replaced {
+						fields = append(fields, domain.RequestField{Name: pair[0], Value: pair[1]})
+					}
+				}
+				body = fields
+			} else if body, err = ParseProfileTablesJSON([]byte(*c.BodyJSON)); err != nil {
+				t.Fatal(err)
+			}
+			input, err := ParseStaffBoardMessageInput(body, form, c.Partial)
+			if want, ok := c.Expect["errors"]; ok {
+				var expected map[string][]string
+				if err := json.Unmarshal(want, &expected); err != nil {
+					t.Fatal(err)
+				}
+				var invalid *StaffBoardInputError
+				if !errors.As(err, &invalid) {
+					t.Fatalf("want errors %v, got %v", expected, err)
+				}
+				got := map[string][]string{}
+				for _, field := range invalid.Fields {
+					for _, code := range field.Codes {
+						got[field.Name] = append(got[field.Name], staffBoardInputMessage(code))
+					}
+				}
+				if gotJSON, _ := json.Marshal(got); string(gotJSON) != mustCanonical(t, want) {
+					t.Fatalf("errors\n got %s\nwant %s", gotJSON, want)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			expected, err := ParseProfileTablesJSON(c.Expect["valid"])
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := map[string]string{}
+			for _, field := range expected.(domain.RequestObject) {
+				want[field.Name] = string(PythonJSONDumps(field.Value))
+			}
+			got := map[string]string{}
+			if input.Content != nil {
+				got["content"] = string(PythonJSONDumps(*input.Content))
+			}
+			if input.DocumentSet {
+				got["document"] = string(PythonJSONDumps(input.Document))
+			}
+			if input.Pinned != nil {
+				got["pinned"] = string(PythonJSONDumps(*input.Pinned))
+			}
+			if gotJSON, _ := json.Marshal(got); string(gotJSON) != func() string { w, _ := json.Marshal(want); return string(w) }() {
+				t.Fatalf("valid\n got %s\nwant %s", gotJSON, func() string { w, _ := json.Marshal(want); return string(w) }())
+			}
+		})
+	}
+}
+
+func mustCanonical(t *testing.T, raw json.RawMessage) string {
+	t.Helper()
+	var value map[string][]string
+	if err := json.Unmarshal(raw, &value); err != nil {
+		t.Fatal(err)
+	}
+	out, _ := json.Marshal(value)
+	return string(out)
 }
