@@ -116,7 +116,10 @@ func messageMutationsIdentity(c echo.Context, actors *service.ActorAuthenticatio
 // unauthenticated request resolves to an identity without a scope user.
 func messageMutationsIdentityFor(c echo.Context, actors *service.ActorAuthentication, identities *service.IdentityResolver, method, operation string, anonymous bool) (*domain.ResolvedIdentity, error) {
 	request := c.Request()
-	c.Response().Header().Set("Allow", method+", OPTIONS")
+	// Viewsets with several allowed methods set Allow before resolving.
+	if c.Response().Header().Get("Allow") == "" {
+		c.Response().Header().Set("Allow", method+", OPTIONS")
+	}
 	c.Response().Header().Set("Content-Language", restLanguage(request))
 	query := parseReferenceForm(request.URL.RawQuery)
 	if format, present := query.Lookup("format"); present && format != "" && format != "json" {

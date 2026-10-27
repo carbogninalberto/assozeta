@@ -359,6 +359,13 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return `Invalid pk "` + id + `" - object does not exist.`
 		}
 		return `Pk "` + id + `" non valido - l'oggetto non esiste.`
+	case strings.HasPrefix(code, "unique:"):
+		// unique:<model verbose name>:<field verbose name>, DRF UniqueValidator.
+		model, field, _ := strings.Cut(strings.TrimPrefix(code, "unique:"), ":")
+		if english {
+			return model + " with this " + field + " already exists."
+		}
+		return model + " con questo " + field + " esiste già."
 	case strings.HasPrefix(code, "max:"):
 		limit := strings.TrimPrefix(code, "max:")
 		if english {

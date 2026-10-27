@@ -13932,25 +13932,73 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "execution_owner": "django",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) (ActiveManager, no impersonation boundary).",
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "request": "No body.",
+        "response": "204 empty.",
+        "errors": "404 Not found. (unparseable pk) or model 404; 401; 403; 500 athlete or missing association.",
+        "permissions": "Registry association.templates.delete.",
+        "side_effects": "Row delete with audit (changes_json index).",
+        "transaction": "Autocommit delete with audit signals.",
+        "external_paths": [
+          "/api/v1/templates/{pk}/delete",
+          "/api/v2/templates/{pk}/delete",
+          "/api/templates/{pk}/delete"
+        ]
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/module_templates_http.json",
+        "TESTS/fixtures/generate_module_templates_http.py",
+        "TESTS/contracts/test_module_templates_http.py",
+        "TESTS/adapters/django/module_templates_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/module_templates_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/module-templates.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 41/41 after three source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/module-templates-http-red-r1/results.json",
+          "receipt_sha256": "74e7a972f93c4eb1f643a1c50b006d3fc50983671ec604dd8ba179beb61644f7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 41/41 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit and index effects.",
+          "artifact": "quality-reports/go-migration/module-templates-http-versioned-r1/results.json",
+          "receipt_sha256": "5c5a134c66f8e3a49c945fbb0978707d51f6e141db328aad793d2665017d3a21"
+        },
+        {
+          "revision": "committing change with delete index path mutated",
+          "result": "Mutation control: indexing deletes as direct fails Go.",
+          "artifact": "quality-reports/go-migration/module-templates-http-mutation-r1/results.json",
+          "receipt_sha256": "1d5375dc204f988c32599c72f9dc73807f770a214b5a70554145059f697c4381"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:templates/<str:pk>/update -> SportAssociationModuleTemplatesViewSet.as_view({'patch': 'update'})",
@@ -13984,8 +14032,12 @@
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/module-templates.md"
+      ],
+      "notes": [
+        "Shares the family characterization; not ported."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:templates/add -> SportAssociationModuleTemplatesViewSet.as_view({'post': 'create'})",
@@ -14002,25 +14054,74 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'post': 'create'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "execution_owner": "django",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) (ActiveManager, no impersonation boundary).",
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "request": "JSON object; ModelSerializer fields __all__ with sport_association overwritten.",
+        "response": "201 serializer.data.",
+        "errors": "400 DRF field errors; 401; 403; 500 non-object or form body, athlete or missing association, DELETE dispatch.",
+        "permissions": "Registry association.templates.create.",
+        "side_effects": "One template row, audit LogEntry and AuditLogIndex (direct).",
+        "transaction": "Autocommit save with audit signals.",
+        "external_paths": [
+          "/api/v1/templates/add",
+          "/api/v2/templates/add",
+          "/api/templates/add"
+        ]
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/module_templates_http.json",
+        "TESTS/fixtures/generate_module_templates_http.py",
+        "TESTS/contracts/test_module_templates_http.py",
+        "TESTS/adapters/django/module_templates_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/module_templates_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/module-templates.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 41/41 after three source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/module-templates-http-red-r1/results.json",
+          "receipt_sha256": "74e7a972f93c4eb1f643a1c50b006d3fc50983671ec604dd8ba179beb61644f7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 41/41 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit and index effects.",
+          "artifact": "quality-reports/go-migration/module-templates-http-versioned-r1/results.json",
+          "receipt_sha256": "5c5a134c66f8e3a49c945fbb0978707d51f6e141db328aad793d2665017d3a21"
+        },
+        {
+          "revision": "committing change with delete index path mutated",
+          "result": "Mutation control: indexing deletes as direct fails Go.",
+          "artifact": "quality-reports/go-migration/module-templates-http-mutation-r1/results.json",
+          "receipt_sha256": "1d5375dc204f988c32599c72f9dc73807f770a214b5a70554145059f697c4381"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:templates/bulk-delete -> SportAssociationModuleTemplatesViewSet.as_view({'delete': 'bulk_delete'})",
@@ -14037,25 +14138,73 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "execution_owner": "django",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) (ActiveManager, no impersonation boundary).",
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "request": "JSON object with sport_association_module_templates_ids.",
+        "response": "204 empty.",
+        "errors": "400 {\"exception\": \"No instances provided\"}; 401; 403; 500 non-dict body, unparseable or non-iterable IDs, athlete or missing association.",
+        "permissions": "Registry association.templates.delete.",
+        "side_effects": "Own matching rows deleted, one audit entry each.",
+        "transaction": "transaction.atomic around the delete.",
+        "external_paths": [
+          "/api/v1/templates/bulk-delete",
+          "/api/v2/templates/bulk-delete",
+          "/api/templates/bulk-delete"
+        ]
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/module_templates_http.json",
+        "TESTS/fixtures/generate_module_templates_http.py",
+        "TESTS/contracts/test_module_templates_http.py",
+        "TESTS/adapters/django/module_templates_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/module_templates_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/module-templates.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 41/41 after three source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/module-templates-http-red-r1/results.json",
+          "receipt_sha256": "74e7a972f93c4eb1f643a1c50b006d3fc50983671ec604dd8ba179beb61644f7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 41/41 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit and index effects.",
+          "artifact": "quality-reports/go-migration/module-templates-http-versioned-r1/results.json",
+          "receipt_sha256": "5c5a134c66f8e3a49c945fbb0978707d51f6e141db328aad793d2665017d3a21"
+        },
+        {
+          "revision": "committing change with delete index path mutated",
+          "result": "Mutation control: indexing deletes as direct fails Go.",
+          "artifact": "quality-reports/go-migration/module-templates-http-mutation-r1/results.json",
+          "receipt_sha256": "1d5375dc204f988c32599c72f9dc73807f770a214b5a70554145059f697c4381"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:templates/list -> SportAssociationModuleTemplatesViewSet.as_view({'get': 'list'})",
@@ -14072,25 +14221,75 @@
         "target": "SportAssociationModuleTemplatesViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/module_templates.go",
+        "BE_GO/internal/dto/module_templates.go",
+        "BE_GO/internal/repository/module_templates.go",
+        "BE_GO/internal/service/module_templates.go",
+        "BE_GO/internal/handler/module_templates.go",
+        "BE_GO/internal/handler/message_mutations.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_sportassociationmoduletemplates table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "execution_owner": "django",
+        "resource_scope": "SportAssociation.objects.get(user=request.user) (ActiveManager, no impersonation boundary).",
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "request": "No body.",
+        "response": "200 list of serialized templates, unordered.",
+        "errors": "401; 403 registry/impersonation; 500 athlete, missing or soft-deleted association, DELETE dispatch.",
+        "permissions": "Registry association.templates.read.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
+        "external_paths": [
+          "/api/v1/templates/list",
+          "/api/v2/templates/list",
+          "/api/templates/list"
+        ]
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/module_templates_http.json",
+        "TESTS/fixtures/generate_module_templates_http.py",
+        "TESTS/contracts/test_module_templates_http.py",
+        "TESTS/adapters/django/module_templates_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/module_templates_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/module-templates.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 41/41 after three source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/module-templates-http-red-r1/results.json",
+          "receipt_sha256": "74e7a972f93c4eb1f643a1c50b006d3fc50983671ec604dd8ba179beb61644f7"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 41/41 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact template, audit and index effects.",
+          "artifact": "quality-reports/go-migration/module-templates-http-versioned-r1/results.json",
+          "receipt_sha256": "5c5a134c66f8e3a49c945fbb0978707d51f6e141db328aad793d2665017d3a21"
+        },
+        {
+          "revision": "committing change with delete index path mutated",
+          "result": "Mutation control: indexing deletes as direct fails Go.",
+          "artifact": "quality-reports/go-migration/module-templates-http-mutation-r1/results.json",
+          "receipt_sha256": "1d5375dc204f988c32599c72f9dc73807f770a214b5a70554145059f697c4381"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:testimonials/add -> testimonials_create",

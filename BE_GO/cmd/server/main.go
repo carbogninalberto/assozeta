@@ -177,6 +177,7 @@ func run() (runErr error) {
 	workflowWritesHandler := handler.NewAutomationWorkflowWritesHandler(service.NewAutomationWorkflowWrites(repository.NewAutomationWorkflows(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	testimonialsHandler := handler.NewTestimonialsHandler(service.NewTestimonials(repository.NewTestimonials(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations, cfg.SenjaWebhookSecret)
+	moduleTemplatesHandler := handler.NewModuleTemplatesHandler(service.NewModuleTemplates(repository.NewModuleTemplates(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -208,6 +209,10 @@ func run() (runErr error) {
 	e.Any("/communications/workflows/add", workflowWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/testimonials/add", testimonialsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/testimonials/update", testimonialsHandler.Webhook, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/templates/list", moduleTemplatesHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/templates/add", moduleTemplatesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/templates/bulk-delete", moduleTemplatesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/templates/:pk/delete", moduleTemplatesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/delete", workflowWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/list", workflowReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/details", workflowReadsHandler.Details, middleware.DjangoSessionAudit(sessionAuthentication))
