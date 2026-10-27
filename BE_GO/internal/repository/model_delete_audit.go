@@ -24,7 +24,7 @@ type modelColumn struct {
 // deleteModelWithAudit deletes one row and renders auditlog's delete changes
 // from its stored values: each concrete field against 'None' with None
 // omitted, except null foreign keys (smart_str(strings_only=True) keeps None,
-// which differs from the absent side's 'None'). Strings are as stored,
+// which differs from the absent side's 'None') and null JSON fields ('null'). Strings are as stored,
 // booleans True/False, numbers as their PostgreSQL text (str(Decimal) for
 // numeric), dates ISO, timestamps naive UTC str(), JSON sorted ASCII dumps.
 // Foreign keys use the Django field name (the column without "_id").
@@ -61,8 +61,12 @@ func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, i
 			name = strings.TrimSuffix(name, "_id")
 		}
 		if value == nil {
-			if column.ForeignKey {
+			switch {
+			case column.ForeignKey:
 				changes[name] = [2]string{"None", "None"}
+			case column.Type == "jsonb" || column.Type == "json":
+				// JSONField values render through json.dumps: None is 'null'.
+				changes[name] = [2]string{"null", "None"}
 			}
 			continue
 		}

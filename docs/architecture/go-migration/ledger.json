@@ -2537,25 +2537,70 @@
         "target": "attendance_day_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/attendance_days.go",
+        "BE_GO/internal/repository/attendance_days.go",
+        "BE_GO/internal/service/attendance_days.go",
+        "BE_GO/internal/handler/attendance_days.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and impersonation scope",
+        "application_attendanceday and its course chain; auditlog resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/attendance-day/{uid}/delete",
+          "/api/v2/attendance-day/{uid}/delete",
+          "/api/attendance-day/{uid}/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"data\": {\"msg\": \"attendance day deleted\"}}.",
+        "errors": "400 malformed UUID; 401; 403 registry or impersonation; 404 [\"error: attendance day not found.\"].",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.attendance.update.",
+        "resource_scope": "Course owner equals the scope user; impersonation association bound.",
+        "side_effects": "Day delete with audit (actor index).",
+        "transaction": "Autocommit delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/attendance_day_delete_http.json",
+        "TESTS/fixtures/generate_attendance_day_delete_http.py",
+        "TESTS/contracts/test_attendance_day_delete_http.py",
+        "TESTS/adapters/django/attendance_day_delete_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/attendance-days.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 12/12 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/attendance-day-delete-http-red-r1/results.json",
+          "receipt_sha256": "be0b554ce1946f6986b65dc572d407318c1edc738b523a74702d69f9c0249fb1"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 12/12 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact delete, audit and index effects.",
+          "artifact": "quality-reports/go-migration/attendance-day-delete-http-versioned-r4/results.json",
+          "receipt_sha256": "3cd6d55c5219f98aa12ae0823069bad0d667c3cf55cee30428252829482defb1"
+        },
+        {
+          "revision": "committing change without the null JSON rule",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/attendance-day-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "67161a3fbb03521da5f83e2c56105d8af9aa9c1c924a3739d8a4b7646daa3680"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:attendance-day/<str:uid>/mark-absent -> attendance_day_mark_absent",
@@ -6001,6 +6046,12 @@
           "result": "GREEN rerun after the handler gained bulk delete: four transports.",
           "artifact": "quality-reports/go-migration/documents-delete-http-versioned-r3/results.json",
           "receipt_sha256": "7ec4d34277d77fc7247a89fcbb8f350efba6cdf88c1d3ee3462ab0bb3b955aea"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
+          "artifact": "quality-reports/go-migration/documents-delete-http-versioned-r4/results.json",
+          "receipt_sha256": "0b2a8dc916117b2be21756257bba8fb0b47c39450a0d8867805f020f308ef077"
         }
       ],
       "notes": [
@@ -6239,6 +6290,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/documents-bulk-delete-http-mutation-r1/results.json",
           "receipt_sha256": "a22f037c057ee79309174d26fb0f002d3f32f4e11f589748d2a841429f0c990c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
+          "artifact": "quality-reports/go-migration/documents-bulk-delete-http-versioned-r4/results.json",
+          "receipt_sha256": "32bd5379a77c6943f9a3a1b0d67d48ce3531c115c1b20bb31b38f756956cca70"
         }
       ],
       "notes": [
@@ -7514,6 +7571,12 @@
           "result": "Mutation control: fails Go on the audit changes.",
           "artifact": "quality-reports/go-migration/invoice-deletes-http-mutation-r1/results.json",
           "receipt_sha256": "9b566d38374aa7328b441330ec97097909642829f73a0fd4ecc5009feaf23525"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r4/results.json",
+          "receipt_sha256": "7d675a2afb131edd46c84f2b9a7d7193b38796fa91b4cba19bf35b02859eb91b"
         }
       ],
       "notes": [
@@ -7779,6 +7842,12 @@
           "result": "Mutation control: fails Go on the audit changes.",
           "artifact": "quality-reports/go-migration/invoice-deletes-http-mutation-r1/results.json",
           "receipt_sha256": "9b566d38374aa7328b441330ec97097909642829f73a0fd4ecc5009feaf23525"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r4/results.json",
+          "receipt_sha256": "7d675a2afb131edd46c84f2b9a7d7193b38796fa91b4cba19bf35b02859eb91b"
         }
       ],
       "notes": [
