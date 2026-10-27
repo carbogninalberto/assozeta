@@ -10,16 +10,21 @@ const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '
 const renderName = (page, section, checkpoint = 'heading') =>
     crypto.createHash('sha256').update(JSON.stringify([page, section, checkpoint])).digest('hex').slice(0, 24) + '.png';
 const report = {status: 'running', cli: 'mint@4.2.955', preview_url: state.manual_preview_url, checks: []};
+const plan = JSON.parse(fs.readFileSync(path.join(run, 'render-reuse.json')));
+report.fresh_pages = plan.fresh_pages;
+report.reused_pages = plan.reused_pages;
+report.mode = plan.reused_pages.length ? 'partial' : 'fresh';
 const browser = await chromium.launch();
 const page = await browser.newPage({viewport: {width: 1920, height: 1080}, deviceScaleFactor: 1});
 try {
     const manifest = JSON.parse(fs.readFileSync(path.join(run, 'manifest.json')));
-    report.pages = [];
+    report.pages = plan.reused_pages.map(page => plan.pages[page].render);
     fs.mkdirSync(path.join(run, 'renders'), {recursive: true});
     for (const entry of manifest.pages) {
         const sections = entry.sections.filter(section => section.status === 'verified');
         if (!sections.length) continue;
         const relative = entry.path.replace(/\.mdx$/, '');
+        if (!plan.fresh_pages.includes(relative)) continue;
         await page.goto(state.manual_preview_url + '/' + relative, {timeout: 90000});
         const result = {page: relative, anchors: [], images: [], layouts: [], source_sha256:
             crypto.createHash('sha256').update(fs.readFileSync(path.join(state.manual, entry.path))).digest('hex')};

@@ -14,6 +14,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      force_full_manual:
+        description: Force full manual verification and historical appliance rehearsal
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -22,8 +27,12 @@ jobs:
   manual-release:
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/manuale-release.yml
+    permissions:
+      contents: read
+      actions: read
     with:
       release: ${{ github.event.release.tag_name || github.sha }}
+      force_full: ${{ inputs.force_full_manual || false }}
 
   selfhost-quality:
     # PRs run affected checks separately; pushes only need the smoke/static gates.

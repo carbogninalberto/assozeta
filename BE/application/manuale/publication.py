@@ -82,6 +82,10 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             for root in (run, application, manual)):
         raise EvidenceError('Use a new output directory outside the input repositories/run')
     state = read_json(run, 'run.json')
+    if state.get('render_reuse') or (run / 'render-reuse.json').exists():
+        from .render_reuse import validate_render_reuse
+        validate_render_reuse({**state, 'run': str(run), 'application': str(application),
+                               'manual': str(run / 'manual')})
     manifest = read_json(run, 'manifest.json')
     original = ManualIndex.load(owned(run, 'index.json'))
     metadata = original.value['metadata']
@@ -129,6 +133,12 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     if not verified_pages or set(rendered) != verified_pages or len(rendered) != len(render.get('pages', [])):
         raise EvidenceError('Rendering evidence does not cover exactly the verified pages')
     manual_bindings = dict(catalog['manual_files'])
+    if state.get('render_reuse'):
+        manual_bindings.update({path.removeprefix('manual/'): expected
+            for path, expected in read_json(run, 'render-inputs.json').items() if path.startswith('manual/')})
+        for page in read_json(run, 'compile.json')['pages']:
+            if page['page'] in verified_pages:
+                manual_bindings.update(page.get('assets', {}))
     manual_bindings['.manuale-evidence.json'] = file_digest(owned(generated_manual, '.manuale-evidence.json'))
     for page in verified_pages:
         record = rendered[page]
@@ -197,6 +207,13 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     candidate_catalog_binding = digest(candidate_catalog_bytes)
     proof_paths = {'run.json', 'manifest.json', 'index.json', 'evaluation.json', 'render.json', 'embedded-manual.json',
                    metadata['source_catalog']['path']}
+    if state.get('render_reuse'):
+        proof_paths.update(('compile.json', 'render-inputs.json', 'render-reuse.json'))
+        render_plan = read_json(run, 'render-reuse.json')
+        for entry in render_plan['pages'].values():
+            proof_paths.update((entry['original_report']['path'], entry['origin_record']['path']))
+        for page in render['pages']:
+            proof_paths.update(layout['path'] for layout in page['layouts'])
     proof_paths.update(scenario['report_path'] for scenario in manifest.get('scenarios', []))
     if metadata.get('evidence_reuse'):
         proof_paths.add(metadata['evidence_reuse']['path'])

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import {compileManual} from './compile.mjs';
 
 function fixture(t) {
@@ -54,7 +55,13 @@ test('reference links, images and nested navigation are validated', async t => {
     // This test verifies reference resolution; image integrity belongs to the evidence validator.
     fs.writeFileSync(path.join(manual, 'images/example.png'), 'unit fixture');
     fs.writeFileSync(path.join(manual, 'docs/guida.mdx'), '## Guida\n\n[Leggi][other]\n\n![Immagine](/images/example.png)\n\n[other]: altro#caffe\n');
-    assert.equal((await compileManual(manual, output)).pages[0].references, 2);
+    const first = await compileManual(manual, output);
+    assert.equal(first.pages[0].references, 2);
+    assert.deepEqual(first.pages[0].assets, {'images/example.png': crypto.createHash('sha256').update('unit fixture').digest('hex')});
+    assert.deepEqual(first.pages[1].assets, {});
+    fs.writeFileSync(path.join(manual, 'images/example.png'), 'changed unit asset');
+    const second = await compileManual(manual, output);
+    assert.notEqual(second.pages[0].assets['images/example.png'], first.pages[0].assets['images/example.png']);
     fs.unlinkSync(path.join(manual, 'images/example.png'));
     await assert.rejects(compileManual(manual, output));
 });
