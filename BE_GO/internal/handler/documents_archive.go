@@ -20,6 +20,7 @@ type DocumentArchiveService interface {
 type ArchiveWriteService interface {
 	Move(context.Context, domain.ResolvedIdentity, string, any, domain.LoginAuditContext) error
 	Delete(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+	BulkDelete(context.Context, domain.ResolvedIdentity, any, domain.LoginAuditContext) error
 }
 
 type DocumentArchiveHandler struct {
@@ -79,10 +80,18 @@ func (h *DocumentArchiveHandler) Delete(c echo.Context) error {
 	return h.write(c, "DELETE, OPTIONS", http.MethodDelete, "documents_delete")
 }
 
+func (h *DocumentArchiveHandler) BulkDelete(c echo.Context) error {
+	return h.write(c, "DELETE, OPTIONS", "BULK", "documents_bulk_delete")
+}
+
 // write serves move (POST) and delete; the viewset's delete() makes DELETE
 // allowed and dispatched on the move route too. Parsers are JSONParser only.
 func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation string) error {
 	c.Response().Header().Set("Allow", allow)
+	bulk := method == "BULK"
+	if bulk {
+		method = http.MethodDelete
+	}
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, method, operation)
 	if identity == nil {
 		return err
@@ -104,7 +113,7 @@ func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation 
 	}
 	defer tracked.Release()
 	var body any
-	if request.Method == http.MethodPost {
+	if request.Method == http.MethodPost || bulk {
 		if media, _, _ := mime.ParseMediaType(request.Header.Get("Content-Type")); request.ContentLength != 0 && media != "application/json" {
 			return restError(c, &restInputError{Status: 415, Detail: restText(request, "media")})
 		}
@@ -120,7 +129,15 @@ func (h *DocumentArchiveHandler) write(c echo.Context, allow, method, operation 
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	if request.Method == http.MethodDelete {
+	if bulk {
+		err = h.writes.BulkDelete(ctx, *identity, body, audit)
+		if errors.Is(err, service.ErrArchiveNoInstances) || errors.Is(err, service.ErrArchiveSomeMissing) {
+			return c.JSON(400, map[string]string{"exception": err.Error()})
+		}
+		if errors.Is(err, service.ErrArchiveBulkForeign) {
+			return restError(c, &domain.PermissionDenied{Detail: err.Error()})
+		}
+	} else if request.Method == http.MethodDelete {
 		err = h.writes.Delete(ctx, *identity, c.Param("pk"), audit)
 	} else {
 		err = h.writes.Move(ctx, *identity, c.Param("pk"), body, audit)

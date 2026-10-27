@@ -49,6 +49,15 @@ type ArchiveWriteTransaction interface {
 	AppendArchiveAudit(context.Context, ArchiveMoveAudit) error
 	// DeleteArchive deletes the row and appends auditlog's delete entry.
 	DeleteArchive(ctx context.Context, id, association string, audit LoginAuditContext, at time.Time) error
+	// ArchiveOwners maps each requested archive ID that exists (any association) to its association.
+	ArchiveOwners(ctx context.Context, ids []string) (map[string]string, error)
+	// BulkDeleteArchives deletes the archive rows, then their Documents, with audit entries.
+	BulkDeleteArchives(ctx context.Context, ids []string, association string, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
 	Commit() error
 	Rollback() error
 }
+
+// ErrDocumentCascadeUnsupported marks a Document delete Django's collector
+// would cascade to other rows; Go refuses it instead of approximating.
+var ErrDocumentCascadeUnsupported = errors.New("document delete would cascade to other rows")

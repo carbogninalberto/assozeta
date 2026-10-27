@@ -5995,6 +5995,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/documents-delete-http-mutation-r1/results.json",
           "receipt_sha256": "3b4c114b04df6b346abcf874bb08534a72548a70fe827769fda00123ce0019ce"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained bulk delete: four transports.",
+          "artifact": "quality-reports/go-migration/documents-delete-http-versioned-r3/results.json",
+          "receipt_sha256": "7ec4d34277d77fc7247a89fcbb8f350efba6cdf88c1d3ee3462ab0bb3b955aea"
         }
       ],
       "notes": [
@@ -6077,6 +6083,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/documents-move-http-mutation-r1/results.json",
           "receipt_sha256": "55e4974c6da4e4559064c61592462884b85ea9c1a34a02f7af25590ba13d4a1d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained bulk delete: four transports.",
+          "artifact": "quality-reports/go-migration/documents-move-http-versioned-r3/results.json",
+          "receipt_sha256": "5516352f6fc4b72d5e40652e0fa66a8b101a965b290087e85b657ff097e4b9a6"
         }
       ],
       "notes": [
@@ -6168,25 +6180,70 @@
         "target": "DocumentArchiveViewSet.as_view({'delete': 'bulk_delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/documents_archive.go",
+        "BE_GO/internal/repository/documents_archive.go",
+        "BE_GO/internal/service/documents_archive.go",
+        "BE_GO/internal/handler/documents_archive.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "archive and docmanager_document tables; auditlog resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/documents/bulk-delete",
+          "/api/v2/documents/bulk-delete",
+          "/api/documents/bulk-delete"
+        ],
+        "request": "JSON object with files (archive IDs).",
+        "response": "204 empty.",
+        "errors": "400 No instances provided / Some instances not found; 401; 403 registry, impersonation or foreign rows; 415 non-JSON; 500 bad body or IDs, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "Archive rows and their Documents deleted with audit entries; SET_NULL references cleared.",
+        "transaction": "transaction.atomic.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/documents_bulk_delete_http.json",
+        "TESTS/fixtures/generate_documents_bulk_delete_http.py",
+        "TESTS/contracts/test_documents_bulk_delete_http.py",
+        "TESTS/adapters/django/documents_bulk_delete_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/documents-archive.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 14/14 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/documents-bulk-delete-http-red-r1/results.json",
+          "receipt_sha256": "126b552576f3b6d4431e928ee8ef04a68120d95a2eb84023247a3e30eba42637"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 14/14 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact archive, document, audit and index effects.",
+          "artifact": "quality-reports/go-migration/documents-bulk-delete-http-versioned-r3/results.json",
+          "receipt_sha256": "6a232d57fda81497823a9b7da3246cf64cdbb0c4204b81dd3c89071a32d94a3c"
+        },
+        {
+          "revision": "committing change without the reverse related_name field",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/documents-bulk-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "a22f037c057ee79309174d26fb0f002d3f32f4e11f589748d2a841429f0c990c"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports; Go refuses Document deletes that Django would cascade to other rows (needs review)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:documents/list -> DocumentArchiveViewSet.as_view({'get': 'list'})",
@@ -6271,6 +6328,12 @@
           "result": "GREEN rerun after the handler gained move/delete: four transports.",
           "artifact": "quality-reports/go-migration/documents-list-http-versioned-r2/results.json",
           "receipt_sha256": "1a49d02a4dd2ce2149522efac80062ef9804742a84605357a5d98665c9b94677"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained bulk delete: four transports.",
+          "artifact": "quality-reports/go-migration/documents-list-http-versioned-r3/results.json",
+          "receipt_sha256": "e5efa09c396fd8c780ce2158129e3cdafb193f33f1b40d3bf4b62035ffc5b32b"
         }
       ],
       "notes": [

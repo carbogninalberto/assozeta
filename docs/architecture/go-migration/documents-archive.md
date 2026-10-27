@@ -1,9 +1,9 @@
-# Document archive — list, move and delete implementing; add, update and bulk-delete not ported
+# Document archive — list, move, delete and bulk-delete implementing; add and update not ported
 
 `documents/list`, `documents/<pk>/move` and `documents/<pk>/delete` map
 `DocumentArchiveViewSet` actions (`BE/application/views/archive_views.py`) and are
 implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/documents_archive.go`).
-Add, update and bulk-delete are not ported yet.
+`documents/bulk-delete` is implemented too. Add and update are not ported yet.
 
 ## List behavior
 
@@ -38,6 +38,27 @@ Add, update and bulk-delete are not ported yet.
   indexed through `changes_json.sport_association`; `204`. The viewset's
   `delete()` also answers `DELETE` on the move route with that pk.
 
+## Bulk delete behavior
+
+- `request.data.get('files', [])`: a falsy value is `400 {"exception": "No
+  instances provided"}` (before the association lookup); non-dict bodies and
+  values Django's UUID field rejects raise (500).
+- The requested rows are loaded across associations; unless there is one row
+  per requested value (`len` of the raw value, so duplicates and nulls fail) the
+  answer is `400 {"exception": "Some instances not found"}`; any other
+  association's row is `403 User not allowed to delete some of these instances.`
+- One transaction deletes the archive rows (audited, `changes_json` index) and
+  then their Documents. `Document` is audited too: its delete entry lists every
+  field plus `customer_invoice_pdf` as `application.CustomerInvoice.None`
+  (auditlog walks `_meta.get_fields()` on delete, and only a reverse foreign key
+  with an explicit `related_name` resolves to a manager), indexed through the
+  actor's association (`actor.sport_association`, none for collaborators).
+- **Go limitation:** Django's collector clears the `SET_NULL` Document
+  references (ported) and cascades to other referencing rows (medical
+  certificates and appointments, subscription files, many-to-many links). Go
+  refuses such a delete with 500 instead of approximating the cascade; this
+  needs review before execution ownership moves.
+
 ## Evidence (TDD)
 
 `TESTS/fixtures/documents_list_http.json` (generator alongside) authors 18
@@ -56,3 +77,9 @@ dispatch) before `TESTS/fixtures/documents_delete_http.json` (11 cases) was
 authored, so its RED run unregisters the route; Go then fails with 404. It
 passes 11/11 on all four transports, and indexing the delete as `direct` fails
 the run.
+
+**Bulk delete:** `TESTS/fixtures/documents_bulk_delete_http.json` authors 14
+cases. The Django reference corrected one expectation, confirmed in
+`auditlog/diff.py`: the related-name reverse foreign key in the Document delete
+entry. RED: Django 14/14 and Go 404 before any Go code. GREEN: 14/14 on all four
+transports; dropping that reverse field fails the run.

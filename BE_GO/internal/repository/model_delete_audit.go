@@ -29,6 +29,13 @@ type modelColumn struct {
 // numeric), dates ISO, timestamps naive UTC str(), JSON sorted ASCII dumps.
 // Foreign keys use the Django field name (the column without "_id").
 func deleteModelWithAudit(ctx context.Context, tx *sqlx.Tx, table, key, id string) (map[string][2]string, map[string]any, error) {
+	return deleteModelWithAuditReverse(ctx, tx, table, key, id, nil)
+}
+
+// deleteModelWithAuditReverse also records the model's reverse foreign keys
+// that declare a related_name: auditlog walks _meta.get_fields() on delete,
+// and those accessors render as their empty manager ("app.Model.None").
+func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, id string, reverse map[string]string) (map[string][2]string, map[string]any, error) {
 	columns := []modelColumn{}
 	if err := tx.SelectContext(ctx, &columns, `SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS type,
  EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=a.attrelid AND c.contype='f' AND c.conkey=ARRAY[a.attnum]) AS foreign_key
@@ -64,6 +71,9 @@ func deleteModelWithAudit(ctx context.Context, tx *sqlx.Tx, table, key, id strin
 			return nil, nil, err
 		}
 		changes[name] = [2]string{rendered, "None"}
+	}
+	for name, manager := range reverse {
+		changes[name] = [2]string{manager, "None"}
 	}
 	if _, err = tx.ExecContext(ctx, `DELETE FROM `+table+` WHERE `+key+`=$1`, id); err != nil {
 		return nil, nil, err

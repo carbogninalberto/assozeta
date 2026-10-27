@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -197,6 +198,103 @@ func (s *ArchiveWrites) Delete(ctx context.Context, identity domain.ResolvedIden
 	}
 	defer tx.Rollback()
 	if err = tx.DeleteArchive(ctx, id, association, paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)); err != nil {
+		return err
+	}
+	if err = ctx.Err(); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+var (
+	ErrArchiveNoInstances  = errors.New("No instances provided")
+	ErrArchiveSomeMissing  = errors.New("Some instances not found")
+	ErrArchiveBulkForeign  = errors.New("User not allowed to delete some of these instances.")
+	errArchiveBulkIDsValue = errors.New("archive bulk id value raised")
+)
+
+// BulkDelete follows DocumentArchiveViewSet.bulk_delete: request.data.get('files', []),
+// a falsy value is the 400; one existing row per requested value (len of the
+// raw value, so duplicates and None fail); foreign rows are 403; then archive
+// rows and their Documents are deleted in one transaction.
+func (s *ArchiveWrites) BulkDelete(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return ErrArchiveBody
+	}
+	value, _ := object.Lookup("files")
+	if !dto.PythonTruthy(value) {
+		return ErrArchiveNoInstances
+	}
+	tx, err := s.store.BeginArchiveWrite(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	association, err := tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil)
+	if err != nil {
+		return err
+	}
+	var items []any
+	switch v := value.(type) {
+	case []any:
+		items = v
+	case string:
+		for _, r := range v {
+			items = append(items, string(r))
+		}
+	case domain.RequestObject:
+		for _, field := range v {
+			items = append(items, field.Name)
+		}
+	default:
+		return errArchiveBulkIDsValue
+	}
+	ids := []string{}
+	for _, item := range items {
+		switch v := item.(type) {
+		case nil:
+			continue
+		case string:
+			id, err := paymentInfoParseUUID(v)
+			if err != nil {
+				return errArchiveBulkIDsValue
+			}
+			ids = append(ids, id.String())
+		default:
+			if number, isNumber := v.(json.Number); isNumber && strings.ContainsAny(string(number), ".eE") {
+				return errArchiveBulkIDsValue
+			}
+			id, err := dto.DjangoUUIDFromInt(v)
+			if err != nil {
+				return errArchiveBulkIDsValue
+			}
+			ids = append(ids, id)
+		}
+	}
+	owners, err := tx.ArchiveOwners(ctx, ids)
+	if err != nil {
+		return err
+	}
+	if len(owners) != len(items) {
+		return ErrArchiveSomeMissing
+	}
+	targets := make([]string, 0, len(owners))
+	for id, owner := range owners {
+		if owner != association {
+			return ErrArchiveBulkForeign
+		}
+		targets = append(targets, id)
+	}
+	actorAssociation, err := tx.ActiveAssociationOf(ctx, identity.Actor.ID)
+	if err != nil {
+		return err
+	}
+	if err = tx.BulkDeleteArchives(ctx, targets, association, actorAssociation, paymentCategoryAuditContext(identity, audit),
+		s.now().UTC().Truncate(time.Microsecond)); err != nil {
 		return err
 	}
 	if err = ctx.Err(); err != nil {

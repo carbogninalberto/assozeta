@@ -226,6 +226,7 @@ func run() (runErr error) {
 	e.Any("/invoice-suppliers/:uid/delete", invoiceDeletesHandler.Supplier, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/list", foldersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/list", documentArchiveHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/documents/bulk-delete", documentArchiveHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/move", documentArchiveHandler.Move, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/:pk/delete", documentArchiveHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/folders/:pk/delete", foldersHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))

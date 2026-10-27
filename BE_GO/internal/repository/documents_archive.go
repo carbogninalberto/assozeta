@@ -91,3 +91,94 @@ func (t *archiveWriteTransaction) DeleteArchive(ctx context.Context, id, associa
 		Representation: "SportAssociationDocumentsArchive object (" + id + ")", Action: 2, Changes: changes,
 		Context: audit, AssociationID: &association, ResolutionPath: &path, At: at})
 }
+
+func (t *archiveWriteTransaction) ArchiveOwners(ctx context.Context, ids []string) (map[string]string, error) {
+	rows := []struct {
+		ID          string `db:"sport_association_documents_archive_id"`
+		Association string `db:"sport_association_id"`
+	}{}
+	if err := t.tx.SelectContext(ctx, &rows, `SELECT sport_association_documents_archive_id, sport_association_id
+ FROM application_sportassociationdocumentsarchive WHERE sport_association_documents_archive_id=ANY($1::uuid[]) FOR UPDATE`, ids); err != nil {
+		return nil, err
+	}
+	owners := make(map[string]string, len(rows))
+	for _, row := range rows {
+		owners[row.ID] = row.Association
+	}
+	return owners, nil
+}
+
+func (t *archiveWriteTransaction) ActiveAssociationOf(ctx context.Context, user string) (*string, error) {
+	var id string
+	err := t.tx.GetContext(ctx, &id, `SELECT sport_association_id FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, user)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return &id, err
+}
+
+// documentSetNull are the Document foreign keys declared on_delete=SET_NULL;
+// Django's collector clears them with an update, without model saves.
+var documentSetNull = map[string]bool{
+	"application_subscription.document_pdf_id": true, "application_instructorhours.document_id": true,
+	"application_invoice.document_pdf_id": true, "application_invoicesuppliers.document_pdf_id": true,
+	"application_customerinvoice.pdf_id": true,
+}
+
+// BulkDeleteArchives mirrors archives_to_delete.delete() then
+// Document.objects.filter(document_id__in=...).delete() in one transaction.
+func (t *archiveWriteTransaction) BulkDeleteArchives(ctx context.Context, ids []string, association string, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error {
+	documents := []string{}
+	if err := t.tx.SelectContext(ctx, &documents, `SELECT document_id FROM application_sportassociationdocumentsarchive
+ WHERE sport_association_documents_archive_id=ANY($1::uuid[])`, ids); err != nil {
+		return err
+	}
+	for _, id := range ids {
+		if err := t.DeleteArchive(ctx, id, association, audit, at); err != nil {
+			return err
+		}
+	}
+	references := []struct {
+		Table  string `db:"table_name"`
+		Column string `db:"column_name"`
+	}{}
+	if err := t.tx.SelectContext(ctx, &references, `SELECT c.conrelid::regclass::text AS table_name, a.attname AS column_name
+ FROM pg_constraint c JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=c.conkey[1]
+ WHERE c.contype='f' AND c.confrelid='docmanager_document'::regclass AND array_length(c.conkey, 1)=1`); err != nil {
+		return err
+	}
+	for _, ref := range references {
+		if documentSetNull[ref.Table+"."+ref.Column] {
+			if _, err := t.tx.ExecContext(ctx, `UPDATE `+ref.Table+` SET `+ref.Column+`=NULL WHERE `+ref.Column+`=ANY($1::uuid[])`, documents); err != nil {
+				return err
+			}
+			continue
+		}
+		var referenced bool
+		if err := t.tx.GetContext(ctx, &referenced, `SELECT EXISTS(SELECT 1 FROM `+ref.Table+` WHERE `+ref.Column+`=ANY($1::uuid[]))`, documents); err != nil {
+			return err
+		}
+		if referenced {
+			return domain.ErrDocumentCascadeUnsupported
+		}
+	}
+	reverse := map[string]string{"customer_invoice_pdf": "application.CustomerInvoice.None"}
+	for _, id := range documents {
+		changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", id, reverse)
+		if err != nil {
+			return err
+		}
+		// Document has no resolver and no association field: the actor's association, if any.
+		event := modelAuditEntry{Model: "document", Key: id, Representation: "Document object (" + id + ")", Action: 2,
+			Changes: changes, Context: audit, At: at}
+		if actorAssociation != nil {
+			path := "actor.sport_association"
+			event.AssociationID, event.ResolutionPath = actorAssociation, &path
+		}
+		if err = appendModelAuditForApp(ctx, t.tx, "docmanager", event); err != nil {
+			return err
+		}
+	}
+	return nil
+}
