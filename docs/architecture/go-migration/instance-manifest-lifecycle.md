@@ -91,8 +91,9 @@ teardown left no disposable containers.
 The default recovery mode (`--browser` without `--legacy-controller`) also
 passed with the same images and harness: 10 checkpoints from 2.0.1, 90 manifest
 requests across all three prefixes, four post-restore reseeds and 36 maintenance
-probes with the same 503 contract. The `--legacy` v1.0.2 mode has not been run
-for this change.
+probes with the same 503 contract. The `--legacy` v1.0.2 mode also passed:
+bootstrap to 2.0.1 and owner update to 2.0.2 with 2 checkpoints, 18 manifest
+requests and 9 maintenance probes.
 
 It requires locally available `assozeta-{backend,backend-go,web,updater}:goal-test`
 and `assozeta-renderer:test` images, the pinned v1.0.17 commit in local Git,
