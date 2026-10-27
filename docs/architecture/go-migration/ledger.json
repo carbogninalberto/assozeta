@@ -17645,6 +17645,12 @@
           "result": "Old-controller installed lifecycle passes with browser: 11 checkpoints (v1.0.17 alias-only and 2.0.2 across /api, /api/v1, /api/v2, five after restore), 87 manifest GET/HEAD/OPTIONS requests with exact body/headers and unchanged selected database/audit/session/cache state before and after each request, restore flush/reseed, and 45 maintenance probes returning 503 no-store Retry-After 60. Receipt records working_tree_clean false for the harness overlay. Per-request upstream attribution, transient SQL writes, concurrent packaged reads and pool recovery remain gaps; no status promotion.",
           "artifact": "quality-reports/go-migration/manifest-lifecycle-old-controller-r1/old-controller-transition.json",
           "receipt_sha256": "314145e56ac15888415ab9f9699c8686da7096e86063c8b8f3dd094db6d640fc"
+        },
+        {
+          "revision": "images 334cfae3185205dc33ff87cfe468e5c97d11b69b; lifecycle harness identical to f1fbf05b",
+          "result": "Default update-recovery installed lifecycle passes with browser: 10 checkpoints from 2.0.1 through 2.0.2 recovery paths, 90 manifest GET/HEAD/OPTIONS requests across /api, /api/v1 and /api/v2 with unchanged selected state per request, four post-restore reseeds, and 36 maintenance probes returning 503 no-store Retry-After 60. Receipt records working_tree_clean false for the harness overlay. Same remaining gaps; no status promotion.",
+          "artifact": "quality-reports/go-migration/manifest-lifecycle-recovery-r1/update-recovery.json",
+          "receipt_sha256": "3dad640b6690a044a8a2d05571021afcad50c8e84732a2b572d9b8c04fe93f72"
         }
       ],
       "notes": [

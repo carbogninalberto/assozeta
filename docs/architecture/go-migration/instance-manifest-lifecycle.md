@@ -88,6 +88,12 @@ maintenance probes across five maintenance checkpoints, all HTTP 503 with
 `Cache-Control: no-store` and `Retry-After: 60`. Browser checks passed and
 teardown left no disposable containers.
 
+The default recovery mode (`--browser` without `--legacy-controller`) also
+passed with the same images and harness: 10 checkpoints from 2.0.1, 90 manifest
+requests across all three prefixes, four post-restore reseeds and 36 maintenance
+probes with the same 503 contract. The `--legacy` v1.0.2 mode has not been run
+for this change.
+
 It requires locally available `assozeta-{backend,backend-go,web,updater}:goal-test`
 and `assozeta-renderer:test` images, the pinned v1.0.17 commit in local Git,
 Docker/Compose, and the existing browser fixture dependencies. No new service
