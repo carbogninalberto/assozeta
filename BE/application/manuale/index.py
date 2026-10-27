@@ -554,6 +554,35 @@ def seal_index(value):
     return value
 
 
+# Rounded SVD output differs in its last digit between CPU/BLAS platforms.
+SEMANTIC_TOLERANCE = 1e-9
+
+
+def _numerically_close(left, right):
+    if isinstance(left, list) and isinstance(right, list):
+        return len(left) == len(right) and all(_numerically_close(a, b) for a, b in zip(left, right))
+    return (type(left) in (int, float) and type(right) in (int, float)
+            and math.isfinite(left) and math.isfinite(right)
+            and abs(left - right) <= SEMANTIC_TOLERANCE)
+
+
+def reproduces(rebuilt, sealed):
+    """Whether a rebuilt corpus proves a sealed one, possibly built on another runner.
+
+    Content, evidence, dependencies and vocabulary must match exactly; only the
+    derived semantic projection may differ by floating-point platform noise.
+    """
+    derived = ('identity', 'semantics')
+    if ({key: item for key, item in rebuilt.items() if key not in derived}
+            != {key: item for key, item in sealed.items() if key not in derived}):
+        return False
+    left, right = rebuilt.get('semantics'), sealed.get('semantics')
+    if not isinstance(left, dict) or not isinstance(right, dict) or set(left) != set(right):
+        return False
+    return all(left[key] == right[key] if key == 'vocabulary' else _numerically_close(left[key], right[key])
+               for key in left)
+
+
 def promote(index, output):
     """Replace only after complete construction/validation; never mutate in place."""
     output = Path(output)

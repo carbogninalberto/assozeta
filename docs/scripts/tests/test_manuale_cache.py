@@ -404,6 +404,30 @@ class VerifiedPortableCacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'cannot be reproduced'):
             self.export()
 
+    def reseal_semantics(self, offset):
+        f = self.fixture
+        corpus = copy.deepcopy(f.corpus)
+        corpus['semantics']['basis'][0][0] += offset
+        corpus = fixtures.manual_index.seal_index(corpus)
+        write_json(f.old_run, 'index.json', corpus)
+        for report in ('evaluation.json', 'embedded-manual.json'):
+            value = json.loads((f.old_run / report).read_text())
+            value['corpus_identity'] = corpus['identity']
+            write_json(f.old_run, report, value)
+        return corpus
+
+    def test_baseline_sealed_on_another_cpu_platform_is_admitted(self):
+        corpus = self.reseal_semantics(1e-12)
+        self.export()
+        restored = self.fixture.root / 'other-platform'
+        cache.import_cache(self.archive, restored, self.fixture.root / 'manual-source', register=False)
+        self.assertEqual(json.loads((restored / 'index.json').read_text())['identity'], corpus['identity'])
+
+    def test_resealed_index_cannot_change_semantic_projection(self):
+        self.reseal_semantics(1e-6)
+        with self.assertRaisesRegex(ValueError, 'cannot be reproduced'):
+            self.export()
+
     def test_failed_incomplete_or_uncommitted_runs_cannot_export(self):
         f = self.fixture
         previous = self.archive

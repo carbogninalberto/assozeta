@@ -147,7 +147,8 @@ are build artifacts, recorded as `generated-from-committed`, never a fabricated
 manual commit. The new `release-bundled` state is accepted only by the image-owned
 bundle loader; remote synchronization still requires `published` evidence.
 
-The bundler reproduces the index from retained proof and checks rendering,
+The bundler reproduces the index from retained proof (exactly, except for
+floating-point platform noise of at most 1e-9 in the derived SVD semantics) and checks rendering,
 MCP/agent and embedded-reader results before atomic packaging. Image build, candidate installation/update and
 startup verify the required package and all screenshots. Candidate verification
 runs without networking, installation volumes or manual-specific configuration. Website deployment is

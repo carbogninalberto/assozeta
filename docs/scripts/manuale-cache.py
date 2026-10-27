@@ -449,7 +449,7 @@ def _validate_evaluated_evidence(run, state, *, require_source_repositories=Fals
     if corpus.get('metadata') != metadata:
         raise ValueError('Evaluated index does not belong to the capture manifest input/release')
     rebuilt = index.build_index(manual, application, manifest, artifact_root=run)
-    if rebuilt['identity'] != corpus['identity']:
+    if not index.reproduces(rebuilt, corpus):
         raise ValueError('Evaluated index cannot be reproduced from retained content and evidence')
     chunks = corpus.get('chunks')
     if (not isinstance(chunks, list) or not chunks

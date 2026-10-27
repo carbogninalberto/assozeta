@@ -714,6 +714,10 @@ con sorgenti già accettate nel ramo predefinito. Le prove di una PR diventano
 riutilizzabili dopo il merge; un artifact caricato prima di un job fallito non è
 ammissibile. Sono verificati il digest GitHub del download, l'inventario completo,
 i byte Git, i rapporti riusciti, il corpus, fixture, tooling, PNG e provenienza.
+Il corpus ricostruito deve coincidere esattamente per contenuti, prove, dipendenze
+e vocabolario; solo la proiezione semantica SVD derivata può differire per rumore
+numerico del processore (al massimo 1e-9), così una baseline resta ammissibile su
+runner con CPU diverse.
 Nessun codice del cache viene eseguito durante l'importazione. Archivi mancanti,
 vecchi, corrotti o non fidati producono una motivazione e verifiche nuove; il
 primo passaggio dal vecchio formato richiede quindi una verifica completa.
