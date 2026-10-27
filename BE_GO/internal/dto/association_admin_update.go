@@ -2,7 +2,9 @@ package dto
 
 import (
 	"encoding/json"
+
 	"errors"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"math"
 	"math/big"
 	"regexp"
@@ -111,4 +113,24 @@ func DjangoUUIDFromInt(value any) (string, error) {
 		return "", ErrDjangoFieldPrep
 	}
 	return id, nil
+}
+
+// PythonTruthy is bool() of a parsed request value.
+func PythonTruthy(value any) bool {
+	switch v := value.(type) {
+	case nil:
+		return false
+	case bool:
+		return v
+	case json.Number:
+		number, err := strconv.ParseFloat(string(v), 64)
+		return err != nil || number != 0
+	case string:
+		return v != ""
+	case []any:
+		return len(v) > 0
+	case domain.RequestObject:
+		return len(v) > 0
+	}
+	return true
 }

@@ -94,3 +94,55 @@ func (s *FolderDeletes) Delete(ctx context.Context, identity domain.ResolvedIden
 	}
 	return tx.Commit()
 }
+
+// ErrFolderMoveBody is request.data.get on a non-dict body (500).
+var ErrFolderMoveBody = errors.New("folder move body has no get")
+
+type FolderMoves struct{ store domain.FolderMoveStore }
+
+func NewFolderMoves(store domain.FolderMoveStore) *FolderMoves { return &FolderMoves{store: store} }
+
+// Move follows FolderViewSet.move: get_object, then a truthy new_parent is
+// Folder.objects.get(id=...) (any association; foreign is 403) and
+// move_to(new_parent), otherwise move_to(None).
+func (s *FolderMoves) Move(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	tx, err := s.store.BeginFolderMove(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	association, err := tx.AssociationForOwner(ctx, identity.ScopeUser.ID, nil)
+	if err != nil {
+		return err
+	}
+	id, err := dto.PythonIntPrep(raw)
+	if err != nil {
+		return ErrFolderLookup
+	}
+	if err = tx.OwnFolder(ctx, id, association); err != nil {
+		return err
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return ErrFolderMoveBody
+	}
+	value, _ := object.Lookup("new_parent")
+	var target *int64
+	if dto.PythonTruthy(value) {
+		parsed, err := dto.PythonIntPrep(value)
+		if err != nil {
+			return ErrFolderIDValue
+		}
+		target = &parsed
+	}
+	if err = tx.MoveFolder(ctx, id, association, target); err != nil {
+		return err
+	}
+	if err = ctx.Err(); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

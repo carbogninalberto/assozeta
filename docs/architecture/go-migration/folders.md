@@ -1,10 +1,10 @@
-# Archive folders — list and delete implementing; add, update and move not ported
+# Archive folders — list, delete and move implementing; add and update not ported
 
 Five explicit `folders/...` routes map `FolderViewSet`
 (`BE/application/views/archive_views.py`) actions on the MPTT `Folder` model.
-`folders/list` and `folders/<pk>/delete` are implemented in Go
-(`BE_GO/internal/{domain,dto,repository,service,handler}/folders.go`); add,
-update and move are not ported yet.
+`folders/list`, `folders/<pk>/delete` and `folders/<pk>/move` are implemented in
+Go (`BE_GO/internal/{domain,dto,repository,service,handler}/folders.go`); add
+and update are not ported yet.
 
 ## List behavior
 
@@ -40,6 +40,28 @@ children in memory; Django queries each node's children.
 Go collects the subtree before renumbering (later siblings shift into the
 deleted range), then applies the same updates in one owned transaction.
 
+## Move behavior
+
+- Registry `association.archive.update`; `get_object` as for delete (bare and
+  model 404s) before the body is read.
+- `request.data.get('new_parent')` (non-dict bodies raise, 500). A falsy value
+  calls `move_to(None)`; otherwise `Folder.objects.get(id=...)` over every
+  association (a value `int()` rejects or an unknown ID raises, 500; another
+  association's folder is `403 Cannot move to folder from different sport
+  association.`) and `move_to(target)`, i.e. MPTT `first-child`.
+- MPTT paths: a child within its tree (one renumbering UPDATE), a child into
+  another tree (space in the target tree, then the inter-tree move closing the
+  old gap), a root into another tree, and a child made root with the next
+  tree id over all folders; moving into itself or a descendant raises
+  `InvalidMove` before any write (500). The node's `save()` then stores
+  `parent_id`. `200` with an empty body.
+- The viewset's `delete()` makes `DELETE` allowed on the move route and
+  dispatches it with the pk, deleting the folder (`204`). OPTIONS describes
+  `FolderSerializer`'s POST fields.
+
+Go ports the four `TreeManager` SQL paths with the same arithmetic under a table
+lock, then the `parent_id` save.
+
 ## Evidence (TDD)
 
 `TESTS/fixtures/folders_list_http.json` (generator alongside) authors 17 cases
@@ -51,3 +73,9 @@ before any Go code. GREEN: native Django, native Go, Caddy `/api/v1` and
 expected `(lft, rght)` of every remaining folder. RED: Django 12/12 and Go 404
 before any Go code. GREEN: 12/12 on all four transports; collecting the subtree
 after renumbering fails the run.
+
+**Move:** `TESTS/fixtures/folders_move_http.json` authors 20 cases whose
+expected `(tree, lft, rght, level, parent)` states were derived by hand from the
+MPTT SQL. Django passed them, Go failed with 404 before any Go code, and Go now
+passes 20/20 on all four transports; dropping the level change of a move within
+a tree fails the run.

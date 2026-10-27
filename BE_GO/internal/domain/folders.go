@@ -48,3 +48,23 @@ type FolderDeleteTransaction interface {
 	Commit() error
 	Rollback() error
 }
+
+var (
+	// ErrFolderInvalidMove is mptt InvalidMove (into itself or a descendant), raised before any write (500).
+	ErrFolderInvalidMove = errors.New("invalid folder move")
+	// ErrFolderTargetMissing is Folder.objects.get(id=new_parent) raising DoesNotExist (500).
+	ErrFolderTargetMissing = errors.New("folder move target does not exist")
+	ErrFolderTargetForeign = errors.New("Cannot move to folder from different sport association.")
+)
+
+type FolderMoveTransaction interface {
+	FolderDeleteTransaction
+	// OwnFolder is get_object on the association's folders.
+	OwnFolder(ctx context.Context, id int64, association string) error
+	// MoveFolder is move_to(target, 'first-child'), or move_to(None) for a nil target.
+	MoveFolder(ctx context.Context, id int64, association string, target *int64) error
+}
+
+type FolderMoveStore interface {
+	BeginFolderMove(context.Context) (FolderMoveTransaction, error)
+}

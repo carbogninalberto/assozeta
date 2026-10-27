@@ -6238,6 +6238,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/folders-delete-http-mutation-r1/results.json",
           "receipt_sha256": "912bcf2675c9d42724f516a6ed9081d726d1b3c0a39596486f28656b61541b88"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained move: four transports.",
+          "artifact": "quality-reports/go-migration/folders-delete-http-versioned-r3/results.json",
+          "receipt_sha256": "f432f444ff691c63e728f07d1553b4e718d33d909ba4ef501efeac42157afa87"
         }
       ],
       "notes": [
@@ -6259,25 +6265,71 @@
         "target": "FolderViewSet.as_view({'post': 'move'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/folders.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/internal/service/folders.go",
+        "BE_GO/internal/handler/folders.go",
+        "BE_GO/internal/dto/association_admin_update.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_folder (MPTT)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/folders/{pk}/move",
+          "/api/v2/folders/{pk}/move",
+          "/api/folders/{pk}/move"
+        ],
+        "request": "JSON or form object with new_parent (folder id or falsy).",
+        "response": "200 empty (POST); 204 empty (DELETE deletes the folder).",
+        "errors": "401; 403 registry, impersonation or foreign target; 404 Not found. or model 404; 500 bad body, missing/non-integer target, InvalidMove, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "MPTT renumbering and parent_id save; no audit.",
+        "transaction": "Autocommit statements.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/folders_move_http.json",
+        "TESTS/fixtures/generate_folders_move_http.py",
+        "TESTS/contracts/test_folders_move_http.py",
+        "TESTS/adapters/django/folders_move_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/folders.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 20/20; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/folders-move-http-red-r1/results.json",
+          "receipt_sha256": "2fefc986a10684c842ae5a2d05b0b38626b096e8ac3402d30d2d978f43b7947c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact MPTT states.",
+          "artifact": "quality-reports/go-migration/folders-move-http-versioned-r3/results.json",
+          "receipt_sha256": "00e418e9864b0680de85f0af8c3cbedf76408fca7a539f0a2c472ae1e4ff9cd9"
+        },
+        {
+          "revision": "committing change without the within-tree level change",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/folders-move-http-mutation-r1/results.json",
+          "receipt_sha256": "5e70e63150314987f95039533dca566f11ed87d3fce68a6fe2ebde3f75e5014f"
+        }
+      ],
+      "notes": [
+        "Implementing: MPTT move parity (four paths, InvalidMove, DELETE dispatch) proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/<str:pk>/update -> FolderViewSet.as_view({'patch': 'update'})",
@@ -6431,6 +6483,12 @@
           "result": "GREEN rerun after the handler gained delete: 17/17 on four transports.",
           "artifact": "quality-reports/go-migration/folders-list-http-versioned-r2/results.json",
           "receipt_sha256": "dc8144f4e0d25c0d42fed338820505fab2371647ca82385b9283058e64aca609"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained move: four transports.",
+          "artifact": "quality-reports/go-migration/folders-list-http-versioned-r3/results.json",
+          "receipt_sha256": "d54ccd139aa9e99e94e9779c86aae62b2c74a0e26013363c5f049d51d285fe58"
         }
       ],
       "notes": [
