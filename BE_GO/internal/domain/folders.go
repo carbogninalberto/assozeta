@@ -32,3 +32,19 @@ type FolderStore interface {
 	// Ancestors include the folder itself, root first.
 	Ancestors(ctx context.Context, folder Folder) ([]Folder, error)
 }
+
+// ErrFolderNotFound is get_object's model 404 on the association's folders.
+var ErrFolderNotFound = errors.New("No Folder matches the given query.")
+
+type FolderDeleteStore interface {
+	BeginFolderDelete(context.Context) (FolderDeleteTransaction, error)
+}
+
+type FolderDeleteTransaction interface {
+	AssociationForOwner(context.Context, string, *string) (string, error)
+	// DeleteSubtree closes the MPTT gap, detaches archived documents and
+	// deletes the folder with its descendants.
+	DeleteSubtree(ctx context.Context, id int64, association string) error
+	Commit() error
+	Rollback() error
+}

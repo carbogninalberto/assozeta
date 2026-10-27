@@ -6180,25 +6180,69 @@
         "target": "FolderViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/folders.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/internal/service/folders.go",
+        "BE_GO/internal/handler/folders.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_folder (MPTT), application_sportassociationdocumentsarchive"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/folders/{pk}/delete",
+          "/api/v2/folders/{pk}/delete",
+          "/api/folders/{pk}/delete"
+        ],
+        "request": "No body.",
+        "response": "204 empty.",
+        "errors": "401; 403 registry or impersonation; 404 Not found. or model 404; 500 athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.update.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "MPTT gap close, archive folder SET_NULL, subtree delete; no audit.",
+        "transaction": "Autocommit statements.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/folders_delete_http.json",
+        "TESTS/fixtures/generate_folders_delete_http.py",
+        "TESTS/contracts/test_folders_delete_http.py",
+        "TESTS/adapters/django/folders_delete_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/folders.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 12/12; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/folders-delete-http-red-r1/results.json",
+          "receipt_sha256": "ca9be4862036d35bfe0d94a473a999f5b4921df957e153a7b061cc609865e922"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 12/12 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact tree and archive effects.",
+          "artifact": "quality-reports/go-migration/folders-delete-http-versioned-r1/results.json",
+          "receipt_sha256": "ec8ec562f3e374f1383d4612cdcacf09f28867ca37d474aa1559847833abde6d"
+        },
+        {
+          "revision": "committing change collecting the subtree after renumbering",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/folders-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "912bcf2675c9d42724f516a6ed9081d726d1b3c0a39596486f28656b61541b88"
+        }
+      ],
+      "notes": [
+        "Implementing: MPTT delete parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:folders/<str:pk>/move -> FolderViewSet.as_view({'post': 'move'})",
@@ -6381,6 +6425,12 @@
           "result": "Mutation control: fails Go.",
           "artifact": "quality-reports/go-migration/folders-list-http-mutation-r1/results.json",
           "receipt_sha256": "567219f59c5cdd8e6dd4a0ff8843680a2c9e5ee157f957e270a7dbfe2c147222"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN rerun after the handler gained delete: 17/17 on four transports.",
+          "artifact": "quality-reports/go-migration/folders-list-http-versioned-r2/results.json",
+          "receipt_sha256": "dc8144f4e0d25c0d42fed338820505fab2371647ca82385b9283058e64aca609"
         }
       ],
       "notes": [

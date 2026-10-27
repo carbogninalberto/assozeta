@@ -1,0 +1,266 @@
+{
+ "matrix_version": 1,
+ "scope": "Folder delete authored sequence with MPTT effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "folders": [
+  [
+   "a",
+   null,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "a1",
+   "a",
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "a1a",
+   "a1",
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "a2",
+   "a",
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "b",
+   null,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "f",
+   null,
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "archive": {
+  "id": "a1000000-0000-4000-8000-000000830001",
+  "document": "a1000000-0000-4000-8000-000000830002",
+  "folder": "a1a",
+  "association": "a1000000-0000-4000-8000-000000701001"
+ },
+ "cases": [
+  {
+   "name": "folders-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "folders-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/$folder:f/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-missing-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/999999999/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-non-integer-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/abc/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Folder",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-owner-deletes-subtree",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "deleted": [
+     "a1",
+     "a1a"
+    ],
+    "tree": {
+     "a": [
+      1,
+      4
+     ],
+     "a2": [
+      2,
+      3
+     ],
+     "b": [
+      1,
+      2
+     ]
+    },
+    "detached": [
+     "a1000000-0000-4000-8000-000000830001"
+    ]
+   }
+  },
+  {
+   "name": "folders-delete-repeat-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/folders/$folder:a1/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Folder matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "folders-delete-full-collaborator-deletes-root",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/folders/$folder:b/delete",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "deleted": [
+     "b"
+    ],
+    "tree": {
+     "a": [
+      1,
+      4
+     ],
+     "a2": [
+      2,
+      3
+     ]
+    },
+    "detached": []
+   }
+  }
+ ]
+}
