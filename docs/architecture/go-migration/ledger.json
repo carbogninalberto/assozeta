@@ -15339,25 +15339,42 @@
         "target": "staff_board_messages_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
+        "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
+        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/staff-board/{id}/delete",
+          "/api/v2/communications/staff-board/{id}/delete",
+          "/api/communications/staff-board/{id}/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"message deleted.\"}.",
+        "errors": "400 malformed UUID; 403 non-author (Italian message); 404 foreign/missing.",
+        "authentication": "JWT/session authentication via DRF IsAuthenticated; anonymous and invalid credentials rejected before dispatch.",
+        "permissions": "IsAssociationUser (ASSOCIATION or COLLABORATOR role); collaborators also need the route key in permissions_registry (default deny); athletes rejected.",
+        "resource_scope": "request.user.sport_association (effective association after collaborator/impersonation resolution); foreign or missing IDs return 404 {\"error\": \"message not found.\"}.",
+        "side_effects": "Row delete; on_commit invalidation; no audit rows.",
+        "transaction": "Single autocommit DELETE; publish after commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/communications/tests/test_staff_board.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/staff-board.md"
+      ],
+      "notes": [
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/staff-board/<str:staff_board_message_id>/update -> staff_board_messages_update",
@@ -15374,25 +15391,42 @@
         "target": "staff_board_messages_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
+        "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
+        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/staff-board/{id}/update",
+          "/api/v2/communications/staff-board/{id}/update",
+          "/api/communications/staff-board/{id}/update"
+        ],
+        "request": "Partial content/document/pinned; content without document clears document.",
+        "response": "200 {\"data\": row}.",
+        "errors": "400 malformed UUID or validation; 403 non-author content/document change (Italian message); 404 foreign/missing.",
+        "authentication": "JWT/session authentication via DRF IsAuthenticated; anonymous and invalid credentials rejected before dispatch.",
+        "permissions": "IsAssociationUser (ASSOCIATION or COLLABORATOR role); collaborators also need the route key in permissions_registry (default deny); athletes rejected.",
+        "resource_scope": "request.user.sport_association (effective association after collaborator/impersonation resolution); foreign or missing IDs return 404 {\"error\": \"message not found.\"}.",
+        "side_effects": "Row update (updated_at auto_now); on_commit invalidation; no audit rows.",
+        "transaction": "Single autocommit UPDATE via save(); publish after commit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/communications/tests/test_staff_board.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/staff-board.md"
+      ],
+      "notes": [
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/staff-board/add -> staff_board_messages_add",
@@ -15409,25 +15443,42 @@
         "target": "staff_board_messages_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
+        "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
+        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/staff-board/add",
+          "/api/v2/communications/staff-board/add",
+          "/api/communications/staff-board/add"
+        ],
+        "request": "content (CharField <=10000, non-blank JSON string), optional document (validate_document closed schema), optional pinned (BooleanField).",
+        "response": "201 {\"data\": row}; document replaces content with extracted text; content-only sets document null.",
+        "errors": "400 DRF validation envelopes; 401; 403.",
+        "authentication": "JWT/session authentication via DRF IsAuthenticated; anonymous and invalid credentials rejected before dispatch.",
+        "permissions": "IsAssociationUser (ASSOCIATION or COLLABORATOR role); collaborators also need the route key in permissions_registry (default deny); athletes rejected.",
+        "resource_scope": "request.user.sport_association (effective association after collaborator/impersonation resolution); foreign or missing IDs return 404 {\"error\": \"message not found.\"}.",
+        "side_effects": "One StaffBoardMessage row with author=message_actor; on_commit staff_board_changed invalidation; no audit rows.",
+        "transaction": "Single autocommit INSERT (ATOMIC_REQUESTS unset); publish after commit, failures logged only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/communications/tests/test_staff_board.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/staff-board.md"
+      ],
+      "notes": [
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/staff-board/list -> staff_board_messages_list",
@@ -15444,25 +15495,42 @@
         "target": "staff_board_messages_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
+        "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
+        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/staff-board/list",
+          "/api/v2/communications/staff-board/list",
+          "/api/communications/staff-board/list"
+        ],
+        "request": "No body; unpaginated.",
+        "response": "200 {\"data\": [row...]} ordered -pinned, -created_at with author_name/author_avatar/is_owner projections.",
+        "errors": "401 unauthenticated; 403 missing role/permission.",
+        "authentication": "JWT/session authentication via DRF IsAuthenticated; anonymous and invalid credentials rejected before dispatch.",
+        "permissions": "IsAssociationUser (ASSOCIATION or COLLABORATOR role); collaborators also need the route key in permissions_registry (default deny); athletes rejected.",
+        "resource_scope": "request.user.sport_association (effective association after collaborator/impersonation resolution); foreign or missing IDs return 404 {\"error\": \"message not found.\"}.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "BE/communications/tests/test_staff_board.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/staff-board.md"
+      ],
+      "notes": [
+        "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/workflows/<str:workflow_id>/delete -> communication_workflows_delete",
