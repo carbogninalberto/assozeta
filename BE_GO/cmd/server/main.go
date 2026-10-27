@@ -188,7 +188,7 @@ func run() (runErr error) {
 	foldersHandler := handler.NewFoldersHandler(service.NewFolders(repository.NewFolders(db)), service.NewFolderDeletes(repository.NewFolders(db)), service.NewFolderMoves(repository.NewFolders(db)), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	documentArchiveHandler := handler.NewDocumentArchiveHandler(service.NewDocumentArchive(repository.NewDocumentArchive(db)), service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	savedReportsHandler := handler.NewSavedReportsHandler(service.NewSavedReports(repository.NewSavedReports(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
-	attendanceDaysHandler := handler.NewAttendanceDaysHandler(service.NewAttendanceDays(repository.NewAttendanceDays(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	attendanceDaysHandler := handler.NewAttendanceDaysHandler(service.NewAttendanceDays(repository.NewAttendanceDays(db), time.Now), service.NewAttendanceMarks(repository.NewAttendanceDays(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
@@ -229,6 +229,7 @@ func run() (runErr error) {
 	e.Any("/folders/list", foldersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/documents/list", documentArchiveHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/attendance-day/:uid/delete", attendanceDaysHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/attendance-day/:uid/mark-absent", attendanceDaysHandler.MarkAbsent, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/saved-reports/list", savedReportsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/saved-reports/add", savedReportsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/saved-reports/:pk/info", savedReportsHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))

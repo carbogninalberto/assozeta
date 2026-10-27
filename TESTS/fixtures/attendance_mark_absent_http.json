@@ -1,0 +1,499 @@
+{
+ "matrix_version": 1,
+ "scope": "Attendance mark-absent authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "courses": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000860001",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000860002",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "registries": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000860003",
+   "course": "own"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000860004",
+   "course": "foreign"
+  }
+ },
+ "days": {
+  "day": {
+   "id": "a1000000-0000-4000-8000-000000870007",
+   "registry": "own",
+   "title": "Allenamento",
+   "date": "2026-11-05T18:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+    }
+   ],
+   "expected_absences": null,
+   "auto_marked": false,
+   "associated_event": null
+  },
+  "foreign_day": {
+   "id": "a1000000-0000-4000-8000-000000870008",
+   "registry": "foreign",
+   "title": "Estero",
+   "date": "2026-11-05T18:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "auto_marked": false,
+   "associated_event": null
+  }
+ },
+ "subscriptions": {
+  "owner_sub": {
+   "id": "a1000000-0000-4000-8000-000000870001",
+   "association": "own_association",
+   "user": "owner"
+  },
+  "athlete_sub": {
+   "id": "a1000000-0000-4000-8000-000000870002",
+   "association": "own_association",
+   "user": "athlete"
+  },
+  "foreign_sub": {
+   "id": "a1000000-0000-4000-8000-000000870003",
+   "association": "foreign_association",
+   "user": "foreign_owner"
+  }
+ },
+ "course_subscriptions": {
+  "cs1": {
+   "id": "a1000000-0000-4000-8000-000000870004",
+   "course": "own",
+   "subscription": "owner_sub"
+  },
+  "cs2": {
+   "id": "a1000000-0000-4000-8000-000000870005",
+   "course": "own",
+   "subscription": "athlete_sub"
+  },
+  "csf": {
+   "id": "a1000000-0000-4000-8000-000000870006",
+   "course": "foreign",
+   "subscription": "foreign_sub"
+  }
+ },
+ "cases": [
+  {
+   "name": "attendance-mark-absent-malformed-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/abc/mark-absent",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "attendance-mark-absent-foreign-day-not-found",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870008/mark-absent",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870006"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-missing-subscription-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "error: course_subscription_id is required."
+   ],
+   "effect": null,
+   "body": {
+    "absent": true
+   }
+  },
+  {
+   "name": "attendance-mark-absent-malformed-subscription-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "course_subscription_id": "nope"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-foreign-course-subscription-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Iscrizione al corso non disponibile."
+   },
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870006"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "attendance-mark-absent-owner-marks-absent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "added to expected_absences and removed from attendees."
+    }
+   },
+   "effect": {
+    "attendees": [],
+    "expected_absences": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+     }
+    ],
+    "changes": {
+     "attendees": [
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}]",
+      "[]"
+     ],
+     "expected_absences": [
+      "null",
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}]"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-already-absent-no-save",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": [
+    "error: course_subscription_id already in expected_absences."
+   ],
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004",
+    "absent": 1
+   }
+  },
+  {
+   "name": "attendance-mark-absent-full-collaborator-marks-present",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "removed from expected_absences and added to attendees."
+    }
+   },
+   "effect": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+     }
+    ],
+    "expected_absences": [],
+    "changes": {
+     "attendees": [
+      "[]",
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}]"
+     ],
+     "expected_absences": [
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}]",
+      "[]"
+     ]
+    },
+    "actor": "full_collaborator",
+    "impersonation": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004",
+    "absent": false
+   }
+  },
+  {
+   "name": "attendance-mark-absent-already-present-no-save",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": [
+    "error: course_subscription_id already in attendees."
+   ],
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004",
+    "absent": 0
+   }
+  },
+  {
+   "name": "attendance-mark-absent-uppercase-id-appended-raw",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "added to expected_absences and removed from attendees."
+    }
+   },
+   "effect": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+     }
+    ],
+    "expected_absences": [
+     {
+      "course_subscription_id": "A1000000-0000-4000-8000-000000870005"
+     }
+    ],
+    "changes": {
+     "expected_absences": [
+      "[]",
+      "[{\"course_subscription_id\": \"A1000000-0000-4000-8000-000000870005\"}]"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": null
+   },
+   "body": {
+    "course_subscription_id": "A1000000-0000-4000-8000-000000870005"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-athlete-without-primary-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 404,
+   "response": [
+    "error: attendance day not found."
+   ],
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870005"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-owner-scoped-athlete-foreign-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-owner-scoped-athlete-marks-present",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "removed from expected_absences and added to attendees."
+    }
+   },
+   "effect": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000870005"
+     }
+    ],
+    "expected_absences": [
+     {
+      "course_subscription_id": "A1000000-0000-4000-8000-000000870005"
+     }
+    ],
+    "changes": {
+     "attendees": [
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}]",
+      "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870004\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000870005\"}]"
+     ]
+    },
+    "actor": "owner",
+    "impersonation": "owner_athlete"
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870005",
+    "absent": false
+   }
+  },
+  {
+   "name": "attendance-mark-absent-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.attendance.update"
+   },
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000870004"
+   }
+  },
+  {
+   "name": "attendance-mark-absent-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "attendance-mark-absent-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "attendance-mark-absent-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "attendance-mark-absent-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/attendance-day/a1000000-0000-4000-8000-000000870007/mark-absent",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Attendance Day Mark Absent",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}
