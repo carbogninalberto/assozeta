@@ -8,6 +8,7 @@ first Go delivery failure/recovery before a successful owner update. No producti
 installation is used.
 """
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -31,6 +32,135 @@ sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from common import read_env, update_env
 from distribution import digest, snapshot_managed
 from quality_support import docker_host, write_evidence, assert_project_removed, remove_disposable_project
+
+
+MANIFEST_SESSION = 'manifestlifecyclefixturesession01'
+MANIFEST_CACHE_SEED = '''
+from django.core.cache import cache
+from django.contrib.sessions.backends.cache import SessionStore
+cache.set('fixture:manifest:lifecycle', {'retained': 'manifest-cache'}, timeout=None)
+session = SessionStore(session_key='manifestlifecyclefixturesession01')
+cache.set(session.cache_key, {'manifest_fixture': 'retained-session'}, timeout=None)
+'''
+MANIFEST_STATE = '''
+import hashlib, json
+from django.core.cache import cache
+from django.contrib.sessions.backends.cache import SessionStore
+from django_redis import get_redis_connection
+from application.models import User, SportAssociation
+from instance.models import InstanceConfiguration, DataRestore
+from auditlog.models import LogEntry
+from application.models.audit_models import AuditLogIndex
+def fingerprint(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, default=str).encode()).hexdigest()
+models = [InstanceConfiguration, User, SportAssociation, DataRestore, LogEntry, AuditLogIndex]
+database = {model._meta.label: fingerprint(list(model._base_manager.order_by('pk').values())) for model in models}
+raw = get_redis_connection('default')
+keys = set(raw.scan_iter(match='*django.contrib.sessions.cache*'))
+keys.add(cache.make_key('fixture:manifest:lifecycle').encode())
+cached = {}
+for key in keys:
+    value = raw.get(key)
+    if value is not None:
+        cached[fingerprint(key.hex())] = hashlib.sha256(value).hexdigest()
+sentinels = [cache.get('fixture:manifest:lifecycle'), cache.get(SessionStore(session_key='manifestlifecyclefixturesession01').cache_key)]
+print('MANIFEST_STATE=' + json.dumps({'database': database, 'cache': cached, 'sentinels': sentinels}, sort_keys=True))
+'''
+
+
+def prepare_manifest_checkpoint(snapshot, seed_cache, *, source_database=None, restored=False):
+    state = snapshot()
+    if source_database is not None:
+        assert state['database'] == source_database, 'Lifecycle changed selected manifest/database/audit state'
+    if source_database is None or restored:
+        if restored:
+            # Restore deliberately flushes Redis, so retained sessions are wrong.
+            assert state['sentinels'] == [None, None], 'Restore retained stale manifest fixture cache/session'
+        seed_cache()
+    prepared = snapshot()
+    assert prepared['database'] == state['database'], 'Cache preparation changed selected database state'
+    assert prepared['sentinels'] == [{'retained': 'manifest-cache'}, {'manifest_fixture': 'retained-session'}], 'Missing manifest cache/session fixture'
+    return prepared['database']
+
+
+def assert_installed_manifest(origin, host, icon_src, snapshot, *,
+                              prefixes=('/api', '/api/v1', '/api/v2'), opener=urlopen):
+    """Exercise real HTTP and selected state callbacks; return observed receipts only.
+
+    This compares persistent state, not SQL statement counts or transient writes.
+    Upstream ownership is established separately by the existing delivery probes.
+    """
+    manifest = {
+        'name': 'Preserved Club', 'short_name': 'PC',
+        'description': 'Gestionale per associazioni sportive',
+        'icons': [{'src': icon_src, 'sizes': size, 'type': 'image/png'} for size in ('192x192', '512x512')],
+        'start_url': '/', 'display': 'standalone', 'background_color': '#ffffff', 'theme_color': '#351DC2',
+    }
+    metadata = {
+        'name': 'Instance Manifest', 'description': 'GET /instance/manifest.json\nDynamic PWA manifest.',
+        'renders': ['application/json'],
+        'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
+    }
+    receipts = []
+    for prefix in prefixes:
+        for method in ('GET', 'HEAD', 'OPTIONS'):
+            path = prefix + '/instance/manifest.json'
+            before = snapshot()
+            request = Request(origin + path, method=method, headers={
+                'Host': host, 'Accept': 'application/json', 'Accept-Language': 'en',
+                'Accept-Encoding': 'identity', 'Cookie': 'sessionid=' + MANIFEST_SESSION,
+                'Authorization': 'Bearer invalid-manifest-fixture-token',
+            })
+            with opener(request, timeout=15) as response:
+                body = response.read()
+                assert response.status == 200, (path, method, response.status)
+                for name, expected in {
+                    'Allow': 'GET, HEAD, OPTIONS', 'Content-Type': 'application/json',
+                    'Content-Language': 'en', 'WWW-Authenticate': None, 'Retry-After': None,
+                    'Set-Cookie': None, 'Content-Encoding': None,
+                }.items():
+                    assert response.headers.get(name) == expected, (path, method, name)
+                vary = sorted({token.strip().lower() for line in response.headers.get_all('Vary', [])
+                               for token in line.split(',') if token.strip()})
+                assert vary == ['accept-encoding', 'accept-language', 'cookie', 'origin'], (path, method, vary)
+                if method == 'HEAD':
+                    assert body == b'', (path, 'HEAD returned a body')
+                else:
+                    expected = manifest if method == 'GET' else metadata
+                    assert json.loads(body) == expected, (path, method, 'manifest contract mismatch')
+                headers = {name: response.headers.get(name) for name in (
+                    'Allow', 'Content-Type', 'Content-Language', 'WWW-Authenticate', 'Retry-After',
+                    'Set-Cookie', 'Content-Encoding')}
+            assert snapshot() == before, (path, method, 'manifest changed selected state/cache/audit')
+            receipts.append({'path': path, 'method': method, 'status': response.status,
+                'body_sha256': hashlib.sha256(body).hexdigest(), 'headers': headers, 'vary_tokens': vary,
+                'selected_state_unchanged': True})
+    return receipts
+
+
+def assert_manifest_maintenance(origin, host, *, opener=urlopen):
+    receipts = []
+    for prefix in ('/api', '/api/v1', '/api/v2'):
+        for method in ('GET', 'HEAD', 'OPTIONS'):
+            path = prefix + '/instance/manifest.json'
+            request = Request(origin + path, method=method, headers={'Host': host})
+            try:
+                with opener(request, timeout=15):
+                    raise AssertionError((path, method, 'manifest bypassed maintenance'))
+            except HTTPError as response:
+                with response:
+                    assert response.code == 503, (path, method, response.code)
+                    assert response.headers['Cache-Control'] == 'no-store', (path, method)
+                    assert response.headers['Retry-After'] == '60', (path, method)
+                    body = response.read()
+                    if method == 'GET':
+                        assert b'Torniamo tra poco' in body, path
+                    else:
+                        assert body == b'', (path, method)
+                    receipts.append({'path': path, 'method': method, 'status': response.code,
+                                     'cache_control': response.headers['Cache-Control'],
+                                     'retry_after': response.headers['Retry-After']})
+    return receipts
 
 
 def free_port():
@@ -60,6 +190,8 @@ def run(legacy=False, browser=False, operations_only=False, legacy_controller=Fa
     go_intent_snapshot = None
     go_occurrence_snapshot = None
     go_migration_interruption = False
+    manifest_checkpoints = []
+    manifest_maintenance = []
 
     def command(args, **kwargs):
         with log.open('a') as output:
@@ -421,6 +553,8 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
                 assert response.headers['Cache-Control'] == 'no-store'
                 assert response.headers['Retry-After'] == '60'
                 assert b'Torniamo tra poco' in response.read()
+            manifest_maintenance.append(assert_manifest_maintenance(
+                f'http://127.0.0.1:{port}', f'{host}:{port}'))
 
         def api(path, body=None):
             request = Request(f'http://127.0.0.1:{port}/api/instance/{path}',
@@ -589,6 +723,32 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         original_env = read_env(env_file)
         database = ['exec', '-T', 'postgres', 'psql', '-U', original_env['DBUSER'], '-d', original_env['DBNAME'], '-At', '-c']
         command(compose(*database, "CREATE TABLE upgrade_sentinel (value text); INSERT INTO upgrade_sentinel VALUES ('preserved');"), env=environment)
+
+        def manifest_state():
+            observed = capture(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', MANIFEST_STATE), env=environment)
+            return json.loads(next(line.removeprefix('MANIFEST_STATE=') for line in observed.splitlines()
+                                   if line.startswith('MANIFEST_STATE=')))
+
+        manifest_database = None
+
+        def manifest_checkpoint(phase, version, *, old_source=False, restored=False):
+            nonlocal manifest_database
+            observed_version = api('admin')['running_version'].removeprefix('v')
+            assert observed_version == version, (phase, observed_version, version)
+            manifest_database = prepare_manifest_checkpoint(manifest_state,
+                lambda: command(compose('exec', '-T', 'api', 'python', 'manage.py', 'shell', '-c', MANIFEST_CACHE_SEED), env=environment),
+                source_database=manifest_database, restored=restored)
+            # Upload/admin presentation adds ?v=; the public manifest contract
+            # deliberately preserves the stored, unversioned canonical URL.
+            requests = assert_installed_manifest(f'http://127.0.0.1:{port}', f'{host}:{port}',
+                '/api/instance/logo.png', manifest_state,
+                prefixes=('/api',) if old_source else ('/api', '/api/v1', '/api/v2'))
+            manifest_checkpoints.append({'phase': phase, 'running_version': observed_version,
+                'restored': restored, 'requests': requests,
+                'selected_database_matches_source': True,
+                'upstream_evidence': 'existing health version/image probes; no per-manifest upstream observer'})
+
+        manifest_checkpoint('before-installed-upgrade', '1.0.17' if legacy_controller else '2.0.1', old_source=legacy_controller)
         if legacy_controller:
             (fixtures / 'releases.json').write_text(json.dumps(catalog))
             print('Testing failed first Go delivery through frozen owner-request controller and rollback to four-image source.', flush=True)
@@ -601,6 +761,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             target_go_state = json.loads(capture(['docker', 'inspect', target_go]))[0]
             assert target_go_state['Config']['Image'] == backend_go[4]
             assert target_go_state['State']['Running'] and target_go_state['State']['Health']['Status'] == 'healthy'
+            assert_maintenance_web()
             pending = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
             assert pending['source_version'] == '1.0.17'
             command(helper + ['-c', 'import subprocess,sys; subprocess.run(sys.argv[1:],check=True)',
@@ -612,6 +773,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
             assert capture(compose(*database, "SELECT to_regclass('public.assozeta_go_schema_migrations') IS NULL"), env=environment) == 't'
             assert_logo()
+            manifest_checkpoint('first-go-delivery-recovered', '1.0.17', old_source=True, restored=True)
             await_runner_version('1.0.17')
             if browser:
                 (fixtures / 'releases.json').write_text(json.dumps([release for release in catalog if release['id'] in (1, 2, 117)]))
@@ -655,6 +817,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert retried['id'] == operation['id'] and retried['status'] == 'succeeded'
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
+        manifest_checkpoint('owner-upgrade-and-competing-backup-completed', '2.0.2')
         command(compose(*database, "INSERT INTO public.assozeta_go_jobs(id,association_id,kind,version,idempotency_key,payload,max_attempts,available_at) VALUES ('11111111-1111-4111-8111-111111111111','00000000-0000-0000-0000-000000000000','fixture.lifecycle',1,'update-smoke','{\"checkpoint\":\"source\",\"integer\":9007199254740993}',3,clock_timestamp())"), env=environment)
         go_intent_query = "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"
         go_intent_snapshot = capture(compose(*database, go_intent_query), env=environment)
@@ -696,6 +859,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
             assert_dual_apis('2.0.2')
             assert_logo()
+            manifest_checkpoint(f'{failure}-source-preserved', '2.0.2')
         print('Starting controlled migration failure to fixture 2.0.3.', flush=True)
         operation = api('admin/updates', {'release_id': 3, 'tag': 'v2.0.3', 'request_id': str(uuid4())})['operation']
         result = await_operation(operation['id'])
@@ -748,6 +912,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert_dual_apis('2.0.2')
         assert api('admin')['config']['oem']['name'] == 'Preserved Club'
         assert_logo()
+        manifest_checkpoint('partial-migration-and-failed-restore-recovered', '2.0.2', restored=True)
         assert capture(compose(*database, 'SELECT value FROM upgrade_sentinel'), env=environment) == 'preserved'
         assert capture(compose(*database, "SELECT count(*) FROM information_schema.columns WHERE table_name = 'upgrade_sentinel' AND column_name = 'failed_release'"), env=environment) == '0'
         assert read_env(env_file) == upgraded_env
@@ -762,12 +927,14 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         unhealthy = api('admin/updates', {'release_id': 4, 'tag': 'v2.0.4', 'request_id': str(uuid4())})['operation']
         unhealthy = await_operation(unhealthy['id'])
         assert unhealthy['status'] == 'recovery_required' and unhealthy['failed_stage'] == 'health_check', unhealthy
+        assert_maintenance_web()
         transaction = json.loads((installation / '.updater/pending-distribution/transaction.json').read_text())
         command(recover + [transaction['backup']['path']])
         assert api('admin')['running_version'].removeprefix('v') == '2.0.2'
         assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
+        manifest_checkpoint('public-health-failure-recovered', '2.0.2', restored=True)
 
         print('Testing abrupt runner interruption with a surviving partial migration.', flush=True)
         (fixtures / 'migration-blocked').write_text('')
@@ -797,6 +964,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert runner_status()['can_update']
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted['id'])['status'] == 'recovered'
         assert_logo()
+        manifest_checkpoint('interrupted-migration-recovered', '2.0.2', restored=True)
 
         print('Testing abrupt runner interruption while the packaged Go migration waits in PostgreSQL.', flush=True)
         (fixtures / 'go-launch-ready').unlink(missing_ok=True)
@@ -868,6 +1036,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert_dual_apis('2.0.2')
         assert next(item for item in runner_status()['history'] if item['id'] == interrupted_go['id'])['status'] == 'recovered'
         assert_logo()
+        manifest_checkpoint('interrupted-packaged-go-migration-recovered', '2.0.2', restored=True)
         go_migration_interruption = True
 
         print('Testing abrupt runner interruption before the recovery snapshot exists.', flush=True)
@@ -892,6 +1061,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
         assert_dual_apis('2.0.2')
         assert read_env(env_file) == upgraded_env
         assert_logo()
+        manifest_checkpoint('interrupted-backup-reconciled', '2.0.2')
         success = True
         print('PASS: automatic provisioning, owner API update, competing CLI backup serialization, verified 2.0.2, runner replacement, preserved data/branding/secrets, backup/download/partial-migration/health failures, rejected mismatched backup, safely failed data restore, resumed recovery, abrupt runner interruption during migration and backup, overlap prevention, idempotent retries, and verified source reconciliation.', flush=True)
     finally:
@@ -944,7 +1114,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         remove_disposable_project(project)
         if success:
-            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller})
+            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller, 'manifest_checkpoints': manifest_checkpoints, 'manifest_maintenance': manifest_maintenance})
             shutil.rmtree(directory)
         else:
             print(f'Failure artifacts retained privately at {directory}', flush=True)

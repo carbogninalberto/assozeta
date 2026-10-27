@@ -17604,7 +17604,9 @@
         "TESTS/adapters/go/read_route_locales_image.py: unchanged 848-case matrix on Django, immutable Linux Go image and both versioned transports; 8 provenance and 8 portable matrix controls",
         "TESTS/contracts/test_historical_read_routes.py",
         "TESTS/adapters/django/historical_read_routes.py",
-        "TESTS/adapters/go/historical_read_image.py"
+        "TESTS/adapters/go/historical_read_image.py",
+        "selfhost/tests/test_application_manifest_lifecycle.py",
+        "selfhost/tests/application-update-smoke.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/instance-manifest.md",
@@ -17632,6 +17634,12 @@
           "artifact": "quality-reports/go-migration/parallel-scale-20261025/historical-image-orders-strictpath-r2-review.json",
           "revision": "757bb46ae294a9aeecc11c802aeae8dac82fbafc plus explicitly bound message-read source overlay; full input hashes are authoritative",
           "scope": "Bounded fixed-archive import/read/login slice: two fresh native/versioned orders and two fresh immutable-image/versioned orders, 547 migrations, 128 model snapshots, canonical timed storage paths, exact14audit5index rows,28reads4logins per run, full Redis types/bytes/absolute expiry, real misroute rejection and cleanup. No installed/restore/whole-family promotion."
+        },
+        {
+          "revision": "images 334cfae3185205dc33ff87cfe468e5c97d11b69b; lifecycle harness overlay identical to the committing change",
+          "result": "Old-controller installed lifecycle passes with browser: 11 checkpoints (v1.0.17 alias-only and 2.0.2 across /api, /api/v1, /api/v2, five after restore), 87 manifest GET/HEAD/OPTIONS requests with exact body/headers and unchanged selected database/audit/session/cache state before and after each request, restore flush/reseed, and 45 maintenance probes returning 503 no-store Retry-After 60. Receipt records working_tree_clean false for the harness overlay. Per-request upstream attribution, transient SQL writes, concurrent packaged reads and pool recovery remain gaps; no status promotion.",
+          "artifact": "quality-reports/go-migration/manifest-lifecycle-old-controller-r1/old-controller-transition.json",
+          "receipt_sha256": "314145e56ac15888415ab9f9699c8686da7096e86063c8b8f3dd094db6d640fc"
         }
       ],
       "notes": [
