@@ -1,10 +1,12 @@
 """Association-scoped document deletion.
 
 A document has no association of its own; it belongs to the objects that
-reference it. Deletion is allowed only when every referencing object resolves
-to the caller's association. A document nothing references any longer (its
-owner was deleted first) belongs to the association its creation audit entry
-was indexed to. Anything else answers like a missing document.
+reference it (resolved directly, or through the objects referencing them).
+Deletion is refused when any reference belongs to another association and
+allowed when they all belong to the caller's. When no reference has a known
+owner (for instance the owner was deleted first), the association its creation
+audit entry was indexed to decides. Anything else answers like a missing
+document.
 """
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -14,20 +16,38 @@ from rest_framework.response import Response
 NOT_FOUND = {'error': 'Document not found.'}
 
 
-def document_belongs_to(document, association):
+def referrers(obj):
+    """Every object holding a foreign key or many-to-many link to obj."""
+    for relation in obj._meta.related_objects:
+        yield from relation.related_model._base_manager.filter(**{relation.field.name: obj}).iterator()
+
+
+def owners_of(obj, depth=1):
+    """Associations owning obj: its resolver, else (one level up) its referrers'.
+    None marks an owner that cannot be determined."""
     from application.tenant_scope import resolve_association
+    owner = resolve_association(obj)
+    if owner is not None:
+        return {owner.pk}
+    if depth == 0:
+        return {None}
+    found = set()
+    for parent in referrers(obj):
+        found |= owners_of(parent, depth - 1)
+    return found or {None}
+
+
+def document_belongs_to(document, association):
     if association is None:
         return False
-    referenced = False
-    for relation in document._meta.related_objects:
-        model = relation.related_model
-        for obj in model._base_manager.filter(**{relation.field.name: document}).iterator():
-            referenced = True
-            owner = resolve_association(obj)
-            if owner is None or owner.pk != association.pk:
-                return False
-    if referenced:
+    owners = set()
+    for obj in referrers(document):
+        owners |= owners_of(obj)
+    if owners - {None, association.pk}:
+        return False
+    if owners == {association.pk}:
         return True
+    # Unreferenced, or referenced only by objects whose owner is unknown.
     return created_for(document, association)
 
 

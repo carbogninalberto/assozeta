@@ -52,6 +52,20 @@ class DocumentDeleteScopeTests(BaseAPITestCase):
         self.assertEqual(self.delete(self.owner, own.pk).status_code, 200)
         self.assertFalse(Document.objects.filter(pk=own.pk).exists())
 
+    def test_certificate_document_resolves_through_its_subscription(self):
+        from application.models.subscriptions_models import MedicalCertificate
+        from application.tests.fixtures.factories import create_test_subscription
+        document = Document.objects.create(filename='medical.pdf')
+        certificate = MedicalCertificate.objects.create(document=document)
+        foreign_document = Document.objects.create(filename='foreign-medical.pdf')
+        foreign_certificate = MedicalCertificate.objects.create(document=foreign_document)
+        create_test_subscription(sport_association=self.own, medical=certificate)
+        create_test_subscription(sport_association=self.other, medical=foreign_certificate)
+        self.assertEqual(self.delete(self.owner, foreign_document.pk).status_code, 404)
+        self.assertTrue(Document.objects.filter(pk=foreign_document.pk).exists())
+        self.assertEqual(self.delete(self.owner, document.pk).status_code, 200)
+        self.assertFalse(Document.objects.filter(pk=document.pk).exists())
+
     def test_unattributed_orphan_and_athlete_are_not_found(self):
         orphan = Document.objects.create(filename='orphan.pdf')
         self.assertEqual(self.delete(self.owner, orphan.pk).status_code, 404)
