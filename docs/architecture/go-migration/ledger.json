@@ -6320,25 +6320,72 @@
         "target": "FolderViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/folders.go",
+        "BE_GO/internal/dto/folders.go",
+        "BE_GO/internal/repository/folders.go",
+        "BE_GO/internal/service/folders.go",
+        "BE_GO/internal/handler/folders.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_folder (MPTT)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/folders/list",
+          "/api/v2/folders/list",
+          "/api/folders/list"
+        ],
+        "request": "Optional ?folder=<id>.",
+        "response": "200 {\"data\": [FolderSerializer with children], \"path\": [...] | null}.",
+        "errors": "401; 403 registry, impersonation or foreign folder; 404 parent folder; 500 non-integer folder, athlete or missing association, DELETE dispatch.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.archive.read.",
+        "resource_scope": "SportAssociation.objects.get(user=request.user).",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/folders_list_http.json",
+        "TESTS/fixtures/generate_folders_list_http.py",
+        "TESTS/contracts/test_folders_list_http.py",
+        "TESTS/adapters/django/folders_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/folders.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 17/17; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/folders-list-http-red-r1/results.json",
+          "receipt_sha256": "4215bd93f23984bd32239c63cf4de2b5b33e32b5a2a28a7aa96fea1f36f1a747"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 17/17 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged state.",
+          "artifact": "quality-reports/go-migration/folders-list-http-versioned-r1/results.json",
+          "receipt_sha256": "95d92661754561d4b09369aa742c5009686be9ca1a97e6ce5a5277587aee8c6e"
+        },
+        {
+          "revision": "committing change with reversed tree order",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/folders-list-http-mutation-r1/results.json",
+          "receipt_sha256": "567219f59c5cdd8e6dd4a0ff8843680a2c9e5ee157f957e270a7dbfe2c147222"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:google/calendar/<str:course_id>/export -> google_calendar_export_course",
