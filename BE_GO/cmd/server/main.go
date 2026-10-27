@@ -174,6 +174,7 @@ func run() (runErr error) {
 	paymentInfoHandler := handler.NewPaymentInfoHandler(service.NewPaymentInfo(repository.NewPaymentInfo(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	messageReadsHandler := handler.NewMessageReadsHandler(service.NewMessageReads(repository.NewMessageReads(db)), service.NewActorAuthentication(accounts, tokens), identities, handler.WithMessageListSpoolDirectory(cfg.MessageListSpoolDirectory))
 	messageMutationsHandler := handler.NewMessageMutationsHandler(service.NewMessageMutations(repository.NewMessageMutations(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	workflowWritesHandler := handler.NewAutomationWorkflowWritesHandler(service.NewAutomationWorkflowWrites(repository.NewAutomationWorkflows(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
@@ -203,6 +204,8 @@ func run() (runErr error) {
 	e.Any("/communications/messages/:message_id/detail", messageReadsHandler.Detail, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/add", messageMutationsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/messages/:message_id/delete", messageMutationsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/workflows/add", workflowWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/communications/workflows/:workflow_id/delete", workflowWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/list", workflowReadsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/workflows/:workflow_id/details", workflowReadsHandler.Details, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/communications/email-logs/list", emailLogsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

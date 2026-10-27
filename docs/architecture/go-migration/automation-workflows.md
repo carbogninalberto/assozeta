@@ -1,14 +1,27 @@
-# Automation workflow routes — reads implementing; writes characterized
+# Automation workflow routes — list, details, add and delete implementing; update characterized
 
 Five `communications/workflows/...` routes in `BE/communications/views.py`
 (`communication_workflows_list`, `_add`, `_details`, `_update`, `_delete`) are
-characterized from source. List and details are implemented in Go
-(`BE_GO/internal/*/automation_workflows.go`); add, update and delete are not.
+characterized from source. List, details, add and delete are implemented in Go
+(`BE_GO/internal/*/automation_workflow*.go`); update is not.
 
 **Read evidence (TDD):** the authored 20-case `TESTS/fixtures/workflows_http.json`
 passed on Django on the first run, Go then failed with 404 before any Go code,
 and it now passes 20/20 on native Django, native Go, Caddy `/api/v1` and
 `/api/v2`. Reversing the Go list order fails the run.
+
+**Write evidence (TDD):** two temporary Django probes on a throwaway database
+characterized the audit format (JSON fields as sorted ASCII `json.dumps`,
+naive UTC `str(datetime)` timestamps, `None` omitted, index path
+`changes_json.sport_association` for both create and delete, the acting
+collaborator as audit actor), that a client `automation_workflow_id` is
+writable, and that array, null and form bodies return 500. The authored 27-case
+`TESTS/fixtures/workflow_writes_http.json` then passed on Django on the first
+run, Go failed with 404 before any Go code, and it now passes 27/27 on all four
+transports with exact workflow, audit-entry and index effects. Rendering the
+audit tree without sorted keys fails the run. Go reproduces Django's delete of a
+missing or foreign ID (HTTP 500, no change); that remains a candidate bug for a
+decision.
 
 ## Shared behavior
 

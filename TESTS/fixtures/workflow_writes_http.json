@@ -1,0 +1,734 @@
+{
+ "matrix_version": 1,
+ "scope": "Workflow add/delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "seed": {
+  "own_delete": {
+   "id": "a1000000-0000-4000-8000-000000760001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Da eliminare",
+   "description": "Vecchia",
+   "tree": [],
+   "enabled": true,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000760002",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "description": null,
+   "tree": [],
+   "enabled": false,
+   "created_at": "2026-10-22T09:00:00Z",
+   "updated_at": "2026-10-22T09:00:00Z"
+  }
+ },
+ "index_path": "changes_json.sport_association",
+ "cases": [
+  {
+   "name": "workflow-writes-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow added.",
+    "workflow_id": "$new:owner"
+   },
+   "effect": {
+    "kind": "create",
+    "label": "owner",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "name": "Benvenuto à",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "b": 1,
+        "a": [
+         true,
+         null,
+         1.5
+        ]
+       }
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Oggetto à 😀"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "automation_workflow_id": [
+       "None",
+       "$new:owner"
+      ],
+      "name": [
+       "None",
+       "Benvenuto à"
+      ],
+      "automation_tree": [
+       "None",
+       "[{\"data\": {\"a\": [true, null, 1.5], \"b\": 1}, \"id\": \"trigger\", \"value\": \"new_subscription\"}, {\"data\": {\"subject\": \"Oggetto \\u00e0 \\ud83d\\ude00\"}, \"id\": \"message\", \"value\": \"email\"}]"
+      ],
+      "enabled": [
+       "None",
+       "False"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "created_at": [
+       "None",
+       "$now-audit"
+      ],
+      "updated_at": [
+       "None",
+       "$now-audit"
+      ]
+     }
+    }
+   },
+   "body": {
+    "name": "Benvenuto à",
+    "automation_tree": [
+     {
+      "id": "trigger",
+      "value": "new_subscription",
+      "data": {
+       "b": 1,
+       "a": [
+        true,
+        null,
+        1.5
+       ]
+      }
+     },
+     {
+      "id": "message",
+      "value": "email",
+      "data": {
+       "subject": "Oggetto à 😀"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "workflow-writes-add-client-id-truthy-enabled",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow added.",
+    "workflow_id": "a1000000-0000-4000-8000-000000760009"
+   },
+   "effect": {
+    "kind": "create",
+    "label": "client",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "name": "Scelto",
+     "description": "",
+     "automation_tree": [],
+     "enabled": true
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "automation_workflow_id": [
+       "None",
+       "$new:client"
+      ],
+      "name": [
+       "None",
+       "Scelto"
+      ],
+      "automation_tree": [
+       "None",
+       "[]"
+      ],
+      "enabled": [
+       "None",
+       "True"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "created_at": [
+       "None",
+       "$now-audit"
+      ],
+      "updated_at": [
+       "None",
+       "$now-audit"
+      ],
+      "description": [
+       "None",
+       ""
+      ]
+     }
+    },
+    "fixed_id": "a1000000-0000-4000-8000-000000760009"
+   },
+   "body": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000760009",
+    "name": "Scelto",
+    "automation_tree": [],
+    "enabled": "yes",
+    "description": "",
+    "created_at": "2020-01-01T00:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "workflow-writes-add-duplicate-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000760009",
+    "name": "Doppio",
+    "automation_tree": []
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-blank-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "   ",
+    "automation_tree": []
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-long-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-missing-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "automation_tree": []
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-tree-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x",
+    "automation_tree": {}
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-tree-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x",
+    "automation_tree": null
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-sms-message",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x",
+    "automation_tree": [
+     {
+      "id": "message",
+      "value": "sms"
+     }
+    ]
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-bad-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x",
+    "automation_workflow_id": "nope"
+   }
+  },
+  {
+   "name": "workflow-writes-add-invalid-enabled-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x",
+    "enabled": "maybe"
+   }
+  },
+  {
+   "name": "workflow-writes-add-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "body": []
+  },
+  {
+   "name": "workflow-writes-add-null-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "workflow-writes-add-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   },
+   "raw_body": "name=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-writes-add-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow added.",
+    "workflow_id": "$new:full"
+   },
+   "effect": {
+    "kind": "create",
+    "label": "full",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "name": "Collaboratore",
+     "description": null,
+     "automation_tree": [],
+     "enabled": false
+    },
+    "audit": {
+     "action": 0,
+     "actor": "full_collaborator",
+     "changes": {
+      "automation_workflow_id": [
+       "None",
+       "$new:full"
+      ],
+      "name": [
+       "None",
+       "Collaboratore"
+      ],
+      "automation_tree": [
+       "None",
+       "[]"
+      ],
+      "enabled": [
+       "None",
+       "False"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "created_at": [
+       "None",
+       "$now-audit"
+      ],
+      "updated_at": [
+       "None",
+       "$now-audit"
+      ]
+     }
+    }
+   },
+   "body": {
+    "name": "Collaboratore"
+   }
+  },
+  {
+   "name": "workflow-writes-add-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/add'. Contact administrator to grant access."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-writes-add-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-writes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "workflow-writes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Workflows Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/workflows/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-foreign-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000760002/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-missing-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000769999/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000760001/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'communications/workflows/a1000000-0000-4000-8000-000000760001/delete'. Contact administrator to grant access."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000760001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow deleted."
+   },
+   "effect": {
+    "kind": "delete",
+    "row": "a1000000-0000-4000-8000-000000760001",
+    "audit": {
+     "action": 2,
+     "actor": "owner",
+     "changes": {
+      "automation_workflow_id": [
+       "a1000000-0000-4000-8000-000000760001",
+       "None"
+      ],
+      "name": [
+       "Da eliminare",
+       "None"
+      ],
+      "description": [
+       "Vecchia",
+       "None"
+      ],
+      "automation_tree": [
+       "[]",
+       "None"
+      ],
+      "enabled": [
+       "True",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "created_at": [
+       "2026-10-20 09:00:00.250000",
+       "None"
+      ],
+      "updated_at": [
+       "2026-10-21 10:00:00",
+       "None"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "workflow-writes-delete-repeat-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000760001/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "workflow-writes-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000760001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Communication Workflows Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  }
+ ]
+}

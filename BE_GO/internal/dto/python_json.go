@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 	"math/big"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -21,7 +22,17 @@ func PythonJSONDumps(value any) []byte {
 	return []byte(out.String())
 }
 
-func pythonJSONWrite(out *strings.Builder, value any) {
+// PythonJSONDumpsSorted is json.dumps(value, sort_keys=True); Go byte order on
+// UTF-8 (and preserved surrogate units) equals Python's code-point order.
+func PythonJSONDumpsSorted(value any) []byte {
+	var out strings.Builder
+	pythonJSONWriteSorted(&out, value, true)
+	return []byte(out.String())
+}
+
+func pythonJSONWrite(out *strings.Builder, value any) { pythonJSONWriteSorted(out, value, false) }
+
+func pythonJSONWriteSorted(out *strings.Builder, value any, sorted bool) {
 	switch v := value.(type) {
 	case nil:
 		out.WriteString("null")
@@ -36,6 +47,10 @@ func pythonJSONWrite(out *strings.Builder, value any) {
 	case json.Number:
 		out.WriteString(pythonJSONNumber(string(v)))
 	case domain.RequestObject:
+		if sorted {
+			v = append(domain.RequestObject(nil), v...)
+			sort.SliceStable(v, func(i, j int) bool { return v[i].Name < v[j].Name })
+		}
 		out.WriteByte('{')
 		for i, field := range v {
 			if i > 0 {
@@ -43,7 +58,7 @@ func pythonJSONWrite(out *strings.Builder, value any) {
 			}
 			pythonJSONString(out, field.Name)
 			out.WriteString(": ")
-			pythonJSONWrite(out, field.Value)
+			pythonJSONWriteSorted(out, field.Value, sorted)
 		}
 		out.WriteByte('}')
 	case []any:
@@ -52,7 +67,7 @@ func pythonJSONWrite(out *strings.Builder, value any) {
 			if i > 0 {
 				out.WriteString(", ")
 			}
-			pythonJSONWrite(out, item)
+			pythonJSONWriteSorted(out, item, sorted)
 		}
 		out.WriteByte(']')
 	default:

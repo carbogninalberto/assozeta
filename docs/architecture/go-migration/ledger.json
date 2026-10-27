@@ -15827,8 +15827,16 @@
         "target": "communication_workflows_delete",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/automation_workflow_write.go",
+        "BE_GO/internal/dto/python_json.go",
+        "BE_GO/internal/domain/automation_workflows.go",
+        "BE_GO/internal/repository/automation_workflows.go",
+        "BE_GO/internal/service/automation_workflow_writes.go",
+        "BE_GO/internal/handler/automation_workflow_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
@@ -15853,12 +15861,31 @@
         "transaction": "Autocommit delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/workflow_writes_http.json",
+        "TESTS/fixtures/generate_workflow_writes_http.py",
+        "TESTS/contracts/test_workflow_writes_http.py",
+        "TESTS/adapters/django/workflow_writes_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/automation-workflows.md"
+        "docs/architecture/go-migration/automation-workflows.md",
+        {
+          "revision": "8188d4db family plus authored sequence, before Go code",
+          "result": "RED: Django 27/27 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-red-r1/results.json",
+          "receipt_sha256": "c05a54c8e290def7635ebb01b97d476c59e1a8b1763b33e93f5c50db9f3624a3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go.",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "30af7ebfd1f4d33592f53a75333e971d2372c2d6ece2b8be07f482306c03b36a"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: write parity including audit proven on four transports.",
+        "Delete of a missing/foreign ID reproduces Django's 500 (candidate bug, decision pending)."
       ]
     },
     {
@@ -16000,8 +16027,16 @@
         "target": "communication_workflows_add",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/automation_workflow_write.go",
+        "BE_GO/internal/dto/python_json.go",
+        "BE_GO/internal/domain/automation_workflows.go",
+        "BE_GO/internal/repository/automation_workflows.go",
+        "BE_GO/internal/service/automation_workflow_writes.go",
+        "BE_GO/internal/handler/automation_workflow_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
@@ -16026,12 +16061,30 @@
         "transaction": "Autocommit save with audit signals (ATOMIC_REQUESTS unset).",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/workflow_writes_http.json",
+        "TESTS/fixtures/generate_workflow_writes_http.py",
+        "TESTS/contracts/test_workflow_writes_http.py",
+        "TESTS/adapters/django/workflow_writes_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/automation-workflows.md"
+        "docs/architecture/go-migration/automation-workflows.md",
+        {
+          "revision": "8188d4db family plus authored sequence, before Go code",
+          "result": "RED: Django 27/27 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-red-r1/results.json",
+          "receipt_sha256": "c05a54c8e290def7635ebb01b97d476c59e1a8b1763b33e93f5c50db9f3624a3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go.",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "30af7ebfd1f4d33592f53a75333e971d2372c2d6ece2b8be07f482306c03b36a"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: write parity including audit proven on four transports."
       ]
     },
     {
