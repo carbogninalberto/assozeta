@@ -15809,25 +15809,39 @@
         "target": "communication_workflows_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/workflows/{id}/delete",
+          "/api/v2/communications/workflows/{id}/delete",
+          "/api/communications/workflows/{id}/delete"
+        ],
+        "request": "See automation-workflows.md.",
+        "response": "200 {\"msg\": \"workflow deleted.\"}.",
+        "errors": "400 malformed UUID; missing/foreign ID raises AttributeError (500, candidate bug).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
+        "resource_scope": "request.user.sport_association through ActiveManager.",
+        "side_effects": "Row delete and audit.",
+        "transaction": "Autocommit delete with audit signals.",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/automation-workflows.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/workflows/<str:workflow_id>/details -> communication_workflows_details",
@@ -15844,25 +15858,39 @@
         "target": "communication_workflows_details",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/workflows/{id}/details",
+          "/api/v2/communications/workflows/{id}/details",
+          "/api/communications/workflows/{id}/details"
+        ],
+        "request": "See automation-workflows.md.",
+        "response": "200 one workflow (all fields).",
+        "errors": "400 malformed UUID; 404 {\"msg\": \"workflow not found.\"}; 401/403/500 as list.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
+        "resource_scope": "request.user.sport_association through ActiveManager.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/automation-workflows.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/workflows/<str:workflow_id>/update -> communication_workflows_update",
@@ -15879,25 +15907,40 @@
         "target": "communication_workflows_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers",
+        "Workflow task family on the durable Go job system with execution ownership"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/workflows/{id}/update",
+          "/api/v2/communications/workflows/{id}/update",
+          "/api/communications/workflows/{id}/update"
+        ],
+        "request": "See automation-workflows.md.",
+        "response": "200 {\"msg\": \"workflow updated.\"}.",
+        "errors": "400 malformed UUID or {\"msg\": \"workflow not valid.\"}; 404 workflow not found.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
+        "resource_scope": "request.user.sport_association through ActiveManager.",
+        "side_effects": "Row update and audit; on disabled->enabled, cron flag reset save and AutomationWorkflow.trigger(), which may enqueue Celery check_workflows_trigger_cron with a countdown.",
+        "transaction": "Separate autocommit saves; task enqueue outside any transaction.",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/automation-workflows.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/workflows/add -> communication_workflows_add",
@@ -15914,25 +15957,39 @@
         "target": "communication_workflows_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/workflows/add",
+          "/api/v2/communications/workflows/add",
+          "/api/communications/workflows/add"
+        ],
+        "request": "See automation-workflows.md.",
+        "response": "200 {\"msg\": \"workflow added.\", \"workflow_id\": uuid}.",
+        "errors": "400 {\"msg\": \"workflow not valid.\"} for any validation error; 401/403/500 as list.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
+        "resource_scope": "request.user.sport_association through ActiveManager.",
+        "side_effects": "One AutomationWorkflow row plus auditlog LogEntry and AuditLogIndex.",
+        "transaction": "Autocommit save with audit signals (ATOMIC_REQUESTS unset).",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/automation-workflows.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/workflows/list -> communication_workflows_list",
@@ -15949,25 +16006,39 @@
         "target": "communication_workflows_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/workflows/list",
+          "/api/v2/communications/workflows/list",
+          "/api/communications/workflows/list"
+        ],
+        "request": "See automation-workflows.md.",
+        "response": "200 list of AutomationWorkflow rows (all fields) ordered -created_at.",
+        "errors": "401; 403 role/unmapped-route; 500 missing or soft-deleted association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
+        "resource_scope": "request.user.sport_association through ActiveManager.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/automation-workflows.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/core/urls.py:healthz -> health",
