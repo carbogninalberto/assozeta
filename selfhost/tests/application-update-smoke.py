@@ -191,6 +191,7 @@ def run(legacy=False, browser=False, operations_only=False, legacy_controller=Fa
     go_occurrence_snapshot = None
     go_migration_interruption = False
     manifest_checkpoints = []
+    realtime_probes = []
     manifest_maintenance = []
 
     def command(args, **kwargs):
@@ -657,6 +658,18 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             settings = read_env(env_file)
             sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
             assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
+            # The managed relay forwards Go outbox events through Django Channels.
+            assert len(capture(compose('ps', '-q', 'realtime-relay'), env=environment).splitlines()) == 1
+            event = capture(compose(*sql, "INSERT INTO public.assozeta_go_realtime_events(envelope_version,kind,target_id) "
+                                    f"VALUES (1,'staff_board_changed','{uuid4()}') RETURNING id"), env=environment).splitlines()[0]
+            assert event.isdigit()
+            for _ in range(60):
+                if capture(compose(*sql, f'SELECT delivered_at IS NOT NULL FROM public.assozeta_go_realtime_events WHERE id={event}'), env=environment) == 't':
+                    break
+                time.sleep(0.5)
+            else:
+                raise AssertionError('Realtime relay did not deliver the outbox probe')
+            realtime_probes.append({'version': version, 'delivered': True})
             assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
             if go_intent_snapshot is not None:
                 actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)
@@ -1114,7 +1127,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
             subprocess.run(['docker', 'image', 'rm', tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         remove_disposable_project(project)
         if success:
-            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller, 'manifest_checkpoints': manifest_checkpoints, 'manifest_maintenance': manifest_maintenance})
+            write_evidence('operations' if operations_only else 'legacy-upgrade' if legacy else 'old-controller-transition' if legacy_controller else 'update-recovery', {'images': {'backend': backend, 'backend_go': backend_go, 'web': web, 'renderer': renderer, 'updater': updaters}, 'browser': browser, 'dual_api_delivery': True, 'go_operational_migrations': True, 'go_migration_interruption': go_migration_interruption, 'execution_owner': 'django-celery', 'historical_controller': historical_controller, 'manifest_checkpoints': manifest_checkpoints, 'manifest_maintenance': manifest_maintenance, 'realtime_relay_probes': realtime_probes})
             shutil.rmtree(directory)
         else:
             print(f'Failure artifacts retained privately at {directory}', flush=True)
