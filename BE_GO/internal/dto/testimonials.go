@@ -261,3 +261,9 @@ func pythonStringRepr(out *strings.Builder, value string) {
 	}
 	out.WriteRune(quote)
 }
+
+// PythonContains is `key in data` for a parsed body.
+func PythonContains(data any, key string) (bool, error) { return pythonContains(data, key) }
+
+// PythonIndex is data[key] for a parsed body.
+func PythonIndex(data any, key string) (any, error) { return pythonIndex(data, key) }

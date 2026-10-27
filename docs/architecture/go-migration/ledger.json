@@ -11898,25 +11898,71 @@
         "target": "SavedReportViewSet.as_view({'delete': 'delete'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and registry",
+        "application_savedreport"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/{pk}/delete",
+          "/api/v2/saved-reports/{pk}/delete",
+          "/api/saved-reports/{pk}/delete"
+        ],
+        "request": "JSON or form object (see saved-reports.md).",
+        "response": "204 empty.",
+        "errors": "400 required/unknown tool; 401; 403 unmapped or impersonation; 404 Report not found; 500 raw-value and lookup exceptions.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user.",
+        "side_effects": "SavedReport rows; not audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/saved_reports_http.json",
+        "TESTS/fixtures/generate_saved_reports_http.py",
+        "TESTS/contracts/test_saved_reports_http.py",
+        "TESTS/adapters/django/saved_reports_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/saved-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-red-r1/results.json",
+          "receipt_sha256": "bd0a243fdc599e1e8ec475ed4f1bdbc9671dda18efb1eea0d68f937a68fa4f6e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact report rows and timestamps.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "f28f7911a52d058d9df233ea1f67e2fefdf0378c3f768a197db2001b020a065a"
+        },
+        {
+          "revision": "committing change without strip()",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "db64a21139e84ad9e7fbc82e6b717d82743c96cdb71fe772f84b721fd63cf0c8"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/<str:pk>/info -> SavedReportViewSet.as_view({'get': 'info'})",
@@ -11933,25 +11979,73 @@
         "target": "SavedReportViewSet.as_view({'get': 'info'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and registry",
+        "application_savedreport"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/{pk}/info",
+          "/api/v2/saved-reports/{pk}/info",
+          "/api/saved-reports/{pk}/info"
+        ],
+        "request": "JSON or form object (see saved-reports.md).",
+        "response": "200 {\"data\": {...}}.",
+        "errors": "400 required/unknown tool; 401; 403 unmapped or impersonation; 404 Report not found; 500 raw-value and lookup exceptions.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user.",
+        "side_effects": "SavedReport rows; not audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/saved_reports_http.json",
+        "TESTS/fixtures/generate_saved_reports_http.py",
+        "TESTS/contracts/test_saved_reports_http.py",
+        "TESTS/adapters/django/saved_reports_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/saved-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-red-r1/results.json",
+          "receipt_sha256": "bd0a243fdc599e1e8ec475ed4f1bdbc9671dda18efb1eea0d68f937a68fa4f6e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact report rows and timestamps.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "f28f7911a52d058d9df233ea1f67e2fefdf0378c3f768a197db2001b020a065a"
+        },
+        {
+          "revision": "committing change without strip()",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "db64a21139e84ad9e7fbc82e6b717d82743c96cdb71fe772f84b721fd63cf0c8"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/<str:pk>/run -> SavedReportViewSet.as_view({'post': 'run'})",
@@ -12003,25 +12097,72 @@
         "target": "SavedReportViewSet.as_view({'patch': 'update'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and registry",
+        "application_savedreport"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/{pk}/update",
+          "/api/v2/saved-reports/{pk}/update",
+          "/api/saved-reports/{pk}/update"
+        ],
+        "request": "JSON or form object (see saved-reports.md).",
+        "response": "200 {\"saved_report_id\", \"name\": raw}.",
+        "errors": "400 required/unknown tool; 401; 403 unmapped or impersonation; 404 Report not found; 500 raw-value and lookup exceptions.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user.",
+        "side_effects": "SavedReport rows; not audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/saved_reports_http.json",
+        "TESTS/fixtures/generate_saved_reports_http.py",
+        "TESTS/contracts/test_saved_reports_http.py",
+        "TESTS/adapters/django/saved_reports_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/saved-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-red-r1/results.json",
+          "receipt_sha256": "bd0a243fdc599e1e8ec475ed4f1bdbc9671dda18efb1eea0d68f937a68fa4f6e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact report rows and timestamps.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "f28f7911a52d058d9df233ea1f67e2fefdf0378c3f768a197db2001b020a065a"
+        },
+        {
+          "revision": "committing change without strip()",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "db64a21139e84ad9e7fbc82e6b717d82743c96cdb71fe772f84b721fd63cf0c8"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/add -> SavedReportViewSet.as_view({'post': 'add'})",
@@ -12038,25 +12179,72 @@
         "target": "SavedReportViewSet.as_view({'post': 'add'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and registry",
+        "application_savedreport"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/add",
+          "/api/v2/saved-reports/add",
+          "/api/saved-reports/add"
+        ],
+        "request": "JSON or form object (see saved-reports.md).",
+        "response": "201 {\"saved_report_id\", \"name\"}.",
+        "errors": "400 required/unknown tool; 401; 403 unmapped or impersonation; 404 Report not found; 500 raw-value and lookup exceptions.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user.",
+        "side_effects": "SavedReport rows; not audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/saved_reports_http.json",
+        "TESTS/fixtures/generate_saved_reports_http.py",
+        "TESTS/contracts/test_saved_reports_http.py",
+        "TESTS/adapters/django/saved_reports_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/saved-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-red-r1/results.json",
+          "receipt_sha256": "bd0a243fdc599e1e8ec475ed4f1bdbc9671dda18efb1eea0d68f937a68fa4f6e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact report rows and timestamps.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "f28f7911a52d058d9df233ea1f67e2fefdf0378c3f768a197db2001b020a065a"
+        },
+        {
+          "revision": "committing change without strip()",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "db64a21139e84ad9e7fbc82e6b717d82743c96cdb71fe772f84b721fd63cf0c8"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:saved-reports/list -> SavedReportViewSet.as_view({'get': 'list'})",
@@ -12073,25 +12261,73 @@
         "target": "SavedReportViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/saved_reports.go",
+        "BE_GO/internal/dto/saved_reports.go",
+        "BE_GO/internal/repository/saved_reports.go",
+        "BE_GO/internal/service/saved_reports.go",
+        "BE_GO/internal/handler/saved_reports.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and registry",
+        "application_savedreport"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "HEAD",
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/saved-reports/list",
+          "/api/v2/saved-reports/list",
+          "/api/saved-reports/list"
+        ],
+        "request": "JSON or form object (see saved-reports.md).",
+        "response": "200 {\"data\": [...]} ordered -updated_at.",
+        "errors": "400 required/unknown tool; 401; 403 unmapped or impersonation; 404 Report not found; 500 raw-value and lookup exceptions.",
+        "authentication": "core.middleware.IsAuthenticated (identity resolution).",
+        "permissions": "Unmapped in the registry.",
+        "resource_scope": "Owner association and created_by=request.user.",
+        "side_effects": "SavedReport rows; not audited.",
+        "transaction": "Autocommit.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/saved_reports_http.json",
+        "TESTS/fixtures/generate_saved_reports_http.py",
+        "TESTS/contracts/test_saved_reports_http.py",
+        "TESTS/adapters/django/saved_reports_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/saved-reports.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-red-r1/results.json",
+          "receipt_sha256": "bd0a243fdc599e1e8ec475ed4f1bdbc9671dda18efb1eea0d68f937a68fa4f6e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact report rows and timestamps.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-versioned-r1/results.json",
+          "receipt_sha256": "f28f7911a52d058d9df233ea1f67e2fefdf0378c3f768a197db2001b020a065a"
+        },
+        {
+          "revision": "committing change without strip()",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/saved-reports-http-mutation-r1/results.json",
+          "receipt_sha256": "db64a21139e84ad9e7fbc82e6b717d82743c96cdb71fe772f84b721fd63cf0c8"
+        }
+      ],
+      "notes": [
+        "Implementing: parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:search/profile/<str:username> -> search_profile",
