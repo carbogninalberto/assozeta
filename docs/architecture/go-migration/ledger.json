@@ -14428,25 +14428,40 @@
         "target": "communication_email_logs_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "Existing actor/scope identity and collaborator registry default deny",
+        "Existing application_emaillog table; Django owns migrations",
+        "Process local wall clock interpreted as UTC for both windows"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/communications/email-logs/list",
+          "/api/v2/communications/email-logs/list",
+          "/api/communications/email-logs/list"
+        ],
+        "request": "No body; unpaginated.",
+        "response": "200 {\"today_count\": int, \"total_count\": int, \"results\": [{email_log_id, recipient, subject, sent_at, result}]} ordered -sent_at within 90 days.",
+        "errors": "401 unauthenticated; 403 athlete ('User is not a sport association') and registry default deny for collaborators; 500 when an owner/admin has no association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAuthenticated only; route unmapped in permissions_registry, so collaborators are denied by default.",
+        "resource_scope": "User.sport_association cached_property: connected owner for collaborators, own association otherwise; deleted associations are not excluded.",
+        "side_effects": "None.",
+        "transaction": "Read only; two queries (rows streamed in chunks of 100, plus today_count).",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/email-logs.md"
+      ],
+      "notes": [
+        "Characterized from inspected source; no Go implementation or executed evidence."
+      ]
     },
     {
       "id": "route:BE/communications/urls.py:communications/messages/<str:message_id>/delete -> communication_messages_delete",
