@@ -1,8 +1,14 @@
-# Automation workflow routes — characterized, not implemented
+# Automation workflow routes — reads implementing; writes characterized
 
 Five `communications/workflows/...` routes in `BE/communications/views.py`
 (`communication_workflows_list`, `_add`, `_details`, `_update`, `_delete`) are
-characterized from source. No Go implementation or executed evidence exists.
+characterized from source. List and details are implemented in Go
+(`BE_GO/internal/*/automation_workflows.go`); add, update and delete are not.
+
+**Read evidence (TDD):** the authored 20-case `TESTS/fixtures/workflows_http.json`
+passed on Django on the first run, Go then failed with 404 before any Go code,
+and it now passes 20/20 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`. Reversing the Go list order fails the run.
 
 ## Shared behavior
 

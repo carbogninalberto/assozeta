@@ -2,7 +2,8 @@
 
 Run with the production interpreter:
 ``python -m TESTS.adapters.django.staff_board_http_acceptance --output NEW_DIRECTORY [--versioned]
-[--family staff-board|email-logs]``.
+--family FAMILY``
+(for example staff-board, email-logs, workflows).
 Reuses the proven private PostgreSQL/Redis, Django ASGI observer, native Go
 server and shipped Caddy lifetimes. Each endpoint gets a fresh fixture and a
 verified cleanup receipt. Only the credential-free results.json is published.
@@ -17,32 +18,33 @@ import traceback
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
-FAMILIES = {
-    'staff-board': ('staff_board_http', ('TESTS/fixtures/staff_board_http.json', 'TESTS/contracts/test_staff_board_http.py',
-        'TESTS/adapters/django/staff_board_http.py', 'BE/communications/views.py', 'BE/communications/staff_board.py',
-        'BE/communications/serializers.py', 'BE_GO/internal/handler/staff_board.go', 'BE_GO/internal/service/staff_board.go',
-        'BE_GO/internal/repository/staff_board.go', 'BE_GO/internal/dto/staff_board_input.go',
-        'BE_GO/internal/dto/staff_board_document.go', 'BE_GO/internal/dto/staff_board_response.go',
-        'BE/notifications/go_realtime.py')),
-    'email-logs': ('email_logs_http', ('TESTS/fixtures/email_logs_http.json', 'TESTS/contracts/test_email_logs_http.py',
-        'TESTS/adapters/django/email_logs_http.py', 'BE/communications/views.py', 'BE/application/models/user_models.py',
-        'BE/application/impersonation.py')),
-}
+# Each family is TESTS.adapters.django.<family>_http and declares its own SOURCES,
+# so adding a family never changes this driver or other families' bindings.
+def family_runner(family):
+    import importlib
+    import re
+    assert re.fullmatch(r'[a-z]+(-[a-z]+)*', family), 'family.name'
+    runner = importlib.import_module('TESTS.adapters.django.' + family.replace('-', '_') + '_http')
+    assert all(callable(getattr(runner, name, None)) for name in ('fixture_context', 'run_workload')) \
+        and isinstance(getattr(runner, 'SOURCES', None), tuple), 'family.interface'
+    return runner
+
+
 SOURCES = ('TESTS/adapters/django/staff_board_http_acceptance.py', 'BE_GO/cmd/server/main.go',
            'TESTS/adapters/go/go_operational_migrations.py', 'BE_GO/migrations/migrations.go',
            'BE_GO/migrations/000004_realtime_events.up.sql')
 
 
 def source_hashes(family='staff-board'):
-    return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in SOURCES + FAMILIES[family][1]}
+    names = SOURCES + tuple(family_runner(family).SOURCES)
+    return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in names}
 
 
 def execute(report, tools, private, log):
     from TESTS.adapters.django import message_reads_runtime as reuse
     from TESTS.adapters.django.message_read_scopes_runtime import go_service, caddy_liveness_guard, LIFECYCLE_GUARD
     from TESTS.adapters.django.message_mutations_acceptance import _owned, configure_database_bounds, PG_BOUNDS
-    import importlib
-    runner = importlib.import_module('TESTS.adapters.django.' + FAMILIES[report['family']][0])
+    runner = family_runner(report['family'])
     versioned = report['versioned']
     with _owned(reuse.owned_message_database(private, report)) as (work, port, _services):
         env, _ = reuse.private_environment(work, port, tools)
@@ -108,7 +110,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--versioned', action='store_true')
-    parser.add_argument('--family', choices=sorted(FAMILIES), default='staff-board')
+    parser.add_argument('--family', required=True)
     args = parser.parse_args(argv)
     from TESTS.adapters.django import message_reads_runtime as reuse
     output = reuse.prepare_output_directory(args.output)

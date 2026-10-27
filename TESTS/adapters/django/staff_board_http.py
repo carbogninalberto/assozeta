@@ -18,6 +18,14 @@ from TESTS.adapters.django import message_mutations as mutations
 MODEL = 'communications.StaffBoardMessage'
 
 
+SOURCES = ('TESTS/fixtures/staff_board_http.json', 'TESTS/contracts/test_staff_board_http.py',
+           'TESTS/adapters/django/staff_board_http.py', 'BE/communications/views.py', 'BE/communications/staff_board.py',
+           'BE/communications/serializers.py', 'BE/notifications/go_realtime.py', 'BE_GO/internal/handler/staff_board.go',
+           'BE_GO/internal/service/staff_board.go', 'BE_GO/internal/repository/staff_board.go',
+           'BE_GO/internal/dto/staff_board_input.go', 'BE_GO/internal/dto/staff_board_document.go',
+           'BE_GO/internal/dto/staff_board_response.go')
+
+
 def scalar(value):
     if isinstance(value, dict) and set(value) == {'type', 'value'} and value['type'] in ('uuid', 'datetime'):
         return value['value']

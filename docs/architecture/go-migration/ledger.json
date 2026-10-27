@@ -14481,8 +14481,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks.",
-          "artifact": "quality-reports/go-migration/email-logs-http-versioned-r2/results.json",
-          "receipt_sha256": "e05db1b130e269b5a9d8ace3a901799cc5b218ee26146636ee0b331f03224ad0"
+          "artifact": "quality-reports/go-migration/email-logs-http-versioned-r3/results.json",
+          "receipt_sha256": "da865ef49950f167c453b311777430fd3f24b20c087bdb030a6d3406af8a94a6"
         }
       ],
       "notes": [
@@ -15450,8 +15450,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
-          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
+          "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
         }
       ],
       "notes": [
@@ -15569,8 +15569,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
-          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
+          "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
         }
       ],
       "notes": [
@@ -15688,8 +15688,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
-          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
+          "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
         }
       ],
       "notes": [
@@ -15785,8 +15785,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
-          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r6/results.json",
+          "receipt_sha256": "feb2f732b4bb4f615ef74eadc73b8e08a3c559f801e2e2c3edc25bfdc5ceb576"
         }
       ],
       "notes": [
@@ -15858,8 +15858,15 @@
         "target": "communication_workflows_details",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/automation_workflows.go",
+        "BE_GO/internal/repository/automation_workflows.go",
+        "BE_GO/internal/service/automation_workflows.go",
+        "BE_GO/internal/dto/automation_workflows.go",
+        "BE_GO/internal/handler/automation_workflows.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
@@ -15884,12 +15891,30 @@
         "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/workflows_http.json",
+        "TESTS/fixtures/generate_workflows_http.py",
+        "TESTS/contracts/test_workflows_http.py",
+        "TESTS/adapters/django/workflows_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/automation-workflows.md"
+        "docs/architecture/go-migration/automation-workflows.md",
+        {
+          "revision": "53ed9d4f plus authored sequence, before Go code",
+          "result": "RED: Django 20/20 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/workflows-http-red-r1/results.json",
+          "receipt_sha256": "3ce743952a89778859fc118406c4ef960592e938d8231fc0697471f2e8ec3e54"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go.",
+          "artifact": "quality-reports/go-migration/workflows-http-versioned-r2/results.json",
+          "receipt_sha256": "30ccf1a7a68676f74fdb45d007210b25e4acc9c641d9a32d5964d663ead8ebff"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: read parity proven on four transports."
       ]
     },
     {
@@ -16006,8 +16031,15 @@
         "target": "communication_workflows_list",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/automation_workflows.go",
+        "BE_GO/internal/repository/automation_workflows.go",
+        "BE_GO/internal/service/automation_workflows.go",
+        "BE_GO/internal/dto/automation_workflows.go",
+        "BE_GO/internal/handler/automation_workflows.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "Existing identity, collaborator registry and association scope",
         "communications_automationworkflow table; auditlog LogEntry/AuditLogIndex resolvers"
@@ -16032,12 +16064,30 @@
         "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/workflows_http.json",
+        "TESTS/fixtures/generate_workflows_http.py",
+        "TESTS/contracts/test_workflows_http.py",
+        "TESTS/adapters/django/workflows_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/automation-workflows.md"
+        "docs/architecture/go-migration/automation-workflows.md",
+        {
+          "revision": "53ed9d4f plus authored sequence, before Go code",
+          "result": "RED: Django 20/20 on first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/workflows-http-red-r1/results.json",
+          "receipt_sha256": "3ce743952a89778859fc118406c4ef960592e938d8231fc0697471f2e8ec3e54"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 20/20 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks; list-order mutation fails Go.",
+          "artifact": "quality-reports/go-migration/workflows-http-versioned-r2/results.json",
+          "receipt_sha256": "30ccf1a7a68676f74fdb45d007210b25e4acc9c641d9a32d5964d663ead8ebff"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: read parity proven on four transports."
       ]
     },
     {

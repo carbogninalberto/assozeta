@@ -15,6 +15,12 @@ from TESTS.adapters.django import message_reads as shared
 from TESTS.adapters.django import message_mutations as mutations
 
 
+SOURCES = ('TESTS/fixtures/email_logs_http.json', 'TESTS/contracts/test_email_logs_http.py',
+           'TESTS/adapters/django/email_logs_http.py', 'BE/communications/views.py', 'BE/application/models/user_models.py',
+           'BE/application/impersonation.py', 'BE_GO/internal/handler/email_logs.go', 'BE_GO/internal/service/email_logs.go',
+           'BE_GO/internal/repository/email_logs.go', 'BE_GO/internal/dto/email_logs.go')
+
+
 def seed_fixture(apps, private_work, raw):
     from django.db import transaction
     from application.models import EmailLog
