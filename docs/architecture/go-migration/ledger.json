@@ -15372,7 +15372,9 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
-        "BE_GO/internal/service/staff_board_test.go"
+        "BE_GO/internal/repository/staff_board_integration_test.go",
+        "BE_GO/internal/service/staff_board_test.go",
+        "TESTS/adapters/go/staff_board_repository.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15380,6 +15382,12 @@
           "revision": "current branch plus the committing service/repository change",
           "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
           "artifact": "BE_GO/internal/service/staff_board_test.go"
+        },
+        {
+          "revision": "fc944817 plus the committing integration test and adapter",
+          "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
+          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
+          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
         }
       ],
       "notes": [
@@ -15440,8 +15448,10 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/adapters/go/staff_board_repository.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
         "TESTS/fixtures/staff-board-responses.json"
@@ -15467,6 +15477,12 @@
           "revision": "current branch plus the committing service/repository change",
           "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
           "artifact": "BE_GO/internal/service/staff_board_test.go"
+        },
+        {
+          "revision": "fc944817 plus the committing integration test and adapter",
+          "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
+          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
+          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
         }
       ],
       "notes": [
@@ -15527,8 +15543,10 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
+        "TESTS/adapters/go/staff_board_repository.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
         "TESTS/fixtures/staff-board-responses.json"
@@ -15554,6 +15572,12 @@
           "revision": "current branch plus the committing service/repository change",
           "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
           "artifact": "BE_GO/internal/service/staff_board_test.go"
+        },
+        {
+          "revision": "fc944817 plus the committing integration test and adapter",
+          "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
+          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
+          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
         }
       ],
       "notes": [
@@ -15610,7 +15634,9 @@
       "tests": [
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
+        "TESTS/adapters/go/staff_board_repository.py",
         "TESTS/fixtures/staff-board-responses.json"
       ],
       "evidence": [
@@ -15624,6 +15650,12 @@
           "revision": "current branch plus the committing service/repository change",
           "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
           "artifact": "BE_GO/internal/service/staff_board_test.go"
+        },
+        {
+          "revision": "fc944817 plus the committing integration test and adapter",
+          "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
+          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
+          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
         }
       ],
       "notes": [

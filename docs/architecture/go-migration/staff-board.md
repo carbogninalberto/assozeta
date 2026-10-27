@@ -185,9 +185,22 @@ service, not RED-first) cover acting-author selection, validation before any
 transaction on add, update precedence including the null-body `TypeError`,
 publish-after-commit, commit failure without publish, publish failure kept as
 success, author-only delete and non-association scopes. Mutations that publish
-before commit, or validate updates before the lookup, fail those tests. **The
-repository SQL has not yet run against PostgreSQL**, and there is no handler,
-route or realtime publisher.
+before commit, or validate updates before the lookup, fail those tests.
+
+Real PostgreSQL evidence: `python -m TESTS.adapters.go.staff_board_repository
+--output NEW_DIRECTORY` reuses the message-read private PostgreSQL/Redis
+lifecycle with the full migration history, seeds two associations, a
+collaborator, ordered rows, 100 bulk rows and a real `SET_NULL` author deletion
+through the ORM, and runs the race-enabled `staffboardintegration` tests. The
+list returns the exact pinned/newest order, excludes the foreign association,
+projects the deleted author and uses two queries (association plus one joined
+select) at 104 rows. Mutations insert, row-lock, pin-only update without
+rewriting other columns, delete a seeded row, reject foreign rows on every write
+path, and show PostgreSQL rejecting a lone-surrogate document with nothing
+persisted. Django then reads, renders (`author_name`, `is_owner`) and saves the
+Go-written row, observes the deletion, and finds every other seeded row
+unchanged. A mutation reversing the list order fails the run. There is still no
+handler, route or realtime publisher.
 
 ## Required evidence before `implementing`
 
