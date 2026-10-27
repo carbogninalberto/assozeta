@@ -51,6 +51,19 @@ table lock, cancels it, then proves reader backend/transaction/pool release whil
 the blocker remains held. Recovery succeeds after release. No whole-application
 performance improvement is inferred from these component checks.
 
+`TestInstanceManifestPostgresConcurrentPoolRecovery` uses the production
+`internal/database.OpenDB` connector with a four-connection pool. 32 concurrent
+readers performing 128 reads all return the fixture branding; the pool is
+contended, bounded and fully released with only idle backends. Every pooled
+backend is then terminated server-side. After more than one second idle, pgx's
+pinned `ResetSession` ping (v5.9.2 pings only when idle exceeds one second)
+discards each stale connection, and a second 128-read wave succeeds on new
+backends within the same bound. The adapter requires this test by name. A
+mutation control without the idle wait fails: one read per stale connection
+(four) observes a broken pipe. Reuse within one second of a server-side
+termination therefore still surfaces a database error to that request; the
+equivalent Django window is not measured here.
+
 The adapter verifies both required PostgreSQL test names and all four original
 bounds subcases; a successful zero-test run cannot pass. Native evidence is under
 ignored `quality-reports/go-migration/instance-manifest-parent/`, including

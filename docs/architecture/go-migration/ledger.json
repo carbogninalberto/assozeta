@@ -17651,6 +17651,12 @@
           "result": "Default update-recovery installed lifecycle passes with browser: 10 checkpoints from 2.0.1 through 2.0.2 recovery paths, 90 manifest GET/HEAD/OPTIONS requests across /api, /api/v1 and /api/v2 with unchanged selected state per request, four post-restore reseeds, and 36 maintenance probes returning 503 no-store Retry-After 60. Receipt records working_tree_clean false for the harness overlay. Same remaining gaps; no status promotion.",
           "artifact": "quality-reports/go-migration/manifest-lifecycle-recovery-r1/update-recovery.json",
           "receipt_sha256": "3dad640b6690a044a8a2d05571021afcad50c8e84732a2b572d9b8c04fe93f72"
+        },
+        {
+          "revision": "f72190c1777666c17a2890cbbf163e51dbe4409d plus the committing test/adapter change",
+          "result": "Actual private PostgreSQL: TestInstanceManifestPostgresConcurrentPoolRecovery passes inside the 128-case Go bootstrap adapter run with all three required repository groups. Production connector, four-connection pool, 32 concurrent readers and 128 reads per wave; contended, bounded and released; every backend terminated server-side; after the pgx idle-ping threshold a second wave succeeds on new backends. RED mutation without the idle wait fails with four broken-pipe reads, characterizing sub-second stale reuse as a visible error; Django's equivalent window is not measured. Packaged-image concurrency and HTTP-level pool recovery remain open; no status promotion.",
+          "artifact": "quality-reports/go-migration/instance-manifest-pool-r1/green/results.json",
+          "receipt_sha256": "4b841004c758fb059555a80fd0eaa3dd001a538e7e0a0e17ded6346a09f8b584"
         }
       ],
       "notes": [

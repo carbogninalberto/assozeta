@@ -345,16 +345,17 @@ def main():
             if options.backend=='go':
                 environment={**tool_env,'ASSOZETA_INSTANCE_BOOTSTRAP_DSN':f'postgres://contracts@/assozeta_contract_bootstrap?host={work}&sslmode=disable',
                     'ASSOZETA_INSTANCE_BOOTSTRAP_PLANS':str(OUTPUT/'repository-plans.json')}
-                result = subprocess.run(['go','test','-race','-tags','instancebootstrapintegration','./internal/repository','-run','^TestInstance(BootstrapPostgresBounds|ManifestPostgresCancellation)$','-count=1','-v'],
+                result = subprocess.run(['go','test','-race','-tags','instancebootstrapintegration','./internal/repository','-run','^TestInstance(BootstrapPostgresBounds|ManifestPostgresCancellation|ManifestPostgresConcurrentPoolRecovery)$','-count=1','-v'],
                     cwd=ROOT/'BE_GO',env=environment,timeout=120,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
                 log.write(result.stdout);log.flush();result.check_returncode()
                 passed = set(re.findall(r'^--- PASS: (TestInstance\w+) \(',result.stdout,re.MULTILINE))
-                assert passed == {'TestInstanceBootstrapPostgresBounds','TestInstanceManifestPostgresCancellation'}, ('repository test groups missing',passed)
+                assert passed == {'TestInstanceBootstrapPostgresBounds','TestInstanceManifestPostgresCancellation','TestInstanceManifestPostgresConcurrentPoolRecovery'}, ('repository test groups missing',passed)
                 bounds = set(re.findall(r'^\s+--- PASS: TestInstanceBootstrapPostgresBounds/(\S+) \(',result.stdout,re.MULTILINE))
                 assert bounds == {'pair_array_secrets_projected_before_snapshot','rows100','rows1000','rows10000'}, ('repository bounds cases missing',bounds)
                 report['repository_bounds_groups']=len(bounds)
                 report['manifest_readonly_bounds_rows']=[100,1000,10000]
                 report['manifest_blocked_cancellation_recovery']=True
+                report['manifest_concurrent_pool_recovery']=True
                 report['repository_test_groups']=sorted(passed)
 
         finally:
