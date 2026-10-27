@@ -1,9 +1,10 @@
 """Association-scoped document deletion.
 
 A document has no association of its own; it belongs to the objects that
-reference it. Deletion is allowed only when at least one object references
-the document and every referencing object resolves to the caller's
-association. Anything else answers like a missing document.
+reference it. Deletion is allowed only when every referencing object resolves
+to the caller's association. A document nothing references any longer (its
+owner was deleted first) belongs to the association its creation audit entry
+was indexed to. Anything else answers like a missing document.
 """
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -25,7 +26,19 @@ def document_belongs_to(document, association):
             owner = resolve_association(obj)
             if owner is None or owner.pk != association.pk:
                 return False
-    return referenced
+    if referenced:
+        return True
+    return created_for(document, association)
+
+
+def created_for(document, association):
+    from auditlog.models import LogEntry
+    from django.contrib.contenttypes.models import ContentType
+    from application.models.audit_models import AuditLogIndex
+    entries = LogEntry.objects.filter(content_type=ContentType.objects.get_for_model(document, for_concrete_model=True),
+                                      object_pk=str(document.pk), action=LogEntry.Action.CREATE)
+    owners = set(AuditLogIndex.objects.filter(log_entry__in=entries).values_list('sport_association_id', flat=True))
+    return owners == {association.pk}
 
 
 @api_view(['DELETE'])
