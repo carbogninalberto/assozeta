@@ -12,6 +12,10 @@ class UsersManagerConfig(AppConfig):
         # Import signals to ensure they are connected
         import application.signals  # noqa
 
+        # Reject cross-tenant objects in every writable serializer relation.
+        from application.tenant_scope import install
+        install()
+
         # Setup audit log resolvers and connect signal
         from application.audit_resolvers import setup_audit_resolvers
         from application.signals import connect_audit_log_signal
