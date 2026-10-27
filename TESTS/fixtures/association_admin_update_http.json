@@ -1,0 +1,589 @@
+{
+ "matrix_version": 1,
+ "scope": "Superuser association admin-update authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "billing_id": "a1000000-0000-4000-8000-000000780021",
+ "cases": [
+  {
+   "name": "association-admin-update-owner-not-superuser",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": {}
+   }
+  },
+  {
+   "name": "association-admin-update-full-collaborator-not-superuser",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": {}
+   }
+  },
+  {
+   "name": "association-admin-update-admin-impersonating-owner-not-superuser",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 401,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": {}
+   }
+  },
+  {
+   "name": "association-admin-update-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {}
+  },
+  {
+   "name": "association-admin-update-non-uuid-path-admin-denied",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/not-a-uuid/admin-update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {}
+  },
+  {
+   "name": "association-admin-update-malformed-id",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/------------------------------------/admin-update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {}
+  },
+  {
+   "name": "association-admin-update-missing-association",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000720009/admin-update",
+   "headers": {},
+   "status": 404,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {}
+  },
+  {
+   "name": "association-admin-update-deleted-association",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701003/admin-update",
+   "headers": {},
+   "status": 404,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {}
+  },
+  {
+   "name": "association-admin-update-association-without-billing",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701002/admin-update",
+   "headers": {},
+   "status": 404,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": {}
+   }
+  },
+  {
+   "name": "association-admin-update-missing-billing-key",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "notes": "x"
+   }
+  },
+  {
+   "name": "association-admin-update-list-body-server-error",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": []
+  },
+  {
+   "name": "association-admin-update-billing-list-server-error",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": []
+   }
+  },
+  {
+   "name": "association-admin-update-empty-billing-no-changes",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Modifiche salvate."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": false,
+     "renewal_type": 2,
+     "ends_on": "2026-12-31T23:59:59.123456Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Note interne",
+    "audits": []
+   },
+   "body": {
+    "billing_subscription": {}
+   }
+  },
+  {
+   "name": "association-admin-update-updates-billing-and-notes",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Modifiche salvate."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 2,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Nuove note è",
+    "audits": [
+     {
+      "model": "billingsubscription",
+      "id": "a1000000-0000-4000-8000-000000780021",
+      "repr": "BillingSubscription object (a1000000-0000-4000-8000-000000780021)",
+      "changes": {
+       "auto_renewal": [
+        "False",
+        "True"
+       ],
+       "ends_on": [
+        "2026-12-31 23:59:59.123456",
+        "2027-01-02 03:04:05"
+       ],
+       "billing_plan": [
+        "a1000000-0000-4000-8000-000000780001",
+        "A1000000-0000-4000-8000-000000780001"
+       ]
+      },
+      "index": {
+       "association": "admin_association",
+       "path": "actor.sport_association"
+      }
+     },
+     {
+      "model": "sportassociation",
+      "id": "a1000000-0000-4000-8000-000000701001",
+      "repr": "SportAssociation object (a1000000-0000-4000-8000-000000701001)",
+      "changes": {
+       "notes": [
+        "Note interne",
+        "Nuove note è"
+       ]
+      },
+      "index": {
+       "association": "own_association",
+       "path": "self"
+      }
+     }
+    ]
+   },
+   "body": {
+    "billing_subscription": {
+     "auto_renewal": "True",
+     "renewal_type": 2,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "A1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "Nuove note è"
+   }
+  },
+  {
+   "name": "association-admin-update-raw-values-diffed",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Modifiche salvate."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 1,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "5",
+    "audits": [
+     {
+      "model": "billingsubscription",
+      "id": "a1000000-0000-4000-8000-000000780021",
+      "repr": "BillingSubscription object (a1000000-0000-4000-8000-000000780021)",
+      "changes": {
+       "renewal_type": [
+        "2",
+        "1.0"
+       ]
+      },
+      "index": {
+       "association": "admin_association",
+       "path": "actor.sport_association"
+      }
+     },
+     {
+      "model": "sportassociation",
+      "id": "a1000000-0000-4000-8000-000000701001",
+      "repr": "SportAssociation object (a1000000-0000-4000-8000-000000701001)",
+      "changes": {
+       "notes": [
+        "Nuove note è",
+        "5"
+       ]
+      },
+      "index": {
+       "association": "own_association",
+       "path": "self"
+      }
+     }
+    ]
+   },
+   "body": {
+    "billing_subscription": {
+     "renewal_type": 1.0
+    },
+    "notes": 5
+   }
+  },
+  {
+   "name": "association-admin-update-invalid-boolean-server-error",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 1,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": "5",
+    "audits": [
+     {
+      "model": "billingsubscription",
+      "id": "a1000000-0000-4000-8000-000000780021",
+      "repr": "BillingSubscription object (a1000000-0000-4000-8000-000000780021)",
+      "changes": {
+       "auto_renewal": [
+        "True",
+        "maybe"
+       ]
+      },
+      "index": {
+       "association": "admin_association",
+       "path": "actor.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "billing_subscription": {
+     "auto_renewal": "maybe"
+    }
+   }
+  },
+  {
+   "name": "association-admin-update-null-notes",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Modifiche salvate."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 1,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": null,
+    "audits": [
+     {
+      "model": "sportassociation",
+      "id": "a1000000-0000-4000-8000-000000701001",
+      "repr": "SportAssociation object (a1000000-0000-4000-8000-000000701001)",
+      "changes": {
+       "notes": [
+        "5",
+        "None"
+       ]
+      },
+      "index": {
+       "association": "own_association",
+       "path": "self"
+      }
+     }
+    ]
+   },
+   "body": {
+    "billing_subscription": {},
+    "notes": null
+   }
+  },
+  {
+   "name": "association-admin-update-wrong-method",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 1,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": null,
+    "audits": []
+   }
+  },
+  {
+   "name": "association-admin-update-options",
+   "actor": "admin",
+   "method": "OPTIONS",
+   "path": "/sport-associations/a1000000-0000-4000-8000-000000701001/admin-update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association Admin Update",
+    "description": "List all sport associations",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "billing": {
+     "auto_renewal": true,
+     "renewal_type": 1,
+     "ends_on": "2027-01-02T03:04:05Z",
+     "billing_plan": "a1000000-0000-4000-8000-000000780001"
+    },
+    "notes": null,
+    "audits": []
+   }
+  }
+ ]
+}

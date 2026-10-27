@@ -11552,25 +11552,72 @@
         "target": "sport_association_admin_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/association_admin_update.go",
+        "BE_GO/internal/dto/association_admin_update.go",
+        "BE_GO/internal/repository/association_admin_update.go",
+        "BE_GO/internal/service/association_admin_update.go",
+        "BE_GO/internal/handler/association_admin_update.go",
+        "BE_GO/internal/repository/dashboard_layout.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution (administrator exemption) and collaborator registry exclusion",
+        "billing_subscription, application_sportassociation; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/sport-associations/{uid}/admin-update",
+          "/api/v2/sport-associations/{uid}/admin-update",
+          "/api/sport-associations/{uid}/admin-update"
+        ],
+        "request": "JSON object with billing_subscription (object) and optional notes; raw values, no validation.",
+        "response": "200 {\"msg\": \"Modifiche salvate.\"}.",
+        "errors": "400 malformed UUID, bare 400 missing billing, notes 400; bare 401/404; 403 non-UUID path for administrators; 500 non-dict bodies and rejected raw values.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Scope user is_superuser; administrator exemption for UUID-shaped paths.",
+        "resource_scope": "Active association by ID; first billing subscription of its owner.",
+        "side_effects": "Billing subscription and association notes updates with pre_save audit entries (actor and self index).",
+        "transaction": "Separate autocommit saves; audit entries commit before their saves.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/association_admin_update_http.json",
+        "TESTS/fixtures/generate_association_admin_update_http.py",
+        "TESTS/contracts/test_association_admin_update_http.py",
+        "TESTS/adapters/django/association_admin_update_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/association_admin_update_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/association-admin-update.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 19/19 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/association-admin-update-http-red-r1/results.json",
+          "receipt_sha256": "c07538fb66807f00ce3838076d30592aa50957773e7136261a3f27262b59bd05"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 19/19 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact billing, notes, audit and index effects.",
+          "artifact": "quality-reports/go-migration/association-admin-update-http-versioned-r1/results.json",
+          "receipt_sha256": "5661df604bcad75025b8992019f2a1e892c3f7829aeaae306b976de647cbab0c"
+        },
+        {
+          "revision": "committing change with the failed-save billing audit discarded",
+          "result": "Mutation control: fails Go.",
+          "artifact": "quality-reports/go-migration/association-admin-update-http-mutation-r1/results.json",
+          "receipt_sha256": "1bb42f0a37b33fc07999f0a0f6d3b59312a1a96322fdc60c7643d8c60a0cb55d"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including pre_save audit of raw values proven on four transports; notes update is column-scoped (needs review with the other full-row saves)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:sport-associations/list -> sport_association_list",
