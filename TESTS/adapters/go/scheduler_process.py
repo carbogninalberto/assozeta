@@ -140,11 +140,11 @@ class SchedulerRehearsal(Rehearsal):
         self.command('migrate')
         failed=self.command('scheduler',success=False,env_file=path)
         assert 'scheduler process initialized' not in failed.stderr
-        for version,dirty in [(3,True),(2,False),(999,False)]:
+        for version,dirty in [(4,True),(3,False),(2,False),(999,False)]:
             self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=%s',(version,dirty))
             failed=self.command('scheduler',success=False)
             assert 'scheduler process initialized' not in failed.stderr
-        self.sql('UPDATE assozeta_go_schema_migrations SET version=3,dirty=false')
+        self.sql('UPDATE assozeta_go_schema_migrations SET version=4,dirty=false')
         self.case('dirty and unknown operational schema refuse readiness')
         self.sql('ALTER TABLE django_celery_beat_periodictask RENAME TO fixture_hidden_beat')
         try:

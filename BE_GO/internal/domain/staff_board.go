@@ -70,12 +70,13 @@ type StaffBoardTransaction interface {
 	InsertStaffBoardMessage(context.Context, StaffBoardWrite) error
 	UpdateStaffBoardMessage(ctx context.Context, id, association string, change StaffBoardChange) error
 	DeleteStaffBoardMessage(ctx context.Context, id, association string) error
+	// AppendRealtimeEvent writes the invalidation to the transactional outbox;
+	// it becomes visible (and is notified) only if the transaction commits.
+	AppendRealtimeEvent(ctx context.Context, kind, target string) error
 	Commit() error
 	Rollback() error
 }
 
-// StaffBoardPublisher delivers the post-commit invalidation. Failures must not
-// turn a committed write into an error; the service only reports them.
-type StaffBoardPublisher interface {
-	PublishStaffBoardChange(ctx context.Context, association string) error
-}
+// RealtimeStaffBoardChanged is the outbox kind for NotificationConsumer's
+// staff_board_changed invalidation; the target is the association ID.
+const RealtimeStaffBoardChanged = "staff_board_changed"

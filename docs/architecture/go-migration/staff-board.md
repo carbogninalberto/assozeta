@@ -1,4 +1,4 @@
-# Staff board — implementing; HTTP parity proven, realtime missing
+# Staff board — implementing; HTTP parity and realtime boundary proven
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -217,10 +217,30 @@ author-only 403 messages, DRF permission denial, the UUID 400 list and the
 generic 500 page for the view's uncaught `TypeError` cases. Handler tests use a
 recording service behind the real identity plumbing.
 
-The composition root wires an explicit `UnavailableStaffBoardPublisher`: every
-committed write logs that the invalidation was not delivered. Clients connected
-through Django Channels therefore do **not** refresh after a Go write. That is a
-blocking parity gap, not a silent success.
+Realtime uses a transactional outbox (Go migration 4,
+`public.assozeta_go_realtime_events`; see `BE_GO/migrations/README.md`). Every
+successful write appends one version-1 `staff_board_changed` event for the
+association in the same transaction, with `pg_notify` on commit; failed or
+rolled-back writes append nothing, and an outbox failure rolls the write back.
+While Django owns WebSockets, `python manage.py relay_go_realtime`
+(`BE/notifications/go_realtime.py`) claims pending events with `FOR UPDATE SKIP
+LOCKED` and sends them through Django's own channel layer, so Go never writes the
+Channels Redis encoding. Unknown kinds or versions are marked
+`unsupported_event`; transient failures retry up to 30 times, then become
+`delivery_exhausted`. Delivery is at least once.
+
+Evidence: Django tests (18 with the existing staff-board suite) cover the
+absent outbox, group delivery, unsupported kinds, retry exhaustion, no resend,
+and a raw-ASGI `NotificationConsumer` session that receives a relayed event and
+stops receiving after its read permission is revoked; a mutation of the relayed
+message type fails them. `TESTS/test_go_realtime_outbox_ddl.py` keeps the Django
+test's DDL identical to the shipped migration. The real-PostgreSQL repository
+run proves the event and its notification appear only after commit, and that a
+rolled-back event leaves no row. The four-transport HTTP run asserts exactly one
+pending event per successful Go write (5 per Go transport), none for Django
+writes or failures, and delivery by the real relay into the staff-board group.
+Remaining: the relay is not yet a service in the self-host compose, so an
+installed system would queue Go events durably until one runs.
 
 ## Authored HTTP sequence (executed on four transports)
 

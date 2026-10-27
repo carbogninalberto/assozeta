@@ -31,7 +31,8 @@ EXPECTED_TESTS = frozenset({"TestStaffBoardRepositoryListLive", "TestStaffBoardR
 BULK = 100
 SOURCES = ("BE_GO/internal/repository/staff_board.go", "BE_GO/internal/repository/staff_board_integration_test.go",
            "BE_GO/internal/service/staff_board.go", "BE_GO/internal/domain/staff_board.go",
-           "TESTS/adapters/go/staff_board_repository.py")
+           "TESTS/adapters/go/staff_board_repository.py", "TESTS/adapters/go/go_operational_migrations.py",
+           "BE_GO/migrations/000004_realtime_events.up.sql")
 DOCUMENT = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Fissato"}]}]}
 GO_DOCUMENT = {"type": "doc", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Scritto da Go è"}]}]}
 
@@ -149,6 +150,9 @@ def execute(private, report, services, tools):
                 schema = lifecycle.migrate_full_schema(log)
                 assert schema["mode"] == "full-migration-history" and schema["remaining_plan"] == 0, "schema"
                 report["schema"] = schema
+                from TESTS.adapters.go import go_operational_migrations
+                with (private / "go-migrate.log").open("w") as migrate_log:
+                    report["go_operational_schema"] = go_operational_migrations.apply(work, {**environment, **tools}, migrate_log)
                 fixture = seed()
                 seeded = snapshot()
                 go_environment = {**tools, "ASSOZETA_STAFF_BOARD_DSN":

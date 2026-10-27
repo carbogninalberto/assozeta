@@ -56,6 +56,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     private_work = Path(private_work)
     contract.require(not private_work.exists(), 'fixture.new-private-directory-required')
     before = scopes.snapshot_state(apps)
+    events_before = [row[0] for row in outbox_events()]
     cache_before, sequences_before = snapshot_historical_read_cache(raw), mutations.sequence_snapshot()
     fixture = None
     receipt = cleanup_receipt if cleanup_receipt is not None else {}
@@ -67,6 +68,10 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         def remove_rows():
             # Includes rows created by requests even when an assertion failed.
             StaffBoardMessage.objects.exclude(pk__in=list(rows(before))).delete()
+            # Restoring sequences below would otherwise reuse outbox identities.
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute('DELETE FROM public.assozeta_go_realtime_events WHERE NOT (id = ANY(%s))', [events_before])
             if fixture is not None:
                 shared.delete_created(fixture)
             shared.assert_state_unchanged(before, scopes.snapshot_state(apps))
@@ -119,6 +124,36 @@ def assert_effect(case, before, after, bindings, window):
                      'state.update-only')
 
 
+def outbox_events():
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute("""SELECT id, envelope_version, kind, target_id::text, delivered_at IS NULL AND failed_code IS NULL
+            FROM public.assozeta_go_realtime_events ORDER BY id""")
+        return cursor.fetchall()
+
+
+def assert_realtime(case, backend, before, after):
+    """Go writes append exactly one pending invalidation that the Django relay
+    delivers to the staff-board group; Django writes and failures append none."""
+    from asgiref.sync import async_to_sync
+    from channels.layers import InMemoryChannelLayer
+    from communications.staff_board import staff_board_group
+    from notifications import go_realtime
+    added = after[len(before):]
+    contract.require(after[:len(before)] == before, 'realtime.history')
+    if backend != 'go' or case['effect']['kind'] == 'none':
+        contract.require(not added, 'realtime.unexpected-event')
+        return False
+    association = contract.load_source()['ids']['own_association']
+    contract.require(len(added) == 1 and added[0][1:] == (1, 'staff_board_changed', association, True), 'realtime.event')
+    layer = InMemoryChannelLayer()
+    channel = async_to_sync(layer.new_channel)()
+    async_to_sync(layer.group_add)(staff_board_group(association), channel)
+    contract.require(go_realtime.relay_once(layer=layer) == {'delivered': 1, 'retry': 0, 'failed': 0}, 'realtime.relay')
+    contract.require(async_to_sync(layer.receive)(channel) == {'type': 'staff_board_changed'}, 'realtime.delivered')
+    return True
+
+
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     """Run every authored case in order; raise on the first failed check."""
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
@@ -126,16 +161,23 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     shared.assert_state_unchanged(fixture['baseline_state'], scopes.snapshot_state(apps))
     bindings, results = {}, []
     known = set(source['seed'])
+    relayed = 0
     for case in source['cases']:
         before = scopes.snapshot_state(apps)
+        events_before = outbox_events()
         cursor = observer.cursor()
         token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
-        status, window = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'],
-                                              bindings=bindings, known_ids=known)
-        after = scopes.snapshot_state(apps)
-        shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
-        assert_effect(case, before, after, bindings, window)
+        try:
+            status, window = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'],
+                                                  bindings=bindings, known_ids=known)
+            after = scopes.snapshot_state(apps)
+            shared.assert_attribution(backend, case['method'], case['path'], status, observer.delta(cursor), case['name'])
+            assert_effect(case, before, after, bindings, window)
+            relayed += assert_realtime(case, backend, events_before, outbox_events())
+        except BaseException as error:
+            error.case = f'{label}:{case["name"]}'
+            raise
         results.append({'case': case['name'], 'status': status})
     shared.assert_cache_unchanged(fixture['baseline_cache'], snapshot_historical_read_cache(raw), fixture['contrasts'])
     return {'label': label, 'backend': backend, 'success': True, 'cases': results,
-            'authored_cases': len(source['cases'])}
+            'authored_cases': len(source['cases']), 'realtime_events_relayed': relayed}

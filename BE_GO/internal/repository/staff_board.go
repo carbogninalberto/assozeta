@@ -154,6 +154,15 @@ WHERE staff_board_message_id=$1 AND sport_association_id=$2`, id, association)
 	return requireOneRow(result, err)
 }
 
+// AppendRealtimeEvent inserts a version-1 envelope and notifies listeners; both
+// take effect only at commit.
+func (t *staffBoardTransaction) AppendRealtimeEvent(ctx context.Context, kind, target string) error {
+	_, err := t.tx.ExecContext(ctx, `WITH event AS (
+INSERT INTO public.assozeta_go_realtime_events(envelope_version,kind,target_id) VALUES(1,$1,$2) RETURNING id)
+SELECT pg_notify('assozeta_go_realtime', id::text) FROM event`, kind, target)
+	return err
+}
+
 func requireOneRow(result sql.Result, err error) error {
 	if err != nil {
 		return err

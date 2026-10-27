@@ -14481,8 +14481,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks.",
-          "artifact": "quality-reports/go-migration/email-logs-http-versioned-r1/results.json",
-          "receipt_sha256": "45e506eac515c82c46adde09d654a6846e5c8ee6ab571b2b56e8c867e842565d"
+          "artifact": "quality-reports/go-migration/email-logs-http-versioned-r2/results.json",
+          "receipt_sha256": "e05db1b130e269b5a9d8ace3a901799cc5b218ee26146636ee0b331f03224ad0"
         }
       ],
       "notes": [
@@ -15382,16 +15382,19 @@
       },
       "status": "implementing",
       "go": [
+        "BE/notifications/go_realtime.py",
+        "BE/notifications/management/commands/relay_go_realtime.py",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
-        "BE_GO/internal/service/staff_board.go"
+        "BE_GO/internal/service/staff_board.go",
+        "BE_GO/migrations/000004_realtime_events.up.sql"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
       ],
       "contract": {
         "methods": [
@@ -15415,6 +15418,7 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
+        "BE/notifications/tests/test_go_realtime.py",
         "BE_GO/internal/handler/staff_board_test.go",
         "BE_GO/internal/repository/staff_board_integration_test.go",
         "BE_GO/internal/service/staff_board_test.go",
@@ -15422,7 +15426,8 @@
         "TESTS/adapters/django/staff_board_http_acceptance.py",
         "TESTS/adapters/go/staff_board_repository.py",
         "TESTS/contracts/test_staff_board_http.py",
-        "TESTS/fixtures/staff_board_http.json"
+        "TESTS/fixtures/staff_board_http.json",
+        "TESTS/test_go_realtime_outbox_ddl.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15434,8 +15439,8 @@
         {
           "revision": "fc944817 plus the committing integration test and adapter",
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
-          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
-          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+          "artifact": "quality-reports/go-migration/staff-board-repository-r3/results.json",
+          "receipt_sha256": "e89dce86343f7698b1214dec9f23e72015865b221f0808c42988fe5afc0f8f93"
         },
         {
           "revision": "c53658a4 plus the committing handler/route change",
@@ -15445,13 +15450,13 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
-          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
+          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
+        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
       ]
     },
     {
@@ -15471,6 +15476,8 @@
       },
       "status": "implementing",
       "go": [
+        "BE/notifications/go_realtime.py",
+        "BE/notifications/management/commands/relay_go_realtime.py",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
@@ -15479,12 +15486,13 @@
         "BE_GO/internal/dto/staff_board_response.go",
         "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
-        "BE_GO/internal/service/staff_board.go"
+        "BE_GO/internal/service/staff_board.go",
+        "BE_GO/migrations/000004_realtime_events.up.sql"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
       ],
       "contract": {
         "methods": [
@@ -15508,6 +15516,7 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
+        "BE/notifications/tests/test_go_realtime.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
         "BE_GO/internal/handler/staff_board_test.go",
@@ -15521,7 +15530,8 @@
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
         "TESTS/fixtures/staff-board-responses.json",
-        "TESTS/fixtures/staff_board_http.json"
+        "TESTS/fixtures/staff_board_http.json",
+        "TESTS/test_go_realtime_outbox_ddl.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15548,8 +15558,8 @@
         {
           "revision": "fc944817 plus the committing integration test and adapter",
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
-          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
-          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+          "artifact": "quality-reports/go-migration/staff-board-repository-r3/results.json",
+          "receipt_sha256": "e89dce86343f7698b1214dec9f23e72015865b221f0808c42988fe5afc0f8f93"
         },
         {
           "revision": "c53658a4 plus the committing handler/route change",
@@ -15559,13 +15569,13 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
-          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
+          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
+        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
       ]
     },
     {
@@ -15585,6 +15595,8 @@
       },
       "status": "implementing",
       "go": [
+        "BE/notifications/go_realtime.py",
+        "BE/notifications/management/commands/relay_go_realtime.py",
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/staff_board.go",
         "BE_GO/internal/dto/python_json.go",
@@ -15593,12 +15605,13 @@
         "BE_GO/internal/dto/staff_board_response.go",
         "BE_GO/internal/handler/staff_board.go",
         "BE_GO/internal/repository/staff_board.go",
-        "BE_GO/internal/service/staff_board.go"
+        "BE_GO/internal/service/staff_board.go",
+        "BE_GO/migrations/000004_realtime_events.up.sql"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
-        "Realtime invalidation boundary for group staff_board_<association_id> (no Go realtime package yet; Channels Redis encoding is not a Go protocol)"
+        "Go realtime outbox (migration 4) and the Django relay_go_realtime command; relay not yet deployed in self-host compose"
       ],
       "contract": {
         "methods": [
@@ -15622,6 +15635,7 @@
       },
       "tests": [
         "BE/communications/tests/test_staff_board.py",
+        "BE/notifications/tests/test_go_realtime.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
         "BE_GO/internal/handler/staff_board_test.go",
@@ -15635,7 +15649,8 @@
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
         "TESTS/fixtures/staff-board-responses.json",
-        "TESTS/fixtures/staff_board_http.json"
+        "TESTS/fixtures/staff_board_http.json",
+        "TESTS/test_go_realtime_outbox_ddl.py"
       ],
       "evidence": [
         "docs/architecture/go-migration/staff-board.md",
@@ -15662,8 +15677,8 @@
         {
           "revision": "fc944817 plus the committing integration test and adapter",
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
-          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
-          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+          "artifact": "quality-reports/go-migration/staff-board-repository-r3/results.json",
+          "receipt_sha256": "e89dce86343f7698b1214dec9f23e72015865b221f0808c42988fe5afc0f8f93"
         },
         {
           "revision": "c53658a4 plus the committing handler/route change",
@@ -15673,13 +15688,13 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
-          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
+          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
         }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation.",
-        "Implementing: HTTP parity proven on four transports; realtime invalidation boundary missing (blocking for verified)."
+        "Implementing: HTTP parity and the outbox/relay/consumer path are proven; the relay is not yet a self-host service."
       ]
     },
     {
@@ -15759,8 +15774,8 @@
         {
           "revision": "fc944817 plus the committing integration test and adapter",
           "result": "Real PostgreSQL (full migration history): exact list order, foreign exclusion, deleted-author projection and a constant two-query list at 104 rows; insert, lock, column-scoped update, delete, foreign write denial and jsonb surrogate rejection; Django reads, renders and saves the Go-written row with seeded rows unchanged. Ordering mutation fails the run. No handler, route or realtime.",
-          "artifact": "quality-reports/go-migration/staff-board-repository-r2/results.json",
-          "receipt_sha256": "eeec9c2235cf98774795145fd4046a32a9c5c037ee59faf07b9df85c2e54dcea"
+          "artifact": "quality-reports/go-migration/staff-board-repository-r3/results.json",
+          "receipt_sha256": "e89dce86343f7698b1214dec9f23e72015865b221f0808c42988fe5afc0f8f93"
         },
         {
           "revision": "c53658a4 plus the committing handler/route change",
@@ -15770,8 +15785,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
-          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r5/results.json",
+          "receipt_sha256": "1b8883bb20d038ed5177d5888353b01405a0ec7f16e9c4365363f3966f413319"
         }
       ],
       "notes": [

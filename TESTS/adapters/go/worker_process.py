@@ -187,7 +187,7 @@ class Rehearsal:
         assert self.sql('SELECT singleton,runtime,generation FROM assozeta_go_job_ownership') == [(1, 'django', 1)]
         self.command('migrate')
         assert self.sql('SELECT * FROM django_migrations') == [(7, 'fixture', 'unchanged')]
-        assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(3, False)]
+        assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(4, False)]
         assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('django', 1)]
         self.command('migrate', '--down', success=False)
         self.case('explicit forward migration is idempotent and preserves Django history and default ownership')
@@ -221,7 +221,7 @@ class Rehearsal:
             assert self.job(identifier)[:2] == ('pending', 0) and not self.effects()
             assert self.sql('SELECT daily_email_balance FROM communications_communicationconfiguration ORDER BY id') == [(9,), (0,), (-1,)]
             assert self.sql('SELECT runtime,generation FROM assozeta_go_job_ownership') == [('go', 2)]
-            assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(3, False)]
+            assert self.sql('SELECT version,dirty FROM assozeta_go_schema_migrations') == [(4, False)]
         self.sql('DELETE FROM instance_datarestore')
         self.sql('DELETE FROM assozeta_go_jobs')
         self.sql("UPDATE assozeta_go_job_ownership SET runtime='django',generation=1")
@@ -235,11 +235,11 @@ class Rehearsal:
 
         with (self.work / 'operations.lock').open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            for version, dirty in [(3, True), (4, False)]:
+            for version, dirty in [(4, True), (3, False), (5, False)]:
                 self.sql('UPDATE assozeta_go_schema_migrations SET version=%s,dirty=%s', (version, dirty))
                 failed = self.command('worker', success=False, timeout=3)
                 assert 'worker ready' not in failed.stderr
-            self.sql('UPDATE assozeta_go_schema_migrations SET version=3,dirty=false')
+            self.sql('UPDATE assozeta_go_schema_migrations SET version=4,dirty=false')
         self.case('dirty or unknown migration history refuses readiness even during maintenance')
         self.sql('ALTER TABLE assozeta_go_periodic_occurrences RENAME TO fixture_hidden_occurrences')
         try:

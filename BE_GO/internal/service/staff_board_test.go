@@ -22,6 +22,7 @@ type sbStore struct {
 	rows      map[string]domain.StaffBoardMessage
 	events    []string
 	commitErr error
+	eventErr  error
 	begun     int
 }
 
@@ -89,6 +90,13 @@ func (t *sbTx) DeleteStaffBoardMessage(_ context.Context, id, _ string) error {
 	delete(t.pending, id)
 	return nil
 }
+func (t *sbTx) AppendRealtimeEvent(_ context.Context, kind, target string) error {
+	if t.store.eventErr != nil {
+		return t.store.eventErr
+	}
+	t.store.events = append(t.store.events, "event:"+kind+":"+target)
+	return nil
+}
 func (t *sbTx) Commit() error {
 	if t.store.commitErr != nil {
 		return t.store.commitErr
@@ -106,18 +114,6 @@ func (t *sbTx) Rollback() error {
 	return nil
 }
 
-type sbPublisher struct {
-	store *sbStore
-	err   error
-	calls []string
-}
-
-func (p *sbPublisher) PublishStaffBoardChange(_ context.Context, association string) error {
-	p.calls = append(p.calls, association)
-	p.store.events = append(p.store.events, "publish")
-	return p.err
-}
-
 func sbIdentity(collaborator bool) domain.ResolvedIdentity {
 	owner := &domain.Account{ID: sbOwner, Role: domain.RoleAssociation, Active: true}
 	if !collaborator {
@@ -128,15 +124,13 @@ func sbIdentity(collaborator bool) domain.ResolvedIdentity {
 	return domain.ResolvedIdentity{Actor: member, Effective: member, ScopeUser: owner, Collaborator: true}
 }
 
-func sbService(rows ...domain.StaffBoardMessage) (*StaffBoard, *sbStore, *sbPublisher, *[]error) {
+func sbService(rows ...domain.StaffBoardMessage) (*StaffBoard, *sbStore) {
 	store := &sbStore{rows: map[string]domain.StaffBoardMessage{}}
 	for _, row := range rows {
 		store.rows[row.ID] = row
 	}
-	publisher := &sbPublisher{store: store}
-	var reported []error
 	at := time.Date(2026, 10, 27, 10, 0, 0, 123456789, time.UTC)
-	return NewStaffBoard(store, publisher, func() time.Time { return at }, func(err error) { reported = append(reported, err) }), store, publisher, &reported
+	return NewStaffBoard(store, func() time.Time { return at }), store
 }
 
 func sbExisting(author *string) domain.StaffBoardMessage {
@@ -170,7 +164,7 @@ func sbEvents(t *testing.T, store *sbStore, want ...string) {
 
 func TestStaffBoardAddAuthorsAsActingUserAndPublishesAfterCommit(t *testing.T) {
 	for _, collaborator := range []bool{false, true} {
-		service, store, publisher, _ := sbService()
+		service, store := sbService()
 		row, err := service.Add(context.Background(), sbIdentity(collaborator), sbBody("content", " ciao "), false)
 		if err != nil {
 			t.Fatal(err)
@@ -185,39 +179,35 @@ func TestStaffBoardAddAuthorsAsActingUserAndPublishesAfterCommit(t *testing.T) {
 		if row.CreatedAt != "2026-10-27T10:00:00.123456Z" || row.SportAssociation != sbAssociation {
 			t.Fatalf("time/association %+v", row)
 		}
-		sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "insert", "commit", "publish")
-		if len(publisher.calls) != 1 || publisher.calls[0] != sbAssociation {
-			t.Fatal(publisher.calls)
-		}
+		sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "insert", "event:staff_board_changed:"+sbAssociation, "commit")
 	}
 }
 
 func TestStaffBoardAddValidationPrecedesTransaction(t *testing.T) {
-	service, store, publisher, _ := sbService()
+	service, store := sbService()
 	_, err := service.Add(context.Background(), sbIdentity(false), sbBody("content", ""), false)
 	var invalid *dto.StaffBoardInputError
-	if !errors.As(err, &invalid) || store.begun != 0 || len(publisher.calls) != 0 {
-		t.Fatal(err, store.begun, publisher.calls)
+	if !errors.As(err, &invalid) || store.begun != 0 || len(store.events) != 0 {
+		t.Fatal(err, store.begun, store.events)
 	}
 }
 
-func TestStaffBoardCommitFailureNeverPublishes(t *testing.T) {
-	service, store, publisher, _ := sbService()
+func TestStaffBoardCommitFailureLeavesNoRow(t *testing.T) {
+	service, store := sbService()
 	store.commitErr = errors.New("commit failed")
-	if _, err := service.Add(context.Background(), sbIdentity(false), sbBody("content", "x"), false); err == nil || len(publisher.calls) != 0 {
-		t.Fatal(err, publisher.calls)
+	if _, err := service.Add(context.Background(), sbIdentity(false), sbBody("content", "x"), false); err == nil || len(store.rows) != 0 {
+		t.Fatal(err, store.rows)
 	}
 }
 
-func TestStaffBoardPublishFailureKeepsCommittedResult(t *testing.T) {
-	service, store, publisher, reported := sbService()
-	publisher.err = errors.New("channel layer down")
-	if _, err := service.Add(context.Background(), sbIdentity(false), sbBody("content", "x"), false); err != nil {
-		t.Fatal(err)
+// The event and the write are one transaction: an outbox failure rolls back.
+func TestStaffBoardOutboxFailureRollsBackWrite(t *testing.T) {
+	service, store := sbService()
+	store.eventErr = errors.New("outbox insert failed")
+	if _, err := service.Add(context.Background(), sbIdentity(false), sbBody("content", "x"), false); err == nil || len(store.rows) != 0 {
+		t.Fatal(err, store.rows)
 	}
-	if len(store.rows) != 1 || len(*reported) != 1 {
-		t.Fatal(store.rows, *reported)
-	}
+	sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "insert", "rollback")
 }
 
 func TestStaffBoardUpdatePrecedence(t *testing.T) {
@@ -243,7 +233,7 @@ func TestStaffBoardUpdatePrecedence(t *testing.T) {
 			if c.row != nil {
 				rows = append(rows, *c.row)
 			}
-			service, store, publisher, _ := sbService(rows...)
+			service, store := sbService(rows...)
 			_, err := service.Update(context.Background(), sbIdentity(false), c.raw, c.body, false)
 			switch want := c.want.(type) {
 			case *dto.MessageReadUUIDError:
@@ -262,9 +252,6 @@ func TestStaffBoardUpdatePrecedence(t *testing.T) {
 				}
 			}
 			sbEvents(t, store, c.events...)
-			if len(publisher.calls) != 0 {
-				t.Fatal("published failed update")
-			}
 		})
 	}
 }
@@ -274,18 +261,15 @@ func ptr[T any](value T) *T { return &value }
 func TestStaffBoardUpdateSemantics(t *testing.T) {
 	other := sbOther
 	// Pin changes need only the route permission, not authorship.
-	service, store, publisher, _ := sbService(sbExisting(&other))
+	service, store := sbService(sbExisting(&other))
 	row, err := service.Update(context.Background(), sbIdentity(false), sbMessage, sbBody("pinned", "true"), false)
 	if err != nil || !row.Pinned || row.Content != "old" || string(row.Document) != `{"type": "doc"}` || row.IsOwner {
 		t.Fatal(err, row)
 	}
-	sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "update", "commit", "publish")
-	if len(publisher.calls) != 1 {
-		t.Fatal(publisher.calls)
-	}
+	sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "update", "event:staff_board_changed:"+sbAssociation, "commit")
 	// Content without document clears the rich document.
 	owner := sbOwner
-	service, _, _, _ = sbService(sbExisting(&owner))
+	service, _ = sbService(sbExisting(&owner))
 	row, err = service.Update(context.Background(), sbIdentity(false), sbMessage, sbBody("content", "nuovo"), false)
 	if err != nil || row.Content != "nuovo" || row.Document != nil || row.UpdatedAt != "2026-10-27T10:00:00.123456Z" {
 		t.Fatal(err, row)
@@ -315,17 +299,17 @@ func TestStaffBoardDeleteAuthorOnly(t *testing.T) {
 		row  domain.StaffBoardMessage
 		want error
 	}{{sbExisting(&other), domain.ErrStaffBoardDeleteNotAuthor}, {sbExisting(nil), domain.ErrStaffBoardDeleteNotAuthor}, {sbExisting(&owner), nil}} {
-		service, store, publisher, _ := sbService(c.row)
+		service, store := sbService(c.row)
 		err := service.Delete(context.Background(), sbIdentity(false), sbMessage)
 		if !errors.Is(err, c.want) && !(c.want == nil && err == nil) {
 			t.Fatal(err)
 		}
 		if c.want == nil {
-			sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "delete", "commit", "publish")
-			if len(store.rows) != 0 || len(publisher.calls) != 1 {
-				t.Fatal(store.rows, publisher.calls)
+			sbEvents(t, store, "begin", "lock-owner:"+sbOwner, "delete", "event:staff_board_changed:"+sbAssociation, "commit")
+			if len(store.rows) != 0 {
+				t.Fatal(store.rows)
 			}
-		} else if len(store.rows) != 1 || len(publisher.calls) != 0 {
+		} else if len(store.rows) != 1 {
 			t.Fatal("rejected delete changed state")
 		}
 	}
@@ -334,7 +318,7 @@ func TestStaffBoardDeleteAuthorOnly(t *testing.T) {
 func TestStaffBoardRejectsNonAssociationScopes(t *testing.T) {
 	athlete := &domain.Account{ID: sbOther, Role: domain.RoleAthlete, Active: true}
 	identity := domain.ResolvedIdentity{Actor: athlete, Effective: athlete, ScopeUser: athlete}
-	service, store, _, _ := sbService()
+	service, store := sbService()
 	if err := service.Admit(context.Background(), identity); !errors.Is(err, domain.ErrStaffBoardForbidden) {
 		t.Fatal(err)
 	}

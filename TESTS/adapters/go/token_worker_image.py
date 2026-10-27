@@ -335,7 +335,7 @@ test ! -w /app/migrate
         )[0]) == ('django', 1)
         assert tuple(self.sql(
             'SELECT version,dirty FROM assozeta_go_schema_migrations'
-        )[0]) == (3, False)
+        )[0]) == (4, False)
         self.case(
             'packaged worker and migrate run as UID10001 on read-only root with owned metadata'
         )

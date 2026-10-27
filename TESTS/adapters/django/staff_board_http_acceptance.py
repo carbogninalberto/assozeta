@@ -22,12 +22,15 @@ FAMILIES = {
         'TESTS/adapters/django/staff_board_http.py', 'BE/communications/views.py', 'BE/communications/staff_board.py',
         'BE/communications/serializers.py', 'BE_GO/internal/handler/staff_board.go', 'BE_GO/internal/service/staff_board.go',
         'BE_GO/internal/repository/staff_board.go', 'BE_GO/internal/dto/staff_board_input.go',
-        'BE_GO/internal/dto/staff_board_document.go', 'BE_GO/internal/dto/staff_board_response.go')),
+        'BE_GO/internal/dto/staff_board_document.go', 'BE_GO/internal/dto/staff_board_response.go',
+        'BE/notifications/go_realtime.py')),
     'email-logs': ('email_logs_http', ('TESTS/fixtures/email_logs_http.json', 'TESTS/contracts/test_email_logs_http.py',
         'TESTS/adapters/django/email_logs_http.py', 'BE/communications/views.py', 'BE/application/models/user_models.py',
         'BE/application/impersonation.py')),
 }
-SOURCES = ('TESTS/adapters/django/staff_board_http_acceptance.py', 'BE_GO/cmd/server/main.go')
+SOURCES = ('TESTS/adapters/django/staff_board_http_acceptance.py', 'BE_GO/cmd/server/main.go',
+           'TESTS/adapters/go/go_operational_migrations.py', 'BE_GO/migrations/migrations.go',
+           'BE_GO/migrations/000004_realtime_events.up.sql')
 
 
 def source_hashes(family='staff-board'):
@@ -56,6 +59,8 @@ def execute(report, tools, private, log):
             override = override_settings(CACHES=reuse.cache_override(port))
             override.enable()
             report['schema'] = reuse.migrate_full_schema(log)
+            from TESTS.adapters.go import go_operational_migrations
+            report['go_operational_schema'] = go_operational_migrations.apply(work, {**env, **tools}, log)
             raw = redis.Redis(host='127.0.0.1', port=port, db=1, password=env['REDIS_PASSWORD'],
                               decode_responses=False, socket_timeout=5, socket_connect_timeout=5)
             poll(raw.ping, bool, timeout=15)

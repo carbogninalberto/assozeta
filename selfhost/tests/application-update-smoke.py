@@ -656,7 +656,7 @@ print(json.dumps({'http_status':response.status,**json.loads(response.read())}))
                 assert len(capture(compose('ps', '-q', service), env=environment).splitlines()) == 1
             settings = read_env(env_file)
             sql = ['exec', '-T', 'postgres', 'psql', '-U', settings['DBUSER'], '-d', settings['DBNAME'], '-At', '-c']
-            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '3|f'
+            assert capture(compose(*sql, 'SELECT version,dirty FROM public.assozeta_go_schema_migrations'), env=environment) == '4|f'
             assert capture(compose(*sql, 'SELECT runtime,generation FROM public.assozeta_go_job_ownership'), env=environment) == 'django|1'
             if go_intent_snapshot is not None:
                 actual = capture(compose(*sql, "SELECT md5(row_to_json(j)::text) FROM public.assozeta_go_jobs j WHERE id='11111111-1111-4111-8111-111111111111'"), env=environment)

@@ -114,8 +114,8 @@ db_query() {
 
 assert_go_operational_schema() {
     actual=$(db_query "SELECT version || ':' || dirty FROM public.assozeta_go_schema_migrations;")
-    [ "$actual" = '3:false' ] || {
-        printf 'Expected clean Go operational schema 3, got %s.\n' "$actual" >&2
+    [ "$actual" = '4:false' ] || {
+        printf 'Expected clean Go operational schema 4, got %s.\n' "$actual" >&2
         exit 1
     }
     actual=$(db_query "SELECT runtime || ':' || generation FROM public.assozeta_go_job_ownership WHERE singleton=1;")

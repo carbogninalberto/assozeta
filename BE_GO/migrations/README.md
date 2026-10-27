@@ -22,6 +22,17 @@ schedule or ownership transition and changes no Django table. Its down script
 also refuses destructive rollback. See
 [transactional publication](../internal/service/occurrence.md).
 
+Migration 4 adds `public.assozeta_go_realtime_events`, a transactional realtime
+outbox. Go services append a version-1 envelope (`kind`, `target_id`) in the same
+transaction as the business write and `pg_notify('assozeta_go_realtime', id)`,
+so rolled-back writes publish nothing and committed ones are never lost. While
+Django owns WebSocket delivery, `python manage.py relay_go_realtime`
+(`BE/notifications/go_realtime.py`) claims pending rows with `FOR UPDATE SKIP
+LOCKED`, forwards allowlisted kinds through Django's own channel layer and
+records `delivered_at` or a `failed_code`; Go never writes the Channels Redis
+encoding. Delivery is at least once. Its down script refuses rollback so pending
+events survive a binary rollback.
+
 `Apply` exposes only forward migration. There is no force/baseline operation and
 the down script explicitly refuses deletion, retaining even terminal jobs and
 their deduplication keys during binary rollback. Invoking a third-party down tool
@@ -29,7 +40,7 @@ will report that refusal and may leave its migration history dirty; it is not a
 supported rollback procedure. Operator recovery must inspect the actual schema,
 not blindly force a version. No Django table or migration history is changed.
 Worker readiness requires the exact current clean operational version and table
-shape. An older worker binary expecting version 2 therefore refuses a version-3
+shape. An older worker binary expecting an earlier version therefore refuses a newer
 database. Rolling back that binary alone cannot resume Go workers; a coordinated
 and verified restoration/recovery procedure is required. No installed Go worker
 activation is offered by this increment.

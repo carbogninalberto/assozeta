@@ -20,8 +20,10 @@ func (r *Jobs) CheckSchema(ctx context.Context, currentVersion uint) error {
 	}
 	rows, err := r.db.QueryxContext(ctx, `SELECT j.id,j.ownership_generation,o.singleton,o.runtime,o.generation,
  p.id,p.periodic_task_id,p.source_name,p.dispatch_sequence,p.job_id,p.dispatched_at,p.ownership_generation,p.definition_sha256
+,
+ e.id,e.envelope_version,e.kind,e.target_id,e.created_at,e.attempts,e.delivered_at,e.failed_code
  FROM public.assozeta_go_jobs j CROSS JOIN public.assozeta_go_job_ownership o
- CROSS JOIN public.assozeta_go_periodic_occurrences p LIMIT 0`)
+ CROSS JOIN public.assozeta_go_periodic_occurrences p CROSS JOIN public.assozeta_go_realtime_events e LIMIT 0`)
 	if err != nil {
 		return err
 	}

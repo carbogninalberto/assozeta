@@ -13,17 +13,15 @@ import (
 )
 
 // StaffBoard owns staff-board authorization, authorship, transactions and the
-// post-commit invalidation. It writes no audit rows: Django does not register
-// StaffBoardMessage with auditlog.
+// transactional invalidation event. It writes no audit rows: Django does not
+// register StaffBoardMessage with auditlog.
 type StaffBoard struct {
-	store     domain.StaffBoardStore
-	publisher domain.StaffBoardPublisher
-	now       func() time.Time
-	report    func(error)
+	store domain.StaffBoardStore
+	now   func() time.Time
 }
 
-func NewStaffBoard(store domain.StaffBoardStore, publisher domain.StaffBoardPublisher, now func() time.Time, report func(error)) *StaffBoard {
-	return &StaffBoard{store: store, publisher: publisher, now: now, report: report}
+func NewStaffBoard(store domain.StaffBoardStore, now func() time.Time) *StaffBoard {
+	return &StaffBoard{store: store, now: now}
 }
 
 // Admit precedes OPTIONS/method dispatch, like the other association views.
@@ -99,18 +97,16 @@ func (s *StaffBoard) begin(ctx context.Context, identity domain.ResolvedIdentity
 	return tx, association, nil
 }
 
-// finish commits, then publishes. A publish failure is reported, never returned.
+// finish appends the invalidation to the outbox inside the write transaction,
+// then commits; the event exists exactly when the write does.
 func (s *StaffBoard) finish(ctx context.Context, tx domain.StaffBoardTransaction, association string) error {
+	if err := tx.AppendRealtimeEvent(ctx, domain.RealtimeStaffBoardChanged, association); err != nil {
+		return err
+	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	if err := s.publisher.PublishStaffBoardChange(context.WithoutCancel(ctx), association); err != nil && s.report != nil {
-		s.report(err)
-	}
-	return nil
+	return tx.Commit()
 }
 
 func (s *StaffBoard) reload(ctx context.Context, tx domain.StaffBoardTransaction, id, association string) (domain.StaffBoardMessage, error) {
@@ -248,14 +244,3 @@ func staffBoardNamesText(body any) (bool, error) {
 
 // ErrStaffBoardUnsupportedBody mirrors Django's uncaught TypeError (HTTP 500).
 var ErrStaffBoardUnsupportedBody = errors.New("staff-board update body does not support membership")
-
-// ErrStaffBoardRealtimeUnavailable marks the missing Go realtime boundary. It
-// is reported after commit and never fails the write; connected clients are
-// not invalidated until a tested cross-runtime delivery exists.
-var ErrStaffBoardRealtimeUnavailable = errors.New("staff-board realtime invalidation is not implemented in Go")
-
-type UnavailableStaffBoardPublisher struct{}
-
-func (UnavailableStaffBoardPublisher) PublishStaffBoardChange(context.Context, string) error {
-	return ErrStaffBoardRealtimeUnavailable
-}

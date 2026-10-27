@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -151,8 +152,48 @@ func TestStaffBoardRepositoryMutationsLive(t *testing.T) {
 	if err = tx.DeleteStaffBoardMessage(ctx, fixture.Rows["to_delete"], association); err != nil {
 		t.Fatal(err)
 	}
+	// The outbox event and its notification exist only after commit.
+	listener, err := pgx.Connect(ctx, os.Getenv("ASSOZETA_STAFF_BOARD_DSN"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close(context.Background())
+	if _, err = listener.Exec(ctx, "LISTEN assozeta_go_realtime"); err != nil {
+		t.Fatal(err)
+	}
+	var eventsBefore int
+	if err = db.GetContext(ctx, &eventsBefore, `SELECT count(*) FROM public.assozeta_go_realtime_events`); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.AppendRealtimeEvent(ctx, domain.RealtimeStaffBoardChanged, association); err != nil {
+		t.Fatal(err)
+	}
+	early, cancelEarly := context.WithTimeout(ctx, 300*time.Millisecond)
+	if _, err = listener.WaitForNotification(early); err == nil {
+		t.Fatal("notification delivered before commit")
+	}
+	cancelEarly()
 	if err = tx.Commit(); err != nil {
 		t.Fatal(err)
+	}
+	notification, err := listener.WaitForNotification(ctx)
+	if err != nil || notification.Channel != "assozeta_go_realtime" {
+		t.Fatal("notification after commit", err)
+	}
+	var event struct {
+		ID      int64  `db:"id"`
+		Version int    `db:"envelope_version"`
+		Kind    string `db:"kind"`
+		Target  string `db:"target_id"`
+		Pending bool   `db:"pending"`
+	}
+	if err = db.GetContext(ctx, &event, `SELECT id,envelope_version,kind,target_id::text AS target_id,
+ delivered_at IS NULL AND failed_code IS NULL AS pending FROM public.assozeta_go_realtime_events ORDER BY id DESC LIMIT 1`); err != nil {
+		t.Fatal(err)
+	}
+	if event.Version != 1 || event.Kind != "staff_board_changed" || event.Target != association || !event.Pending ||
+		notification.Payload != strconv.FormatInt(event.ID, 10) {
+		t.Fatalf("outbox event %+v payload %q", event, notification.Payload)
 	}
 
 	// Foreign rows are invisible to every write path.
@@ -174,9 +215,16 @@ func TestStaffBoardRepositoryMutationsLive(t *testing.T) {
 	// by PostgreSQL jsonb and nothing persists.
 	tx = begin()
 	bad := uuid.NewString()
+	if err = tx.AppendRealtimeEvent(ctx, domain.RealtimeStaffBoardChanged, association); err != nil {
+		t.Fatal(err)
+	}
 	err = tx.InsertStaffBoardMessage(ctx, domain.StaffBoardWrite{ID: bad, AssociationID: association, AuthorID: fixture.Owner,
 		Content: "x", Document: []byte(`{"type": "doc", "t": "\ud800"}`), At: at})
 	_ = tx.Rollback()
+	var eventsAfter int
+	if e := db.GetContext(ctx, &eventsAfter, `SELECT count(*) FROM public.assozeta_go_realtime_events`); e != nil || eventsAfter != eventsBefore+1 {
+		t.Fatal("rolled-back event persisted", eventsAfter, eventsBefore, e)
+	}
 	if err == nil {
 		t.Fatal("lone surrogate document accepted")
 	}
