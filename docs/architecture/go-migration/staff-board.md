@@ -1,4 +1,4 @@
-# Staff board — characterized; validator, input and row projection ported
+# Staff board — characterized; components, service and repository drafted
 
 The four `communications/staff-board/...` routes are characterized from the
 current Django source and its tests. No Go implementation, authored portable
@@ -156,6 +156,38 @@ association owner, then the username; `is_owner` compares the author with the
 acting user; timestamps use DRF's UTC `Z` form. The authored 9-case
 `TESTS/fixtures/staff-board-responses.json` passes through Django's real
 serializer (unsaved model instances, no database) and the Go projection.
+
+## Service and repository (drafted)
+
+`BE_GO/internal/service/staff_board.go` owns authorization, authorship and
+transactions. The acting author is `message_actor`: the effective collaborator
+for collaborators, otherwise the scope user. Writes reuse the shared owned
+transaction (restore advisory barrier), owner row lock and scoped association
+lookup used by saved messages; the list uses the saved-message read owner check.
+Update follows Django's order exactly: URL UUID, 404 lookup, author-only 403
+when the raw body names `content` or `document` (Python `in`: object keys, list
+elements, substrings, otherwise the view's `TypeError` 500), and only then the
+serializer. Delete is author-only. The invalidation is published only after a
+successful commit, and publish failures are reported without failing the write.
+No audit rows are written.
+
+`BE_GO/internal/repository/staff_board.go` uses one joined, parameterized query
+for list and lookup (author `LEFT JOIN`, association owner and denomination),
+ordering `pinned DESC, created_at DESC` like the model. Lookup uses
+`FOR UPDATE OF m`. **Deliberate difference:** Django's `save()` rewrites every
+column it previously read, so concurrent edits can lose each other's changes.
+Go updates only validated columns and `updated_at` under the row lock, so
+sequential results are identical and concurrent pin/content edits are no longer
+lost. This needs reviewer sign-off.
+
+Evidence so far is unit-level: 15 authored service cases (written after the
+service, not RED-first) cover acting-author selection, validation before any
+transaction on add, update precedence including the null-body `TypeError`,
+publish-after-commit, commit failure without publish, publish failure kept as
+success, author-only delete and non-association scopes. Mutations that publish
+before commit, or validate updates before the lookup, fail those tests. **The
+repository SQL has not yet run against PostgreSQL**, and there is no handler,
+route or realtime publisher.
 
 ## Required evidence before `implementing`
 

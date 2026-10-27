@@ -15340,7 +15340,11 @@
         "syntax": "path"
       },
       "status": "characterized",
-      "go": [],
+      "go": [
+        "BE_GO/internal/domain/staff_board.go",
+        "BE_GO/internal/repository/staff_board.go",
+        "BE_GO/internal/service/staff_board.go"
+      ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
         "Existing communications_staffboardmessage table; Django owns schema migrations; no auditlog registration",
@@ -15367,10 +15371,16 @@
         "execution_owner": "django"
       },
       "tests": [
-        "BE/communications/tests/test_staff_board.py"
+        "BE/communications/tests/test_staff_board.py",
+        "BE_GO/internal/service/staff_board_test.go"
       ],
       "evidence": [
-        "docs/architecture/go-migration/staff-board.md"
+        "docs/architecture/go-migration/staff-board.md",
+        {
+          "revision": "current branch plus the committing service/repository change",
+          "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
+          "artifact": "BE_GO/internal/service/staff_board_test.go"
+        }
       ],
       "notes": [
         "Characterized from inspected Django source and tests; exact Allow/HEAD/metadata bytes and DRF error bodies still need authored observation. No Go implementation."
@@ -15397,7 +15407,9 @@
         "BE_GO/internal/dto/python_json.go",
         "BE_GO/internal/dto/staff_board_document.go",
         "BE_GO/internal/dto/staff_board_input.go",
-        "BE_GO/internal/dto/staff_board_response.go"
+        "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/repository/staff_board.go",
+        "BE_GO/internal/service/staff_board.go"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
@@ -15428,6 +15440,7 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
@@ -15449,6 +15462,11 @@
           "revision": "current branch plus the committing row-projection change",
           "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
           "artifact": "TESTS/fixtures/staff-board-responses.json"
+        },
+        {
+          "revision": "current branch plus the committing service/repository change",
+          "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
+          "artifact": "BE_GO/internal/service/staff_board_test.go"
         }
       ],
       "notes": [
@@ -15476,7 +15494,9 @@
         "BE_GO/internal/dto/python_json.go",
         "BE_GO/internal/dto/staff_board_document.go",
         "BE_GO/internal/dto/staff_board_input.go",
-        "BE_GO/internal/dto/staff_board_response.go"
+        "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/repository/staff_board.go",
+        "BE_GO/internal/service/staff_board.go"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
@@ -15507,6 +15527,7 @@
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_document_test.go",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/service/staff_board_test.go",
         "TESTS/adapters/django/staff_board_documents.py",
         "TESTS/fixtures/staff-board-documents.json",
         "TESTS/fixtures/staff-board-inputs.json",
@@ -15528,6 +15549,11 @@
           "revision": "current branch plus the committing row-projection change",
           "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
           "artifact": "TESTS/fixtures/staff-board-responses.json"
+        },
+        {
+          "revision": "current branch plus the committing service/repository change",
+          "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
+          "artifact": "BE_GO/internal/service/staff_board_test.go"
         }
       ],
       "notes": [
@@ -15552,7 +15578,9 @@
       "status": "characterized",
       "go": [
         "BE_GO/internal/domain/staff_board.go",
-        "BE_GO/internal/dto/staff_board_response.go"
+        "BE_GO/internal/dto/staff_board_response.go",
+        "BE_GO/internal/repository/staff_board.go",
+        "BE_GO/internal/service/staff_board.go"
       ],
       "dependencies": [
         "Existing actor/effective/scope identity, collaborator permission registry and restore admission",
@@ -15582,6 +15610,7 @@
       "tests": [
         "BE/communications/tests/test_staff_board.py",
         "BE_GO/internal/dto/staff_board_response_test.go",
+        "BE_GO/internal/service/staff_board_test.go",
         "TESTS/fixtures/staff-board-responses.json"
       ],
       "evidence": [
@@ -15590,6 +15619,11 @@
           "revision": "current branch plus the committing row-projection change",
           "result": "Authored 9-case response projection corpus (author_name fallbacks, deleted author, is_owner, UTC timestamps): Django StaffBoardMessageSerializer 9/9 and Go projection 9/9. Component evidence only.",
           "artifact": "TESTS/fixtures/staff-board-responses.json"
+        },
+        {
+          "revision": "current branch plus the committing service/repository change",
+          "result": "Service unit tests (15 authored cases, written after implementation) pass; publish-before-commit and validate-before-lookup mutations caught. Repository SQL not yet executed against PostgreSQL; no handler, route or realtime publisher. Deliberate column-scoped update vs Django full-row save() recorded for review.",
+          "artifact": "BE_GO/internal/service/staff_board_test.go"
         }
       ],
       "notes": [
