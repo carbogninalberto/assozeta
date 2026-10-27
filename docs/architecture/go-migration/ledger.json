@@ -7090,25 +7090,70 @@
         "target": "invoice_customers_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_deletes.go",
+        "BE_GO/internal/repository/invoice_deletes.go",
+        "BE_GO/internal/service/invoice_deletes.go",
+        "BE_GO/internal/handler/invoice_deletes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-customers/{uid}/delete",
+          "/api/v2/invoice-customers/{uid}/delete",
+          "/api/invoice-customers/{uid}/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"message\": \"Invoice deleted\"}.",
+        "errors": "400 malformed UUID; 401; 403 registry or impersonation; 500 missing/foreign invoice, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.clientinvoices.delete.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "Invoice delete with an audit entry (changes_json index).",
+        "transaction": "Autocommit delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_deletes_http.json",
+        "TESTS/fixtures/generate_invoice_deletes_http.py",
+        "TESTS/contracts/test_invoice_deletes_http.py",
+        "TESTS/adapters/django/invoice_deletes_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-deletes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 22/22 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-red-r1/results.json",
+          "receipt_sha256": "200678abcd7ffe3e6f1009262a3e0257723172afe3566f62c1dcb90162294888"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 22/22 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact delete, audit and index effects.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r1/results.json",
+          "receipt_sha256": "ff1543adbeae3fd42cc66faf08e57cdffb1c26217ab824db8c4e4511edd2bf1e"
+        },
+        {
+          "revision": "committing change without the null foreign key rule",
+          "result": "Mutation control: fails Go on the audit changes.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-mutation-r1/results.json",
+          "receipt_sha256": "9b566d38374aa7328b441330ec97097909642829f73a0fd4ecc5009feaf23525"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the generic delete audit proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-customers/<str:uid>/update -> invoice_customers_update",
@@ -7310,25 +7355,70 @@
         "target": "invoice_suppliers_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/invoice_deletes.go",
+        "BE_GO/internal/repository/invoice_deletes.go",
+        "BE_GO/internal/service/invoice_deletes.go",
+        "BE_GO/internal/handler/invoice_deletes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/invoice-suppliers/{uid}/delete",
+          "/api/v2/invoice-suppliers/{uid}/delete",
+          "/api/invoice-suppliers/{uid}/delete"
+        ],
+        "request": "No body.",
+        "response": "200 {\"message\": \"Invoice deleted\"}.",
+        "errors": "400 malformed UUID; 401; 403 registry or impersonation; 500 missing/foreign invoice, athlete or missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.documents.supplierinvoices.delete.",
+        "resource_scope": "Impersonation-scoped association of the scope user.",
+        "side_effects": "Invoice delete with an audit entry (changes_json index).",
+        "transaction": "Autocommit delete with audit signals.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/invoice_deletes_http.json",
+        "TESTS/fixtures/generate_invoice_deletes_http.py",
+        "TESTS/contracts/test_invoice_deletes_http.py",
+        "TESTS/adapters/django/invoice_deletes_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/invoice-deletes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 22/22 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-red-r1/results.json",
+          "receipt_sha256": "200678abcd7ffe3e6f1009262a3e0257723172afe3566f62c1dcb90162294888"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 22/22 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact delete, audit and index effects.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r1/results.json",
+          "receipt_sha256": "ff1543adbeae3fd42cc66faf08e57cdffb1c26217ab824db8c4e4511edd2bf1e"
+        },
+        {
+          "revision": "committing change without the null foreign key rule",
+          "result": "Mutation control: fails Go on the audit changes.",
+          "artifact": "quality-reports/go-migration/invoice-deletes-http-mutation-r1/results.json",
+          "receipt_sha256": "9b566d38374aa7328b441330ec97097909642829f73a0fd4ecc5009feaf23525"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the generic delete audit proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:invoice-suppliers/<str:uid>/update -> invoice_suppliers_update",
