@@ -222,6 +222,23 @@ committed write logs that the invalidation was not delivered. Clients connected
 through Django Channels therefore do **not** refresh after a Go write. That is a
 blocking parity gap, not a silent success.
 
+## Authored HTTP sequence (not yet executed)
+
+`TESTS/fixtures/staff_board_http.json` (generator alongside) authors 32 ordered
+cases on the shared identity fixture: list by owner, full and restricted
+collaborators, the foreign owner and an administrator impersonating the owner;
+athlete, anonymous, wrong-method and OPTIONS responses; add validation,
+plain-text and rich-document creation; update precedence (malformed ID, foreign
+404, missing permission, author-only before validation, deleted author), pin by
+a non-author, author content edit and blank content; author-only and foreign
+delete, a successful delete and its repeat; and a forged impersonation session.
+Shared identity denials were aligned with the measured saved-message fixture
+(`Missing permission: …` for mapped routes, the impersonation messages) before
+any run. Generated IDs and write times use explicit `$new:`/`$now` placeholders.
+No runner exists yet; next it should reuse `message_read_scopes.seed_fixture`,
+`observed_case` attribution and the `message_mutations_acceptance` lifetimes
+for native Django/Go and Caddy v1/v2.
+
 ## Required evidence before `implementing`
 
 1. An independently authored fixture and portable contract (no Django imports)
