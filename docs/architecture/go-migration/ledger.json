@@ -14428,8 +14428,15 @@
         "target": "communication_email_logs_list",
         "syntax": "path"
       },
-      "status": "characterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/email_logs.go",
+        "BE_GO/internal/repository/email_logs.go",
+        "BE_GO/internal/service/email_logs.go",
+        "BE_GO/internal/dto/email_logs.go",
+        "BE_GO/internal/handler/email_logs.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [
         "Existing actor/scope identity and collaborator registry default deny",
         "Existing application_emaillog table; Django owns migrations",
@@ -14447,20 +14454,39 @@
         ],
         "request": "No body; unpaginated.",
         "response": "200 {\"today_count\": int, \"total_count\": int, \"results\": [{email_log_id, recipient, subject, sent_at, result}]} ordered -sent_at within 90 days.",
-        "errors": "401 unauthenticated; 403 athlete ('User is not a sport association') and registry default deny for collaborators; 500 when an owner/admin has no association.",
+        "errors": "401 unauthenticated; 403 athlete ('User is not a sport association'), registry unmapped-route denial for non-FULL collaborators, administrators outside impersonation; 500 when the owner's association is missing or soft-deleted.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
-        "permissions": "IsAuthenticated only; route unmapped in permissions_registry, so collaborators are denied by default.",
-        "resource_scope": "User.sport_association cached_property: connected owner for collaborators, own association otherwise; deleted associations are not excluded.",
+        "permissions": "IsAuthenticated only; route unmapped in permissions_registry: FULL collaborators bypass the registry, other collaborators are denied.",
+        "resource_scope": "User.sport_association cached_property: connected owner for collaborators, own association otherwise, through ActiveManager (soft-deleted associations raise DoesNotExist, HTTP 500).",
         "side_effects": "None.",
         "transaction": "Read only; two queries (rows streamed in chunks of 100, plus today_count).",
         "execution_owner": "django"
       },
-      "tests": [],
+      "tests": [
+        "TESTS/fixtures/email_logs_http.json",
+        "TESTS/fixtures/generate_email_logs_http.py",
+        "TESTS/contracts/test_email_logs_http.py",
+        "TESTS/adapters/django/email_logs_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/service/email_logs_test.go"
+      ],
       "evidence": [
-        "docs/architecture/go-migration/email-logs.md"
+        "docs/architecture/go-migration/email-logs.md",
+        {
+          "revision": "4664a8b6 plus authored sequence, before Go code",
+          "result": "RED: Django 13/13, Go 404 on the first case (route absent). Earlier 1-hour margins; superseded fixture margins are wider.",
+          "artifact": "quality-reports/go-migration/email-logs-http-red-r1/results.json",
+          "receipt_sha256": "7c0f41089ad76ee68d1c5b964afb1fd90438b5067fe962e78fc6e6eeec0a28b9"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 13/13 on native Django, native Go, Caddy /api/v1 and /api/v2 with full-state, attribution, cache and cleanup checks.",
+          "artifact": "quality-reports/go-migration/email-logs-http-versioned-r1/results.json",
+          "receipt_sha256": "45e506eac515c82c46adde09d654a6846e5c8ee6ab571b2b56e8c867e842565d"
+        }
       ],
       "notes": [
-        "Characterized from inspected source; no Go implementation or executed evidence."
+        "Implementing: HTTP parity proven on four transports; rows buffered within the 90-day window; query-plan review pending."
       ]
     },
     {
@@ -15419,8 +15445,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
-          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
+          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
         }
       ],
       "notes": [
@@ -15533,8 +15559,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
-          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
+          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
         }
       ],
       "notes": [
@@ -15647,8 +15673,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
-          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
+          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
         }
       ],
       "notes": [
@@ -15744,8 +15770,8 @@
         {
           "revision": "5e2b174e plus the committing runner",
           "result": "Authored 32-case HTTP sequence passes on native Django, native Go, Caddy /api/v1 and /api/v2 (exact status/body/headers, complete 128-model state effects, per-request attribution, cache unchanged, verified cleanup). Go author-check mutation fails only Go. No HTTP-level RED (Go code predates the sequence). Realtime invalidation still missing; not verified.",
-          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r2/results.json",
-          "receipt_sha256": "7efbc3e59e831196ad6f03dbf850ef71a2de08fd6ded96716973d3fccdcb9df4"
+          "artifact": "quality-reports/go-migration/staff-board-http-versioned-r3/results.json",
+          "receipt_sha256": "13c59fd1be69e20697bc10d9efa8dfebe7c09d1f39abe4d6122105fbcade2783"
         }
       ],
       "notes": [

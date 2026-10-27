@@ -1,7 +1,8 @@
-"""Parent-only staff-board HTTP acceptance on native Django/Go and Caddy v1/v2.
+"""Parent-only authored HTTP acceptance on native Django/Go and Caddy v1/v2.
 
 Run with the production interpreter:
-``python -m TESTS.adapters.django.staff_board_http_acceptance --output NEW_DIRECTORY [--versioned]``.
+``python -m TESTS.adapters.django.staff_board_http_acceptance --output NEW_DIRECTORY [--versioned]
+[--family staff-board|email-logs]``.
 Reuses the proven private PostgreSQL/Redis, Django ASGI observer, native Go
 server and shipped Caddy lifetimes. Each endpoint gets a fresh fixture and a
 verified cleanup receipt. Only the credential-free results.json is published.
@@ -16,24 +17,29 @@ import traceback
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
-SOURCES = ('TESTS/fixtures/staff_board_http.json', 'TESTS/contracts/test_staff_board_http.py',
-           'TESTS/adapters/django/staff_board_http.py', 'TESTS/adapters/django/staff_board_http_acceptance.py',
-           'BE/communications/views.py', 'BE/communications/staff_board.py', 'BE/communications/serializers.py',
-           'BE_GO/internal/handler/staff_board.go', 'BE_GO/internal/service/staff_board.go',
-           'BE_GO/internal/repository/staff_board.go', 'BE_GO/internal/dto/staff_board_input.go',
-           'BE_GO/internal/dto/staff_board_document.go', 'BE_GO/internal/dto/staff_board_response.go',
-           'BE_GO/cmd/server/main.go')
+FAMILIES = {
+    'staff-board': ('staff_board_http', ('TESTS/fixtures/staff_board_http.json', 'TESTS/contracts/test_staff_board_http.py',
+        'TESTS/adapters/django/staff_board_http.py', 'BE/communications/views.py', 'BE/communications/staff_board.py',
+        'BE/communications/serializers.py', 'BE_GO/internal/handler/staff_board.go', 'BE_GO/internal/service/staff_board.go',
+        'BE_GO/internal/repository/staff_board.go', 'BE_GO/internal/dto/staff_board_input.go',
+        'BE_GO/internal/dto/staff_board_document.go', 'BE_GO/internal/dto/staff_board_response.go')),
+    'email-logs': ('email_logs_http', ('TESTS/fixtures/email_logs_http.json', 'TESTS/contracts/test_email_logs_http.py',
+        'TESTS/adapters/django/email_logs_http.py', 'BE/communications/views.py', 'BE/application/models/user_models.py',
+        'BE/application/impersonation.py')),
+}
+SOURCES = ('TESTS/adapters/django/staff_board_http_acceptance.py', 'BE_GO/cmd/server/main.go')
 
 
-def source_hashes():
-    return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in SOURCES}
+def source_hashes(family='staff-board'):
+    return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in SOURCES + FAMILIES[family][1]}
 
 
 def execute(report, tools, private, log):
     from TESTS.adapters.django import message_reads_runtime as reuse
     from TESTS.adapters.django.message_read_scopes_runtime import go_service, caddy_liveness_guard, LIFECYCLE_GUARD
     from TESTS.adapters.django.message_mutations_acceptance import _owned, configure_database_bounds, PG_BOUNDS
-    from TESTS.adapters.django import staff_board_http as runner
+    import importlib
+    runner = importlib.import_module('TESTS.adapters.django.' + FAMILIES[report['family']][0])
     versioned = report['versioned']
     with _owned(reuse.owned_message_database(private, report)) as (work, port, _services):
         env, _ = reuse.private_environment(work, port, tools)
@@ -97,19 +103,22 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--versioned', action='store_true')
+    parser.add_argument('--family', choices=sorted(FAMILIES), default='staff-board')
     args = parser.parse_args(argv)
     from TESTS.adapters.django import message_reads_runtime as reuse
     output = reuse.prepare_output_directory(args.output)
-    report = {'success': False, 'scope': 'staff-board authored HTTP sequence', 'versioned': args.versioned,
-              'complete_staff_board_parity': False, 'workloads': [], 'fixture_cleanup': [], 'resource_cleanup': {},
+    report = {'success': False, 'scope': args.family + ' authored HTTP sequence', 'versioned': args.versioned, 'family': args.family,
+              'complete_family_parity': False, 'workloads': [], 'fixture_cleanup': [], 'resource_cleanup': {},
               'service_cleanup': {}, 'errors': [], 'runtime_executed': False}
     before = None
     try:
         from TESTS.adapters.django.production_runtime import require_production_python
         report['python'] = require_production_python()
-        before = source_hashes()
+        before = source_hashes(args.family)
         report['source_sha256'] = before
         tools = reuse.sanitized_tool_environment()
+        # Django and the Go server share the host clock; window fixtures keep
+        # wide margins so any host offset below them yields the same result.
         tools.update({'LC_ALL': 'C', 'LANG': 'C', 'GOPROXY': 'off', 'GOTOOLCHAIN': 'local',
                       'GOSUMDB': 'off', 'GOFLAGS': '-mod=readonly'})
         with patch.dict(os.environ, tools, clear=True):
@@ -121,7 +130,8 @@ def main(argv=None):
                     except BaseException as error:
                         # Diagnostics stay private; publish only the fixed failure location.
                         traceback.print_exc(file=log)
-                        report['errors'].append({'type': type(error).__name__,
+                        log.flush()
+                        report['errors'].append({'type': type(error).__name__, 'case': getattr(error, 'case', None),
                                                  'check': str(error)[:120] if isinstance(error, AssertionError) else None,
                                                  'actual_status': getattr(error, 'actual_status', None)})
                         (output / 'failure.log').write_text((private / 'private.log').read_text()[-20000:])
@@ -130,7 +140,7 @@ def main(argv=None):
     except BaseException as error:
         report['errors'].append({'type': type(error).__name__})
     finally:
-        report['source_stable'] = before is not None and source_hashes() == before
+        report['source_stable'] = before is not None and source_hashes(args.family) == before
         report['fixture_cleanup_verified'] = bool(report['fixture_cleanup']) and all(r.get('verified') for r in report['fixture_cleanup'])
         report['services_stopped'] = all(state in ('stopped', None) for state in report['service_cleanup'].values()) \
             if report['service_cleanup'] else False
