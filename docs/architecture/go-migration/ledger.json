@@ -14107,25 +14107,72 @@
         "target": "testimonials_create",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/testimonials.go",
+        "BE_GO/internal/dto/testimonials.go",
+        "BE_GO/internal/repository/testimonials.go",
+        "BE_GO/internal/service/testimonials.go",
+        "BE_GO/internal/handler/testimonials.go",
+        "BE_GO/internal/dto/python_json.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity, collaborator registry and association scope",
+        "application_testimonial and application_sportassociation tables; auditlog LogEntry/AuditLogIndex resolvers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/testimonials/add",
+          "/api/v2/testimonials/add",
+          "/api/testimonials/add"
+        ],
+        "request": "JSON object with text and score; see testimonials.md for Python membership and coercion rules.",
+        "response": "200 {\"msg\": \"Thank you for your review.\"}.",
+        "errors": "400 {\"msg\": \"missing params.\"} or {\"msg\": \"invalid score.\"}; 401; 403 registry, impersonation or athlete; 500 for Python TypeErrors, null text and missing or soft-deleted association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry other.settings.update (FULL collaborators pass); no association-role permission class.",
+        "resource_scope": "request.user.sport_association; reviewed lookup by request.user within the impersonation association.",
+        "side_effects": "One Testimonial row; reviewed=True full-row save audited only on a false-to-true change (index path self).",
+        "transaction": "Autocommit saves (ATOMIC_REQUESTS unset); Go commits the testimonial before a failed reviewed lookup.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/testimonials_http.json",
+        "TESTS/fixtures/generate_testimonials_http.py",
+        "TESTS/contracts/test_testimonials_http.py",
+        "TESTS/adapters/django/testimonials_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/testimonials_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/testimonials.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 38/38 after two source-confirmed corrections; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/testimonials-http-red-r1/results.json",
+          "receipt_sha256": "52a7cad5d4fd43f328ee8a3f4bc06d5437b79aee64f1dc86fbf86b47f9f448a6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 38/38 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact testimonial, reviewed, audit and index effects.",
+          "artifact": "quality-reports/go-migration/testimonials-http-versioned-r1/results.json",
+          "receipt_sha256": "06e7b5fd31547dca8c978b34346ae091a41d989cdec898ca609945708bfcd2b9"
+        },
+        {
+          "revision": "committing change with index path mutated",
+          "result": "Mutation control: index path direct fails Go on index.fields.",
+          "artifact": "quality-reports/go-migration/testimonials-http-mutation-r1/results.json",
+          "receipt_sha256": "f5e6817b9cd425838a5f1e876441aa27f59b7fa0522981e8178403f5e8865a65"
+        }
+      ],
+      "notes": [
+        "Implementing: write parity including reviewed-flag audit proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:testimonials/update -> testimonials_update",
@@ -14142,25 +14189,40 @@
         "target": "testimonials_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
+      "status": "characterized",
       "go": [],
-      "dependencies": [],
+      "dependencies": [
+        "SENJA_WEBHOOK_SECRET in Go configuration and launcher allowlist",
+        "Compact Python json.dumps port for HMAC input",
+        "application_sportassociation audit (shared with testimonials/add)"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/testimonials/update",
+          "/api/v2/testimonials/update",
+          "/api/testimonials/update"
+        ],
+        "request": "Senja webhook JSON with x-senja-signature HMAC-SHA256 over compact json.dumps of the parsed body.",
+        "response": "200 with an empty body.",
+        "errors": "401 missing or wrong signature; 400 missing type or any error in testimonial_created handling; 404 unknown association; 500 non-ASCII signature or indexing a non-object body.",
+        "authentication": "Default ScopedJWTAuthentication; AllowAny.",
+        "permissions": "Registry other.settings.update applies only to authenticated collaborators.",
+        "resource_scope": "Association named in the payload, active only.",
+        "side_effects": "reviewed=True full-row save, audited on change.",
+        "transaction": "Autocommit save.",
         "execution_owner": "django"
       },
       "tests": [],
-      "evidence": [],
-      "notes": []
+      "evidence": [
+        "docs/architecture/go-migration/testimonials.md"
+      ],
+      "notes": [
+        "Characterized from source; no authored sequence yet."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:two-fa/info -> two_fa_info",
@@ -16057,7 +16119,7 @@
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAssociationUser; routes unmapped in permissions_registry (FULL collaborators pass, others denied).",
         "resource_scope": "request.user.sport_association through ActiveManager.",
-        "side_effects": "One AutomationWorkflow row plus auditlog LogEntry and AuditLogIndex.",
+        "side_effects": "One AutomationWorkflow row plus auditlog LogEntry and AuditLogIndex (path direct).",
         "transaction": "Autocommit save with audit signals (ATOMIC_REQUESTS unset).",
         "execution_owner": "django"
       },
@@ -16081,6 +16143,12 @@
           "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact workflow, audit entry and audit index effects; unsorted audit JSON mutation fails Go.",
           "artifact": "quality-reports/go-migration/workflow-writes-http-versioned-r1/results.json",
           "receipt_sha256": "30af7ebfd1f4d33592f53a75333e971d2372c2d6ece2b8be07f482306c03b36a"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN after correction: with audit resolvers registered as in production, creates are indexed direct; 27/27 on four transports.",
+          "artifact": "quality-reports/go-migration/workflow-writes-http-versioned-r2/results.json",
+          "receipt_sha256": "431a3fa910772105bf4f03a812572343367646b6b8cf9dfd0ef5402bfdf438cf"
         }
       ],
       "notes": [
