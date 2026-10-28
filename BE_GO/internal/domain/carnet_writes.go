@@ -104,3 +104,16 @@ type CarnetLinkTransaction interface {
 type CarnetLinkStore interface {
 	BeginCarnetLink(context.Context) (CarnetLinkTransaction, error)
 }
+
+type CarnetMetaTransaction interface {
+	// HoldingMeta locks the owner's carnet subscription and returns its meta
+	// JSON text (nil for SQL NULL) and subscription association.
+	HoldingMeta(ctx context.Context, holding, owner string, scope *string) (meta *string, association string, err error)
+	SaveHoldingMeta(ctx context.Context, holding, meta, association string, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetMetaStore interface {
+	BeginCarnetMeta(context.Context) (CarnetMetaTransaction, error)
+}

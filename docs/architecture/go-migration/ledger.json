@@ -4632,25 +4632,68 @@
         "target": "carnet_subscription_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnetsubscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/<uid>/update",
+          "/api/v2/carnet-subscription/<uid>/update",
+          "/api/carnet-subscription/<uid>/update"
+        ],
+        "request": "JSON/form: lessons_left.",
+        "response": "200 {\"msg\": \"Carnet subscription updated.\"}.",
+        "errors": "400 missing lessons left / malformed uid / out of range; 401; 403; 404 Carnet subscription not found.; 500 list body, non-integer value or unusable meta.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "A carnet subscription of the scope user's subscriptions.",
+        "side_effects": "Sets meta.lessons_left; one auditlog update entry when it changes.",
+        "transaction": "One transaction (Django autocommit save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_update_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_update_http.py",
+        "TESTS/contracts/test_carnet_subscription_update_http.py",
+        "TESTS/adapters/django/carnet_subscription_update_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 23/23; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-update-http-red-r1/results.json",
+          "receipt_sha256": "e2120ae33e7516b2823e6fddd9e71ee39d5631fd5a391fefca39b9ff927ca57c"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 23/23 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-update-http-versioned-r1/results.json",
+          "receipt_sha256": "da94550ffcf5b8fa3848901d086e537891893d5c0cb4b5d486ebd85bca7f526c"
+        },
+        {
+          "revision": "committing change without the negative check",
+          "result": "Mutation control: fails Go on the negative case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-update-http-mutation-r1/results.json",
+          "receipt_sha256": "3bc9e359470565700879cf49a391cd8943f2860448cfac3bcb83e635faed5eaa"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including Python int() coercion and the audited meta save on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/list -> carnet_subscription_list",

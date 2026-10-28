@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -206,6 +209,105 @@ func (s *CarnetLinks) Remove(ctx context.Context, identity domain.ResolvedIdenti
 		return ErrPaymentSaveFailed
 	}
 	if err = tx.RemoveCourseLink(ctx, id.String(), course.String()); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+var (
+	ErrCarnetLessonsMissing = errors.New("missing lessons left")
+	ErrCarnetLessonsRange   = errors.New("lessons left out of range")
+)
+
+type CarnetMetas struct {
+	store domain.CarnetMetaStore
+	now   func() time.Time
+}
+
+func NewCarnetMetas(store domain.CarnetMetaStore, now func() time.Time) *CarnetMetas {
+	return &CarnetMetas{store: store, now: now}
+}
+
+// pythonNumber compares like Python numbers: JSON numbers and booleans only.
+func pythonNumber(value any) (*big.Rat, bool) {
+	switch v := value.(type) {
+	case bool:
+		if v {
+			return big.NewRat(1, 1), true
+		}
+		return new(big.Rat), true
+	case json.Number:
+		rat, ok := new(big.Rat).SetString(string(v))
+		return rat, ok
+	}
+	return nil, false
+}
+
+// UpdateLessons follows carnet_subscription_update.
+func (s *CarnetMetas) UpdateLessons(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		// request.data.keys() on a non-dict body.
+		return ErrPaymentSaveFailed
+	}
+	value, present := object.Lookup("lessons_left")
+	if !present {
+		return ErrCarnetLessonsMissing
+	}
+	id, err := messageReadsParseUUID(raw)
+	if err != nil {
+		return err
+	}
+	tx, err := s.store.BeginCarnetMeta(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	stored, association, err := tx.HoldingMeta(ctx, id, identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return err
+	}
+	left, err := dto.PythonIntPrep(value)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	meta, err := paymentJSON(stored)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	fields, ok := meta.(domain.RequestObject)
+	if !ok {
+		return ErrPaymentSaveFailed
+	}
+	counterValue, present := fields.Lookup("lessons_counter")
+	counter, numeric := pythonNumber(counterValue)
+	if !present || !numeric {
+		return ErrPaymentSaveFailed
+	}
+	if big.NewRat(left, 1).Cmp(counter) > 0 || left < 0 {
+		return ErrCarnetLessonsRange
+	}
+	updated := make(domain.RequestObject, 0, len(fields)+1)
+	replaced := false
+	for _, field := range fields {
+		if field.Name == "lessons_left" {
+			field.Value, replaced = json.Number(strconv.FormatInt(left, 10)), true
+		}
+		updated = append(updated, field)
+	}
+	if !replaced {
+		updated = append(updated, domain.RequestField{Name: "lessons_left", Value: json.Number(strconv.FormatInt(left, 10))})
+	}
+	oldText, newText := string(dto.PythonJSONDumpsSorted(fields)), string(dto.PythonJSONDumpsSorted(updated))
+	changes := map[string][2]string{}
+	if oldText != newText {
+		changes["meta"] = [2]string{oldText, newText}
+	}
+	if err = tx.SaveHoldingMeta(ctx, id, string(dto.PythonJSONDumps(updated)), association, changes,
+		paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)); err != nil {
 		return err
 	}
 	return tx.Commit()

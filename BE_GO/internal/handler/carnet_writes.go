@@ -34,7 +34,12 @@ type CarnetLinkService interface {
 	Remove(context.Context, domain.ResolvedIdentity, string, string) error
 }
 
+type CarnetMetaService interface {
+	UpdateLessons(context.Context, domain.ResolvedIdentity, string, any, domain.LoginAuditContext) error
+}
+
 type CarnetWritesHandler struct {
+	metas      CarnetMetaService
 	links      CarnetLinkService
 	toggles    CarnetToggleService
 	deletes    CarnetDeleteService
@@ -46,8 +51,8 @@ type CarnetWritesHandler struct {
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewCarnetWritesHandler(links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
+func NewCarnetWritesHandler(metas CarnetMetaService, links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{metas: metas, links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -256,4 +261,49 @@ func (h *CarnetWritesHandler) RemoveCourseLink(c echo.Context) error {
 		return restError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "Carnet subscription deleted."})
+}
+
+func (h *CarnetWritesHandler) UpdateLessons(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPatch, "carnet_subscription_update")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Subscription Update", "Set carnet subscription to enabled")
+	}
+	if request.Method != http.MethodPatch {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	body, err := readMessageMutationsBody(c)
+	if err != nil {
+		return restError(c, err)
+	}
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	err = h.metas.UpdateLessons(ctx, *identity, c.Param("uid"), body, audit)
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, service.ErrCarnetLessonsMissing):
+		return c.JSON(400, map[string]string{"msg": "Missing lessons left."})
+	case errors.Is(err, service.ErrCarnetLessonsRange):
+		return c.JSON(400, map[string]string{"msg": "Lessons left cannot be > than lessons_number."})
+	case errors.Is(err, domain.ErrCarnetSubscriptionNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet subscription not found."})
+	case err != nil:
+		return messageReadsError(c, err)
+	}
+	return c.JSON(200, map[string]string{"msg": "Carnet subscription updated."})
 }

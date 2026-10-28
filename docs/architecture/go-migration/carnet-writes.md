@@ -86,3 +86,17 @@ filters ids through the target's soft-delete manager, so a link to a deleted
 course subscription stays; an unlinked id is a no-op. The save changes no
 field: no audit entry. `TESTS/fixtures/carnet_subscription_delete_http.json`
 authors 16 cases; the Django reference corrected the deleted-link expectation.
+
+## Carnet subscription update
+
+`PATCH carnet-subscription/<uid>/update` refuses non-association roles, then
+requires a `lessons_left` key (`400 {"msg": "Missing lessons left."}`; a list
+body has no `keys()`: 500), validates the uid (400), gets the owned carnet
+subscription (404), and compares `int(lessons_left)` (Python `int()`: strings
+with spaces, truncated floats, booleans; other values are a 500) with
+`meta['lessons_counter']` (a non-dict meta, missing or non-numeric counter is
+a 500): above it or negative is `400 {"msg": "Lessons left cannot be > than
+lessons_number."}`. The new `lessons_left` is saved in meta and audited as the
+sorted JSON dumps when it changes, indexed through the subscription.
+`TESTS/fixtures/carnet_subscription_update_http.json` authors 23 cases;
+dropping the negative check fails its case.

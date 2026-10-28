@@ -275,3 +275,43 @@ func (t *carnetWriteTransaction) RemoveCourseLink(ctx context.Context, holding, 
   (SELECT course_subscription_id FROM application_coursesubscription WHERE course_subscription_id=$2 AND NOT deleted)`, holding, course)
 	return err
 }
+
+var _ domain.CarnetMetaStore = (*CarnetWrites)(nil)
+
+func (r *CarnetWrites) BeginCarnetMeta(ctx context.Context) (domain.CarnetMetaTransaction, error) {
+	tx, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) HoldingMeta(ctx context.Context, holding, owner string, scope *string) (*string, string, error) {
+	var row struct {
+		Meta        *string `db:"meta"`
+		Association string  `db:"sport_association_id"`
+	}
+	err := t.tx.GetContext(ctx, &row, `SELECT h.meta::text AS meta, s.sport_association_id FROM application_carnetsubscription h
+ JOIN application_subscription s ON s.subscription_id=h.subscription_id
+ JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id
+ LEFT JOIN application_carnet c ON c.carnet_id=h.carnet_id_id
+ WHERE h.carnet_subscription_id=$1 AND sa.user_id=$2
+  AND ($3::uuid IS NULL OR (s.sport_association_id=$3::uuid AND c.sport_association_id=$3::uuid)) FOR UPDATE OF h`, holding, owner, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, "", domain.ErrCarnetSubscriptionNotFound
+	}
+	return row.Meta, row.Association, err
+}
+
+func (t *carnetWriteTransaction) SaveHoldingMeta(ctx context.Context, holding, meta, association string, changes map[string][2]string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_carnetsubscription SET meta=$2::jsonb WHERE carnet_subscription_id=$1`, holding, meta); err != nil {
+		return err
+	}
+	if len(changes) == 0 {
+		return nil
+	}
+	path := "subscription.sport_association"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnetsubscription", Key: holding,
+		Representation: "CarnetSubscription object (" + holding + ")", Action: 1, Changes: changes, Context: audit,
+		AssociationID: &association, ResolutionPath: &path, At: at})
+}
