@@ -1,5 +1,10 @@
 // Source for the generated Python-facing recipes.json inventory.
 import {authoredWorkflows} from './authored-workflows.mjs';
+import {editorialContracts} from './editorial-contracts.mjs';
+
+// Restore has reviewed reference prose, but no captured procedure uses its
+// implementation. Explicit recipe dependencies still take precedence.
+export const referenceOnlyDependencies = ['BE/instance/restore/'];
 
 export const sharedDependencies = [
     "BE/core/",
@@ -24,7 +29,11 @@ export const sharedDependencies = [
 ];
 
 export function workflowRegistry() {
+    const references = editorialContracts();
     return {format: 1, shared_dependencies: sharedDependencies,
+        non_capture_dependencies: referenceOnlyDependencies,
+        reference_dependencies: [...new Set(references.flatMap(section => section.source_contracts.map(source => source.path)))].sort(),
+        reference_modules: [...new Set(references.map(section => section.recipe_module))].sort(),
         recipes: Object.entries(authoredWorkflows).sort(([a], [b]) => a.localeCompare(b)).map(([id, spec]) => {
             // Shared mutation helpers participate in both capture and reuse invalidation.
             const sources = [...spec.sources];

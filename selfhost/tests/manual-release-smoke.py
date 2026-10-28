@@ -98,6 +98,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('package', type=Path)
     parser.add_argument('release')
+    parser.add_argument('--scope', choices=('full', 'compatibility'), default='full',
+                        help='Compatibility checks startup/reader/access on the exact package; full also rehearses historical updates and faults')
     parser.add_argument('--previous-package', type=Path,
                         help='Optional independently verified synthetic rollback package')
     parser.add_argument('--previous-release', default='1.0.17',
@@ -108,11 +110,11 @@ def main():
                          required=True, verify_assets=True)
     previous_bundle = (load_bundle(args.previous_package, revision=revision, release=args.previous_release,
                                   required=True, verify_assets=True) if args.previous_package else None)
-    if args.previous_release == args.release:
+    if args.scope == 'full' and args.previous_release == args.release:
         raise ValueError('Upgrade rehearsal requires two distinct versions')
     output = ROOT / 'quality-reports/manual-release'
     output.mkdir(parents=True, exist_ok=True)
-    result = {'status': 'running', 'application_revision': revision, 'release': args.release,
+    result = {'status': 'running', 'scope': args.scope, 'application_revision': revision, 'release': args.release,
               'corpus_identity': bundle.value['identity'], 'checks': [], 'timings': [],
               'proof_scope': {'current_distribution': 'Django default plus required Go manual artifact and HTTP/assets',
                   'historical': ('independently verified synthetic package' if previous_bundle else
@@ -193,7 +195,10 @@ def main():
             backend = backends['backend']
             web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
             renderer = image('renderer', ROOT / 'selfhost/renderer')
-            if previous_bundle:
+            if args.scope == 'compatibility':
+                previous_images = None
+                result['previous_source'] = 'historical rehearsal not selected; compatible verified infrastructure'
+            elif previous_bundle:
                 previous_backends = build_manual_backends(work, args.previous_package,
                     args.previous_release, revision, image, prefix='previous-')
                 previous_images = {**previous_backends, 'web': web, 'renderer': renderer}
@@ -245,8 +250,10 @@ def main():
                 time.sleep(.5)
             target_images = {**backends, 'web': web, 'renderer': renderer}
             repositories = {name: registry + '/' + project + '-' + name for name in target_images}
-            for version, version_images in ((args.release, target_images),
-                                            (args.previous_release, previous_images)):
+            versions = [(args.release, target_images)]
+            if previous_images:
+                versions.append((args.previous_release, previous_images))
+            for version, version_images in versions:
                 for name, source in version_images.items():
                     target = repositories[name] + ':' + version
                     command(['docker', 'tag', source, target]); images.append(target)
@@ -355,6 +362,9 @@ def main():
             ready(); contracts('recreated')
             contracts('recreated-go', api_prefix='/api/v2')
             record('container recreation retains the image-matched manual')
+            if args.scope == 'compatibility':
+                result['status'] = 'passed'
+                return
             # Stop at the real create/start boundary, as if activation had been
             # interrupted after replacing the container but before starting it.
             command(compose('up', '--no-start', '--no-deps', '--force-recreate', 'api'), env=env)

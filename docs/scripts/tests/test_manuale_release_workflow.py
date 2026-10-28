@@ -10,22 +10,26 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
-    def test_pr_verification_retains_complete_evidence_and_only_default_branch_saves_cache(self):
-        steps = yaml.safe_load((ROOT / '.github/workflows/manuale.yml').read_text())['jobs']['verify']['steps']
-        restore = next(step for step in steps if step.get('uses', '').startswith('actions/cache/restore@'))
-        save = next(step for step in steps if step.get('uses', '').startswith('actions/cache/save@'))
-        export = next(step for step in steps if step.get('id') == 'manual-cache-export')
-        self.assertEqual(restore['with']['path'], save['with']['path'])
-        self.assertEqual(restore['with']['key'], save['with']['key'])
-        for step in (save, export):
-            self.assertIn("github.ref == format('refs/heads/{0}', github.event.repository.default_branch)", step['if'])
-            self.assertNotIn('always()', step['if'])
-        self.assertIn("steps.manual-cache-export.outcome == 'success'", save['if'])
-        self.assertTrue(restore['continue-on-error'])
-        verification = next(step for step in steps if 'BASE_REVISION' in step.get('env', {}))
-        self.assertEqual(verification['env']['BASE_REVISION'], '${{ github.event.pull_request.base.sha }}')
-        self.assertIn('--changed-since "$BASE_REVISION"', verification['run'])
-        self.assertNotIn('--allow-dirty', verification['run'])
+    def test_one_shared_verifier_pins_inputs_and_preserves_scheduled_full_runs(self):
+        main = yaml.safe_load((ROOT / '.github/workflows/manuale.yml').read_text())
+        release = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())
+        shared = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())
+        self.assertNotIn('pull_request', release[True])
+        for job in (main['jobs']['verify'], release['jobs']['bundle']):
+            self.assertEqual(job['uses'], './.github/workflows/manuale-verify.yml')
+        self.assertIn("github.event_name == 'schedule'", main['jobs']['verify']['with']['force_full'])
+        steps = shared['jobs']['verify']['steps']
+        commands = '\n'.join(step.get('run', '') for step in steps)
+        self.assertIn('manuale-ci.py pin', commands)
+        self.assertNotIn('MANUAL_REF', commands)
+        self.assertNotIn('--changed-since', commands)
+        for phase in ('capture', 'compile', 'render', 'runtime', 'package', 'baseline'):
+            self.assertIn('--phase ' + phase, commands)
+        candidate = next(step for step in steps if step.get('with', {}).get('name') == 'manuale-verified-baseline')
+        self.assertNotIn('always()', candidate.get('if', ''))
+        self.assertEqual(candidate['with']['if-no-files-found'], 'error')
+        self.assertEqual(candidate['with']['retention-days'], 90)
+        self.assertEqual(shared['jobs']['appliance']['needs'], 'verify')
     def test_installable_images_require_complete_current_go_inventory(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         self.assertEqual(jobs['go-quality']['uses'], './.github/workflows/go-quality.yml')
@@ -55,20 +59,20 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('REQUIRE_MANUAL=', build['with']['build-args'])
         self.assertIn('manual-release', jobs['release-bundle']['needs'])
 
-    def test_release_package_uses_exact_release_and_real_rehearsal(self):
-        jobs = yaml.safe_load((ROOT / '.github/workflows/manuale-release.yml').read_text())['jobs']
-        steps = jobs['bundle']['steps']
+    def test_exact_package_and_historical_rehearsal_are_separate_required_phases(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())['jobs']
+        steps = jobs['verify']['steps']
         runs = '\n'.join(step.get('run', '') for step in steps)
-        self.assertEqual(runs.count('docs/scripts/manuale.py verify-release'), 1)
         self.assertIn('--release "$RELEASE_VERSION"', runs)
-        self.assertIn('--previous-release 1.0.17', runs)
-        self.assertNotIn('manuale-previous-run', runs)
-        self.assertNotIn('docs/scripts/manuale.py run', runs)
         self.assertNotIn('--allow-dirty', runs)
         self.assertNotIn('--edit-content', runs)
         upload = next(step for step in steps if step.get('with', {}).get('name') == 'manuale-release-runtime')
         self.assertNotIn('always()', upload.get('if', ''))
         self.assertEqual(upload['with']['if-no-files-found'], 'error')
+        rehearsal = next(step for step in jobs['appliance']['steps'] if 'CHECK_SCOPE' in step.get('env', {}))
+        self.assertIn("'full' || 'compatibility'", rehearsal['env']['CHECK_SCOPE'])
+        self.assertIn('--previous-release 1.0.17', rehearsal['run'])
+        self.assertIn('--scope "$CHECK_SCOPE"', rehearsal['run'])
 
     def test_failed_manual_gate_cannot_allow_release_publication(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']

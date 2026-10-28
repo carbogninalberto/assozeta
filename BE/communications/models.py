@@ -20,6 +20,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Bound every SMTP connection so a slow or unreachable host cannot hang a worker.
+SMTP_TIMEOUT_SECONDS = 10
+
 class CommunicationConfiguration(models.Model):
     SSL = 'SSL'
     TLS = 'TLS'
@@ -62,9 +65,9 @@ class CommunicationConfiguration(models.Model):
         try:
             # log to the SMTP server based on email_encryption
             if self.email_encryption == self.SSL:
-                server = smtplib.SMTP_SSL(self.email_smtp_host, self.email_smtp_port)
+                server = smtplib.SMTP_SSL(self.email_smtp_host, self.email_smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
             else:
-                server = smtplib.SMTP(self.email_smtp_host, self.email_smtp_port)
+                server = smtplib.SMTP(self.email_smtp_host, self.email_smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
                 if self.email_encryption == self.TLS:
                     server.starttls()
             # login to the SMTP server
@@ -157,9 +160,9 @@ class CommunicationConfiguration(models.Model):
 
             # log to the SMTP server based on email_encryption
             if self.email_encryption == self.SSL:
-                server = smtplib.SMTP_SSL(self.email_smtp_host, self.email_smtp_port)
+                server = smtplib.SMTP_SSL(self.email_smtp_host, self.email_smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
             else:
-                server = smtplib.SMTP(self.email_smtp_host, self.email_smtp_port)
+                server = smtplib.SMTP(self.email_smtp_host, self.email_smtp_port, timeout=SMTP_TIMEOUT_SECONDS)
                 if self.email_encryption == self.TLS:
                     server.starttls()
 
@@ -358,6 +361,7 @@ class AutomationWorkflow(models.Model):
 
 
 # Register models with auditlog
-auditlog.register(CommunicationConfiguration)
+# Never record SMTP credentials in audit history.
+auditlog.register(CommunicationConfiguration, exclude_fields=['email_smtp_password'])
 auditlog.register(Message)
 auditlog.register(AutomationWorkflow)

@@ -39,6 +39,7 @@ export async function compileManual(manual, output) {
     const compiled = [];
     for (const [page, text] of sources) {
         const references = [];
+        const assets = {};
         const definitions = new Map();
         const referenceUses = [];
         function visit(node) {
@@ -73,11 +74,13 @@ export async function compileManual(manual, output) {
                 if (url.hash && !anchors.get(target).has(decodeURIComponent(url.hash.slice(1))))
                     throw new Error('Missing manual anchor: ' + page + ':' + reference);
             } else {
-                if (!fs.statSync(owned(manual, relative)).isFile())
+                const asset = owned(manual, relative);
+                if (!fs.statSync(asset).isFile())
                     throw new Error('Missing manual file: ' + page + ':' + reference);
+                assets[relative] = sha(fs.readFileSync(asset));
             }
         }
-        compiled.push({page, source_sha256: sha(text), code: String(result), references: references.length});
+        compiled.push({page, source_sha256: sha(text), code: String(result), references: references.length, assets});
     }
     // No previous build is replaced until all pages and references pass.
     for (const item of compiled) {

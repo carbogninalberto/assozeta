@@ -71,9 +71,9 @@ they do not prevent independently supported sections from being drafted.
 The CI workflow defaults to verification. Editorial opt-in requires the default
 application branch and the configured trusted manual revision. Pull requests
 and repository dispatches never enable the editor or its credentials.
-`MANUAL_AUTO_EDIT=true` applies only to trusted default-branch push/scheduled
-runs; `workflow_dispatch.edit_content` must be explicit and cannot select an
-untrusted manual ref. An unavailable CLI is an explicit failure. Scope a CI key
+`workflow_dispatch.edit_content` must be explicit and use the immutable SHA
+in `docs/manuale/source.json`. `MANUAL_AUTO_EDIT` no longer turns ordinary
+pushes or scheduled verification into editorial regeneration. An unavailable CLI is an explicit failure. Scope a CI key
 to the editorial step; the runner removes it after that phase, including failure
 paths, before builds or browser/backend subprocesses. Keep authentication and
 private editorial diagnostics out of public exports. This mode does not publish.
@@ -113,6 +113,26 @@ numeric image-slot mapping. Keep full `run` verification for release evidence.
 
 ## Bundled release delivery
 
+CI uses `.github/workflows/manuale-verify.yml` for PR, main and release. Follow
+`docs/manuale/README.md` (conditional verification policy): reuse compatible
+verified workflows, recapture affected consumers, and rerender only pages whose
+content/render dependencies changed. Keep fresh exact-target package, startup,
+reader, authorization and MCP/assistant checks. Full content verification and
+historical appliance rehearsal remain required for shared/manual infrastructure,
+packaging/startup/update compatibility, unknown production inputs, missing
+trusted baselines, the weekly schedule and explicit `force_full`. Ordinary
+application and release/upgrade gates are independent and must remain enabled.
+
+Pin the reviewed authoring SHA in `docs/manuale/source.json`; never resolve a
+mutable authoring branch during release preparation. PR/main/release reuse must
+use successful approved CI artifacts with accepted default-branch source and
+GitHub digest validation. Structural hashes alone do not authenticate evidence.
+Do not export failed or partial evaluations as portable baselines. Preserve
+original capture/render provenance and report the measured avoided work from
+`ci-results.json`, plus decisions and phase timings. A version bump or new Git
+SHA alone never proves content changed or justifies full regeneration.
+
+
 Use `manuale.py verify-release --manual-repo PATH --release VERSION` for the
 complete target verification, packaging and isolated historical upgrade/rollback
 rehearsal. It defaults to the real published v1.0.17 as the transition baseline;
@@ -121,13 +141,14 @@ previously verified target, with packaging revalidation, rather than generating
 it again. Neither operation publishes a release. The optional low-level
 `--previous-package` rehearsal flag is for separately verified synthetic fixtures.
 
-Release images use `manuale-release.py --bundle` after a full evaluated run for
+Release images use `manuale-release.py --bundle` after a complete evaluated result for
 exact committed application and manual authoring inputs. Generated MDX and PNGs
 are build artifacts, recorded as `generated-from-committed`, never a fabricated
 manual commit. The new `release-bundled` state is accepted only by the image-owned
 bundle loader; remote synchronization still requires `published` evidence.
 
-The bundler reproduces the index from retained proof and checks rendering,
+The bundler reproduces the index from retained proof (exactly, except for
+floating-point platform noise of at most 1e-9 in the derived SVD semantics) and checks rendering,
 MCP/agent and embedded-reader results before atomic packaging. Image build, candidate installation/update and
 startup verify the required package and all screenshots. Candidate verification
 runs without networking, installation volumes or manual-specific configuration. Website deployment is

@@ -168,6 +168,14 @@ def dependency_contract(root, value, recipe):
     prefixes = [prefix for prefix in value['shared_dependencies'] + recipe.get('dependencies', [])
                 if prefix.startswith(('BE/', 'UI/'))]
     known, production = inventory(root, prefixes)
+    def used(path):
+        if path.startswith('BE/') and '/tests/' in path or (
+                path.startswith('UI/') and re.search(r'\.(?:test|spec)\.[cm]?[jt]sx?$', path)):
+            return False
+        return (any(path.startswith(prefix) for prefix in recipe.get('dependencies', []))
+                or not any(path.startswith(prefix) for prefix in value.get('non_capture_dependencies', [])))
+    known = {path for path in known if used(path)}
+    production = {path for path in production if used(path)}
     tooling = closure(root, recipe)
     return known | tooling | {'docs/manuale/recipes.json'}, production, tooling
 
@@ -347,7 +355,8 @@ def target(state):
 
 def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_recipes, manifest, prior_plan):
     previous, current = old_recipes.get(identifier), new_recipes[identifier]
-    if previous != current or old_registry['shared_dependencies'] != new_registry['shared_dependencies']:
+    if (previous != current or old_registry['shared_dependencies'] != new_registry['shared_dependencies']
+            or old_registry.get('non_capture_dependencies', []) != new_registry.get('non_capture_dependencies', [])):
         raise ReuseError('recipe-version-script-or-dependency-contract-changed')
     old_known, old_production, old_tooling = dependency_contract(old['application'], old_registry, previous)
     new_known, production, tooling = dependency_contract(state['application'], new_registry, current)
@@ -366,7 +375,8 @@ def _entry(state, old, identifier, old_registry, new_registry, old_recipes, new_
     if not binding or binding.get('status') != 'passed' or binding.get('report_path') != report_path or binding.get('report_sha256') != file_hash(old['run'], report_path):
         raise ReuseError('original-report-binding-invalid')
     origin = {'run_id': old['run_id'], 'application_revision': old['application_input']['revision'],
-              'release': old['release'], 'capture_id': old.get('capture_id')}
+              'release': old['release'], 'capture_id': old.get('capture_id'),
+              'manual_revision': old.get('manual_input', {}).get('revision')}
     origin_manifest = 'manifest.json'
     if binding.get('reuse'):
         # The baseline's own reuse plan is identical for every recipe in this build;
@@ -409,11 +419,13 @@ def build_reuse_plan(state, baseline_run, *, stage=True, eligible_recipes=None):
         raise ReuseError('baseline-must-be-a-different-owned-run')
     old = load(old_run, 'run.json')
     old['run'] = str(old_run)
-    # A later renderer/evaluation failure does not invalidate independently sealed browser
-    # captures. Reuse still verifies each passed report, source, editorial
-    # binding and image; the new corpus must pass rendering and evaluation.
-    if old.get('status') not in ('generated', 'evaluated', 'indexed', 'rendered', 'failed'):
+    # Successful local capture phases remain usable, but failed verification
+    # must never become a baseline, including a failed post-evaluation rehearsal.
+    if old.get('status') not in ('generated', 'evaluated', 'indexed', 'rendered'):
         raise ReuseError('baseline-run-not-verified')
+    for filename in ('render.json', 'evaluation.json', 'embedded-manual.json', 'release-verification.json'):
+        if (old_run / filename).is_file() and load(old_run, filename).get('status') == 'failed':
+            raise ReuseError('baseline-verification-failed: ' + filename)
     manifest = load(old_run, 'manifest.json')
     if (manifest.get('metadata', {}).get('application_revision') != old['application_input']['revision']
             or manifest['metadata'].get('release') != old['release']):
@@ -512,7 +524,8 @@ def validate_reuse_plan(state, plan=None):
                 or binding.get('source_hashes') != report.get('source_hashes')):
             raise ReuseError('retained-origin-report-binding-invalid')
         if (original.get('metadata', {}).get('application_revision') != entry['origin']['application_revision']
-                or original['metadata'].get('release') != entry['origin']['release']):
+                or original['metadata'].get('release') != entry['origin']['release']
+                or original['metadata'].get('manual_revision') != entry['origin'].get('manual_revision')):
             raise ReuseError('retained-origin-manifest-target-invalid')
         retained_sections = {(page['path'], section['id']): section for page in original.get('pages', [])
                              for section in page.get('sections', [])

@@ -22,6 +22,25 @@ class RetrievalSpecificityTests(unittest.TestCase):
     def search(self, index, query):
         return index.search(query, revision='unit', release='unit')
 
+    def test_rebuild_tolerates_only_platform_noise_in_semantics(self):
+        sealed = self.index([('Esportare il calendario', 'Esporta il calendario degli eventi.', 'Esporta'),
+                             ('Registrare una fattura', 'Crea una fattura passiva locale.', 'Crea')]).value
+        def rebuilt(change):
+            value = {key: item for key, item in sealed.items() if key != 'identity'}
+            value['semantics'] = {key: [list(row) if isinstance(row, list) else row for row in item]
+                                  for key, item in sealed['semantics'].items()}
+            value['chunks'] = [dict(chunk) for chunk in sealed['chunks']]
+            change(value)
+            return module.seal_index(value)
+        def nudge(offset):
+            return lambda value: value['semantics']['basis'][0].__setitem__(0, value['semantics']['basis'][0][0] + offset)
+        self.assertTrue(module.reproduces(rebuilt(lambda value: None), sealed))
+        self.assertTrue(module.reproduces(rebuilt(nudge(1e-12)), sealed))
+        self.assertFalse(module.reproduces(rebuilt(nudge(1e-6)), sealed))
+        self.assertFalse(module.reproduces(rebuilt(lambda value: value['semantics']['vocabulary'].append('nuovo')), sealed))
+        self.assertFalse(module.reproduces(rebuilt(lambda value: value['semantics'].pop('vectors')), sealed))
+        self.assertFalse(module.reproduces(rebuilt(lambda value: value['chunks'][0].update(text='Testo alterato')), sealed))
+
     def test_protocol_disclaimer_is_not_integration_evidence(self):
         index = self.index([
             ('Registrare una fattura passiva', 'Creare una fattura passiva locale. La fattura elettronica non è verificata.', 'Crea fattura'),

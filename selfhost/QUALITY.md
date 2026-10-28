@@ -16,6 +16,20 @@ before publishing edge images; they skip the full quality workflow. Pull request
 keep their existing path-based selection of backend, UI and upgrade checks.
 The full quality workflow also remains available through manual dispatch.
 
+Manual publication additionally uses `manuale-verify.yml`: it admits an intact
+baseline from a successful approved CI run whose source has reached the default
+branch, selects affected workflows, and packages a new bundle for the exact
+application revision and version. The immutable authoring input lives in
+`docs/manuale/source.json`. Compatible content keeps its original evidence;
+package/startup/restart, reader/access and runtime checks run again. Manual or
+shared verification infrastructure, packaging/startup/update compatibility,
+unknown production inputs, absent trusted baselines, weekly runs and
+`force_full` require full content verification and historical appliance rehearsal.
+Use `force_full_manual` on image publication to force that path. These decisions
+never skip the application suites or ordinary release/upgrade checks above.
+See [manual verification policy](../docs/manuale/README.md#verifica-condizionale-in-ci-e-release)
+and the run's decision, timing and avoided-work artifacts.
+
 The harness selects the Docker bridge gateway on Linux and retains
 `host.docker.internal` on Docker Desktop. It creates only disposable
 installations and Docker projects. Linux CI runs inspection with root privileges

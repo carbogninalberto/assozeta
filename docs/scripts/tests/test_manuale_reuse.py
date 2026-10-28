@@ -201,6 +201,52 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(self.state['cache']['mode'], 'automatic')
         self.assertEqual((self.run / 'unit-members.json').read_bytes(), (self.old_run / 'unit-members.json').read_bytes())
 
+    def test_generated_registry_metadata_does_not_invalidate_unchanged_recipe_contracts(self):
+        relative = 'docs/manuale/recipes.json'
+        registry = json.loads((self.code / relative).read_text())
+        registry['reference_dependencies'] = ['BE/reference-only.py']
+        write(self.code, relative, registry)
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        args = SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                               reuse_evidence=str(self.old_run))
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], [])
+        self.assertEqual(self.state['evidence_reuse']['reused_recipes'], ['unit-members'])
+        decision = self.state['cache']['decisions'][0]['input_decisions'][0]
+        self.assertIn('individual recipe contracts', decision['reason'])
+        self.assertEqual(decision['recipes'], [])
+
+    def test_generated_registry_recipe_change_still_requires_its_fresh_capture(self):
+        relative = 'docs/manuale/recipes.json'
+        registry = json.loads((self.code / relative).read_text())
+        registry['recipes'][0]['version'] += 1
+        write(self.code, relative, registry)
+        self.state['application_input']['uncommitted_files'][relative] = reuse.file_hash(self.code, relative)
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        args = SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                               reuse_evidence=str(self.old_run))
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+        self.assertEqual(self.state['evidence_reuse']['reused_recipes'], [])
+        self.assertEqual(self.state['cache']['decisions'][0]['affected_recipes'], ['unit-members'])
+
+    def test_ci_optional_baseline_failure_explains_fresh_fallback(self):
+        self.state['manual_repository'] = str(self.root / 'manual-source')
+        self.old['status'] = 'failed'
+        write(self.old_run, 'run.json', self.old)
+        args = SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                               reuse_evidence=str(self.old_run), baseline_optional=True)
+        with patch.object(runner, 'retained_evidence_helper', return_value=reuse):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+        self.assertNotIn('evidence_reuse', self.state)
+        decision, = self.state['cache']['decisions']
+        self.assertEqual(decision['result'], 'unavailable')
+        self.assertIn('baseline-run-not-verified', decision['reason'])
+
     def test_partial_capture_manifest_is_discoverable_without_being_marked_complete(self):
         repository = str(self.root / 'manual-source')
         self.old['manual_repository'] = self.state['manual_repository'] = repository
@@ -456,26 +502,20 @@ class ReuseFixtureTests(unittest.TestCase):
         self.assertEqual(plan['recipes'], {})
         self.assertFalse((self.run / 'unit-members.json').exists())
 
-    def test_generated_capture_can_be_reused_without_promoting_failed_render(self):
-        self.old['status'] = 'generated'
-        write(self.old_run, 'run.json', self.old)
-        write(self.old_run, 'render.json', {'status': 'failed'})
-        self.state['selected_recipes'] = ['unit-members']
-        plan = reuse.reuse_compatible_captures(self.state, self.old_run)
-        self.assertEqual(plan['reused_recipes'], ['unit-members'])
-        self.assertEqual(self.state['selected_recipes'], [])
-        self.assertFalse((self.run / 'render.json').exists())
-        self.assertFalse((self.run / 'index.json').exists())
-        self.old['status'] = 'failed'
-        write(self.old_run, 'run.json', self.old)
-        write(self.old_run, 'evaluation.json', {'status': 'failed', 'error': 'timeout'})
-        plan = reuse.reuse_compatible_captures(self.state, self.old_run)
-        self.assertEqual(plan['reused_recipes'], ['unit-members'])
-        self.assertFalse((self.run / 'evaluation.json').exists())
-        self.old['status'] = 'capturing'
-        write(self.old_run, 'run.json', self.old)
-        with self.assertRaisesRegex(ValueError, 'baseline-run-not-verified'):
-            reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+    def test_failed_run_or_failed_verification_cannot_supply_reusable_evidence(self):
+        for filename in ('render.json', 'evaluation.json', 'embedded-manual.json', 'release-verification.json'):
+            with self.subTest(report=filename):
+                self.old['status'] = 'evaluated'
+                write(self.old_run, 'run.json', self.old)
+                write(self.old_run, filename, {'status': 'failed'})
+                with self.assertRaises(ValueError):
+                    reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
+                (self.old_run / filename).unlink()
+        for status in ('failed', 'capturing'):
+            self.old['status'] = status
+            write(self.old_run, 'run.json', self.old)
+            with self.assertRaisesRegex(ValueError, 'baseline-run-not-verified'):
+                reuse.reuse_compatible_captures(self.state, self.old_run, stage=False)
 
     def test_full_reuse_recaptures_changed_dependencies(self):
         path = 'BE/members/service.py'

@@ -18,7 +18,7 @@ from urllib.parse import quote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .index import (EvidenceError, ManualIndex, build_index, canonical, digest,
-                    file_digest, load_source_catalog, promote, seal_index)
+                    file_digest, load_source_catalog, promote, reproduces, seal_index)
 
 
 def owned(root, relative):
@@ -82,6 +82,10 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             for root in (run, application, manual)):
         raise EvidenceError('Use a new output directory outside the input repositories/run')
     state = read_json(run, 'run.json')
+    if state.get('render_reuse') or (run / 'render-reuse.json').exists():
+        from .render_reuse import validate_render_reuse
+        validate_render_reuse({**state, 'run': str(run), 'application': str(application),
+                               'manual': str(run / 'manual')})
     manifest = read_json(run, 'manifest.json')
     original = ManualIndex.load(owned(run, 'index.json'))
     metadata = original.value['metadata']
@@ -111,7 +115,7 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     for relative, expected in bindings.items():
         verify_blob(application, application_revision, relative, expected)
     rebuilt = build_index(generated_manual, application, manifest, artifact_root=run)
-    if rebuilt['identity'] != original.value['identity']:
+    if not reproduces(rebuilt, original.value):
         raise EvidenceError('Evaluated corpus cannot be reproduced from retained proof')
     # A passed report alone is insufficient: bind the evaluation to the corpus,
     # and rendered pages to the exact generated MDX the final commit will serve.
@@ -129,6 +133,12 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     if not verified_pages or set(rendered) != verified_pages or len(rendered) != len(render.get('pages', [])):
         raise EvidenceError('Rendering evidence does not cover exactly the verified pages')
     manual_bindings = dict(catalog['manual_files'])
+    if state.get('render_reuse'):
+        manual_bindings.update({path.removeprefix('manual/'): expected
+            for path, expected in read_json(run, 'render-inputs.json').items() if path.startswith('manual/')})
+        for page in read_json(run, 'compile.json')['pages']:
+            if page['page'] in verified_pages:
+                manual_bindings.update(page.get('assets', {}))
     manual_bindings['.manuale-evidence.json'] = file_digest(owned(generated_manual, '.manuale-evidence.json'))
     for page in verified_pages:
         record = rendered[page]
@@ -197,6 +207,13 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
     candidate_catalog_binding = digest(candidate_catalog_bytes)
     proof_paths = {'run.json', 'manifest.json', 'index.json', 'evaluation.json', 'render.json', 'embedded-manual.json',
                    metadata['source_catalog']['path']}
+    if state.get('render_reuse'):
+        proof_paths.update(('compile.json', 'render-inputs.json', 'render-reuse.json'))
+        render_plan = read_json(run, 'render-reuse.json')
+        for entry in render_plan['pages'].values():
+            proof_paths.update((entry['original_report']['path'], entry['origin_record']['path']))
+        for page in render['pages']:
+            proof_paths.update(layout['path'] for layout in page['layouts'])
     proof_paths.update(scenario['report_path'] for scenario in manifest.get('scenarios', []))
     if metadata.get('evidence_reuse'):
         proof_paths.add(metadata['evidence_reuse']['path'])
@@ -237,7 +254,8 @@ def prepare_release(run_path, application_path, manual_path, output_path, *, rel
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(contents)
         owned(stage, 'source-catalog.json').write_bytes(candidate_catalog_bytes)
-        if build_index(generated_manual if _bundled else manual, application, manifest, artifact_root=stage / 'evidence')['identity'] != original.value['identity']:
+        if not reproduces(build_index(generated_manual if _bundled else manual, application, manifest,
+                                      artifact_root=stage / 'evidence'), original.value):
             raise EvidenceError('Retained proof changed while staging the release')
         load_source_catalog(generated_manual if _bundled else manual, application, candidate_manifest, stage)
         promote(candidate_manifest, stage / 'manifest.json')
