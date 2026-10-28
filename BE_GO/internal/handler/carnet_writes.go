@@ -39,6 +39,7 @@ type CarnetMetaService interface {
 }
 
 type CarnetWritesHandler struct {
+	topups     CarnetTopupService
 	metas      CarnetMetaService
 	links      CarnetLinkService
 	toggles    CarnetToggleService
@@ -51,8 +52,12 @@ type CarnetWritesHandler struct {
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewCarnetWritesHandler(metas CarnetMetaService, links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{metas: metas, links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
+type CarnetTopupService interface {
+	Topup(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+}
+
+func NewCarnetWritesHandler(topups CarnetTopupService, metas CarnetMetaService, links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{topups: topups, metas: metas, links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -306,4 +311,41 @@ func (h *CarnetWritesHandler) UpdateLessons(c echo.Context) error {
 		return messageReadsError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "Carnet subscription updated."})
+}
+
+func (h *CarnetWritesHandler) Topup(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPost, "carnet_subscription_topup")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Subscription Topup", "Create a new carnet with the same subscription")
+	}
+	if request.Method != http.MethodPost {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	err = h.topups.Topup(ctx, *identity, c.Param("uid"), audit)
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetSubscriptionNotFound):
+		return c.JSON(404, map[string]string{"msg": "Error in topping up carnet."})
+	case err != nil:
+		return messageReadsError(c, err)
+	}
+	return c.JSON(200, map[string]string{"msg": "Carnet topped up."})
 }

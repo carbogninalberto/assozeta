@@ -4632,25 +4632,73 @@
         "target": "carnet_subscription_topup",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/handler/authenticated_rest.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request guard, permission registry and audit index",
+        "application_payment",
+        "application_carnetsubscription",
+        "application_customaccounts",
+        "application_paymentcategory"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/<uid>/topup",
+          "/api/v2/carnet-subscription/<uid>/topup",
+          "/api/carnet-subscription/<uid>/topup"
+        ],
+        "request": "No body is read.",
+        "response": "200 {\"msg\": \"Carnet topped up.\"}.",
+        "errors": "400 malformed uid (every role); 401; 403 Not allowed. / scoped-request / registry; 404 Error in topping up carnet.; 500 athlete carnet subscription without subscription.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update; athlete view.",
+        "resource_scope": "Associations: the scope user's subscriptions; athletes: their own subscription's carnet subscription within the scoped session.",
+        "side_effects": "Creates a course payment (default bank account and category, Quota Corso) and a carnet subscription with fresh lesson counters linked to the live course subscriptions; one auditlog create entry each.",
+        "transaction": "One transaction (Django autocommit saves).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_topup_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_topup_http.py",
+        "TESTS/contracts/test_carnet_subscription_topup_http.py",
+        "TESTS/adapters/django/carnet_subscription_topup_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 21/21; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-red-r1/results.json",
+          "receipt_sha256": "08eba8d4916e0c184ad75760b0eb30529e31e0f8f9ccd01aa53fac265d061808"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 21/21 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact created rows and audit entries.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-versioned-r1/results.json",
+          "receipt_sha256": "48da50d462c22972d79a7a8e02591405a32d6b63f4ae8155915fc6be6de357ac"
+        },
+        {
+          "revision": "committing change copying deleted course links",
+          "result": "Mutation control: fails Go on state.links.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-mutation-r1/results.json",
+          "receipt_sha256": "0540769d9661c72b1cad87e39d72331bb1f7fc77088f6029d67cf6aa6192d5ca"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the payment create defaults and create-audit rendering on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/<str:uid>/update -> carnet_subscription_update",

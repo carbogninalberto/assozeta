@@ -312,3 +312,67 @@ func (s *CarnetMetas) UpdateLessons(ctx context.Context, identity domain.Resolve
 	}
 	return tx.Commit()
 }
+
+type CarnetTopups struct {
+	store domain.CarnetTopupStore
+	now   func() time.Time
+	ids   func() string
+}
+
+func NewCarnetTopups(store domain.CarnetTopupStore, now func() time.Time, ids func() string) *CarnetTopups {
+	return &CarnetTopups{store: store, now: now, ids: ids}
+}
+
+// Topup follows carnet_subscription_topup: the uid is validated for every
+// role; associations top up their subscriptions' carnets, athletes only
+// carnets of subscriptions they hold (the scoped-request check has already
+// bounded an impersonation session to the same queryset).
+func (s *CarnetTopups) Topup(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
+	id, err := messageReadsParseUUID(raw)
+	if err != nil {
+		return err
+	}
+	tx, err := s.store.BeginCarnetTopup(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var owner *string
+	if identity.ScopeUser.Role == domain.RoleAssociation {
+		owner = &identity.ScopeUser.ID
+	}
+	source, err := tx.TopupSource(ctx, id, owner)
+	if err != nil {
+		return err
+	}
+	if owner == nil {
+		if source.SubscriptionID == nil {
+			// old_carnet.subscription.user on a carnet without subscription.
+			return ErrPaymentSaveFailed
+		}
+		if source.SubscriptionUser == nil || *source.SubscriptionUser != identity.ScopeUser.ID {
+			return ErrCarnetNotAllowed
+		}
+	}
+	category, _, err := tx.DefaultPaymentCategory(ctx)
+	if err != nil {
+		return err
+	}
+	var account *string
+	if source.SubscriptionUser != nil {
+		// PaymentManager.create assigns the default account only with a user.
+		if account, err = tx.DefaultBankAccount(ctx, source.CarnetAssociation); err != nil {
+			return err
+		}
+	}
+	meta, err := json.Marshal(map[string]any{"lessons_counter": source.Lessons, "lessons_left": source.Lessons, "lessons_registry": []any{}})
+	if err != nil {
+		return err
+	}
+	write := domain.CarnetTopupWrite{PaymentID: s.ids(), HoldingID: s.ids(), Source: source, CategoryID: category, Account: account,
+		Meta: string(meta), Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
+	if err = tx.CreateTopup(ctx, id, write); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

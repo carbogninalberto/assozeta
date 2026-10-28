@@ -128,3 +128,49 @@ func pythonNaiveUTC(value time.Time) string {
 	}
 	return value.Format("2006-01-02 15:04:05.000000")
 }
+
+// createdModelChanges renders auditlog's create changes for a row just
+// inserted in this transaction: the mirror of the delete rendering, each
+// stored value against 'None' (foreign keys and DateTimeFields that are null
+// render 'None', null JSON 'null'; other nulls are omitted).
+func createdModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string) (map[string][2]string, error) {
+	columns := []modelColumn{}
+	if err := tx.SelectContext(ctx, &columns, `SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS type,
+ EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=a.attrelid AND c.contype='f' AND c.conkey=ARRAY[a.attnum]) AS foreign_key
+ FROM pg_attribute a WHERE a.attrelid=$1::regclass AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum`, table); err != nil {
+		return nil, err
+	}
+	var raw []byte
+	if err := tx.GetContext(ctx, &raw, `SELECT to_jsonb(t) FROM `+table+` t WHERE `+key+`=$1`, id); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	stored := map[string]any{}
+	if err := decoder.Decode(&stored); err != nil {
+		return nil, err
+	}
+	changes := map[string][2]string{}
+	for _, column := range columns {
+		value := stored[column.Name]
+		name := column.Name
+		if column.ForeignKey {
+			name = strings.TrimSuffix(name, "_id")
+		}
+		if value == nil {
+			switch {
+			case column.ForeignKey, strings.HasPrefix(column.Type, "timestamp"):
+				changes[name] = [2]string{"None", "None"}
+			case column.Type == "jsonb" || column.Type == "json":
+				changes[name] = [2]string{"None", "null"}
+			}
+			continue
+		}
+		rendered, err := renderAuditValue(column.Type, value, raw, column.Name)
+		if err != nil {
+			return nil, err
+		}
+		changes[name] = [2]string{"None", rendered}
+	}
+	return changes, nil
+}

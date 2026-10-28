@@ -117,3 +117,44 @@ type CarnetMetaTransaction interface {
 type CarnetMetaStore interface {
 	BeginCarnetMeta(context.Context) (CarnetMetaTransaction, error)
 }
+
+// CarnetTopupSource is the topped-up carnet subscription with its carnet and
+// subscription fields; Subscription* are nil without a subscription.
+type CarnetTopupSource struct {
+	UserID                  *string `db:"user_id"`
+	CarnetID                string  `db:"carnet_id"`
+	CarnetAssociation       *string `db:"carnet_association"`
+	Fee                     string  `db:"fee"`
+	Lessons                 int64   `db:"lessons_number"`
+	SubscriptionID          *string `db:"subscription_id"`
+	SubscriptionUser        *string `db:"subscription_user"`
+	SubscriptionAssociate   *string `db:"subscription_associate"`
+	SubscriptionAssociation *string `db:"subscription_association"`
+}
+
+type CarnetTopupWrite struct {
+	PaymentID, HoldingID string
+	Source               CarnetTopupSource
+	CategoryID, Account  *string
+	Meta                 string
+	Context              LoginAuditContext
+	At                   time.Time
+}
+
+type CarnetTopupTransaction interface {
+	// TopupSource gets CarnetSubscription.objects.get(id) and, for an owner,
+	// subscription__sport_association__user=owner; ErrCarnetSubscriptionNotFound.
+	TopupSource(ctx context.Context, holding string, owner *string) (CarnetTopupSource, error)
+	DefaultPaymentCategory(ctx context.Context) (id, name *string, err error)
+	// DefaultBankAccount is Payment.get_default_bank_account(association).
+	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
+	// CreateTopup inserts the payment and carnet subscription with their
+	// create audit entries and links the source's live course subscriptions.
+	CreateTopup(ctx context.Context, source string, write CarnetTopupWrite) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetTopupStore interface {
+	BeginCarnetTopup(context.Context) (CarnetTopupTransaction, error)
+}

@@ -100,3 +100,33 @@ lessons_number."}`. The new `lessons_left` is saved in meta and audited as the
 sorted JSON dumps when it changes, indexed through the subscription.
 `TESTS/fixtures/carnet_subscription_update_http.json` authors 23 cases;
 dropping the negative check fails its case.
+
+## Carnet subscription topup
+
+`POST carnet-subscription/<uid>/topup` validates the uid for every role
+(`400 ["badly formed hexadecimal UUID string"]`). Associations get the carnet
+subscription within the scope user's subscriptions; athletes get it by id,
+where an association-scoped session has already been bounded to the
+association's family-visible carnet subscriptions by the scoped-request guard
+(`403 Risorsa non disponibile…`), and must hold its subscription
+(`403 {"msg": "Not allowed."}`; a carnet subscription without subscription is
+a 500). A missing row is `404 {"msg": "Error in topping up carnet."}`.
+
+The view creates a payment with `PaymentManager.create` (subscription user and
+associate, the carnet's fee and association, subject course; with a user, the
+association's first enabled non-editable bank account by key) and
+`Payment.save` (the first `entrate e proventi da attività tipiche` category,
+description `Quota Corso`), then a carnet subscription for the same carnet,
+user and subscription with `lessons_counter` and `lessons_left` set to the
+carnet's lessons and an empty registry, linked to the old holding's live
+course subscriptions (the related manager hides deleted ones). auditlog
+records one create entry for each row (every stored field against `None`;
+null foreign keys and timestamps as `None`, null JSON as `null`), indexed
+directly for the payment and through `subscription.sport_association` for
+the carnet subscription; the repeated `save()` calls change nothing. Go
+renders the create entries from the inserted rows in the same transaction.
+
+Path parameters now reach the Go scoped-request guard for every route using
+the shared identity helpers, as `resolver_match.kwargs` do in Django.
+`TESTS/fixtures/carnet_subscription_topup_http.json` authors 21 cases; the
+Django reference passed them on the first run.
