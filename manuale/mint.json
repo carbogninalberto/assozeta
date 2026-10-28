@@ -1,0 +1,120 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Documentazione di Bakney Sport",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "favicon.svg",
+  "colors": {
+    "primary": "#351DC2",
+    "light": "#7160d6",
+    "dark": "#351DC2"
+  },
+  "theme": "venus",
+  "modeToggle": {
+    "default": "light"
+  },
+  "seo": {
+    "indexHiddenPages": true
+  },
+  "feedback": {
+    "thumbsRating": true
+  },
+  "search": {
+    "prompt": "Cerca nel manuale"
+  },
+  "topbarLinks": [
+    {
+      "name": "Stato applicazione",
+      "url": "https://bakney-status.html2pdfapi.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Accedi a Bakney",
+    "url": "https://app.bakney.com"
+  },
+  "topAnchor": {
+    "name": "Documentazione",
+    "icon": "book-open",
+    "iconType": "duotone"
+  },
+  "anchors": [
+    {
+      "name": "Domande Frequenti",
+      "icon": "question",
+      "url": "faq"
+    }, {
+      "name": "Guide e tutorial",
+      "icon": "life-ring",
+      "url": "tutorials"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Guide e tutorial",
+      "pages": [
+        "tutorials/come-assegnare-i-tag-agli-atleti",
+        "tutorials/come-creare-moduli-iscrizione-personalizzati",
+        "tutorials/come-gestire-registro-presenze-carnet",
+        "tutorials/come-esportare-dati-associazione",
+        "tutorials/come-impostare-pagamenti-rateizzati",
+        "tutorials/come-gestire-certificati-medici",
+        "tutorials/come-impostare-gestire-istruttori",
+        "tutorials/come-impostare-stripe-pagamenti-online",
+        "tutorials/come-impostare-automazioni-workflow"
+      ]
+    },
+    {
+      "group": "Documentazione",
+      "pages": [
+        "docs/introduzione",
+        "docs/bacheca",
+        "docs/libro-soci",
+        "docs/corsi",
+        "docs/istruttori",
+        "docs/camp-e-ritiri",
+        "docs/calendario",
+        "docs/carnet",
+        "docs/registro-presenze",
+        "docs/pagamenti",
+        "docs/ricevute",
+        "docs/contabilita-avanzata",
+        "docs/bilancio",
+        "docs/comunicazioni",
+        "docs/archivio",
+        "docs/collaboratori",
+        "docs/impostazioni"
+      ]
+    },
+    {
+      "group": "Domande frequenti",
+      "pages": [
+        "faq/come-si-crea-un-socio",
+        "faq/come-inviare-email-nuovi-iscritti",
+        "faq/come-si-importano-dei-soci",
+        "faq/i-miei-dati-sono-al-sicuro",
+        "faq/come-condividere-il-link-iscrizioni",
+        "faq/come-gestire-i-certificati-medici",
+        "faq/come-configurare-i-pagamenti-online",
+        "faq/come-stampare-tessere-atleti",
+        "faq/come-generare-bilancio",
+        "faq/come-usare-ricerca-filtri-atleti",
+        "faq/come-archiviare-dati",
+        "faq/come-calcolare-generare-codici-fiscali",
+        "faq/come-invitare-collaboratori",
+        "faq/come-cambiare-anno-sportivo-fiscale",
+        "faq/come-collegare-google-calendar",
+        "faq/come-abilitare-autenticazione-due-fattori",
+        "faq/quali-sono-piani-abbonamento"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "youtube": "https://www.youtube.com/@bakney3037",
+    "instagram": "https://www.instagram.com/bakney.sport",
+    "facebook": "https://www.facebook.com/bakney.sport",
+    "linkedin": "https://www.linkedin.com/company/bakney-srl",
+    "website": "https://bakney.com"
+  }
+}

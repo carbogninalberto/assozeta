@@ -1,0 +1,146 @@
+---
+title: "Ricevute"
+description: "In questa sezione troverai tutte le informazioni relative alle ricevute di pagamento."
+---
+
+## Come vengono emesse le ricevute?
+
+La ricevuta accompagna l’incasso di un’entrata intestata a una persona. Nell’esempio incassiamo la **Quota associativa Sara Conti** di **25,00 €**; la creazione del pagamento e la registrazione dell’incasso restano due operazioni distinte.
+
+<Steps>
+<Step title="Trova l’entrata da incassare">
+Apri **Pagamenti**, trova la riga di Sara e controlla intestazione, descrizione, importo e stato **In attesa**. Premi **Segna come pagato**. Nella finestra **Incassare il pagamento?** controlla la **Data Incasso** prima di confermare.
+</Step>
+<Step title="Scegli Genera ricevuta e Invia email">
+Mantieni **Genera ricevuta** selezionato: il comando registra l’incasso e avvia la generazione del PDF. Nell’esempio **Invia email** rimane disattivato. Premi **Incassa** soltanto dopo avere confrontato l’entrata con l’incasso effettivo.
+<Frame>![Incasso di Sara Conti con generazione del PDF e invio email disattivato](/images/ricevute/consultazione/1.png)</Frame>
+</Step>
+<Step title="Ritrova e controlla la ricevuta">
+Chiudi **Dettagli Pagamento** e apri **Documenti fiscali → Ricevute**. Attendi che il PDF sia disponibile. Nell’esempio Sara ha il progressivo **2**; la precedente ricevuta di Luca ha il progressivo **1**. Ricarica l’elenco e trova di nuovo la riga prima di [aprire e scaricare il documento](#come-posso-scaricare-una-ricevuta).
+<Frame>![Ricevute dell’esempio con i PDF disponibili e i progressivi salvati](/images/ricevute/consultazione/2.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Se togli **Genera ricevuta**, l’incasso registra comunque la ricevuta, ma senza il PDF immediato. Aprendo l’elenco **Ricevute**, il sistema avvia la generazione dei PDF mancanti. La disponibilità del PDF dipende dai servizi di generazione dell’installazione; la conferma dell’incasso non attesta una consegna email.</Note>
+
+<Info>Serve il permesso di modifica dei pagamenti per confermare l’incasso. La sola lettura delle ricevute permette di consultare i documenti già presenti.</Info>
+
+## Numerazione progressiva
+
+Alla conferma dell’incasso di un’entrata intestata a una persona, il sistema assegna un numero al record della ricevuta. Il numero non è la prova che il PDF sia già disponibile o che sia stato inviato al destinatario.
+
+<Steps>
+<Step title="Controlla l’elenco dopo l’incasso">
+Apri **Documenti fiscali → Ricevute** e guarda la colonna **Numero**. Nell’esempio il numero iniziale è **0** e non ci sono altre ricevute nell’anno configurato: l’incasso di Luca produce **1**, quello di Sara produce **2**.
+<Frame>![Progressivi 1 e 2 nelle ricevute salvate dell’esempio](/images/ricevute/consultazione/2.png)</Frame>
+</Step>
+<Step title="Ricontrolla la stessa persona dopo il ricaricamento">
+Ricarica l’elenco e confronta persona, importo e progressivo con il documento che intendi consultare. La ricevuta di Sara resta **2**. Usa la guida [Scaricare una ricevuta](#come-posso-scaricare-una-ricevuta) per aprire il PDF corretto.
+</Step>
+</Steps>
+
+Per i valori iniziali e la visualizzazione del numero consulta [Configurazioni possibili](#configurazioni-possibili). Per correggere un record esistente usa [Modifica del progressivo](#modifica-del-progressivo-della-ricevuta), con il relativo permesso. Non cambiare il numero soltanto per rendere uguali due documenti appartenenti a persone diverse.
+
+## Come posso scaricare una ricevuta?
+
+<Steps>
+  <Step title="Apri le ricevute">
+    Dal menu laterale apri **Documenti fiscali → Ricevute**. Trova la riga della persona e il numero della ricevuta.
+    <Frame>![Elenco delle ricevute dell'associazione](/images/ricevute/consultazione/2.png)</Frame>
+  </Step>
+  <Step title="Consulta il PDF">
+    Premi il pulsante con il suggerimento **Ricevuta n.2**, usando il numero della ricevuta che vuoi aprire.
+    Si apre l'anteprima del PDF. Premi **Chiudi** per tornare all'elenco.
+    <Frame>![Anteprima del PDF della ricevuta](/images/ricevute/consultazione/3.png)</Frame>
+  </Step>
+  <Step title="Scarica il documento">
+    Chiudi l'anteprima e premi **Condividi ricevuta** nella stessa riga.
+    Nella finestra **Condividi link ricevuta**, premi il pulsante accanto al link per copiarlo.
+    Apri il link copiato in una nuova scheda del browser: il PDF viene scaricato.
+    <Frame>![Pulsante per copiare il link di download; il link è oscurato nell'immagine](/images/ricevute/consultazione/4.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Un collaboratore con il permesso di lettura delle ricevute può consultarle. Il solo permesso di lettura non autorizza modifica, eliminazione o il comando di generazione manuale della ricevuta.</Note>
+
+## Come posso inviare una ricevuta?
+
+<Warning>Questa sezione richiede verifiche esterne del servizio, delle condizioni applicabili o della consegna. Non documenta un’operazione esterna già eseguita.</Warning>
+
+Prima di condividere una ricevuta, controlla intestazione, importo e PDF. Il link di scaricamento consente l’accesso al documento: condividilo soltanto con il destinatario previsto e non pubblicarlo in schermate o gruppi aperti.
+
+<Steps>
+  <Step title="Apri la condivisione">
+    In **Ricevute**, individua il documento e usa il comando di condivisione disponibile nella riga. Si apre **Condividi link ricevuta**.
+  </Step>
+  <Step title="Scegli il canale">
+    Il comando di copia mette il link negli appunti. **WhatsApp** apre il servizio esterno; **Email** prepara un messaggio nel programma email. In entrambi i casi rivedi il destinatario prima della spedizione.
+  </Step>
+  <Step title="Distingui l’invio dell’applicazione">
+    Quando disponibile, **Invia** richiede invece la spedizione tramite l’applicazione. Il percorso cerca prima l’email del tesserato, poi quella dell’account collegato e del fornitore secondo i dati presenti; senza un indirizzo utilizzabile segnala l’assenza dell’email.
+  </Step>
+  <Step title="Controlla la ricezione">
+    Per la prova usa un destinatario concordato e verifica casella e apertura del documento. La conferma di richiesta non certifica consegna o lettura.
+  </Step>
+</Steps>
+
+<Frame caption="Segnaposto FullHD: condivisione ricevuta con link riservato completamente nascosto. Procedura ancora da verificare.">
+  <img src="/images/course-payment-additional/receipt-share-pending.svg" alt="Segnaposto FullHD: condivisione ricevuta con link riservato completamente nascosto" />
+</Frame>
+
+L’invio, l’apertura tramite programmi esterni e la ricezione non sono stati esercitati per questa guida. La richiesta non equivale a generazione di una nuova ricevuta o a nuovo incasso.
+
+## Eliminare una ricevuta
+
+<Steps>
+  <Step title="Seleziona la ricevuta da eliminare">
+    Apri **Documenti fiscali → Ricevute** e trova la ricevuta. Premi il pulsante con il suggerimento **Elimina Ricevuta** nella sua riga.
+  </Step>
+  <Step title="Conferma l'eliminazione">
+    Nella finestra **Vuoi eliminare definitivamente la ricevuta?**, premi **Elimina**.
+    La ricevuta viene rimossa dall'elenco.
+    <Frame>![Conferma dell'eliminazione della ricevuta](/images/ricevute/modifica-eliminazione/4.png)</Frame>
+  </Step>
+  <Step title="Controlla il pagamento collegato">
+    Apri **Pagamenti**. Il pagamento rimane presente con lo stesso importo, torna **In attesa** e non è più collegato alla ricevuta eliminata.
+    <Frame>![Pagamento tornato in attesa dopo l'eliminazione della ricevuta](/images/ricevute/modifica-eliminazione/5.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>In questa versione non è applicato un limite di sette giorni per questa cancellazione. Nell'esempio la ricevuta ha 29 giorni. Serve comunque il permesso di eliminazione; il solo accesso in lettura non basta.</Note>
+
+## Modifica del progressivo della ricevuta
+
+<Steps>
+  <Step title="Trova la ricevuta">
+    Apri **Documenti fiscali → Ricevute**. Se vuoi includere anche anni diversi da quello corrente, scegli **Filtra Anno** nel campo **Anno ricevute**.
+    Nella riga della persona premi il pulsante con il suggerimento **Modifica**.
+    <Frame>![Ricevuta di Giulia Bianchi con numero 7](/images/ricevute/modifica-eliminazione/1.png)</Frame>
+  </Step>
+  <Step title="Cambia il numero">
+    Nel modulo **Modifica ricevuta**, cambia **Numero**, per esempio da **7** a **9**. Premi **Salva**.
+    <Frame>![Nuovo progressivo nel modulo della ricevuta](/images/ricevute/modifica-eliminazione/2.png)</Frame>
+  </Step>
+  <Step title="Controlla il risultato">
+    Il nuovo numero compare nell'elenco anche dopo il ricaricamento. Il PDF viene rigenerato con il progressivo aggiornato.
+    La modifica del numero non cambia l'importo del pagamento collegato.
+    <Frame>![Progressivo 9 conservato nell'elenco delle ricevute](/images/ricevute/modifica-eliminazione/3.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Per modificare una ricevuta serve il relativo permesso. Un collaboratore in sola lettura non può salvarne una modifica.</Note>
+
+### Configurazioni possibili
+
+Le preferenze si trovano in **Profilo > Generali**, nel gruppo **Ricevute**. La modifica richiede il permesso sulle impostazioni.
+
+| Preferenza | Effetto | Cosa controllare |
+| --- | --- | --- |
+| **Numera Ricevute** | Nel modello di ricevuta previsto, rende visibile il progressivo nella testata. | Il record riceve comunque un numero all’incasso; nascondere il numero sul documento non interrompe la numerazione. |
+| **Numero iniziale ricevute** | Il prossimo progressivo è il maggiore tra il valore iniziale e i numeri già presenti nell’intervallo considerato, più uno. | Con valore iniziale 200 e nessun numero superiore, il successivo è 201. Un numero già più alto prevale. |
+| **Data uguale per ricevute e pagamenti** | All’incasso, assegna alla ricevuta la data del pagamento. | La data del pagamento e quella di creazione della ricevuta possono altrimenti essere diverse. |
+
+L’intervallo usato per il progressivo dipende dall’inizio dell’anno fiscale. Per i passaggi delle preferenze consulta [Impostazioni](/docs/impostazioni); per correggere un record esistente consulta [Modifica del progressivo](#modifica-del-progressivo-della-ricevuta).
+
+<Note>Per modificare le preferenze segui la guida alle impostazioni e controlla i valori dopo il ricaricamento. La rigenerazione di documenti già emessi richiede una procedura distinta. La cancellazione richiede il proprio permesso e non dipende da una finestra temporanea di sette giorni.</Note>
+

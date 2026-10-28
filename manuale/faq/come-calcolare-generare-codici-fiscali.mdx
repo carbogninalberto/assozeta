@@ -1,0 +1,89 @@
+---
+title: Come calcolare e generare i codici fiscali?
+description: "Come calcolare, controllare e correggere il codice fiscale dai dati anagrafici in Assozeta."
+---
+
+# Calcolo automatico del codice fiscale
+
+Accanto al campo **Codice Fiscale**, il pulsante con il suggerimento **Genera codice fiscale** calcola un valore dai dati anagrafici compilati. La funzione è presente durante l'inserimento della persona e nel modulo dell'anagrafica.
+
+Il risultato viene riportato nel campo: controllalo prima di proseguire e salva la scheda per conservarlo. Il messaggio **Codice fiscale generato con successo** conferma la risposta del calcolo, non una verifica presso un archivio fiscale esterno.
+
+<Warning>Confronta il valore con il documento della persona. Un codice calcolato a partire dai dati non dimostra quale codice sia stato effettivamente attribuito, soprattutto in presenza di omocodia o dati storici particolari.</Warning>
+
+## Dati necessari per il calcolo
+
+Il calcolo richiede **nome**, **cognome**, **sesso**, **data di nascita** e **città di nascita**. Il servizio accetta per il calcolo i valori di sesso **M** e **F**. Per nome e cognome usa la grafia dei documenti; per la nascita controlla la data completa e il luogo effettivo, distinto dalla residenza.
+
+Se uno di questi dati è vuoto, il servizio può rispondere **alcuni dati sono mancanti.**. Se il luogo non viene riconosciuto, mostra **Città non mappata.**; altri dati non utilizzabili possono produrre **alcuni dati non sono validi.**.
+
+<Tip>Prima di riprovare, controlla ciascun campo. Aggiungere la residenza non corregge un luogo di nascita sbagliato: i due campi hanno funzioni diverse.</Tip>
+
+# Come funziona
+
+<Steps>
+  <Step title="Compila i dati necessari">
+    Durante la creazione di un'iscrizione, raggiungi il passaggio **Inserisci le informazioni dell'Associato**.
+    Inserisci **Nome**, **Cognome**, **Sesso**, **Data di nascita** e **Città di nascita**.
+    Nell'esempio: **Marta Neri**, sesso **F**, nata il **01/01/2000** a **Roma**.
+  </Step>
+  <Step title="Genera e controlla il codice fiscale">
+    Premi **Genera codice fiscale**, il pulsante accanto al campo **Codice Fiscale**.
+    Il risultato compare nel campo, dove puoi controllarlo prima di continuare la compilazione.
+    <Frame>![Codice fiscale generato nel modulo di creazione dell’iscrizione](/images/faq/creazione-socio/3.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Il calcolo a partire dai dati anagrafici non conferma che il codice sia quello attribuito alla persona. Controllalo sul suo documento prima di salvare l'iscrizione.</Note>
+
+[Prosegui con la registrazione completa](/faq/come-si-crea-un-socio#creare-un-socio-socio-tesserato-o-tesserato).
+
+# Validazione del codice fiscale
+
+I moduli controllati richiedono un codice fiscale nel formato previsto per **16 caratteri**, con lettere e cifre nelle posizioni attese. Durante l'inserimento, un codice che corrisponde a quel formato può anche essere usato per ricavare sesso, luogo e data di nascita quando disponibili.
+
+Questo controllo di formato è distinto dal pulsante **Genera codice fiscale**. Non risulta una correzione automatica garantita del carattere finale di un codice digitato né una verifica del suo titolare presso un servizio fiscale esterno.
+
+<Warning>Un controllo di formato superato non garantisce l'esattezza del dato. Ricontrolla i campi eventualmente ricavati dal codice, soprattutto la data di nascita e il luogo; non sovrascrivere un valore del documento solo per far coincidere il calcolo.</Warning>
+
+# Quando il calcolo automatico potrebbe non funzionare
+
+Un luogo di nascita non riconosciuto dal calcolatore produce **Città non mappata.**. Controlla la denominazione e la data prima di riprovare; per un luogo estero o una denominazione storica usa il documento della persona come riferimento.
+
+Il calcolo può inoltre fallire per campi vuoti, sesso diverso dai valori supportati o una data non utilizzabile. In questi casi correggi il dato anagrafico effettivo, senza inventare una città o una data per ottenere un risultato.
+
+<Note>Il formato richiesto da alcuni moduli usa cifre in posizioni specifiche e può rifiutare codici con sostituzioni dovute all'omocodia. Le sorgenti non confermano l'accettazione di ogni caso speciale. Se il codice del documento viene rifiutato, conserva il messaggio mostrato e chiedi assistenza.</Note>
+
+# Inserire o correggere manualmente il codice fiscale
+
+Per una persona già presente correggi il dato nella sua **Anagrafica**, confrontandolo con il documento. Il codice calcolato dal pulsante **Genera codice fiscale** è un aiuto alla compilazione: non sostituisce il codice effettivamente attribuito alla persona.
+
+Occorre l’autorizzazione di modifica delle **Anagrafiche**, distinta dai soli permessi sulle iscrizioni. Nell’esempio correggiamo un errore di trascrizione nell’anagrafica di **Giulia Bianchi**, già collegata a un’iscrizione.
+
+<Steps>
+  <Step title="Apri i dati anagrafici">
+Apri **Organizzazione → Anagrafiche**, cerca la persona e premi il suo nome. Controlla nome, cognome e data di nascita prima di intervenire: il campo **Codice Fiscale** deve appartenere alla persona corretta, non al suo tutore o a un omonimo.
+
+<Frame>![Anagrafica corretta aperta dal suo elenco.](/images/faq/correzione-codice-fiscale/1.png)</Frame>
+</Step>
+  <Step title="Confronta e correggi il dato">
+Trascrivi il codice del documento nel campo **Codice Fiscale**. Ricontrolla tutti i caratteri e i dati anagrafici, mantenendo nascita e residenza distinte. Finché non premi **Salva**, il dato digitato rimane una modifica locale della scheda.
+
+<Frame>![Nuovo codice compilato; il server conserva ancora quello precedente.](/images/faq/correzione-codice-fiscale/2.png)</Frame>
+</Step>
+  <Step title="Salva e ricontrolla">
+Premi **Salva** nella barra in basso e attendi **Dati aggiornati con successo**. Chiudi la scheda, ricarica l’elenco e riapri la stessa persona: il campo deve conservare il valore corretto. Se il modulo segnala un formato non valido, controlla la trascrizione prima di riprovare; non cambiare un codice del documento soltanto per superare il controllo.
+
+<Frame>![Codice salvato e conservato dopo la riapertura.](/images/faq/correzione-codice-fiscale/3.png)</Frame>
+</Step>
+  <Step title="Controlla l’iscrizione collegata">
+Apri **Organizzazione → Iscrizioni → Tesserati** e la scheda della stessa persona. Nelle informazioni anagrafiche controlla che compaia il codice aggiornato. Verifica separatamente i documenti già prodotti: una copia scaricata prima della modifica non si aggiorna da sola.
+
+<Frame>![La scheda dell’iscrizione legge il codice aggiornato della stessa anagrafica.](/images/faq/correzione-codice-fiscale/4.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il controllo del formato non è una verifica presso un archivio fiscale esterno. Per omocodia, luoghi storici o codici del documento rifiutati, conserva il messaggio mostrato e chiedi assistenza senza inventare valori alternativi.</Warning>
+
+<Note>Durante una nuova iscrizione puoi compilare manualmente il codice nel passaggio anagrafico, ma devi completare e salvare l’intera domanda per conservarlo. Il salvataggio dell’anagrafica descritto qui riguarda invece una persona già presente.</Note>
+

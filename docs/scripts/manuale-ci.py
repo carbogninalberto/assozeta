@@ -54,19 +54,35 @@ def summary(plan):
             output.write(report)
 
 
+# Fixed metadata makes the materialized commit a pure function of the vendored tree.
+MANUAL_COMMIT_ENVIRONMENT = {
+    'GIT_AUTHOR_NAME': 'Assozeta manual', 'GIT_AUTHOR_EMAIL': 'manual@assozeta.invalid', 'GIT_AUTHOR_DATE': '2000-01-01T00:00:00+0000',
+    'GIT_COMMITTER_NAME': 'Assozeta manual', 'GIT_COMMITTER_EMAIL': 'manual@assozeta.invalid', 'GIT_COMMITTER_DATE': '2000-01-01T00:00:00+0000',
+}
+
+
 def pin(args, policy):
     source = policy.pinned_source(override=args.manual_revision)
     destination = Path(args.manual_repo).resolve()
     if destination.exists():
         raise ValueError('Use a new manual authoring checkout')
-    subprocess.run(['git', 'clone', '--no-checkout', 'https://github.com/' + source['repository'] + '.git',
-                    str(destination)], check=True)
-    subprocess.run(['git', '-C', str(destination), 'fetch', 'origin', source['revision']], check=True)
-    subprocess.run(['git', '-C', str(destination), 'checkout', '--detach', source['revision']], check=True)
-    actual = subprocess.check_output(['git', '-C', str(destination), 'rev-parse', 'HEAD'], text=True).strip()
-    if actual != source['revision']:
-        raise ValueError('Manual source pin changed during checkout')
-    write(args.output, source)
+    destination.mkdir(parents=True)
+    # Materialize the committed vendored folder (never uncommitted workspace
+    # files) as the root of a clean, deterministic companion repository.
+    archive = subprocess.run(['git', '-C', str(ROOT), 'archive', '--format=tar', 'HEAD:' + source['path']],
+                             check=True, stdout=subprocess.PIPE).stdout
+    subprocess.run(['tar', '-x', '-C', str(destination)], input=archive, check=True)
+    git = lambda *arguments: subprocess.run(['git', '-C', str(destination), '-c', 'core.autocrlf=false', '-c', 'commit.gpgsign=false',
+                                             *arguments], check=True, env={**os.environ, **MANUAL_COMMIT_ENVIRONMENT},
+                                            stdout=subprocess.PIPE, text=True).stdout.strip()
+    git('init', '-q', '-b', 'main')
+    git('add', '-A', '-f')
+    git('commit', '-q', '-m', 'Vendored manual content')
+    git('remote', 'add', 'origin', 'https://github.com/' + source['repository'] + '.git')
+    actual = git('rev-parse', 'HEAD')
+    if git('status', '--porcelain=v1', '--untracked-files=all'):
+        raise ValueError('Materialized manual checkout is not clean')
+    write(args.output, {**source, 'revision': actual})
     outputs(manual_revision=actual)
 
 

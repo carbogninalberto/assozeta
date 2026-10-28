@@ -1,0 +1,306 @@
+---
+title: "Pagamenti"
+description: "In questa sezione troverai tutte le informazioni relative ai pagamenti."
+---
+
+## Metodi di pagamento
+
+Il **Metodo** descrive il mezzo con cui registri il pagamento. È distinto dal **Conto**, dalla **Causale** e dal tipo di quota.
+
+| Metodo nell’applicazione | Uso nella registrazione |
+| --- | --- |
+| **non definito** | Mezzo ancora da indicare |
+| **contanti** | Incasso o pagamento in contanti |
+| **Bonifico Bancario** | Movimento tramite bonifico |
+| **Altro mezzo Online** | Altro mezzo online registrato |
+| **Bonifico SEPA** | Bonifico SEPA registrato |
+| **Stripe** | Movimento associato al percorso Stripe |
+| **PoS** | Movimento registrato tramite terminale |
+
+Impostare un metodo non avvia da solo una transazione. In particolare, registrare **Stripe** o **PoS** non prova che il servizio esterno abbia incassato la somma. Conto, importo, stato e data dell’incasso vanno controllati separatamente.
+
+## Tipologie di pagamento
+
+**Tipologia** distingue un’**Entrata** da un’**Uscita**. **Tipo Quota** descrive invece l’origine della quota:
+
+| Tipo Quota | Significato |
+| --- | --- |
+| **Altro** | Registrazione non classificata come iscrizione o corso |
+| **Iscrizione** | Quota collegata all’iscrizione |
+| **Corso** | Quota di attività, rata, carnet o abbonamento secondo il collegamento |
+| **Giroconto** | Movimento tra conti, da gestire con la funzione dedicata |
+
+Lo stato **In attesa** o **Pagato** è separato da queste classificazioni. Se nelle impostazioni è attivo l’incasso automatico dei nuovi pagamenti, la creazione può risultare già **Pagato** e preparare anche una ricevuta per un’entrata intestata a tesserato, fornitore o istruttore. Le uscite e le entrate senza un destinatario previsto seguono condizioni differenti.
+
+<Note>L’incasso automatico non va descritto come creazione senza ricevuta. Prima di salvare una registrazione controlla l’impostazione e il destinatario; il campo data da solo non rappresenta tutte le condizioni del flusso.</Note>
+
+## Creare un pagamento
+
+Prepara una persona già registrata, un conto e una causale. L’esempio usa **Giulia Bianchi**, il conto **Cassa Aurora**, la causale **Quote e attività associative** e la descrizione **Quota laboratorio creativo**. Con l’incasso automatico disattivato, salvi prima l’entrata e registri l’incasso in un secondo momento.
+
+<Steps>
+  <Step title="Apri il modulo">
+    Apri **Pagamenti** dal menu laterale e premi **Pagamento**.
+  </Step>
+  <Step title="Compila una nuova entrata">
+    Inserisci **Descrizione** e **Importo**. In **Intestato a** scegli la persona; indica il **Conto** e la **Causale**.
+    Nell'esempio registriamo **35,00** in contanti per **Giulia Bianchi** sul conto **Cassa Aurora**.
+    Mantieni **Tipologia → Entrata** e **Tipo Quota → Altro**, con la **Data Incasso** vuota.
+    <Frame>![Modulo compilato per una nuova entrata in contanti](/images/pagamenti/registrazione/1.png)</Frame>
+  </Step>
+  <Step title="Crea e controlla">
+    Premi **Crea**. Chiudi i dettagli per tornare all'elenco e trovare il nuovo pagamento.
+    Con l'incasso automatico disattivato, il pagamento viene creato **In attesa** e va incassato separatamente.
+    <Frame>![Pagamento creato nell'elenco](/images/pagamenti/registrazione/2.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Un collaboratore con il solo permesso di lettura può consultare i pagamenti. Per crearli serve il permesso di creazione.</Note>
+
+## Segna un pagamento come "pagato"
+
+<Steps>
+  <Step title="Conferma l'incasso">
+    Nella riga di un'entrata **In attesa**, premi il pulsante con il suggerimento **Segna come pagato**.
+    Nella finestra **Incassare il pagamento?** indica la **Data Incasso**.
+  </Step>
+  <Step title="Scegli la generazione del PDF">
+    **Genera ricevuta** è selezionato inizialmente. Se lo togli, il sistema registra comunque una ricevuta per l'entrata intestata alla persona, ma non ne genera subito il PDF.
+    Nell'esempio togliamo la selezione e lasciamo **Invia email** disattivato; premiamo **Incassa**.
+    <Frame>![Conferma dell'incasso senza generazione immediata del PDF](/images/pagamenti/registrazione/5.png)</Frame>
+  </Step>
+  <Step title="Controlla lo stato">
+    Chiudi i dettagli. Il pagamento risulta **Pagato** e conserva la data indicata anche dopo il ricaricamento.
+    <Frame>![Pagamento incassato e conservato nell'elenco](/images/pagamenti/registrazione/6.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Per incassare serve il permesso di modifica dei pagamenti. [Leggi come consultare il PDF della ricevuta](/docs/ricevute#come-posso-scaricare-una-ricevuta).</Note>
+
+## Vincolo sull'importo
+
+**Importo** rappresenta una somma; **Tipologia** indica se è un’entrata o un’uscita. Per registrare una somma da restituire, prepara una registrazione di uscita con l’importo concordato e la causale appropriata, invece di cambiare soltanto il segno di un’entrata.
+
+L’importo del pagamento può comprendere la somma della voce principale e delle causali aggiuntive. Controlla il totale finale, non soltanto il valore della prima casella.
+
+<Note>Questa guida non conferma un blocco generale del server per qualunque importo negativo: la precedente affermazione «non è possibile inserire importi negativi» non è dimostrata in tutti i percorsi esaminati. Usa importi coerenti con il movimento e verifica eventuali correzioni con il responsabile contabile.</Note>
+
+## Eliminare un pagamento
+
+
+
+La cancellazione di una registrazione non dispone un rimborso al destinatario. Prima di procedere controlla anche ricevute, rate e documenti collegati.
+
+<Steps>
+  <Step title="Individua la registrazione">
+Apri **Pagamenti** e controlla destinatario, importo, metodo e stato. Usa il comando **Elimina** nella riga, se disponibile con i tuoi permessi.
+
+<Frame>![Rata dimostrativa incassata, con ricevuta reale collegata, prima dell’eliminazione.](/images/pagamenti/manutenzione-reale/11.png)</Frame>
+</Step>
+  <Step title="Rivedi la conferma">
+Controlla che la richiesta riguardi il pagamento corretto. Premi **Elimina** per confermare oppure **Annulla** per uscire senza conferma.
+
+<Frame>![Seconda conferma della rata corretta, prima di scegliere Elimina.](/images/pagamenti/manutenzione-reale/13.png)</Frame>
+</Step>
+  <Step title="Controlla i documenti e le quote">
+Dopo l’operazione cerca il pagamento nell’elenco. Se è collegata una ricevuta, il percorso di cancellazione singola la contrassegna come annullata e ne aggiorna il documento. Se il pagamento corrisponde a una rata del corso, viene eliminata anche quella rata dal piano individuale; le altre rate restano presenti. Riapri il piano rate e controlla separatamente la ricevuta.
+
+<Frame>![PDF reale rigenerato dopo l’annullamento, senza collegamenti o token di condivisione.](/images/pagamenti/manutenzione-reale/16.png)</Frame>
+
+<Frame>![Piano della singola iscrizione dopo l’eliminazione: rate, importi e scadenze da controllare separatamente.](/images/pagamenti/manutenzione-reale/17.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Le operazioni collettive hanno un percorso distinto e non vanno considerate equivalenti a tutte le condizioni della cancellazione singola. Per un pagamento incassato o online chiarisci prima come trattare ricevuta e rimborso; l’eliminazione dall’elenco non restituisce fondi su Stripe.</Warning>
+
+## Modificare un pagamento
+
+<Steps>
+  <Step title="Apri un pagamento in attesa">
+    Nell'elenco **Pagamenti**, premi il pulsante con il suggerimento **Modifica** nella riga del pagamento.
+  </Step>
+  <Step title="Modifica l'importo">
+    Nel modulo **Modifica Pagamento** cambia **Importo**, per esempio da **35,00** a **40,00**, poi premi **Modifica**.
+    <Frame>![Modifica dell'importo prima dell'incasso](/images/pagamenti/registrazione/3.png)</Frame>
+  </Step>
+  <Step title="Controlla il salvataggio">
+    Chiudi i dettagli e torna all'elenco. Il nuovo importo rimane salvato anche dopo il ricaricamento della pagina.
+    <Frame>![Importo modificato e conservato dopo il ricaricamento](/images/pagamenti/registrazione/4.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Il solo accesso in lettura non permette di modificare un pagamento.</Note>
+
+## Esportare i pagamenti
+
+
+
+L’esportazione permette di confrontare i dati fuori dall’applicazione. Controlla prima ambito, periodo e filtri: il file non rappresenta automaticamente soltanto le righe selezionate.
+
+<Steps>
+  <Step title="Scegli il tipo di esportazione">
+In **Pagamenti**, apri **Esporta** e scegli **CSV (dall’inizio)** oppure **Excel (dall’inizio)** per l’esportazione generale.
+
+<Frame>![CSV e Excel dall’inizio, distinti dalla ricerca corrente.](/images/pagamenti/manutenzione-reale/2.png)</Frame>
+</Step>
+  <Step title="Esporta una ricerca specifica">
+Per un ambito filtrato imposta la ricerca e i filtri. Usa il comando con suggerimento **Esporta ricerca corrente in Excel**. La **Prima nota** ha ulteriori scelte di periodo, tra cui corrente, precedente e filtro selezionato.
+
+<Frame>![Ricerca di Sara Conti: una sola quota nell’ambito corrente.](/images/pagamenti/manutenzione-reale/3.png)</Frame>
+</Step>
+  <Step title="Controlla il file">
+Attendi il download e apri il file. Confronta destinatari, somme, stati e date con l’ambito scelto; non inviare l’esportazione a terzi prima di aver controllato i dati personali inclusi.
+
+<Frame>![Download reali completati: la ricerca resta visibile e le quote sono invariate.](/images/pagamenti/manutenzione-reale/5.png)</Frame>
+</Step>
+</Steps>
+
+L’esportazione non modifica lo stato dei pagamenti.
+
+## Personalizzare le colonne della tabella
+
+
+
+<Steps>
+  <Step title="Apri le scelte della tabella">
+Nell’area dei comandi della tabella **Pagamenti**, apri il pulsante con l’icona delle regolazioni. Compare l’elenco delle colonne.
+
+<Frame>![Scelte delle colonne Pagamenti prima della modifica di Metodo.](/images/pagamenti/manutenzione-reale/7.png)</Frame>
+</Step>
+  <Step title="Scegli cosa mostrare">
+Spunta le colonne utili, per esempio **Metodo**, e togli quelle che non servono alla consultazione. La scelta riguarda la visualizzazione, non cancella i dati delle registrazioni.
+
+<Frame>![Metodo nascosto nella tabella, con le quote ancora presenti.](/images/pagamenti/manutenzione-reale/8.png)</Frame>
+</Step>
+  <Step title="Controlla la riapertura">
+La modifica richiama il salvataggio delle impostazioni della tabella. Riapri la pagina e controlla che le colonne scelte restino visibili. 
+
+<Frame>![Metodo rimane nascosto dopo riapertura e ricaricamento della pagina.](/images/pagamenti/manutenzione-reale/9.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Su schermi più piccoli alcune colonne possono essere nascoste o richiedere lo scorrimento orizzontale. Non interpretare una colonna non visibile come un dato mancante nel pagamento.</Note>
+
+## Come sollecitare un pagamento
+
+<Warning>Questa sezione richiede verifiche esterne del servizio, delle condizioni applicabili o della consegna. Non documenta un’operazione esterna già eseguita.</Warning>
+
+Il sollecito riguarda un pagamento **In attesa** intestato a un tesserato. Verifica l’email del tesserato e il mancato incasso prima di richiedere il messaggio; non usarlo indiscriminatamente per fornitori o registrazioni prive di persona collegata.
+
+<Steps>
+  <Step title="Controlla le registrazioni">
+    In **Pagamenti**, filtra o individua le quote in attesa. Seleziona soltanto le righe da sollecitare dopo il confronto con gli incassi effettivi.
+  </Step>
+  <Step title="Richiedi il sollecito">
+    Premi **Sollecita** e rivedi la conferma con il numero di persone coinvolte. **Annulla** evita la conferma; **Sollecita** richiede l’invio.
+  </Step>
+  <Step title="Verifica destinatari ed esito">
+    Il messaggio usa l’email del tesserato quando presente e può aggiungere l’indirizzo dell’account dell’associazione secondo il collegamento. Controlla lo storico email e, per la prova, la casella destinataria.
+  </Step>
+</Steps>
+
+Il sollecito non cambia da solo lo stato del pagamento e viene rifiutato dal percorso se il pagamento risulta già incassato. Una conferma a schermo non dimostra ricezione o lettura. Procedura in browser, consegna e finalità della comunicazione restano da verificare.
+
+## Come vedere i pagamenti avvenuti via Stripe
+
+Il filtro **Metodo pagamento** permette di cercare le registrazioni il cui metodo è **Stripe**. Usa il filtro della tabella, anziché digitare Stripe nella descrizione: una parola nel testo non identifica il metodo registrato.
+
+<Steps>
+  <Step title="Apri il filtro del metodo">
+    Apri **Pagamenti** e controlla il periodo visualizzato. Apri **Metodo pagamento** nell’area dei filtri: l’elenco contiene **Stripe**, oltre agli altri metodi disponibili.
+  
+<Frame>![Apri il filtro del metodo](/images/pagamenti/stripe-controlli-locali/8.png)</Frame>
+  </Step>
+  <Step title="Scegli Stripe">
+    Seleziona **Stripe** e attendi il caricamento. La tabella mostra soltanto le registrazioni corrispondenti al metodo e agli altri filtri attivi. Anche un elenco vuoto è un risultato valido: controlla periodo e filtri prima di concludere che manchi una registrazione.
+  
+<Frame>![Scegli Stripe](/images/pagamenti/stripe-controlli-locali/9.png)</Frame>
+  </Step>
+  <Step title="Distingui pagato e in attesa">
+    Apri **Stato pagamento** e scegli **Pagato** per cercare gli incassi registrati, oppure **In attesa** per le quote ancora aperte. Confronta intestatario, descrizione, importo e date dei risultati. Il filtro riguarda dati dell’applicazione e non prova un accredito sul conto.
+  
+<Frame>![Distingui pagato e in attesa](/images/pagamenti/stripe-controlli-locali/10.png)</Frame>
+  </Step>
+  <Step title="Ripristina la consultazione">
+    Scegli **Stato** nel filtro dello stato e **Metodo** nel filtro del metodo per togliere queste due selezioni. La tabella torna all’ambito definito dagli altri filtri. Cambiare filtro non modifica gli importi e non segna alcun pagamento come incassato.
+  
+<Frame>![Ripristina la consultazione](/images/pagamenti/stripe-controlli-locali/12.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>La consultazione è disponibile anche al collaboratore con accesso in lettura ai pagamenti. Per transazioni, commissioni, accrediti o discrepanze chiedi al gestore di confrontare i dati con l’account Stripe corretto.</Note>
+
+## Gestione delle causali
+
+
+
+Le causali classificano entrate e uscite. **Nome**, **Movimento**, **Tipologia** e gestione IVA descrivono la classificazione da associare al pagamento; non sostituiscono importo, destinatario o conto.
+
+<Steps>
+<Step title="Apri le causali">
+Da **Pagamenti** apri **Causali**. L’elenco mostra sia voci comuni sia quelle dell’associazione. Per aggiungere una voce propria premi **Crea causale**: compare **Crea una causale**.
+
+<Frame>![Causali esistenti, prima della creazione di una voce dell’associazione.](/images/pagamenti/causali-reali/1.png)</Frame>
+</Step>
+<Step title="Compila la classificazione">
+Inserisci un **Nome** riconoscibile e scegli **Movimento**, Entrata oppure Uscita. Rivedi **Tipologia**, Istituzionale o Commerciale, **Tipo IVA** e **Tipo detrazione** secondo la classificazione approvata dal responsabile. Per un’entrata controlla anche **Detraibile fiscalmente**; non abilitarlo solo per completare il modulo. Nell’esempio si usa Quota laboratorio dimostrativa come Entrata, Istituzionale, IVA Esente e nessuna detrazione.
+<Frame>![Classificazione di una nuova causale prima di Salva](/images/pagamenti/causali-reali/2.png)</Frame>
+</Step>
+<Step title="Salva e ricontrolla">
+Premi **Salva**, ricarica l’elenco e ritrova la voce con nome e classificazione corretti. Nel modulo di pagamento scegli una causale coerente con il movimento. Salvare una nuova causale non modifica le quote già registrate.
+<Frame>![Nuova causale presente dopo il ricaricamento](/images/pagamenti/causali-reali/3.png)</Frame>
+</Step>
+<Step title="Modifica una causale propria">
+Usa **Modifica** sulla riga dell’associazione. Rivedi il nome e tutti i valori, poi **Salva** e ricarica. I comandi di modifica ed eliminazione non sono disponibili per le voci comuni. Un collaboratore in lettura consulta l’elenco, senza poter salvare cambiamenti.
+<Frame>![Causale modificata e riaperta nell’elenco](/images/pagamenti/causali-reali/5.png)</Frame>
+</Step>
+<Step title="Rimuovi una voce non più utilizzata">
+Premi **Elimina** sulla causale propria e rileggi **Vuoi eliminare la causale di pagamento?**. **Annulla** conserva la voce. Confermando **Elimina**, la causale è contrassegnata come **Eliminata** dopo il ricaricamento. Non presumere che vengano cancellati i pagamenti già registrati: controllali separatamente prima di cambiare una classificazione usata nei documenti.
+<Frame>![Causale contrassegnata come Eliminata](/images/pagamenti/causali-reali/8.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Le scelte fiscali descrivono valori dell’applicazione; non attestano il diritto a una detrazione o la correttezza normativa. Le condizioni 730 richiedono una verifica esterna del caso concreto.</Note>
+
+### Causali detraibili 730
+
+
+
+Il contrassegno **Detraibile fiscalmente** appartiene alla **causale** di un’entrata. L’associazione lo imposta nella gestione delle causali, poi sceglie quella causale nei pagamenti interessati. Il campo registra una scelta: non certifica il diritto alla detrazione.
+
+<Steps>
+<Step title="Apri la causale personale">
+Da **Pagamenti** apri **Gestisci Causali**. Per una nuova voce premi **Crea causale**; per una voce dell’associazione usa la matita **Modifica**. Le causali comuni hanno i comandi di modifica disabilitati.
+Controlla **Nome**, **Movimento** e **Tipologia**: **Detraibile fiscalmente** è mostrato quando il movimento è **Entrata**. La distinzione **Istituzionale** o **Commerciale** e la **Gestione IVA** restano campi separati.
+</Step>
+<Step title="Imposta il contrassegno e salva">
+Nell’esempio crei **Laboratorio detraibile dimostrativo**, con movimento **Entrata**, tipologia **Istituzionale**, **Tipo IVA: IVA Esente** e **Tipo detrazione: No**. Seleziona **Detraibile fiscalmente**, poi premi **Salva**.
+I valori fiscali dell’esempio servono solo a riconoscere i campi: scegli quelli concordati per la tua associazione.
+<Frame>![Entrata istituzionale con Detraibile fiscalmente selezionato prima del salvataggio.](/images/pagamenti/ripartizione-causali/2.png)</Frame>
+</Step>
+<Step title="Riapri e controlla la scelta">
+Ricarica l’elenco e apri **Modifica**. Il contrassegno deve essere selezionato. Nell’esempio il nome diventa **Laboratorio detraibile serale**: salvi e riapri per controllare che la modifica del nome conservi il contrassegno.
+<Frame>![Contrassegno fiscale conservato dopo la modifica del solo nome e la riapertura.](/images/pagamenti/ripartizione-causali/5.png)</Frame>
+</Step>
+<Step title="Correggi una selezione errata">
+Se la classificazione era errata, riapri la causale personale, disattiva **Detraibile fiscalmente** e premi **Salva**. Ricarica e riapri per controllare che il campo resti disattivato.
+La modifica riguarda la causale condivisa dai pagamenti che la utilizzano: non promette una correzione dei documenti PDF già generati.
+<Frame>![Contrassegno disattivato anche dopo il ricaricamento.](/images/pagamenti/ripartizione-causali/7.png)</Frame>
+</Step>
+<Step title="Controlla i permessi e la documentazione">
+Un collaboratore con soli permessi di lettura può consultare l’elenco; il comando **Modifica** è disabilitato. Per aggiornare una causale occorre il permesso relativo alla modifica delle causali.
+<Frame>![Collaboratore in lettura: causale visibile e comando di modifica disabilitato.](/images/pagamenti/ripartizione-causali/16.png)</Frame>
+Prima di consegnare documenti a un socio, controlla intestatario, importo, data, modalità di pagamento e documentazione richiesta.
+</Step>
+</Steps>
+
+<Warning>Questa procedura prepara solo la gestione locale del contrassegno. Non è una procedura di invio del 730, non verifica l’ammissibilità della spesa e non attesta la completezza di un riepilogo fiscale. La produzione di tale riepilogo e la verifica fiscale richiedono una prova e una valutazione separate.</Warning>
+
+## Risorse correlate
+
+<CardGroup cols={2}>
+  <Card title="Ricevute" icon="file-invoice" href="/docs/ricevute">Emissione, consultazione e gestione dei documenti.</Card>
+  <Card title="Rate dei corsi" icon="coins" href="/tutorials/come-impostare-pagamenti-rateizzati">Scadenze e quote assegnate ai tesserati.</Card>
+  <Card title="Pagamenti online" icon="credit-card" href="/tutorials/come-impostare-stripe-pagamenti-online">Configurazione dell’istanza e limiti da verificare con il servizio.</Card>
+</CardGroup>
+

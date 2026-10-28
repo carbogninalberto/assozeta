@@ -1,0 +1,90 @@
+---
+title: Come importare i soci?
+description: "Prepara un file XLSX o CSV, controlla le bozze importate e approva le iscrizioni in Assozeta."
+---
+
+# Cos'è l'importazione dei soci?
+
+L'importazione trasforma le righe di un file in **Bozze** da controllare. È utile quando possiedi già un elenco di persone e vuoi evitare di riscrivere tutti i dati.
+
+Il caricamento non completa da solo le iscrizioni. Dopo aver collegato le colonne, controlla le bozze valide e quelle con dati mancanti; soltanto l'approvazione crea le iscrizioni con la tipologia, il ruolo e le quote scelti.
+
+Serve un account autorizzato a creare iscrizioni. La pagina di caricamento cerca inoltre l'associazione gestita dall'account: se un collaboratore autorizzato non riesce ad avviare l'importazione, fai verificare l'accesso dal titolare anziché ripetere il caricamento.
+
+<Note>L'importazione di soci da foglio è diversa dal ripristino completo dei dati dell'associazione. Non caricare un archivio di backup in questo percorso.</Note>
+
+## Preparazione del file
+
+Prepara una riga per persona e una prima riga di intestazioni. **XLSX** è il formato consigliato dalla schermata. Se usi **CSV**, il lettore si aspetta il separatore **punto e virgola**: una virgola può far comparire tutte le informazioni come un'unica colonna.
+
+| Informazioni | Campi da preparare |
+| --- | --- |
+| Persona | Nome, cognome, sesso, codice fiscale, data e città di nascita. |
+| Residenza | Indirizzo, città di residenza e CAP. |
+| Contatti | Email e telefono, se disponibili. |
+| Minore | Dati anagrafici e residenza del tutore; email e telefono se disponibili. |
+| Dati aggiuntivi | Scadenza del certificato, date del tesseramento e numero tessera, se disponibili. |
+
+Nome, cognome, sesso, codice fiscale, nascita e residenza sono usati per valutare la validità della bozza. Email e telefono sono opzionali. Scrivi date non ambigue e controlla che codice fiscale e CAP non vengano trasformati in numeri o formule.
+
+<Warning>La schermata dichiara **XLS/XLSX, CSV o ODS sotto 15 MB**. Le sorgenti del lettore mostrano però lettori Excel specifici e non dimostrano il funzionamento di ogni file ODS, né un limite di 15 MB applicato in tutti i passaggi. Per ridurre gli errori, converti in XLSX e prova prima un elenco piccolo.</Warning>
+
+## Processo di importazione
+
+<Steps>
+  <Step title="Apri l'importazione dalle Bozze">
+    In **Organizzazione → Iscrizioni**, entra in **Bozze** e premi **Importa atleti**. Nella schermata **Importazione soci e tesserati** trascina il file nell'area di caricamento oppure selezionalo dal computer.
+    <Frame>![File CSV effettivamente letto dal server](/images/faq/importazione-file/1.png)</Frame>
+  </Step>
+  <Step title="Controlla ogni collegamento">
+Nel passaggio **Collega le informazioni del tuo file ai campi corretti**, scegli la colonna corrispondente a ciascun campo. I collegamenti proposti in base al nome della colonna sono suggerimenti: verifica, per esempio, che l'email del tutore non sia collegata all'email dell'atleta.
+
+<Frame>![Colonne del CSV collegate ai campi](/images/faq/importazione-file/2.png)</Frame>
+</Step>
+  <Step title="Completa i valori comuni">
+In **Colonne senza collegamento** puoi assegnare un valore comune ad alcuni campi di residenza, indirizzo e CAP rimasti senza colonna. Usa questa possibilità soltanto se il valore vale davvero per tutte le righe interessate; non sostituisce ogni campo mancante.
+
+<Frame>![Valori comuni per i campi di residenza non collegati](/images/faq/importazione-file/3.png)</Frame>
+</Step>
+  <Step title="Avvia e verifica le bozze">
+    Premi **Importa Atleti** e conferma **Continua**. L'applicazione torna alle **Bozze** e invita ad attendere l'importazione. Controlla le righe effettivamente presenti e il loro stato; se manca una parte dell'elenco, verifica il file e i collegamenti prima di ricaricarlo.
+    <Frame>![Due bozze importate, una con dati incompleti](/images/faq/importazione-file/4.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Il messaggio di avvio non certifica che tutte le righe siano state importate correttamente. Il controllo delle bozze è parte della procedura.</Note>
+
+## Gestione dei soci importati
+
+<Steps>
+  <Step title="Correggi le bozze incomplete">
+Apri le righe da sistemare e controlla i dati della persona e del tutore. Una bozza non valida non viene approvata soltanto perché è stata selezionata. Per correggerla serve il permesso di modifica.
+
+<Frame>![Nome mancante corretto nella scheda della bozza](/images/faq/importazione-file/5.png)</Frame>
+</Step>
+  <Step title="Approva un gruppo omogeneo">
+Seleziona le bozze valide e apri **Approva da bozze**. Scegli la tipologia, il ruolo quando previsto, la **Quota Associativa** e la **Quota Tesseramento**. Sono disponibili anche opzioni senza quota. Se le persone richiedono piani diversi, approva gruppi separati.
+
+<Frame>![Tipologia, ruolo e quote prima della conferma](/images/faq/importazione-file/6.png)</Frame>
+</Step>
+  <Step title="Controlla l'elenco risultante">
+Dopo la conferma verifica le persone nel **Libro Soci** o in **Tesserati**, secondo la tipologia scelta, e controlla date, quote e stato. Le bozze elaborate con successo vengono rimosse; quelle rimaste richiedono ancora attenzione.
+
+<Frame>![Iscrizioni create e presenti dopo il ricaricamento](/images/faq/importazione-file/7.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il foglio può contenere una data di scadenza del certificato, ma non allega automaticamente il documento originale. Inoltre l'approvazione da bozze non raccoglie una firma della persona: controlla separatamente documento, firma e pagamento.</Warning>
+
+## Consigli utili
+
+Inizia con poche righe rappresentative: una persona adulta, un minore con tutore e una riga con campi opzionali vuoti. Controlla le bozze prima di procedere con l'elenco completo.
+
+- Conserva una copia del file originale e annota quale gruppo hai già approvato.
+- Controlla date e CAP dopo l'apertura nel foglio di calcolo; gli zeri iniziali possono andare persi.
+- Verifica i collegamenti suggeriti, soprattutto per le colonne del tutore.
+- Cerca le persone già presenti prima di approvare: il confronto dei doppioni usa anche nomi e periodo, non solo il codice fiscale.
+- Per una scadenza sanitaria importata, controlla anche il documento e il tipo di certificato.
+
+<Note>Ripetere il caricamento prepara altre bozze. Se un gruppo è già presente, evita di approvarlo nuovamente senza aver prima controllato il risultato precedente.</Note>
+

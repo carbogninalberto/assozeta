@@ -1,0 +1,267 @@
+---
+title: "Carnet"
+description: "In questa sezione troverai tutte le informazioni necessarie per la gestione dei carnet lezioni."
+---
+
+## Cos'è un carnet?
+
+Un carnet è un pacchetto con un numero definito di lezioni e un prezzo. Il pacchetto è il modello; ogni assegnazione a una persona ha il proprio saldo e il proprio pagamento. Nell’esempio Giulia ha cinque lezioni a 50,00 €.
+
+<Steps>
+<Step title="Assegna il pacchetto alla persona">
+Apri **Attività → Carnet**, scegli **Carnet ginnastica 5 lezioni** e la scheda **Utilizzo**. Premi **Assegna carnet**, cerca Giulia in **Associa carnet a**, seleziona **Giulia Bianchi** e premi **Assegna**.
+<Frame>![Persona scelta per l’assegnazione del carnet](/images/registro-presenze/carnet-manuale/6.png)</Frame>
+</Step>
+<Step title="Controlla saldo e pagamento creati">
+Nella riga della persona compaiono **5/5** lezioni. L’assegnazione crea un pagamento di **50,00 €**, inizialmente in attesa. Una riga senza collegamenti mostra **Valido per tutti i corsi**; collegarla al corso permette di limitarne l’uso.
+<Frame>![Cinque lezioni disponibili dopo l’assegnazione](/images/registro-presenze/carnet-manuale/7.png)</Frame>
+</Step>
+</Steps>
+
+## Come funziona un carnet?
+
+Il percorso ordinario è **assegnazione → pagamento → presenza → controllo delle lezioni**. Nell’esempio la persona è già iscritta al corso; la quota del corso da 120,00 € resta distinta da quella del carnet.
+
+<Steps>
+<Step title="Assegna il pacchetto alla persona">
+Apri **Attività → Carnet**, scegli **Carnet ginnastica 5 lezioni** e la scheda **Utilizzo**. Premi **Assegna carnet**, cerca Giulia in **Associa carnet a**, seleziona **Giulia Bianchi** e premi **Assegna**.
+<Frame>![Persona scelta per l’assegnazione del carnet](/images/registro-presenze/carnet-manuale/6.png)</Frame>
+</Step>
+<Step title="Collega il corso già frequentato">
+Nella riga di Giulia premi **collega corso**. Nella finestra **Assegna carnet ad un corso** seleziona **Ginnastica per tutti** e premi **Assegna carnet**. La lista propone i corsi a cui la persona è già iscritta: il collegamento non iscrive un atleta a un corso nuovo.
+<Frame>![Corso selezionato per il collegamento](/images/registro-presenze/carnet-manuale/8.png)</Frame>
+</Step>
+<Step title="Incassa la quota del carnet">
+Apri **Pagamenti** e individua il pagamento di **50,00 €** intestato a Giulia. Premi **Segna come pagato**. In **Incassare il pagamento?** imposta **Data Incasso** e premi **Incassa**. Nell’esempio togli **Genera ricevuta** e mantieni **Invia email** disattivato: non si produce subito un PDF e non viene inviato un messaggio.
+<Frame>![Incasso della quota carnet con PDF ed email disattivati](/images/registro-presenze/carnet-manuale/10.png)</Frame>
+</Step>
+<Step title="Registra la presenza">
+In **Modifica Presenze** individua **Bianchi Giulia** e attiva il suo interruttore. Il cambio viene salvato subito: attendi che sia confermato prima di premere **Chiudi**. Non serve un pulsante Salva finale.
+<Frame>![Presenza manuale di Giulia nella lezione](/images/registro-presenze/carnet-manuale/13.png)</Frame>
+</Step>
+<Step title="Controlla il carnet">
+Apri **Attività → Carnet → Carnet ginnastica 5 lezioni → Utilizzo**. La riga della persona passa da **5/5** a **4/5**. Ricarica la pagina e verifica che il saldo sia rimasto uguale. La presenza consuma una sola lezione del carnet pagato e collegato al corso.
+<Frame>![Quattro lezioni rimaste sul carnet da cinque](/images/registro-presenze/carnet-manuale/14.png)</Frame>
+</Step>
+</Steps>
+
+### Logica di scalamento lezioni
+
+La scelta avviene fra i carnet non disabilitati della stessa iscrizione, collegati al corso oppure senza vincolo di corso. Prima viene scelto il saldo positivo più basso, poi si controlla il pagamento. Per una partecipazione già registrata e lasciata attiva non viene creato un nuovo consumo nel salvataggio manuale.
+
+<Steps>
+<Step title="Apri il registro e individua la persona">
+Apri il corso **Ginnastica presenze automatiche**, scegli **Presenze** e apri la lezione. Per questa verifica manuale l’opzione automatica è disattivata. Il modulo mostra otto iscritti, con situazioni di carnet diverse.
+<Frame>![Modulo Presenze con gli iscritti dei casi dimostrativi](/images/registro-presenze/varianti-carnet/1.png)</Frame>
+</Step>
+<Step title="Controlla il carnet non pagato e quello esaurito">
+Prova a segnare Luca: il modulo avvisa **Il carnet non è ancora stato pagato.** e la presenza torna non selezionata. Marco ha il carnet esaurito: compare **Carnet finito.**. Le presenze e i saldi dei due casi restano invariati. Prima di riprovare controlla pagamento o assegnazione del pacchetto.
+<Frame>![Rifiuto reale della presenza di Luca per carnet non pagato](/images/registro-presenze/varianti-carnet/2.png)</Frame>
+<Frame>![Rifiuto reale della presenza di Marco per carnet esaurito](/images/registro-presenze/varianti-carnet/3.png)</Frame>
+</Step>
+<Step title="Controlla la scelta fra più carnet">
+Tommaso ha un carnet con una lezione non pagato e un altro con cinque lezioni pagato: il saldo minore viene scelto per primo, quindi la presenza è rifiutata senza consumare l’altro pacchetto. Il sistema non seleziona automaticamente il pacchetto pagato al suo posto.
+<Frame>![Saldo minore non pagato che blocca la registrazione](/images/registro-presenze/varianti-carnet/4.png)</Frame>
+</Step>
+<Step title="Registra e correggi un consumo ammesso">
+Paola ha due carnet pagati, con due e cinque lezioni residue. Segna la presenza: viene consumato quello con due lezioni, che passa a una; l’altro rimane a cinque. Per correggere questa stessa partecipazione, togli la presenza dalla stessa data e controlla che i saldi tornino a due e cinque.
+<Frame>![Presenza di Paola salvata con consumo del saldo positivo minore](/images/registro-presenze/varianti-carnet/5.png)</Frame>
+<Frame>![Presenza di Paola rimossa e saldo restituito](/images/registro-presenze/varianti-carnet/6.png)</Frame>
+</Step>
+<Step title="Distingui carnet disabilitato e assenza di carnet">
+Il carnet disabilitato di Elena non viene selezionato. Nel caso mostrato non esistono altri carnet pertinenti, quindi la presenza può essere salvata senza consumare quel pacchetto. Anche Andrea, che non ha un carnet, può risultare presente senza un consumo. Questi casi non equivalgono a un carnet attivo ma esaurito.
+<Frame>![Elena presente senza consumo del carnet disabilitato](/images/registro-presenze/varianti-carnet/7.png)</Frame>
+<Frame>![Andrea presente senza assegnazione di carnet](/images/registro-presenze/varianti-carnet/8.png)</Frame>
+</Step>
+<Step title="Riapri dopo le correzioni">
+Togli le presenze dimostrative che hai usato soltanto per il controllo, ricarica la lezione e confronta registro e saldi. Nell’esempio ogni correzione lascia il saldo iniziale e nessun consumo residuo. I collaboratori in lettura non possono salvare questi cambiamenti.
+<Frame>![Registro riaperto dopo la rimozione delle presenze di prova](/images/registro-presenze/varianti-carnet/9.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La rimozione della presenza dalla stessa data aggiorna consumo e saldo insieme. Eliminare una data dal registro o cambiare soltanto le lezioni residue sono operazioni diverse. Una registrazione con più persone non autorizza a dedurre che ogni rifiuto annulli tutti i consumi elaborati prima del rifiuto.</Warning>
+
+<Note>Il percorso confronta saldi diversi. La parità di saldo, pacchetti condivisi fra più corsi e correzioni su date storiche non sono dimostrati da questi esempi. Le catture e i risultati rimangono preparati finché il browser non esegue il flusso reale.</Note>
+
+### Carnet pubblici e privati
+
+La creazione dell’esempio produce un carnet pubblico; puoi renderlo privato dai dettagli del pacchetto. Questa scelta riguarda il pacchetto, non il pagamento o il saldo delle assegnazioni già presenti.
+
+<Steps>
+<Step title="Salva la visibilità desiderata">
+Apri il titolo del carnet e resta in **Dettagli**. Disattiva **Carnet pubblico** e premi **Salva**. Ricarica la scheda per controllare che la scelta sia conservata. Il modulo iniziale non contiene questo interruttore: la visibilità si cambia dopo la creazione.
+<Frame>![Carnet pubblico disattivato nei dettagli](/images/registro-presenze/carnet-manuale/5.png)</Frame>
+</Step>
+</Steps>
+
+<Note>L’acquisto dall’area atleta e la visibilità per ogni ruolo richiedono una prova separata. Qui controlli soltanto il salvataggio della scelta nell’area dell’associazione.</Note>
+
+### Registro presenze automatico con carnet
+
+L’automazione considera i carnet non disabilitati della stessa iscrizione, pertinenti al corso oppure senza vincolo di corso. Sceglie il saldo positivo più basso e controlla il pagamento dopo la scelta. Nell’esempio sono presenti anche casi non pagati, esauriti e concorrenti: controlla le regole nella sezione [Logica di scalamento lezioni](#logica-di-scalamento-lezioni).
+
+<Steps>
+<Step title="Controlla la preparazione dell’automazione">
+Il carnet deve essere già assegnato e, quando necessario, collegato al corso; il suo pagamento deve essere registrato come incassato. Controlla l’opzione automatica salvata in **Generali**. Il pagamento del corso è distinto da quello del carnet.
+<Frame>![Opzione automatica salvata per il corso preparato](/images/registro-presenze/automatiche/3.png)</Frame>
+</Step>
+<Step title="Controlla le assenze previste">
+Prima della lezione ricontrolla le segnalazioni nell’area atleta. Sara è indicata come assente; Giulia è presente. Il processo salta l’assenza di Sara, senza consumare il suo carnet per quella data.
+<Frame>![Segnalazione di assenza prevista di Sara](/images/registro-presenze/automatiche/7.png)</Frame>
+</Step>
+<Step title="Confronta registro e carnet dopo la lezione">
+Dopo l’elaborazione apri **Presenze** e poi **Utilizzo** del carnet. Giulia risulta presente e passa da **5/5** a **4/5**; Sara non viene registrata dal processo e conserva **5/5**. Il consumo annota data, corso e titolo della lezione.
+<Frame>![Presenze risultanti dall’elaborazione automatica](/images/registro-presenze/automatiche/9.png)</Frame>
+<Frame>![Una lezione consumata nel carnet di Giulia](/images/registro-presenze/automatiche/10.png)</Frame>
+<Frame>![Carnet di Sara senza consumo per l’assenza prevista](/images/registro-presenze/automatiche/11.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Un carnet selezionato ma non pagato blocca quella persona, anche quando un altro pacchetto pagato ha più lezioni. Carnet pertinenti tutti esauriti non producono la presenza; in assenza di carnet pertinenti la presenza può essere registrata senza consumo.</Note>
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+#### Blocco per assenza prevista
+
+La segnalazione **ASSENTE** conserva la persona fra le assenze previste della data. Il processo automatico la esclude dai presenti e dal consumo del carnet per quella lezione.
+
+<Steps>
+<Step title="Apri la scheda della persona e della lezione">
+Accedi con l’account atleta collegato all’iscrizione. In **Prossime lezioni** controlla nome della persona, titolo e data: lo stesso account può mostrare più iscrizioni. Nell’esempio l’area personale mostra Giulia e Sara.
+<Frame>![Prossime lezioni per Giulia e Sara nell’area atleta](/images/registro-presenze/automatiche/5.png)</Frame>
+</Step>
+<Step title="Segnala e conferma l’assenza">
+Premi **ASSENTE** nella scheda corretta. Leggi la conferma e premi **Sarò assente**; **Annulla** lascia la scelta invariata. Attendi il ricaricamento dei dati, poi riapri la pagina e controlla che l’assenza sia ancora evidenziata.
+<Frame>![Conferma Sarò assente](/images/registro-presenze/automatiche/6.png)</Frame>
+<Frame>![Assenza di Sara conservata dopo il ricaricamento](/images/registro-presenze/automatiche/7.png)</Frame>
+</Step>
+<Step title="Correggi la scelta prima dell’elaborazione">
+Se parteciperai, premi **PRESENTE** e conferma **Sarò presente**. Nell’esempio Giulia torna presente, mentre Sara rimane assente. Ricontrolla la scheda: le lezioni proposte appartengono alle iscrizioni dell’account, non a qualsiasi persona dell’associazione.
+<Frame>![Scelta di Giulia corretta in Presente](/images/registro-presenze/automatiche/8.png)</Frame>
+</Step>
+</Steps>
+
+<Steps>
+<Step title="Ricontrolla il saldo dopo la lezione">
+Nell’esempio Sara rimane assente e il suo carnet conserva **5/5**. Apri **Utilizzo** e confronta il saldo con quello precedente: una segnalazione tempestiva evita questo consumo.
+<Frame>![Cinque lezioni residue per Sara dopo l’elaborazione](/images/registro-presenze/automatiche/11.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La segnalazione dall’area atleta aggiorna assenze previste e presenti della data. Non ricalcola né restituisce una lezione del carnet già consumata. Per una correzione successiva all’elaborazione controlla il registro con l’associazione e verifica separatamente il saldo.</Warning>
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+## Creare e gestire un carnet
+
+Occorrono i permessi di creazione e modifica dei carnet. Prepara nome, descrizione, prezzo e lezioni prima di iniziare; nell’esempio l’assegnazione viene eseguita dopo aver creato il pacchetto.
+
+<Steps>
+<Step title="Compila il nuovo carnet">
+Apri **Attività → Carnet** e premi **Carnet**. In **Nuovo Carnet** compila **Titolo**, **Descrizione**, **Prezzo del carnet** e **Numero lezioni**. Nell’esempio: **Carnet ginnastica 5 lezioni**, **50,00 €**, **5** lezioni.
+<Frame>![Pacchetto di cinque lezioni prima della creazione](/images/registro-presenze/carnet-manuale/3.png)</Frame>
+</Step>
+<Step title="Completa senza assegnare subito">
+Premi **Continua**. Puoi scegliere gli atleti a cui assegnarlo subito; nell’esempio lascia la lista vuota. Premi **Completa**, ricontrolla i dati e conferma **Continua**. Il carnet compare nell’elenco come pubblico. Creare soltanto il pacchetto non genera un pagamento.
+<Frame>![Nuovo carnet nell’elenco, senza assegnazioni](/images/registro-presenze/carnet-manuale/4.png)</Frame>
+</Step>
+<Step title="Salva la visibilità desiderata">
+Apri il titolo del carnet e resta in **Dettagli**. Disattiva **Carnet pubblico** e premi **Salva**. Ricarica la scheda per controllare che la scelta sia conservata. Il modulo iniziale non contiene questo interruttore: la visibilità si cambia dopo la creazione.
+<Frame>![Carnet pubblico disattivato nei dettagli](/images/registro-presenze/carnet-manuale/5.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Un collaboratore in sola lettura può consultare corso, carnet e presenze. Per crearli, assegnarli o modificarli servono i permessi della singola operazione. Il registro non richiede un abbonamento alla piattaforma.</Note>
+
+## Assegnare un carnet ad un atleta
+
+La persona deve avere un’iscrizione disponibile nell’associazione. L’esempio assegna il pacchetto a Giulia e genera un pagamento separato dalla sua quota associativa e dalla quota corso.
+
+<Steps>
+<Step title="Assegna il pacchetto alla persona">
+Apri **Attività → Carnet**, scegli **Carnet ginnastica 5 lezioni** e la scheda **Utilizzo**. Premi **Assegna carnet**, cerca Giulia in **Associa carnet a**, seleziona **Giulia Bianchi** e premi **Assegna**.
+<Frame>![Persona scelta per l’assegnazione del carnet](/images/registro-presenze/carnet-manuale/6.png)</Frame>
+</Step>
+<Step title="Controlla saldo e pagamento creati">
+Nella riga della persona compaiono **5/5** lezioni. L’assegnazione crea un pagamento di **50,00 €**, inizialmente in attesa. Una riga senza collegamenti mostra **Valido per tutti i corsi**; collegarla al corso permette di limitarne l’uso.
+<Frame>![Cinque lezioni disponibili dopo l’assegnazione](/images/registro-presenze/carnet-manuale/7.png)</Frame>
+</Step>
+<Step title="Incassa la quota del carnet">
+Apri **Pagamenti** e individua il pagamento di **50,00 €** intestato a Giulia. Premi **Segna come pagato**. In **Incassare il pagamento?** imposta **Data Incasso** e premi **Incassa**. Nell’esempio togli **Genera ricevuta** e mantieni **Invia email** disattivato: non si produce subito un PDF e non viene inviato un messaggio.
+<Frame>![Incasso della quota carnet con PDF ed email disattivati](/images/registro-presenze/carnet-manuale/10.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Un collaboratore in sola lettura può consultare corso, carnet e presenze. Per crearli, assegnarli o modificarli servono i permessi della singola operazione. Il registro non richiede un abbonamento alla piattaforma.</Note>
+
+### Assegnare un corso ad un carnet
+
+Usa il collegamento per limitare l’assegnazione a un corso già frequentato. L’assegnazione del carnet alla persona deve esistere prima di questo passaggio.
+
+<Steps>
+<Step title="Verifica l’iscrizione al corso">
+Apri **Attività → Corsi e Abbonamenti → Ginnastica per tutti → Iscritti al corso**. Se Giulia non è iscritta, premi **Aggiungi tesserato**, cerca **Giulia**, seleziona **GIULIA BIANCHI (Anno corrente)** e premi **Aggiungi**. Controlla la riga dopo il ricaricamento. Il corso dell’esempio genera anche la propria quota di **120,00 €**, ancora da incassare.
+<Frame>![Tesserato selezionato per l’iscrizione al corso](/images/registro-presenze/carnet-manuale/1.png)</Frame>
+<Frame>![Iscrizione al corso conservata dopo il ricaricamento](/images/registro-presenze/carnet-manuale/2.png)</Frame>
+</Step>
+<Step title="Collega il corso già frequentato">
+Nella riga di Giulia premi **collega corso**. Nella finestra **Assegna carnet ad un corso** seleziona **Ginnastica per tutti** e premi **Assegna carnet**. La lista propone i corsi a cui la persona è già iscritta: il collegamento non iscrive un atleta a un corso nuovo.
+<Frame>![Corso selezionato per il collegamento](/images/registro-presenze/carnet-manuale/8.png)</Frame>
+</Step>
+<Step title="Verifica il collegamento salvato">
+Ricarica **Utilizzo**: la colonna **Corsi** mostra **Ginnastica per tutti**, mentre il saldo resta **5/5**. Collegare questa assegnazione non crea un secondo pagamento.
+<Frame>![Corso collegato e saldo conservato](/images/registro-presenze/carnet-manuale/9.png)</Frame>
+</Step>
+</Steps>
+
+## Ricaricare un carnet
+
+La ricarica riusa lo stesso pacchetto per la stessa persona e crea un’assegnazione nuova. Puoi eseguirla anche se la riga precedente ha lezioni disponibili: prima di confermare evita duplicazioni involontarie. Occorre il permesso di modifica dei carnet.
+
+<Steps>
+<Step title="Scegli l’assegnazione da ricaricare">
+Apri **Attività → Carnet**, scegli il pacchetto e **Utilizzo**. Trova la persona, controlla saldo e corso collegato, poi premi **Ricarica carnet**, il pulsante con la freccia circolare.
+</Step>
+<Step title="Controlla la conferma o annulla">
+La finestra chiede se vuoi riassegnare un nuovo carnet con le stesse impostazioni alla persona mostrata. Ricontrolla nome e cognome. **Annulla** conserva la riga e non genera un pagamento.
+<Frame>![Conferma di ricarica con nome della persona](/images/registro-presenze/carnet-manutenzione/7.png)</Frame>
+<Frame>![Elenco dopo l’annullamento](/images/registro-presenze/carnet-manutenzione/8.png)</Frame>
+</Step>
+<Step title="Conferma la nuova assegnazione">
+Premi **Ricarica** soltanto quando vuoi un’altra assegnazione. Il salvataggio ricarica la pagina: il pacchetto dell’esempio aggiunge una nuova riga con **5/5**, conservando quella precedente e copiando il collegamento a **Ginnastica per tutti**.
+<Frame>![Conferma della nuova assegnazione](/images/registro-presenze/carnet-manutenzione/9.png)</Frame>
+<Frame>![Riga precedente e nuova assegnazione distinte](/images/registro-presenze/carnet-manutenzione/10.png)</Frame>
+</Step>
+<Step title="Controlla il nuovo pagamento">
+La nuova assegnazione crea un nuovo pagamento di **50,00 €**, inizialmente da incassare. Controlla la quota in **Pagamenti** prima di usare il nuovo pacchetto; il pagamento della riga precedente resta distinto. La ricarica non aggiunge cinque lezioni al contatore della vecchia riga.
+</Step>
+</Steps>
+
+<Note>La priorità di consumo tra più carnet richiede un esempio separato. Questo percorso controlla la ricarica e i suoi record, senza registrare presenze quando entrambe le assegnazioni sono disponibili.</Note>
+
+## Riepilogo delle regole di funzionamento
+
+Un **carnet in catalogo**, la sua **assegnazione a una persona** e l’**iscrizione al corso** sono dati distinti. Anche il pagamento della quota del corso e quello del carnet restano separati.
+
+| Operazione | Regola dell’applicazione | Guida da consultare |
+| --- | --- | --- |
+| Creare un pacchetto senza assegnazioni | Non crea il pagamento del carnet di una persona | [Creare e gestire](/docs/carnet#creare-e-gestire-un-carnet) |
+| Assegnare il pacchetto | Crea una nuova assegnazione e il suo pagamento | [Assegnazione](/docs/carnet#assegnare-un-carnet-ad-un-atleta) |
+| Collegare un corso già frequentato | Limita l’assegnazione al corso senza creare un secondo pagamento | [Collegare il corso](/docs/carnet#assegnare-un-corso-ad-un-carnet) |
+| Segnare una presenza manuale | Cerca un carnet attivo con lezioni disponibili; quello scelto deve risultare pagato | [Scalamento e casi particolari](/docs/registro-presenze#casi-particolari-con-i-carnet) |
+| Correggere la stessa presenza | Rimuove l’utilizzo corrispondente e restituisce la lezione | [Restituzione](/docs/registro-presenze#restituzione-alla-rimozione) |
+| Ricaricare | Aggiunge un’assegnazione con un nuovo pagamento e copia i collegamenti; conserva la riga precedente | [Ricaricare un carnet](/docs/carnet#ricaricare-un-carnet) |
+| Modificare le lezioni residue | Corregge il saldo fra zero e il totale; non ricostruisce le partecipazioni | [Saldo manuale](/tutorials/come-gestire-registro-presenze-carnet#modificare-le-lezioni-rimanenti) |
+| Eliminare una data dal registro | Rimuove la data; non esegue la correzione dell’interruttore della presenza | [Eliminare una lezione](/docs/registro-presenze#eliminare-una-lezione-dal-registro) |
+
+<Note>Le presenze automatiche, i carnet concorrenti e le assenze previste hanno regole proprie. Consulta le sezioni dedicate prima di applicare il caso semplice con un solo carnet. La modifica del saldo, la restituzione di una lezione e l’annullamento di un incasso sono operazioni diverse.</Note>
+
+## Risorse correlate
+
+<CardGroup cols={2}>
+<Card title="Corsi" icon="users" href="/docs/corsi">Persone iscritte e calendario delle lezioni.</Card>
+<Card title="Registro presenze" icon="list-check" href="/docs/registro-presenze">Presenze manuali, correzioni e regole dei carnet.</Card>
+<Card title="Registro e carnet: tutorial" icon="ticket" href="/tutorials/come-gestire-registro-presenze-carnet">Percorso dall’assegnazione del carnet alla registrazione delle lezioni.</Card>
+<Card title="Pagamenti" icon="wallet" href="/docs/pagamenti">Quote, stato del pagamento e incasso.</Card>
+</CardGroup>
+
