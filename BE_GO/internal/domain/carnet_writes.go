@@ -75,3 +75,19 @@ type CarnetUnassignTransaction interface {
 type CarnetUnassignStore interface {
 	BeginCarnetUnassign(context.Context) (CarnetUnassignTransaction, error)
 }
+
+// ErrCarnetSubscriptionNotFound is {'msg': 'Carnet subscription not found.'}.
+var ErrCarnetSubscriptionNotFound = errors.New("carnet subscription not found")
+
+type CarnetToggleTransaction interface {
+	// HoldingForToggle locks the owner's carnet subscription and returns its
+	// flag and subscription association.
+	HoldingForToggle(ctx context.Context, holding, owner string, scope *string) (disabled bool, association string, err error)
+	SetHoldingDisabled(ctx context.Context, holding string, disabled bool, association string, audit LoginAuditContext, at time.Time, changed bool) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetToggleStore interface {
+	BeginCarnetToggle(context.Context) (CarnetToggleTransaction, error)
+}

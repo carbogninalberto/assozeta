@@ -5,6 +5,7 @@ import (
 	"errors"
 	"mime"
 	"net/http"
+	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -25,7 +26,12 @@ type CarnetUnassignService interface {
 	Unassign(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
 }
 
+type CarnetToggleService interface {
+	Toggle(context.Context, domain.ResolvedIdentity, string, bool, domain.LoginAuditContext) error
+}
+
 type CarnetWritesHandler struct {
+	toggles    CarnetToggleService
 	deletes    CarnetDeleteService
 	updates    CarnetUpdateService
 	unassigns  CarnetUnassignService
@@ -35,8 +41,8 @@ type CarnetWritesHandler struct {
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewCarnetWritesHandler(deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
+func NewCarnetWritesHandler(toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -169,3 +175,47 @@ func (h *CarnetWritesHandler) Unassign(c echo.Context) error {
 }
 
 var errCarnetAnonymous = errors.New("anonymous user has no role")
+
+func (h *CarnetWritesHandler) Disable(c echo.Context) error { return h.toggle(c, true) }
+func (h *CarnetWritesHandler) Enable(c echo.Context) error  { return h.toggle(c, false) }
+
+func (h *CarnetWritesHandler) toggle(c echo.Context, disabled bool) error {
+	action, word := "enable", "enabled"
+	if disabled {
+		action, word = "disable", "disabled"
+	}
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPatch, "carnet_subscription_"+action)
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Subscription "+strings.ToUpper(action[:1])+action[1:], "Set carnet subscription to "+word)
+	}
+	if request.Method != http.MethodPatch {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	err = h.toggles.Toggle(ctx, *identity, c.Param("uid"), disabled, audit)
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetSubscriptionNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet subscription not found."})
+	case err != nil:
+		return restError(c, err)
+	}
+	return c.JSON(200, map[string]string{"msg": "Carnet subscription " + word + "."})
+}

@@ -63,3 +63,13 @@ render as `['None', 'None']` in delete entries, like null foreign keys
 
 `TESTS/fixtures/carnet_unassign_http.json` authors 15 cases; the payment entry
 is checked by selected values and must be identical across backends.
+
+## Carnet subscription enable/disable
+
+`PATCH carnet-subscription/<uid>/enable` and `/disable` refuse non-association
+roles, then `CarnetSubscription.get(carnet_subscription_id=uid,
+subscription__sport_association__user=request.user)` (404 `Carnet subscription
+not found.`; a non-UUID is a 500) and save `disabled`. auditlog records the flag
+only when it changes, indexed through `subscription.sport_association` (the row
+still resolves). `TESTS/fixtures/carnet_subscription_toggle_http.json` authors
+27 cases; auditing an unchanged save fails the repeat case.

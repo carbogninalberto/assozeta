@@ -4397,25 +4397,68 @@
         "target": "carnet_subscription_disable",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnetsubscription, application_subscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/<uid>/disable",
+          "/api/v2/carnet-subscription/<uid>/disable",
+          "/api/carnet-subscription/<uid>/disable"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"Carnet subscription disabled.\"}.",
+        "errors": "401; 403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet subscription not found.; 500 non-UUID.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "A carnet subscription of the scope user's subscriptions.",
+        "side_effects": "Sets disabled; one auditlog update entry when it changes.",
+        "transaction": "One transaction (Django autocommit save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_toggle_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_toggle_http.py",
+        "TESTS/contracts/test_carnet_subscription_toggle_http.py",
+        "TESTS/adapters/django/carnet_subscription_toggle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27; Go without the routes on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-red-r1/results.json",
+          "receipt_sha256": "f1ff714fda476b5355883fe7dc1ee73d37456249a498d1cf12bd52259849c160"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-versioned-r1/results.json",
+          "receipt_sha256": "793ae17dc59aaf1890d42697b9a23251c2a89d29bf1bc173e6744934c6c2c560"
+        },
+        {
+          "revision": "committing change auditing unchanged saves",
+          "result": "Mutation control: fails Go on the repeat case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-mutation-r1/results.json",
+          "receipt_sha256": "f758dd690e45e3ea871563d8097693590290b3c719acfbb13efce8b4221b690d"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the audited save on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/<str:uid>/enable -> carnet_subscription_enable",
@@ -4432,25 +4475,68 @@
         "target": "carnet_subscription_enable",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnetsubscription, application_subscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/<uid>/enable",
+          "/api/v2/carnet-subscription/<uid>/enable",
+          "/api/carnet-subscription/<uid>/enable"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"Carnet subscription enabled.\"}.",
+        "errors": "401; 403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet subscription not found.; 500 non-UUID.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "A carnet subscription of the scope user's subscriptions.",
+        "side_effects": "Sets disabled; one auditlog update entry when it changes.",
+        "transaction": "One transaction (Django autocommit save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_toggle_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_toggle_http.py",
+        "TESTS/contracts/test_carnet_subscription_toggle_http.py",
+        "TESTS/adapters/django/carnet_subscription_toggle_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27; Go without the routes on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-red-r1/results.json",
+          "receipt_sha256": "f1ff714fda476b5355883fe7dc1ee73d37456249a498d1cf12bd52259849c160"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-versioned-r1/results.json",
+          "receipt_sha256": "793ae17dc59aaf1890d42697b9a23251c2a89d29bf1bc173e6744934c6c2c560"
+        },
+        {
+          "revision": "committing change auditing unchanged saves",
+          "result": "Mutation control: fails Go on the repeat case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-toggle-http-mutation-r1/results.json",
+          "receipt_sha256": "f758dd690e45e3ea871563d8097693590290b3c719acfbb13efce8b4221b690d"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the audited save on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/<str:uid>/topup -> carnet_subscription_topup",

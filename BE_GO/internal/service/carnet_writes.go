@@ -144,3 +144,37 @@ func (s *CarnetUnassigns) Unassign(ctx context.Context, identity domain.Resolved
 	}
 	return tx.Commit()
 }
+
+type CarnetToggles struct {
+	store domain.CarnetToggleStore
+	now   func() time.Time
+}
+
+func NewCarnetToggles(store domain.CarnetToggleStore, now func() time.Time) *CarnetToggles {
+	return &CarnetToggles{store: store, now: now}
+}
+
+// Toggle follows carnet_subscription_enable/disable.
+func (s *CarnetToggles) Toggle(ctx context.Context, identity domain.ResolvedIdentity, raw string, disabled bool, audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	tx, err := s.store.BeginCarnetToggle(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	current, association, err := tx.HoldingForToggle(ctx, id.String(), identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return err
+	}
+	if err = tx.SetHoldingDisabled(ctx, id.String(), disabled, association, paymentCategoryAuditContext(identity, audit),
+		s.now().UTC().Truncate(time.Microsecond), current != disabled); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

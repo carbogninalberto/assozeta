@@ -212,3 +212,49 @@ func (t *carnetWriteTransaction) DeleteHolding(ctx context.Context, holding stri
 	}
 	return appendModelAudit(ctx, t.tx, entry)
 }
+
+var _ domain.CarnetToggleStore = (*CarnetWrites)(nil)
+
+func (r *CarnetWrites) BeginCarnetToggle(ctx context.Context) (domain.CarnetToggleTransaction, error) {
+	tx, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) HoldingForToggle(ctx context.Context, holding, owner string, scope *string) (bool, string, error) {
+	var row struct {
+		Disabled    bool   `db:"disabled"`
+		Association string `db:"sport_association_id"`
+	}
+	err := t.tx.GetContext(ctx, &row, `SELECT h.disabled, s.sport_association_id FROM application_carnetsubscription h
+ JOIN application_subscription s ON s.subscription_id=h.subscription_id
+ JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id
+ LEFT JOIN application_carnet c ON c.carnet_id=h.carnet_id_id
+ WHERE h.carnet_subscription_id=$1 AND sa.user_id=$2
+  AND ($3::uuid IS NULL OR (s.sport_association_id=$3::uuid AND c.sport_association_id=$3::uuid)) FOR UPDATE OF h`, holding, owner, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, "", domain.ErrCarnetSubscriptionNotFound
+	}
+	return row.Disabled, row.Association, err
+}
+
+// SetHoldingDisabled saves the flag; a change is audited and indexed through
+// the subscription's association (carnet_subscription_resolver).
+func (t *carnetWriteTransaction) SetHoldingDisabled(ctx context.Context, holding string, disabled bool, association string, audit domain.LoginAuditContext, at time.Time, changed bool) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_carnetsubscription SET disabled=$2 WHERE carnet_subscription_id=$1`, holding, disabled); err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+	old, updated := "False", "True"
+	if !disabled {
+		old, updated = "True", "False"
+	}
+	path := "subscription.sport_association"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnetsubscription", Key: holding,
+		Representation: "CarnetSubscription object (" + holding + ")", Action: 1, Changes: map[string][2]string{"disabled": {old, updated}},
+		Context: audit, AssociationID: &association, ResolutionPath: &path, At: at})
+}
