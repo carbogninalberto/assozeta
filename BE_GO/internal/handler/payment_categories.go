@@ -366,6 +366,45 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return model + " with this " + field + " already exists."
 		}
 		return model + " con questo " + field + " esiste già."
+	case code == dto.DRFValidationInteger:
+		if english {
+			return "A valid integer is required."
+		}
+		return "È richiesto un numero intero valido."
+	case code == dto.DRFValidationNumber:
+		if english {
+			return "A valid number is required."
+		}
+		return "È richiesto un numero valido."
+	case code == dto.DRFValidationMaxStringLength:
+		if english {
+			return "String value too large."
+		}
+		return "Stringa troppo lunga."
+	case strings.HasPrefix(code, "min-value:"):
+		limit := strings.TrimPrefix(code, "min-value:")
+		if english {
+			return "Ensure this value is greater than or equal to " + limit + "."
+		}
+		return "Assicurati che il valore sia maggiore o uguale a " + limit + "."
+	case strings.HasPrefix(code, "max-digits:"):
+		limit := strings.TrimPrefix(code, "max-digits:")
+		if english {
+			return "Ensure that there are no more than " + limit + " digits in total."
+		}
+		return "Assicurati che non ci siano più di " + limit + " cifre in totale."
+	case strings.HasPrefix(code, "max-decimal-places:"):
+		limit := strings.TrimPrefix(code, "max-decimal-places:")
+		if english {
+			return "Ensure that there are no more than " + limit + " decimal places."
+		}
+		return "Assicurati che non ci siano più di " + limit + " cifre decimali."
+	case strings.HasPrefix(code, "max-whole-digits:"):
+		limit := strings.TrimPrefix(code, "max-whole-digits:")
+		if english {
+			return "Ensure that there are no more than " + limit + " digits before the decimal point."
+		}
+		return "Assicurati che non ci siano più di " + limit + " cifre prima del separatore decimale."
 	case strings.HasPrefix(code, "max:"):
 		limit := strings.TrimPrefix(code, "max:")
 		if english {

@@ -21,3 +21,33 @@ type CarnetWriteTransaction interface {
 	Commit() error
 	Rollback() error
 }
+
+// CarnetEditable is a locked carnet's stored update fields.
+type CarnetEditable struct {
+	AssociationID string  `db:"sport_association_id"`
+	Title         *string `db:"title"`
+	Description   *string `db:"description"`
+	Lessons       int64   `db:"lessons_number"`
+	Fee           string  `db:"fee"`
+	Public        bool    `db:"public"`
+}
+
+type CarnetUpdateWrite struct {
+	ID, Title, Description, Fee string
+	Lessons                     int64
+	Public                      bool
+	Changes                     map[string][2]string
+	Context                     LoginAuditContext
+	At                          time.Time
+}
+
+type CarnetUpdateTransaction interface {
+	CarnetForEdit(ctx context.Context, id, owner string, scope *string) (CarnetEditable, error)
+	UpdateCarnet(ctx context.Context, write CarnetUpdateWrite, association string) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetUpdateStore interface {
+	BeginCarnetUpdate(context.Context) (CarnetUpdateTransaction, error)
+}

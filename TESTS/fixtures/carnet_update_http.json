@@ -1,0 +1,936 @@
+{
+ "matrix_version": 1,
+ "scope": "Carnet update authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "carnets": {
+  "c1": {
+   "id": "a1000000-0000-4000-8000-000000880001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Carnet è",
+   "description": "10 ingressi",
+   "lessons": 10,
+   "fee": "50.00",
+   "public": true,
+   "meta": {
+    "b": [
+     1,
+     2.5
+    ],
+    "a": null
+   },
+   "created": "2026-09-01T08:00:00.250000Z"
+  },
+  "c2": {
+   "id": "a1000000-0000-4000-8000-000000880002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "description": null,
+   "lessons": 0,
+   "fee": "0.00",
+   "public": false,
+   "meta": null,
+   "created": "2026-09-02T08:00:00Z"
+  },
+  "cf": {
+   "id": "a1000000-0000-4000-8000-000000880003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "description": "",
+   "lessons": 5,
+   "fee": "7.50",
+   "public": true,
+   "meta": {},
+   "created": "2026-09-03T08:00:00Z"
+  }
+ },
+ "associates": {
+  "mine": {
+   "id": "a1000000-0000-4000-8000-000000880004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "first_name": "Atleta è",
+   "last_name": "Rossi",
+   "born_date": "1990-05-05",
+   "email": "atleta@example.test",
+   "sex": "F",
+   "tax_code": "RSSTLT90E45H501X",
+   "address": "Via 1",
+   "address_cap": "00100",
+   "address_city": "Roma",
+   "born_city": "Roma",
+   "is_minor": false,
+   "phone": "+39 1",
+   "family_role": "madre"
+  },
+  "child": {
+   "id": "a1000000-0000-4000-8000-000000880005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "first_name": "Figlio",
+   "last_name": "Rossi",
+   "born_date": null,
+   "email": null,
+   "sex": "M",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": true,
+   "phone": null,
+   "family_role": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000880006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "athlete",
+   "first_name": "Atleta",
+   "last_name": "Estero",
+   "born_date": "1991-01-01",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000880007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": null,
+   "first_name": "Altro",
+   "last_name": "Socio",
+   "born_date": null,
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  }
+ },
+ "subscriptions": {
+  "current": {
+   "id": "a1000000-0000-4000-8000-000000880008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "associate": "mine",
+   "start": "2000-01-01",
+   "end": "2099-12-31",
+   "year": "corrente"
+  },
+  "family_next": {
+   "id": "a1000000-0000-4000-8000-000000880009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "child",
+   "start": "2098-01-01",
+   "end": "2099-01-01",
+   "year": "successivo"
+  },
+  "abroad_past": {
+   "id": "a1000000-0000-4000-8000-000000880010",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "athlete",
+   "associate": "abroad",
+   "start": "2000-01-01",
+   "end": "2001-01-01",
+   "year": "precedente"
+  },
+  "other_open": {
+   "id": "a1000000-0000-4000-8000-000000880011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "other",
+   "start": null,
+   "end": null,
+   "year": "corrente"
+  }
+ },
+ "courses": {
+  "swim": {
+   "id": "a1000000-0000-4000-8000-000000880012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Nuoto è"
+  }
+ },
+ "course_subscriptions": {
+  "active": {
+   "id": "a1000000-0000-4000-8000-000000880013",
+   "course": "swim",
+   "subscription": "current",
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000880014",
+   "course": "swim",
+   "subscription": "current",
+   "deleted": true
+  }
+ },
+ "payments": {
+  "p1": {
+   "id": "a1000000-0000-4000-8000-000000880015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "50.00"
+  }
+ },
+ "carnet_subscriptions": {
+  "held": {
+   "id": "a1000000-0000-4000-8000-000000880016",
+   "carnet": "c1",
+   "user": "athlete",
+   "subscription": "current",
+   "courses": [
+    "active",
+    "deleted"
+   ],
+   "payment": "p1",
+   "disabled": false,
+   "meta": {
+    "lessons_left": 9,
+    "lessons_registry": [
+     "x"
+    ]
+   },
+   "created": "2026-10-03T09:30:00.125000Z"
+  },
+  "family": {
+   "id": "a1000000-0000-4000-8000-000000880017",
+   "carnet": "c1",
+   "user": null,
+   "subscription": "family_next",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": null,
+   "created": "2026-10-02T09:30:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000880018",
+   "carnet": "cf",
+   "user": "athlete",
+   "subscription": "abroad_past",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": {},
+   "created": "2026-10-04T09:30:00Z"
+  },
+  "detached": {
+   "id": "a1000000-0000-4000-8000-000000880019",
+   "carnet": "c2",
+   "user": "athlete",
+   "subscription": null,
+   "courses": [],
+   "payment": null,
+   "disabled": true,
+   "meta": {
+    "lessons_left": 0
+   },
+   "created": "2026-10-01T09:30:00Z"
+  },
+  "someone_else": {
+   "id": "a1000000-0000-4000-8000-000000880020",
+   "carnet": "c2",
+   "user": "owner",
+   "subscription": "other_open",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": null,
+   "created": "2026-10-05T09:30:00Z"
+  }
+ },
+ "cases": [
+  {
+   "name": "carnet-update-missing-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "title": [
+      "This field is required."
+     ],
+     "description": [
+      "This field is required."
+     ],
+     "lessons_number": [
+      "This field is required."
+     ],
+     "fee": [
+      "This field is required."
+     ],
+     "public": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "carnet-update-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "non_field_errors": [
+      "Invalid data. Expected a dictionary, but got list."
+     ]
+    }
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "carnet-update-blank-and-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "title": [
+      "This field may not be blank."
+     ],
+     "description": [
+      "This field may not be null."
+     ],
+     "public": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "   ",
+    "description": null,
+    "lessons_number": 20,
+    "fee": 75,
+    "public": null
+   }
+  },
+  {
+   "name": "carnet-update-too-long",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "title": [
+      "Ensure this field has no more than 255 characters."
+     ],
+     "description": [
+      "Ensure this field has no more than 1024 characters."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "description": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-lessons-below-minimum",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "lessons_number": [
+      "Ensure this value is greater than or equal to 1."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 0,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-lessons-fraction",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "lessons_number": [
+      "A valid integer is required."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 1.5,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-lessons-boolean",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "lessons_number": [
+      "A valid integer is required."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": true,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-negative",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "fee": [
+      "Ensure this value is greater than or equal to 0.0."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": -1,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-places",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "fee": [
+      "Ensure that there are no more than 2 decimal places."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 1.234,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-whole-digits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "fee": [
+      "Ensure that there are no more than 7 digits before the decimal point."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 12345678,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-total-digits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "fee": [
+      "Ensure that there are no more than 9 digits in total."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": "1234567.891",
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-fee-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "fee": [
+      "A valid number is required."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": "abc",
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-public-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "public": [
+      "Must be a valid boolean."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": "maybe"
+   }
+  },
+  {
+   "name": "carnet-update-invalid-before-lookup-on-malformed-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": {
+     "title": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880003/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Carnet not found."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-missing-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000720009/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Carnet not found."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-malformed-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/abc/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-athlete-not-allowed",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "Not allowed."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.carnet.update"
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": 75,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Carnet Update",
+    "description": "Update a carnet",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-update-owner-updates",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet updated successfully."
+   },
+   "effect": {
+    "carnet": "c1",
+    "values": {
+     "title": "Nuovo è",
+     "description": "Dieci ingressi",
+     "lessons_number": 20,
+     "fee": "1.00",
+     "public": false
+    },
+    "changes": {
+     "title": [
+      "Carnet è",
+      "Nuovo è"
+     ],
+     "description": [
+      "10 ingressi",
+      "Dieci ingressi"
+     ],
+     "lessons_number": [
+      "10",
+      "20"
+     ],
+     "fee": [
+      "50.00",
+      "1.00"
+     ],
+     "public": [
+      "True",
+      "False"
+     ]
+    },
+    "actor": "owner"
+   },
+   "body": {
+    "title": "  Nuovo è  ",
+    "description": "Dieci ingressi",
+    "lessons_number": "20.0",
+    "fee": 1.0,
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-same-values-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet updated successfully."
+   },
+   "effect": {
+    "carnet": "c1",
+    "values": {
+     "title": "Nuovo è",
+     "description": "Dieci ingressi",
+     "lessons_number": 20,
+     "fee": "1.00",
+     "public": false
+    },
+    "changes": null,
+    "actor": "owner"
+   },
+   "body": {
+    "title": "Nuovo è",
+    "description": "Dieci ingressi",
+    "lessons_number": 20,
+    "fee": "1",
+    "public": false
+   }
+  },
+  {
+   "name": "carnet-update-full-collaborator-form-update",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet updated successfully."
+   },
+   "effect": {
+    "carnet": "c2",
+    "values": {
+     "title": "Form",
+     "description": "Da form",
+     "lessons_number": 3,
+     "fee": "12.50",
+     "public": true
+    },
+    "changes": {
+     "title": [
+      "None",
+      "Form"
+     ],
+     "description": [
+      "None",
+      "Da form"
+     ],
+     "lessons_number": [
+      "0",
+      "3"
+     ],
+     "fee": [
+      "0.00",
+      "12.50"
+     ],
+     "public": [
+      "False",
+      "True"
+     ]
+    },
+    "actor": "full_collaborator"
+   },
+   "raw_body": "title=Form&description=Da+form&lessons_number=3&fee=12.5&public=true",
+   "content_type": "application/x-www-form-urlencoded"
+  }
+ ]
+}

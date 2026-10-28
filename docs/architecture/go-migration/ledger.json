@@ -4833,25 +4833,74 @@
         "target": "carnet_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/dto/carnet_update.go",
+        "BE_GO/internal/dto/drf_numeric.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "PR #28 association scoping",
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnet"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/update",
+          "/api/v2/carnet/<uid>/update",
+          "/api/carnet/<uid>/update"
+        ],
+        "request": "JSON/form: title, description, lessons_number, fee, public (all required).",
+        "response": "200 {\"msg\": \"Carnet updated successfully.\"}.",
+        "errors": "400 {\"msg\": serializer errors}; 401; 403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet not found.; 500 non-UUID.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "A carnet of the scope user's association.",
+        "side_effects": "Updates the carnet; one auditlog update entry with changed fields (direct index).",
+        "transaction": "One transaction (Django autocommit save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_update_http.json",
+        "TESTS/fixtures/generate_carnet_update_http.py",
+        "TESTS/contracts/test_carnet_update_http.py",
+        "TESTS/adapters/django/carnet_update_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/drf_numeric_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-update-http-red-r1/results.json",
+          "receipt_sha256": "9cf84b11bfba8af497393e18a47603ae86ce1723b0ce4a9cc438fe5c4a639814"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-update-http-versioned-r1/results.json",
+          "receipt_sha256": "6fc851b52d11e570bbef73aa170df7bfcb852efee7ee44c9c5e4d2aef6366d46"
+        },
+        {
+          "revision": "committing change without the fee audit diff",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/carnet-update-http-mutation-r1/results.json",
+          "receipt_sha256": "2e11273a31012d0b6620bedb6af329e4324efb76fd11e0a8bdc2becba35e9efd"
+        }
+      ],
+      "notes": [
+        "Implementing: parity with the PR #28 contract including DRF validation and the audited save on four transports; Go updates the serializer columns, not the full row."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/add -> carnet_add",

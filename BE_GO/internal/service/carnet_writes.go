@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 type CarnetDeletes struct {
@@ -41,6 +43,57 @@ func (s *CarnetDeletes) Delete(ctx context.Context, identity domain.ResolvedIden
 	}
 	if err = tx.DeleteCarnet(ctx, id.String(), association, actorAssociation, paymentCategoryAuditContext(identity, audit),
 		s.now().UTC().Truncate(time.Microsecond)); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+type CarnetUpdates struct {
+	store domain.CarnetUpdateStore
+	now   func() time.Time
+}
+
+func NewCarnetUpdates(store domain.CarnetUpdateStore, now func() time.Time) *CarnetUpdates {
+	return &CarnetUpdates{store: store, now: now}
+}
+
+// Update follows the scoped carnet_update: association role, serializer
+// validation before the lookup, the owned carnet and its audited save.
+func (s *CarnetUpdates) Update(ctx context.Context, identity domain.ResolvedIdentity, raw string, body any, form bool, audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	input, err := dto.ParseCarnetUpdate(body, form)
+	if err != nil {
+		return err
+	}
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	tx, err := s.store.BeginCarnetUpdate(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	row, err := tx.CarnetForEdit(ctx, id.String(), identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return err
+	}
+	changes := map[string][2]string{}
+	diff := func(name, old, updated string) {
+		if old != updated {
+			changes[name] = [2]string{old, updated}
+		}
+	}
+	diff("title", pythonOptional(row.Title), input.Title)
+	diff("description", pythonOptional(row.Description), input.Description)
+	diff("lessons_number", strconv.FormatInt(row.Lessons, 10), strconv.FormatInt(input.Lessons, 10))
+	diff("fee", row.Fee, input.Fee)
+	diff("public", pythonBool(row.Public), pythonBool(input.Public))
+	write := domain.CarnetUpdateWrite{ID: id.String(), Title: input.Title, Description: input.Description, Fee: input.Fee, Lessons: input.Lessons,
+		Public: input.Public, Changes: changes, Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
+	if err = tx.UpdateCarnet(ctx, write, row.AssociationID); err != nil {
 		return err
 	}
 	return tx.Commit()

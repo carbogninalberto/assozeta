@@ -76,3 +76,39 @@ func (t *carnetWriteTransaction) DeleteCarnet(ctx context.Context, id, associati
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnet", Key: id, Representation: "Carnet object (" + id + ")",
 		Action: 2, Changes: changes, Context: audit, AssociationID: &association, ResolutionPath: &path, At: at})
 }
+
+var _ domain.CarnetUpdateStore = (*CarnetWrites)(nil)
+
+func (r *CarnetWrites) BeginCarnetUpdate(ctx context.Context) (domain.CarnetUpdateTransaction, error) {
+	tx, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) CarnetForEdit(ctx context.Context, id, owner string, scope *string) (domain.CarnetEditable, error) {
+	var row domain.CarnetEditable
+	err := t.tx.GetContext(ctx, &row, `SELECT c.sport_association_id, c.title, c.description, c.lessons_number, c.fee::text AS fee, c.public
+ FROM application_carnet c JOIN application_sportassociation sa ON sa.sport_association_id=c.sport_association_id
+ WHERE c.carnet_id=$1 AND sa.user_id=$2 AND ($3::uuid IS NULL OR c.sport_association_id=$3::uuid) FOR UPDATE OF c`, id, owner, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return row, domain.ErrCarnetNotFound
+	}
+	return row, err
+}
+
+// UpdateCarnet writes the serializer's fields and, when auditlog would log
+// changes, one update entry indexed directly to the carnet's association.
+func (t *carnetWriteTransaction) UpdateCarnet(ctx context.Context, write domain.CarnetUpdateWrite, association string) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_carnet SET title=$2, description=$3, fee=$4::numeric, lessons_number=$5, public=$6
+ WHERE carnet_id=$1`, write.ID, write.Title, write.Description, write.Fee, write.Lessons, write.Public); err != nil {
+		return err
+	}
+	if len(write.Changes) == 0 {
+		return nil
+	}
+	path := "direct"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnet", Key: write.ID, Representation: "Carnet object (" + write.ID + ")",
+		Action: 1, Changes: write.Changes, Context: write.Context, AssociationID: &association, ResolutionPath: &path, At: write.At})
+}
