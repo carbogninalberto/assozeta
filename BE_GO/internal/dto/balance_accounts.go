@@ -83,3 +83,15 @@ func BalanceTransferItemFrom(row domain.BalanceTransfer) BalanceTransferItem {
 	return BalanceTransferItem{ID: row.ID, From: balanceTransferAccount(row.From), To: balanceTransferAccount(row.To), Amount: row.Amount,
 		Date: DRFUTCDateTime(row.Date), AssociationID: row.AssociationID}
 }
+
+// BalanceSheetItem is one entry of balance_sheet_archived.
+type BalanceSheetItem struct {
+	Data         json.RawMessage `json:"data"`
+	CreationDate string          `json:"creation_date"`
+	Year         int             `json:"year"`
+	Draft        bool            `json:"draft"`
+}
+
+func BalanceSheetItemFrom(row domain.BalanceSheetRow) BalanceSheetItem {
+	return BalanceSheetItem{Data: rawJSON(row.Data), CreationDate: DRFUTCDateTime(row.CreationDate), Year: row.Year, Draft: row.StatusFlag == 1}
+}

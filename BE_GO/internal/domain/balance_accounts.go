@@ -44,3 +44,17 @@ type BalanceAccountStore interface {
 	Accounts(ctx context.Context, association string, group *string, ordered bool) ([]BalanceAccount, error)
 	Transfers(ctx context.Context, association string) ([]BalanceTransfer, error)
 }
+
+// BalanceSheetRow is one non-archived balance sheet; Data is the jsonb text.
+type BalanceSheetRow struct {
+	Data         *string   `db:"data"`
+	CreationDate time.Time `db:"creation_date"`
+	Year         int       `db:"year"`
+	StatusFlag   int       `db:"status_flag"`
+}
+
+type BalanceSheetStore interface {
+	OwnerAssociation(ctx context.Context, owner string) (string, error)
+	// OpenSheets lists archived=False sheets, newest first.
+	OpenSheets(ctx context.Context, association string) ([]BalanceSheetRow, error)
+}

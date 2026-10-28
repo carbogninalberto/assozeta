@@ -15,14 +15,19 @@ type BalanceAccountService interface {
 	Transfers(context.Context, domain.ResolvedIdentity) (map[string]any, error)
 }
 
+type BalanceSheetService interface {
+	Archived(context.Context, domain.ResolvedIdentity) (map[string]any, error)
+}
+
 type BalanceAccountsHandler struct {
 	accounts   BalanceAccountService
+	sheets     BalanceSheetService
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 }
 
-func NewBalanceAccountsHandler(accounts BalanceAccountService, actors *service.ActorAuthentication, identities *service.IdentityResolver) *BalanceAccountsHandler {
-	return &BalanceAccountsHandler{accounts: accounts, actors: actors, identities: identities}
+func NewBalanceAccountsHandler(accounts BalanceAccountService, sheets BalanceSheetService, actors *service.ActorAuthentication, identities *service.IdentityResolver) *BalanceAccountsHandler {
+	return &BalanceAccountsHandler{accounts: accounts, sheets: sheets, actors: actors, identities: identities}
 }
 
 func (h *BalanceAccountsHandler) serve(c echo.Context, operation, name string, read func(*http.Request, domain.ResolvedIdentity) (map[string]any, error)) error {
@@ -60,5 +65,11 @@ func (h *BalanceAccountsHandler) Accounts(c echo.Context) error {
 func (h *BalanceAccountsHandler) Transfers(c echo.Context) error {
 	return h.serve(c, "balance_sheet_accounts_transfer_list", "Balance Sheet Accounts Transfer List", func(request *http.Request, identity domain.ResolvedIdentity) (map[string]any, error) {
 		return h.accounts.Transfers(request.Context(), identity)
+	})
+}
+
+func (h *BalanceAccountsHandler) Archived(c echo.Context) error {
+	return h.serve(c, "balance_sheet_archived", "Balance Sheet Archived", func(request *http.Request, identity domain.ResolvedIdentity) (map[string]any, error) {
+		return h.sheets.Archived(request.Context(), identity)
 	})
 }

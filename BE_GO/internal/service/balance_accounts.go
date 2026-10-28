@@ -75,3 +75,46 @@ func (s *BalanceAccounts) Transfers(ctx context.Context, identity domain.Resolve
 	}
 	return map[string]any{"data": items}, nil
 }
+
+type balanceProfiles interface {
+	Read(ctx context.Context, owner string) (*dto.AssociationProfile, error)
+}
+
+type BalanceSheets struct {
+	store    domain.BalanceSheetStore
+	profiles balanceProfiles
+}
+
+func NewBalanceSheets(store domain.BalanceSheetStore, profiles balanceProfiles) *BalanceSheets {
+	return &BalanceSheets{store: store, profiles: profiles}
+}
+
+// Archived follows balance_sheet_archived: IsAssociationUser, then
+// SportAssociation.objects.get(user=request.user) before the role check, then
+// the archived=False sheets and SportAssociationSerializer.
+func (s *BalanceSheets) Archived(ctx context.Context, identity domain.ResolvedIdentity) (map[string]any, error) {
+	user := identity.ScopeUser
+	if user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator {
+		return nil, domain.ErrMessageReadForbidden
+	}
+	association, err := s.store.OwnerAssociation(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if user.Role != domain.RoleAssociation {
+		return nil, ErrBalanceInfoUnavailable
+	}
+	rows, err := s.store.OpenSheets(ctx, association)
+	if err != nil {
+		return nil, err
+	}
+	profile, err := s.profiles.Read(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]dto.BalanceSheetItem, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, dto.BalanceSheetItemFrom(row))
+	}
+	return map[string]any{"balance_sheets": items, "sport_association": profile}, nil
+}

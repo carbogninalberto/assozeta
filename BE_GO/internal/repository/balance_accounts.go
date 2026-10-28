@@ -55,3 +55,12 @@ func (r *BalanceAccounts) Transfers(ctx context.Context, association string) ([]
  WHERE t.sport_association_id=$1`, association)
 	return rows, err
 }
+
+var _ domain.BalanceSheetStore = (*BalanceAccounts)(nil)
+
+func (r *BalanceAccounts) OpenSheets(ctx context.Context, association string) ([]domain.BalanceSheetRow, error) {
+	rows := []domain.BalanceSheetRow{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT data::text AS data, creation_date, year, status_flag FROM application_balancesheet
+ WHERE sport_association_id=$1 AND NOT archived ORDER BY creation_date DESC`, association)
+	return rows, err
+}
