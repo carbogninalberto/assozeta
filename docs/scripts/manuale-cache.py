@@ -714,7 +714,7 @@ def _stage_member(stage, name, source, mode, totals):
     return {'path': name, 'sha256': digest, 'size': size, 'mode': destination.stat().st_mode & 0o777}
 
 
-def export_cache(run, output):
+def export_cache(run, output, *, store=None, producer=None):
     run = Path(run).resolve()
     output = Path(output).resolve()
     state = _read_json(owned(run, 'run.json'), 'run.json')
@@ -797,8 +797,12 @@ def export_cache(run, output):
                 with path.open('rb') as stream:
                     archive.addfile(info, stream)
         archive_path.replace(output)
-    return {'path': str(output), 'workflows': len(validated['registry']['recipes']),
-            'format': FORMAT, 'purpose': PURPOSE}
+    result = {'path': str(output), 'workflows': len(validated['registry']['recipes']),
+              'format': FORMAT, 'purpose': PURPOSE}
+    if store is not None:
+        # Same single validation; per-workflow entries keep their own provenance.
+        result['evidence_store'] = _publish_validated_store(run, state, validated, store, producer=producer)
+    return result
 
 
 def _parse_cache_manifest(path):
@@ -1057,23 +1061,308 @@ def import_cache(archive_path, output, manual_repository, *, register=True):
     return {'run': str(output), 'format': FORMAT, 'purpose': PURPOSE}
 
 
+def _evidence_store():
+    path = ROOT / 'docs/scripts/manuale_evidence_store.py'
+    spec = importlib.util.spec_from_file_location('manuale_evidence_store', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _workflow_manual_revision(store, application, workflow_id, manual_revision):
+    if manual_revision in (None, 'auto'):
+        return store.workflow_manual_revision(application, workflow_id)
+    return manual_revision
+
+
+def _publish_validated_store(run, state, validated, store_path, *, producer=None, manual_revision='auto',
+                             schema_version=None):
+    """Publish each freshly captured workflow of a validated run as its own entry.
+
+    Retained (reused) scenarios are skipped: their original producer's entry
+    remains their only provenance, so nothing is re-attributed to this run.
+    """
+    store = _evidence_store()
+    schema_version = schema_version or store.SCHEMA_VERSION
+    application = Path(state['application']).resolve()
+    manual = Path(state['manual']).resolve()
+    producer = dict(producer or store.producer_from_environment())
+    revision = validated['application_revision']
+    if producer.get('head_sha') != revision:
+        raise ValueError('Evidence producer commit differs from the evaluated application revision')
+    manifest = validated['manifest']
+    sidecar_path = manual / '.manuale-evidence.json'
+    sidecar = _read_json(sidecar_path, '.manuale-evidence.json') if sidecar_path.is_file() else {}
+    bindings = sidecar.get('sections', {}) if isinstance(sidecar, dict) else {}
+    scenarios = {item['id']: item for item in manifest['scenarios']}
+    published, skipped = [], []
+    for recipe in validated['registry']['recipes']:
+        identifier = recipe['id']
+        scenario = scenarios[identifier]
+        if 'reuse' in scenario:
+            skipped.append({'workflow_id': identifier, 'reason': 'retained evidence keeps its original producer'})
+            continue
+        report_path = owned(run, identifier + '.json')
+        report_bytes = report_path.read_bytes()
+        if _digest_bytes(report_bytes) != scenario['report_sha256']:
+            raise ValueError('Scenario report changed after validation: ' + identifier)
+        report = json.loads(report_bytes)
+        if report.get('application_revision') != revision:
+            raise ValueError('Fresh scenario was not captured from the evaluated revision: ' + identifier)
+        workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+        inputs = store.fingerprint_inputs(application, identifier, manual_revision=workflow_revision,
+                                          schema_version=schema_version, reference_date=state['reference_date'])
+        fingerprint = store.digest(store.canonical(inputs))
+        screenshots = {relative: owned(run, relative) for relative in store._report_captures(report)}
+        sections, editorial = [], {}
+        for page in manifest['pages']:
+            for item in page.get('sections', []):
+                if identifier in item.get('scenario_ids', []):
+                    sections.append({'page': page['path'], **item})
+                    key = page['path'] + '#' + item.get('id', '')
+                    if key in bindings:
+                        editorial[key] = bindings[key]
+        origin = {'application_revision': revision, 'capture_id': report['capture_id'],
+                  'reference_date': state['reference_date'], 'manual_revision': validated['manual_revision']}
+        entry = store.publish(store_path, workflow_id=identifier, fingerprint=fingerprint,
+                              schema_version=schema_version, producer=producer, origin=origin,
+                              report_bytes=report_bytes, screenshots=screenshots, scenario=scenario,
+                              sections=sections, editorial_bindings=editorial, inputs=inputs)
+        published.append({'workflow_id': identifier, 'fingerprint': fingerprint,
+                          'manifest_sha256': entry.manifest_sha256})
+    return {'store': str(Path(store_path)), 'published': published, 'skipped': skipped,
+            'schema_version': schema_version}
+
+
+def publish_store(run, store_path, *, producer=None, manual_revision='auto'):
+    run = Path(run).resolve()
+    state = _read_json(owned(run, 'run.json'), 'run.json')
+    validated = _validate_evaluated_evidence(run, state, require_source_repositories=True)
+    return _publish_validated_store(run, state, validated, store_path, producer=producer,
+                                    manual_revision=manual_revision)
+
+
+def _impact_forced(impact, workflows):
+    """Impact report says which workflows must be fresh; unreadable means all."""
+    if impact is None:
+        return {}
+    if (not isinstance(impact, dict) or impact.get('format') != 1
+            or not isinstance(impact.get('affected_workflows'), list)):
+        return {identifier: 'impact report invalid; fail closed' for identifier in workflows}
+    if impact.get('full_verification_required') or impact.get('mode') == 'full':
+        return {identifier: 'impact: full verification required' for identifier in workflows}
+    return {identifier: 'impact: workflow affected by the change'
+            for identifier in impact['affected_workflows'] if identifier in workflows}
+
+
+def plan_store(store_path, application, *, trusted_producers, manual_revision='auto', reference_date,
+               workflows=None, impact=None, manifest_only=True, repository=None, schema_version=None):
+    """Per-workflow reuse decisions; a miss or any rejection means fresh capture."""
+    store = _evidence_store()
+    schema_version = schema_version or store.SCHEMA_VERSION
+    application = Path(application).resolve()
+    registry = store._registry(application)[1]
+    selected = list(workflows) if workflows else list(registry)
+    unknown = sorted(set(selected) - set(registry))
+    if unknown:
+        raise ValueError('Unknown workflows: ' + ', '.join(unknown))
+    forced = _impact_forced(impact, selected)
+    available = store_path is not None and Path(store_path).is_dir()
+    decisions = []
+    for identifier in selected:
+        decision = {'workflow_id': identifier}
+        try:
+            workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+            decision['fingerprint'] = store.workflow_fingerprint(
+                application, identifier, manual_revision=workflow_revision,
+                schema_version=schema_version, reference_date=reference_date)
+        except ValueError as exc:
+            decisions.append({**decision, 'decision': 'capture', 'reason': 'fingerprint unavailable: ' + str(exc)})
+            continue
+        if identifier in forced:
+            decisions.append({**decision, 'decision': 'capture', 'reason': forced[identifier]})
+            continue
+        if not available:
+            decisions.append({**decision, 'decision': 'capture', 'reason': 'cold: evidence store unavailable'})
+            continue
+        try:
+            entry = store.lookup(store_path, identifier, decision['fingerprint'],
+                                 trusted_producers=trusted_producers, manifest_only=manifest_only,
+                                 repository=repository, reference_date=reference_date,
+                                 schema_version=schema_version)
+        except ValueError as exc:
+            decisions.append({**decision, 'decision': 'capture',
+                              'reason': 'rejected (' + type(exc).__name__ + '): ' + str(exc)})
+            continue
+        if entry is None:
+            decisions.append({**decision, 'decision': 'capture', 'reason': 'miss: no evidence at this fingerprint'})
+            continue
+        decisions.append({**decision, 'decision': 'reuse', 'reason': 'verified trusted evidence at an identical fingerprint',
+                          **{key: value for key, value in entry.provenance().items()
+                             if key in ('manifest_sha256', 'producer', 'origin', 'verified')}})
+    reused = [item['workflow_id'] for item in decisions if item['decision'] == 'reuse']
+    return {'format': 1, 'schema_version': schema_version, 'store_available': available,
+            'manifest_only': manifest_only, 'workflows': decisions, 'reused_workflows': reused,
+            'capture_workflows': [item['workflow_id'] for item in decisions if item['decision'] == 'capture'],
+            'counts': {'reuse': len(reused), 'capture': len(decisions) - len(reused)}}
+
+
+def materialize_store(store_path, plan, application, output, *, trusted_producers, manual_revision='auto',
+                      reference_date, repository=None):
+    """Fully re-verify every planned reuse (blobs included) and stage it into output.
+
+    The plan file is advisory: fingerprints are recomputed from the checkout.
+    Failures move the workflow back to fresh capture instead of aborting.
+    """
+    store = _evidence_store()
+    output = Path(output).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    schema_version = plan.get('schema_version', store.SCHEMA_VERSION)
+    if schema_version != store.SCHEMA_VERSION:
+        raise ValueError('Reuse plan was produced for another evidence schema')
+    application = Path(application).resolve()
+    materialized, rejected = [], []
+    for item in plan.get('workflows', []):
+        if item.get('decision') != 'reuse':
+            continue
+        identifier = item['workflow_id']
+        try:
+            workflow_revision = _workflow_manual_revision(store, application, identifier, manual_revision)
+            fingerprint = store.workflow_fingerprint(application, identifier, manual_revision=workflow_revision,
+                                                     schema_version=schema_version, reference_date=reference_date)
+            if fingerprint != item.get('fingerprint'):
+                raise store.IncompatibleEvidence('fingerprint changed since planning')
+            entry = store.verify(store_path, identifier, fingerprint, trusted_producers=trusted_producers,
+                                 repository=repository, reference_date=reference_date,
+                                 schema_version=schema_version)
+            if entry.manifest_sha256 != item.get('manifest_sha256'):
+                raise store.CorruptEvidence('manifest changed since planning')
+            materialized.append(store.materialize(entry, output))
+        except ValueError as exc:
+            rejected.append({'workflow_id': identifier, 'reason': type(exc).__name__ + ': ' + str(exc)})
+    selection = {'format': 1, 'purpose': 'reused-workflow-evidence-not-fresh-capture',
+                 'schema_version': schema_version, 'materialized': materialized, 'rejected': rejected,
+                 'capture_workflows': sorted(set(plan.get('capture_workflows', []))
+                                             | {item['workflow_id'] for item in rejected})}
+    _write_json(output / 'evidence-store-selection.json', selection)
+    return selection
+
+
+def _trusted_file(path):
+    if path is None:
+        return {}
+    value = _read_json(path, 'trusted producers')
+    trusted = value.get('trusted') if isinstance(value, dict) else None
+    if not isinstance(trusted, dict):
+        raise ValueError('Trusted producer file must contain a "trusted" mapping')
+    return trusted
+
+
+def store_producers(store_path, repository, *, api=None):
+    """Authenticate every producer run referenced by the store index."""
+    store = _evidence_store()
+    run_ids = set()
+    if store_path is not None and Path(store_path).is_dir():
+        run_ids = {item.get('producer_run_id') for item in store.read_index(store_path)['entries'].values()
+                   if isinstance(item, dict)}
+    trusted, rejected = store.github_trusted_producers(repository, run_ids, **({'api': api} if api else {}))
+    return {'format': 1, 'repository': repository, 'trusted': trusted, 'rejected': rejected}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=('export', 'import'))
+    parser.add_argument('command', choices=('export', 'import', 'store-publish', 'store-producers',
+                                            'store-plan', 'store-materialize', 'store-bind'))
     parser.add_argument('--run', type=Path)
-    parser.add_argument('--archive', type=Path, required=True)
+    parser.add_argument('--archive', type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--manual-repo', type=Path)
+    parser.add_argument('--store', type=Path, help='Per-workflow evidence store directory')
+    parser.add_argument('--application', type=Path, default=ROOT)
+    parser.add_argument('--manual-revision', default='auto',
+                        help="Fingerprint manual revision; 'auto' uses each workflow's page mapping")
+    parser.add_argument('--reference-date', default='2026-09-30')
+    parser.add_argument('--trusted-producers', type=Path, help='Output of store-producers')
+    parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY'))
+    parser.add_argument('--workflow', action='append', help='Limit planning to these workflow ids')
+    parser.add_argument('--impact', type=Path, help='manuale_impact.py report (format 1)')
+    parser.add_argument('--full', action='store_true', help='store-plan: also verify screenshot blobs')
+    parser.add_argument('--plan', type=Path)
+    parser.add_argument('--selection', type=Path)
+    parser.add_argument('--fresh', action='append', default=[], help='store-bind: freshly captured workflow id')
+    parser.add_argument('--application-revision')
+    parser.add_argument('--release')
     args = parser.parse_args()
     if args.command == 'export':
-        if not args.run:
-            parser.error('--run is required')
-        result = export_cache(args.run, args.archive)
-    else:
-        if not args.output or not args.manual_repo:
-            parser.error('--output and --manual-repo are required')
+        if not args.run or not args.archive:
+            parser.error('--run and --archive are required')
+        result = export_cache(args.run, args.archive, store=args.store)
+    elif args.command == 'import':
+        if not args.archive or not args.output or not args.manual_repo:
+            parser.error('--archive, --output and --manual-repo are required')
         result = import_cache(args.archive, args.output, args.manual_repo)
-    print(json.dumps(result))
+    elif args.command == 'store-publish':
+        if not args.run or not args.store:
+            parser.error('--run and --store are required')
+        result = publish_store(args.run, args.store, manual_revision=args.manual_revision)
+    elif args.command == 'store-producers':
+        if not args.output or not args.repository:
+            parser.error('--output and --repository are required')
+        result = store_producers(args.store, args.repository)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        _write_json(args.output, result)
+    elif args.command == 'store-plan':
+        if not args.output:
+            parser.error('--output is required')
+        impact = None
+        if args.impact:
+            try:
+                impact = _read_json(args.impact, 'impact report')
+            except ValueError:
+                impact = {'format': 'invalid'}
+        result = plan_store(args.store, args.application, trusted_producers=_trusted_file(args.trusted_producers),
+                            manual_revision=args.manual_revision, reference_date=args.reference_date,
+                            workflows=args.workflow, impact=impact, manifest_only=not args.full,
+                            repository=args.repository)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        _write_json(args.output, result)
+    elif args.command == 'store-materialize':
+        if not args.plan or not args.output or not args.store:
+            parser.error('--store, --plan and --output are required')
+        result = materialize_store(args.store, _read_json(args.plan, 'reuse plan'), args.application, args.output,
+                                   trusted_producers=_trusted_file(args.trusted_producers),
+                                   manual_revision=args.manual_revision, reference_date=args.reference_date,
+                                   repository=args.repository)
+    else:
+        if not args.output or not args.application_revision or not args.release or not args.manual_revision \
+                or args.manual_revision == 'auto':
+            parser.error('--output, --application-revision, --manual-revision and --release are required')
+        result = bind_release(args.selection, args.fresh, args.application, application_revision=args.application_revision,
+                              manual_revision=args.manual_revision, release=args.release,
+                              reference_date=args.reference_date)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        _write_json(args.output, result)
+    print(json.dumps(result if args.command not in ('store-plan', 'store-producers', 'store-bind') else
+                     {key: result[key] for key in ('counts', 'binding_sha256', 'trusted', 'rejected')
+                      if key in result}, default=str))
+
+
+def bind_release(selection_path, fresh, application, *, application_revision, manual_revision, release,
+                 reference_date, fingerprint_manual_revision='auto'):
+    """Release binding for this exact release identity; rebuilt every time."""
+    store = _evidence_store()
+    application = Path(application).resolve()
+    evidence = []
+    if selection_path is not None:
+        selection = _read_json(selection_path, 'evidence-store selection')
+        evidence.extend(selection.get('materialized', []))
+    for identifier in fresh:
+        workflow_revision = _workflow_manual_revision(store, application, identifier, fingerprint_manual_revision)
+        evidence.append({'workflow_id': identifier, 'fresh': True, 'fingerprint': store.workflow_fingerprint(
+            application, identifier, manual_revision=workflow_revision, schema_version=store.SCHEMA_VERSION,
+            reference_date=reference_date), 'origin': {'application_revision': application_revision}})
+    return store.release_binding(evidence, application_revision=application_revision,
+                                 manual_revision=manual_revision, release=release)
 
 
 if __name__ == '__main__':
