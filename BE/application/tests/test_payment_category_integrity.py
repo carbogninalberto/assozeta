@@ -76,9 +76,14 @@ class PaymentCategoryIntegrityTests(TransactionTestCase):
         return client.delete(f'/payment/category/{category.pk}/delete')
 
     def test_update_cannot_transfer_globalize_or_replace_identity(self):
+        # tenant_scope refuses an existing foreign association before validation.
+        before = self.snapshot()
+        response = self.request('update', {'sport_association': str(self.foreign_association.pk), 'name': 'Forbidden',
+                                            'vat_management': {'vat': 8, 'deduction': 2}})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(set(response.json()), {'detail'})
+        self.assertEqual(self.snapshot(), before)
         cases = (
-            ('sport_association', str(self.foreign_association.pk),
-             "L'associazione della categoria non può essere modificata."),
             ('sport_association', None,
              "L'associazione della categoria non può essere modificata."),
             ('payment_category_id', str(uuid4()),

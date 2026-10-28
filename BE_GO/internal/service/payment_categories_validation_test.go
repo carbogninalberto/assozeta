@@ -57,11 +57,14 @@ func TestPaymentCategoryCombinedValidation(t *testing.T) {
 					"vat":               []string{"choice:99"}, "deduction": []string{"choice:99"},
 				},
 			}
-			if partial {
-				want["sport_association"] = []string{"immutable-association"}
-			}
 			var validation *dto.PaymentCategoryValidationError
-			if !errors.As(err, &validation) || !reflect.DeepEqual(validation.Errors, want) {
+			if partial {
+				// The foreign association's PermissionDenied escapes before the
+				// serializer raises the collected field errors.
+				if !errors.Is(err, domain.ErrPaymentCategoryForeignReference) {
+					t.Fatalf("error=%v want foreign reference denial", err)
+				}
+			} else if !errors.As(err, &validation) || !reflect.DeepEqual(validation.Errors, want) {
 				t.Fatalf("error=%v validation=%#v want=%#v", err, validation, want)
 			}
 			if store.tx.inserted || store.tx.updated || store.tx.committed || len(store.tx.audits) != 0 {

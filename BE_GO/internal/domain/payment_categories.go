@@ -12,6 +12,9 @@ var (
 	ErrPaymentCategoryNotFound      = errors.New("payment category not found")
 	ErrPaymentCategoryInvalidID     = errors.New("payment category identifier is invalid")
 	ErrPaymentCategoryVATRequired   = errors.New("payment category VAT is required")
+	// ErrPaymentCategoryForeignReference is tenant_scope's generic DRF denial
+	// for a related field naming another association.
+	ErrPaymentCategoryForeignReference = errors.New("payment category references another association")
 )
 
 type PaymentCategoryVAT struct {

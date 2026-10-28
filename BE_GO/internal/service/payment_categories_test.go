@@ -295,7 +295,7 @@ func TestPaymentCategoriesPatchPartialAndRejectsTenantChange(t *testing.T) {
 	store = &paymentCategoryStoreTest{tx: paymentCategoryTransactionTest{association: association, category: category, associationExists: true}}
 	foreign := "00000000-0000-4000-8000-000000000999"
 	input = dto.PaymentCategoryWrite{AssociationPresent: true, AssociationID: &foreign}
-	if _, err = NewPaymentCategories(store, time.Now).Update(context.Background(), paymentCategoryIdentity(), paymentCategoryTestCategory, input, domain.LoginAuditContext{}); !paymentCategoryValidationCode(err, "sport_association", "immutable-association") {
+	if _, err = NewPaymentCategories(store, time.Now).Update(context.Background(), paymentCategoryIdentity(), paymentCategoryTestCategory, input, domain.LoginAuditContext{}); !errors.Is(err, domain.ErrPaymentCategoryForeignReference) {
 		t.Fatal("foreign tenant change admitted", err)
 	}
 	if store.begins != 1 || store.tx.updated || store.tx.committed || store.tx.rollbacks != 1 {

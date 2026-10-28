@@ -250,6 +250,8 @@ func paymentCategoryError(c echo.Context, err error) error {
 	switch {
 	case errors.As(err, &validation):
 		return c.JSON(400, paymentCategoryValidationMessages(c.Request(), validation.Errors))
+	case errors.Is(err, domain.ErrPaymentCategoryForeignReference):
+		return restError(c, &domain.PermissionDenied{Detail: messageReadsPermissionDetail(c.Request())})
 	case errors.Is(err, domain.ErrPaymentCategoryListForbidden):
 		return c.JSON(403, map[string]string{"error": "user not allowed."})
 	case errors.Is(err, domain.ErrPaymentCategoryForbidden):

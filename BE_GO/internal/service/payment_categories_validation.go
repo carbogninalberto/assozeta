@@ -11,6 +11,18 @@ import (
 // Django runs every field validator before saving, including validators which
 // read existing identifiers. Preserve that complete error map without writes.
 func validatePaymentCategoryWrite(ctx context.Context, tx domain.PaymentCategoryTransaction, input dto.PaymentCategoryWrite, before *domain.PaymentCategoryState) error {
+	// TenantScopedPrimaryKeyRelatedField raises PermissionDenied from
+	// to_internal_value, before the serializer collects the other field errors.
+	if _, invalid := input.ValidationErrors["sport_association"]; before != nil && input.AssociationID != nil && !invalid &&
+		(before.AssociationID == nil || *input.AssociationID != *before.AssociationID) {
+		exists, err := tx.AssociationExists(ctx, *input.AssociationID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return domain.ErrPaymentCategoryForeignReference
+		}
+	}
 	validation := make(map[string]any, len(input.ValidationErrors))
 	for field, value := range input.ValidationErrors {
 		validation[field] = value
@@ -55,8 +67,6 @@ func validatePaymentCategoryWrite(ctx context.Context, tx domain.PaymentCategory
 			}
 			if !exists {
 				validation["sport_association"] = []string{"related-does-not-exist:" + *input.AssociationID}
-			} else {
-				validation["sport_association"] = []string{"immutable-association"}
 			}
 		}
 	}

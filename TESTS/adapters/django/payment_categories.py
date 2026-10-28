@@ -919,10 +919,10 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
     add_case('patch-same-association', 'PATCH', update_path(170019), token=tokens[160000],
              body={'sport_association': uid(161000)}, status=200,
              check=lambda status, response: response['data']['sport_association'] == uid(161000))
+    # tenant_scope denies an existing foreign association before field validation.
     add_case('patch-foreign-association', 'PATCH', update_path(170019), token=tokens[160000],
-             body={'sport_association': uid(161001)}, status=400,
-             check=lambda status, response: response == {
-                 'sport_association': ["L'associazione della categoria non può essere modificata."]})
+             body={'sport_association': uid(161001)}, status=403,
+             check=lambda status, response: response == {'detail': 'You do not have permission to perform this action.'})
     add_case('patch-null-association', 'PATCH', update_path(170019), token=tokens[160000],
              body={'sport_association': None}, status=400,
              check=lambda status, response: response == {
@@ -930,7 +930,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
     add_case('patch-missing-association-id', 'PATCH', update_path(170019), token=tokens[160000],
              body={'sport_association': uid(179997)}, status=400)
     add_case('patch-deleted-association-id', 'PATCH', update_path(170019), token=tokens[160000],
-             body={'sport_association': uid(161012)}, status=400)
+             body={'sport_association': uid(161012)}, status=403)
     add_case('patch-new-category-id', 'PATCH', update_path(170019), token=tokens[160000],
              body={'payment_category_id': uid(177001)}, status=400,
              check=lambda status, response: response == {
@@ -1077,7 +1077,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
     add_case('patch-combined-invalid', 'PATCH', update_path(170011), token=tokens[160000],
              body={'payment_category_id': uid(178002), 'sport_association': uid(161001),
                    'name': '', 'vat_management': {
-                       'vat_management_id': uid(171001), 'vat': 99, 'deduction': 99}}, status=400)
+                       'vat_management_id': uid(171001), 'vat': 99, 'deduction': 99}}, status=403)
     add_case('patch-missing-association-invalid-name', 'PATCH', update_path(170011),
              token=tokens[160000], body={'sport_association': uid(179997), 'name': ''}, status=400)
     add_case('patch-changed-id-null-vat', 'PATCH', update_path(170011), token=tokens[160000],
@@ -1371,18 +1371,14 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                 'deduction': ['"99" is not a valid choice.'],
             }},
             'patch-vat-null': {'vat_management': ['This field may not be null.']},
-            'patch-foreign-association': {
-                'sport_association': ["L'associazione della categoria non può essere modificata."],
-            },
+            'patch-foreign-association': {'detail': 'You do not have permission to perform this action.'},
             'patch-null-association': {
                 'sport_association': ["L'associazione della categoria non può essere modificata."],
             },
             'patch-missing-association-id': {
                 'sport_association': [f'Invalid pk "{uid(179997)}" - object does not exist.'],
             },
-            'patch-deleted-association-id': {
-                'sport_association': ["L'associazione della categoria non può essere modificata."],
-            },
+            'patch-deleted-association-id': {'detail': 'You do not have permission to perform this action.'},
             'patch-new-category-id': {
                 'payment_category_id': ["L'identificativo della categoria non può essere modificato."],
             },
@@ -1471,14 +1467,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None):
                                    'vat': ['"99" is not a valid choice.'],
                                    'deduction': ['"99" is not a valid choice.']},
             },
-            'patch-combined-invalid': {
-                'payment_category_id': ["L'identificativo della categoria non può essere modificato."],
-                'sport_association': ["L'associazione della categoria non può essere modificata."],
-                'name': ['This field may not be blank.'],
-                'vat_management': {'vat_management_id': ['vat management with this vat management id already exists.'],
-                                   'vat': ['"99" is not a valid choice.'],
-                                   'deduction': ['"99" is not a valid choice.']},
-            },
+            'patch-combined-invalid': {'detail': 'You do not have permission to perform this action.'},
             'patch-missing-association-invalid-name': {
                 'sport_association': [f'Invalid pk "{uid(179997)}" - object does not exist.'],
                 'name': ['This field may not be blank.'],
