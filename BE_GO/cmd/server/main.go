@@ -197,6 +197,7 @@ func run() (runErr error) {
 	foldersHandler := handler.NewFoldersHandler(service.NewFolders(repository.NewFolders(db)), service.NewFolderDeletes(repository.NewFolders(db)), service.NewFolderMoves(repository.NewFolders(db)), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	documentArchiveHandler := handler.NewDocumentArchiveHandler(service.NewDocumentArchive(repository.NewDocumentArchive(db)), service.NewArchiveWrites(repository.NewDocumentArchive(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	savedReportsHandler := handler.NewSavedReportsHandler(service.NewSavedReports(repository.NewSavedReports(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	paymentArchiveHandler := handler.NewPaymentArchiveHandler(service.NewPaymentArchives(repository.NewPaymentArchives(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	attendanceDaysHandler := handler.NewAttendanceDaysHandler(service.NewAttendanceDays(repository.NewAttendanceDays(db), time.Now), service.NewAttendanceMarks(repository.NewAttendanceDays(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	emailLogsHandler := handler.NewEmailLogsHandler(service.NewEmailLogs(repository.NewEmailLogs(db), time.Now, time.Local), service.NewActorAuthentication(accounts, tokens), identities)
 	staffBoardHandler := handler.NewStaffBoardHandler(service.NewStaffBoard(repository.NewStaffBoard(db), time.Now),
@@ -235,6 +236,7 @@ func run() (runErr error) {
 	e.Any("/carnet/list", carnetListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/:uid/info", carnetListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/search/profile/:username", searchProfileHandler.Profile, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/payment/:uid/archive", paymentArchiveHandler.Archive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/list", suppliersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))

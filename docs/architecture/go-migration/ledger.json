@@ -10358,25 +10358,69 @@
         "target": "payment_archive",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/payment_archive.go",
+        "BE_GO/internal/repository/payment_archive.go",
+        "BE_GO/internal/service/payment_archive.go",
+        "BE_GO/internal/handler/payment_archive.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_payment, application_paymentcategory, course/installment/carnet subscriptions"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/payment/<uid>/archive",
+          "/api/v2/payment/<uid>/archive",
+          "/api/payment/<uid>/archive"
+        ],
+        "request": "No body; optional X-Group-Id.",
+        "response": "200 {\"msg\": \"Payment archived.\" | \"Payment unarchived.\"}.",
+        "errors": "400 malformed UUID; 401; 403 non-association role, administrator without impersonation, missing permission, scoped athlete session; 500 missing association or payment.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.payments.archive.update.",
+        "resource_scope": "A live payment of the scope user's association (group-aware).",
+        "side_effects": "Toggles archived; Payment.save() may fill payment_category and description; one auditlog update with a direct index row.",
+        "transaction": "One transaction (Django autocommit save).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/payment_archive_http.json",
+        "TESTS/fixtures/generate_payment_archive_http.py",
+        "TESTS/contracts/test_payment_archive_http.py",
+        "TESTS/adapters/django/payment_archive_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/payment-archive.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 27/27 after one source-confirmed correction; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-archive-http-red-r1/results.json",
+          "receipt_sha256": "4222e2e546ca22f5f7a7c3e07345da4f63b6a1ddf2d68cec9230d9a0743f94a3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 27/27 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, audit and index effects.",
+          "artifact": "quality-reports/go-migration/payment-archive-http-versioned-r1/results.json",
+          "receipt_sha256": "f8dfa296b00b19bd26931de61e3ab6d8714cda2446a61cbdd8fb62a58f04c5c6"
+        },
+        {
+          "revision": "committing change skipping the quota corso override",
+          "result": "Mutation control: fails Go on that case.",
+          "artifact": "quality-reports/go-migration/payment-archive-http-mutation-r1/results.json",
+          "receipt_sha256": "d1c0287fadcc1142b87979eb70ad169591ddd76708e38db23ead2bb21195a46a"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including Payment.save() defaults and audit proven on four transports; Go updates changed columns only (needs review, as for other column-scoped writes)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:payment/<str:uid>/cancel -> payment_cancel",
