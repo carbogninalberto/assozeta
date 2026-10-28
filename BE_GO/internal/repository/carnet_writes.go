@@ -174,18 +174,27 @@ func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, paymen
 	return appendModelAudit(ctx, t.tx, entry)
 }
 
+type modelReference struct {
+	Table  string `db:"table_name"`
+	Column string `db:"column_name"`
+}
+
+// modelReferences lists the database foreign keys referencing table.column.
+func modelReferences(ctx context.Context, tx *sqlx.Tx, table, column string) ([]modelReference, error) {
+	refs := []modelReference{}
+	err := tx.SelectContext(ctx, &refs, `SELECT kcu.table_name, kcu.column_name FROM information_schema.referential_constraints rc
+ JOIN information_schema.key_column_usage kcu ON kcu.constraint_name=rc.constraint_name AND kcu.constraint_schema=rc.constraint_schema
+ JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name=rc.unique_constraint_name AND ccu.constraint_schema=rc.unique_constraint_schema
+ WHERE ccu.table_name=$1 AND ccu.column_name=$2 AND kcu.table_schema=current_schema()
+ ORDER BY kcu.table_name, kcu.column_name`, table, column)
+	return refs, err
+}
+
 // clearPaymentReferences applies the collector's SET_NULL updates and
 // many-to-many through-row deletes for a payment about to be deleted.
 func clearPaymentReferences(ctx context.Context, tx *sqlx.Tx, payment string) error {
-	refs := []struct {
-		Table  string `db:"table_name"`
-		Column string `db:"column_name"`
-	}{}
-	if err := tx.SelectContext(ctx, &refs, `SELECT kcu.table_name, kcu.column_name FROM information_schema.referential_constraints rc
- JOIN information_schema.key_column_usage kcu ON kcu.constraint_name=rc.constraint_name AND kcu.constraint_schema=rc.constraint_schema
- JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name=rc.unique_constraint_name AND ccu.constraint_schema=rc.unique_constraint_schema
- WHERE ccu.table_name='application_payment' AND ccu.column_name='payment_id' AND kcu.table_schema=current_schema()
- ORDER BY kcu.table_name, kcu.column_name`); err != nil {
+	refs, err := modelReferences(ctx, tx, "application_payment", "payment_id")
+	if err != nil {
 		return err
 	}
 	for _, ref := range refs {

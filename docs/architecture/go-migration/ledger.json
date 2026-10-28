@@ -16044,25 +16044,69 @@
         "target": "supplier_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/supplier_writes.go",
+        "BE_GO/internal/repository/supplier_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/supplier_writes.go",
+        "BE_GO/internal/handler/supplier_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_supplierandcustomers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/<uid>/delete",
+          "/api/v2/supplier/<uid>/delete",
+          "/api/supplier/<uid>/delete"
+        ],
+        "request": "Path uid.",
+        "response": "200 {\"data\": {\"msg\": \"supplier deleted.\"}}.",
+        "errors": "400 malformed uid; 401; 403 User not allowed. / registry / scoped session; 500 missing association (athletes).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.delete.",
+        "resource_scope": "The owner's association's live, group-aware suppliers.",
+        "side_effects": "Hard delete; payments, supplier invoices, subscriptions and sold products lose the reference; one auditlog delete entry per supplier.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_deletes_http.json",
+        "TESTS/fixtures/generate_supplier_deletes_http.py",
+        "TESTS/contracts/test_supplier_deletes_http.py",
+        "TESTS/adapters/django/supplier_deletes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 28/28; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-red-r1/results.json",
+          "receipt_sha256": "8bb2c12d909147ca488615f0d0708a2525871238919e45c6674940364a88ee98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-versioned-r1/results.json",
+          "receipt_sha256": "07bb6a549e5486379a7e6a7eb8e96aacffff1d8544ee5567f1bd3b9d348420f0"
+        },
+        {
+          "revision": "committing change ignoring the group filter",
+          "result": "Mutation control: fails Go on the group-header case.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-mutation-r1/results.json",
+          "receipt_sha256": "423189de919d2e12c5c1a69b9f91f79e636187da1c5141c7ca0b124285deb183"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the logger-line 500s, reference nulling and group-aware selection on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/<str:uid>/info -> supplier_info",
@@ -16231,25 +16275,69 @@
         "target": "supplier_bulk_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/supplier_writes.go",
+        "BE_GO/internal/repository/supplier_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/supplier_writes.go",
+        "BE_GO/internal/handler/supplier_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_supplierandcustomers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/bulk-delete",
+          "/api/v2/supplier/bulk-delete",
+          "/api/supplier/bulk-delete"
+        ],
+        "request": "JSON/form: supplier_ids.",
+        "response": "200 {\"data\": {\"msg\": \"N suppliers deleted.\"}}.",
+        "errors": "400 No supplier IDs provided. / Invalid UUID format.; 401; 403 bare (athletes) / registry / scoped session; 500 non-dict body or unsized supplier_ids, missing association.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.delete.",
+        "resource_scope": "The owner's association's live, group-aware suppliers.",
+        "side_effects": "Hard delete; payments, supplier invoices, subscriptions and sold products lose the reference; one auditlog delete entry per supplier.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_deletes_http.json",
+        "TESTS/fixtures/generate_supplier_deletes_http.py",
+        "TESTS/contracts/test_supplier_deletes_http.py",
+        "TESTS/adapters/django/supplier_deletes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 28/28; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-red-r1/results.json",
+          "receipt_sha256": "8bb2c12d909147ca488615f0d0708a2525871238919e45c6674940364a88ee98"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 28/28 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-versioned-r1/results.json",
+          "receipt_sha256": "07bb6a549e5486379a7e6a7eb8e96aacffff1d8544ee5567f1bd3b9d348420f0"
+        },
+        {
+          "revision": "committing change ignoring the group filter",
+          "result": "Mutation control: fails Go on the group-header case.",
+          "artifact": "quality-reports/go-migration/supplier-deletes-http-mutation-r1/results.json",
+          "receipt_sha256": "423189de919d2e12c5c1a69b9f91f79e636187da1c5141c7ca0b124285deb183"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the logger-line 500s, reference nulling and group-aware selection on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/list -> supplier_list",

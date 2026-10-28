@@ -262,6 +262,10 @@ func run() (runErr error) {
 	e.Any("/audit-logs/models", auditSummaryHandler.Models, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/list", suppliersHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/supplier/:uid/info", suppliersHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
+	supplierWritesHandler := handler.NewSupplierWritesHandler(service.NewSupplierDeletes(repository.NewSupplierWrites(db), time.Now),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/supplier/:uid/delete", supplierWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/supplier/bulk-delete", supplierWritesHandler.BulkDelete, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/archived", balanceAccountsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/accounts/list", balanceAccountsHandler.Accounts, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/accounts-transfer/list", balanceAccountsHandler.Transfers, middleware.DjangoSessionAudit(sessionAuthentication))
