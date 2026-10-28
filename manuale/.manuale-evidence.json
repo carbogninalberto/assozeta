@@ -1097,7 +1097,7 @@
     },
     "docs/comunicazioni.mdx#post": {
       "title": "Post",
-      "content_sha256": "77e8d33c99d8c25a4cd5841f0e74a9a00f25eeed84d19b1d756a50722468b377",
+      "content_sha256": "9057a1bf42a52fd950282c5325382ad5b89635480de88842585f19b3baafeebf",
       "recipe_module": "docs/manuale/communication-auth-reference-recipes.mjs",
       "recipe_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
       "content_source": "authored-mdx",
@@ -1105,6 +1105,14 @@
         "previous_sha256": "62c22b11f7a242a2b2ee2ce58b81bd2314bb6089b9515eef1af10c2b6c59eced",
         "sha256": "6e4a7da87e5f5d35f537a3168ebbbdd8cbb8314485f205e5314b2f6ce50e6f30",
         "purpose": "editorial-review-only"
+      },
+      "editorial_review": {
+        "format": 1,
+        "kind": "wording-only",
+        "from_sha256": "77e8d33c99d8c25a4cd5841f0e74a9a00f25eeed84d19b1d756a50722468b377",
+        "to_sha256": "9057a1bf42a52fd950282c5325382ad5b89635480de88842585f19b3baafeebf",
+        "recipe_sha256": "e611da0dd655733461079af22fd806e5cce93c5145a6456f5adf0d41e4f34903",
+        "note": "Measurement-only wording tweak; behavior unchanged."
       }
     },
     "docs/comunicazioni.mdx#quanti-sms-posso-inviare": {
