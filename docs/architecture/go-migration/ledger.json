@@ -575,6 +575,41 @@
       "notes": []
     },
     {
+      "id": "command:BE/notifications/management/commands/relay_go_realtime.py:relay_go_realtime",
+      "kind": "command",
+      "django": {
+        "file": "BE/notifications/management/commands/relay_go_realtime.py",
+        "line": 9,
+        "symbol": "relay_go_realtime",
+        "sha256": "9140c1d27e831de1a38a1d9eba6d5be6837f2deb19d811d27a91b03085500b82"
+      },
+      "source_present": true,
+      "declaration": {
+        "bases": [
+          "BaseCommand"
+        ]
+      },
+      "status": "uncharacterized",
+      "go": [],
+      "dependencies": [],
+      "contract": {
+        "methods": null,
+        "external_paths": null,
+        "request": null,
+        "response": null,
+        "errors": null,
+        "authentication": null,
+        "permissions": null,
+        "resource_scope": null,
+        "side_effects": null,
+        "transaction": null,
+        "execution_owner": "django"
+      },
+      "tests": [],
+      "evidence": [],
+      "notes": []
+    },
+    {
       "id": "mcp_definition:BE/application/manuale/tools.py:get_manual_evidence",
       "kind": "mcp_definition",
       "django": {
