@@ -36,22 +36,50 @@ func deleteModelWithAudit(ctx context.Context, tx *sqlx.Tx, table, key, id strin
 // that declare a related_name: auditlog walks _meta.get_fields() on delete,
 // and those accessors render as their empty manager ("app.Model.None").
 func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, id string, reverse map[string]string) (map[string][2]string, map[string]any, error) {
+	changes, stored, err := storedModelChanges(ctx, tx, table, key, id, false, true)
+	if err != nil {
+		return nil, nil, err
+	}
+	for name, manager := range reverse {
+		changes[name] = [2]string{manager, "None"}
+	}
+	if _, err = tx.ExecContext(ctx, `DELETE FROM `+table+` WHERE `+key+`=$1`, id); err != nil {
+		return nil, nil, err
+	}
+	return changes, stored, nil
+}
+
+// storedModelChanges renders the stored row as auditlog's delete changes
+// (value against 'None') or, when created, its create changes ('None'
+// against the value). Null foreign keys and DateTimeFields render 'None' on
+// both sides (get_field_value keeps None, the absent side is smart_str()),
+// null JSON fields 'null'; other nulls are omitted.
+func storedModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string, created, lock bool) (map[string][2]string, map[string]any, error) {
 	columns := []modelColumn{}
 	if err := tx.SelectContext(ctx, &columns, `SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS type,
  EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=a.attrelid AND c.contype='f' AND c.conkey=ARRAY[a.attnum]) AS foreign_key
  FROM pg_attribute a WHERE a.attrelid=$1::regclass AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum`, table); err != nil {
 		return nil, nil, err
 	}
+	query := `SELECT to_jsonb(t) FROM ` + table + ` t WHERE ` + key + `=$1`
+	if lock {
+		query += ` FOR UPDATE`
+	}
 	var raw []byte
-	err := tx.GetContext(ctx, &raw, `SELECT to_jsonb(t) FROM `+table+` t WHERE `+key+`=$1 FOR UPDATE`, id)
-	if err != nil {
+	if err := tx.GetContext(ctx, &raw, query, id); err != nil {
 		return nil, nil, errors.Join(ErrModelDeleteMissing, err)
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.UseNumber()
 	stored := map[string]any{}
-	if err = decoder.Decode(&stored); err != nil {
+	if err := decoder.Decode(&stored); err != nil {
 		return nil, nil, err
+	}
+	pair := func(value string) [2]string {
+		if created {
+			return [2]string{"None", value}
+		}
+		return [2]string{value, "None"}
 	}
 	changes := map[string][2]string{}
 	for _, column := range columns {
@@ -63,12 +91,9 @@ func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, i
 		if value == nil {
 			switch {
 			case column.ForeignKey, strings.HasPrefix(column.Type, "timestamp"):
-				// get_field_value keeps None for foreign keys and DateTimeFields,
-				// while the deleted side is the default's smart_str(): 'None'.
 				changes[name] = [2]string{"None", "None"}
 			case column.Type == "jsonb" || column.Type == "json":
-				// JSONField values render through json.dumps: None is 'null'.
-				changes[name] = [2]string{"null", "None"}
+				changes[name] = pair("null")
 			}
 			continue
 		}
@@ -76,13 +101,7 @@ func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, i
 		if err != nil {
 			return nil, nil, err
 		}
-		changes[name] = [2]string{rendered, "None"}
-	}
-	for name, manager := range reverse {
-		changes[name] = [2]string{manager, "None"}
-	}
-	if _, err = tx.ExecContext(ctx, `DELETE FROM `+table+` WHERE `+key+`=$1`, id); err != nil {
-		return nil, nil, err
+		changes[name] = pair(rendered)
 	}
 	return changes, stored, nil
 }
@@ -130,47 +149,8 @@ func pythonNaiveUTC(value time.Time) string {
 }
 
 // createdModelChanges renders auditlog's create changes for a row just
-// inserted in this transaction: the mirror of the delete rendering, each
-// stored value against 'None' (foreign keys and DateTimeFields that are null
-// render 'None', null JSON 'null'; other nulls are omitted).
+// inserted in this transaction.
 func createdModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string) (map[string][2]string, error) {
-	columns := []modelColumn{}
-	if err := tx.SelectContext(ctx, &columns, `SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS type,
- EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid=a.attrelid AND c.contype='f' AND c.conkey=ARRAY[a.attnum]) AS foreign_key
- FROM pg_attribute a WHERE a.attrelid=$1::regclass AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum`, table); err != nil {
-		return nil, err
-	}
-	var raw []byte
-	if err := tx.GetContext(ctx, &raw, `SELECT to_jsonb(t) FROM `+table+` t WHERE `+key+`=$1`, id); err != nil {
-		return nil, err
-	}
-	decoder := json.NewDecoder(bytes.NewReader(raw))
-	decoder.UseNumber()
-	stored := map[string]any{}
-	if err := decoder.Decode(&stored); err != nil {
-		return nil, err
-	}
-	changes := map[string][2]string{}
-	for _, column := range columns {
-		value := stored[column.Name]
-		name := column.Name
-		if column.ForeignKey {
-			name = strings.TrimSuffix(name, "_id")
-		}
-		if value == nil {
-			switch {
-			case column.ForeignKey, strings.HasPrefix(column.Type, "timestamp"):
-				changes[name] = [2]string{"None", "None"}
-			case column.Type == "jsonb" || column.Type == "json":
-				changes[name] = [2]string{"None", "null"}
-			}
-			continue
-		}
-		rendered, err := renderAuditValue(column.Type, value, raw, column.Name)
-		if err != nil {
-			return nil, err
-		}
-		changes[name] = [2]string{"None", rendered}
-	}
-	return changes, nil
+	changes, _, err := storedModelChanges(ctx, tx, table, key, id, true, false)
+	return changes, err
 }

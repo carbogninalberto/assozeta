@@ -917,6 +917,29 @@
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": null
+  },
+  {
+   "name": "carnet-assign-invalid-group-link",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/assign/a1000000-0000-4000-8000-000000880008",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Carnet assigned successfully.",
+    "course_subscription_id": "a1000000-0000-4000-8000-000000970002"
+   },
+   "effect": {
+    "kind": "link",
+    "holding": "family",
+    "course": "second"
+   },
+   "body": {
+    "carnet_subscription_id": "a1000000-0000-4000-8000-000000880017",
+    "course_subscription_id": "a1000000-0000-4000-8000-000000970002"
+   }
   }
  ]
 }

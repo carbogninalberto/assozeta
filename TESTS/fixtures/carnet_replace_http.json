@@ -1,0 +1,891 @@
+{
+ "matrix_version": 1,
+ "scope": "Carnet replace authored sequence with signal-driven deletes and assign effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "carnets": {
+  "c1": {
+   "id": "a1000000-0000-4000-8000-000000880001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Carnet è",
+   "description": "10 ingressi",
+   "lessons": 10,
+   "fee": "50.00",
+   "public": true,
+   "meta": {
+    "b": [
+     1,
+     2.5
+    ],
+    "a": null
+   },
+   "created": "2026-09-01T08:00:00.250000Z"
+  },
+  "c2": {
+   "id": "a1000000-0000-4000-8000-000000880002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "description": null,
+   "lessons": 0,
+   "fee": "0.00",
+   "public": false,
+   "meta": null,
+   "created": "2026-09-02T08:00:00Z"
+  },
+  "cf": {
+   "id": "a1000000-0000-4000-8000-000000880003",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "description": "",
+   "lessons": 5,
+   "fee": "7.50",
+   "public": true,
+   "meta": {},
+   "created": "2026-09-03T08:00:00Z"
+  }
+ },
+ "associates": {
+  "mine": {
+   "id": "a1000000-0000-4000-8000-000000880004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "first_name": "Atleta è",
+   "last_name": "Rossi",
+   "born_date": "1990-05-05",
+   "email": "atleta@example.test",
+   "sex": "F",
+   "tax_code": "RSSTLT90E45H501X",
+   "address": "Via 1",
+   "address_cap": "00100",
+   "address_city": "Roma",
+   "born_city": "Roma",
+   "is_minor": false,
+   "phone": "+39 1",
+   "family_role": "madre"
+  },
+  "child": {
+   "id": "a1000000-0000-4000-8000-000000880005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "first_name": "Figlio",
+   "last_name": "Rossi",
+   "born_date": null,
+   "email": null,
+   "sex": "M",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": true,
+   "phone": null,
+   "family_role": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000880006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "athlete",
+   "first_name": "Atleta",
+   "last_name": "Estero",
+   "born_date": "1991-01-01",
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000880007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": null,
+   "first_name": "Altro",
+   "last_name": "Socio",
+   "born_date": null,
+   "email": null,
+   "sex": "A",
+   "tax_code": null,
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "is_minor": false,
+   "phone": null,
+   "family_role": null
+  }
+ },
+ "subscriptions": {
+  "current": {
+   "id": "a1000000-0000-4000-8000-000000880008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "associate": "mine",
+   "start": "2000-01-01",
+   "end": "2099-12-31",
+   "year": "corrente"
+  },
+  "family_next": {
+   "id": "a1000000-0000-4000-8000-000000880009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "child",
+   "start": "2098-01-01",
+   "end": "2099-01-01",
+   "year": "successivo"
+  },
+  "abroad_past": {
+   "id": "a1000000-0000-4000-8000-000000880010",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "athlete",
+   "associate": "abroad",
+   "start": "2000-01-01",
+   "end": "2001-01-01",
+   "year": "precedente"
+  },
+  "other_open": {
+   "id": "a1000000-0000-4000-8000-000000880011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "other",
+   "start": null,
+   "end": null,
+   "year": "corrente"
+  }
+ },
+ "courses": {
+  "swim": {
+   "id": "a1000000-0000-4000-8000-000000880012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Nuoto è"
+  },
+  "abroad_course": {
+   "id": "a1000000-0000-4000-8000-000000970001",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Corso estero"
+  }
+ },
+ "course_subscriptions": {
+  "active": {
+   "id": "a1000000-0000-4000-8000-000000880013",
+   "course": "swim",
+   "subscription": "current",
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000880014",
+   "course": "swim",
+   "subscription": "current",
+   "deleted": true
+  },
+  "second": {
+   "id": "a1000000-0000-4000-8000-000000970002",
+   "course": "swim",
+   "subscription": "current",
+   "deleted": false
+  },
+  "abroad_cs": {
+   "id": "a1000000-0000-4000-8000-000000970003",
+   "course": "abroad_course",
+   "subscription": "abroad_past",
+   "deleted": false
+  }
+ },
+ "payments": {
+  "p1": {
+   "id": "a1000000-0000-4000-8000-000000880015",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "50.00"
+  },
+  "p_main": {
+   "id": "a1000000-0000-4000-8000-000000980001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "10.00",
+   "paid": false
+  },
+  "p_i1": {
+   "id": "a1000000-0000-4000-8000-000000980002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "10.00",
+   "paid": false
+  },
+  "p_i2": {
+   "id": "a1000000-0000-4000-8000-000000980003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "10.00",
+   "paid": true
+  },
+  "p_other": {
+   "id": "a1000000-0000-4000-8000-000000980004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "amount": "10.00",
+   "paid": false
+  }
+ },
+ "carnet_subscriptions": {
+  "held": {
+   "id": "a1000000-0000-4000-8000-000000880016",
+   "carnet": "c1",
+   "user": "athlete",
+   "subscription": "current",
+   "courses": [
+    "active",
+    "deleted"
+   ],
+   "payment": "p1",
+   "disabled": false,
+   "meta": {
+    "lessons_left": 9,
+    "lessons_registry": [
+     "x"
+    ]
+   },
+   "created": "2026-10-03T09:30:00.125000Z"
+  },
+  "family": {
+   "id": "a1000000-0000-4000-8000-000000880017",
+   "carnet": "c1",
+   "user": null,
+   "subscription": "family_next",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": null,
+   "created": "2026-10-02T09:30:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000880018",
+   "carnet": "cf",
+   "user": "athlete",
+   "subscription": "abroad_past",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": {},
+   "created": "2026-10-04T09:30:00Z"
+  },
+  "detached": {
+   "id": "a1000000-0000-4000-8000-000000880019",
+   "carnet": "c2",
+   "user": "athlete",
+   "subscription": null,
+   "courses": [],
+   "payment": null,
+   "disabled": true,
+   "meta": {
+    "lessons_left": 0
+   },
+   "created": "2026-10-01T09:30:00Z"
+  },
+  "someone_else": {
+   "id": "a1000000-0000-4000-8000-000000880020",
+   "carnet": "c2",
+   "user": "owner",
+   "subscription": "other_open",
+   "courses": [],
+   "payment": null,
+   "disabled": false,
+   "meta": null,
+   "created": "2026-10-05T09:30:00Z"
+  }
+ },
+ "accounts": {
+  "bank": {
+   "id": "a1000000-0000-4000-8000-000000960001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Banca",
+   "type": 2,
+   "editable": false,
+   "enabled": true
+  },
+  "cash": {
+   "id": "a1000000-0000-4000-8000-000000960002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Cassa",
+   "type": 1,
+   "editable": false,
+   "enabled": true
+  },
+  "editable_bank": {
+   "id": "a1000000-0000-4000-8000-000000960003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Altra banca",
+   "type": 2,
+   "editable": true,
+   "enabled": true
+  },
+  "disabled_bank": {
+   "id": "a1000000-0000-4000-8000-000000960004",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Chiusa",
+   "type": 2,
+   "editable": false,
+   "enabled": false
+  }
+ },
+ "course_payments": {
+  "active": "p_main"
+ },
+ "installments": {
+  "i1": {
+   "id": "a1000000-0000-4000-8000-000000980005",
+   "course_subscription": "active",
+   "number": 1,
+   "paid": false,
+   "payment": "p_i1"
+  },
+  "i2": {
+   "id": "a1000000-0000-4000-8000-000000980006",
+   "course_subscription": "active",
+   "number": 2,
+   "paid": true,
+   "payment": "p_i2"
+  },
+  "i3": {
+   "id": "a1000000-0000-4000-8000-000000980007",
+   "course_subscription": "active",
+   "number": 3,
+   "paid": false,
+   "payment": null
+  },
+  "i_other": {
+   "id": "a1000000-0000-4000-8000-000000980008",
+   "course_subscription": "second",
+   "number": 1,
+   "paid": false,
+   "payment": "p_other"
+  }
+ },
+ "cases": [
+  {
+   "name": "carnet-replace-group-header-finds-nothing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": null,
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000880013"
+   }
+  },
+  {
+   "name": "carnet-replace-invalid-group-deletes-then-server-error",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "full_collaborator",
+    "deleted": [
+     [
+      "payment",
+      "p_other",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     ],
+     [
+      "installment",
+      "i_other",
+      null
+     ],
+     [
+      "payment",
+      "p_other",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     ],
+     [
+      "installment",
+      "i_other",
+      null
+     ]
+    ],
+    "create": null,
+    "link": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000970002"
+   }
+  },
+  {
+   "name": "carnet-replace-malformed-course-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "course_subscription_id": "abc"
+   }
+  },
+  {
+   "name": "carnet-replace-athlete-not-allowed",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "Not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.carnet.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Carnet Replace",
+    "description": "Add a new carnet to the association",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "carnet-replace-foreign-carnet-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880003/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": null,
+    "link": null
+   }
+  },
+  {
+   "name": "carnet-replace-unknown-subscription-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000989999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": null,
+    "link": null
+   }
+  },
+  {
+   "name": "carnet-replace-with-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [
+     [
+      "payment",
+      "p_i1",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     ],
+     [
+      "installment",
+      "i1",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     ],
+     [
+      "payment",
+      "p_i1",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     ],
+     [
+      "installment",
+      "i1",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     ],
+     [
+      "installment",
+      "i3",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     ],
+     [
+      "payment",
+      "p_main",
+      [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     ]
+    ],
+    "create": {
+     "carnet": "c1",
+     "subscription": "current",
+     "actor": "owner",
+     "payment": {
+      "user": "athlete",
+      "associate": "mine",
+      "amount": "50.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [
+      "active"
+     ],
+     "lessons": 10
+    },
+    "link": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000880013"
+   }
+  },
+  {
+   "name": "carnet-replace-repeat-with-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": {
+     "carnet": "c1",
+     "subscription": "current",
+     "actor": "owner",
+     "payment": {
+      "user": "athlete",
+      "associate": "mine",
+      "amount": "50.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [
+      "active"
+     ],
+     "lessons": 10
+    },
+    "link": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000880013"
+   }
+  },
+  {
+   "name": "carnet-replace-no-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": {
+     "carnet": "c1",
+     "subscription": "current",
+     "actor": "owner",
+     "payment": {
+      "user": "athlete",
+      "associate": "mine",
+      "amount": "50.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [],
+     "lessons": 10
+    },
+    "link": null
+   }
+  },
+  {
+   "name": "carnet-replace-foreign-course-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": {
+     "carnet": "c1",
+     "subscription": "current",
+     "actor": "owner",
+     "payment": {
+      "user": "athlete",
+      "associate": "mine",
+      "amount": "50.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [],
+     "lessons": 10
+    },
+    "link": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000970003"
+   }
+  },
+  {
+   "name": "carnet-replace-deleted-course-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880002/replace/a1000000-0000-4000-8000-000000880011",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": {
+     "carnet": "c2",
+     "subscription": "other_open",
+     "actor": "owner",
+     "payment": {
+      "user": "owner",
+      "associate": "other",
+      "amount": "0.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [],
+     "lessons": 0
+    },
+    "link": null
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000880014"
+   }
+  },
+  {
+   "name": "carnet-replace-full-collaborator-form",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "deleted": [],
+    "create": {
+     "carnet": "c1",
+     "subscription": "current",
+     "actor": "full_collaborator",
+     "payment": {
+      "user": "athlete",
+      "associate": "mine",
+      "amount": "50.00",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "account": "bank",
+      "group": null
+     },
+     "courses": [
+      "second"
+     ],
+     "lessons": 10
+    },
+    "link": null
+   },
+   "raw_body": "course_subscription_id=a1000000-0000-4000-8000-000000970002",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "carnet-replace-holding-link",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet/a1000000-0000-4000-8000-000000880001/replace/a1000000-0000-4000-8000-000000880008",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Carnet added successfully."
+   },
+   "effect": {
+    "actor": "owner",
+    "deleted": [],
+    "create": null,
+    "link": [
+     "held",
+     "second"
+    ]
+   },
+   "body": {
+    "carnet_subscription_id": "a1000000-0000-4000-8000-000000880016",
+    "course_subscription_id": "a1000000-0000-4000-8000-000000970002"
+   }
+  }
+ ]
+}

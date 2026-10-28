@@ -52,7 +52,7 @@ def seed_fixture(apps, private_work, raw, *, source_contract=contract):
 
 
 @contextmanager
-def fixture_context(apps, private_work, raw, *, cleanup_receipt=None, source_contract=contract):
+def fixture_context(apps, private_work, raw, *, cleanup_receipt=None, source_contract=contract, seed=None):
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
     from application.models import Payment
@@ -70,7 +70,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None, source_con
     receipt = cleanup_receipt if cleanup_receipt is not None else {}
     receipt.update(verified=False, results={})
     try:
-        fixture = seed_fixture(apps, private_work, raw, source_contract=source_contract)
+        fixture = (seed or seed_fixture)(apps, private_work, raw, source_contract=source_contract)
         yield fixture
     finally:
         def remove_rows():

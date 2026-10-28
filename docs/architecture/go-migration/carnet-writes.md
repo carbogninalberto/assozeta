@@ -3,7 +3,7 @@
 `POST carnet/<uid>/delete` and `PATCH carnet/<uid>/update` (`carnet_delete` and
 `carnet_update` in `BE/application/views/carnet_views.py`, as scoped by PR #28) are implemented in Go
 (`BE_GO/internal/{domain,repository,service,handler}/carnet_writes.go`). Django
-remains the production execution owner. Carnet add and replace are not ported yet.
+remains the production execution owner. Carnet add is not ported yet.
 
 ## Behavior
 
@@ -159,6 +159,40 @@ subscription are created as in the topup, linked to the selected course
 subscription. Both answer `200 {"msg": "Carnet assigned successfully.",
 "course_subscription_id": <id or null>}`. Values follow `UUIDField.to_python`
 (integers and booleans as `uuid.UUID(int=...)`).
-`TESTS/fixtures/carnet_assign_http.json` authors 32 cases; the Django
-reference passed them on the first run. Admitting deleted course
-subscriptions fails the deleted-course case.
+Group-aware managers catch the `ValidationError` of a group the UUID field
+rejects and leave the queryset unfiltered, so only a create (which stores the
+raw value) fails with a 500.
+`TESTS/fixtures/carnet_assign_http.json` authors 33 cases; the Django
+reference passed the first 30 on the first run and confirmed the ignored
+invalid group. Admitting deleted course subscriptions fails the
+deleted-course case.
+
+## Carnet replace
+
+`POST carnet/<uid>/replace/<uid_subscription>` refuses non-association roles
+(`403 {"msg": "Not allowed."}`) and requires the owner's association (a
+missing one is a 500). A body `course_subscription_id` selects a live course
+subscription of the association's courses (a non-UUID is a 500). Its live,
+unpaid, group-aware installments are each deleted as
+`installment.payment.delete()` then `installment.delete()`, and then the course
+subscription's live unpaid payment (group-aware, by the value loaded before
+the installments were deleted). The signals make the audit trail
+deliberately repetitive, as Django records it (confirmed with a probe before
+authoring):
+
+- `Payment` pre_delete deletes the payment's installments; each installment's
+  pre_delete deletes its unpaid payment (the payment signal is disconnected),
+  which is audited, then the installment is audited.
+- The outer collector deletes the already-deleted payment and audits it
+  again (a paid payment is audited only here).
+- `installment.delete()` then finds the payment instance whose key Django
+  cleared, fails inside the signal's `except`, and audits the installment
+  again although no row remains.
+
+Payment entries are indexed through `changes_json.sport_association`,
+installment entries through the actor's association (none for a
+collaborator). Each delete is committed (autocommit). `carnet_assign` then
+runs on the same request; its responses (404s, 403) are discarded and the
+view answers `200 {"msg": "Carnet added successfully."}`, but its exceptions
+still surface: with a rejected `X-Group-Id` the deletes stay and the payment
+create is a 500. `TESTS/fixtures/carnet_replace_http.json` authors 19 cases.

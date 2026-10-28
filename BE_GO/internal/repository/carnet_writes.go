@@ -156,25 +156,8 @@ func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, paymen
 	if installments {
 		return domain.ErrPaymentCascadeUnsupported
 	}
-	refs := []struct {
-		Table  string `db:"table_name"`
-		Column string `db:"column_name"`
-	}{}
-	if err := t.tx.SelectContext(ctx, &refs, `SELECT kcu.table_name, kcu.column_name FROM information_schema.referential_constraints rc
- JOIN information_schema.key_column_usage kcu ON kcu.constraint_name=rc.constraint_name AND kcu.constraint_schema=rc.constraint_schema
- JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name=rc.unique_constraint_name AND ccu.constraint_schema=rc.unique_constraint_schema
- WHERE ccu.table_name='application_payment' AND ccu.column_name='payment_id' AND kcu.table_schema=current_schema()
- ORDER BY kcu.table_name, kcu.column_name`); err != nil {
+	if err := clearPaymentReferences(ctx, t.tx, payment); err != nil {
 		return err
-	}
-	for _, ref := range refs {
-		statement := `UPDATE ` + pq(ref.Table) + ` SET ` + pq(ref.Column) + `=NULL WHERE ` + pq(ref.Column) + `=$1`
-		if paymentThroughTables[ref.Table] {
-			statement = `DELETE FROM ` + pq(ref.Table) + ` WHERE ` + pq(ref.Column) + `=$1`
-		}
-		if _, err := t.tx.ExecContext(ctx, statement, payment); err != nil {
-			return err
-		}
 	}
 	// The reverse many-to-many accessor is not rendered on delete.
 	changes, _, err := deleteModelWithAudit(ctx, t.tx, "application_payment", "payment_id", payment)
@@ -189,6 +172,32 @@ func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, paymen
 		entry.AssociationID, entry.ResolutionPath = &association, &path
 	}
 	return appendModelAudit(ctx, t.tx, entry)
+}
+
+// clearPaymentReferences applies the collector's SET_NULL updates and
+// many-to-many through-row deletes for a payment about to be deleted.
+func clearPaymentReferences(ctx context.Context, tx *sqlx.Tx, payment string) error {
+	refs := []struct {
+		Table  string `db:"table_name"`
+		Column string `db:"column_name"`
+	}{}
+	if err := tx.SelectContext(ctx, &refs, `SELECT kcu.table_name, kcu.column_name FROM information_schema.referential_constraints rc
+ JOIN information_schema.key_column_usage kcu ON kcu.constraint_name=rc.constraint_name AND kcu.constraint_schema=rc.constraint_schema
+ JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name=rc.unique_constraint_name AND ccu.constraint_schema=rc.unique_constraint_schema
+ WHERE ccu.table_name='application_payment' AND ccu.column_name='payment_id' AND kcu.table_schema=current_schema()
+ ORDER BY kcu.table_name, kcu.column_name`); err != nil {
+		return err
+	}
+	for _, ref := range refs {
+		statement := `UPDATE ` + pq(ref.Table) + ` SET ` + pq(ref.Column) + `=NULL WHERE ` + pq(ref.Column) + `=$1`
+		if paymentThroughTables[ref.Table] {
+			statement = `DELETE FROM ` + pq(ref.Table) + ` WHERE ` + pq(ref.Column) + `=$1`
+		}
+		if _, err := tx.ExecContext(ctx, statement, payment); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func pq(identifier string) string { return `"` + strings.ReplaceAll(identifier, `"`, `""`) + `"` }
@@ -479,4 +488,181 @@ func (t *carnetWriteTransaction) LinkCourse(ctx context.Context, holding, course
  SELECT $1,$2 WHERE NOT EXISTS (SELECT 1 FROM application_carnetsubscription_course_subscription
   WHERE carnetsubscription_id=$1 AND coursesubscription_id=$2)`, holding, course)
 	return err
+}
+
+func (r *CarnetWrites) BeginCarnetReplace(ctx context.Context) (domain.CarnetReplaceTransaction, error) {
+	transaction, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return transaction.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) ReplaceCourse(ctx context.Context, id, association string) (*domain.CarnetReplaceCourse, error) {
+	return carnetAssignFirst[domain.CarnetReplaceCourse](ctx, t.tx, `SELECT cs.course_subscription_id, cs.payment_id
+ FROM application_coursesubscription cs JOIN application_course c ON c.course_id=cs.course_id
+ WHERE cs.course_subscription_id=$1 AND NOT cs.deleted AND c.sport_association_id=$2`, id, association)
+}
+
+type replacePayment struct {
+	changes     map[string][2]string
+	paid        bool
+	association string
+}
+
+// loadReplacePayment is a payment fetched through the FK descriptor (the base
+// manager), rendered as the delete entry of that in-memory instance.
+func (t *carnetWriteTransaction) loadReplacePayment(ctx context.Context, payment string) (*replacePayment, error) {
+	changes, stored, err := storedModelChanges(ctx, t.tx, "application_payment", "payment_id", payment, false, true)
+	if errors.Is(err, ErrModelDeleteMissing) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &replacePayment{changes: changes, paid: stored["paid"] == true, association: changes["sport_association"][0]}, nil
+}
+
+func (t *carnetWriteTransaction) auditReplacePayment(ctx context.Context, payment string, row *replacePayment, audit domain.CarnetReplaceAudit) error {
+	entry := modelAuditEntry{Model: "payment", Key: payment, Representation: "Payment object (" + payment + ")", Action: 2,
+		Changes: row.changes, Context: audit.Context, At: audit.At}
+	path := "changes_json.sport_association"
+	if row.association != "" && row.association != "None" {
+		association := row.association
+		entry.AssociationID, entry.ResolutionPath = &association, &path
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *carnetWriteTransaction) auditReplaceInstallment(ctx context.Context, installment string, changes map[string][2]string, audit domain.CarnetReplaceAudit) error {
+	entry := modelAuditEntry{Model: "coursesubscriptioninstallment", Key: installment,
+		Representation: "CourseSubscriptionInstallment object (" + installment + ")", Action: 2, Changes: changes, Context: audit.Context, At: audit.At}
+	if audit.ActorAssociation != nil {
+		path := "actor.sport_association"
+		entry.AssociationID, entry.ResolutionPath = audit.ActorAssociation, &path
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+// deleteReplacePayment is payment.delete() with its pre_delete signal: the
+// payment's live (group-aware) installments are deleted, each installment's
+// own pre_delete deleting the payment first when unpaid (signal disconnected),
+// then the outer collector deletes and audits the payment again. Every
+// post_delete is audited, including deletes that affect no row.
+func (t *carnetWriteTransaction) deleteReplacePayment(ctx context.Context, payment string, outer *replacePayment, group *string, audit domain.CarnetReplaceAudit) error {
+	installments := []string{}
+	if err := t.tx.SelectContext(ctx, &installments, `SELECT course_subscription_installment_id FROM application_coursesubscriptioninstallment
+ WHERE payment_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) ORDER BY course_subscription_installment_id FOR UPDATE`,
+		payment, group); err != nil {
+		return err
+	}
+	rendered := make([]map[string][2]string, len(installments))
+	for index, installment := range installments {
+		changes, _, err := storedModelChanges(ctx, t.tx, "application_coursesubscriptioninstallment", "course_subscription_installment_id",
+			installment, false, true)
+		if err != nil {
+			return err
+		}
+		rendered[index] = changes
+	}
+	for range installments {
+		// delete_related_payment: installment.payment, fetched fresh.
+		current, err := t.loadReplacePayment(ctx, payment)
+		if err != nil {
+			return err
+		}
+		if current != nil && !current.paid {
+			if err = clearPaymentReferences(ctx, t.tx, payment); err != nil {
+				return err
+			}
+			if _, err = t.tx.ExecContext(ctx, `DELETE FROM application_payment WHERE payment_id=$1`, payment); err != nil {
+				return err
+			}
+			if err = t.auditReplacePayment(ctx, payment, current, audit); err != nil {
+				return err
+			}
+		}
+	}
+	for index, installment := range installments {
+		if _, err := t.tx.ExecContext(ctx, `DELETE FROM application_coursesubscriptioninstallment WHERE course_subscription_installment_id=$1`,
+			installment); err != nil {
+			return err
+		}
+		if err := t.auditReplaceInstallment(ctx, installment, rendered[index], audit); err != nil {
+			return err
+		}
+	}
+	if err := clearPaymentReferences(ctx, t.tx, payment); err != nil {
+		return err
+	}
+	if _, err := t.tx.ExecContext(ctx, `DELETE FROM application_payment WHERE payment_id=$1`, payment); err != nil {
+		return err
+	}
+	return t.auditReplacePayment(ctx, payment, outer, audit)
+}
+
+func (t *carnetWriteTransaction) DeleteUnpaidInstallments(ctx context.Context, course string, group *string, audit domain.CarnetReplaceAudit) error {
+	installments := []struct {
+		ID        string  `db:"course_subscription_installment_id"`
+		PaymentID *string `db:"payment_id"`
+	}{}
+	if err := t.tx.SelectContext(ctx, &installments, `SELECT course_subscription_installment_id, payment_id FROM application_coursesubscriptioninstallment
+ WHERE course_subscription_id=$1 AND NOT paid AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)
+ ORDER BY course_subscription_installment_id FOR UPDATE`, course, group); err != nil {
+		return err
+	}
+	// The evaluated queryset keeps each instance's values as loaded.
+	rendered := make([]map[string][2]string, len(installments))
+	for index, installment := range installments {
+		changes, _, err := storedModelChanges(ctx, t.tx, "application_coursesubscriptioninstallment", "course_subscription_installment_id",
+			installment.ID, false, true)
+		if err != nil {
+			return err
+		}
+		rendered[index] = changes
+	}
+	for index, installment := range installments {
+		if installment.PaymentID != nil {
+			payment, err := t.loadReplacePayment(ctx, *installment.PaymentID)
+			if err != nil {
+				return err
+			}
+			if payment == nil {
+				// installment.payment on a payment an earlier cascade deleted.
+				return errReplacePaymentMissing
+			}
+			if err = t.deleteReplacePayment(ctx, *installment.PaymentID, payment, group, audit); err != nil {
+				return err
+			}
+		}
+		// installment.delete(): its signal finds the cleared payment instance
+		// and fails silently; the delete is audited even when no row remains.
+		if _, err := t.tx.ExecContext(ctx, `DELETE FROM application_coursesubscriptioninstallment WHERE course_subscription_installment_id=$1`,
+			installment.ID); err != nil {
+			return err
+		}
+		if err := t.auditReplaceInstallment(ctx, installment.ID, rendered[index], audit); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// errReplacePaymentMissing is RelatedObjectDoesNotExist (a 500).
+var errReplacePaymentMissing = errors.New("installment payment no longer exists")
+
+func (t *carnetWriteTransaction) DeleteUnpaidCoursePayment(ctx context.Context, payment string, group *string, audit domain.CarnetReplaceAudit) error {
+	var live bool
+	if err := t.tx.GetContext(ctx, &live, `SELECT EXISTS(SELECT 1 FROM application_payment
+ WHERE payment_id=$1 AND NOT paid AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, payment, group); err != nil {
+		return err
+	}
+	if !live {
+		return nil
+	}
+	row, err := t.loadReplacePayment(ctx, payment)
+	if err != nil || row == nil {
+		return err
+	}
+	return t.deleteReplacePayment(ctx, payment, row, group, audit)
 }

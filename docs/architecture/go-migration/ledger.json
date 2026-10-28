@@ -4888,9 +4888,9 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/carnet-assign-http-versioned-r1/results.json",
-          "receipt_sha256": "5cbcf890c46a4f63961dd2678a00176812e4f4aefa03c70d9cd3bb78a15dac67"
+          "result": "GREEN: 33/33 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects (rejected X-Group-Id ignored by lookups).",
+          "artifact": "quality-reports/go-migration/carnet-assign-http-versioned-r2/results.json",
+          "receipt_sha256": "a49d4663628a4689fa23ca234e1965617c77019b9ce788bd2001a1d0d1322ade"
         },
         {
           "revision": "committing change admitting deleted course subscriptions",
@@ -5098,25 +5098,72 @@
         "target": "carnet_replace",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "carnet_assign port",
+        "application_coursesubscriptioninstallment",
+        "application_payment",
+        "application_coursesubscription",
+        "Existing identity resolution, permission registry and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/replace/<uid_subscription>",
+          "/api/v2/carnet/<uid>/replace/<uid_subscription>",
+          "/api/carnet/<uid>/replace/<uid_subscription>"
+        ],
+        "request": "JSON/form: optional course_subscription_id (plus carnet_assign fields).",
+        "response": "200 {\"msg\": \"Carnet added successfully.\"} (carnet_assign responses discarded).",
+        "errors": "401; 403 Not allowed. / registry / scoped session; 500 malformed UUIDs, missing association, vanished installment payment, carnet_assign exceptions (rejected X-Group-Id on create).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "The owner's association courses; carnet_assign scope for the assignment.",
+        "side_effects": "Deletes the course subscription unpaid installments and unpaid payment with the signal-driven auditlog entries (payment, installment, payment, installment), then carnet_assign effects.",
+        "transaction": "Deletes committed before carnet_assign (Django autocommit).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_replace_http.json",
+        "TESTS/fixtures/generate_carnet_replace_http.py",
+        "TESTS/contracts/test_carnet_replace_http.py",
+        "TESTS/adapters/django/carnet_replace_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 19/19; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-replace-http-red-r2/results.json",
+          "receipt_sha256": "e0844fde0f764a23d6c32852a53284f2efb88d2483fda6b4904acf6e7f0d773d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 19/19 on native Django, native Go, Caddy /api/v1 and /api/v2 with ordered signal-cascade audit entries.",
+          "artifact": "quality-reports/go-migration/carnet-replace-http-versioned-r1/results.json",
+          "receipt_sha256": "b25c2597342886c216b81cdc5bd995ddc4a0fe8c4876326737b25fa58c9fcbda"
+        },
+        {
+          "revision": "committing change without the outer collector payment entry",
+          "result": "Mutation control: fails Go on audit.count.",
+          "artifact": "quality-reports/go-migration/carnet-replace-http-mutation-r1/results.json",
+          "receipt_sha256": "7e5027f33d5d8755f6e36ca77ebeeb08728a73768151127303e6b3dc071a7ea4"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including the repeated signal-driven delete audit entries, discarded carnet_assign responses and autocommit ordering."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/unassign/<str:uid_subscription> -> carnet_unassign",

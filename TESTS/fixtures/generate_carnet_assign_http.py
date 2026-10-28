@@ -109,7 +109,13 @@ add('full-collaborator-form', 'full_collaborator', 'c1', 'current', 200, assigne
     effect=created('c1', 'current', 'full_collaborator', 'bank', 'second'))
 # Subscription.objects filters by the raw X-Group-Id.
 add('group-header-hides-subscription', 'owner', 'c1', 'current', 404, NO_SUBSCRIPTION, headers={'X-Group-Id': IDS['own_group']})
+# A group the UUID field rejects is ignored by GroupAwareManager (it catches the
+# ValidationError): lookups are unfiltered, a link succeeds, and only
+# PaymentManager.create fails storing it.
 add('invalid-group-server-error', 'owner', 'c1', 'current', 500, SERVER, headers={'X-Group-Id': 'abc'})
+add('invalid-group-link', 'owner', 'c1', 'current', 200, assigned('second'), headers={'X-Group-Id': 'abc'},
+    body={'carnet_subscription_id': HOLDINGS['family']['id'], 'course_subscription_id': COURSES['second']['id']},
+    effect=linked('family', 'second'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'}, 'accounts': TOPUP['accounts'],

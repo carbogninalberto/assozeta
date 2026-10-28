@@ -488,14 +488,9 @@ func (s *CarnetAssigns) Assign(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	defer tx.Rollback()
-	var groupFilter *string
-	if group != "" {
-		value, err := djangoUUIDValue(group)
-		if err != nil {
-			return nil, err
-		}
-		groupFilter = &value
-	}
+	// GroupAwareManager catches the ValidationError of a rejected group and
+	// leaves the queryset unfiltered; only a create stores (and rejects) it.
+	groupFilter := supplierGroup(group)
 	subscriptionID, err := djangoUUIDValue(rawSubscription)
 	if err != nil {
 		return nil, err
@@ -611,4 +606,79 @@ func (s *CarnetAssigns) Assign(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	return course, tx.Commit()
+}
+
+type CarnetReplaces struct {
+	store   domain.CarnetReplaceStore
+	assigns *CarnetAssigns
+	now     func() time.Time
+}
+
+func NewCarnetReplaces(store domain.CarnetReplaceStore, assigns *CarnetAssigns, now func() time.Time) *CarnetReplaces {
+	return &CarnetReplaces{store: store, assigns: assigns, now: now}
+}
+
+// Replace follows carnet_replace: the selected course subscription's unpaid
+// installments and payment are deleted (each committed, as in autocommit),
+// then carnet_assign runs on the same request and its response is discarded;
+// only its exceptions surface.
+func (s *CarnetReplaces) Replace(ctx context.Context, identity domain.ResolvedIdentity, rawCarnet, rawSubscription, group string, body any,
+	audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	tx, err := s.store.BeginCarnetReplace(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return err
+	}
+	if association == nil {
+		// SportAssociation.objects.get(user=...) raises DoesNotExist.
+		return ErrPaymentSaveFailed
+	}
+	value, present, err := carnetAssignField(body, "course_subscription_id")
+	if err != nil {
+		return err
+	}
+	if present {
+		id, err := djangoUUIDValue(value)
+		if err != nil {
+			return err
+		}
+		course, err := tx.ReplaceCourse(ctx, id, *association)
+		if err != nil {
+			return err
+		}
+		if course != nil {
+			actorAssociation, err := tx.ActiveAssociationOf(ctx, identity.Actor.ID)
+			if err != nil {
+				return err
+			}
+			deletes := domain.CarnetReplaceAudit{Context: paymentCategoryAuditContext(identity, audit), ActorAssociation: actorAssociation,
+				At: s.now().UTC().Truncate(time.Microsecond)}
+			groupFilter := supplierGroup(group)
+			if err = tx.DeleteUnpaidInstallments(ctx, course.ID, groupFilter, deletes); err != nil {
+				return err
+			}
+			if course.PaymentID != nil {
+				if err = tx.DeleteUnpaidCoursePayment(ctx, *course.PaymentID, groupFilter, deletes); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	_, err = s.assigns.Assign(ctx, identity, rawCarnet, rawSubscription, group, body, audit)
+	switch {
+	case errors.Is(err, ErrCarnetNotAllowed), errors.Is(err, domain.ErrCarnetAssignSubscription), errors.Is(err, domain.ErrCarnetAssignAssociation),
+		errors.Is(err, domain.ErrCarnetAssignCarnet), errors.Is(err, domain.ErrCarnetSubscriptionNotFound), errors.Is(err, domain.ErrCarnetAssignCourse):
+		return nil
+	}
+	return err
 }

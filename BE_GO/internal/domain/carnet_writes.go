@@ -209,3 +209,35 @@ type CarnetAssignTransaction interface {
 type CarnetAssignStore interface {
 	BeginCarnetAssign(context.Context) (CarnetAssignTransaction, error)
 }
+
+type CarnetReplaceCourse struct {
+	ID        string  `db:"course_subscription_id"`
+	PaymentID *string `db:"payment_id"`
+}
+
+// CarnetReplaceAudit carries the request audit context of a replace delete.
+type CarnetReplaceAudit struct {
+	Context          LoginAuditContext
+	ActorAssociation *string
+	At               time.Time
+}
+
+type CarnetReplaceTransaction interface {
+	OwnerAssociation(ctx context.Context, owner string, scope *string) (*string, error)
+	// ReplaceCourse is a live course subscription of the association's courses.
+	ReplaceCourse(ctx context.Context, id, association string) (*CarnetReplaceCourse, error)
+	// DeleteUnpaidInstallments deletes the course subscription's live unpaid
+	// installments (group-aware) as installment.payment.delete() then
+	// installment.delete(), with every signal-driven auditlog entry.
+	DeleteUnpaidInstallments(ctx context.Context, course string, group *string, audit CarnetReplaceAudit) error
+	// DeleteUnpaidCoursePayment deletes the live (group-aware) unpaid payment with
+	// its pre_delete signal cascade; absent payments are skipped.
+	DeleteUnpaidCoursePayment(ctx context.Context, payment string, group *string, audit CarnetReplaceAudit) error
+	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
+	Commit() error
+	Rollback() error
+}
+
+type CarnetReplaceStore interface {
+	BeginCarnetReplace(context.Context) (CarnetReplaceTransaction, error)
+}
