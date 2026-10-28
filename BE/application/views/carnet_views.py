@@ -404,8 +404,9 @@ def carnet_info(request, uid):
             sub_data = CarnetSubscriptionSerializer(sub).data
             sub_data['courses'] = []
             course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
-                subscription=sub.subscription
-            )
+                subscription=sub.subscription,
+                course__sport_association=carnet.sport_association,
+            ) if sub.subscription_id else []
             for course_sub in course_subscriptions:
                 sub_data['courses'].append(CourseSimpleSerializer(course_sub.course).data)
             data['subscriptions'].append(sub_data)

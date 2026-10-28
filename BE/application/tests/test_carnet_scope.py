@@ -110,3 +110,13 @@ class CarnetAssociationScopeTests(BaseTransactionTestCase):
         response = self.client.get(f'/carnet-subscription/list?subscription_id={self.own_sub.pk}')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([row['carnet_subscription_id'] for row in response.data['data']], [self.own_csub.pk])
+
+    def test_info_lists_only_own_courses_of_each_holding(self):
+        from application.models.courses_models import CourseSubscription
+        detached = create_test_carnet_subscription(self.own_carnet, self.own_sub)
+        CarnetSubscription.objects.filter(pk=detached.pk).update(subscription=None)
+        CourseSubscription.objects.create(course=self.cs.course, subscription=None)
+        response = self.client.get(f'/carnet/{self.own_carnet.pk}/info')
+        self.assertEqual(response.status_code, 200)
+        courses = {row['carnet_subscription_id']: [c['course_id'] for c in row['courses']] for row in response.data['data']['subscriptions']}
+        self.assertEqual(courses, {str(detached.pk): [], str(self.own_csub.pk): [str(self.own_cs.course_id)]})
