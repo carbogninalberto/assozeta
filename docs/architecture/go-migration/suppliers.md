@@ -6,7 +6,7 @@ Go (`BE_GO/internal/{domain,dto,repository,service,handler}/suppliers.go`, with
 DRF page-number pagination in `BE_GO/internal/dto/drf_pagination.go`), as are
 `DELETE supplier/<uid>/delete` and `supplier/bulk-delete`
 (`BE_GO/internal/{domain,repository,service,handler}/supplier_writes.go`). Django
-remains the production execution owner. Supplier add and update are not ported yet.
+remains the production execution owner. Add and update are ported too (below).
 
 ## Behavior
 
@@ -75,3 +75,35 @@ model state unchanged; dropping the LIKE escaping fails the percent case.
 `TESTS/fixtures/supplier_deletes_http.json` authors 28 cases; the Django
 reference passed them on the first run. Ignoring the group filter fails the
 group-header case.
+
+## Add and update
+
+`POST supplier/add` and `PATCH supplier/<uid>/update` validate
+`SupplierSerializer` (a ModelSerializer over every field) in Go
+(`BE_GO/internal/dto/supplier_write.go`): the model's text fields with their
+null/blank/length options, the email field through a port of Django 5.2's
+`EmailValidator` (pinned against Django's verdicts in
+`supplier_write_test.go`), a writable `supplier_id` with its UniqueValidator
+over the live, group-aware manager, `deleted`, and the tenant-scoped
+`sport_association` and `group` relations (another association's row is DRF's
+generic 403, which escapes before the other field errors).
+
+- **Add:** athletes get a bare 403; the owner's association is required (500);
+  errors answer `400 {"msg": "validation errors: <repr of serializer.errors>"}`
+  (Python repr of the ErrorDetail lists, in field order). The group-aware
+  manager's `create` stores the raw `X-Group-Id` (with a body `group` too it is
+  an unexpected keyword: 500). auditlog records the create, indexed through the
+  actor's association when the body did not name the association (through
+  `changes_json` when it did), then the association save: `sport_association`
+  only, none when the body named it, or the whole diff again for a deleted
+  supplier because the soft-delete manager cannot load it (both confirmed by
+  the Django reference). The response is `201` with the serialized supplier.
+- **Update:** `is_valid_uuid` (400), the owner's association (500, also for
+  athletes), the first live group-aware supplier (none, or one without an
+  association, is a 500), another association's supplier is `403 User not
+  allowed.`, invalid input is `400 {"msg": "validation errors."}`; changed
+  fields only are audited (indexed directly) and the serialized supplier is
+  returned. A new `supplier_id` would make `Model.save()` insert a copy under
+  the new key; Go refuses it with a 500 instead (not ported).
+
+`TESTS/fixtures/supplier_writes_http.json` authors 31 cases.

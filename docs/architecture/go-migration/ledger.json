@@ -16205,25 +16205,71 @@
         "target": "supplier_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/supplier_write.go",
+        "BE_GO/internal/domain/supplier_writes.go",
+        "BE_GO/internal/repository/supplier_writes.go",
+        "BE_GO/internal/service/supplier_writes.go",
+        "BE_GO/internal/handler/supplier_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, tenant scope, permission registry and audit index",
+        "application_supplierandcustomers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/<uid>/update",
+          "/api/v2/supplier/<uid>/update",
+          "/api/supplier/<uid>/update"
+        ],
+        "request": "JSON/form: SupplierSerializer fields.",
+        "response": "200 serialized supplier.",
+        "errors": "400 malformed uid / {\"msg\": \"validation errors.\"}; 401; 403 User not allowed. / tenant scope / registry; 500 missing association or supplier, a new supplier_id (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.update.",
+        "resource_scope": "The owner's association; tenant-scoped relations.",
+        "side_effects": "Saves every field; one auditlog update entry with the changed fields, indexed directly.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_writes_http.json",
+        "TESTS/fixtures/generate_supplier_writes_http.py",
+        "TESTS/contracts/test_supplier_writes_http.py",
+        "TESTS/adapters/django/supplier_writes_http.py",
+        "BE_GO/internal/dto/supplier_write_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 31/31; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-red-r1/results.json",
+          "receipt_sha256": "f996f26bec78af31685dbde151053c8b0192c0b8150a8ab1acf2553ba3e6e10d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 31/31 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-versioned-r3/results.json",
+          "receipt_sha256": "89a653ab63dd674ea62a1ebc4df547b4c2ce260f5f3a422c8899b020b38ea183"
+        },
+        {
+          "revision": "committing change without the deleted-row audit diff",
+          "result": "Mutation control: fails Go on the full add case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9dd07c91ce4bcbfe923f098b6d2db5424215fb7716d607af87a4dafd2cd61130"
+        }
+      ],
+      "notes": [
+        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports; a supplier_id change on update is refused (Django would insert a copy)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/add -> supplier_add",
@@ -16240,25 +16286,71 @@
         "target": "supplier_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/supplier_write.go",
+        "BE_GO/internal/domain/supplier_writes.go",
+        "BE_GO/internal/repository/supplier_writes.go",
+        "BE_GO/internal/service/supplier_writes.go",
+        "BE_GO/internal/handler/supplier_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, tenant scope, permission registry and audit index",
+        "application_supplierandcustomers"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/supplier/add",
+          "/api/v2/supplier/add",
+          "/api/supplier/add"
+        ],
+        "request": "JSON/form: SupplierSerializer fields.",
+        "response": "201 serialized supplier.",
+        "errors": "400 {\"msg\": \"validation errors: <repr>\"}; 401; 403 bare (athletes) / tenant scope / registry / scoped session; 500 missing association, body group with X-Group-Id, rejected X-Group-Id.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry bookeeping.management.suppliers.create.",
+        "resource_scope": "The owner's association; tenant-scoped relations.",
+        "side_effects": "Creates the supplier (create entry, then the association save entry per the observed rules).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/supplier_writes_http.json",
+        "TESTS/fixtures/generate_supplier_writes_http.py",
+        "TESTS/contracts/test_supplier_writes_http.py",
+        "TESTS/adapters/django/supplier_writes_http.py",
+        "BE_GO/internal/dto/supplier_write_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/suppliers.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 31/31; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-red-r1/results.json",
+          "receipt_sha256": "f996f26bec78af31685dbde151053c8b0192c0b8150a8ab1acf2553ba3e6e10d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 31/31 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-versioned-r3/results.json",
+          "receipt_sha256": "89a653ab63dd674ea62a1ebc4df547b4c2ce260f5f3a422c8899b020b38ea183"
+        },
+        {
+          "revision": "committing change without the deleted-row audit diff",
+          "result": "Mutation control: fails Go on the full add case.",
+          "artifact": "quality-reports/go-migration/supplier-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9dd07c91ce4bcbfe923f098b6d2db5424215fb7716d607af87a4dafd2cd61130"
+        }
+      ],
+      "notes": [
+        "Implementing: SupplierSerializer validation (EmailValidator port, repr errors), tenant-scoped relations and auditlog semantics on four transports; a supplier_id change on update is refused (Django would insert a copy)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:supplier/bulk-delete -> supplier_bulk_delete",

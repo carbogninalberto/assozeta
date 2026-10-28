@@ -351,6 +351,28 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return "Invalid data. Expected a dictionary, but got " + kind + "."
 		}
 		return "Dati non validi. Era atteso un dizionario, ma si è ricevuto " + kind + "."
+	case code == dto.SupplierValidationEmail:
+		if english {
+			return "Enter a valid email address."
+		}
+		return "Inserisci un indirizzo email valido."
+	case code == dto.SupplierValidationUnique:
+		if english {
+			return "supplier and customers with this supplier id already exists."
+		}
+		return "supplier and customers con questo supplier id esiste già."
+	case strings.HasPrefix(code, "related-incorrect-type:"):
+		kind := strings.TrimPrefix(code, "related-incorrect-type:")
+		if english {
+			return "Incorrect type. Expected pk value, received " + kind + "."
+		}
+		return "Tipo non corretto. Era atteso un valore pk, ricevuto " + kind + "."
+	case strings.HasPrefix(code, "related-invalid-uuid:"):
+		value := strings.TrimPrefix(code, "related-invalid-uuid:")
+		if english {
+			return "“" + value + "” is not a valid UUID."
+		}
+		return "“" + value + "” non è un UUID valido."
 	case code == dto.CarnetAddMetaDict:
 		return "This field must be a dictionary."
 	case code == "immutable-category-id":

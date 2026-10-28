@@ -14,14 +14,23 @@ type SupplierWrites struct{ db *sqlx.DB }
 
 func NewSupplierWrites(db *sqlx.DB) *SupplierWrites { return &SupplierWrites{db: db} }
 
-type supplierWriteTransaction struct{ *paymentCategoryTransaction }
+type supplierWriteTransaction struct{ *dashboardLayoutTransaction }
 
-func (r *SupplierWrites) BeginSupplierDelete(ctx context.Context) (domain.SupplierDeleteTransaction, error) {
+func (r *SupplierWrites) begin(ctx context.Context) (*supplierWriteTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &supplierWriteTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: tx}}, nil
+	return &supplierWriteTransaction{dashboardLayoutTransaction: &dashboardLayoutTransaction{
+		paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: tx}}}, nil
+}
+
+func (r *SupplierWrites) BeginSupplierDelete(ctx context.Context) (domain.SupplierDeleteTransaction, error) {
+	return r.begin(ctx)
+}
+
+func (r *SupplierWrites) BeginSupplierWrite(ctx context.Context) (domain.SupplierWriteTransaction, error) {
+	return r.begin(ctx)
 }
 
 func (t *supplierWriteTransaction) OwnerAssociation(ctx context.Context, owner string) (string, error) {
@@ -70,4 +79,71 @@ func (t *supplierWriteTransaction) DeleteSupplier(ctx context.Context, id string
 		entry.AssociationID, entry.ResolutionPath = &association, &path
 	}
 	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *supplierWriteTransaction) AssociationExists(ctx context.Context, id string) (bool, error) {
+	var exists bool
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
+	return exists, err
+}
+
+func (t *supplierWriteTransaction) GroupAssociation(ctx context.Context, id string) (*string, bool, error) {
+	var association *string
+	err := t.tx.GetContext(ctx, &association, `SELECT sport_association_id FROM application_group WHERE group_id=$1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	return association, err == nil, err
+}
+
+func (t *supplierWriteTransaction) SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error) {
+	var taken bool
+	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_supplierandcustomers
+ WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR supplier_id<>$3::uuid))`, id, group, exclude)
+	return taken, err
+}
+
+func (t *supplierWriteTransaction) LiveSupplier(ctx context.Context, id string, group *string) (*domain.Supplier, error) {
+	var row domain.Supplier
+	err := t.tx.GetContext(ctx, &row, `SELECT `+supplierColumns+` FROM application_supplierandcustomers
+ WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) ORDER BY supplier_id LIMIT 1 FOR UPDATE`, id, group)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (t *supplierWriteTransaction) InsertSupplier(ctx context.Context, row domain.Supplier) error {
+	_, err := t.tx.NamedExecContext(ctx, `INSERT INTO application_supplierandcustomers (`+supplierColumns+`)
+ VALUES (:supplier_id,:name,:address,:tax_code,:sport_association_id,:vat_number,:type,:email,:phone_number,:city,:cap,:state,
+ :country,:nationality,:note,:group_id,:deleted)`, row)
+	return err
+}
+
+func (t *supplierWriteTransaction) SaveSupplier(ctx context.Context, row domain.Supplier) error {
+	_, err := t.tx.NamedExecContext(ctx, `UPDATE application_supplierandcustomers SET name=:name, address=:address, tax_code=:tax_code,
+ sport_association_id=:sport_association_id, vat_number=:vat_number, type=:type, email=:email, phone_number=:phone_number, city=:city,
+ cap=:cap, state=:state, country=:country, nationality=:nationality, note=:note, group_id=:group_id, deleted=:deleted
+ WHERE supplier_id=:supplier_id`, row)
+	return err
+}
+
+func (t *supplierWriteTransaction) AuditSupplier(ctx context.Context, entry domain.SupplierAudit) error {
+	changes := entry.Changes
+	if entry.FullDiff {
+		var err error
+		if changes, err = createdModelChanges(ctx, t.tx, "application_supplierandcustomers", "supplier_id", entry.ID); err != nil {
+			return err
+		}
+	}
+	event := modelAuditEntry{Model: "supplierandcustomers", Key: entry.ID, Representation: "SupplierAndCustomers object (" + entry.ID + ")",
+		Action: entry.Action, Changes: changes, Context: entry.Context, At: entry.At}
+	if entry.Association != nil {
+		path := entry.Path
+		event.AssociationID, event.ResolutionPath = entry.Association, &path
+	}
+	return appendModelAudit(ctx, t.tx, event)
 }

@@ -1,0 +1,1027 @@
+{
+ "matrix_version": 1,
+ "scope": "Supplier add and update authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "suppliers": {
+  "acqua": {
+   "id": "a1000000-0000-4000-8000-000000900001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Acqua Srl",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": "acqua@example.test",
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": "Fornitura 100%"
+  },
+  "beta": {
+   "id": "a1000000-0000-4000-8000-000000900002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Beta è Figli",
+   "address": "Via Rossi 1",
+   "tax_code": null,
+   "vat_number": null,
+   "type": "customer",
+   "email": null,
+   "phone_number": null,
+   "city": "Milano",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "cavalli": {
+   "id": "a1000000-0000-4000-8000-000000900003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Cavalli",
+   "address": null,
+   "tax_code": "CVLTAX",
+   "vat_number": "IT0001",
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": null,
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "delta": {
+   "id": "a1000000-0000-4000-8000-000000900004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Delta_Sport",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": "+39 011",
+   "city": "Torino",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "emme": {
+   "id": "a1000000-0000-4000-8000-000000900005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Emme",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Bari",
+   "cap": "70100",
+   "state": "BA",
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "effe": {
+   "id": "a1000000-0000-4000-8000-000000900006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Effe Rossi",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Napoli",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "gi": {
+   "id": "a1000000-0000-4000-8000-000000900007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Gi",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Gela",
+   "cap": null,
+   "state": null,
+   "country": null,
+   "nationality": null,
+   "note": null
+  },
+  "acca": {
+   "id": "a1000000-0000-4000-8000-000000900008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Acca",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "pa",
+   "email": null,
+   "phone_number": null,
+   "city": "Genova",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "ii": {
+   "id": "a1000000-0000-4000-8000-000000900009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Ii Ènte",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Pisa",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "elle": {
+   "id": "a1000000-0000-4000-8000-000000900010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Elle",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Lecce",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "emmeemme": {
+   "id": "a1000000-0000-4000-8000-000000900011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": null,
+   "name": "Emmeemme",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Como",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000900012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": false,
+   "group": "own_group",
+   "name": "Gruppo Uno",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Asti",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000900013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "deleted": true,
+   "group": null,
+   "name": "Rossi Cancellato",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  },
+  "estero": {
+   "id": "a1000000-0000-4000-8000-000000900014",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "deleted": false,
+   "group": null,
+   "name": "Rossi Estero",
+   "address": null,
+   "tax_code": null,
+   "vat_number": null,
+   "type": "supplier",
+   "email": null,
+   "phone_number": null,
+   "city": "Roma",
+   "cap": null,
+   "state": null,
+   "country": "Italia",
+   "nationality": "Italiana",
+   "note": null
+  }
+ },
+ "cases": [
+  {
+   "name": "supplier-writes-add-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 403,
+   "response": "<empty>",
+   "effect": null,
+   "body": {
+    "name": "Atleta"
+   }
+  },
+  {
+   "name": "supplier-writes-add-missing-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'name': [ErrorDetail(string='This field is required.', code='required')]}"
+   },
+   "effect": null,
+   "body": {
+    "city": "Roma"
+   }
+  },
+  {
+   "name": "supplier-writes-add-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'name': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'email': [ErrorDetail(string='Enter a valid email address.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "email": "not-an-email"
+   }
+  },
+  {
+   "name": "supplier-writes-add-existing-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'supplier_id': [ErrorDetail(string='supplier and customers with this supplier id already exists.', code='unique')]}"
+   },
+   "effect": null,
+   "body": {
+    "name": "Copia",
+    "supplier_id": "a1000000-0000-4000-8000-000000900001"
+   }
+  },
+  {
+   "name": "supplier-writes-add-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "supplier-writes-add-foreign-association-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "name": "Estero",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "supplier-writes-add-foreign-group-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "name": "Gruppo estero",
+    "group": "a1000000-0000-4000-8000-000000714002"
+   }
+  },
+  {
+   "name": "supplier-writes-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "name": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.suppliers.create"
+   },
+   "effect": null,
+   "body": {
+    "name": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "supplier-writes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "supplier-writes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-writes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Supplier Add",
+    "description": "API endpoint to add a new supplier",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-writes-add-minimal",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "supplier_id": "$new",
+    "name": "Nuovo è",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": null,
+    "phone_number": null,
+    "city": null,
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": null,
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "values": {
+     "supplier_id": "$new",
+     "name": "Nuovo è",
+     "address": null,
+     "tax_code": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "vat_number": null,
+     "type": "supplier",
+     "email": null,
+     "phone_number": null,
+     "city": null,
+     "cap": null,
+     "state": null,
+     "country": "Italia",
+     "nationality": "Italiana",
+     "note": null,
+     "group": null,
+     "deleted": false
+    },
+    "group": null
+   },
+   "body": {
+    "name": "Nuovo è"
+   }
+  },
+  {
+   "name": "supplier-writes-add-full-own-references",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "supplier_id": "$new",
+    "name": "Completo",
+    "address": "Via 2",
+    "tax_code": "TAX",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": "IT9",
+    "type": "customer",
+    "email": "c@example.test",
+    "phone_number": "+39 2",
+    "city": "Roma",
+    "cap": "00100",
+    "state": "RM",
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nota",
+    "group": "a1000000-0000-4000-8000-000000714001",
+    "deleted": true
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "values": {
+     "supplier_id": "$new",
+     "name": "Completo",
+     "address": "Via 2",
+     "tax_code": "TAX",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "vat_number": "IT9",
+     "type": "customer",
+     "email": "c@example.test",
+     "phone_number": "+39 2",
+     "city": "Roma",
+     "cap": "00100",
+     "state": "RM",
+     "country": "Italia",
+     "nationality": "Italiana",
+     "note": "Nota",
+     "group": "a1000000-0000-4000-8000-000000714001",
+     "deleted": true
+    },
+    "group": null
+   },
+   "body": {
+    "name": "Completo",
+    "address": "Via 2",
+    "tax_code": "TAX",
+    "vat_number": "IT9",
+    "type": "customer",
+    "email": "c@example.test",
+    "phone_number": "+39 2",
+    "city": "Roma",
+    "cap": "00100",
+    "state": "RM",
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nota",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": "a1000000-0000-4000-8000-000000714001",
+    "deleted": true
+   }
+  },
+  {
+   "name": "supplier-writes-add-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 201,
+   "response": {
+    "supplier_id": "$new",
+    "name": "Con gruppo",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": null,
+    "phone_number": null,
+    "city": null,
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": null,
+    "group": "a1000000-0000-4000-8000-000000714001",
+    "deleted": false
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "values": {
+     "supplier_id": "$new",
+     "name": "Con gruppo",
+     "address": null,
+     "tax_code": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "vat_number": null,
+     "type": "supplier",
+     "email": null,
+     "phone_number": null,
+     "city": null,
+     "cap": null,
+     "state": null,
+     "country": "Italia",
+     "nationality": "Italiana",
+     "note": null,
+     "group": "a1000000-0000-4000-8000-000000714001",
+     "deleted": false
+    },
+    "group": null
+   },
+   "body": {
+    "name": "Con gruppo"
+   }
+  },
+  {
+   "name": "supplier-writes-add-full-collaborator-form",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/supplier/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "supplier_id": "$new",
+    "name": "Modulo",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": null,
+    "phone_number": null,
+    "city": "Pisa",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": null,
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "values": {
+     "supplier_id": "$new",
+     "name": "Modulo",
+     "address": null,
+     "tax_code": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "vat_number": null,
+     "type": "supplier",
+     "email": null,
+     "phone_number": null,
+     "city": "Pisa",
+     "cap": null,
+     "state": null,
+     "country": "Italia",
+     "nationality": "Italiana",
+     "note": null,
+     "group": null,
+     "deleted": false
+    },
+    "group": null
+   },
+   "raw_body": "name=Modulo&city=Pisa",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "supplier-writes-update-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-unknown-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000929999/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-soft-deleted-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-group-header-hides-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900012/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-foreign-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-athlete-server-error",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-invalid-email",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": {
+    "email": "nope"
+   }
+  },
+  {
+   "name": "supplier-writes-update-foreign-association-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "supplier-writes-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.suppliers.update"
+   },
+   "effect": null,
+   "body": {
+    "city": "X"
+   }
+  },
+  {
+   "name": "supplier-writes-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "supplier-writes-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Supplier Update",
+    "description": "API endpoint to update a new supplier",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "supplier-writes-update-city",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-000000900001",
+    "name": "Acqua Srl",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": "acqua@example.test",
+    "phone_number": null,
+    "city": "Torino",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Fornitura 100%",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "supplier": "acqua",
+    "changes": {
+     "city": [
+      "Roma",
+      "Torino"
+     ]
+    }
+   },
+   "body": {
+    "city": "Torino"
+   }
+  },
+  {
+   "name": "supplier-writes-update-same-value-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-000000900001",
+    "name": "Acqua Srl",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": "acqua@example.test",
+    "phone_number": null,
+    "city": "Torino",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Fornitura 100%",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "supplier": "acqua",
+    "changes": {}
+   },
+   "body": {
+    "city": "Torino"
+   }
+  },
+  {
+   "name": "supplier-writes-update-clear-and-set",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Milano",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "supplier": "beta",
+    "changes": {
+     "address": [
+      "Via Rossi 1",
+      "None"
+     ],
+     "note": [
+      "None",
+      "Nuova"
+     ]
+    }
+   },
+   "body": {
+    "address": null,
+    "note": "Nuova"
+   }
+  }
+ ]
+}

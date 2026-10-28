@@ -267,3 +267,10 @@ func PythonContains(data any, key string) (bool, error) { return pythonContains(
 
 // PythonIndex is data[key] for a parsed body.
 func PythonIndex(data any, key string) (any, error) { return pythonIndex(data, key) }
+
+// PythonStringRepr is repr() of a str.
+func PythonStringRepr(value string) string {
+	var out strings.Builder
+	pythonStringRepr(&out, value)
+	return out.String()
+}
