@@ -41,7 +41,7 @@ func authenticatedRESTIdentityBody(c echo.Context, actors *service.ActorAuthenti
 	// impersonation therefore retains its denial before missing-credential 401.
 	identity, err := identities.Resolve(r.Context(), actor, domain.IdentityRequest{Method: r.Method, Path: r.URL.Path,
 		SessionID: r.Header.Get("X-Impersonation-Id"), TargetID: r.Header.Get("User-Id"), GroupID: r.Header.Get("X-Group-Id"),
-		References: &domain.RequestReferences{Operation: operation, Query: query, Body: body, BodyError: bodyErr}})
+		References: &domain.RequestReferences{Operation: operation, Path: routePathReferences(c), Query: query, Body: body, BodyError: bodyErr}})
 	if err != nil {
 		return nil, restError(c, err)
 	}
@@ -73,4 +73,17 @@ func readAuthenticatedRESTBodyUsing(c echo.Context, readBody func(*http.Request)
 	value, err := readBody(c.Request())
 	c.Set(authenticatedRESTBodyKey, authenticatedRESTBody{value: value, err: err})
 	return value, err
+}
+
+// routePathReferences is resolver_match.kwargs: the route's named path values
+// in declaration order, checked by the association-scoped request guard.
+func routePathReferences(c echo.Context) domain.RequestObject {
+	names, values := c.ParamNames(), c.ParamValues()
+	var path domain.RequestObject
+	for index, name := range names {
+		if index < len(values) {
+			path = append(path, domain.RequestField{Name: name, Value: values[index]})
+		}
+	}
+	return path
 }

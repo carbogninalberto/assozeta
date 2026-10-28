@@ -148,7 +148,7 @@ func messageReadsIdentity(c echo.Context, actors *service.ActorAuthentication, i
 	identity, err := identities.Resolve(request.Context(), actor, domain.IdentityRequest{
 		Method: request.Method, Path: request.URL.Path, SessionID: request.Header.Get("X-Impersonation-Id"),
 		TargetID: request.Header.Get("User-Id"), GroupID: request.Header.Get("X-Group-Id"),
-		References: &domain.RequestReferences{Operation: operation, Query: query, Body: body, BodyError: bodyErr},
+		References: &domain.RequestReferences{Operation: operation, Path: routePathReferences(c), Query: query, Body: body, BodyError: bodyErr},
 	})
 	if err != nil {
 		return nil, restError(c, err)
