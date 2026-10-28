@@ -30,7 +30,12 @@ type CarnetToggleService interface {
 	Toggle(context.Context, domain.ResolvedIdentity, string, bool, domain.LoginAuditContext) error
 }
 
+type CarnetLinkService interface {
+	Remove(context.Context, domain.ResolvedIdentity, string, string) error
+}
+
 type CarnetWritesHandler struct {
+	links      CarnetLinkService
 	toggles    CarnetToggleService
 	deletes    CarnetDeleteService
 	updates    CarnetUpdateService
@@ -41,8 +46,8 @@ type CarnetWritesHandler struct {
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewCarnetWritesHandler(toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
+func NewCarnetWritesHandler(links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -218,4 +223,37 @@ func (h *CarnetWritesHandler) toggle(c echo.Context, disabled bool) error {
 		return restError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "Carnet subscription " + word + "."})
+}
+
+func (h *CarnetWritesHandler) RemoveCourseLink(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodDelete, "carnet_subscription_delete")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Subscription Delete", "Set carnet subscription delete")
+	}
+	if request.Method != http.MethodDelete {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	err = h.links.Remove(ctx, *identity, c.Param("uid"), c.Param("uid_course"))
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetSubscriptionNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet subscription not found."})
+	case err != nil:
+		return restError(c, err)
+	}
+	return c.JSON(200, map[string]string{"msg": "Carnet subscription deleted."})
 }

@@ -258,3 +258,20 @@ func (t *carnetWriteTransaction) SetHoldingDisabled(ctx context.Context, holding
 		Representation: "CarnetSubscription object (" + holding + ")", Action: 1, Changes: map[string][2]string{"disabled": {old, updated}},
 		Context: audit, AssociationID: &association, ResolutionPath: &path, At: at})
 }
+
+var _ domain.CarnetLinkStore = (*CarnetWrites)(nil)
+
+func (r *CarnetWrites) BeginCarnetLink(ctx context.Context) (domain.CarnetLinkTransaction, error) {
+	tx, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) RemoveCourseLink(ctx context.Context, holding, course string) error {
+	_, err := t.tx.ExecContext(ctx, `DELETE FROM application_carnetsubscription_course_subscription
+ WHERE carnetsubscription_id=$1 AND coursesubscription_id IN
+  (SELECT course_subscription_id FROM application_coursesubscription WHERE course_subscription_id=$2 AND NOT deleted)`, holding, course)
+	return err
+}

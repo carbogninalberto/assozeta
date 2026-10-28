@@ -178,3 +178,35 @@ func (s *CarnetToggles) Toggle(ctx context.Context, identity domain.ResolvedIden
 	}
 	return tx.Commit()
 }
+
+type CarnetLinks struct{ store domain.CarnetLinkStore }
+
+func NewCarnetLinks(store domain.CarnetLinkStore) *CarnetLinks { return &CarnetLinks{store: store} }
+
+// Remove follows carnet_subscription_delete: the owned carnet subscription,
+// then course_subscription.remove(uid_course) and an unchanged save.
+func (s *CarnetLinks) Remove(ctx context.Context, identity domain.ResolvedIdentity, raw, rawCourse string) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	tx, err := s.store.BeginCarnetLink(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, _, err = tx.HoldingForToggle(ctx, id.String(), identity.ScopeUser.ID, paymentCategoryAssociationScope(identity)); err != nil {
+		return err
+	}
+	course, err := paymentInfoParseUUID(rawCourse)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	if err = tx.RemoveCourseLink(ctx, id.String(), course.String()); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

@@ -73,3 +73,16 @@ not found.`; a non-UUID is a 500) and save `disabled`. auditlog records the flag
 only when it changes, indexed through `subscription.sport_association` (the row
 still resolves). `TESTS/fixtures/carnet_subscription_toggle_http.json` authors
 27 cases; auditing an unchanged save fails the repeat case.
+
+## Carnet subscription course-link delete
+
+`DELETE carnet-subscription/<uid>/delete/<uid_course>` is decorated with both
+`@api_view(['POST'])` and `@api_view(['DELETE'])`, but behaves as an
+authenticated DELETE view (Allow `DELETE, OPTIONS`; confirmed against Django
+before authoring). Non-association roles are refused; the carnet subscription
+must belong to the scope user's subscriptions (404; a non-UUID is a 500); then
+`course_subscription.remove(uid_course)` (a non-UUID is a 500). `remove()`
+filters ids through the target's soft-delete manager, so a link to a deleted
+course subscription stays; an unlinked id is a no-op. The save changes no
+field: no audit entry. `TESTS/fixtures/carnet_subscription_delete_http.json`
+authors 16 cases; the Django reference corrected the deleted-link expectation.

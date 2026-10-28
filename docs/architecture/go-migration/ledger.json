@@ -4362,25 +4362,69 @@
         "target": "carnet_subscription_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "PR #28 association scoping",
+        "Existing identity resolution and permission registry",
+        "application_carnetsubscription_course_subscription, application_coursesubscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/<uid>/delete/<uid_course>",
+          "/api/v2/carnet-subscription/<uid>/delete/<uid_course>",
+          "/api/carnet-subscription/<uid>/delete/<uid_course>"
+        ],
+        "request": "No body.",
+        "response": "200 {\"msg\": \"Carnet subscription deleted.\"}.",
+        "errors": "401; 403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet subscription not found.; 500 non-UUID ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.delete.",
+        "resource_scope": "A carnet subscription of the scope user's subscriptions.",
+        "side_effects": "Removes one live course-subscription link; no audit entry.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_delete_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_delete_http.py",
+        "TESTS/contracts/test_carnet_subscription_delete_http.py",
+        "TESTS/adapters/django/carnet_subscription_delete_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 16/16 after one source-confirmed correction; Go without the route on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-delete-http-red-r1/results.json",
+          "receipt_sha256": "29cafa3e21b7fb694d13cbc2435c399e67c01a47d99dd62e1f7ea3b811e70d78"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 16/16 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-delete-http-versioned-r1/results.json",
+          "receipt_sha256": "d5de89c57098d23522cc40270d3db0fab5aaedbdc5f2cf6722f4d8b869205355"
+        },
+        {
+          "revision": "committing change removing links to deleted course subscriptions",
+          "result": "Mutation control: fails Go on that case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-delete-http-mutation-r1/results.json",
+          "receipt_sha256": "d06bf1b900acdb37ee6b17fae2c25bc7f441e76a40b2a6b62f4c24a036ff06d9"
+        }
+      ],
+      "notes": [
+        "Implementing: parity with the PR #28 contract on four transports; the doubly decorated view behaves as a DELETE view."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet-subscription/<str:uid>/disable -> carnet_subscription_disable",

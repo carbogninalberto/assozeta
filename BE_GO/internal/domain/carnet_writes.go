@@ -91,3 +91,16 @@ type CarnetToggleTransaction interface {
 type CarnetToggleStore interface {
 	BeginCarnetToggle(context.Context) (CarnetToggleTransaction, error)
 }
+
+type CarnetLinkTransaction interface {
+	HoldingForToggle(ctx context.Context, holding, owner string, scope *string) (disabled bool, association string, err error)
+	// RemoveCourseLink is course_subscription.remove(id): only live course
+	// subscriptions are matched (the default manager); no audit entry.
+	RemoveCourseLink(ctx context.Context, holding, course string) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetLinkStore interface {
+	BeginCarnetLink(context.Context) (CarnetLinkTransaction, error)
+}
