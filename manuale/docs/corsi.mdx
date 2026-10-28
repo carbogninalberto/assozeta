@@ -1,0 +1,517 @@
+---
+title: "Corsi"
+description: "Guide alla creazione e gestione di corsi e abbonamenti in Assozeta."
+---
+
+## Creare un corso
+
+Per questo esempio prepara un corso **Standard** chiamato **Yoga del mattino**, con descrizione **Lezioni di yoga per adulti.** e quota attività di **90,00 €**. La creazione del corso precede l’iscrizione delle persone e il relativo incasso.
+
+<Steps>
+  <Step title="Apri i corsi">
+    Dal menu laterale apri **Attività → Corsi e Abbonamenti** e premi **Corso o Abbonamento**.
+  </Step>
+  <Step title="Compila un corso Standard">
+    Inserisci **Titolo** e **Descrizione**. Mantieni la tipologia **Standard** e indica una **Quota attività** maggiore di zero, per esempio **90,00**.
+    <Frame>![Dati di un nuovo corso Standard](/images/corsi/creazione-modifica/1.png)</Frame>
+  </Step>
+  <Step title="Salva il corso">
+    Premi **Salva**. Il corso compare nell'elenco **Corsi e abbonamenti**.
+    <Frame>![Nuovo corso nell'elenco](/images/corsi/creazione-modifica/2.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Un collaboratore con accesso in sola lettura può consultare i corsi. Per crearli serve il permesso di creazione; il pulsante non compare quando manca.</Note>
+
+### Funzionamento dei corsi e personalizzazione
+
+La **Tipologia** del corso determina come prepari la quota. Il corso, l'iscrizione di un tesserato e il relativo pagamento sono elementi distinti: un cambiamento della quota generale non va considerato automaticamente applicato a ogni pagamento già assegnato.
+
+| Tipologia | Configurazione |
+| --- | --- |
+| **Standard** | **Quota attività**, eventuale **Corso Gratuito**, rate e opzione di unica soluzione |
+| **Quote Multiple** | Più scelte con **Titolo**, **Causale** e **Importo** |
+| **Abbonamento** | Quota, durata in mesi o stagione, inizio e rinnovo configurabili |
+
+Il carnet è gestito separatamente. Un carnet assegnato non annulla da solo una quota corso già presente. Prima di iscrivere i tesserati, decidi quale modalità usare e controlla anche le causali e il conto dei pagamenti.
+
+#### Corso con pagamento per lezione
+
+Se vuoi usare un carnet, configura prima la quota del corso secondo le esigenze dell’associazione. La normale assegnazione del carnet non rimuove una quota corso già generata. Nell’esempio manteniamo la quota di 120,00 € e aggiungiamo il carnet separato di 50,00 €.
+
+<Steps>
+<Step title="Iscrivi il tesserato al corso">
+Apri **Attività → Corsi e Abbonamenti** e scegli **Ginnastica per tutti**.
+Nella scheda **Iscritti al corso**, premi **Tesserato**. Nel modulo **Iscrivi al corso**, cerca **Giulia** in **Tesserati** e seleziona **GIULIA BIANCHI (Anno corrente)**.
+Premi **Aggiungi** e controlla che Giulia compaia nell'elenco anche dopo aver ricaricato la pagina.
+<Frame>![Giulia Bianchi selezionata nel modulo Iscrivi al corso](/images/registro-presenze/carnet-manuale/1.png)</Frame>
+<Frame>![Iscrizione di Giulia conservata nel corso](/images/registro-presenze/carnet-manuale/2.png)</Frame>
+<Note>Il corso dell'esempio ha una quota di **120,00 €**: l'iscrizione genera il relativo pagamento in attesa. Il carnet viene assegnato separatamente e aggiunge il proprio pagamento; non sostituisce questa quota.</Note>
+</Step>
+<Step title="Assegna un nuovo carnet a Giulia">
+Apri il carnet e scegli **Utilizzo**.
+Premi **Assegna carnet**. Nel modulo **Assegna un carnet**, cerca Giulia in **Associa carnet a**, seleziona **Giulia Bianchi** e premi **Assegna**.
+<Frame>![Giulia selezionata per l’assegnazione del carnet](/images/registro-presenze/carnet-manuale/6.png)</Frame>
+Nell'elenco **Utilizzo del Carnet** compare una nuova riga con **5/5** lezioni. L'assegnazione genera un pagamento di **50,00 €**, inizialmente in attesa.
+<Frame>![Carnet assegnato a Giulia con cinque lezioni disponibili](/images/registro-presenze/carnet-manuale/7.png)</Frame>
+<Note>Una riga senza collegamenti mostra **Valido per tutti i corsi**. Il carnet può essere usato per le presenze nei corsi a cui il tesserato è iscritto; il collegamento permette di limitarlo al corso scelto.</Note>
+</Step>
+<Step title="Collega il carnet al corso">
+Nella riga di Giulia, premi **collega corso**.
+In **Assegna carnet ad un corso**, seleziona **Ginnastica per tutti** e premi **Assegna carnet**.
+<Frame>![Corso già frequentato da Giulia selezionato per il collegamento](/images/registro-presenze/carnet-manuale/8.png)</Frame>
+Il titolo del corso compare nella colonna **Corsi** e il conteggio rimane **5/5** anche dopo il ricaricamento.
+<Frame>![Collegamento al corso conservato nella riga del carnet](/images/registro-presenze/carnet-manuale/9.png)</Frame>
+<Warning>La lista propone i corsi a cui il tesserato è già iscritto. Se manca il corso desiderato, esegui prima l'iscrizione al corso. Il collegamento dell'assegnazione esistente non genera un secondo pagamento.</Warning>
+</Step>
+</Steps>
+
+#### Corso con le rate
+
+
+
+Per un corso **Standard**, la rateizzazione divide la quota attività in scadenze. Prepara prima il totale e le date concordate con l'associazione.
+
+<Steps>
+  <Step title="Prepara la quota">
+In creazione scegli **Standard**, indica **Quota attività** e attiva **Rateizza**. Compare **Rateizzazione della quota attività**.
+
+<Frame>![Corso Standard: tre rate da 100 euro, scadenze e alternativa da 280 euro.](/images/corsi/piano-rate-reale/1.png)</Frame>
+</Step>
+  <Step title="Crea e controlla le rate">
+Indica da **2 a 30** rate e premi **Crea Rate**. Controlla ogni voce **Scade il**; le date iniziali sono una proposta da correggere. Per importi differenti attiva **Permetti rate di importi diversi** e verifica il nuovo totale.
+
+<Frame>![Generatore in creazione: tre importi differenti e scadenze corrette, totale 300 euro.](/images/corsi/piano-rate-reale/3.png)</Frame>
+</Step>
+  <Step title="Salva e assegna il piano">
+Salva il corso. Nella sua scheda, iscrivi un tesserato e controlla le rate selezionate in **Piano rate** prima di **Aggiungi**. Riapri l’iscrizione e consulta i pagamenti generati.
+
+<Frame>![Pagamenti della singola iscrizione, con importi e corso corretti.](/images/corsi/piano-rate-reale/9.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Le rate selezionate possono essere registrate subito, anche con scadenze passate. La precedente promessa di generazione soltanto 30 giorni prima non descrive tutti i percorsi attuali. Una rata assegnata non risulta automaticamente incassata.</Warning>
+
+Consulta il [tutorial sulle rate](/tutorials/come-impostare-pagamenti-rateizzati) per scadenze passate e piano completo.
+
+#### Corso con le rate e pagamento in unica soluzione
+
+
+
+Questa opzione offre un importo alternativo al piano rate di un corso **Standard**. Il pagamento unico può essere diverso dal totale delle rate, per esempio per applicare una riduzione concordata.
+
+<Steps>
+  <Step title="Configura prima le rate">
+    Attiva **Rateizza** e prepara almeno due rate. Quando esiste un piano compare **Permetti pagamento in un’unica soluzione**.
+  </Step>
+  <Step title="Imposta l’alternativa">
+Attiva **Unica soluzione** e compila la **Quota attività** della relativa area. Controlla separatamente totale rate e importo unico; poi salva il corso.
+
+<Frame>![Corso Standard: tre rate da 100 euro, scadenze e alternativa da 280 euro.](/images/corsi/piano-rate-reale/1.png)</Frame>
+</Step>
+  <Step title="Applica la scelta al tesserato">
+Nella scheda del corso seleziona l’iscrizione. In **Operazioni su selezionati**, quando disponibile, scegli **Cambia in unica soluzione** e rivedi la conferma. Controlla il nuovo pagamento e le rate rimaste.
+
+<Frame>![Giulia ha la quota unica da 280 euro; Luca mantiene le sue tre rate.](/images/corsi/piano-rate-reale/22.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il cambio sostituisce le rate non incassate. Le quote già incassate richiedono un controllo separato: non presumere un rimborso o una compensazione automatica. L’operazione non esegue un pagamento su Stripe.</Warning>
+
+#### Corso con quote multiple
+
+
+
+Le **Quote Multiple** sono alternative: ogni iscrizione sceglie una quota, per esempio **Ordinaria** oppure **Studenti**. Non dividono lo stesso totale in rate e non incassano automaticamente l’importo.
+
+<Steps>
+<Step title="Scegli la tipologia">
+Apri **Attività → Corsi e Abbonamenti**, premi **Corso o Abbonamento** e compila titolo e descrizione. Seleziona **Quote Multiple** nella Tipologia. Per una nuova alternativa premi **Aggiungi Quota**.
+</Step>
+<Step title="Compila le alternative">
+Per ogni riga inserisci **Titolo**, **Causale** e **Importo**. Per esempio crea Ordinaria da 90 euro e Studenti da 65 euro, entrambe con una causale di entrata appropriata. Il cestino rimuove la riga ancora in preparazione. **Aggiungi Causale** apre una pagina diversa: prepara prima le causali per non interrompere la compilazione del corso.
+<Frame>![Quote alternative prima del salvataggio](/images/corsi/tipologie-condivisione-reali/1.png)</Frame>
+</Step>
+<Step title="Salva e assegna una quota">
+Premi **Salva**, riapri il corso e controlla titoli e importi. In **Iscritti al corso** premi **Aggiungi tesserato**, scegli la persona e poi la voce **Quota**. Premi **Aggiungi**. Ricarica la scheda e controlla l’iscrizione e il pagamento collegato: nell’esempio Studenti produce una quota da 65 euro ancora da incassare.
+<Frame>![Quota scelta per la singola iscrizione](/images/corsi/tipologie-condivisione-reali/3.png)</Frame>
+
+<Frame>![Iscrizione salvata e pagamento della quota Studenti ancora da incassare.](/images/corsi/tipologie-condivisione-reali/4.png)</Frame>
+</Step>
+<Step title="Rivedi una quota già assegnata">
+Nella riga della persona apri **Modifica** e rileggi l’avviso: cambiare **Quota** non modifica i pagamenti. Scegliendo Ordinaria al posto di Studenti cambi la quota dell’iscrizione, mentre il pagamento già registrato conserva 65 euro. Dopo **Modifica**, riapri la scheda e confronta separatamente iscrizione e pagamento effettivo.
+<Frame>![Avviso prima di cambiare una quota già assegnata](/images/corsi/tipologie-condivisione-reali/5.png)</Frame>
+</Step>
+</Steps>
+
+<Info>Creazione del corso, assegnazione e modifica richiedono i rispettivi permessi sui corsi. Un collaboratore in lettura può consultare le righe; non può salvare queste operazioni. Per correggere una somma già registrata consulta [Pagamenti](/docs/pagamenti), controllando prima stato e documenti collegati.</Info>
+
+#### Corso di tipo Abbonamento
+
+
+
+Un corso **Abbonamento** registra quote riferite a un periodo di attività. La configurazione generale propone valori al singolo tesserato; puoi personalizzare quota e durata quando lo aggiungi. È distinto dal piano della piattaforma.
+
+<Steps>
+<Step title="Imposta quota e durata">
+Da **Attività → Corsi → Corso o Abbonamento** compila titolo e descrizione, poi scegli **Abbonamento**. Inserisci **Quota abbonamento**. Per una durata in mesi disattiva **Dura tutta la stagione sportiva** e scegli **Durata abbonamento (mesi)**, da 1 a 12. Per esempio imposta 40 euro e Mensile. Se usi la stagione sportiva, controlla invece le sue date nelle impostazioni.
+<Frame>![Quota e impostazioni generali dell’abbonamento](/images/corsi/tipologie-condivisione-reali/9.png)</Frame>
+</Step>
+<Step title="Decidi inizio e rinnovo">
+Con **Inizia da data iscrizione** il periodo parte dalla data di iscrizione. Se lo disattivi, scegli **Si rinnova il giorno**, da 1 a 28. Decidi separatamente **Rinnovo automatico** e leggi il riepilogo sotto i controlli. Premi **Salva**, riapri il corso e verifica che importo, durata e interruttori siano conservati.
+
+<Frame>![Condizioni generali dell’abbonamento salvate e riaperte.](/images/corsi/tipologie-condivisione-reali/10.png)</Frame>
+</Step>
+<Step title="Personalizza il singolo abbonamento">
+Nella scheda **Abbonamenti** premi **Aggiungi abbonamento**. Seleziona i **Tesserati** e rivedi **Quota di iscrizione (€)**, durata e **Data inizio**. Per durate in mesi la **Data fine** è calcolata; per la stagione sportiva è un campo da controllare. Nell’esempio puoi assegnare alla sola Giulia 35 euro per due mesi. Controlla **Abbonamento attivo** e **Rinnovo automatico**, quindi premi **Crea**.
+<Frame>![Quota e periodo del singolo abbonamento prima di Crea](/images/corsi/tipologie-condivisione-reali/11.png)</Frame>
+</Step>
+<Step title="Controlla periodo e pagamento">
+Ricarica la pagina e ritrova la persona corretta. Verifica data iniziale, data finale, quota e stato. Controlla i pagamenti dell’abbonamento: la creazione dell’esempio registra una quota da 35 euro non ancora incassata. Le condizioni generali del corso restano da 40 euro e mensili; non sono state sostituite dalla scelta individuale.
+<Frame>![Abbonamento individuale salvato e riaperto](/images/corsi/tipologie-condivisione-reali/12.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Il rinnovo automatico dipende dai servizi periodici dell’installazione e richiede condizioni compatibili del corso e dell’iscrizione. Configurare l’interruttore non prova un rinnovo eseguito a una data precisa e non autorizza da solo un addebito su carta. Gli incassi vanno controllati nella pagina [Pagamenti](/docs/pagamenti).</Note>
+
+## Validità dei corsi
+
+La visibilità e il periodo del corso sono informazioni distinte. Nascondere un corso lo rende non proposto pubblicamente; eliminarlo ha conseguenze ulteriori sui dati collegati.
+
+| Stato | Significato |
+| --- | --- |
+| **Visibile** | Corso disponibile nel profilo dell’associazione; è lo stato richiesto dal servizio di rinnovo degli abbonamenti |
+| **Non visibile** | Corso nascosto; i rinnovi degli abbonamenti non vengono selezionati dal servizio |
+| **Interno** | Stato previsto per uso interno; non equivale allo stato visibile richiesto dai rinnovi |
+
+Il servizio di rinnovo considera inoltre le impostazioni del singolo abbonamento e la sua scadenza. Rendere il corso visibile non incassa i pagamenti già in attesa e non riattiva automaticamente un abbonamento individuale disabilitato.
+
+<Note>Le date di un corso non costituiscono una prova di pagamento. Per una sospensione controlla visibilità, abbonamenti e quote in attesa come elementi separati.</Note>
+
+## Gestire i corsi
+
+
+
+La scheda del corso raccoglie le informazioni generali e gli elenchi collegati. Per consultarla occorre il permesso di lettura; modifiche, iscrizioni, calendario e presenze hanno autorizzazioni proprie.
+
+<Steps>
+  <Step title="Apri la scheda">
+Da **Attività > Corsi e Abbonamenti**, premi il titolo del corso. Controlla che sia il corso corretto prima di una modifica.
+
+<Frame>![Scheda del corso dedicato e due iscrizioni con piano rate.](/images/corsi/manutenzione-calendario/1.png)</Frame>
+</Step>
+  <Step title="Scegli il gruppo di dati">
+Usa **Iscritti al corso**, **Calendario** o **Presenze** secondo l’operazione. **Modifica** riguarda le informazioni generali del corso.
+
+<Frame>![Cinque lezioni periodiche salvate e riaperte nel calendario.](/images/corsi/manutenzione-calendario/6.png)</Frame>
+</Step>
+  <Step title="Riapri dopo un cambiamento">
+Dopo **Salva**, ricarica la scheda e ricontrolla il dato. Nell’esempio Standard modifichiamo il piano generale da due rate di **60 € + 60 €** a **70 € + 50 €**. Il totale resta **120 €**, ma le rate individuali già assegnate conservano i loro importi. Apri **Pagamenti** nella riga della persona per controllarli: la modifica generale non applica automaticamente il nuovo piano agli iscritti già presenti.
+
+<Frame>![Piano generale riaperto; le rate individuali conservano 60 euro.](/images/corsi/manutenzione-calendario/3.png)</Frame>
+</Step>
+</Steps>
+
+### Modificare le informazioni del corso
+
+Nell’esempio cambiamo **Yoga del mattino** in **Yoga del mattino avanzato**, conservando la quota di **90,00 €**. Controlla il corso corretto prima di aprire la modifica.
+
+<Steps>
+  <Step title="Apri e modifica">
+    Nell'elenco dei corsi premi il **titolo** del corso, poi **Modifica**. Cambia il campo **Titolo**.
+    <Frame>![Modifica del titolo di un corso](/images/corsi/creazione-modifica/3.png)</Frame>
+  </Step>
+  <Step title="Salva e controlla">
+    Premi **Salva**. Puoi ricaricare la scheda e verificare che mostri il nuovo titolo.
+    <Frame>![Titolo modificato dopo il ricaricamento](/images/corsi/creazione-modifica/4.png)</Frame>
+  </Step>
+</Steps>
+
+<Note>Per salvare una modifica serve il relativo permesso. Il solo accesso in lettura non autorizza il salvataggio.</Note>
+
+### Calendario delle lezioni
+
+<Steps>
+<Step title="Aggiungi la lezione al calendario">
+Apri **Ginnastica per tutti** e premi **Calendario**.
+Nel mese visualizzato clicca sul giorno della lezione. In **Crea lezione**, compila **Nome**, **Inizio** e **Fine**; l'istruttore è facoltativo.
+Nell'esempio inseriamo **Lezione dimostrativa di ginnastica**, dalle **08:00** alle **09:00** nella data del registro dimostrativo.
+<Frame>![Lezione singola con nome e orario nel modulo Crea lezione](/images/registro-presenze/carnet-manuale/11.png)</Frame>
+Premi **Crea**. Il salvataggio pubblica il calendario e rende disponibile la nuova riga nelle presenze.
+<Note>Questa versione salva direttamente la lezione quando premi Crea. Per la lezione singola dell'esempio non serve un ulteriore comando Salva e Aggiorna.</Note>
+</Step>
+<Step title="Ricontrolla il registro pubblicato">
+Apri **Presenze** e ricarica. Controlla titolo, data e orario della nuova lezione: deve essere disponibile per registrare le presenze. La pubblicazione del calendario non attiva da sola le presenze automatiche.
+<Frame>![Lezione singola pubblicata e disponibile nel registro](/images/registro-presenze/carnet-manuale/12.png)</Frame>
+</Step>
+</Steps>
+
+#### Gestire le lezioni
+
+Questa procedura illustra una lezione singola. Per serie e interventi successivi consulta [Lezione periodica](#lezione-periodica) e [Modificare o rimuovere le lezioni](#modificare-o-rimuovere-le-lezioni).
+
+<Steps>
+<Step title="Aggiungi la lezione al calendario">
+Apri **Ginnastica per tutti** e premi **Calendario**.
+Nel mese visualizzato clicca sul giorno della lezione. In **Crea lezione**, compila **Nome**, **Inizio** e **Fine**; l'istruttore è facoltativo.
+Nell'esempio inseriamo **Lezione dimostrativa di ginnastica**, dalle **08:00** alle **09:00** nella data del registro dimostrativo.
+<Frame>![Lezione singola con nome e orario nel modulo Crea lezione](/images/registro-presenze/carnet-manuale/11.png)</Frame>
+Premi **Crea**. Il salvataggio pubblica il calendario e rende disponibile la nuova riga nelle presenze.
+<Note>Questa versione salva direttamente la lezione quando premi Crea. Per la lezione singola dell'esempio non serve un ulteriore comando Salva e Aggiorna.</Note>
+</Step>
+<Step title="Ricontrolla il registro pubblicato">
+Apri **Presenze** e ricarica. Controlla titolo, data e orario della nuova lezione: deve essere disponibile per registrare le presenze. La pubblicazione del calendario non attiva da sola le presenze automatiche.
+<Frame>![Lezione singola pubblicata e disponibile nel registro](/images/registro-presenze/carnet-manuale/12.png)</Frame>
+</Step>
+</Steps>
+
+#### Lezione singola
+
+<Steps>
+<Step title="Aggiungi la lezione al calendario">
+Apri **Ginnastica per tutti** e premi **Calendario**.
+Nel mese visualizzato clicca sul giorno della lezione. In **Crea lezione**, compila **Nome**, **Inizio** e **Fine**; l'istruttore è facoltativo.
+Nell'esempio inseriamo **Lezione dimostrativa di ginnastica**, dalle **08:00** alle **09:00** nella data del registro dimostrativo.
+<Frame>![Lezione singola con nome e orario nel modulo Crea lezione](/images/registro-presenze/carnet-manuale/11.png)</Frame>
+Premi **Crea**. Il salvataggio pubblica il calendario e rende disponibile la nuova riga nelle presenze.
+<Note>Questa versione salva direttamente la lezione quando premi Crea. Per la lezione singola dell'esempio non serve un ulteriore comando Salva e Aggiorna.</Note>
+</Step>
+<Step title="Ricontrolla il registro pubblicato">
+Apri **Presenze** e ricarica. Controlla titolo, data e orario della nuova lezione: deve essere disponibile per registrare le presenze. La pubblicazione del calendario non attiva da sola le presenze automatiche.
+<Frame>![Lezione singola pubblicata e disponibile nel registro](/images/registro-presenze/carnet-manuale/12.png)</Frame>
+</Step>
+</Steps>
+
+#### Lezione periodica
+
+
+
+Puoi creare una serie di lezioni per giorni della settimana. La serie parte dal **giorno corrente**, non semplicemente dal mese che stai guardando nel calendario.
+
+<Steps>
+  <Step title="Apri la creazione periodica">
+Nella scheda **Calendario**, usa **Crea lezioni periodiche**. Compila **Nome** e **Ripeti nei giorni**.
+
+<Frame>![Creazione periodica: nome e giorni selezionati, anche con un altro mese visualizzato.](/images/corsi/manutenzione-calendario/4.png)</Frame>
+</Step>
+  <Step title="Indica fine e orari">
+Compila **Ripeti fino al giorno (escluso)**: quella data non viene inclusa. La serie parte da oggi anche se stai visualizzando un altro mese. Nell’esempio scegliamo un intervallo breve con cinque lezioni dalle **09:00** alle **10:00** e un istruttore; una seconda serie distinta usa **Tutto il giorno** senza istruttore. Controlla giorni, fine e orari prima del salvataggio: selezionare Tutto il giorno cambia la modalità delle lezioni, non il gruppo a cui appartengono.
+
+<Frame>![Seconda serie distinta: Tutto il giorno, senza istruttore.](/images/corsi/manutenzione-calendario/7.png)</Frame>
+</Step>
+  <Step title="Crea e controlla la serie">
+Premi il comando di creazione e attendi il salvataggio. Controlla le lezioni generate e riapri il calendario per verificarne la presenza. Se compare l’avviso sulla data finale o sui giorni, correggi la scelta prima di ripetere.
+
+<Frame>![Cinque lezioni periodiche salvate e riaperte nel calendario.](/images/corsi/manutenzione-calendario/6.png)</Frame>
+</Step>
+</Steps>
+
+<Frame>![Creazione di lezioni periodiche con giorni, orari e fine esclusa](/images/corsi/manutenzione-calendario/5.png)</Frame>
+
+<Warning>Ripetere la creazione della stessa serie può aggiungere nuove lezioni. Prima di riprovare dopo un errore, verifica ciò che è già presente.</Warning>
+
+#### Modificare o rimuovere le lezioni
+
+
+
+<Steps>
+  <Step title="Apri la lezione">
+Nel **Calendario** premi la lezione. Controlla data, orario e contenuto del modulo di modifica.
+
+<Frame>![Una lezione della serie: nome e descrizione modificabili, data e orario consultabili.](/images/corsi/manutenzione-calendario/8.png)</Frame>
+</Step>
+  <Step title="Salva una modifica">
+Aggiorna **Nome** e **Descrizione**, quindi premi **Salva**. Nell’esempio rinominiamo una sola lezione in **Lezione corretta di ginnastica**. Ricarica il calendario e riaprila per controllare testo, data e orario; controlla anche un’altra lezione della serie. I campi di data e orario di questa finestra sono consultabili: non presumere che la modifica del nome riscriva tutta la serie.
+
+<Frame>![La singola lezione modificata conserva identità, orario e gruppo dopo la riapertura.](/images/corsi/manutenzione-calendario/9.png)</Frame>
+</Step>
+  <Step title="Scegli l’ambito dell’eliminazione">
+Per una sola lezione usa **Elimina**. In una serie associata, **Questo e successivi** riguarda la lezione selezionata e quelle successive dello stesso gruppo; **Questo e precedenti** riguarda la selezionata e quelle precedenti del gruppo. Controlla la data e l’ambito prima della conferma. Una serie distinta, anche nello stesso corso, va controllata separatamente.
+
+<Frame>![Ambito Questo e successivi nella serie associata.](/images/corsi/manutenzione-calendario/11.png)</Frame>
+</Step>
+  <Step title="Conferma e ricontrolla">
+La conferma avverte che vengono eliminate anche le presenze collegate. Premi **Elimina** soltanto dopo il controllo; **Annulla** evita la conferma. Ricontrolla calendario e registro.
+
+<Frame>![Registro riaperto: rimangono soltanto le tre lezioni della seconda serie.](/images/corsi/manutenzione-calendario/13.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>L’eliminazione riguarda anche le presenze delle lezioni scelte. Una modifica di un singolo evento non va interpretata come aggiornamento automatico di tutta la serie.</Warning>
+
+#### Pubblicare il calendario
+
+<Steps>
+<Step title="Aggiungi la lezione al calendario">
+Apri il corso e premi **Calendario**. Nel giorno previsto apri **Crea lezione**, inserisci **Nome**, **Inizio** e **Fine** e controlla il corso. Nell’esempio creiamo **Lezione accessibile dal calendario**, dalle **08:00** alle **09:00**; l’istruttore è facoltativo.
+<Frame>![Lezione singola compilata con nome, data e orario prima di Crea.](/images/corsi/iscritti-calendario-reali/3.png)</Frame>
+</Step>
+<Step title="Salva e controlla la pubblicazione">
+Premi **Crea**, attendi e ricarica. Il salvataggio della lezione singola pubblica direttamente il calendario: non occorre un secondo comando **Salva e Aggiorna**. Apri **Presenze** e riconosci nome, data e orario della nuova riga.
+<Frame>![Lezione salvata nel Registro delle presenze del corso.](/images/corsi/iscritti-calendario-reali/4.png)</Frame>
+</Step>
+<Step title="Riapri la lezione corretta">
+Dal calendario del corso riapri la lezione per consultare il dettaglio. Il collegamento a una specifica lezione conserva corso ed evento: controlla il nome prima di modificare dati o presenze.
+<Frame>![Collegamento alla lezione apre il dettaglio del corso corretto.](/images/corsi/iscritti-calendario-reali/5.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Pubblicare salva le lezioni nel gestionale e nel registro; non invia messaggi agli atleti. Condivisione del link e sincronizzazione Google hanno procedure separate.</Note>
+
+#### Condivisione del calendario
+
+
+
+Puoi condividere la vista del calendario del singolo corso senza fornire accesso alla gestione dell’associazione. Il collegamento e il codice per incorporarlo riguardano il corso aperto.
+
+<Steps>
+<Step title="Controlla il calendario del corso">
+Apri il corso corretto e premi **Calendario**. Rivedi nomi delle lezioni, date, orari e descrizioni prima di condividere: sono informazioni che compariranno nella vista raggiungibile dal collegamento.
+</Step>
+<Step title="Apri Condividi calendario">
+Premi **Condividi**. Nel riquadro **Condividi calendario** trovi il link e **Codice HTML da incorporare nel tuo sito**. Il pulsante con l’icona di copia trasferisce il collegamento negli appunti. Per il sito, copia invece il codice iframe e fai controllare la pagina in cui verrà inserito.
+<Frame>![Dialogo Condividi calendario con link e codice incorporabile mascherati](/images/corsi/tipologie-condivisione-reali/7.png)</Frame>
+</Step>
+<Step title="Controlla la vista senza sessione">
+Apri il collegamento in una nuova finestra senza accesso all’associazione. Controlla titolo del corso, lezioni e orari. Usa le viste mese, settimana o giorno secondo necessità. Questa pagina consulta il calendario: non offre i comandi per modificare lezioni, iscrizioni o pagamenti.
+<Frame>![Calendario condiviso aperto senza una sessione dell’associazione](/images/corsi/tipologie-condivisione-reali/8.png)</Frame>
+</Step>
+<Step title="Condividi dopo il controllo">
+Nel riquadro sono presenti i comandi per WhatsApp ed email, che aprono strumenti esterni con il collegamento preparato. Controlla destinatario e testo nel servizio scelto prima di inviare. L’applicazione non dimostra da questo riquadro che il messaggio sia stato consegnato.
+</Step>
+</Steps>
+
+<Info>La vista è accessibile a chi possiede il collegamento. Le descrizioni delle lezioni possono comparire nella vista condivisa: evita di inserirvi recapiti o annotazioni personali. La condivisione tramite link è distinta dalla [sincronizzazione con Google Calendar](/faq/come-collegare-google-calendar), che richiede un collegamento esterno da verificare.</Info>
+
+### Aggiungere o rimuovere atleti
+
+<Steps>
+<Step title="Scegli un’iscrizione corrente">
+Da **Attività → Corsi e Abbonamenti**, apri il corso e premi **Aggiungi tesserato**. Nella finestra **Iscrivi al corso**, cerca la persona e seleziona l’iscrizione corretta; nell’esempio **GIULIA BIANCHI (Anno corrente)**.
+<Frame>![Giulia dell’anno corrente selezionata prima di Aggiungi.](/images/corsi/iscritti-calendario-reali/1.png)</Frame>
+</Step>
+<Step title="Aggiungi e controlla la quota">
+Premi **Aggiungi**, attendi e ricarica il corso. La riga di Giulia rimane in **Iscritti al corso**. Nel corso Standard dell’esempio nasce una quota di **120,00 € non pagata**: l’iscrizione al corso non registra un incasso.
+<Frame>![Iscrizione al corso riaperta: atleta presente e quota da120 euro in attesa.](/images/corsi/iscritti-calendario-reali/2.png)</Frame>
+</Step>
+<Step title="Valuta la rimozione della riga">
+Nella riga di Giulia premi il cestino **Elimina**. La conferma **Eliminare l’iscrizione?** avvisa che saranno eliminate le eventuali rate non pagate. **Annulla** conserva l’iscrizione.
+<Frame>![Conferma di eliminazione dell’iscrizione al corso, con avviso sulle rate non pagate.](/images/corsi/iscritti-calendario-reali/11.png)</Frame>
+</Step>
+<Step title="Conferma e ricontrolla gli effetti">
+Conferma **Elimina** e ricarica. Giulia non è più iscritta al corso, ma la quota unica aperta da **120,00 €** resta nei Pagamenti. Controllala separatamente: la rimozione dell’iscrizione non cancella questa quota unica. La sua iscrizione associativa e il calendario del corso restano presenti.
+<Frame>![Atleta rimosso soltanto dal corso; iscrizione associativa e lezione conservate.](/images/corsi/iscritti-calendario-reali/12.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Questo esempio usa un corso Standard con quota unica non pagata. Per rate e incassi già registrati segui [Eliminazione di un atleta dal corso](/docs/corsi#eliminazione-di-un-atleta-dal-corso); carnet e abbonamenti hanno procedure proprie. Un collaboratore senza modifica corsi non può effettuare queste scritture.</Note>
+
+### Gestire i pagamenti del corso
+
+
+
+Le operazioni sulle quote si trovano nell’elenco **Iscritti al corso**. Prima di sostituire un piano, controlla gli incassi già registrati e seleziona soltanto le iscrizioni interessate.
+
+<Steps>
+  <Step title="Seleziona le iscrizioni">
+    Spunta le righe dei tesserati nell’elenco. Compare **Operazioni su selezionati**.
+  </Step>
+  <Step title="Scegli l’operazione disponibile">
+**Assegna piano rate** sostituisce le rate non incassate e assegna le scadenze previste per l’iscrizione. **Assegna piano rate completo** include il piano completo. **Cambia in unica soluzione** compare quando il corso ha l’alternativa configurata.
+
+<Frame>![Conferma Assegna piano rate per una sola iscrizione.](/images/corsi/piano-rate-reale/17.png)</Frame>
+</Step>
+  <Step title="Rivedi conferma e risultato">
+La conferma ricorda l’effetto sui pagamenti non effettuati. Dopo l’operazione, controlla il **Piano rate** della singola riga e i pagamenti effettivi. Verifica anche eventuali importi già incassati.
+
+<Frame>![Piano completo: tre rate, compresa quella passata, dopo la ricarica.](/images/corsi/piano-rate-reale/20.png)</Frame>
+</Step>
+</Steps>
+
+Sono disponibili anche operazioni sui carnet. L’assegnazione ordinaria di un carnet e la sostituzione dei pagamenti con un carnet hanno effetti differenti: consulta la [guida ai carnet](/docs/carnet) prima di scegliere.
+
+<Warning>La modifica del piano non è un rimborso, una compensazione automatica né un addebito online. Evita selezioni collettive finché non hai controllato una singola iscrizione di prova.</Warning>
+
+## Dettagli tecnici e casi particolari
+
+Le quote generali del corso, il piano del singolo tesserato e i pagamenti registrati vanno controllati separatamente. In particolare, iscrizioni tardive, cambi di quota e rimozioni possono avere effetti diversi secondo il percorso scelto.
+
+Prima di un’operazione che sostituisce o elimina dati, consulta il singolo piano, gli incassi e le ricevute. Le sezioni successive chiariscono il giorno di rinnovo, i controlli sui duplicati e i limiti della cancellazione.
+
+### Giorno di addebito per gli abbonamenti
+
+Il campo **Si rinnova il giorno** offre i giorni da **1 a 28** quando l’abbonamento non parte dalla data di iscrizione e non dura tutta la stagione. La durata è espressa in mesi, fino a dodici.
+
+Il giorno 28 è una data disponibile in ogni mese; non significa automaticamente **ultimo giorno del mese**. Il campo stabilisce il riferimento del periodo, non autorizza un addebito su carta e non certifica un incasso.
+
+**Inizia da data iscrizione** usa invece l’inizio individuale. I rinnovi dipendono anche da corso visibile, abbonamento attivo e servizi dell’installazione; per l’esecuzione effettiva controlla le quote generate.
+
+### Prevenzione pagamenti duplicati
+
+Sono presenti controlli specifici: il rinnovo degli abbonamenti usa un blocco di esecuzione e ricontrolla il singolo record, mentre la modifica di un piano distingue le rate già collegate da quelle da aggiungere.
+
+Questo non costituisce una garanzia generale contro qualunque doppio clic o doppia richiesta. Le rate selezionate vengono create nel percorso di assegnazione; assegnare nuovamente una quota o un carnet è un’operazione da valutare separatamente.
+
+<Note>Dopo un errore o una risposta incerta, riapri l’iscrizione e cerca la quota nei pagamenti prima di ripetere. Confronta tesserato, corso, importo e scadenza; il solo nome della quota non basta a identificare un duplicato.</Note>
+
+### Eliminazione di un corso
+
+
+
+Nascondere un corso ed eliminarlo sono operazioni diverse. Il comando di eliminazione del corso richiama una cancellazione con effetti sui collegamenti: non va descritto come semplice archiviazione reversibile.
+
+<Steps>
+  <Step title="Controlla corso e dati collegati">
+Prima della cancellazione consulta iscrizioni, rate, abbonamenti, presenze, pagamenti e ricevute. Se vuoi soltanto fermare la visibilità o i rinnovi, valuta il comando per nascondere il corso.
+
+<Frame>![Giulia: una rata incassata e una in attesa prima della rimozione dal corso.](/images/corsi/manutenzione-calendario/15.png)</Frame>
+</Step>
+  <Step title="Apri il corso non visibile">
+Nell’elenco un corso visibile non propone la stessa disponibilità del comando **Elimina Corso**. Nascondilo se richiesto dal percorso dell’interfaccia e ritrovalo nell’archivio dei corsi.
+
+<Frame>![Corso non visibile nell’Archivio, con il comando Elimina Corso disponibile.](/images/corsi/manutenzione-calendario/20.png)</Frame>
+</Step>
+  <Step title="Valuta la conferma e verifica">
+Leggi la finestra di conferma: **Annulla** interrompe l’operazione, mentre **Elimina** conferma la cancellazione del corso indicato. Dopo la conferma ricarica l’archivio e cerca il titolo. Nell’esempio Standard senza ricevute emesse, le quote non pagate ancora collegate al corso vengono rimosse e l’incasso di **60 €** resta consultabile. Riapri **Contabilità → Pagamenti** per verificare persona, importo e stato. Questo esempio non attesta gli effetti sulle altre modalità di corso o su ricevute, carnet e rinnovi.
+
+<Frame>![Conferma della cancellazione definitiva del solo corso dedicato.](/images/corsi/manutenzione-calendario/21.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Non è garantita la conservazione indistinta di tutti i dati o pagamenti collegati. La cancellazione può coinvolgere iscrizioni e rate; non è documentato un annullamento completo dalla pagina. </Warning>
+
+### Eliminazione di un atleta dal corso
+
+
+
+Rimuovere l’iscrizione al corso non elimina automaticamente il tesserato dall’associazione. L’operazione può rimuovere rate e collegamenti del corso, quindi richiede prima il controllo degli incassi.
+
+<Steps>
+  <Step title="Controlla la riga">
+Apri **Iscritti al corso** e verifica nome, corso, piano rate e pagamenti del tesserato.
+
+<Frame>![Giulia: una rata incassata e una in attesa prima della rimozione dal corso.](/images/corsi/manutenzione-calendario/15.png)</Frame>
+</Step>
+  <Step title="Richiedi la rimozione">
+Usa il comando di eliminazione nella riga. La conferma avverte sulle rate non pagate e sull’irreversibilità; annulla se il tesserato o l’ambito non sono corretti.
+
+<Frame>![Conferma della rimozione della singola iscrizione; annullamento disponibile.](/images/corsi/manutenzione-calendario/16.png)</Frame>
+</Step>
+  <Step title="Rivedi gli effetti">
+Dopo la conferma ricarica **Iscritti al corso** e controlla che la persona rimossa non compaia più e che gli altri iscritti siano ancora presenti. Nell’esempio Standard Giulia ha una rata di **60 € incassata** e una di **60 € non pagata**: la rimozione elimina la rata in attesa, mentre l’incasso resta consultabile in **Contabilità → Pagamenti**. La persona rimane nell’associazione. Nessun rimborso viene registrato da questa operazione; ricevute già emesse, carnet e rinnovi richiedono un controllo distinto dall’esempio.
+
+<Frame>![Pagamento incassato ancora consultabile; la rata non pagata è stata rimossa.](/images/corsi/manutenzione-calendario/18.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La rimozione può cancellare i collegamenti delle rate. Le quote incassate e gli abbonamenti richiedono un controllo specifico; non assumere che ogni variante conservi lo stesso archivio.</Warning>
+
+## Risorse correlate
+
+<CardGroup cols={2}>
+  <Card title="Pagamenti rateizzati" icon="coins" href="/tutorials/come-impostare-pagamenti-rateizzati">Configurare scadenze, piano completo e pagamento unico.</Card>
+  <Card title="Registro presenze e carnet" icon="clipboard-list" href="/tutorials/come-gestire-registro-presenze-carnet">Iscrizioni, lezioni, presenze e collegamento dei carnet.</Card>
+  <Card title="Pagamenti" icon="money-bill" href="/docs/pagamenti">Consultare le quote e registrare gli incassi.</Card>
+  <Card title="Calendario" icon="calendar" href="/docs/calendario">Consultazione e condivisione delle attività.</Card>
+</CardGroup>
+

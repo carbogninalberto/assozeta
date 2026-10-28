@@ -1,0 +1,203 @@
+---
+title: "Collaboratori"
+description: "In questa sezione è spiegato come gestire i collaboratori della tua associazione sportiva."
+---
+
+## Introduzione
+
+I collaboratori lavorano sui dati della stessa associazione con le autorizzazioni assegnate dal responsabile. Questa procedura modifica un collaboratore già collegato.
+
+<Steps>
+<Step title="Apri i collaboratori">
+Dal menu laterale apri **Collaboratori**.
+La riga del collaboratore già collegato, **MARCO NERI**, mostra l'email **lettura@aurora.example.test**, lo stato **Accettato** e il ruolo **Personalizzato**.
+Usa l'email per riconoscere la persona prima di modificare i permessi.
+<Frame>![Collaboratore Marco Neri già collegato con accesso Personalizzato](/images/collaboratori/permessi/1.png)</Frame>
+</Step>
+</Steps>
+
+<Note>**Accesso Completo** concede i permessi ordinari dell'associazione. Non assegna il ruolo di proprietario dell'installazione: operazioni quali il ripristino dei dati mantengono controlli separati sul proprietario o sull'amministratore.</Note>
+
+## Invitare un collaboratore
+
+<Note>Bozza in attesa di prova: i passaggi e le immagini previste richiedono la verifica del flusso reale prima della pubblicazione.</Note>
+
+<Steps>
+<Step title="Apri i collaboratori">
+Dal menu laterale apri **Collaboratori**.
+La riga del collaboratore già collegato, **MARCO NERI**, mostra l'email **lettura@aurora.example.test**, lo stato **Accettato** e il ruolo **Personalizzato**.
+Usa l'email per riconoscere la persona prima di modificare i permessi.
+<Frame>![Collaboratore Marco Neri già collegato con accesso Personalizzato](/images/collaboratori/permessi/1.placeholder.svg)</Frame>
+</Step>
+<Step title="Prepara il modulo di invito">
+Premi **Collaboratore** in alto a destra per aprire **Creazione di un collaboratore**.
+Inserisci l'**Email** e scegli **Accesso Completo** oppure **Personalizzato**.
+Nell'esempio usiamo l'indirizzo fittizio **nuovo.collaboratore@example.test**, scegliamo **Personalizzato** e selezioniamo soltanto **Vedi le impostazioni**.
+<Frame>![Modulo di invito preparato con email fittizia e permessi personalizzati](/images/collaboratori/permessi/7.placeholder.svg)</Frame>
+<Warning>La verifica si ferma alla preparazione del modulo. L'invio con **Salva**, la consegna dell'email e l'accettazione dell'invito richiedono una prova con il servizio email della tua installazione. Qui il modulo viene chiuso con **Chiudi** senza inviare.</Warning>
+</Step>
+</Steps>
+
+## Livelli di permessi
+
+| Livello | Scelta nel modulo |
+| --- | --- |
+| **Accesso Completo** | Permessi ordinari completi sulle funzioni dell’associazione |
+| **Personalizzato** | Caselle per le singole autorizzazioni |
+
+<Steps>
+<Step title="Apri la modifica del collaboratore">
+Premi la matita **Modifica** nella riga del collaboratore.
+Si apre **Modifica collaboratore**. Il menu **Permessi** propone **Accesso Completo** e **Personalizzato**.
+Lascia **Personalizzato** se vuoi scegliere le singole autorizzazioni.
+<Frame>![Finestra di modifica dei permessi del collaboratore esistente](/images/collaboratori/permessi/3.png)</Frame>
+</Step>
+</Steps>
+
+<Note>**Accesso Completo** concede i permessi ordinari dell'associazione. Non assegna il ruolo di proprietario dell'installazione: operazioni quali il ripristino dei dati mantengono controlli separati sul proprietario o sull'amministratore.</Note>
+
+<Steps>
+<Step title="Controlla anche un accesso completo salvato">
+Il passaggio a **Accesso Completo** è distinto dalla selezione di singole caselle. Dopo **Salva** e riapertura, il collaboratore dell’esempio può aggiornare il proprio profilo. Per tornare alla consultazione scegli nuovamente **Personalizzato** e conserva soltanto i permessi necessari.
+<Frame>![Controlla anche un accesso completo salvato](/images/collaboratori/permessi/8.png)</Frame>
+</Step>
+</Steps>
+
+### Accesso Completo
+
+Assegna **Accesso Completo** quando la persona deve operare sulle funzioni ordinarie dell’associazione. Questa scelta concede le autorizzazioni del ruolo, ma non trasferisce la proprietà dell’organizzazione né rende amministratore dell’installazione.
+
+<Steps>
+<Step title="Scegli Accesso Completo nella persona corretta">
+Apri **Collaboratori**, riconosci l’email e lo stato **Accettato**, premi la matita **Modifica**, seleziona **Accesso Completo** in **Permessi** e premi **Salva**.
+<Frame>![Scegli Accesso Completo nella persona corretta](/images/collaboratori/permessi/1.png)</Frame>
+</Step>
+<Step title="Verifica il ruolo salvato e una funzione autorizzata">
+Ricarica la lista e fai riaprire l’applicazione al collaboratore. Nell’esempio, l’account collegato modifica il proprio Nome in **Profilo → Informazioni Account**, salva e lo ritrova alla riapertura. I dati dell’organizzazione e del proprietario restano invariati.
+<Frame>![Verifica il ruolo salvato e una funzione autorizzata](/images/collaboratori/permessi/8.png)</Frame>
+</Step>
+<Step title="Riduci l’accesso quando serve">
+Per tornare a un accesso limitato seleziona **Personalizzato**, ricontrolla tutte le caselle e salva. Nell’esempio torniamo alle autorizzazioni iniziali dopo aver ripristinato il Nome personale.
+<Frame>![Riduci l’accesso quando serve](/images/collaboratori/permessi/9.png)</Frame>
+</Step>
+</Steps>
+
+### Personalizzato
+
+Scegli le autorizzazioni necessarie per ciascuna area. **Seleziona tutto** e **Rimuovi tutto** agiscono sulla selezione: prima di salvare ricontrolla le caselle.
+
+<Steps>
+<Step title="Aggiungi il permesso necessario">
+Nell'area **Impostazioni**, lascia selezionato **Vedi le impostazioni** e aggiungi **Aggiorna le impostazioni**.
+Nell'esempio non cambiamo gli altri permessi di consultazione del collaboratore e non gli assegniamo Accesso Completo.
+I permessi possono riguardare lettura, creazione, aggiornamento o eliminazione, a seconda dell'area: controlla le caselle disponibili per la funzione che serve.
+<Frame>![Permesso Aggiorna le impostazioni aggiunto alle autorizzazioni esistenti](/images/collaboratori/permessi/3.png)</Frame>
+</Step>
+<Step title="Togli un’autorizzazione che non serve più">
+Apri di nuovo **Modifica collaboratore**, deseleziona **Aggiorna le impostazioni** e premi **Salva**.
+Nel nostro esempio il nome personale torna **Marco** prima di togliere il permesso e tutte le autorizzazioni iniziali vengono ripristinate.
+Dopo aver riaperto l'applicazione, i controlli dell'organizzazione sono di nuovo disattivati; il salvataggio del profilo viene rifiutato anche con la sessione già esistente.
+<Frame>![Permesso di aggiornamento rimosso e accesso in sola lettura ripristinato](/images/collaboratori/permessi/6.png)</Frame>
+</Step>
+</Steps>
+
+## Stato degli inviti
+
+La colonna **Invito** distingue un account già collegato, **Accettato**, da un invito **In attesa**. Un invito in attesa non è ancora un collaboratore che opera sui dati dell’associazione.
+
+<Steps>
+<Step title="Confronta le due righe nella lista">
+Apri **Collaboratori** e riconosci la persona dall’email. L’esempio mostra un account collegato e un invito in attesa su righe separate; non confondere la rimozione dell’account con la cancellazione dell’invito.
+<Frame>![Confronta le due righe nella lista](/images/collaboratori/rimozione/1.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Questo confronto legge stati già preparati nell’associazione dimostrativa. Invio dell’email, scadenza del link e accettazione da parte del destinatario dipendono dal relativo servizio e non sono provati dalla sola lista. Per modificare l’accesso di un account già collegato segui la procedura sui permessi.</Note>
+
+## Modificare i permessi di un collaboratore
+
+<Steps>
+<Step title="Apri i collaboratori">
+Dal menu laterale apri **Collaboratori**.
+La riga del collaboratore già collegato, **MARCO NERI**, mostra l'email **lettura@aurora.example.test**, lo stato **Accettato** e il ruolo **Personalizzato**.
+Usa l'email per riconoscere la persona prima di modificare i permessi.
+<Frame>![Collaboratore Marco Neri già collegato con accesso Personalizzato](/images/collaboratori/permessi/1.png)</Frame>
+</Step>
+<Step title="Apri la modifica del collaboratore">
+Premi la matita **Modifica** nella riga del collaboratore.
+Si apre **Modifica collaboratore**. Il menu **Permessi** propone **Accesso Completo** e **Personalizzato**.
+Lascia **Personalizzato** se vuoi scegliere le singole autorizzazioni.
+<Frame>![Finestra di modifica dei permessi del collaboratore esistente](/images/collaboratori/permessi/3.png)</Frame>
+</Step>
+<Step title="Aggiungi il permesso necessario">
+Nell'area **Impostazioni**, lascia selezionato **Vedi le impostazioni** e aggiungi **Aggiorna le impostazioni**.
+Nell'esempio non cambiamo gli altri permessi di consultazione del collaboratore e non gli assegniamo Accesso Completo.
+I permessi possono riguardare lettura, creazione, aggiornamento o eliminazione, a seconda dell'area: controlla le caselle disponibili per la funzione che serve.
+<Frame>![Permesso Aggiorna le impostazioni aggiunto alle autorizzazioni esistenti](/images/collaboratori/permessi/3.png)</Frame>
+</Step>
+<Step title="Salva e verifica l’accesso della persona">
+Premi **Salva** nella finestra di modifica.
+Chiedi al collaboratore di riaprire l'applicazione e verificare la funzione interessata: i menu già aperti possono ancora mostrare i permessi precedenti.
+Nell'esempio, Marco aggiorna il **Nome** del proprio account in **Profilo → Informazioni Account**, salva **Matteo** e lo ritrova dopo il ricaricamento.
+<Frame>![Collaboratore autorizzato che prepara la modifica del proprio nome](/images/collaboratori/permessi/4.png)</Frame>
+<Frame>![Nome Matteo salvato nel solo account collaboratore](/images/collaboratori/permessi/5.png)</Frame>
+<Note>Questa prova riguarda il profilo personale del collaboratore. Il nome del proprietario e i dati dell'organizzazione restano invariati. Anche quando il modulo mostra i campi dell'organizzazione abilitati, in questa versione il loro salvataggio tramite il profilo del collaboratore non aggiorna l'associazione: per quei dati usa il proprietario.</Note>
+</Step>
+<Step title="Togli un’autorizzazione che non serve più">
+Apri di nuovo **Modifica collaboratore**, deseleziona **Aggiorna le impostazioni** e premi **Salva**.
+Nel nostro esempio il nome personale torna **Marco** prima di togliere il permesso e tutte le autorizzazioni iniziali vengono ripristinate.
+Dopo aver riaperto l'applicazione, i controlli dell'organizzazione sono di nuovo disattivati; il salvataggio del profilo viene rifiutato anche con la sessione già esistente.
+<Frame>![Permesso di aggiornamento rimosso e accesso in sola lettura ripristinato](/images/collaboratori/permessi/6.png)</Frame>
+</Step>
+</Steps>
+
+## Rimuovere un collaboratore
+
+
+
+
+La rimozione di un account già collegato e quella di un invito **In attesa** sono due operazioni diverse. Nell’esempio usiamo **Paolo Testa** e **invito.temporaneo@aurora.example.test**, creati soltanto per la dimostrazione; **Marco Neri** rimane collegato.
+
+<Steps>
+<Step title="Identifica account e invito nella lista">
+Apri **Collaboratori** e controlla nome, email e stato della riga. Paolo Testa ha stato **Accettato** ed email **temporaneo@aurora.example.test**. L’altra riga ha email **invito.temporaneo@aurora.example.test** e stato **In attesa**.
+Se vuoi soltanto ridurre le autorizzazioni di una persona già collegata, usa la matita **Modifica**. Non eliminare un account per togliere un singolo permesso.
+<Frame caption="Account Paolo Testa e invito temporaneo distinti nella lista">![Account Paolo Testa e invito temporaneo distinti nella lista](/images/collaboratori/rimozione/1.png)</Frame>
+</Step>
+<Step title="Apri la conferma e controlla prima di eliminare">
+Premi il cestino **Elimina** nella riga corretta. La finestra chiede **Vuoi eliminare il collaboratore?**, senza riepilogare l’email: controlla quindi la riga prima di aprirla.
+Con **Annulla** torni alla lista e la riga rimane presente. Per un account già collegato, l’annullamento conserva anche la sua sessione.
+<Frame caption="Conferma di eliminazione dell’account con Annulla">![Conferma di eliminazione dell’account con Annulla](/images/collaboratori/rimozione/3.png)</Frame>
+</Step>
+<Step title="Conferma la rimozione dell’account e controlla l’accesso">
+Premi **Elimina** per rimuovere Paolo Testa, poi ricarica la lista: la sua riga deve essere assente. Nell’esempio l’invito **In attesa** e Marco Neri rimangono presenti.
+L’operazione elimina l’account collegato. Le richieste successive al profilo e alle iscrizioni con la sessione già emessa di Paolo devono essere rifiutate; una pagina già aperta può ancora mostrare dati ricevuti in precedenza. La sessione di Marco continua a funzionare.
+<Frame caption="Paolo assente dopo il ricaricamento e invito conservato">![Paolo assente dopo il ricaricamento e invito conservato](/images/collaboratori/rimozione/4.png)</Frame>
+</Step>
+<Step title="Rimuovi separatamente un invito non accettato">
+Per annullare l’invito, premi il cestino sulla riga **In attesa**, controlla la scelta e conferma con **Elimina**. Anche qui puoi prima scegliere **Annulla** senza rimuovere la riga.
+Ricarica la lista: l’invito non deve comparire più, mentre Marco rimane collegato. Non viene inviato un nuovo invito da questa operazione.
+<Frame caption="Conferma di rimozione del solo invito In attesa">![Conferma di rimozione del solo invito In attesa](/images/collaboratori/rimozione/5.png)</Frame>
+<Frame caption="Invito assente dopo il ricaricamento e Marco Neri conservato">![Invito assente dopo il ricaricamento e Marco Neri conservato](/images/collaboratori/rimozione/6.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Per una persona già collegata, la rimozione elimina l’account. Non esiste un ripristino dalla lista; inviare un nuovo invito non garantisce il recupero dei dati precedenti. La rimozione di una riga di invito già accettata segue un percorso distinto che può coinvolgere l’account associato all’email: non è compresa in questo esempio.</Warning>
+
+<Note>Il cestino richiede il permesso di eliminazione dei collaboratori. Un account in sola lettura vede i cestini disattivati e non può eliminare né l’account né l’invito. Questo esempio non verifica invio email, consegna o accettazione di un nuovo invito.</Note>
+<Frame caption="Eliminazione disattivata per il collaboratore in sola lettura">![Eliminazione disattivata per il collaboratore in sola lettura](/images/collaboratori/rimozione/2.png)</Frame>
+
+## Risorse correlate
+
+
+<CardGroup cols={2}>
+  <Card title="Come invitare collaboratori" icon="user-group" href="/faq/come-invitare-collaboratori">
+    Preparare un invito, riconoscere lo stato e scegliere i permessi.
+  </Card>
+  <Card title="Istruttori" icon="chalkboard-user" href="/docs/istruttori">
+    Il profilo dell’istruttore e il suo eventuale account collaboratore associato.
+  </Card>
+</CardGroup>
+
+Il profilo dell’istruttore e l’account collaboratore sono elementi distinti. Creare un profilo senza account associato non invia un invito e non abilita l’accesso della persona.
+

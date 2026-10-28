@@ -6,9 +6,11 @@ Il workflow `manuale-release.yml` richiama `manuale-verify.yml`: verifica i
 contenuti interessati e riusa prove compatibili, poi controlla lettore,
 MCP/assistente, pacchetto e avvio sulla revisione e versione esatte. La verifica
 completa resta obbligatoria nei casi indicati nella politica in fondo a questa
-pagina. Il repository sorgente è `Bakney/manuale`, fissato allo SHA immutabile
-in `docs/manuale/source.json`. Non servono credenziali di scrittura, un provider
-AI o un deploy Mintlify.
+pagina. I contenuti del manuale sono inclusi in questo repository nella cartella
+`manuale/` (`docs/manuale/source.json` indica la cartella): `manuale-ci.py pin`
+la materializza dal commit corrente come repository Git pulito con un commit
+deterministico, usato come revisione immutabile della stesura. Non servono
+credenziali di scrittura, un provider AI o un deploy Mintlify.
 
 Il nuovo comando `manuale-release.py --bundle` riproduce l'indice dalle prove
 valutate e produce `runtime/index.json`, schermate PNG e `runtime/bundle.json`.
@@ -82,7 +84,7 @@ inventa nuove prove né promuove sezioni non supportate per rendere verde una re
 Le lacune restano nell'indice e nei resoconti di copertura.
 
 
-Il manuale utente rimane nel repository [Bakney/manuale](https://github.com/Bakney/manuale). Assozeta contiene l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
+Il manuale utente è incluso nella cartella `manuale/` di questo repository (importato da [Bakney/manuale](https://github.com/Bakney/manuale) al commit `1cfe01f`). La pubblicazione del sito resta collegata a Bakney/manuale finché il sito Mintlify non viene ricollegato a questa cartella. Assozeta contiene anche l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
 
 Se i repository di input hanno metadati Git in sola lettura, aggiungere `--standalone-checkouts`: il runner crea cloni locali indipendenti dentro la directory del run, conserva il commit e l'origine effettivi, applica solo le modifiche dichiarate e registra `checkout_kind: standalone-local-clone`. Senza questa opzione usa i worktree collegati. Non richiede rete o token GitHub.
 
@@ -328,9 +330,9 @@ cambiati possono interrompere il lavoro con diagnostica esplicita; l’indice
 valido precedente resta conservato, soggetto ai suoi controlli di compatibilità.
 
 In CI `workflow_dispatch.edit_content` richiede una scelta esplicita sul ramo
-predefinito. Il dispatch editoriale deve omettere `manual_ref` oppure scegliere
-esattamente lo SHA fidato di `docs/manuale/source.json`. Push, pianificazione,
-PR e `repository_dispatch` verificano senza modello o chiave editoriale.
+predefinito e deve omettere `manual_ref`: il manuale è incluso nel repository e
+non si accettano revisioni esterne. Push, pianificazione e PR verificano senza
+modello o chiave editoriale.
 `MANUAL_AUTO_EDIT` non attiva più riscritture durante normali fix o release.
 
 Il workflow usa soltanto un CLI già disponibile e fallisce esplicitamente se
@@ -598,24 +600,15 @@ Queste sono istruzioni di installazione: il runner non modifica configurazioni
 personali né installa credenziali.
 Il goal e i criteri di consegna correnti sono in
 [`MANUALE_SIMPLIFICATION_AND_APPLIANCE_DELIVERY_GOAL.md`](../goal-prompts/MANUALE_SIMPLIFICATION_AND_APPLIANCE_DELIVERY_GOAL.md).
-Il modello CI del repository manuale è
-[`ci/notify-assozeta.yml`](./ci/notify-assozeta.yml); token, esecuzione GitHub e
-pubblicazione del sito richiedono ancora l’integrazione prevista.
-La revisione editoriale predefinita è il commit completo in `docs/manuale/source.json`.
-Aggiornare questo file con una PR dopo la revisione della stesura. Un dispatch può
-indicare un altro SHA completo; rami e tag mutabili sono rifiutati. Ogni esecuzione
-clona quel commit in un checkout indipendente: due release contemporanee non
-possono cambiare reciprocamente la stesura. `MANUAL_REF` non seleziona più gli
+La revisione editoriale è il commit deterministico materializzato dalla cartella
+`manuale/` del commit verificato. Le modifiche alla stesura passano da una PR su
+questo repository; un `manual_ref` esterno viene rifiutato. Ogni esecuzione
+materializza la cartella in un checkout indipendente: due release contemporanee
+non possono cambiare reciprocamente la stesura. `MANUAL_REF` non seleziona più gli
 input di verifica o di release.
 
-Il secret `ASSOZETA_DISPATCH_TOKEN` appartiene al repository manuale: per il
-dispatch verso Assozeta, usare un token fine-grained limitato al repository
-destinatario con permesso **Contents: write**, come richiede l’
-[endpoint GitHub repository dispatch](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event).
-Il template osserva anche i binding di revisione, sui rami `main`, `add/manuale` e `add/manuale-release`.
-Il workflow ricevente deve essere disponibile sul ramo predefinito per il dispatch,
-come indicato negli [eventi GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#repository_dispatch).
-Configurazione, installazione del workflow e invio remoto restano da completare.
+Il dispatch dal repository manuale (`ci/notify-assozeta.yml`, `repository_dispatch`) non è più usato:
+il manuale è incluso in questo repository e le sue modifiche avviano la verifica come ogni PR.
 
 ## Pubblicazione opzionale del sito e del corpus esterno
 

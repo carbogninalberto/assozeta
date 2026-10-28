@@ -1,0 +1,115 @@
+---
+title: Come configurare i pagamenti online?
+description: "Guida passo-passo per configurare i pagamenti online con Stripe nella tua associazione."
+---
+
+# Configurare i pagamenti online con Stripe
+
+In questa installazione self-hosted i pagamenti online usano un **account Stripe diretto dell’istanza**. Non si configura un nuovo account Connect dal precedente pulsante **Configura Stripe**: quel percorso di onboarding è disabilitato.
+
+Le condizioni applicative sono due: integrazione Stripe configurata e abilitata nell’istanza, e **Pagamenti Online** abilitato per l’associazione. Il salvataggio di queste opzioni non costituisce un incasso.
+
+Per i dettagli consulta il [tutorial Stripe](/tutorials/come-impostare-stripe-pagamenti-online).
+
+## Cosa serve per iniziare?
+
+<Warning>Questa sezione richiede verifiche esterne del servizio, delle condizioni applicabili o della consegna. Non documenta un’operazione esterna già eseguita.</Warning>
+
+Concorda con il gestore quale account Stripe usare e quale ambiente destinare alla prova. La configurazione dell’istanza richiede il proprietario o un amministratore autorizzato; il responsabile dell’associazione deve poter modificare le proprie impostazioni.
+
+Servono chiave pubblica, chiave segreta dello stesso ambiente e firma del webhook, oltre alla configurazione prevista sul servizio esterno. Per una prova prepara una quota e un destinatario controllati, senza coinvolgere incassi reali.
+
+L’applicazione non conferma da sola attivazione dell’account, verifiche richieste dal provider, metodi, tariffe o accrediti. Chiarisci questi aspetti prima dell’uso e mantieni riservate le credenziali.
+
+## Come attivare Stripe
+
+<Warning>Questa procedura richiede credenziali e configurazione di un account Stripe. Il collegamento completo e una transazione di prova non sono ancora stati esercitati per questa versione.</Warning>
+
+L’installazione usa un account **Stripe diretto**. La configurazione appartiene al proprietario dell’installazione o a un amministratore autorizzato; le credenziali non vanno distribuite agli atleti o ai collaboratori per la normale consultazione delle quote.
+
+<Steps>
+  <Step title="Apri la scheda dell’integrazione">
+    Vai in **Profilo > Self Instance > Integrazioni**, scheda **Stripe**. Leggi lo stato e l’origine della configurazione: le impostazioni salvate nell’istanza hanno precedenza sui valori iniziali del server.
+  </Step>
+  <Step title="Prepara i dati dell’account corretto">
+    Con il gestore individua l’ambiente di prova o di uso reale. La scheda richiede **Chiave pubblica Stripe**, **Chiave segreta Stripe** e **Firma webhook Stripe**. Le chiavi pubblica e segreta devono appartenere allo stesso ambiente. Non usare credenziali reali nelle immagini della guida o in chat.
+  </Step>
+  <Step title="Salva e ricontrolla">
+    Attiva **Abilita Stripe** e premi **Salva Stripe**. Attendi la conferma, riapri la scheda e ricontrolla stato e origine. Una credenziale già configurata può essere conservata lasciando vuoto il suo campo: i comandi di rimozione sono distinti e vanno usati soltanto quando è necessario rimuoverla.
+  </Step>
+  <Step title="Controlla prima del primo utilizzo">
+    Dopo il salvataggio **Verifica Stripe** esegue il controllo in lettura previsto dalla scheda. Non incassa una quota. Concorda una prova completa con il gestore, compreso l’aggiornamento del pagamento nell’applicazione, prima di usare il servizio con incassi reali.
+  </Step>
+</Steps>
+
+La preferenza **Pagamenti Online** dell’associazione si trova invece in **Profilo > Generali**. Il suo salvataggio è distinto dall’integrazione dell’istanza. L’attivazione esterna, il webhook e gli esiti delle transazioni restano verifiche separate.
+
+<Frame caption="Scheda Stripe da acquisire con segreti nascosti; collegamento esterno ancora da verificare.">
+  <img src="/images/course-payment-additional/stripe-instance-pending.svg" alt="Segnaposto della scheda Stripe nelle integrazioni dell’istanza" />
+</Frame>
+
+## Come funziona per i tuoi atleti?
+
+<Warning>Questa procedura comprende operazioni sul servizio Stripe. Richiede una configurazione valida, un ambiente di prova concordato e il controllo dell’esito: le schermate locali, da sole, non attestano una transazione eseguita.</Warning>
+
+<Note>Procedura ancora da verificare in browser, compresi risultato e riapertura. I comandi descritti sono presenti nell’applicazione.</Note>
+
+L’atleta consulta i pagamenti collegati al proprio account. Una quota in attesa può proporre il percorso online quando l’associazione e l’istanza lo rendono disponibile.
+
+<Steps>
+  <Step title="Controlla la quota">
+    L’atleta apre **Pagamenti** e confronta associazione, importo e quota. Il comando disponibile è **Paga Ora**.
+  </Step>
+  <Step title="Rivedi il pagamento esterno">
+    Il comando apre il modulo Stripe. Il destinatario deve controllare i dati e seguire la modalità di prova o uso reale concordata con l’associazione.
+  </Step>
+  <Step title="Ricontrolla stato e ricevuta">
+    Dopo l’esito rivedi la quota nell’applicazione. In presenza di un risultato incerto chiedi all’associazione il confronto con la transazione prima di ripetere; la ricevuta si consulta quando il documento è disponibile.
+  </Step>
+</Steps>
+
+La guida non attesta una transazione esercitata, un tempo massimo di aggiornamento o un accredito garantito. La ricezione dell’eventuale email è un controllo distinto.
+
+## Domande frequenti
+
+Le domande successive distinguono le impostazioni dell’applicazione dalle condizioni del servizio esterno. **Configurato**, **abilitato** e **incassato** non sono stati equivalenti.
+
+Per un dubbio sull’esito raccogli nome della quota, importo e orario e chiedi al gestore il confronto con l’account Stripe corretto. Non condividere chiavi, firma del webhook o dati riservati della carta.
+
+### Quanto costa Stripe?
+
+<Warning>Questa sezione richiede verifiche esterne del servizio, delle condizioni applicabili o della consegna. Non documenta un’operazione esterna già eseguita.</Warning>
+
+Questa guida non indica tariffe fisse o percentuali perché il costo dipende dall’account e dalle condizioni del servizio. Chiedi al gestore di verificare commissioni applicabili a metodi, rimborsi e accrediti prima dell’uso.
+
+Il riepilogo delle commissioni nell’applicazione deriva dai dati recuperati dal servizio per il periodo scelto. Non è un listino e un valore zero non dimostra assenza di commissioni. Confronta il costo effettivo nel portale dell’account corretto.
+
+### I pagamenti sono sicuri?
+
+<Warning>Questa sezione richiede verifiche esterne del servizio, delle condizioni applicabili o della consegna. Non documenta un’operazione esterna già eseguita.</Warning>
+
+L’applicazione usa un modulo Stripe per il percorso online e verifica la firma delle notifiche di esito previste dal servizio prima di elaborarle. Questi controlli non costituiscono una garanzia totale di sicurezza o conformità dell’intera installazione.
+
+Verifica con il gestore ambiente, account, credenziali, autorizzazioni e destinazione delle notifiche. Il servizio esterno e l’infrastruttura richiedono verifiche proprie; non inserire dati di carte in chat o nei campi descrittivi dei pagamenti per chiedere assistenza.
+
+### Posso disattivare i pagamenti online?
+
+Sì. L’opzione dell’associazione si modifica in **Profilo > Generali**. Prima di cambiarla concorda la gestione delle eventuali richieste di pagamento già avviate: deselezionare una casella non è una richiesta di rimborso.
+
+<Steps>
+  <Step title="Disattiva l’opzione">
+    Raggiungi **Pagamenti Online** e togli la spunta. Se il comando è disabilitato, usa un account autorizzato a modificare le impostazioni. Il valore a schermo non è ancora il risultato salvato.
+  
+<Frame>![Disattiva l’opzione](/images/pagamenti/stripe-controlli-locali/4.png)</Frame>
+  </Step>
+  <Step title="Salva e ricontrolla">
+    Premi **Salva**, attendi la conferma e ricarica la pagina. Controlla che **Pagamenti Online** resti deselezionato. Se compare un errore, riapri le impostazioni prima di ripetere la modifica.
+  
+<Frame>![Salva e ricontrolla](/images/pagamenti/stripe-controlli-locali/5.png)</Frame>
+  </Step>
+</Steps>
+
+La scheda Stripe dell’installazione resta distinta da questa preferenza. Per cambiare credenziali, webhook o stato dell’integrazione rivolgiti al gestore; non occorre rimuovere chiavi per togliere la spunta dell’associazione.
+
+<Note>Lo stato degli incassi già registrati va controllato nella pagina Pagamenti. Le richieste in corso e gli eventuali rimborsi richiedono il confronto con il servizio esterno: questa procedura riguarda soltanto l’opzione locale.</Note>
+

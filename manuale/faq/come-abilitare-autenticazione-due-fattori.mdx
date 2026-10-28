@@ -1,0 +1,115 @@
+---
+title: "Come abilitare l'autenticazione a due fattori?"
+description: "Configurare il codice temporaneo del proprio account e riconoscere i passaggi che richiedono il salvataggio."
+---
+
+# Abilitare l'autenticazione a due fattori (2FA)
+
+L'autenticazione a due fattori aggiunge un codice temporaneo alla verifica dell'account. Quando è attiva, l'accesso con email o nome utente e password richiede anche un codice valido generato dall'app di autenticazione.
+
+L'impostazione riguarda **il tuo account**. Attivarla non abilita automaticamente il doppio fattore per tutti i collaboratori o per tutti gli atleti dell'associazione.
+
+<Note>Nelle schermate della guida, QR, chiave segreta e codici temporanei sono nascosti.</Note>
+
+## Perché attivare il 2FA?
+
+Il codice temporaneo aggiunge un controllo oltre alla password e riduce il rischio di accesso con la sola password compromessa. Mantieni protette anche la casella email, la password e l'app che genera i codici.
+
+Prepara il telefono e chiarisci come recuperare l'accesso se lo perdi. La pagina di configurazione mostra un QR e una chiave segreta: chi li possiede può configurare la generazione dei codici del tuo account.
+
+<Warning>Non condividere QR, chiave segreta o codici OTP in chat, documenti e schermate. Per illustrare la procedura usa immagini con entrambe le informazioni nascoste.</Warning>
+
+## App compatibili
+
+La pagina dell'applicazione cita **Microsoft Authenticator** e **Google Authenticator** come esempi di app per scansionare il QR e generare il codice temporaneo. La configurazione usa un codice a **6 cifre**.
+
+Prima di iniziare, apri la tua app di autenticazione e individua il comando per aggiungere un account tramite QR o chiave. I nomi dei comandi sul telefono dipendono dall'app utilizzata; questa guida non verifica disponibilità, backup o trasferimento degli account di tali servizi.
+
+## Come attivare il 2FA
+
+La configurazione riguarda il tuo account personale. Prima di procedere prepara un generatore di codici temporanei; la pagina mostra il QR e la chiave da usare nella configurazione del generatore. La scansione e l’importazione sul telefono dipendono dall’app scelta e richiedono una verifica separata.
+
+<Steps>
+  <Step title="Apri la pagina del tuo profilo">
+Apri **Profilo > Autenticazione 2 fattori**. Nella pagina **Autenticazione a due fattori**, controlla **Abilita Doppio Fattore**. Se è già attivo, non avviare una nuova configurazione per controllare il solo stato: puoi ricaricare la pagina per confermarlo.
+
+<Frame>![Profilo: doppio fattore disattivato prima della configurazione.](/images/autenticazione/attivazione-accesso/1.png)</Frame>
+</Step>
+  <Step title="Prepara la configurazione">
+    Accendi **Abilita Doppio Fattore**. Compaiono **Codice OTP**, il QR e **Chiave Segreta**. Usa QR o chiave per configurare il generatore che hai preparato; non copiarli in documenti condivisi. Il cambio dell’interruttore prepara il modulo ma non salva ancora l’attivazione.
+  </Step>
+  <Step title="Conferma il codice">
+Inserisci il codice temporaneo corrente di **6 cifre** in **Codice OTP**. **Salva** diventa disponibile dopo l’inserimento di sei caratteri; il controllo definitivo del codice avviene al salvataggio. Un codice rifiutato non attiva il doppio fattore.
+
+<Frame>![Codice OTP inserito e nascosto prima del salvataggio.](/images/autenticazione/attivazione-accesso/3.png)</Frame>
+</Step>
+  <Step title="Salva e controlla lo stato">
+Premi **Salva** e attendi **Autenticazione a due fattori aggiornata.** QR e chiave non restano nel modulo dopo il salvataggio riuscito. Ricarica la pagina e controlla che **Abilita Doppio Fattore** sia ancora acceso. Se compare **Codice OTP errato, riprova.**, controlla il generatore e il codice corrente, poi ripeti il salvataggio.
+
+<Frame>![Doppio fattore salvato e ancora attivo dopo il ricaricamento.](/images/autenticazione/attivazione-accesso/4.png)</Frame>
+</Step>
+</Steps>
+
+<Frame caption="Configurazione preparata ma non salvata, QR e chiave interamente nascosti.">
+  <img src="/images/autenticazione/attivazione-accesso/2.png" alt="Configurazione del doppio fattore: QR, chiave e OTP completamente nascosti" />
+</Frame>
+
+<Note>Non uscire dall'account durante una configurazione incompleta. Controlla il salvataggio e conserva l'accesso all'app che genera i codici prima di provare un nuovo login.</Note>
+
+## Come funziona il login con il 2FA
+
+Questa procedura riguarda l’accesso con identificativo e password a un account per cui l’attivazione è stata salvata. Puoi provarla in una nuova sessione del browser, mantenendo aperta quella già autenticata fino alla conferma del nuovo accesso.
+
+<Steps>
+  <Step title="Inserisci le credenziali">
+Apri la pagina di accesso, inserisci email o nome utente e password, poi premi il pulsante di accesso. Anche con una password corretta, l’accesso non si completa senza il secondo fattore quando è attivo.
+
+<Frame>![Nuovo accesso con identificativo e password nascosti.](/images/autenticazione/attivazione-accesso/5.png)</Frame>
+</Step>
+  <Step title="Controlla la richiesta del secondo fattore">
+    Quando compare **Autenticazione a Due Fattori**, individua il campo **Inserisci il codice OTP.**. Il generatore deve essere quello configurato per questo account. Questo riquadro precede l’apertura dell’area autenticata.
+  </Step>
+  <Step title="Inserisci il codice corrente">
+    Inserisci sei cifre e conferma nel riquadro. Un campo vuoto, incompleto o contenente caratteri diversi dalle cifre mostra **Devi inserire un codice OTP Valido**. Un codice di sei cifre viene verificato prima di concedere la sessione; se è errato, l’accesso non si completa.
+  </Step>
+  <Step title="Controlla l’accesso completato">
+Attendi l’apertura dell’applicazione e controlla che sia l’account desiderato. Apri nuovamente **Profilo > Autenticazione 2 fattori** e ricarica la pagina: lo stato salvato deve risultare ancora attivo. Se il tentativo fallisce, riparti dalla pagina di accesso e controlla credenziali, generatore e codice corrente.
+
+<Frame>![Accesso alla bacheca completato con credenziali e codice reali.](/images/autenticazione/attivazione-accesso/7.png)</Frame>
+
+<Frame>![Profilo riaperto nella nuova sessione: doppio fattore ancora attivo.](/images/autenticazione/attivazione-accesso/8.png)</Frame>
+</Step>
+</Steps>
+
+<Frame caption="Richiesta del secondo fattore prima di concedere una sessione.">
+  <img src="/images/autenticazione/attivazione-accesso/6.png" alt="Richiesta del codice temporaneo durante l’accesso, con dati riservati nascosti" />
+</Frame>
+
+<Note>La verifica della procedura applicativa non dimostra il funzionamento dell’interfaccia del telefono, backup, trasferimento o recupero del generatore. Le modalità alternative di accesso e il recupero dell’account richiedono una verifica separata.</Note>
+
+## Come disattivare il 2FA
+
+<Steps>
+  <Step title="Apri il profilo dalla sessione autenticata">
+    Da una sessione già autenticata, apri **Profilo > Autenticazione 2 fattori**. Controlla che **Abilita Doppio Fattore** sia attivo sull’account che vuoi modificare.
+  </Step>
+  <Step title="Disattiva e salva">
+    Disattiva **Abilita Doppio Fattore** e premi **Salva**. Attendi la conferma **Autenticazione a due fattori aggiornata.** Il modulo attuale non richiede un nuovo OTP per disattivare dalla sessione autenticata.
+  </Step>
+  <Step title="Controlla la disattivazione">
+Riapri la pagina e controlla che l’interruttore sia spento. Per controllare anche l’accesso, apri una nuova sessione e verifica che dopo le credenziali non venga più richiesto il codice OTP.
+
+<Frame>![Doppio fattore disattivato dalla sessione autenticata e stato conservato dopo il ricaricamento.](/images/autenticazione/doppio-fattore/8.png)</Frame>
+</Step>
+</Steps>
+
+<Note>La sola modifica dell’interruttore non salva lo stato: premi **Salva** prima di lasciare la pagina.</Note>
+
+## Hai perso l'accesso all'app?
+
+Se hai ancora una sessione autenticata, la pagina del profilo offre la disattivazione descritta sopra. Valuta il cambio del dispositivo con il responsabile e verifica la nuova configurazione prima di chiudere la sessione.
+
+Se non riesci più ad accedere, chiedi al **gestore della tua installazione** quale procedura di recupero è disponibile e come viene verificata la tua identità. Questa guida non documenta codici di recupero, un pulsante di reset autonomo o un ripristino garantito dal supporto.
+
+<Warning>Il recupero dipende dalla gestione effettiva dell'installazione e richiede una verifica esterna. Non inviare al supporto password, QR, chiave segreta o codici temporanei per dimostrare la tua identità.</Warning>
+

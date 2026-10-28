@@ -6,6 +6,7 @@ on:
       - 'BE/**'
       - 'UI/**'
       - 'docs/manuale/**'
+      - 'manuale/**'
       - 'docs/scripts/manuale*'
       - 'docs/scripts/tests/test_manuale*.py'
       - 'skills/assozeta-manuale/**'
@@ -25,6 +26,7 @@ on:
       - 'BE/**'
       - 'UI/**'
       - 'docs/manuale/**'
+      - 'manuale/**'
       - 'docs/scripts/manuale*'
       - 'docs/scripts/tests/test_manuale*.py'
       - 'skills/assozeta-manuale/**'
@@ -41,7 +43,7 @@ on:
   workflow_dispatch:
     inputs:
       manual_ref:
-        description: Full immutable manual revision (defaults to docs/manuale/source.json)
+        description: Unsupported; the manual is vendored in manuale/ (leave empty)
         type: string
       force_full:
         description: Ignore compatible evidence and run full verification plus historical appliance rehearsal
@@ -51,8 +53,6 @@ on:
         description: Draft bounded MDX edits with an installed authenticated Codex CLI (trusted default branch only)
         type: boolean
         default: false
-  repository_dispatch:
-    types: [manuale-updated]
   schedule:
     - cron: '15 4 * * 1'
 
@@ -70,7 +70,7 @@ jobs:
     uses: ./.github/workflows/manuale-verify.yml
     with:
       release: ${{ format('manual-verification-{0}', github.sha) }}
-      manual_revision: ${{ inputs.manual_ref || github.event.client_payload.manual_revision || '' }}
+      manual_revision: ${{ inputs.manual_ref || '' }}
       force_full: ${{ github.event_name == 'schedule' || inputs.force_full || false }}
 
   editorial:
@@ -109,8 +109,8 @@ jobs:
           default_ref = 'refs/heads/' + os.environ['DEFAULT_BRANCH']
           trusted_application = os.environ['APPLICATION_REF'] == default_ref
           dispatch_edit = event == 'workflow_dispatch' and os.environ['EDIT_REQUESTED'] == 'true'
-          pinned = json.load(open('docs/manuale/source.json'))['revision']
-          trusted_manual = not os.environ['DISPATCH_MANUAL_REF'] or os.environ['DISPATCH_MANUAL_REF'] == pinned
+          # The manual is vendored in manuale/; no external revision is trusted.
+          trusted_manual = not os.environ['DISPATCH_MANUAL_REF']
           if dispatch_edit and not (trusted_application and trusted_manual):
               raise SystemExit('Content editing requires the default application branch and the committed immutable manual pin; run plain verification for other dispatch inputs.')
           enabled = dispatch_edit and trusted_application and trusted_manual

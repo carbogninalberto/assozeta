@@ -1,0 +1,139 @@
+---
+title: Come archiviare i dati?
+description: "Come archiviare e ripristinare le iscrizioni e salvare la preferenza di archiviazione automatica."
+---
+
+# Cosa significa archiviare
+
+Archiviare un’iscrizione significa spostarla dall’elenco attivo all’archivio della stessa sezione. Non equivale a eliminarla: il ripristino conserva la stessa iscrizione.
+
+<Steps>
+<Step title="Confronta elenco attivo e archivio">
+Dopo **Archivia selezionati**, ricarica l’elenco: Sara Conti scompare dalle iscrizioni attive e compare nell’**Archivio**. Il passaggio viene conservato alla riapertura.
+<Frame>![Confronta elenco attivo e archivio](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+</Steps>
+
+<Note>La quota non pagata dell’esempio passa anche nel distinto archivio dei pagamenti. La successiva riattivazione dell’iscrizione lascia quel pagamento archiviato.</Note>
+
+# Archiviazione manuale
+
+<Steps>
+<Step title="Seleziona l’iscrizione corretta">
+Apri le iscrizioni attive e seleziona la casella della riga da archiviare. Nell’esempio scegliamo soltanto Sara Conti, con quota non saldata.
+<Frame>![Seleziona l’iscrizione corretta](/images/archivio/manutenzione/1.png)</Frame>
+</Step>
+<Step title="Conferma Archivia selezionati">
+Premi **Archivia** e controlla la conferma **Archivia selezionati**. **Annulla** lascia la situazione invariata; conferma solo dopo aver verificato la selezione.
+<Frame>![Leggi e conferma](/images/archivio/manutenzione/2.png)</Frame>
+</Step>
+<Step title="Controlla gli effetti persistiti">
+Ricarica l’elenco e apri **Archivio**. Verifica l’iscrizione selezionata e controlla separatamente l’archivio dei pagamenti per la quota non pagata.
+<Frame>![Controlla gli effetti persistiti](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+</Steps>
+
+<Note>L’esempio non comprende iscrizioni ai corsi o ricevute collegate. I loro eventuali effetti non sono dimostrati da questa archiviazione: controlla i collegamenti prima di lavorare su una persona con quelle risorse.</Note>
+
+# Archiviazione automatica
+
+
+L’opzione **Archivia Iscrizioni Automaticamente** è presente nelle impostazioni **Generali**. Usa l’inizio dell’anno fiscale dell’associazione per individuare le iscrizioni create in un periodo fiscale concluso.
+
+L’opzione salvata e il lavoro automatico sono due controlli distinti: l’archiviazione richiede che i servizi programmati dell’installazione eseguano l’operazione. Non è una conferma che tutte le iscrizioni siano già state spostate all’apertura della nuova stagione.
+
+<Warning>Prima di attivarla controlla le date fiscali e i pagamenti collegati. Il comportamento automatico non è una copia esatta dell’archiviazione manuale; l’esecuzione completa nel passaggio di anno deve essere verificata sulla tua installazione.</Warning>
+
+## Come funziona
+
+
+Il controllo automatico considera le iscrizioni non archiviate e non eliminate delle associazioni che hanno l’opzione attiva. Per ogni iscrizione calcola l’anno fiscale usando la sua **data di creazione** e il giorno e mese di inizio dell’anno fiscale configurati.
+
+Se quel periodo è concluso, il lavoro previsto archivia l’iscrizione, il suo pagamento diretto e il documento contabile collegato a quel pagamento. Non è il criterio “iscrizione scaduta”: la data di scadenza dell’iscrizione e il periodo fiscale di creazione sono dati distinti.
+
+La presenza dei collegamenti al pagamento e al documento è importante. Nella versione corrente, dati mancanti possono interrompere l’esecuzione del lavoro; non è quindi corretto promettere che ogni iscrizione venga archiviata automaticamente, né che tutti i pagamenti o tutte le ricevute della persona siano inclusi.
+
+<Note>Orario di esecuzione, completamento del lavoro e gestione delle iscrizioni senza pagamento o documento richiedono una verifica separata. Per i dati già spostati controlla gli archivi interessati, senza dedurre il risultato dal solo interruttore attivo.</Note>
+
+## Come attivarla
+
+
+
+
+La procedura salva l’opzione dell’associazione. Il lavoro programmato che archivia le iscrizioni a fine periodo fiscale rimane un controllo distinto.
+
+<Steps>
+<Step title="Controlla il periodo fiscale">
+Con il proprietario apri **Profilo → Generali**. Controlla **Anno fiscale** e il riepilogo della data iniziale prima di cambiare l’opzione. Non confondere l’anno fiscale con le date della stagione sportiva o con la scadenza della singola iscrizione.
+<Frame caption="Anno fiscale prima del cambio dell’opzione automatica">![Anno fiscale prima del cambio dell’opzione automatica](/images/archivio/manutenzione/10.png)</Frame>
+</Step>
+<Step title="Attiva l’opzione e salva">
+Scorri fino a **Archivia Iscrizioni Automaticamente**, attiva l’interruttore e premi **Salva**. Il pulsante registra la preferenza; non apre una conferma di archiviazione delle righe e non sposta immediatamente Sara dall’elenco.
+<Frame caption="Interruttore Archivia Iscrizioni Automaticamente attivo prima di Salva">![Interruttore Archivia Iscrizioni Automaticamente attivo prima di Salva](/images/archivio/manutenzione/11.png)</Frame>
+</Step>
+<Step title="Riapri e controlla la preferenza">
+Ricarica la pagina e torna a **Generali**. L’interruttore deve rimanere attivo e le impostazioni fiscali devono avere i valori desiderati. Controlla **Iscrizioni → Tesserati** separatamente: salvare l’opzione non dimostra che il lavoro programmato sia stato eseguito.
+<Frame caption="Preferenza automatica conservata dopo il ricaricamento">![Preferenza automatica conservata dopo il ricaricamento](/images/archivio/manutenzione/12.png)</Frame>
+Un collaboratore in sola lettura vede l’opzione ma non può modificarla o salvare le impostazioni. Per il cambiamento usa un account autorizzato; per i dati dell’associazione usa il proprietario.
+<Frame caption="Preferenza visibile ma disattivata nell’account in sola lettura">![Preferenza visibile ma disattivata nell’account in sola lettura](/images/archivio/manutenzione/13.png)</Frame>
+</Step>
+<Step title="Verifica il lavoro programmato prima di affidarti all’automatismo">
+Concorda con il gestore dell’installazione una prova sul periodo fiscale e sui collegamenti effettivi delle iscrizioni. Dopo l’esecuzione controlla **Iscrizioni → Archivio** e gli archivi contabili coinvolti.
+Se stai soltanto provando la preferenza, puoi disattivare di nuovo l’interruttore, premere **Salva** e ricaricare per controllare il valore. Nell’esempio l’opzione torna disattivata senza modificare le iscrizioni o i pagamenti.
+<Frame caption="Opzione disattivata nuovamente dopo il controllo dimostrativo">![Opzione disattivata nuovamente dopo il controllo dimostrativo](/images/archivio/manutenzione/14.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il salvataggio non esegue immediatamente il lavoro automatico. Programmazione, gestione dei dati incompleti ed esito del passaggio di anno richiedono una verifica esterna a questa procedura. Questo esempio verifica la preferenza, non l’archiviazione a fine anno.</Warning>
+
+# Consultare i dati archiviati
+
+<Steps>
+<Step title="Apri l’archivio dedicato">
+Per una persona apri **Organizzazione → Iscrizioni → Archivio**. Cerca il nome o cognome e controlla la riga; azzera la ricerca per tornare all’elenco completo.
+<Frame>![Apri l’archivio dedicato](/images/archivio/manutenzione/5.png)</Frame>
+</Step>
+<Step title="Controlla gli elementi collegati separatamente">
+Per la quota non saldata apri **Contabilità → Pagamenti → Archivio**. Il pagamento è distinto dalla riga dell’iscrizione e può restare archiviato dopo il suo ripristino.
+<Frame>![Controlla gli elementi collegati separatamente](/images/archivio/manutenzione/6.png)</Frame>
+</Step>
+</Steps>
+
+<Note>La sola lettura consente la consultazione dell’archivio ma non il ripristino. **Archivio** nel menu laterale riguarda invece documenti e cartelle.</Note>
+
+# Ripristinare i dati archiviati
+
+<Steps>
+<Step title="Trova l’iscrizione archiviata">
+Apri **Organizzazione → Iscrizioni → Archivio** e cerca nome o cognome. Nell’esempio l’iscrizione di **Sara Conti** è presente nell’archivio dopo la ricarica; controlla la riga prima di agire.
+<Frame>![Trova l’iscrizione archiviata](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+<Step title="Conferma il ripristino">
+Premi **Rimuovi dall’archivio** nella riga e controlla la conferma. Usa **Annulla** se hai scelto la persona sbagliata; altrimenti premi **Sposta nel libro soci**.
+<Frame>![Conferma il ripristino](/images/archivio/manutenzione/8.png)</Frame>
+</Step>
+<Step title="Ricontrolla l’elenco e i pagamenti">
+Ricarica l’elenco attivo: la stessa iscrizione torna consultabile. La sua quota non saldata rimane nell’archivio dei pagamenti e va controllata separatamente da **Contabilità → Pagamenti → Archivio**. Ripristinare l’iscrizione non ripristina automaticamente quel pagamento.
+<Frame>![Ricontrolla l’elenco e i pagamenti](/images/archivio/manutenzione/9.png)</Frame>
+</Step>
+</Steps>
+
+# Cosa viene archiviato
+
+Il dato da archiviare dipende dalla sezione in cui lavori. Questa procedura mostra una singola iscrizione e la sua quota non saldata, non un archivio unico di tutta l’associazione.
+
+| Elemento nell’esempio | Risultato |
+| --- | --- |
+| Iscrizione di Sara Conti | Fuori dall’elenco attivo, visibile nell’Archivio delle iscrizioni |
+| Quota non saldata collegata | Visibile nel distinto Archivio dei pagamenti |
+| Altri pagamenti già saldati | Restano invariati |
+
+<Steps>
+<Step title="Controlla la quota collegata">
+Dopo l’archiviazione cerca anche il pagamento nel suo archivio. Dopo il ripristino dell’iscrizione controllalo ancora: rimane archiviato finché non lo ripristini separatamente.
+<Frame>![Controlla la quota collegata](/images/archivio/manutenzione/6.png)</Frame>
+</Step>
+</Steps>
+
+<Note>L’applicazione prevede inoltre archivi per corsi e documenti contabili. L’esempio di Sara non include iscrizioni ai corsi o ricevute collegate: i possibili effetti su quelle risorse e il passaggio automatico a fine periodo richiedono prove dedicate.</Note>
+

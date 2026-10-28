@@ -334,7 +334,9 @@ def affected_recipes(registry, changed, manual_changed=(), *, root=ROOT, decisio
         selected.update(matches)
 
     for relative in changed:
-        if relative == 'docs/manuale/source.json':
+        if relative == 'docs/manuale/source.json' or relative.startswith('manuale/'):
+            # Vendored manual content is materialized as its own immutable
+            # authoring revision and checked independently.
             record(relative, 'application', 'immutable-authoring-pin; content checked independently', [])
             continue
         if relative.startswith('docs/scripts/tests/') or (relative.startswith('BE/') and '/tests/' in relative) or (

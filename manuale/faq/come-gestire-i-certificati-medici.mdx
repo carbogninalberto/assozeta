@@ -1,0 +1,93 @@
+---
+title: Come gestire i certificati medici?
+description: "Come controllare documenti, scadenze e classificazione dei certificati medici in Assozeta."
+---
+
+# Gestire i certificati medici
+
+Il certificato si gestisce dalla scheda dell'iscrizione, nella sezione **Certificato medico**. Per valutare la situazione controlla tre dati distinti: **documento allegato**, **data di scadenza** e indicazione **Certificato medico agonistico**.
+
+La data permette all'applicazione di mostrare il tempo rimanente o la scadenza. Non dimostra da sola che il documento sia presente: un'importazione può registrare una scadenza senza allegare il certificato originale.
+
+Per consultare la scheda servono i permessi di lettura delle iscrizioni; per caricare, sostituire, rimuovere o cambiare i dati servono i permessi di modifica. Alcune azioni non vengono proposte per un'iscrizione archiviata.
+
+<Note>Il gestionale aiuta a registrare e controllare i dati. Il contenuto del certificato e i requisiti richiesti per l'attività devono essere verificati dall'associazione.</Note>
+
+## Caricare un certificato medico
+
+<Steps>
+  <Step title="Apri la sezione della persona">
+    In **Organizzazione → Iscrizioni**, apri la persona e la sezione **Certificato medico**. Se non c'è un certificato, premi **Nuovo Certificato**; se ne esiste uno, usa **Sostituisci certificato** quando vuoi cambiare il file.
+    <Frame>![Scheda della persona: Nuovo Certificato prima del caricamento.](/images/certificati/controlli-reali/7.png)</Frame>
+  </Step>
+  <Step title="Carica e attendi la conferma">
+    Nella finestra **Certificato Medico** usa **Trascina o premi per caricare il Certificato Medico**. Sono ammessi **PDF** e **immagini fino a 5 MB**. Attendi **Documento caricato** con il nome del file; se compare un errore, correggi il file e riprova.
+    <Frame>![File allegato immediatamente; data controllata prima di Salva.](/images/certificati/controlli-reali/8.png)</Frame>
+  </Step>
+  <Step title="Controlla la data e salva">
+    Imposta **Data Scadenza** confrontandola con il documento e premi **Salva**. Dopo la conferma riapri la sezione, controlla la data e verifica l'allegato; ricarica la pagina per controllare i dati conservati.
+    <Frame>![Allegato e scadenza persistiti dopo Salva e ricaricamento.](/images/certificati/controlli-reali/9.png)</Frame>
+  </Step>
+</Steps>
+
+<Warning>Il caricamento allega il file subito. **Salva** applica la data di scadenza: chiudere la finestra dopo il caricamento non annulla automaticamente il file appena allegato. Se hai scelto il documento sbagliato, correggilo dalla sezione.</Warning>
+
+## Notifiche automatiche di scadenza
+
+L'impostazione **Invia notifiche certificati medici**, in **Profilo → Generali → Altro**, abilita i promemoria previsti **30 giorni** e **7 giorni** prima della scadenza e **1 giorno** dopo.
+
+La selezione automatica considera iscrizioni correnti, non archiviate né eliminate, create negli ultimi **366 giorni**, con una scadenza che coincide con il giorno previsto dal promemoria. Non recupera indistintamente tutte le scadenze passate.
+
+Il destinatario viene cercato prima nell'email dell'atleta, poi nell'email del tutore principale se la prima manca o non è valida; in mancanza di entrambe viene usata l'email dell'account collegato. Controlla quindi i recapiti della scheda, oltre all'interruttore.
+
+<Note>La programmazione dei promemoria e il recapito dipendono dai servizi email dell'installazione. La presenza della funzione nel gestionale non dimostra che un messaggio sia stato consegnato. Usa anche l'elenco e la bacheca per controllare le scadenze.</Note>
+
+## Controllare lo stato dei certificati
+
+<Steps>
+  <Step title="Controlla l'elenco delle iscrizioni">
+Nella scheda **Tesserati** consulta la colonna **Certificato**. Le etichette possono indicare tempo rimanente, scadenza, dato mancante oppure l'indicazione di esenzione legata all'età.
+
+<Frame>![Tesserati: certificato valido della persona e dati mancanti delle altre iscrizioni.](/images/certificati/controlli-reali/19.png)</Frame>
+</Step>
+  <Step title="Apri la situazione completa">
+Apri **Certificato medico** della persona e controlla documento, **Data Scadenza** e **Certificato medico agonistico**. Una data registrata senza il file non equivale ad avere verificato il certificato.
+
+<Frame>![File, scadenza e classificazione agonistica conservati insieme.](/images/certificati/controlli-reali/14.png)</Frame>
+</Step>
+  <Step title="Confronta elenco e bacheca">
+Usa **Certificato non presente** e **Certificato scaduto** per restringere l’elenco e riapri una persona dei risultati per controllare il motivo. In bacheca, **Certificati medici in scadenza** include da oggi ai prossimi **30 giorni**, mentre **Certificati medici scaduti** considera date precedenti a oggi. Premi **Modifica** nel widget per aprire la stessa sezione della persona. Controlla anche il periodo di creazione selezionato prima di confrontare i conteggi con l’elenco: filtri e widget possono avere ambiti diversi.
+
+<Frame>![Certificato non presente: le iscrizioni prive di certificato, senza la persona con documento.](/images/certificati/controlli-reali/23.png)</Frame>
+
+<Frame>![Certificato scaduto: documento della persona con data precedente a oggi.](/images/certificati/controlli-reali/24.png)</Frame>
+
+<Frame>![Scadenza di oggi: filtro elenco scaduto e widget in scadenza selezionano diversamente.](/images/certificati/controlli-reali/26.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Il filtro «scaduto» dell'elenco comprende anche la data di oggi. Alcune etichette e la bacheca distinguono invece le date precedenti a oggi: per i casi al limite, fa riferimento alla data effettivamente registrata.</Note>
+
+## Aggiornare un certificato medico
+
+<Steps>
+  <Step title="Sostituisci il documento quando necessario">
+    Apri **Certificato medico** e premi **Sostituisci certificato**. Carica il nuovo PDF o immagine, attendi la conferma e controlla la **Data Scadenza** del nuovo documento prima di premere **Salva**.
+    <Frame>![Nuovo PDF dimostrativo caricato tramite Sostituisci certificato.](/images/certificati/controlli-reali/10.png)</Frame>
+  </Step>
+  <Step title="Aggiorna una data senza cambiare file">
+Premi **Modifica scadenza** accanto alla data esistente; se manca, usa **impostala ora!**. La finestra propone la data salvata e consente di modificarla senza scegliere un file. Nell’esempio correggiamo la scadenza mantenendo lo stesso documento dimostrativo. Ricontrolla la data sul certificato, premi **Salva**, ricarica la scheda e verifica la nuova data insieme all’allegato. Questa operazione richiede un’iscrizione non archiviata e il permesso di modifica.
+
+<Frame>![Modifica scadenza: data salvata proposta, senza campo di caricamento.](/images/certificati/controlli-reali/12.png)</Frame>
+
+<Frame>![Data modificata e riaperta, con lo stesso documento allegato.](/images/certificati/controlli-reali/13.png)</Frame>
+</Step>
+  <Step title="Controlla anche la classificazione">
+Se necessario modifica **Certificato medico agonistico**. Questo interruttore invia una modifica separata: attendi la conferma e ricarica la scheda. Controlla infine file, data e classificazione insieme.
+
+<Frame>![File, scadenza e classificazione agonistica conservati insieme.](/images/certificati/controlli-reali/14.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>**Rimuovi** richiede una conferma ed elimina il collegamento del certificato. Usalo soltanto se vuoi rimuoverlo, anziché aggiornarne la data. La sostituzione non dimostra una notifica automatica al destinatario.</Warning>
+

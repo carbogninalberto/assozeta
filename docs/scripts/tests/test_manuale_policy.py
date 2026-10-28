@@ -3,6 +3,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -104,20 +105,46 @@ class ManualPolicyTests(unittest.TestCase):
         self.assertEqual(after['mode'], 'reuse')
         self.assertNotEqual(before['application_revision'], after['application_revision'])
 
-    def test_concurrent_releases_keep_independent_immutable_authoring_inputs(self):
+    def test_vendored_manual_pin_rejects_external_sources_and_overrides(self):
         with tempfile.TemporaryDirectory() as temporary:
-            one, two = [Path(temporary) / name for name in ('release-one.json', 'release-two.json')]
-            one.write_text(json.dumps({'repository': 'Bakney/manuale', 'revision': 'a' * 40}))
-            two.write_text(json.dumps({'repository': 'Bakney/manuale', 'revision': 'b' * 40}))
-            first = policy.pinned_source(one)
-            second = policy.pinned_source(two)
-            two.write_text(json.dumps({'repository': 'Bakney/manuale', 'revision': 'c' * 40}))
-            self.assertEqual(first['revision'], 'a' * 40)
-            self.assertEqual(second['revision'], 'b' * 40)
-            self.assertEqual(policy.pinned_source(one), first)
-            for mutable in ('main', 'add/manuale-release', 'abcd1234', 'v1.2.3'):
-                with self.assertRaisesRegex(ValueError, 'immutable'):
-                    policy.pinned_source(one, override=mutable)
+            vendored, external = [Path(temporary) / name for name in ('vendored.json', 'external.json')]
+            vendored.write_text(json.dumps({'repository': 'carbogninalberto/assozeta', 'path': 'manuale'}))
+            external.write_text(json.dumps({'repository': 'Bakney/manuale', 'revision': 'a' * 40}))
+            self.assertEqual(policy.pinned_source(vendored), {'repository': 'carbogninalberto/assozeta', 'path': 'manuale'})
+            with self.assertRaisesRegex(ValueError, 'vendored'):
+                policy.pinned_source(external)
+            for override in ('a' * 40, 'main', 'v1.2.3'):
+                with self.assertRaisesRegex(ValueError, 'override'):
+                    policy.pinned_source(vendored, override=override)
+
+    def test_vendored_manual_materializes_one_deterministic_clean_revision(self):
+        spec = importlib.util.spec_from_file_location('manuale_ci_pin', Path(__file__).resolve().parents[1] / 'manuale-ci.py')
+        ci = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(ci)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / 'application'
+            (root / 'manuale/docs').mkdir(parents=True)
+            (root / 'manuale/docs/page.mdx').write_text('# Pagina è\n')
+            (root / 'manuale/.manuale-evidence.json').write_text('{}\n')
+            (root / 'docs/manuale').mkdir(parents=True)
+            (root / 'docs/manuale/source.json').write_text(json.dumps({'repository': 'carbogninalberto/assozeta', 'path': 'manuale'}))
+            identity = {'GIT_AUTHOR_NAME': 'fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
+                        'GIT_COMMITTER_NAME': 'fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'}
+            run = lambda *arguments: subprocess.run(['git', '-C', str(root), *arguments], check=True, capture_output=True, env={**os.environ, **identity})
+            run('init', '-q'); run('add', '-A'); run('-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'fixture')
+            # An uncommitted workspace file must not enter the materialized manual.
+            (root / 'manuale/docs/draft.mdx').write_text('draft\n')
+            ci.ROOT = root
+            revisions = []
+            for name in ('one', 'two'):
+                args = type('Args', (), {'manual_repo': str(Path(temporary) / name), 'manual_revision': '', 'output': str(Path(temporary) / (name + '.json'))})
+                with patch.object(policy, 'ROOT', root):
+                    ci.pin(args, type('Policy', (), {'pinned_source': staticmethod(lambda override=None: policy.pinned_source(root / 'docs/manuale/source.json', override))}))
+                revisions.append(json.loads(Path(args.output).read_text())['revision'])
+                files = subprocess.run(['git', '-C', args.manual_repo, 'ls-files'], check=True, capture_output=True, text=True).stdout.split()
+                self.assertEqual(sorted(files), ['.manuale-evidence.json', 'docs/page.mdx'])
+            self.assertEqual(revisions[0], revisions[1])
+            self.assertRegex(revisions[0], '^[0-9a-f]{40}$')
 
     def trusted_producer(self):
         repo = 'example/application'
