@@ -140,6 +140,7 @@ function invoiceBody(assetOrigin, title = 'Ricevuta dimostrativa') {
   <p class="page-break">Contenuto multilingua: Ελληνικά · Русский · 日本語 · العربية.</p>
   <img src="${assetOrigin}/pixel.png" width="20" height="20" alt="Pixel dimostrativo">
   <img class="signature" src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="260" height="90"><path d="M10 60 Q60 5 100 55 T200 40" fill="none" stroke="#14558b" stroke-width="4"/></svg>')}">
+  <iframe src="/fixture/frame-same-origin" title="Iframe interno"></iframe>
 </body>
 </html>`;
 }
@@ -237,6 +238,9 @@ async function startFixture() {
                 document.cookie = 'renderer_state=leaked-cookie; path=/';
                 document.body.textContent = 'state stored';
                 </script></body></html>`);
+        }
+        if (url.pathname === '/fixture/frame-same-origin') {
+            return html('<p>Iframe same-origin dimostrativo</p>');
         }
         if (url.pathname === '/fixture/state-check') {
             return html(`<!doctype html><html><body><script>
@@ -421,6 +425,8 @@ async function main() {
             );
             assert.equal(headerAt('assets.renderer.test', pathname)?.auth || '', '');
         }
+        assert.ok(headerAt('api.renderer.test', '/fixture/frame-same-origin'));
+        assert.equal(headerAt('api.renderer.test', '/fixture/frame-same-origin')?.auth || '', '');
         assert.equal(fixture.state.headers.filter(entry => entry.method === 'HEAD').length, 0);
         assert.equal(
             fixture.state.headers.filter(entry => entry.method === 'GET' && entry.pathname === '/fixture/invoice').length,
