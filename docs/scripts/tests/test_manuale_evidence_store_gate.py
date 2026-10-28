@@ -6,6 +6,7 @@ without a backend, browser or GitHub access.
 """
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import unittest
@@ -33,6 +34,11 @@ class GateFixture(unittest.TestCase):
         self.trusted = {'3001': dict(self.producer)}
         self.state = self.f.state
         self.state['selected_recipes'] = ['unit-members']
+        # The runner admits store evidence for GITHUB_REPOSITORY; pin it to the
+        # fixture repository so results do not depend on the CI environment.
+        environment = patch.dict(os.environ, {'GITHUB_REPOSITORY': REPOSITORY})
+        environment.start()
+        self.addCleanup(environment.stop)
 
     def materialize(self, producer=None, *, trusted=None):
         cache.publish_store(self.f.old_run, self.store, producer=producer or self.producer)
@@ -198,6 +204,19 @@ class StoreGateTests(GateFixture):
         self.assertEqual(self.state['evidence_store']['reused_workflows'], ['unit-members'])
         decision = next(item for item in self.state['cache']['decisions'] if item.get('kind') == 'evidence-store')
         self.assertEqual(decision['admitted'], ['unit-members'])
+
+    def test_runner_refuses_store_evidence_of_another_repository(self):
+        selection = self.materialize()
+        self.state['manual_repository'] = str(self.f.root / 'manual-source')
+        args = fixtures.SimpleNamespace(command='run', changed_since=None, manual_changed_since=None,
+                                        no_cache=True, reuse_store=str(selection))
+        runner = fixtures.runner
+        with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'someone/else'}), \
+                patch.object(runner, 'retained_evidence_helper', return_value=reuse), \
+                patch.object(runner, 'evidence_store_gate', return_value=self.evidence):
+            runner.reuse_inputs(self.state, args)
+        self.assertEqual(self.state['selected_recipes'], ['unit-members'])
+        self.assertNotIn('evidence_reuse', self.state)
 
     def test_runner_treats_an_unusable_selection_as_a_cold_miss(self):
         selection = self.f.root / 'broken'
