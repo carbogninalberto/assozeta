@@ -3041,28 +3041,70 @@
         "target": "balance_sheet_accounts_transfer_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/dto/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_accounts.go",
+        "BE_GO/internal/handler/balance_accounts.go",
+        "BE_GO/internal/dto/drf_pagination.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_customaccounts, application_customaccountstransfer, application_payment"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session) and IsAssociationUser.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
+        "execution_owner": "django",
+        "request": "No body.",
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts-transfer/list",
+          "/api/v2/balance-sheet/accounts-transfer/list",
+          "/api/balance-sheet/accounts-transfer/list"
+        ],
+        "response": "200 {\"data\": [CustomAccountTransferInfoSerializer]} unordered.",
+        "errors": "401; 403 non-association role, administrator without impersonation, missing permission or scoped athlete session; 500 missing association.",
+        "permissions": "Registry bookeeping.management.accountstransfers.read.",
+        "resource_scope": "Transfers of the scope user's association."
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_accounts_http.json",
+        "TESTS/fixtures/generate_balance_accounts_http.py",
+        "TESTS/contracts/test_balance_accounts_http.py",
+        "TESTS/adapters/django/balance_accounts_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 25/25 on the first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-red-r1/results.json",
+          "receipt_sha256": "eeb8c91df42d68326ecaa9e312632ff5cc18ef229ca96b5e9d571f54cffe4f8b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-versioned-r1/results.json",
+          "receipt_sha256": "106cc297c288414afa688d8417d1f5d461bb689129c8f8f024a7e3c9deca0634"
+        },
+        {
+          "revision": "committing change counting unpaid payments",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "948cb53f97c92e483fa4f773515fb0367c2dfc5a242c2a16b949b3e6cad81767"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: read parity proven on four transports."
       ]
     },
     {
@@ -3197,26 +3239,70 @@
         "target": "balance_sheet_accounts_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/dto/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_accounts.go",
+        "BE_GO/internal/handler/balance_accounts.go",
+        "BE_GO/internal/dto/drf_pagination.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_customaccounts, application_customaccountstransfer, application_payment"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
-        "execution_owner": "django"
+        "authentication": "DRF IsAuthenticated (JWT/session) and IsAssociationUser.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
+        "execution_owner": "django",
+        "request": "Query related (default true); optional X-Group-Id (payments).",
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts/list",
+          "/api/v2/balance-sheet/accounts/list",
+          "/api/balance-sheet/accounts/list"
+        ],
+        "response": "200 {\"data\": [CustomAccountSerializer]} ordered by editable; related != \"true\": raw dictionaries.",
+        "errors": "401; 403 non-association role, administrator without impersonation, missing permission or scoped athlete session; 500 missing association.",
+        "permissions": "Registry bookeeping.management.accounts.read.",
+        "resource_scope": "Accounts of the scope user's association."
       },
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "TESTS/fixtures/balance_accounts_http.json",
+        "TESTS/fixtures/generate_balance_accounts_http.py",
+        "TESTS/contracts/test_balance_accounts_http.py",
+        "TESTS/adapters/django/balance_accounts_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 25/25 on the first run; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-red-r1/results.json",
+          "receipt_sha256": "eeb8c91df42d68326ecaa9e312632ff5cc18ef229ca96b5e9d571f54cffe4f8b"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 25/25 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-versioned-r1/results.json",
+          "receipt_sha256": "106cc297c288414afa688d8417d1f5d461bb689129c8f8f024a7e3c9deca0634"
+        },
+        {
+          "revision": "committing change counting unpaid payments",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/balance-accounts-http-mutation-r1/results.json",
+          "receipt_sha256": "948cb53f97c92e483fa4f773515fb0367c2dfc5a242c2a16b949b3e6cad81767"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: read parity proven on four transports."
       ]
     },
     {

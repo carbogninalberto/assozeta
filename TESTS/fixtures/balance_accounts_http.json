@@ -1,0 +1,961 @@
+{
+ "matrix_version": 1,
+ "scope": "Balance-sheet accounts and transfers list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "accounts": {
+  "bank": {
+   "id": "a1000000-0000-4000-8000-000000910001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Banca è",
+   "initial": "100.00",
+   "type": 2,
+   "code": "IT60X",
+   "editable": true,
+   "enabled": true
+  },
+  "cash": {
+   "id": "a1000000-0000-4000-8000-000000910002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Cassa",
+   "initial": "0.00",
+   "type": 1,
+   "code": "C",
+   "editable": false,
+   "enabled": true
+  },
+  "other": {
+   "id": "a1000000-0000-4000-8000-000000910003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Altro",
+   "initial": "20.00",
+   "type": 3,
+   "code": "C",
+   "editable": true,
+   "enabled": false
+  },
+  "ghost": {
+   "id": "a1000000-0000-4000-8000-000000910004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Vuoto",
+   "initial": "7.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000910005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Gruppo",
+   "initial": "0.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000910006",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "initial": "1.00",
+   "type": 2,
+   "code": "C",
+   "editable": true,
+   "enabled": true
+  }
+ },
+ "transfers": {
+  "t1": {
+   "id": "a1000000-0000-4000-8000-000000910007",
+   "from": "bank",
+   "to": "other",
+   "amount": "30.00",
+   "date": "2026-09-01T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "t2": {
+   "id": "a1000000-0000-4000-8000-000000910008",
+   "from": "cash",
+   "to": "bank",
+   "amount": "10.50",
+   "date": "2026-09-02T10:00:00.500000Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "t3": {
+   "id": "a1000000-0000-4000-8000-000000910009",
+   "from": null,
+   "to": "other",
+   "amount": "5.00",
+   "date": "2026-09-03T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "tf": {
+   "id": "a1000000-0000-4000-8000-000000910010",
+   "from": "abroad",
+   "to": null,
+   "amount": "1.00",
+   "date": "2026-09-04T10:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "payments": {
+  "income": {
+   "id": "a1000000-0000-4000-8000-000000910011",
+   "account": "bank",
+   "amount": "50.00",
+   "paid": true,
+   "expense": false,
+   "deleted": false,
+   "group": null
+  },
+  "expense": {
+   "id": "a1000000-0000-4000-8000-000000910012",
+   "account": "bank",
+   "amount": "20.25",
+   "paid": true,
+   "expense": true,
+   "deleted": false,
+   "group": null
+  },
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000910013",
+   "account": "bank",
+   "amount": "999.00",
+   "paid": false,
+   "expense": false,
+   "deleted": false,
+   "group": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000910014",
+   "account": "ghost",
+   "amount": "7.00",
+   "paid": true,
+   "expense": false,
+   "deleted": true,
+   "group": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000910015",
+   "account": "grouped",
+   "amount": "12.00",
+   "paid": true,
+   "expense": false,
+   "deleted": false,
+   "group": "own_group"
+  }
+ },
+ "cases": [
+  {
+   "name": "balance-accounts-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "current_balance": 110.25,
+      "initial_balance": "100.00",
+      "account_type": 2,
+      "account_code": "IT60X",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "current_balance": -10.5,
+      "initial_balance": "0.00",
+      "account_type": 1,
+      "account_code": "C",
+      "deletable": false,
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "current_balance": 55.0,
+      "initial_balance": "20.00",
+      "account_type": 3,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "current_balance": 7.0,
+      "initial_balance": "7.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": true,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "current_balance": 12.0,
+      "initial_balance": "0.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     }
+    ]
+   },
+   "order": "editable"
+  },
+  {
+   "name": "balance-accounts-owner-group-payments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "current_balance": 80.5,
+      "initial_balance": "100.00",
+      "account_type": 2,
+      "account_code": "IT60X",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "current_balance": -10.5,
+      "initial_balance": "0.00",
+      "account_type": 1,
+      "account_code": "C",
+      "deletable": false,
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "current_balance": 55.0,
+      "initial_balance": "20.00",
+      "account_type": 3,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "current_balance": 7.0,
+      "initial_balance": "7.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": true,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "current_balance": 12.0,
+      "initial_balance": "0.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     }
+    ]
+   },
+   "order": "editable"
+  },
+  {
+   "name": "balance-accounts-owner-related-false",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list?related=false",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "initial_balance": 100.0,
+      "account_type": 2,
+      "account_code": "IT60X",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "initial_balance": 0.0,
+      "account_type": 1,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "initial_balance": 20.0,
+      "account_type": 3,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "initial_balance": 7.0,
+      "account_type": 2,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "initial_balance": 0.0,
+      "account_type": 2,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     }
+    ]
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-owner-related-capitalized-raw",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list?related=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "initial_balance": 100.0,
+      "account_type": 2,
+      "account_code": "IT60X",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "initial_balance": 0.0,
+      "account_type": 1,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "initial_balance": 20.0,
+      "account_type": 3,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "initial_balance": 7.0,
+      "account_type": 2,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "initial_balance": 0.0,
+      "account_type": 2,
+      "account_code": "C",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "editable": true
+     }
+    ]
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "current_balance": 110.25,
+      "initial_balance": "100.00",
+      "account_type": 2,
+      "account_code": "IT60X",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "current_balance": -10.5,
+      "initial_balance": "0.00",
+      "account_type": 1,
+      "account_code": "C",
+      "deletable": false,
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "current_balance": 55.0,
+      "initial_balance": "20.00",
+      "account_type": 3,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "current_balance": 7.0,
+      "initial_balance": "7.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": true,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "current_balance": 12.0,
+      "initial_balance": "0.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     }
+    ]
+   },
+   "order": "editable"
+  },
+  {
+   "name": "balance-accounts-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+      "enabled": true,
+      "name": "Banca è",
+      "current_balance": 110.25,
+      "initial_balance": "100.00",
+      "account_type": 2,
+      "account_code": "IT60X",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+      "enabled": true,
+      "name": "Cassa",
+      "current_balance": -10.5,
+      "initial_balance": "0.00",
+      "account_type": 1,
+      "account_code": "C",
+      "deletable": false,
+      "editable": false
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+      "enabled": false,
+      "name": "Altro",
+      "current_balance": 55.0,
+      "initial_balance": "20.00",
+      "account_type": 3,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910004",
+      "enabled": true,
+      "name": "Vuoto",
+      "current_balance": 7.0,
+      "initial_balance": "7.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": true,
+      "editable": true
+     },
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910005",
+      "enabled": true,
+      "name": "Gruppo",
+      "current_balance": 12.0,
+      "initial_balance": "0.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     }
+    ]
+   },
+   "order": "editable"
+  },
+  {
+   "name": "balance-accounts-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_id": "a1000000-0000-4000-8000-000000910006",
+      "enabled": true,
+      "name": "Estero",
+      "current_balance": 0.0,
+      "initial_balance": "1.00",
+      "account_type": 2,
+      "account_code": "C",
+      "deletable": false,
+      "editable": true
+     }
+    ]
+   },
+   "order": "editable"
+  },
+  {
+   "name": "balance-accounts-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-athlete-forbidden",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accounts.read"
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+      "custom_account_from": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+       "name": "Banca è",
+       "account_type": 2,
+       "account_code": "IT60X"
+      },
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+       "name": "Altro",
+       "account_type": 3,
+       "account_code": "C"
+      },
+      "amount": "30.00",
+      "date": "2026-09-01T10:00:00Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910008",
+      "custom_account_from": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+       "name": "Cassa",
+       "account_type": 1,
+       "account_code": "C"
+      },
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+       "name": "Banca è",
+       "account_type": 2,
+       "account_code": "IT60X"
+      },
+      "amount": "10.50",
+      "date": "2026-09-02T10:00:00.500000Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910009",
+      "custom_account_from": null,
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+       "name": "Altro",
+       "account_type": 3,
+       "account_code": "C"
+      },
+      "amount": "5.00",
+      "date": "2026-09-03T10:00:00Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "order": "transfer"
+  },
+  {
+   "name": "balance-accounts-transfers-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+      "custom_account_from": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+       "name": "Banca è",
+       "account_type": 2,
+       "account_code": "IT60X"
+      },
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+       "name": "Altro",
+       "account_type": 3,
+       "account_code": "C"
+      },
+      "amount": "30.00",
+      "date": "2026-09-01T10:00:00Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910008",
+      "custom_account_from": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910002",
+       "name": "Cassa",
+       "account_type": 1,
+       "account_code": "C"
+      },
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+       "name": "Banca è",
+       "account_type": 2,
+       "account_code": "IT60X"
+      },
+      "amount": "10.50",
+      "date": "2026-09-02T10:00:00.500000Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910009",
+      "custom_account_from": null,
+      "custom_account_to": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910003",
+       "name": "Altro",
+       "account_type": 3,
+       "account_code": "C"
+      },
+      "amount": "5.00",
+      "date": "2026-09-03T10:00:00Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "order": "transfer"
+  },
+  {
+   "name": "balance-accounts-transfers-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910010",
+      "custom_account_from": {
+       "custom_account_id": "a1000000-0000-4000-8000-000000910006",
+       "name": "Estero",
+       "account_type": 2,
+       "account_code": "C"
+      },
+      "custom_account_to": null,
+      "amount": "1.00",
+      "date": "2026-09-04T10:00:00Z",
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     }
+    ]
+   },
+   "order": "transfer"
+  },
+  {
+   "name": "balance-accounts-transfers-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-athlete-forbidden",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.management.accountstransfers.read"
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "order": "id"
+  },
+  {
+   "name": "balance-accounts-transfers-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/balance-sheet/accounts-transfer/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Balance Sheet Accounts Transfer List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "order": "id"
+  }
+ ]
+}
