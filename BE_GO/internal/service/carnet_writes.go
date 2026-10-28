@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -327,7 +328,7 @@ func NewCarnetTopups(store domain.CarnetTopupStore, now func() time.Time, ids fu
 // role; associations top up their subscriptions' carnets, athletes only
 // carnets of subscriptions they hold (the scoped-request check has already
 // bounded an impersonation session to the same queryset).
-func (s *CarnetTopups) Topup(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
+func (s *CarnetTopups) Topup(ctx context.Context, identity domain.ResolvedIdentity, raw, group string, audit domain.LoginAuditContext) error {
 	id, err := messageReadsParseUUID(raw)
 	if err != nil {
 		return err
@@ -358,21 +359,256 @@ func (s *CarnetTopups) Topup(ctx context.Context, identity domain.ResolvedIdenti
 	if err != nil {
 		return err
 	}
+	write, err := carnetHoldingWrite(ctx, tx, source, category, group, s.ids, identity, audit, s.now)
+	if err != nil {
+		return err
+	}
+	write.LinkFrom = &id
+	if err = tx.CreateTopup(ctx, write); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+type carnetBankAccounts interface {
+	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
+}
+
+// carnetHoldingWrite prepares Payment.objects.create plus
+// CarnetSubscription.objects.create for a carnet's subscription holder.
+func carnetHoldingWrite(ctx context.Context, tx carnetBankAccounts, source domain.CarnetTopupSource, category *string, group string,
+	ids func() string, identity domain.ResolvedIdentity, audit domain.LoginAuditContext, now func() time.Time) (domain.CarnetTopupWrite, error) {
+	var write domain.CarnetTopupWrite
+	var groupID *string
+	if group != "" {
+		// UUIDField.to_python of the raw header; a rejected value is a 500.
+		parsed, err := paymentInfoParseUUID(group)
+		if err != nil {
+			return write, ErrPaymentSaveFailed
+		}
+		text := parsed.String()
+		groupID = &text
+	}
 	var account *string
 	if source.SubscriptionUser != nil {
 		// PaymentManager.create assigns the default account only with a user.
+		var err error
 		if account, err = tx.DefaultBankAccount(ctx, source.CarnetAssociation); err != nil {
-			return err
+			return write, err
 		}
 	}
 	meta, err := json.Marshal(map[string]any{"lessons_counter": source.Lessons, "lessons_left": source.Lessons, "lessons_registry": []any{}})
 	if err != nil {
-		return err
+		return write, err
 	}
-	write := domain.CarnetTopupWrite{PaymentID: s.ids(), HoldingID: s.ids(), Source: source, CategoryID: category, Account: account,
-		Meta: string(meta), Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
-	if err = tx.CreateTopup(ctx, id, write); err != nil {
-		return err
+	return domain.CarnetTopupWrite{PaymentID: ids(), HoldingID: ids(), Source: source, CategoryID: category, Account: account, Group: groupID,
+		Meta: string(meta), Context: paymentCategoryAuditContext(identity, audit), At: now().UTC().Truncate(time.Microsecond)}, nil
+}
+
+type CarnetAssigns struct {
+	store domain.CarnetAssignStore
+	now   func() time.Time
+	ids   func() string
+}
+
+func NewCarnetAssigns(store domain.CarnetAssignStore, now func() time.Time, ids func() string) *CarnetAssigns {
+	return &CarnetAssigns{store: store, now: now, ids: ids}
+}
+
+// djangoUUIDValue is UUIDField.to_python for a filter value: strings are
+// parsed as hex, integers (booleans included) as uuid.UUID(int=...);
+// anything else, or a rejected value, is a ValidationError (a 500).
+func djangoUUIDValue(value any) (string, error) {
+	switch v := value.(type) {
+	case string:
+		parsed, err := paymentInfoParseUUID(v)
+		if err != nil {
+			return "", ErrPaymentSaveFailed
+		}
+		return parsed.String(), nil
+	case bool:
+		if v {
+			return "00000000-0000-0000-0000-000000000001", nil
+		}
+		return "00000000-0000-0000-0000-000000000000", nil
+	case json.Number:
+		number, ok := new(big.Int).SetString(string(v), 10)
+		if !ok || number.Sign() < 0 || number.BitLen() > 128 {
+			return "", ErrPaymentSaveFailed
+		}
+		var raw [16]byte
+		number.FillBytes(raw[:])
+		return uuidFromBytes(raw), nil
 	}
-	return tx.Commit()
+	return "", ErrPaymentSaveFailed
+}
+
+func uuidFromBytes(raw [16]byte) string {
+	const hex = "0123456789abcdef"
+	buffer := make([]byte, 0, 36)
+	for index, value := range raw {
+		if index == 4 || index == 6 || index == 8 || index == 10 {
+			buffer = append(buffer, '-')
+		}
+		buffer = append(buffer, hex[value>>4], hex[value&15])
+	}
+	return string(buffer)
+}
+
+// carnetAssignField is `name in request.data` then request.data[name]: a
+// list or text body that contains the name cannot be indexed by it (a 500).
+func carnetAssignField(body any, name string) (any, bool, error) {
+	switch value := body.(type) {
+	case nil:
+		return nil, false, nil
+	case domain.RequestObject:
+		field, present := value.Lookup(name)
+		return field, present, nil
+	case []any:
+		for _, item := range value {
+			if item == name {
+				return nil, false, ErrPaymentSaveFailed
+			}
+		}
+		return nil, false, nil
+	case string:
+		if strings.Contains(value, name) {
+			return nil, false, ErrPaymentSaveFailed
+		}
+		return nil, false, nil
+	}
+	return nil, false, ErrPaymentSaveFailed
+}
+
+// Assign follows carnet_assign; it returns the selected course subscription.
+func (s *CarnetAssigns) Assign(ctx context.Context, identity domain.ResolvedIdentity, rawCarnet, rawSubscription, group string, body any,
+	audit domain.LoginAuditContext) (*string, error) {
+	tx, err := s.store.BeginCarnetAssign(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	var groupFilter *string
+	if group != "" {
+		value, err := djangoUUIDValue(group)
+		if err != nil {
+			return nil, err
+		}
+		groupFilter = &value
+	}
+	subscriptionID, err := djangoUUIDValue(rawSubscription)
+	if err != nil {
+		return nil, err
+	}
+	subscription, err := tx.AssignSubscription(ctx, subscriptionID, groupFilter)
+	if err != nil {
+		return nil, err
+	}
+	if subscription == nil {
+		return nil, domain.ErrCarnetAssignSubscription
+	}
+	association := identity.ScopeUser.Role == domain.RoleAssociation
+	if !association && (subscription.UserID == nil || *subscription.UserID != identity.ScopeUser.ID) {
+		return nil, ErrCarnetNotAllowed
+	}
+	sportAssociation := subscription.AssociationID
+	if association {
+		if sportAssociation, err = tx.OwnerAssociation(ctx, identity.ScopeUser.ID, paymentCategoryAssociationScope(identity)); err != nil {
+			return nil, err
+		}
+	}
+	if sportAssociation == nil {
+		return nil, domain.ErrCarnetAssignAssociation
+	}
+	if subscription.AssociationID == nil || *subscription.AssociationID != *sportAssociation {
+		return nil, domain.ErrCarnetAssignSubscription
+	}
+	carnetID, err := djangoUUIDValue(rawCarnet)
+	if err != nil {
+		return nil, err
+	}
+	carnet, err := tx.AssociationCarnet(ctx, carnetID, *sportAssociation)
+	if err != nil {
+		return nil, err
+	}
+	if carnet == nil {
+		return nil, domain.ErrCarnetAssignCarnet
+	}
+	var course *string
+	value, present, err := carnetAssignField(body, "course_subscription_id")
+	if err != nil {
+		return nil, err
+	}
+	if present {
+		id, err := djangoUUIDValue(value)
+		if err != nil {
+			return nil, err
+		}
+		if course, err = tx.AssociationCourseSubscription(ctx, id, *sportAssociation); err != nil {
+			return nil, err
+		}
+	}
+	value, present, err = carnetAssignField(body, "carnet_subscription_id")
+	if err != nil {
+		return nil, err
+	}
+	if present {
+		holding, err := djangoUUIDValue(value)
+		if err != nil {
+			return nil, err
+		}
+		var holder *string
+		if !association {
+			holder = &identity.ScopeUser.ID
+		}
+		found, err := tx.AssignHolding(ctx, holding, *sportAssociation, holder)
+		if err != nil {
+			return nil, err
+		}
+		if !found {
+			return nil, domain.ErrCarnetSubscriptionNotFound
+		}
+		if course == nil {
+			courseValue, present, err := carnetAssignField(body, "course_id")
+			if err != nil {
+				return nil, err
+			}
+			if present {
+				var courseID *string
+				if courseValue != nil {
+					id, err := djangoUUIDValue(courseValue)
+					if err != nil {
+						return nil, err
+					}
+					courseID = &id
+				}
+				if course, err = tx.SubscriptionCourse(ctx, courseID, groupFilter, subscription.ID); err != nil {
+					return nil, err
+				}
+			}
+		}
+		if course == nil {
+			return nil, domain.ErrCarnetAssignCourse
+		}
+		if err = tx.LinkCourse(ctx, holding, *course); err != nil {
+			return nil, err
+		}
+		return course, tx.Commit()
+	}
+	category, _, err := tx.DefaultPaymentCategory(ctx)
+	if err != nil {
+		return nil, err
+	}
+	source := domain.CarnetTopupSource{UserID: subscription.UserID, CarnetID: carnet.ID, CarnetAssociation: sportAssociation, Fee: carnet.Fee,
+		Lessons: carnet.Lessons, SubscriptionID: &subscription.ID, SubscriptionUser: subscription.UserID,
+		SubscriptionAssociate: subscription.AssociateID, SubscriptionAssociation: subscription.AssociationID}
+	write, err := carnetHoldingWrite(ctx, tx, source, category, group, s.ids, identity, audit, s.now)
+	if err != nil {
+		return nil, err
+	}
+	write.Link = course
+	if err = tx.CreateTopup(ctx, write); err != nil {
+		return nil, err
+	}
+	return course, tx.Commit()
 }

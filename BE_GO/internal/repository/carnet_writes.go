@@ -361,12 +361,13 @@ func (t *carnetWriteTransaction) DefaultBankAccount(ctx context.Context, associa
 // CreateTopup mirrors Payment.objects.create then CarnetSubscription.objects.create:
 // one create entry each, rendered from the stored row; the repeated save()
 // calls and course_subscription.add() record nothing.
-func (t *carnetWriteTransaction) CreateTopup(ctx context.Context, source string, write domain.CarnetTopupWrite) error {
+func (t *carnetWriteTransaction) CreateTopup(ctx context.Context, write domain.CarnetTopupWrite) error {
 	from := write.Source
 	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_payment (payment_id,type,subject,amount,creation_date,paid,expense,
- description,payment_category_id,user_id,associate_id,sport_association_id,archived,custom_accounts_id,deleted)
- VALUES ($1,'default',2,$2::numeric,$3,false,false,'Quota Corso',$4,$5,$6,$7,false,$8,false)`,
-		write.PaymentID, from.Fee, write.At, write.CategoryID, from.SubscriptionUser, from.SubscriptionAssociate, from.CarnetAssociation, write.Account); err != nil {
+ description,payment_category_id,user_id,associate_id,sport_association_id,archived,custom_accounts_id,deleted,group_id)
+ VALUES ($1,'default',2,$2::numeric,$3,false,false,'Quota Corso',$4,$5,$6,$7,false,$8,false,$9)`,
+		write.PaymentID, from.Fee, write.At, write.CategoryID, from.SubscriptionUser, from.SubscriptionAssociate, from.CarnetAssociation, write.Account,
+		write.Group); err != nil {
 		return err
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_payment", "payment_id", write.PaymentID)
@@ -399,10 +400,83 @@ func (t *carnetWriteTransaction) CreateTopup(ctx context.Context, source string,
 	if err = appendModelAudit(ctx, t.tx, entry); err != nil {
 		return err
 	}
-	// old_carnet.course_subscription.all() uses the soft-delete manager.
-	_, err = t.tx.ExecContext(ctx, `INSERT INTO application_carnetsubscription_course_subscription (carnetsubscription_id,coursesubscription_id)
+	if write.LinkFrom != nil {
+		// old_carnet.course_subscription.all() uses the soft-delete manager.
+		if _, err = t.tx.ExecContext(ctx, `INSERT INTO application_carnetsubscription_course_subscription (carnetsubscription_id,coursesubscription_id)
  SELECT $1, l.coursesubscription_id FROM application_carnetsubscription_course_subscription l
  JOIN application_coursesubscription cs ON cs.course_subscription_id=l.coursesubscription_id
- WHERE l.carnetsubscription_id=$2 AND NOT cs.deleted`, write.HoldingID, source)
+ WHERE l.carnetsubscription_id=$2 AND NOT cs.deleted`, write.HoldingID, *write.LinkFrom); err != nil {
+			return err
+		}
+	}
+	if write.Link != nil {
+		return t.LinkCourse(ctx, write.HoldingID, *write.Link)
+	}
+	return nil
+}
+
+func (r *CarnetWrites) BeginCarnetAssign(ctx context.Context) (domain.CarnetAssignTransaction, error) {
+	transaction, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return transaction.(*carnetWriteTransaction), nil
+}
+
+func carnetAssignFirst[T any](ctx context.Context, tx *sqlx.Tx, query string, args ...any) (*T, error) {
+	var row T
+	err := tx.GetContext(ctx, &row, query, args...)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (t *carnetWriteTransaction) AssignSubscription(ctx context.Context, id string, group *string) (*domain.CarnetAssignSubscription, error) {
+	return carnetAssignFirst[domain.CarnetAssignSubscription](ctx, t.tx, `SELECT subscription_id, user_id, associate_id, sport_association_id
+ FROM application_subscription WHERE subscription_id=$1 AND ($2::uuid IS NULL OR group_id=$2::uuid)`, id, group)
+}
+
+func (t *carnetWriteTransaction) OwnerAssociation(ctx context.Context, owner string, scope *string) (*string, error) {
+	return carnetAssignFirst[string](ctx, t.tx, `SELECT sport_association_id FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR sport_association_id=$2::uuid) ORDER BY sport_association_id LIMIT 1`, owner, scope)
+}
+
+func (t *carnetWriteTransaction) AssociationCarnet(ctx context.Context, id, association string) (*domain.CarnetAssignCarnet, error) {
+	return carnetAssignFirst[domain.CarnetAssignCarnet](ctx, t.tx, `SELECT carnet_id, fee::text AS fee, lessons_number FROM application_carnet
+ WHERE carnet_id=$1 AND sport_association_id=$2`, id, association)
+}
+
+func (t *carnetWriteTransaction) AssociationCourseSubscription(ctx context.Context, id, association string) (*string, error) {
+	return carnetAssignFirst[string](ctx, t.tx, `SELECT cs.course_subscription_id FROM application_coursesubscription cs
+ JOIN application_course c ON c.course_id=cs.course_id JOIN application_subscription s ON s.subscription_id=cs.subscription_id
+ WHERE cs.course_subscription_id=$1 AND NOT cs.deleted AND c.sport_association_id=$2 AND s.sport_association_id=$2`, id, association)
+}
+
+func (t *carnetWriteTransaction) AssignHolding(ctx context.Context, id, association string, holder *string) (bool, error) {
+	var found bool
+	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_carnetsubscription h
+ JOIN application_subscription s ON s.subscription_id=h.subscription_id
+ WHERE h.carnet_subscription_id=$1 AND s.sport_association_id=$2 AND ($3::uuid IS NULL OR s.user_id=$3::uuid))`, id, association, holder)
+	return found, err
+}
+
+func (t *carnetWriteTransaction) SubscriptionCourse(ctx context.Context, course *string, group *string, subscription string) (*string, error) {
+	// Course.objects is live and group-aware; filter(course=None) is IS NULL.
+	return carnetAssignFirst[string](ctx, t.tx, `SELECT cs.course_subscription_id FROM application_coursesubscription cs
+ WHERE NOT cs.deleted AND cs.subscription_id=$3 AND cs.course_id IS NOT DISTINCT FROM (
+  SELECT c.course_id FROM application_course c WHERE c.course_id=$1::uuid AND NOT c.deleted AND ($2::uuid IS NULL OR c.group_id=$2::uuid)
+  ORDER BY c.course_id LIMIT 1)
+ ORDER BY cs.course_subscription_id LIMIT 1`, course, group, subscription)
+}
+
+// LinkCourse is course_subscription.add(): an existing link is kept.
+func (t *carnetWriteTransaction) LinkCourse(ctx context.Context, holding, course string) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_carnetsubscription_course_subscription (carnetsubscription_id,coursesubscription_id)
+ SELECT $1,$2 WHERE NOT EXISTS (SELECT 1 FROM application_carnetsubscription_course_subscription
+  WHERE carnetsubscription_id=$1 AND coursesubscription_id=$2)`, holding, course)
 	return err
 }

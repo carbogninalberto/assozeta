@@ -136,9 +136,13 @@ type CarnetTopupWrite struct {
 	PaymentID, HoldingID string
 	Source               CarnetTopupSource
 	CategoryID, Account  *string
-	Meta                 string
-	Context              LoginAuditContext
-	At                   time.Time
+	// Group is GroupAwareManager.create's raw X-Group-Id, parsed as a UUID.
+	Group *string
+	Meta  string
+	// LinkFrom copies that holding's live course links; Link adds one.
+	LinkFrom, Link *string
+	Context        LoginAuditContext
+	At             time.Time
 }
 
 type CarnetTopupTransaction interface {
@@ -149,12 +153,59 @@ type CarnetTopupTransaction interface {
 	// DefaultBankAccount is Payment.get_default_bank_account(association).
 	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
 	// CreateTopup inserts the payment and carnet subscription with their
-	// create audit entries and links the source's live course subscriptions.
-	CreateTopup(ctx context.Context, source string, write CarnetTopupWrite) error
+	// create audit entries and the requested course links.
+	CreateTopup(ctx context.Context, write CarnetTopupWrite) error
 	Commit() error
 	Rollback() error
 }
 
 type CarnetTopupStore interface {
 	BeginCarnetTopup(context.Context) (CarnetTopupTransaction, error)
+}
+
+// Carnet assign lookups, each the queryset's first() by key.
+var (
+	ErrCarnetAssignSubscription = errors.New("carnet assign subscription not found")
+	ErrCarnetAssignAssociation  = errors.New("carnet assign association not found")
+	ErrCarnetAssignCarnet       = errors.New("carnet assign carnet not found")
+	ErrCarnetAssignCourse       = errors.New("carnet assign course subscription not found")
+)
+
+type CarnetAssignSubscription struct {
+	ID            string  `db:"subscription_id"`
+	UserID        *string `db:"user_id"`
+	AssociateID   *string `db:"associate_id"`
+	AssociationID *string `db:"sport_association_id"`
+}
+
+type CarnetAssignCarnet struct {
+	ID      string `db:"carnet_id"`
+	Fee     string `db:"fee"`
+	Lessons int64  `db:"lessons_number"`
+}
+
+type CarnetAssignTransaction interface {
+	// AssignSubscription is Subscription.objects (group-aware) by key.
+	AssignSubscription(ctx context.Context, id string, group *string) (*CarnetAssignSubscription, error)
+	OwnerAssociation(ctx context.Context, owner string, scope *string) (*string, error)
+	AssociationCarnet(ctx context.Context, id, association string) (*CarnetAssignCarnet, error)
+	// AssociationCourseSubscription is a live course subscription whose course
+	// and subscription belong to the association.
+	AssociationCourseSubscription(ctx context.Context, id, association string) (*string, error)
+	// AssignHolding is a carnet subscription of the association's
+	// subscriptions, held by holder when set.
+	AssignHolding(ctx context.Context, id, association string, holder *string) (bool, error)
+	// SubscriptionCourse is the live course subscription of the group-aware
+	// live course (nil: course IS NULL) for the subscription.
+	SubscriptionCourse(ctx context.Context, course *string, group *string, subscription string) (*string, error)
+	LinkCourse(ctx context.Context, holding, course string) error
+	DefaultPaymentCategory(ctx context.Context) (id, name *string, err error)
+	DefaultBankAccount(ctx context.Context, association *string) (*string, error)
+	CreateTopup(ctx context.Context, write CarnetTopupWrite) error
+	Commit() error
+	Rollback() error
+}
+
+type CarnetAssignStore interface {
+	BeginCarnetAssign(context.Context) (CarnetAssignTransaction, error)
 }

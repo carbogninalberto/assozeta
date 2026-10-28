@@ -3,7 +3,7 @@
 `POST carnet/<uid>/delete` and `PATCH carnet/<uid>/update` (`carnet_delete` and
 `carnet_update` in `BE/application/views/carnet_views.py`, as scoped by PR #28) are implemented in Go
 (`BE_GO/internal/{domain,repository,service,handler}/carnet_writes.go`). Django
-remains the production execution owner. Carnet add, assign and replace are not ported yet.
+remains the production execution owner. Carnet add and replace are not ported yet.
 
 ## Behavior
 
@@ -128,5 +128,37 @@ renders the create entries from the inserted rows in the same transaction.
 
 Path parameters now reach the Go scoped-request guard for every route using
 the shared identity helpers, as `resolver_match.kwargs` do in Django.
-`TESTS/fixtures/carnet_subscription_topup_http.json` authors 21 cases; the
-Django reference passed them on the first run.
+`PaymentManager` is group-aware: its `create` stores the raw `X-Group-Id` as
+the payment's group, unchecked against the association; a value the UUID
+field rejects or a missing group fails the insert (a 500, nothing created).
+`TESTS/fixtures/carnet_subscription_topup_http.json` authors 25 cases; the
+Django reference passed them on the first run. Dropping the group from the
+payment insert fails the group case.
+
+## Carnet assign
+
+`POST carnet/<uid>/assign/<uid_subscription>` (not an athlete view: scoped
+sessions are refused) gets the subscription through the group-aware
+`Subscription.objects` (the raw `X-Group-Id` filters it; a rejected value or
+a non-UUID uid is a 500; missing: `404 {"msg": "Subscription not found."}`).
+Other roles must hold it (`403 {"msg": "Not allowed."}`). The association is
+the owner's, or the subscription's for athletes (`404 Sport association not
+found.`), and must own the subscription (404) and the carnet
+(`404 {"msg": "Carnet not found."}`; a non-UUID is a 500).
+
+A body `course_subscription_id` selects any live course subscription whose
+course and subscription belong to the association, not necessarily the URL
+subscription's (a non-UUID is a 500; a list or text body containing the key
+cannot be indexed: 500). With `carnet_subscription_id` the existing holding of
+the association's subscriptions (for athletes, theirs; otherwise
+`404 Carnet subscription not found.`) gets that course subscription or, for a
+`course_id`, the URL subscription's live course subscription of the live,
+group-aware course (`404 Course subscription not found.`); `add()` keeps an
+existing link and nothing is audited. Otherwise the payment and carnet
+subscription are created as in the topup, linked to the selected course
+subscription. Both answer `200 {"msg": "Carnet assigned successfully.",
+"course_subscription_id": <id or null>}`. Values follow `UUIDField.to_python`
+(integers and booleans as `uuid.UUID(int=...)`).
+`TESTS/fixtures/carnet_assign_http.json` authors 32 cases; the Django
+reference passed them on the first run. Admitting deleted course
+subscriptions fails the deleted-course case.

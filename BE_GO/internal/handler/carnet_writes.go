@@ -39,6 +39,7 @@ type CarnetMetaService interface {
 }
 
 type CarnetWritesHandler struct {
+	assigns    CarnetAssignService
 	topups     CarnetTopupService
 	metas      CarnetMetaService
 	links      CarnetLinkService
@@ -52,12 +53,16 @@ type CarnetWritesHandler struct {
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-type CarnetTopupService interface {
-	Topup(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+type CarnetAssignService interface {
+	Assign(ctx context.Context, identity domain.ResolvedIdentity, carnet, subscription, group string, body any, audit domain.LoginAuditContext) (*string, error)
 }
 
-func NewCarnetWritesHandler(topups CarnetTopupService, metas CarnetMetaService, links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{topups: topups, metas: metas, links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
+type CarnetTopupService interface {
+	Topup(context.Context, domain.ResolvedIdentity, string, string, domain.LoginAuditContext) error
+}
+
+func NewCarnetWritesHandler(assigns CarnetAssignService, topups CarnetTopupService, metas CarnetMetaService, links CarnetLinkService, toggles CarnetToggleService, deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{assigns: assigns, topups: topups, metas: metas, links: links, toggles: toggles, deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -338,7 +343,7 @@ func (h *CarnetWritesHandler) Topup(c echo.Context) error {
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	err = h.topups.Topup(ctx, *identity, c.Param("uid"), audit)
+	err = h.topups.Topup(ctx, *identity, c.Param("uid"), request.Header.Get("X-Group-Id"), audit)
 	switch {
 	case errors.Is(err, service.ErrCarnetNotAllowed):
 		return c.JSON(403, map[string]string{"msg": "Not allowed."})
@@ -348,4 +353,53 @@ func (h *CarnetWritesHandler) Topup(c echo.Context) error {
 		return messageReadsError(c, err)
 	}
 	return c.JSON(200, map[string]string{"msg": "Carnet topped up."})
+}
+
+func (h *CarnetWritesHandler) Assign(c echo.Context) error {
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPost, "carnet_assign")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Assign", "Add a new carnet to a subscription")
+	}
+	if request.Method != http.MethodPost {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	body, err := readMessageMutationsBody(c)
+	if err != nil {
+		return restError(c, err)
+	}
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	course, err := h.assigns.Assign(ctx, *identity, c.Param("uid"), c.Param("uid_subscription"), request.Header.Get("X-Group-Id"), body, audit)
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetAssignSubscription):
+		return c.JSON(404, map[string]string{"msg": "Subscription not found."})
+	case errors.Is(err, domain.ErrCarnetAssignAssociation):
+		return c.JSON(404, map[string]string{"msg": "Sport association not found."})
+	case errors.Is(err, domain.ErrCarnetAssignCarnet):
+		return c.JSON(404, map[string]string{"msg": "Carnet not found."})
+	case errors.Is(err, domain.ErrCarnetSubscriptionNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet subscription not found."})
+	case errors.Is(err, domain.ErrCarnetAssignCourse):
+		return c.JSON(404, map[string]string{"msg": "Course subscription not found."})
+	case err != nil:
+		return messageReadsError(c, err)
+	}
+	return c.JSON(200, map[string]any{"msg": "Carnet assigned successfully.", "course_subscription_id": course})
 }

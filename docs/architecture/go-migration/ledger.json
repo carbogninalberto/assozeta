@@ -4661,11 +4661,11 @@
         ],
         "request": "No body is read.",
         "response": "200 {\"msg\": \"Carnet topped up.\"}.",
-        "errors": "400 malformed uid (every role); 401; 403 Not allowed. / scoped-request / registry; 404 Error in topping up carnet.; 500 athlete carnet subscription without subscription.",
+        "errors": "400 malformed uid (every role); 401; 403 Not allowed. / scoped-request / registry; 404 Error in topping up carnet.; 500 athlete carnet subscription without subscription. 500 rejected or missing X-Group-Id group.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "Registry association.carnet.update; athlete view.",
         "resource_scope": "Associations: the scope user's subscriptions; athletes: their own subscription's carnet subscription within the scoped session.",
-        "side_effects": "Creates a course payment (default bank account and category, Quota Corso) and a carnet subscription with fresh lesson counters linked to the live course subscriptions; one auditlog create entry each.",
+        "side_effects": "Creates a course payment (default bank account and category, Quota Corso) and a carnet subscription with fresh lesson counters linked to the live course subscriptions; one auditlog create entry each. The raw X-Group-Id becomes the payment group (GroupAwareManager.create).",
         "transaction": "One transaction (Django autocommit saves).",
         "execution_owner": "django"
       },
@@ -4685,15 +4685,21 @@
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 21/21 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact created rows and audit entries.",
-          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-versioned-r1/results.json",
-          "receipt_sha256": "48da50d462c22972d79a7a8e02591405a32d6b63f4ae8155915fc6be6de357ac"
+          "result": "GREEN: 25/25 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact created rows and audit entries.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-versioned-r2/results.json",
+          "receipt_sha256": "d93a027e9a7cacdecb3bf03ed0536c53877c8874b9099e95deb62a25a3c3d4d4"
         },
         {
           "revision": "committing change copying deleted course links",
           "result": "Mutation control: fails Go on state.links.",
           "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-mutation-r1/results.json",
           "receipt_sha256": "0540769d9661c72b1cad87e39d72331bb1f7fc77088f6029d67cf6aa6192d5ca"
+        },
+        {
+          "revision": "committing change without the payment group",
+          "result": "Mutation control: fails Go on the group case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-topup-http-mutation-r2/results.json",
+          "receipt_sha256": "e9447071a2c238b26a7b944e2345e0b0e979d7eacabf9467c8217986b1fb425c"
         }
       ],
       "notes": [
@@ -4828,25 +4834,74 @@
         "target": "carnet_assign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_payment",
+        "application_carnetsubscription",
+        "application_coursesubscription",
+        "application_customaccounts",
+        "application_paymentcategory"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/assign/<uid_subscription>",
+          "/api/v2/carnet/<uid>/assign/<uid_subscription>",
+          "/api/carnet/<uid>/assign/<uid_subscription>"
+        ],
+        "request": "JSON/form: optional course_subscription_id, carnet_subscription_id, course_id.",
+        "response": "200 {\"msg\": \"Carnet assigned successfully.\", \"course_subscription_id\": <uuid or null>}.",
+        "errors": "401; 403 Not allowed. / registry / scoped session; 404 Subscription, Sport association, Carnet, Carnet subscription or Course subscription not found.; 500 malformed UUIDs, rejected X-Group-Id or unindexable body.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "The owner's association (athletes: the subscription's) owning the subscription and carnet; athletes hold the subscription.",
+        "side_effects": "Links a course subscription to an existing holding without audit, or creates a payment and carnet subscription (two auditlog create entries) as in the topup.",
+        "transaction": "One transaction (Django autocommit saves).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_assign_http.json",
+        "TESTS/fixtures/generate_carnet_assign_http.py",
+        "TESTS/contracts/test_carnet_assign_http.py",
+        "TESTS/adapters/django/carnet_assign_http.py",
+        "BE_GO/internal/service/carnet_assign_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change (30-case draft), before Go code",
+          "result": "RED: Django 30/30; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-assign-http-red-r1/results.json",
+          "receipt_sha256": "d19f90c6353ecdc1dbe234163d380fd3011df997fa9025bb1be0a265bf477bc0"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-assign-http-versioned-r1/results.json",
+          "receipt_sha256": "5cbcf890c46a4f63961dd2678a00176812e4f4aefa03c70d9cd3bb78a15dac67"
+        },
+        {
+          "revision": "committing change admitting deleted course subscriptions",
+          "result": "Mutation control: fails Go on the deleted-course case.",
+          "artifact": "quality-reports/go-migration/carnet-assign-http-mutation-r1/results.json",
+          "receipt_sha256": "e3506b806863bbb224e1bd1b3aab08a532861b96ab7c3c637e2ac8f7db90d0a3"
+        }
+      ],
+      "notes": [
+        "Implementing: parity for both branches, group-aware lookups and creates, and UUIDField coercion on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/delete -> carnet_delete",

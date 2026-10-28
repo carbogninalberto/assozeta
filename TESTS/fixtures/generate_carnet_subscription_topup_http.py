@@ -36,14 +36,14 @@ def add(name, actor, target, status, response, *, method='POST', headers=None, e
                   'headers': headers or {}, 'status': status, 'response': response, 'effect': effect})
 
 
-def topped(holding, actor, account, impersonation=None):
+def topped(holding, actor, account, impersonation=None, group=None):
     row = HOLDINGS[holding]
     carnet = SOURCE['carnets'][row['carnet']]
     subscription = SOURCE['subscriptions'][row['subscription']]
     live = [label for label in row['courses'] if not SOURCE['course_subscriptions'][label]['deleted']]
     return {'holding': holding, 'actor': actor, 'impersonation': impersonation,
             'payment': {'user': subscription['user'], 'associate': subscription['associate'], 'amount': carnet['fee'],
-                        'association': carnet['association'], 'account': account},
+                        'association': carnet['association'], 'account': account, 'group': group},
             'courses': live, 'lessons': carnet['lessons']}
 
 
@@ -77,6 +77,15 @@ add('athlete-foreign-association', 'athlete', 'abroad', 200, OK, effect=topped('
 add('owner-scoped-athlete', 'owner', 'held', 200, OK, headers=SCOPED, effect=topped('held', 'owner', 'bank', 'owner_athlete'))
 add('admin-impersonating-athlete', 'admin', 'held', 200, OK, headers={'X-Impersonation-Id': '$session:admin_athlete', 'User-Id': IDS['athlete']},
     effect=topped('held', 'admin', 'bank', 'admin_athlete'))
+# GroupAwareManager.create stores the raw X-Group-Id on the payment, unvalidated
+# against the association; a value the UUID field rejects, or a missing group,
+# fails the insert (autocommit: nothing is created).
+add('owner-group-header', 'owner', 'held', 200, OK, headers={'X-Group-Id': IDS['own_group']},
+    effect=topped('held', 'owner', 'bank', group='own_group'))
+add('owner-foreign-group-header', 'owner', 'held', 200, OK, headers={'X-Group-Id': IDS['foreign_group']},
+    effect=topped('held', 'owner', 'bank', group='foreign_group'))
+add('owner-invalid-group-server-error', 'owner', 'held', 500, SERVER, headers={'X-Group-Id': 'abc'})
+add('owner-unknown-group-server-error', 'owner', 'held', 500, SERVER, headers={'X-Group-Id': UNKNOWN})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'}, 'accounts': ACCOUNTS,

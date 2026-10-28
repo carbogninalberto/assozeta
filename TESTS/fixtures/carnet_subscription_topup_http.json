@@ -523,7 +523,8 @@
      "associate": "mine",
      "amount": "50.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [
      "active"
@@ -550,7 +551,8 @@
      "associate": "mine",
      "amount": "50.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [
      "active"
@@ -577,7 +579,8 @@
      "associate": "child",
      "amount": "50.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [],
     "lessons": 10
@@ -602,7 +605,8 @@
      "associate": "other",
      "amount": "0.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [],
     "lessons": 0
@@ -627,7 +631,8 @@
      "associate": "abroad",
      "amount": "7.50",
      "association": "a1000000-0000-4000-8000-000000701002",
-     "account": null
+     "account": null,
+     "group": null
     },
     "courses": [],
     "lessons": 5
@@ -655,7 +660,8 @@
      "associate": "mine",
      "amount": "50.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [
      "active"
@@ -685,13 +691,98 @@
      "associate": "mine",
      "amount": "50.00",
      "association": "a1000000-0000-4000-8000-000000701001",
-     "account": "bank"
+     "account": "bank",
+     "group": null
     },
     "courses": [
      "active"
     ],
     "lessons": 10
    }
+  },
+  {
+   "name": "carnet-subscription-topup-owner-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet-subscription/a1000000-0000-4000-8000-000000880016/topup",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Carnet topped up."
+   },
+   "effect": {
+    "holding": "held",
+    "actor": "owner",
+    "impersonation": null,
+    "payment": {
+     "user": "athlete",
+     "associate": "mine",
+     "amount": "50.00",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "account": "bank",
+     "group": "own_group"
+    },
+    "courses": [
+     "active"
+    ],
+    "lessons": 10
+   }
+  },
+  {
+   "name": "carnet-subscription-topup-owner-foreign-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet-subscription/a1000000-0000-4000-8000-000000880016/topup",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Carnet topped up."
+   },
+   "effect": {
+    "holding": "held",
+    "actor": "owner",
+    "impersonation": null,
+    "payment": {
+     "user": "athlete",
+     "associate": "mine",
+     "amount": "50.00",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "account": "bank",
+     "group": "foreign_group"
+    },
+    "courses": [
+     "active"
+    ],
+    "lessons": 10
+   }
+  },
+  {
+   "name": "carnet-subscription-topup-owner-invalid-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet-subscription/a1000000-0000-4000-8000-000000880016/topup",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "carnet-subscription-topup-owner-unknown-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/carnet-subscription/a1000000-0000-4000-8000-000000880016/topup",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000969999"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
   }
  ]
 }

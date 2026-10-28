@@ -30,12 +30,12 @@ AUDIT, INDEX = 'auditlog.LogEntry', 'application.AuditLogIndex'
 MANAGED = (PAYMENT, HOLDING, LINK, AUDIT, INDEX)
 
 
-def seed_fixture(apps, private_work, raw):
+def seed_fixture(apps, private_work, raw, *, source_contract=contract):
     from auditlog.context import disable_auditlog
     from django.db import transaction
     from application.models import CustomAccounts
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
-    source = contract.load_source()
+    source = source_contract.load_source()
     with disable_auditlog(), transaction.atomic():
         fixture = scopes.seed_fixture(apps, Path(private_work), raw)
         carnets.seed_rows(source, fixture['created'])
@@ -52,7 +52,7 @@ def seed_fixture(apps, private_work, raw):
 
 
 @contextmanager
-def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+def fixture_context(apps, private_work, raw, *, cleanup_receipt=None, source_contract=contract):
     from auditlog.context import disable_auditlog
     from auditlog.models import LogEntry
     from application.models import Payment
@@ -70,7 +70,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     receipt = cleanup_receipt if cleanup_receipt is not None else {}
     receipt.update(verified=False, results={})
     try:
-        fixture = seed_fixture(apps, private_work, raw)
+        fixture = seed_fixture(apps, private_work, raw, source_contract=source_contract)
         yield fixture
     finally:
         def remove_rows():
@@ -146,7 +146,8 @@ def assert_effect(case, before, after, source, remote, fixture, window):
                 'meta_payment_categories': None, 'invoice_id': None, 'user_id': ids[spec['user']],
                 'associate_id': source['associates'][spec['associate']]['id'], 'supplier_id': None, 'instructor_id': None,
                 'sport_association_id': spec['association'], 'payment_intent_id': None, 'archived': False, 'invoice_fiscal_code': None,
-                'meta': None, 'notes': None, 'custom_accounts_id': account, 'signature_id': None, 'deleted': False, 'group_id': None,
+                'meta': None, 'notes': None, 'custom_accounts_id': account, 'signature_id': None, 'deleted': False,
+                'group_id': ids[spec['group']] if spec['group'] else None,
                 'course': None}
     contract.require({k: str(v) if k.endswith('_id') and v is not None else v for k, v in stored.items()}
                      == {k: str(v) if k.endswith('_id') and v is not None else v for k, v in expected.items()}, 'state.payment')
