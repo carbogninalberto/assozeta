@@ -4799,25 +4799,69 @@
         "target": "carnet_subscription_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_subscription_list.go",
+        "BE_GO/internal/repository/carnet_subscription_list.go",
+        "BE_GO/internal/service/carnet_subscription_list.go",
+        "BE_GO/internal/handler/carnet_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, scoped-request guard and permission registry",
+        "application_carnetsubscription",
+        "application_subscription"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet-subscription/list",
+          "/api/v2/carnet-subscription/list",
+          "/api/carnet-subscription/list"
+        ],
+        "request": "Query: subscription_id.",
+        "response": "200 {\"data\": [carnet subscription rows]} (unordered).",
+        "errors": "401; 403 Not allowed. / registry / scoped session; 404 Subscription not found.; 500 missing param (associations), malformed id, missing carnet or lesson counters.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.read; athlete view.",
+        "resource_scope": "Athletes: their subscriptions; associations: their association's; same-associate subscriptions in the subscription's association.",
+        "side_effects": "None.",
+        "transaction": "Read only.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_subscription_list_http.json",
+        "TESTS/fixtures/generate_carnet_subscription_list_http.py",
+        "TESTS/contracts/test_carnet_subscription_list_http.py",
+        "TESTS/adapters/django/carnet_subscription_list_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-list.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 22/22; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-list-http-red-r1/results.json",
+          "receipt_sha256": "0a46d25dad76b5146f1b2c1eaa332713261cf6d09c3b510e128a02176536ccb6"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 22/22 on native Django, native Go, Caddy /api/v1 and /api/v2 with unchanged model state.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-list-http-versioned-r1/results.json",
+          "receipt_sha256": "c522753f6d27b34d3b7d89a583187c3aab36f690fee7a8ba77080e30aa18940d"
+        },
+        {
+          "revision": "committing change without the associate match",
+          "result": "Mutation control: fails Go on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-subscription-list-http-mutation-r1/results.json",
+          "receipt_sha256": "fee0cde913f84a4bc28fbd89cf699676bc509e09ad47104d07d91f357a771504"
+        }
+      ],
+      "notes": [
+        "Implementing: parity for both roles, scoped sessions and same-associate selection on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/assign/<str:uid_subscription> -> carnet_assign",

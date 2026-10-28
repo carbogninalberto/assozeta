@@ -239,6 +239,7 @@ func run() (runErr error) {
 	e.Any("/sport-associations/list", associationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/check-inconsistencies", inconsistenciesHandler.Check, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/list", carnetListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/carnet-subscription/list", handler.NewCarnetSubscriptionListHandler(service.NewCarnetSubscriptionLists(repository.NewCarnetSubscriptionLists(db)), service.NewActorAuthentication(accounts, tokens), identities).List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/add", carnetWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/:uid/info", carnetListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/carnet/:uid/delete", carnetWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))

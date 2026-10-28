@@ -58,3 +58,22 @@ removing the course soft-delete filter fails the athlete case.
 `X-Group-Id` under scoped impersonation is passed to the family CTE but not
 exercised by a case, and a course subscription whose course is missing (a 500
 in Django) is not modelled.
+
+## Carnet subscription list
+
+`GET carnet-subscription/list?subscription_id=` (an athlete view) is
+implemented in Go (`BE_GO/internal/{domain,repository,service}/carnet_subscription_list.go`
+and `handler/carnet_list.go`). Athletes must name one of their own
+subscriptions (group-aware, scoped), compared as canonical text (another
+spelling is `403 {"msg": "Not allowed."}`); associations without the
+parameter fail with a 500 (the unbound queryset). The subscription
+(group-aware, scoped; an owner's association only; a non-UUID is a 500)
+or `404 {"msg": "Subscription not found."}` selects, unordered, the carnet
+subscriptions of that subscription or of any subscription of its associate
+(`IS NULL` for none) in its association. Each row reads the carnet (missing:
+500), the live course links, the payment (base manager) or the carnet fee as
+`"{:.2f}"`, and `meta['lessons_counter']`/`meta['lessons_left']` (a meta that
+is not a dict or lacks a key is a 500). Datetimes render as UTC isoformat
+with microseconds when set and `Z`, as the Django reference showed.
+`TESTS/fixtures/carnet_subscription_list_http.json` authors 22 cases;
+dropping the associate match fails the first case.
