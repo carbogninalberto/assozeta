@@ -1,0 +1,345 @@
+---
+title: "Registro Presenze"
+description: "In questa sezione troverai tutte le informazioni necessarie per la gestione del Registro Presenze."
+---
+
+## Introduzione
+
+Il registro del corso elenca le date delle lezioni e le persone presenti. Calendario e registro sono collegati, ma segnare una presenza è un’operazione distinta dalla creazione della data.
+
+<Steps>
+<Step title="Crea la lezione nel calendario">
+Apri il corso e premi **Calendario**. Clicca sul giorno desiderato; in **Crea lezione** compila **Nome**, **Inizio** e **Fine**. Nell’esempio inserisci **Lezione dimostrativa di ginnastica**, dalle **08:00** alle **09:00**. Premi **Crea**: il salvataggio pubblica il calendario e aggiunge la data al registro.
+<Frame>![Lezione singola con titolo e orari](/images/registro-presenze/carnet-manuale/11.png)</Frame>
+</Step>
+<Step title="Apri il registro del corso">
+Apri **Attività → Corsi e Abbonamenti**, scegli **Ginnastica per tutti** e premi **Presenze**. Trova la lezione confrontando titolo, data e orario. Il pulsante blu con l’icona della lista apre **Modifica Presenze**.
+<Frame>![Lezione nel Registro delle presenze](/images/registro-presenze/carnet-manuale/12.png)</Frame>
+</Step>
+</Steps>
+
+[Continua con la presenza manuale](#segnare-le-presenze-manualmente).
+
+## Segnare le presenze manualmente
+
+Prima prepara una lezione nel calendario e verifica che l’atleta sia iscritto al corso. L’esempio riguarda una presenza manuale di Giulia con un carnet pagato di cinque lezioni.
+
+<Steps>
+<Step title="Apri il registro del corso">
+Apri **Attività → Corsi e Abbonamenti**, scegli **Ginnastica per tutti** e premi **Presenze**. Trova la lezione confrontando titolo, data e orario. Il pulsante blu con l’icona della lista apre **Modifica Presenze**.
+<Frame>![Lezione nel Registro delle presenze](/images/registro-presenze/carnet-manuale/12.png)</Frame>
+</Step>
+<Step title="Registra la presenza">
+In **Modifica Presenze** individua **Bianchi Giulia** e attiva il suo interruttore. Il cambio viene salvato subito: attendi che sia confermato prima di premere **Chiudi**. Non serve un pulsante Salva finale.
+<Frame>![Presenza manuale di Giulia nella lezione](/images/registro-presenze/carnet-manuale/13.png)</Frame>
+</Step>
+<Step title="Controlla il carnet">
+Apri **Attività → Carnet → Carnet ginnastica 5 lezioni → Utilizzo**. La riga della persona passa da **5/5** a **4/5**. Ricarica la pagina e verifica che il saldo sia rimasto uguale. La presenza consuma una sola lezione del carnet pagato e collegato al corso.
+<Frame>![Quattro lezioni rimaste sul carnet da cinque](/images/registro-presenze/carnet-manuale/14.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Un collaboratore in sola lettura può consultare corso, carnet e presenze. Per crearli, assegnarli o modificarli servono i permessi della singola operazione. Il registro non richiede un abbonamento alla piattaforma.</Note>
+
+## Presenze automatiche (Pro/Teams)
+
+Le presenze automatiche calcolano l’elenco della lezione a partire dagli iscritti al corso. Saltano le assenze previste e applicano i vincoli dei carnet. Per predisporle segui [Attivare le presenze automatiche](/docs/registro-presenze#attivare-le-presenze-automatiche); per le registrazioni effettive controlla sempre la partecipazione con l’istruttore.
+
+<Steps>
+<Step title="Verifica l’opzione salvata">
+Apri **Profilo → Generali** e controlla **Segna Presenze Automaticamente**. Prima del percorso prepara corso attivo, iscrizioni e calendario pubblicato. Nell’esempio l’opzione viene salvata e ricontrollata dopo la riapertura.
+<Frame>![Opzione automatica salvata nelle impostazioni Generali](/images/registro-presenze/automatiche/3.png)</Frame>
+</Step>
+<Step title="Controlla le assenze segnalate prima della lezione">
+Nell’area personale dell’atleta, **Prossime lezioni** mostra persona e data. Sara sceglie **ASSENTE** e conferma **Sarò assente**; Giulia corregge la propria scelta con **PRESENTE**. Ricontrolla le schede prima dell’elaborazione.
+<Frame>![Assenza prevista di Sara dopo la riapertura](/images/registro-presenze/automatiche/7.png)</Frame>
+<Frame>![Presenza di Giulia dopo la correzione della scelta](/images/registro-presenze/automatiche/8.png)</Frame>
+</Step>
+<Step title="Controlla il registro dopo l’elaborazione">
+Dopo la lezione apri il corso e **Presenze**. Il processo prende in esame le date già trascorse nelle ultime 24 ore e ancora da elaborare: non segna tutti presenti appena crei la lezione. Nell’esempio sono salvate quattro presenze fra otto iscritti; la segnalazione di Sara e i vincoli dei carnet spiegano gli esclusi.
+<Frame>![Quattro presenze nel registro dopo il processo applicativo](/images/registro-presenze/automatiche/9.png)</Frame>
+</Step>
+<Step title="Controlla il saldo delle persone coinvolte">
+Apri **Attività → Carnet**, scegli il pacchetto e **Utilizzo**. Giulia passa da cinque a quattro lezioni residue; Sara conserva cinque lezioni grazie all’assenza prevista. Una seconda invocazione sulla data già elaborata lascia invariati presenti e saldi.
+<Frame>![Carnet di Giulia con saldo 4/5](/images/registro-presenze/automatiche/10.png)</Frame>
+<Frame>![Carnet di Sara con saldo 5/5 invariato](/images/registro-presenze/automatiche/11.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il processo salva l’elenco calcolato, non una semplice aggiunta ai presenti già inseriti. La data viene contrassegnata come elaborata. Non trattare l’impostazione attiva come prova che la persona abbia partecipato realmente.</Warning>
+
+<Warning>La segnalazione dall’area atleta aggiorna assenze previste e presenti della data. Non ricalcola né restituisce una lezione del carnet già consumata. Per una correzione successiva all’elaborazione controlla il registro con l’associazione e verifica separatamente il saldo.</Warning>
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+### Come funziona
+
+Le presenze automatiche calcolano l’elenco della lezione a partire dagli iscritti al corso. Saltano le assenze previste e applicano i vincoli dei carnet. Per predisporle segui [Attivare le presenze automatiche](/docs/registro-presenze#attivare-le-presenze-automatiche); per le registrazioni effettive controlla sempre la partecipazione con l’istruttore.
+
+<Steps>
+<Step title="Verifica l’opzione salvata">
+Apri **Profilo → Generali** e controlla **Segna Presenze Automaticamente**. Prima del percorso prepara corso attivo, iscrizioni e calendario pubblicato. Nell’esempio l’opzione viene salvata e ricontrollata dopo la riapertura.
+<Frame>![Opzione automatica salvata nelle impostazioni Generali](/images/registro-presenze/automatiche/3.png)</Frame>
+</Step>
+<Step title="Controlla le assenze segnalate prima della lezione">
+Nell’area personale dell’atleta, **Prossime lezioni** mostra persona e data. Sara sceglie **ASSENTE** e conferma **Sarò assente**; Giulia corregge la propria scelta con **PRESENTE**. Ricontrolla le schede prima dell’elaborazione.
+<Frame>![Assenza prevista di Sara dopo la riapertura](/images/registro-presenze/automatiche/7.png)</Frame>
+<Frame>![Presenza di Giulia dopo la correzione della scelta](/images/registro-presenze/automatiche/8.png)</Frame>
+</Step>
+<Step title="Controlla il registro dopo l’elaborazione">
+Dopo la lezione apri il corso e **Presenze**. Il processo prende in esame le date già trascorse nelle ultime 24 ore e ancora da elaborare: non segna tutti presenti appena crei la lezione. Nell’esempio sono salvate quattro presenze fra otto iscritti; la segnalazione di Sara e i vincoli dei carnet spiegano gli esclusi.
+<Frame>![Quattro presenze nel registro dopo il processo applicativo](/images/registro-presenze/automatiche/9.png)</Frame>
+</Step>
+<Step title="Controlla il saldo delle persone coinvolte">
+Apri **Attività → Carnet**, scegli il pacchetto e **Utilizzo**. Giulia passa da cinque a quattro lezioni residue; Sara conserva cinque lezioni grazie all’assenza prevista. Una seconda invocazione sulla data già elaborata lascia invariati presenti e saldi.
+<Frame>![Carnet di Giulia con saldo 4/5](/images/registro-presenze/automatiche/10.png)</Frame>
+<Frame>![Carnet di Sara con saldo 5/5 invariato](/images/registro-presenze/automatiche/11.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il processo salva l’elenco calcolato, non una semplice aggiunta ai presenti già inseriti. La data viene contrassegnata come elaborata. Non trattare l’impostazione attiva come prova che la persona abbia partecipato realmente.</Warning>
+
+<Warning>La segnalazione dall’area atleta aggiorna assenze previste e presenti della data. Non ricalcola né restituisce una lezione del carnet già consumata. Per una correzione successiva all’elaborazione controlla il registro con l’associazione e verifica separatamente il saldo.</Warning>
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+### Segnalazione assenze da parte degli atleti
+
+L’area personale propone le lezioni dei successivi sette giorni ancora da elaborare automaticamente. La segnalazione va riferita alla persona e alla data corrette; se la lezione non compare, chiedi all’associazione di controllare iscrizione al corso e pubblicazione del calendario.
+
+<Steps>
+<Step title="Apri la scheda della persona e della lezione">
+Accedi con l’account atleta collegato all’iscrizione. In **Prossime lezioni** controlla nome della persona, titolo e data: lo stesso account può mostrare più iscrizioni. Nell’esempio l’area personale mostra Giulia e Sara.
+<Frame>![Prossime lezioni per Giulia e Sara nell’area atleta](/images/registro-presenze/automatiche/5.png)</Frame>
+</Step>
+<Step title="Segnala e conferma l’assenza">
+Premi **ASSENTE** nella scheda corretta. Leggi la conferma e premi **Sarò assente**; **Annulla** lascia la scelta invariata. Attendi il ricaricamento dei dati, poi riapri la pagina e controlla che l’assenza sia ancora evidenziata.
+<Frame>![Conferma Sarò assente](/images/registro-presenze/automatiche/6.png)</Frame>
+<Frame>![Assenza di Sara conservata dopo il ricaricamento](/images/registro-presenze/automatiche/7.png)</Frame>
+</Step>
+<Step title="Correggi la scelta prima dell’elaborazione">
+Se parteciperai, premi **PRESENTE** e conferma **Sarò presente**. Nell’esempio Giulia torna presente, mentre Sara rimane assente. Ricontrolla la scheda: le lezioni proposte appartengono alle iscrizioni dell’account, non a qualsiasi persona dell’associazione.
+<Frame>![Scelta di Giulia corretta in Presente](/images/registro-presenze/automatiche/8.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La segnalazione dall’area atleta aggiorna assenze previste e presenti della data. Non ricalcola né restituisce una lezione del carnet già consumata. Per una correzione successiva all’elaborazione controlla il registro con l’associazione e verifica separatamente il saldo.</Warning>
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+### Attivare le presenze automatiche
+
+L’opzione è distinta dalla pubblicazione del calendario e non richiede un abbonamento alla piattaforma. Il riferimento a **Pro/Teams** nel titolo è storico. Parti da un calendario pubblicato e da iscrizioni al corso già preparate; il solo salvataggio di una lezione non attiva l’automazione.
+
+<Steps>
+<Step title="Apri Generali e attiva l’opzione">
+Apri il **Profilo** e scegli **Generali**. Individua **Segna Presenze Automaticamente**, attiva l’interruttore e controlla la scelta. Finché non premi Salva, la modifica non è conservata.
+<Frame>![Segna Presenze Automaticamente attivo prima del salvataggio](/images/registro-presenze/automatiche/2.png)</Frame>
+</Step>
+<Step title="Salva e controlla dopo la riapertura">
+Premi **Salva**, attendi **Impostazioni generali aggiornate.** e riapri la pagina. L’interruttore deve essere ancora attivo. Il calendario del corso deve essere pubblicato e il corso attivo per essere elaborato.
+<Frame>![Impostazione automatica conservata dopo la riapertura](/images/registro-presenze/automatiche/3.png)</Frame>
+</Step>
+<Step title="Sospendi l’automazione quando necessario">
+Per sospendere le registrazioni successive, disattiva lo stesso interruttore e premi **Salva**. Riapri Generali e controlla che sia spento. La disattivazione non cancella le presenze o i consumi già salvati.
+<Frame>![Automazione disattivata e scelta conservata dopo la riapertura](/images/registro-presenze/automatiche/12.png)</Frame>
+</Step>
+</Steps>
+
+Un collaboratore con il solo permesso di lettura delle impostazioni vede il comando disattivato: per modificarlo serve il permesso di modifica delle impostazioni. Il rifiuto conserva la scelta del titolare.
+
+<Note>L’esempio richiede l’esecuzione del vero processo applicativo in un ambiente isolato. L’invocazione controllata prova il suo risultato salvato; non prova la consegna periodica di Celery, il funzionamento del broker o sincronizzazioni esterne. Le immagini sono pianificate finché il flusso reale non viene eseguito.</Note>
+
+## Interazione con i carnet
+
+Il pagamento del carnet è distinto dalla quota corso. Nell’esempio il carnet è già assegnato e collegato a **Ginnastica per tutti**; la sua quota di 50,00 € deve essere incassata prima di registrare la presenza.
+
+<Steps>
+<Step title="Incassa la quota del carnet">
+Apri **Pagamenti** e individua il pagamento di **50,00 €** intestato a Giulia. Premi **Segna come pagato**. In **Incassare il pagamento?** imposta **Data Incasso** e premi **Incassa**. Nell’esempio togli **Genera ricevuta** e mantieni **Invia email** disattivato: non si produce subito un PDF e non viene inviato un messaggio.
+<Frame>![Incasso della quota carnet con PDF ed email disattivati](/images/registro-presenze/carnet-manuale/10.png)</Frame>
+</Step>
+<Step title="Registra la presenza">
+In **Modifica Presenze** individua **Bianchi Giulia** e attiva il suo interruttore. Il cambio viene salvato subito: attendi che sia confermato prima di premere **Chiudi**. Non serve un pulsante Salva finale.
+<Frame>![Presenza manuale di Giulia nella lezione](/images/registro-presenze/carnet-manuale/13.png)</Frame>
+</Step>
+<Step title="Controlla il carnet">
+Apri **Attività → Carnet → Carnet ginnastica 5 lezioni → Utilizzo**. La riga della persona passa da **5/5** a **4/5**. Ricarica la pagina e verifica che il saldo sia rimasto uguale. La presenza consuma una sola lezione del carnet pagato e collegato al corso.
+<Frame>![Quattro lezioni rimaste sul carnet da cinque](/images/registro-presenze/carnet-manuale/14.png)</Frame>
+</Step>
+<Step title="Correggi la presenza nella stessa lezione">
+Torna in **Ginnastica per tutti → Presenze**, apri la stessa lezione e disattiva l’interruttore di **Bianchi Giulia**. Attendi il salvataggio, poi premi **Chiudi**. Correggi l’interruttore della persona, non il cestino della data.
+</Step>
+<Step title="Ricontrolla le lezioni restituite">
+Riapri il carnet in **Utilizzo** e ricarica la pagina: il saldo torna da **4/5** a **5/5**. L’utilizzo associato a quella presenza viene rimosso. Controlla separatamente la quota del carnet: correggere una presenza non annulla l’incasso.
+<Frame>![Cinque lezioni ripristinate dopo la correzione](/images/registro-presenze/carnet-manuale/15.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Questa prova riguarda un solo carnet pagato. Non dedurre da questo esempio la priorità tra pacchetti multipli o il comportamento di un carnet esaurito.</Note>
+
+### Scalamento alla presenza
+
+Con il carnet dell’esempio pagato e collegato al corso, una presenza manuale usa una sola lezione.
+
+<Steps>
+<Step title="Registra la presenza">
+In **Modifica Presenze** individua **Bianchi Giulia** e attiva il suo interruttore. Il cambio viene salvato subito: attendi che sia confermato prima di premere **Chiudi**. Non serve un pulsante Salva finale.
+<Frame>![Presenza manuale di Giulia nella lezione](/images/registro-presenze/carnet-manuale/13.png)</Frame>
+</Step>
+<Step title="Controlla il carnet">
+Apri **Attività → Carnet → Carnet ginnastica 5 lezioni → Utilizzo**. La riga della persona passa da **5/5** a **4/5**. Ricarica la pagina e verifica che il saldo sia rimasto uguale. La presenza consuma una sola lezione del carnet pagato e collegato al corso.
+<Frame>![Quattro lezioni rimaste sul carnet da cinque](/images/registro-presenze/carnet-manuale/14.png)</Frame>
+</Step>
+</Steps>
+
+### Restituzione alla rimozione
+
+Per correggere una partecipazione registrata per errore, intervieni sulla stessa persona nella stessa lezione. Eliminare l’intera data è un’altra operazione.
+
+<Steps>
+<Step title="Correggi la presenza nella stessa lezione">
+Torna in **Ginnastica per tutti → Presenze**, apri la stessa lezione e disattiva l’interruttore di **Bianchi Giulia**. Attendi il salvataggio, poi premi **Chiudi**. Correggi l’interruttore della persona, non il cestino della data.
+</Step>
+<Step title="Ricontrolla le lezioni restituite">
+Riapri il carnet in **Utilizzo** e ricarica la pagina: il saldo torna da **4/5** a **5/5**. L’utilizzo associato a quella presenza viene rimosso. Controlla separatamente la quota del carnet: correggere una presenza non annulla l’incasso.
+<Frame>![Cinque lezioni ripristinate dopo la correzione](/images/registro-presenze/carnet-manuale/15.png)</Frame>
+</Step>
+</Steps>
+
+### Casi particolari con i carnet
+
+La scelta avviene fra i carnet non disabilitati della stessa iscrizione, collegati al corso oppure senza vincolo di corso. Prima viene scelto il saldo positivo più basso, poi si controlla il pagamento. Per una partecipazione già registrata e lasciata attiva non viene creato un nuovo consumo nel salvataggio manuale.
+
+<Steps>
+<Step title="Apri il registro e individua la persona">
+Apri il corso **Ginnastica presenze automatiche**, scegli **Presenze** e apri la lezione. Per questa verifica manuale l’opzione automatica è disattivata. Il modulo mostra otto iscritti, con situazioni di carnet diverse.
+<Frame>![Modulo Presenze con gli iscritti dei casi dimostrativi](/images/registro-presenze/varianti-carnet/1.png)</Frame>
+</Step>
+<Step title="Controlla il carnet non pagato e quello esaurito">
+Prova a segnare Luca: il modulo avvisa **Il carnet non è ancora stato pagato.** e la presenza torna non selezionata. Marco ha il carnet esaurito: compare **Carnet finito.**. Le presenze e i saldi dei due casi restano invariati. Prima di riprovare controlla pagamento o assegnazione del pacchetto.
+<Frame>![Rifiuto reale della presenza di Luca per carnet non pagato](/images/registro-presenze/varianti-carnet/2.png)</Frame>
+<Frame>![Rifiuto reale della presenza di Marco per carnet esaurito](/images/registro-presenze/varianti-carnet/3.png)</Frame>
+</Step>
+<Step title="Controlla la scelta fra più carnet">
+Tommaso ha un carnet con una lezione non pagato e un altro con cinque lezioni pagato: il saldo minore viene scelto per primo, quindi la presenza è rifiutata senza consumare l’altro pacchetto. Il sistema non seleziona automaticamente il pacchetto pagato al suo posto.
+<Frame>![Saldo minore non pagato che blocca la registrazione](/images/registro-presenze/varianti-carnet/4.png)</Frame>
+</Step>
+<Step title="Registra e correggi un consumo ammesso">
+Paola ha due carnet pagati, con due e cinque lezioni residue. Segna la presenza: viene consumato quello con due lezioni, che passa a una; l’altro rimane a cinque. Per correggere questa stessa partecipazione, togli la presenza dalla stessa data e controlla che i saldi tornino a due e cinque.
+<Frame>![Presenza di Paola salvata con consumo del saldo positivo minore](/images/registro-presenze/varianti-carnet/5.png)</Frame>
+<Frame>![Presenza di Paola rimossa e saldo restituito](/images/registro-presenze/varianti-carnet/6.png)</Frame>
+</Step>
+<Step title="Distingui carnet disabilitato e assenza di carnet">
+Il carnet disabilitato di Elena non viene selezionato. Nel caso mostrato non esistono altri carnet pertinenti, quindi la presenza può essere salvata senza consumare quel pacchetto. Anche Andrea, che non ha un carnet, può risultare presente senza un consumo. Questi casi non equivalgono a un carnet attivo ma esaurito.
+<Frame>![Elena presente senza consumo del carnet disabilitato](/images/registro-presenze/varianti-carnet/7.png)</Frame>
+<Frame>![Andrea presente senza assegnazione di carnet](/images/registro-presenze/varianti-carnet/8.png)</Frame>
+</Step>
+<Step title="Riapri dopo le correzioni">
+Togli le presenze dimostrative che hai usato soltanto per il controllo, ricarica la lezione e confronta registro e saldi. Nell’esempio ogni correzione lascia il saldo iniziale e nessun consumo residuo. I collaboratori in lettura non possono salvare questi cambiamenti.
+<Frame>![Registro riaperto dopo la rimozione delle presenze di prova](/images/registro-presenze/varianti-carnet/9.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La rimozione della presenza dalla stessa data aggiorna consumo e saldo insieme. Eliminare una data dal registro o cambiare soltanto le lezioni residue sono operazioni diverse. Una registrazione con più persone non autorizza a dedurre che ogni rifiuto annulli tutti i consumi elaborati prima del rifiuto.</Warning>
+
+<Note>Il percorso confronta saldi diversi. La parità di saldo, pacchetti condivisi fra più corsi e correzioni su date storiche non sono dimostrati da questi esempi. Le catture e i risultati rimangono preparati finché il browser non esegue il flusso reale.</Note>
+
+## Eliminare una lezione dal registro
+
+Occorre il permesso di modifica delle presenze. Il cestino elimina la data dal registro; non sostituisce la rimozione della presenza di una singola persona.
+
+<Steps>
+<Step title="Controlla che la data sia vuota">
+Apri **Attività → Corsi e Abbonamenti**, scegli il corso e **Presenze**. Trova la data confrontando titolo e orario. Questa procedura riguarda una lezione senza presenze registrate; se ci sono partecipazioni, correggile prima con la procedura appropriata.
+</Step>
+<Step title="Controlla la conferma prima di eliminare">
+Premi il cestino rosso nella riga della data. La finestra chiede **Desideri eliminare la data dal registro presenze?** e avverte che perderai le assenze segnalate. **Annulla** conserva la data.
+<Frame>![Conferma della cancellazione della data](/images/registro-presenze/carnet-manutenzione/11.png)</Frame>
+</Step>
+<Step title="Elimina e ricontrolla registro e calendario">
+Premi **Elimina** soltanto per la data selezionata. Ricarica **Presenze** e verifica che non compaia più. Nell’esempio i saldi del carnet rimangono invariati e l’evento resta nel **Calendario**: la cancellazione della riga del registro non cancella automaticamente la lezione dal calendario.
+<Frame>![Registro dopo l’eliminazione della data vuota](/images/registro-presenze/carnet-manutenzione/12.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>La cancellazione diretta non esegue la restituzione delle lezioni consumate. Il caso di una data con presenze e utilizzi del carnet richiede una procedura distinta, ancora da verificare. Non usare questo esempio di data vuota per cancellare partecipazioni già registrate.</Warning>
+
+## Sincronizzazione con il calendario
+
+Il calendario pubblicato del corso alimenta le date del registro. Una modifica del nome della lezione aggiorna anche la data corrispondente; l’eliminazione dal calendario rimuove le date del registro comprese nell’ambito scelto.
+
+<Steps>
+<Step title="Apri la lezione del calendario">
+Apri **Attività → Corsi e Abbonamenti**, scegli il corso e **Calendario**, poi seleziona una lezione già pubblicata. Controlla titolo e data; nell’esempio modifichiamo nome e descrizione della sola lezione, mantenendo giorno e orario.
+<Frame>![Modifica del nome e della descrizione della lezione](/images/corsi/manutenzione-calendario/8.png)</Frame>
+</Step>
+<Step title="Salva e riapri la lezione">
+Premi **Salva**, ricarica e riapri la lezione. Controlla il nome e la descrizione, poi consulta **Presenze**: la data conserva la propria identità e la presenza già associata. Le altre lezioni della serie rimangono distinte.
+<Frame>![Lezione modificata e riaperta nello stesso giorno](/images/corsi/manutenzione-calendario/9.png)</Frame>
+</Step>
+<Step title="Valuta la cancellazione dal calendario">
+Se devi eliminare la lezione, usa **Elimina** e leggi la conferma: vengono eliminate anche le presenze di quella data. **Annulla** lascia i dati invariati. Per una serie scegli consapevolmente fra la sola lezione, **Questo e successivi** e **Questo e precedenti**.
+<Frame>![Conferma dell’eliminazione della singola lezione e delle sue presenze](/images/corsi/manutenzione-calendario/10.png)</Frame>
+</Step>
+<Step title="Ricontrolla calendario e registro">
+Conferma soltanto l’ambito desiderato, ricarica e apri **Presenze**. Le date eliminate dal calendario devono essere assenti anche dal registro; quelle dell’altra serie rimangono. Nell’esempio le cancellazioni mirate della prima serie lasciano le tre lezioni della seconda.
+<Frame>![Registro dopo le cancellazioni mirate delle lezioni](/images/corsi/manutenzione-calendario/13.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il comando dal **Calendario** è distinto dal cestino in **Presenze**: cancellare direttamente una data nel registro non cancella l’evento del calendario. Nessuno dei due comandi equivale a togliere una singola presenza per restituire una lezione del carnet. Prima di cancellare una data con consumi, controlla e correggi le presenze necessarie. Il percorso non prova spostamenti di data/orario con carnet né la sincronizzazione con Google Calendar.</Warning>
+
+### Come funziona la sincronizzazione
+
+La sincronizzazione riguarda il calendario interno del corso e il suo registro presenze. Per correggere la descrizione mantenendo la partecipazione già registrata, conserva la stessa lezione. Per eliminare una lezione, valuta prima anche l’effetto sulle presenze.
+
+<Steps>
+<Step title="Apri la lezione del calendario">
+Apri **Attività → Corsi e Abbonamenti**, scegli il corso e **Calendario**, poi seleziona una lezione già pubblicata. Controlla titolo e data; nell’esempio modifichiamo nome e descrizione della sola lezione, mantenendo giorno e orario.
+<Frame>![Modifica del nome e della descrizione della lezione](/images/corsi/manutenzione-calendario/8.png)</Frame>
+</Step>
+<Step title="Salva e riapri la lezione">
+Premi **Salva**, ricarica e riapri la lezione. Controlla il nome e la descrizione, poi consulta **Presenze**: la data conserva la propria identità e la presenza già associata. Le altre lezioni della serie rimangono distinte.
+<Frame>![Lezione modificata e riaperta nello stesso giorno](/images/corsi/manutenzione-calendario/9.png)</Frame>
+</Step>
+<Step title="Valuta la cancellazione dal calendario">
+Se devi eliminare la lezione, usa **Elimina** e leggi la conferma: vengono eliminate anche le presenze di quella data. **Annulla** lascia i dati invariati. Per una serie scegli consapevolmente fra la sola lezione, **Questo e successivi** e **Questo e precedenti**.
+<Frame>![Conferma dell’eliminazione della singola lezione e delle sue presenze](/images/corsi/manutenzione-calendario/10.png)</Frame>
+</Step>
+<Step title="Ricontrolla calendario e registro">
+Conferma soltanto l’ambito desiderato, ricarica e apri **Presenze**. Le date eliminate dal calendario devono essere assenti anche dal registro; quelle dell’altra serie rimangono. Nell’esempio le cancellazioni mirate della prima serie lasciano le tre lezioni della seconda.
+<Frame>![Registro dopo le cancellazioni mirate delle lezioni](/images/corsi/manutenzione-calendario/13.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il comando dal **Calendario** è distinto dal cestino in **Presenze**: cancellare direttamente una data nel registro non cancella l’evento del calendario. Nessuno dei due comandi equivale a togliere una singola presenza per restituire una lezione del carnet. Prima di cancellare una data con consumi, controlla e correggi le presenze necessarie. Il percorso non prova spostamenti di data/orario con carnet né la sincronizzazione con Google Calendar.</Warning>
+
+## Consultare lo storico presenze di un atleta
+
+La scheda della persona raccoglie le sue presenze effettive ai corsi; una lezione programmata senza presenza non entra nella tabella come partecipazione. Occorrono i permessi di accesso alle iscrizioni e alle presenze; non serve un abbonamento alla piattaforma.
+
+<Steps>
+<Step title="Apri lo storico della persona">
+Apri **Organizzazione → Iscrizioni → Tesserati**, scegli la persona e premi **Registro Presenze** nella sua scheda. I riquadri **Presenze ultimi 30 giorni** e **Presenze totali** riassumono le partecipazioni registrate, mentre la tabella mostra le singole lezioni.
+<Frame>![Storico personale della presenza registrata](/images/registro-presenze/carnet-manutenzione/1.png)</Frame>
+</Step>
+<Step title="Filtra il corso e cerca la lezione">
+Nel filtro **Corso** scegli **Ginnastica per tutti** oppure **Tutti i corsi**. Confronta nome lezione, corso e data. Usa la ricerca per restringere la tabella; se non trovi righe, controlla anche il corso scelto e togli il testo di ricerca. Una ricerca vuota non annulla una presenza.
+<Frame>![Storico filtrato per corso](/images/registro-presenze/carnet-manutenzione/2.png)</Frame>
+<Frame>![Ricerca senza corrispondenze](/images/registro-presenze/carnet-manutenzione/3.png)</Frame>
+</Step>
+<Step title="Correggi dal registro del corso">
+Lo storico personale è una consultazione. Se una presenza è errata, apri **Ginnastica per tutti → Presenze** e modifica l’interruttore della persona nella lezione. Alla riapertura dello storico una presenza rimossa non compare più.
+</Step>
+</Steps>
+
+## Risorse correlate
+
+<CardGroup cols={2}>
+<Card title="Corsi" icon="users" href="/docs/corsi">Iscrizioni e calendario delle singole lezioni.</Card>
+<Card title="Carnet" icon="ticket" href="/docs/carnet">Assegnazione, corsi collegati e lezioni disponibili.</Card>
+<Card title="Registro e carnet: tutorial" icon="list-check" href="/tutorials/come-gestire-registro-presenze-carnet">Sequenza pratica e controlli sul saldo.</Card>
+<Card title="Calendario" icon="calendar-days" href="/docs/calendario">Viste, lezioni ed eventi dell’associazione.</Card>
+</CardGroup>
+

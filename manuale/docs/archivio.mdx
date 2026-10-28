@@ -1,0 +1,130 @@
+---
+title: "Archivio"
+description: "Consulta, archivia e ripristina le iscrizioni, controllando separatamente i pagamenti collegati."
+---
+
+## Introduzione
+
+Le iscrizioni archiviate si consultano in **Organizzazione → Iscrizioni → Archivio**. Sono fuori dall’elenco attivo ma restano riconoscibili per persona e iscrizione; l’archivio non è una cancellazione definitiva.
+
+<Steps>
+<Step title="Consulta l’archivio delle iscrizioni">
+Apri la scheda **Archivio**, cerca la persona e controlla la riga. Nell’esempio **Sara Conti** è archiviata e **Rimuovi dall’archivio** permette il ritorno nell’elenco attivo.
+<Frame>![Consulta l’archivio delle iscrizioni](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Il menu laterale **Archivio** contiene file e cartelle dell’associazione ed è uno spazio diverso. Corsi e pagamenti hanno a loro volta archivi dedicati: scegli la sezione del dato che devi cercare.</Note>
+
+## Cosa puoi archiviare?
+
+
+L’applicazione usa archivi distinti. L’**Archivio** delle **Iscrizioni** raccoglie iscrizioni fuori dall’elenco attivo; non è una schermata unica con tutte le categorie dell’associazione.
+
+| Dove consultare | Cosa raccoglie |
+| --- | --- |
+| **Organizzazione → Iscrizioni → Archivio** | Iscrizioni archiviate |
+| **Corsi e Abbonamenti → Corsi → Archivio** | Elenco dei corsi nell’archivio dedicato |
+| **Contabilità → Pagamenti → Archivio** | Pagamenti archiviati |
+| Scheda **Archivio** dei documenti contabili | Documenti contabili archiviati |
+| **Archivio** del menu laterale | File e cartelle dell’associazione, uno spazio distinto dalle iscrizioni |
+
+Per le iscrizioni, l’archiviazione può interessare anche iscrizioni ai corsi e pagamenti non saldati collegati; può inoltre eliminare i documenti contabili collegati ad alcuni di quei pagamenti. Non va considerata una semplice modifica del filtro della lista.
+
+<Warning>Le azioni di archiviazione e ripristino non sono identiche per tutte le categorie. Prima di archiviare un’iscrizione controlla i collegamenti; il suo ripristino non ripristina automaticamente i pagamenti.</Warning>
+
+## Come archiviare un elemento
+
+
+
+
+Questa procedura riguarda **un’iscrizione**. Nell’esempio scegliamo **Sara Conti**, con una quota associativa non saldata e senza iscrizioni ai corsi o documenti contabili emessi. Gli altri archivi hanno azioni proprie.
+
+<Steps>
+<Step title="Controlla e seleziona l’iscrizione">
+Apri **Organizzazione → Iscrizioni**, nella scheda **Tesserati**. Riconosci Sara Conti dai dati della riga e controlla prima i pagamenti collegati in **Contabilità → Pagamenti**. Nell’esempio la quota di Sara è **In attesa**.
+Seleziona la casella della sola riga di Sara: il comando **Archivia** nella barra delle azioni riguarda le righe selezionate, anche se appartengono all’anno corrente.
+<Frame caption="Sara Conti selezionata nella lista Tesserati">![Sara Conti selezionata nella lista Tesserati](/images/archivio/manutenzione/1.png)</Frame>
+</Step>
+<Step title="Leggi la conferma prima di procedere">
+Premi **Archivia**. La finestra chiede **Vuoi archiviare 1 soci?**: controlla il numero prima di scegliere **Archivia selezionati**. Premi **Annulla** se hai selezionato la persona sbagliata; l’iscrizione e i pagamenti rimangono nello stato precedente.
+L’archiviazione può modificare anche i collegamenti dell’iscrizione: non usarla come sostituto di un filtro dell’elenco.
+<Frame caption="Conferma Archivia selezionati e pulsante Annulla">![Conferma Archivia selezionati e pulsante Annulla](/images/archivio/manutenzione/2.png)</Frame>
+</Step>
+<Step title="Controlla entrambe le liste dopo la conferma">
+Con **Archivia selezionati** l’iscrizione esce da **Tesserati**. Ricarica la pagina e apri **Archivio** nella navigazione delle iscrizioni: Sara deve comparire lì.
+Apri separatamente **Contabilità → Pagamenti → Archivio**. Nell’esempio la quota non saldata di Sara è archiviata; i pagamenti saldati di Giulia e Luca rimangono nell’elenco attivo. Il ripristino dell’iscrizione da solo non riporta la quota nell’elenco dei pagamenti attivi.
+<Frame caption="Tesserati dopo il ricaricamento senza l’iscrizione archiviata">![Tesserati dopo il ricaricamento senza l’iscrizione archiviata](/images/archivio/manutenzione/3.png)</Frame>
+<Frame caption="Iscrizione di Sara nell’Archivio dedicato">![Iscrizione di Sara nell’Archivio dedicato](/images/archivio/manutenzione/4.png)</Frame>
+<Frame caption="Quota non saldata nel distinto Archivio dei pagamenti">![Quota non saldata nel distinto Archivio dei pagamenti](/images/archivio/manutenzione/6.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Questo esempio non comprende iscrizioni ai corsi o documenti contabili emessi. Le loro modifiche o eliminazioni richiedono un controllo specifico prima di procedere. Per un’iscrizione con collegamenti più complessi consulta anche [Cosa viene archiviato](/faq/come-archiviare-dati#cosa-viene-archiviato).</Warning>
+
+<Note>Un account in sola lettura può consultare l’archivio previsto dai suoi permessi, ma non archiviare o ripristinare. Se **Archivia** è disattivato controlla i permessi di aggiornamento dell’archivio e l’accesso previsto per la funzione.</Note>
+
+## Consultare l'archivio
+
+
+
+
+L’**Archivio** delle iscrizioni è una scheda di **Iscrizioni**. La voce **Archivio** nel menu laterale apre invece file e cartelle dell’associazione.
+
+<Steps>
+<Step title="Apri l’archivio delle iscrizioni">
+Vai in **Organizzazione → Iscrizioni** e scegli **Archivio** nella navigazione della lista. Nell’esempio Sara Conti è stata archiviata e resta visibile qui dopo il ricaricamento.
+<Frame caption="Archivio delle iscrizioni con Sara Conti">![Archivio delle iscrizioni con Sara Conti](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+<Step title="Cerca la persona e togli la ricerca quando hai finito">
+Nel campo di ricerca dell’elenco scrivi **Sara**: resta la riga corrispondente. Cancella il testo per vedere di nuovo tutte le righe dell’archivio.
+Se non trovi una registrazione, controlla anche il testo di ricerca e la categoria aperta; un archivio vuoto non conferma che i dati siano stati eliminati.
+<Frame caption="Ricerca Sara nella scheda Archivio delle iscrizioni">![Ricerca Sara nella scheda Archivio delle iscrizioni](/images/archivio/manutenzione/5.png)</Frame>
+</Step>
+<Step title="Consulta il pagamento nel suo archivio">
+Apri **Contabilità → Pagamenti → Archivio** per trovare la quota non saldata archiviata insieme all’iscrizione. Nell’esempio riconosci la riga di Sara Conti e lo stato **In attesa**.
+Non dedurre lo stato del pagamento da quello dell’iscrizione: dopo **Rimuovi dall’archivio → Sposta nel libro soci**, Sara torna in **Tesserati**, ma la sua quota resta nell’archivio dei pagamenti fino al ripristino separato.
+<Frame caption="Quota di Sara nel distinto archivio contabile">![Quota di Sara nel distinto archivio contabile](/images/archivio/manutenzione/6.png)</Frame>
+</Step>
+<Step title="Distingui consultazione e ripristino">
+Il comando **Rimuovi dall’archivio** sulla riga serve a riportare l’iscrizione nell’elenco attivo; non è necessario per consultare la lista. Con un account in sola lettura il comando rimane disattivato.
+Per il ripristino segui la sezione successiva e verifica di nuovo entrambe le liste.
+<Frame caption="Archivio consultabile con ripristino disattivato per la sola lettura">![Archivio consultabile con ripristino disattivato per la sola lettura](/images/archivio/manutenzione/7.png)</Frame>
+</Step>
+</Steps>
+
+<Tip>Se stai cercando un file caricato, apri **Archivio** del menu laterale. Per corsi, pagamenti e documenti contabili usa la rispettiva scheda **Archivio**.</Tip>
+
+## Ripristinare un elemento dall'archivio
+
+<Steps>
+<Step title="Trova l’iscrizione archiviata">
+Apri **Organizzazione → Iscrizioni → Archivio** e cerca nome o cognome. Nell’esempio l’iscrizione di **Sara Conti** è presente nell’archivio dopo la ricarica; controlla la riga prima di agire.
+<Frame>![Trova l’iscrizione archiviata](/images/archivio/manutenzione/4.png)</Frame>
+</Step>
+<Step title="Conferma il ripristino">
+Premi **Rimuovi dall’archivio** nella riga e controlla la conferma. Usa **Annulla** se hai scelto la persona sbagliata; altrimenti premi **Sposta nel libro soci**.
+<Frame>![Conferma il ripristino](/images/archivio/manutenzione/8.png)</Frame>
+</Step>
+<Step title="Ricontrolla l’elenco e i pagamenti">
+Ricarica l’elenco attivo: la stessa iscrizione torna consultabile. La sua quota non saldata rimane nell’archivio dei pagamenti e va controllata separatamente da **Contabilità → Pagamenti → Archivio**. Ripristinare l’iscrizione non ripristina automaticamente quel pagamento.
+<Frame>![Ricontrolla l’elenco e i pagamenti](/images/archivio/manutenzione/9.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Il collaboratore con sola lettura può consultare la riga ma trova il ripristino disattivato. Per gli archivi di corsi e pagamenti segui le rispettive procedure: i loro effetti sono distinti da quelli dell’iscrizione.</Note>
+
+## Risorse correlate
+
+
+<CardGroup cols={2}>
+  <Card title="Come archiviare i dati" icon="box-archive" href="/faq/come-archiviare-dati">
+    Iscrizioni, pagamenti collegati, consultazione e limiti del ripristino.
+  </Card>
+  <Card title="Esportare i dati dell’associazione" icon="file-arrow-down" href="/tutorials/come-esportare-dati-associazione">
+    Distinguere un elenco scaricato dal ZIP completo e dall’archiviazione delle iscrizioni.
+  </Card>
+</CardGroup>
+
+Per conservare una copia dei dati considera l’esportazione; per spostare un’iscrizione fuori dall’elenco attivo considera l’archiviazione. Il download non cambia lo stato dell’iscrizione.
+

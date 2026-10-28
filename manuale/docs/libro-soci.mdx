@@ -1,0 +1,422 @@
+---
+title: "Libro Soci"
+description: "In questa sezione è spiegato come funziona il libro soci."
+---
+
+## Introduzione
+
+In Assozeta apri **Organizzazione → Iscrizioni** per consultare l'elenco dei tesserati.
+Ogni riga mostra il nome della persona e le informazioni dell'iscrizione.
+
+<Frame>![Elenco delle iscrizioni dell'associazione](/images/faq/ricerca-filtri/1.png)</Frame>
+
+Per trovare una persona, usa il campo **Cerca...**. [Leggi come cercare e cancellare la ricerca](/faq/come-usare-ricerca-filtri-atleti#la-barra-di-ricerca).
+
+### Come funziona il libro soci?
+
+Il **Libro Soci** raccoglie le iscrizioni di tipo **Socio** e **Socio e Tesserato**. La scheda **Tesserati** raccoglie invece **Socio e Tesserato** e **Tesserato**: una stessa iscrizione può quindi comparire nei due elenchi.
+
+Puoi inserire una persona dall'associazione, ricevere una domanda tramite il modulo online oppure partire dalle **Bozze** importate da file. Controlla sempre lo **Stato**: avere una riga nell'elenco non significa che la domanda sia già **accettata**. Anche firma, quota e certificato sono informazioni distinte.
+
+Per iniziare scegli la procedura adatta:
+
+- [Inserimento di una singola persona](/faq/come-si-crea-un-socio).
+- [Importazione di un elenco](/faq/come-si-importano-dei-soci).
+- [Condivisione del modulo online](/faq/come-condividere-il-link-iscrizioni).
+
+<Note>Il ruolo di socio e i permessi di accesso all'applicazione sono gestiti separatamente. L'approvazione della domanda non assegna automaticamente permessi di collaborazione.</Note>
+
+## Ciclo di vita dell'iscrizione
+
+Nell'elenco **Organizzazione → Iscrizioni**, la colonna **Stato** distingue la richiesta appena inserita da quella approvata.
+Le etichette mostrate nell'elenco sono **non firmata**, **in attesa**, **rifiutata**, **accettata** e **ritirata/o**.
+
+La [procedura di creazione](/faq/come-si-crea-un-socio#creare-un-socio-socio-tesserato-o-tesserato) lascia la richiesta firmata di **Marta Neri** **in attesa**.
+Per approvare questa richiesta, serve il permesso di modifica delle iscrizioni.
+
+<Steps>
+  <Step title="Trova la richiesta da approvare">
+    Apri **Organizzazione → Iscrizioni** e trova la persona nell'elenco.
+    Controlla che lo stato della richiesta dell'esempio sia **in attesa**.
+    <Frame>![Richiesta firmata di Marta Neri in attesa di approvazione](/images/libro-soci/approvazione/1.png)</Frame>
+  </Step>
+  <Step title="Conferma l'approvazione">
+    Nella riga premi il pulsante con il suggerimento **Approva Iscrizione**.
+    Alla domanda **Vuoi accettare l'iscrizione?**, premi **Approva**.
+    Se vuoi tornare all'elenco per ricontrollare i dati, premi **Annulla**.
+    <Frame>![Conferma dell'approvazione di una singola iscrizione](/images/libro-soci/approvazione/2.png)</Frame>
+  </Step>
+  <Step title="Controlla lo stato salvato">
+    La colonna **Stato** mostra **accettata**. Ricarica la pagina per controllare che la modifica sia conservata.
+    Il pulsante di approvazione risulta disattivato per l'iscrizione già accettata.
+    <Frame>![Iscrizione accettata presente dopo il ricaricamento](/images/libro-soci/approvazione/3.png)</Frame>
+  </Step>
+  <Step title="Controlla separatamente la quota">
+    Apri **Pagamenti** per consultare il pagamento collegato alla persona.
+    Nell'esempio, con l'incasso automatico disattivato, la quota di **25,00 €** rimane **In attesa** dopo l'approvazione dell'iscrizione.
+    <Frame>![Quota associativa ancora da incassare dopo l'approvazione](/images/libro-soci/approvazione/4.png)</Frame>
+    [Leggi come confermare l'incasso](/docs/pagamenti#segna-un-pagamento-come-pagato).
+  </Step>
+</Steps>
+
+<Note>Un collaboratore in sola lettura vede la richiesta, ma il pulsante **Approva Iscrizione** è disattivato. Il rifiuto, il ritiro e l'approvazione di più persone insieme richiedono procedure distinte.</Note>
+
+## Tipologie di iscrizione
+
+Nel primo passaggio dell'inserimento scegli la tipologia che vuoi registrare:
+
+| Tipologia mostrata | Informazioni da controllare |
+| --- | --- |
+| **Socio** | Ruolo del socio e quota associativa. |
+| **Socio e Tesserato** | Ruolo, quota associativa e quota di tesseramento. |
+| **Tesserato** | Quota di tesseramento; il ruolo del socio non viene proposto in questo passaggio. |
+
+La scelta determina quali campi vengono mostrati e in quali elenchi compare l'iscrizione. **Socio e Tesserato** compare sia nel **Libro Soci** sia in **Tesserati**.
+
+<Note>Queste etichette classificano la registrazione nell'applicazione. Non dimostrano che un ente esterno abbia ricevuto o completato un tesseramento: controlla separatamente numero, tipo e date della tessera.</Note>
+
+## Ruoli del socio
+
+Per le tipologie **Socio** e **Socio e Tesserato**, il primo passaggio propone il ruolo da riportare nell'iscrizione. Le opzioni sono **Socio ordinario**, **Consigliere**, **Segretario**, **Vice Presidente**, **Presidente**, **Socio volontario**, **Socio sostenitore** e **Tesoriere**.
+
+Scegli il ruolo che corrisponde alla situazione della persona nell'associazione. Non usare questo campo per dare accesso ai dati dell'organizzazione: il ruolo nell'iscrizione non abilita i permessi per leggere, modificare o approvare le domande.
+
+<Note>Per autorizzare una persona a lavorare nell'applicazione, usa la gestione dei collaboratori. Registrare un socio come **Presidente** o **Tesoriere** non sostituisce quell'autorizzazione.</Note>
+
+## Durata delle iscrizioni
+
+In **Profilo → Generali**, le impostazioni distinguono la durata delle iscrizioni dalla durata dei tesseramenti. Per l'iscrizione sono disponibili tre criteri:
+
+| Criterio | Date proposte per una nuova iscrizione senza date già impostate |
+| --- | --- |
+| **Un'anno solare dalla data di iscrizione** | Inizio alla data di creazione; termine alla stessa data dell'anno successivo. |
+| **Da inizio stagione sportiva** | Inizio e termine del periodo dell'associazione che comprende la data di creazione. |
+| **Dall'iscrizione al termine della stagione sportiva** | Inizio alla data di creazione; termine alla fine del periodo dell'associazione. |
+
+Per esempio, con il primo criterio, una creazione del **15 marzo 2026** propone **15 marzo 2026 → 15 marzo 2027**. I criteri legati alla stagione dipendono dal giorno e dal mese di inizio configurati.
+
+<Note>Una modifica delle impostazioni non riscrive automaticamente le date già presenti nelle iscrizioni. Prima di un rinnovo, controlla le date effettive della scheda e quelle del tesseramento.</Note>
+
+## Aggiungi un Socio
+
+Apri **Organizzazione → Iscrizioni** e premi **Aggiungi**. Il modulo guida la compilazione del profilo, dell'anagrafica, della firma, dei documenti e del riepilogo.
+Per creare un'iscrizione serve il relativo permesso; un collaboratore in sola lettura può consultare l'elenco.
+
+<Frame>![Dove iniziare la creazione di una nuova iscrizione](/images/faq/creazione-socio/1.png)</Frame>
+
+[Segui la procedura completa con l'esempio di Marta Neri](/faq/come-si-crea-un-socio#creare-un-socio-socio-tesserato-o-tesserato).
+
+### 1. Informazioni Profilo
+
+Mantieni **Tipo iscrizione → Socio e Tesserato** e il ruolo **Socio ordinario**.
+    Controlla le quote visualizzate prima di proseguire: nell'associazione dell'esempio la quota associativa è **25,00 €**, quella di tesseramento **0,00 €**.
+    Alla domanda **Crea nuovo account per il socio / tesserato?**, scegli **No**: questa guida registra la persona collegandola all'account dell'associazione.
+    <Frame>![Tipo di iscrizione, quote e scelta di non creare un nuovo account](/images/faq/creazione-socio/2.png)</Frame>
+
+La scelta **No** conserva il collegamento all'account dell'associazione. Il percorso con un nuovo account personale richiede una procedura distinta. Premi **Continua** per passare all'anagrafica.
+
+#### Cosa succede se hai più tipologie di quote sociali?
+
+Con **Quote multiple**, una stessa tipologia di iscrizione può offrire più piani con nomi e importi diversi. **Quota associativa** e **Quota Tesseramento** hanno configurazioni separate: selezionare un piano associativo non seleziona automaticamente quello di tesseramento.
+
+Nell’esempio creiamo **Ordinaria — 25,00 €** e **Sostenitore — 45,00 €** per la quota associativa. La quota di tesseramento rimane **0,00 €**. Occorrono i permessi per modificare il modulo e per creare iscrizioni; un collaboratore in sola lettura non può eseguire questi salvataggi.
+
+<Steps>
+  <Step title="Controlla le quote configurate">
+Apri **Organizzazione → Modulo Iscrizioni → Quote**. Controlla che **Associa quote iscrizione** sia attivo. Nella parte **Quota associativa** attiva **Quote multiple**, premi **Aggiungi quota** e compila **Nome quota** e **Quota**. Ripeti per il secondo piano. Se i piani esistono già, usa **Mostra quote** per controllarli e scegli nomi comprensibili anche a chi inserisce una persona.
+
+<Frame>![Due quote associative con nomi e importi distinti prima del salvataggio.](/images/libro-soci/quote-multiple/1.png)</Frame>
+</Step>
+  <Step title="Salva il modulo e ricontrollalo">
+Salva il modulo e attendi la conferma. Riapri **Quote → Mostra quote** e controlla che nomi e importi siano rimasti corretti. Compilare le quote senza salvare il modulo non le rende disponibili alle nuove iscrizioni.
+
+<Frame>![Piani conservati nel modulo dopo il ricaricamento.](/images/libro-soci/quote-multiple/2.png)</Frame>
+</Step>
+  <Step title="Scegli il piano durante l’inserimento">
+Torna in **Organizzazione → Iscrizioni** e premi **Aggiungi**. Mantieni **Socio e Tesserato** e, nell’elenco della **Quota associativa**, scegli **Sostenitore (€ 45,00)**. Controlla separatamente la quota di tesseramento. Nell’esempio scegli **No** alla creazione di un nuovo account e prosegui con i dati, la firma e il riepilogo della [procedura di creazione](/faq/come-si-crea-un-socio#creare-un-socio-socio-tesserato-o-tesserato).
+
+<Frame>![Quota Sostenitore scelta nel primo passaggio della creazione.](/images/libro-soci/quote-multiple/3.png)</Frame>
+</Step>
+  <Step title="Verifica il pagamento collegato">
+Conferma la creazione solo dopo aver ricontrollato il riepilogo. Apri **Pagamenti** e cerca la persona appena inserita: per il piano dell’esempio il pagamento è **45,00 €**. Con l’incasso automatico disattivato rimane **In attesa**. La quota scelta stabilisce l’importo da richiedere; l’iscrizione, l’approvazione e l’incasso sono operazioni distinte.
+
+<Frame>![Pagamento reale di 45 euro collegato alla nuova iscrizione.](/images/libro-soci/quote-multiple/6.png)</Frame>
+</Step>
+</Steps>
+
+<Note>I piani **Parziali**, le quote antecedenti e l’emissione delle quote successive hanno impostazioni proprie. Questo esempio riguarda due piani ordinari senza automatismi successivi. Controlla date e regole di un piano parziale prima di utilizzarlo.</Note>
+
+### 2. Informazioni Anagrafiche
+
+Inserisci **Nome**, **Cognome**, **Sesso**, **Data di nascita** e **Città di nascita**.
+    Nell'esempio usiamo dati fittizi: **Marta Neri**, sesso **F**, nata il **01/01/2000** a **Roma**.
+    Compila **Codice Fiscale** oppure premi **Genera codice fiscale**, il pulsante accanto al campo, dopo aver inserito questi dati.
+    Controlla il risultato nel campo prima di proseguire.
+    <Frame>![Dati anagrafici con il codice fiscale generato](/images/faq/creazione-socio/3.png)</Frame>
+    Inserisci anche **Indirizzo**, **Città di residenza** e **CAP**, poi i recapiti.
+    Nell'esempio: **Via delle Attività 4**, **Roma**, **00100**, email **marta@example.test**.
+    Usa dati e recapiti della persona che stai registrando; quelli della guida servono soltanto a mostrare il flusso.
+    <Frame>![Residenza e recapiti della persona](/images/faq/creazione-socio/4.png)</Frame>
+
+Controlla i campi contrassegnati con l'asterisco e premi **Continua**.
+
+### 3. Firma del Documento
+
+Nel passaggio **Firma del documento**, raccogli la firma nell'area dedicata e controlla che il tratto sia visibile prima di continuare.
+    La guida mostra una firma dimostrativa tracciata con il mouse.
+    <Frame>![Area di firma compilata con un tratto dimostrativo](/images/faq/creazione-socio/5.png)</Frame>
+
+Premi **Continua** per raggiungere il passaggio del certificato medico.
+
+### 4. Certificato Medico
+
+Il passaggio successivo riguarda il **Certificato Medico**.
+    Nell'esempio non alleghiamo un documento e proseguiamo fino al riepilogo.
+    <Frame>![Passaggio del certificato medico senza un allegato nell’esempio](/images/faq/creazione-socio/6.png)</Frame>
+    <Note>Questo esempio descrive la registrazione di un adulto. Le procedure per minori, caricamento e scadenza dei certificati richiedono guide specifiche.</Note>
+
+Premi **Continua** per rivedere i dati prima del salvataggio.
+
+#### Esenzione certificato medico per minori di 6 anni
+
+L'applicazione può mostrare l'etichetta **Esente per …** per una persona che non ha ancora compiuto sei anni. Il conteggio deriva dalla data di nascita registrata; alcune varianti dell'interfaccia abilitano inoltre una specifica indicazione per i minori.
+
+Questa etichetta non aggiunge un certificato né una sua data di scadenza. Quando l'età cambia, il riepilogo può tornare a indicare il documento o la scadenza mancanti. Mantieni quindi corretta la data di nascita e controlla il certificato effettivamente allegato.
+
+<Warning>La parola **Esente** è un'etichetta dell'applicazione. Non usarla come conferma dei requisiti sanitari per una disciplina, una gara o un ente: questi requisiti devono essere verificati con i soggetti competenti.</Warning>
+
+#### Scadenza dei Certificati Medici
+
+L'impostazione **Invia notifiche certificati medici**, in **Profilo → Generali → Altro**, abilita i promemoria previsti **30 giorni** e **7 giorni** prima della scadenza e **1 giorno** dopo.
+
+La selezione automatica considera iscrizioni correnti, non archiviate né eliminate, create negli ultimi **366 giorni**, con una scadenza che coincide con il giorno previsto dal promemoria. Non recupera indistintamente tutte le scadenze passate.
+
+Il destinatario viene cercato prima nell'email dell'atleta, poi nell'email del tutore principale se la prima manca o non è valida; in mancanza di entrambe viene usata l'email dell'account collegato. Controlla quindi i recapiti della scheda, oltre all'interruttore.
+
+<Note>La programmazione dei promemoria e il recapito dipendono dai servizi email dell'installazione. La presenza della funzione nel gestionale non dimostra che un messaggio sia stato consegnato. Usa anche l'elenco e la bacheca per controllare le scadenze.</Note>
+
+### 5. Riepilogo e Creazione
+
+Nel passaggio **Controlla le Informazioni**, rivedi il tipo di iscrizione, i dati della persona, la firma e gli eventuali allegati.
+    <Frame>![Riepilogo della richiesta prima del salvataggio](/images/faq/creazione-socio/7.png)</Frame>
+    Premi **Salva**. Alla domanda **Hai inserito i dati corretti? Controlla prima di continuare.**, premi **Continua** per confermare.
+    Torni nell'elenco delle iscrizioni: cerca **Marta Neri** e controlla che la riga sia presente anche dopo il ricaricamento.
+    <Frame>![Nuova iscrizione presente nell’elenco dopo il ricaricamento](/images/faq/creazione-socio/8.png)</Frame>
+    <Note>Salvare questa richiesta firmata la lascia **in attesa di approvazione**. La creazione e l'approvazione sono operazioni distinte. Con l'incasso automatico disattivato, la quota di **25,00 €** resta da incassare.</Note>
+
+## Anagrafica Smart
+
+La scheda di un'iscrizione raccoglie i dati dell'iscrizione e le sezioni collegate alla persona.
+Qui seguiamo la modifica di **Numero tessera** e **Tipologia tessera** di **Giulia Bianchi**, una persona fittizia dell'**Associazione Sportiva Aurora**.
+Per consultare la scheda serve il permesso di lettura delle iscrizioni; per salvare i metadati serve il permesso di modifica e un'iscrizione non archiviata.
+
+<Steps>
+  <Step title="Apri la scheda della persona">
+    Dal menu laterale apri **Organizzazione → Iscrizioni**. Trova la riga della persona e premi il suo **nome e cognome**.
+    Si apre una scheda laterale: controlla che il nome in alto corrisponda all'iscrizione che vuoi modificare.
+    Nell'esempio apriamo **Giulia Bianchi**, già accettata.
+    <Frame>![Scheda laterale dell’iscrizione e schede di navigazione](/images/libro-soci/scheda/1.png)</Frame>
+  </Step>
+  <Step title="Individua i metadati dell'iscrizione">
+    Nella scheda iniziale cerca **Informazioni Iscrizione**. **Numero tessera** identifica la tessera, mentre **Tipologia tessera** ne descrive la tipologia: è distinta dal campo **Tipo iscrizione**.
+    La stessa area mostra **Iscritto dal**, **Scade il**, **Tipo iscrizione** e, per i soci, **Ruolo socio**.
+    In **Altre informazioni** trovi **Stato**, **Accettata/o il** e **Ritirata/o il**; più sotto trovi **Note** ed eventuali **Campi aggiuntivi**.
+    Rivedi questi dati per riconoscere l'iscrizione corretta prima di procedere. Nell'esempio modifichiamo soltanto i due campi della tessera.
+  </Step>
+  <Step title="Modifica numero e tipologia tessera">
+    Inserisci **42** in **Numero tessera** e **Tessera Aurora** in **Tipologia tessera**.
+    Il numero è un campo testuale; la validazione del modulo ammette lettere, cifre e il carattere di sottolineatura, senza spazi.
+    Usa i valori della tua iscrizione: quelli della guida sono dimostrativi.
+    Controlla i campi prima di premere **Salva**, che diventa disponibile quando ci sono modifiche.
+    <Frame>![Numero e tipologia tessera modificati prima del salvataggio](/images/libro-soci/scheda/2.png)</Frame>
+  </Step>
+  <Step title="Salva e controlla dopo il ricaricamento">
+    Premi **Salva** nella scheda e attendi il completamento del salvataggio.
+    Ricarica la pagina, torna in **Organizzazione → Iscrizioni** e premi nuovamente il nome della persona.
+    Controlla che **Numero tessera** mostri **42** e **Tipologia tessera** mostri **Tessera Aurora**.
+    Il nome rimane **Giulia Bianchi** e lo stato rimane **Accettata**.
+    <Frame>![Dati della tessera conservati dopo la riapertura della scheda](/images/libro-soci/scheda/3.png)</Frame>
+  </Step>
+  <Step title="Passa alla sezione che ti serve">
+    Nella barra delle schede puoi aprire **Certificato medico**, **Pagamenti** e **Documenti**.
+    Per le iscrizioni che comprendono il tesseramento sono presenti anche **Corsi e Abbonamenti**, **Carnet** e **Registro Presenze**.
+    [Segui la procedura per caricare il certificato e inserire la scadenza](/tutorials/come-gestire-certificati-medici#dal-profilo-dell-atleta).
+    Le azioni nelle altre sezioni hanno procedure proprie: il salvataggio dei dati della tessera conclude questa modifica.
+  </Step>
+</Steps>
+
+<Note>Questa procedura salva i metadati dell'iscrizione. La modifica dei dati personali della persona richiede la procedura dell'anagrafica. Un collaboratore in sola lettura può consultare la scheda, ma non dispone dell'azione di salvataggio.</Note>
+
+## Iscrizioni con QR code
+
+Il QR code e il link aprono lo stesso modulo online della tua associazione. Prima di mostrarlo alle persone controlla che il modulo abbia tipologie, quote, sezioni e testi corretti. Il collegamento apre la compilazione: non crea da solo una richiesta e non la approva.
+
+<Steps>
+  <Step title="Apri la condivisione">
+    Apri **Organizzazione → Iscrizioni → Libro Soci** e premi **Condividi link iscrizioni**. La finestra mostra il QR code e l’indirizzo del modulo dell’associazione.
+  </Step>
+  <Step title="Controlla il modulo collegato">
+    Premi **Apri**: il modulo si apre in una nuova scheda. Verifica il nome dell’associazione, la tipologia disponibile e le quote. Se devi correggere qualcosa, torna in **Organizzazione → Modulo Iscrizioni**, salva le modifiche e riapri il collegamento prima di distribuirlo.
+  </Step>
+  <Step title="Prepara il QR code">
+    Torna nella finestra di condivisione e premi **QR code**. Si apre una pagina con il nome dell’associazione, il codice e l’indirizzo del modulo, seguita dalla richiesta di stampa del browser. Usa quella pagina per controllare che sia il codice giusto.
+  </Step>
+  <Step title="Completa la stampa e controlla la lettura">
+    Nel dialogo del tuo browser scegli la destinazione e conferma. Se usi un foglio stampato, prova a leggerlo con il dispositivo che verrà utilizzato: deve aprire il modulo della tua associazione, con un codice abbastanza nitido e leggibile. Scelta della stampante, produzione cartacea e scansione con la fotocamera dipendono dal browser e dal dispositivo.
+  </Step>
+</Steps>
+
+<Note>La pagina di stampa è generata dall’applicazione; la stampa o il salvataggio in PDF avvengono nel browser. Questa procedura deve ancora essere completata con una prova del dialogo nativo, della destinazione scelta e della scansione reale. Non confondere un’anteprima corretta con una stampa già riuscita.</Note>
+
+## Importa Soci da file
+
+L'importazione legge le righe di un foglio e le prepara come **Bozze**. Prima di creare le iscrizioni devi controllarle, correggere i dati mancanti e approvare quelle valide.
+
+<Steps>
+  <Step title="Prepara un file leggibile">
+Usa preferibilmente un file **XLSX** con una riga per persona e intestazioni chiare. Per un **CSV** usa il separatore **punto e virgola**. Mantieni codice fiscale e CAP come testo per evitare modifiche da parte del foglio di calcolo.
+
+<Frame>![File CSV effettivamente letto dal server](/images/faq/importazione-file/1.png)</Frame>
+</Step>
+  <Step title="Collega le colonne">
+    Apri **Bozze** e avvia **Importa atleti**. Carica il file, controlla i collegamenti tra le sue colonne e i campi dell'applicazione, quindi completa gli eventuali valori comuni per residenza, indirizzo e CAP.
+    <Frame>![Colonne del CSV collegate ai campi](/images/faq/importazione-file/2.png)</Frame>
+  </Step>
+  <Step title="Controlla le bozze">
+Premi **Importa Atleti** e conferma **Continua**. Torna alle **Bozze**, controlla il numero di righe e apri quelle da correggere. L'approvazione, con scelta della tipologia e delle quote, è un passaggio successivo.
+
+<Frame>![Due bozze importate, una con dati incompleti](/images/faq/importazione-file/4.png)</Frame>
+</Step>
+</Steps>
+
+[Segui la procedura completa](/faq/come-si-importano-dei-soci).
+
+#### Deduplicazione automatica durante l'importazione
+
+Il controllo delle iscrizioni duplicate viene eseguito durante la creazione o l'approvazione delle bozze. Cerca, nella stessa associazione, un'iscrizione non archiviata con **nome, cognome e codice fiscale corrispondenti**, senza distinguere maiuscole e minuscole, e un periodo che si sovrappone a quello controllato. Se presente, può entrare nel confronto anche la categoria personalizzata della persona.
+
+L'importazione del file, invece, prepara una bozza per ciascuna riga: ripetere il caricamento può creare nuove bozze anche per dati già caricati. Inoltre il controllo tiene conto della possibilità di rinnovo di un'iscrizione scaduta.
+
+<Warning>Non considerare l'importazione ripetuta una garanzia di assenza di doppioni. Un nome scritto diversamente, una diversa associazione, un'iscrizione archiviata o date diverse possono cambiare il risultato. Controlla le bozze e cerca la persona nell'elenco prima di approvarla.</Warning>
+
+## Trasferimento dei Soci
+
+La funzione **Dai accesso** collega un’iscrizione gestita dall’associazione all’account personale del destinatario. L’iscrizione resta nella stessa associazione: questa operazione non sposta la persona nel libro soci di un’altra organizzazione.
+
+Servono il permesso di modifica delle iscrizioni e la titolarità dell’iscrizione ancora gestita dall’account dell’associazione. L’esempio riguarda una persona adulta e un **account già esistente**, così puoi controllare il destinatario prima della conferma.
+
+<Steps>
+  <Step title="Seleziona una sola iscrizione">
+Apri **Organizzazione → Iscrizioni → Tesserati** e seleziona soltanto la riga della persona interessata. Controlla nome e cognome; con zero righe o più righe la funzione non è disponibile. Premi **Dai accesso** nella barra delle azioni.
+
+<Frame>![Una sola iscrizione ancora gestita dall’account dell’associazione.](/images/libro-soci/dai-accesso/1.png)</Frame>
+</Step>
+  <Step title="Controlla il destinatario">
+Nella finestra **Dai accesso all’iscritto con un account**, inserisci l’email dell’account personale esistente. Attendi il risultato e ricontrolla il nome e il cognome mostrati. Il pulsante di conferma rimane disattivato finché il controllo non rende disponibile l’operazione. Se compare **Verrà creato un account**, sei nel percorso di creazione di un nuovo account, diverso da questo esempio.
+
+<Frame>![Destinatario esistente identificato prima di dare accesso.](/images/libro-soci/dai-accesso/2.png)</Frame>
+</Step>
+  <Step title="Annulla se il destinatario non è corretto">
+Premi **Annulla** se l’email o l’identità non sono quelle attese. L’annullamento lascia il collegamento precedente. Riapri **Dai accesso** e inserisci il destinatario corretto: non confermare una corrispondenza dubbia soltanto perché il pulsante è attivo.
+
+<Frame>![Annullamento senza modificare il titolare dell’iscrizione.](/images/libro-soci/dai-accesso/3.png)</Frame>
+</Step>
+  <Step title="Conferma consapevolmente">
+Ricontrolla l’account prima di premere **Dai accesso**. La conferma cambia subito il titolare dell’iscrizione e dell’anagrafica collegata. Il messaggio **Invito di accesso creato con successo** non significa che debba ancora arrivare un’approvazione del destinatario: il servizio registra già il trasferimento come accettato.
+
+<Frame>![Destinatario ricontrollato prima della conferma definitiva.](/images/libro-soci/dai-accesso/4.png)</Frame>
+</Step>
+  <Step title="Ricontrolla il collegamento">
+Ricarica l’elenco e apri la stessa persona. L’iscrizione rimane presente nell’associazione, con gli stessi dati e pagamenti. Se provi di nuovo **Dai accesso**, l’applicazione segnala **Non puoi dare accesso ad un iscritto che già ha accesso.**. Per un destinatario sbagliato chiedi assistenza: questa azione non offre un annullamento automatico che ripristini l’account precedente.
+
+<Frame>![Titolarità aggiornata immediatamente e conservata dopo il ricaricamento.](/images/libro-soci/dai-accesso/5.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Confermare l’accesso è una modifica del collegamento personale. Un collaboratore con permessi di modifica può comunque non essere titolare dell’iscrizione; un collaboratore in sola lettura ha il comando disattivato e non può confermare il trasferimento.</Warning>
+
+<Note>La creazione di un nuovo account prevede un messaggio di benvenuto; la consegna del messaggio va controllata separatamente. Per un minore sono coinvolti anche i dati del tutore: l’esempio di questa procedura riguarda un adulto e non attesta il trasferimento di una famiglia.</Note>
+
+#### Scadenza delle richieste di trasferimento
+
+La procedura attuale di **Dai accesso** completa direttamente il collegamento e registra il trasferimento come accettato. Non è corretto descriverla come una richiesta che il destinatario deve approvare entro **30 giorni**.
+
+Il servizio conserva anche il controllo di eventuali vecchie richieste in attesa: una richiesta già scaduta viene marcata come scaduta, mentre una richiesta ancora in attesa può impedire una nuova operazione sulla stessa iscrizione.
+
+<Note>Se **Dai accesso** segnala una richiesta già esistente, controlla quale account gestisce ora la persona e chiedi assistenza riportando il messaggio mostrato. Evita di ripetere la conferma con email diverse per tentare di sbloccare la scheda.</Note>
+
+## Assegnazione di Tag ai Soci
+
+I tag sono etichette per organizzare e [filtrare le iscrizioni](/faq/come-usare-ricerca-filtri-atleti#filtro-per-tag). Le modifiche riguardano **le iscrizioni selezionate**, non tutte le righe dell'elenco. Serve il permesso di modifica delle iscrizioni.
+
+Nell'esempio **Giulia Bianchi** e **Luca Verdi** hanno già **Gruppo A**; **Sara Conti** non ha tag. Vogliamo ottenere **Gruppo A** e **Laboratorio** sulle iscrizioni di Giulia e Sara, lasciando Luca con il solo **Gruppo A**. I due nomi sono già presenti nell'associazione. Se devi crearne uno nuovo, [segui la procedura di creazione](/tutorials/come-assegnare-i-tag-agli-atleti#creare-un-nuovo-tag) prima di applicarlo.
+
+<Steps>
+  <Step title="Seleziona soltanto le iscrizioni da aggiornare">
+    Apri **Organizzazione → Iscrizioni → Tesserati**. Seleziona la casella nella riga di **Giulia Bianchi** e poi quella di **Sara Conti**. Lascia Luca senza selezione.
+    Controlla i nomi prima di aprire **Assegna Tag**: la stessa combinazione di etichette verrà applicata a entrambe le righe selezionate.
+    <Frame>![Giulia e Sara selezionate, Luca escluso dalla modifica](/images/libro-soci/tag-operazioni/1.png)</Frame>
+  </Step>
+  <Step title="Ricostruisci tutti i tag da mantenere">
+    Premi **Assegna Tag**. Alla riapertura le caselle del menu partono disattivate: non rappresentano automaticamente i tag già salvati sulle persone.
+    <Frame>![Menu appena aperto: anche Gruppo A non è selezionato](/images/libro-soci/tag-operazioni/2.png)</Frame>
+    Spunta **Gruppo A** e **Laboratorio**. Devi selezionare anche **Gruppo A** per conservarlo su Giulia e assegnarlo a Sara. Selezionare soltanto Laboratorio toglierebbe Gruppo A dalle righe coinvolte.
+    Se usi **Nome tag...** per cercare un'etichetta, svuota il campo prima del controllo finale: la ricerca nasconde parte dell'elenco, ma non limita la modifica ai soli nomi visibili.
+    <Frame>![Combinazione completa di tag prima di APPLICA](/images/libro-soci/tag-operazioni/3.png)</Frame>
+  </Step>
+  <Step title="Applica e verifica dopo il ricaricamento">
+    Premi **APPLICA** e attendi il completamento. Ricarica la pagina e controlla la colonna dei tag: Giulia e Sara devono avere **Gruppo A** e **Laboratorio**, Luca soltanto **Gruppo A**.
+    <Frame>![Etichette salvate nelle righe dopo il ricaricamento](/images/libro-soci/tag-operazioni/4.png)</Frame>
+    Un collaboratore di sola lettura può consultare queste etichette, ma **Assegna Tag** è disattivato. Per modificare i tag, chiedi a chi gestisce i permessi dell'associazione.
+    <Frame>![Assegna Tag disattivato per il collaboratore in lettura](/images/libro-soci/tag-operazioni/7.png)</Frame>
+  </Step>
+</Steps>
+
+<Warning>**APPLICA** aggiunge i tag spuntati e rimuove i collegamenti ai tag non spuntati da ciascuna iscrizione selezionata. Se le persone devono conservare combinazioni diverse, lavora su gruppi separati o su una persona alla volta.</Warning>
+
+<Note>Un tag non iscrive automaticamente a un corso e non assegna permessi di accesso. È distinto dal ruolo del socio e dalla tipologia dell'iscrizione.</Note>
+
+### Eliminare un Tag
+
+Puoi **rimuovere il collegamento da una persona** lasciando disponibile l'etichetta, oppure **eliminare il tag dell'associazione**, togliendolo anche da tutte le iscrizioni che lo usano. Entrambe le operazioni richiedono il permesso di modifica delle iscrizioni.
+
+Prosegui dall'esempio precedente: Giulia e Sara hanno **Gruppo A** e **Laboratorio**; Luca ha soltanto **Gruppo A**.
+
+<Steps>
+  <Step title="Togli il collegamento a una sola persona">
+    In **Tesserati**, seleziona soltanto **Giulia Bianchi** e apri **Assegna Tag**. Le caselle partono disattivate: spunta **Gruppo A** per conservarlo e lascia **Laboratorio** senza spunta.
+    <Frame>![Gruppo A da mantenere, Laboratorio da togliere soltanto a Giulia](/images/libro-soci/tag-operazioni/5.png)</Frame>
+    Premi **APPLICA**. Non premere il cestino: in questo passaggio vuoi soltanto cambiare i tag della persona selezionata.
+  </Step>
+  <Step title="Controlla chi conserva il tag">
+    Ricarica la pagina: Giulia deve avere soltanto **Gruppo A**, mentre Sara conserva **Laboratorio**. Il nome Laboratorio rimane disponibile nel menu dei tag e può essere assegnato di nuovo.
+    <Frame>![Laboratorio tolto da Giulia e ancora presente su Sara](/images/libro-soci/tag-operazioni/6.png)</Frame>
+  </Step>
+  <Step title="Controlla la conferma prima di eliminare l'etichetta">
+    Se **Laboratorio non deve più essere usato da nessuno**, seleziona una riga per aprire **Assegna Tag**, trova Laboratorio e premi il cestino accanto al suo nome.
+    Si apre **Vuoi eliminare il tag?**. La selezione della riga serve ad aprire il menu: non limita l'eliminazione a quella persona.
+    <Frame>![Conferma dell'eliminazione del tag dell'associazione](/images/libro-soci/tag-operazioni/8.png)</Frame>
+    Premi **Annulla** se vuoi fermarti. Il tag e i suoi collegamenti restano presenti. Puoi riaprire il menu per ricontrollare.
+    <Frame>![Laboratorio ancora disponibile dopo Annulla](/images/libro-soci/tag-operazioni/9.png)</Frame>
+    Premi **Elimina** soltanto quando hai verificato che l'etichetta deve essere rimossa dall'associazione.
+  </Step>
+  <Step title="Verifica l'eliminazione in tutto l'elenco">
+    Dopo **Elimina**, ricarica la pagina. Laboratorio non deve comparire né su Giulia né su Sara; **Gruppo A** rimane sulle iscrizioni dell'esempio.
+    <Frame>![Laboratorio eliminato anche dalla riga di Sara](/images/libro-soci/tag-operazioni/10.png)</Frame>
+    Seleziona una riga e riapri **Assegna Tag**: Laboratorio non è più nell'elenco delle etichette disponibili. Gruppo A rimane disponibile.
+    <Frame>![Menu riaperto senza l'etichetta eliminata](/images/libro-soci/tag-operazioni/11.png)</Frame>
+  </Step>
+</Steps>
+
+<Warning>Il cestino elimina la definizione del tag e i suoi collegamenti da tutte le iscrizioni dell'associazione, anche dalle persone non selezionate. Per cambiare soltanto alcune righe, usa le spunte e **APPLICA**. Creare in seguito un tag con lo stesso nome non ripristina i precedenti collegamenti.</Warning>
+
+## Risorse correlate
+
+- [Creare un socio, un socio tesserato o un tesserato](/faq/come-si-crea-un-socio): dati iniziali, quote e controllo della richiesta.
+- [Importare soci da file](/faq/come-si-importano-dei-soci): collegamento delle colonne, correzione delle bozze e approvazione.
+- [Condividere il link delle iscrizioni](/faq/come-condividere-il-link-iscrizioni): copia del link e apertura del modulo.
+- [Ricerca e filtri degli atleti](/faq/come-usare-ricerca-filtri-atleti): periodo, stato, tag e vista corrente.
+- [Gestire i certificati medici](/tutorials/come-gestire-certificati-medici): file, data di scadenza, promemoria e controlli nella bacheca.
+
+Le schede **Libro Soci**, **Tesserati**, **Bozze** e **Archivio** hanno scopi diversi. Se una persona non compare, controlla prima la scheda aperta e i filtri attivi.
+

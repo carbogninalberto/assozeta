@@ -28,13 +28,18 @@ SHA = re.compile(r'[a-f0-9]{40}\Z')
 
 
 def pinned_source(path=ROOT / 'docs/manuale/source.json', override=None):
+    """The manual authoring content is vendored in this repository.
+
+    The pin names the folder; ``manuale-ci.py pin`` materializes it as a
+    deterministic, clean Git commit so the verifier keeps one immutable
+    companion revision. External revision overrides are no longer accepted.
+    """
     source = json.loads(Path(path).read_text())
-    if source.get('repository') != 'Bakney/manuale':
-        raise ValueError('Manual authoring repository must be Bakney/manuale')
-    revision = override or source.get('revision', '')
-    if not isinstance(revision, str) or not SHA.fullmatch(revision):
-        raise ValueError('Manual source must be an immutable full Git revision; update docs/manuale/source.json')
-    return {'repository': source['repository'], 'revision': revision}
+    if source.get('repository') != 'carbogninalberto/assozeta' or source.get('path') != 'manuale' or set(source) != {'repository', 'path'}:
+        raise ValueError('Manual authoring content must be the vendored manuale/ folder of this repository')
+    if override:
+        raise ValueError('The manual is vendored in this repository; a manual revision override is not supported')
+    return {'repository': source['repository'], 'path': source['path']}
 
 
 def verification_decision(state, *, force_full=False):

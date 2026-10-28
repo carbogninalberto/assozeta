@@ -1,0 +1,61 @@
+---
+title: Come collegare Google Calendar?
+description: "Comandi per il collegamento a Google Calendar e controlli esterni necessari prima di confermare la sincronizzazione."
+---
+
+# Collegare Google Calendar
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+Il calendario dei corsi e il file **.ics** possono essere consultati localmente. Il collegamento a Google Calendar richiede invece una prova del servizio esterno: questa guida distingue i comandi disponibili dai risultati ancora da confermare.
+
+La funzione locale propone il collegamento in **Profilo → Integrazioni**, con **Connetti a Google** quando l'account non è collegato.
+Per un account collegato compare **Disconnetti**. La connessione richiede la configurazione Google dell'installazione e l'autorizzazione dell'account interessato.
+<Warning>Questa guida non conferma un collegamento Google: non sono state eseguite autorizzazione, gestione dei token, creazione di calendari o revoca presso Google. Se il servizio mostra un avviso di sicurezza o un'app non verificata, interrompi e verifica la configurazione con il responsabile dell'installazione.</Warning>
+
+## Cosa serve per iniziare?
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+Servono un account Google, la configurazione dell'integrazione nell'installazione e l'accesso ai comandi di **Profilo → Integrazioni**. Il collegamento può richiedere autorizzazioni e credenziali che dipendono dall'installazione.
+<Note>Questi requisiti non dimostrano che l'integrazione sia operativa. Prima dell'uso devono essere controllati autorizzazione, callback, token e permessi effettivi dell'account presso Google.</Note>
+
+## Come collegare il tuo account Google
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+<Steps>
+<Step title="Apri le Integrazioni">
+Dal menu laterale apri **Profilo**, poi **Integrazioni**. Cerca la sezione dedicata a Google Calendar.
+</Step>
+<Step title="Riconosci il comando di collegamento">
+Il comando locale si chiama **Connetti a Google**. La procedura può aprire il servizio esterno in una nuova scheda; questa prova non lo avvia.
+</Step>
+</Steps>
+
+La funzione locale propone il collegamento in **Profilo → Integrazioni**, con **Connetti a Google** quando l'account non è collegato.
+Per un account collegato compare **Disconnetti**. La connessione richiede la configurazione Google dell'installazione e l'autorizzazione dell'account interessato.
+<Warning>Questa guida non conferma un collegamento Google: non sono state eseguite autorizzazione, gestione dei token, creazione di calendari o revoca presso Google. Se il servizio mostra un avviso di sicurezza o un'app non verificata, interrompi e verifica la configurazione con il responsabile dell'installazione.</Warning>
+
+## Come sincronizzare un corso
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+Nel **Calendario delle lezioni** del corso il comando è **Sincronizza con Google**; un corso già collegato può mostrare **Sincronizzato** oppure **Sincronizzato in passato**.
+Il comando chiede una conferma e usa il collegamento Google dell'account.
+<Note>La presenza del pulsante non dimostra che le lezioni siano arrivate su Google. Una prova completa deve controllare l'esito nel servizio esterno, comprese le eventuali modifiche successive e gli errori. Questa verifica non è stata eseguita.</Note>
+
+## Cosa viene sincronizzato
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+L'esportazione locale verso Google prepara titolo, inizio e fine delle lezioni del registro del corso; i dettagli dell'istruttore dipendono dai dati assegnati alla lezione.
+<Note>Non è stata controllata la presenza di questi dati in un calendario Google reale. Non sono garantiti aggiornamento automatico, completezza degli istruttori, gestione degli errori o consegna dei promemoria del servizio esterno. Il download **.ics** resta una procedura distinta dal collegamento Google.</Note>
+
+## Come disconnettere Google Calendar
+
+<Note>Bozza in attesa di prova: questa sezione deve essere confermata dal flusso reale prima di essere considerata verificata.</Note>
+
+Per un account collegato **Profilo → Integrazioni** propone **Disconnetti** e una conferma. La richiesta locale contatta Google per revocare il collegamento e aggiorna lo stato dell'account.
+<Warning>La revoca esterna, l'invalidazione dei token e lo stato dei calendari già creati non sono stati eseguiti o verificati. Controlla questi risultati con il responsabile dell'integrazione prima di considerare completa la disconnessione.</Warning>
+

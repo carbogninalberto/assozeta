@@ -1,0 +1,370 @@
+---
+title: Come impostare e gestire gli istruttori
+description: "Guida su come aggiungere istruttori, assegnarli ai corsi e gestire i compensi."
+---
+
+# Indice
+
+
+La gestione degli istruttori comprende il profilo, l’assegnazione alle lezioni e le registrazioni dei compensi. Prima di lavorare sugli importi, stabilisci quale accordo applicare e quali registrazioni devono essere incluse.
+
+La guida segue questo ordine:
+
+- creare il profilo e controllare i dati della persona;
+- assegnare l’istruttore alle **lezioni del calendario**;
+- registrare ore o un compenso a percentuale;
+- creare il pagamento dalle registrazioni ancora da pagare;
+- consultare riepiloghi e report;
+- modificare i dati o valutare la rimozione.
+
+Le ore ricavate dal calendario e quelle registrate per i compensi hanno origini diverse. Il calendario non crea automaticamente una riga di compenso.
+
+# Aggiungere un nuovo istruttore
+
+<Steps>
+<Step title="Apri gli istruttori">
+Dal menu laterale apri **Corsi e Abbonamenti → Istruttori**.
+Premi **Istruttore**, il pulsante in alto a destra, per aprire **Nuovo Istruttore**.
+<Frame>![Lista istruttori inizialmente vuota e pulsante Istruttore](/images/istruttori/creazione-ore/1.png)</Frame>
+</Step>
+<Step title="Compila i campi obbligatori">
+Inserisci **Nome**, **Cognome** ed **Email**, contrassegnati con l'asterisco.
+Nell'**Associazione Sportiva Aurora** usiamo dati fittizi: **Paolo Riva**, email **paolo@example.test**.
+Controlla il formato dell'email prima di salvare: il modulo la richiede anche se non colleghi un account collaboratore.
+<Frame>![Nome, cognome, email e dati anagrafici di Paolo Riva](/images/istruttori/creazione-ore/2.png)</Frame>
+</Step>
+<Step title="Completa i dati anagrafici">
+Compila i dati pertinenti all'istruttore: **Data di nascita**, **Città di nascita**, **Provincia di nascita** e **Codice fiscale**.
+Per la residenza usa **Città di residenza**, **Indirizzo**, **Civico** e **Provincia di residenza**; puoi aggiungere **Telefono** e **Telefono 2**.
+Nell'esempio inseriamo nascita **10/05/1985** a **Roma (RM)** e residenza a **Roma**, **Via dello Sport**, civico **8**, provincia **RM**.
+Lasciamo vuoti codice fiscale e telefoni: per un caso reale controlla questi dati sui documenti della persona.
+<Frame>![Dati anagrafici e residenza nel modulo Nuovo Istruttore](/images/istruttori/creazione-ore/2.png)</Frame>
+</Step>
+<Step title="Controlla le informazioni del contratto">
+Nell'esempio **È un volontario** resta disattivato.
+Compila **Data stipula contratto** con la data effettiva del contratto; la dimostrazione usa la data di riferimento della guida.
+Inserisci **Titolo di studio**, nell'esempio **Laurea in scienze motorie**, e controlla **Ruolo**, che parte da **Istruttore**.
+<Frame>![Informazioni contratto, account facoltativo e tariffe predefinite](/images/istruttori/creazione-ore/3.png)</Frame>
+</Step>
+<Step title="Imposta le tariffe predefinite">
+Nel campo **Tariffa oraria di default (€/ora)** inserisci **15**.
+Nel campo **Percentuale di default (%)** inserisci **20**.
+I valori vengono salvati nel profilo e proposti nel modulo delle ore; questo esempio registra un compenso **Orario**.
+La percentuale salvata non produce da sola un compenso sugli incassi.
+<Frame>![Tariffa oraria di 15 euro e percentuale predefinita di 20](/images/istruttori/creazione-ore/3.png)</Frame>
+</Step>
+<Step title="Controlla l’account collaboratore">
+Il campo **Account collaboratore associato** è facoltativo.
+Nell'esempio lo lasciamo vuoto: nella lista, la colonna **Account** mostrerà **nessuno**.
+Non occorre creare un nuovo account per salvare questo profilo.
+<Frame>![Account collaboratore associato lasciato senza selezione nell’esempio](/images/istruttori/creazione-ore/3.png)</Frame>
+</Step>
+<Step title="Salva e verifica il profilo">
+Premi **Crea Istruttore** dopo aver controllato i dati.
+Torni nella lista: verifica la riga **PAOLO RIVA**, l'email e la colonna **Account**.
+Ricarica la pagina e controlla che la riga sia ancora presente.
+<Frame>![Profilo di Paolo Riva salvato nella lista dopo il ricaricamento](/images/istruttori/creazione-ore/4.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Per creare o modificare un profilo e registrare ore servono i relativi permessi.
+Un collaboratore con accesso in sola lettura vede i dati dell'esempio, ma trova disattivati **Istruttore**, la matita **Modifica** e **Aggiungi** nella scheda compensi.</Note>
+
+## Documenti dell'istruttore
+
+
+Il profilo contiene informazioni anagrafiche e contrattuali, ma i moduli correnti di creazione e modifica non espongono un comando per caricare contratto, qualifiche o documento d’identità direttamente nella scheda dell’istruttore. La possibilità descritta dal precedente manuale non è una procedura disponibile da quei moduli.
+
+Puoi organizzare i file nell’**Archivio** dei documenti dell’associazione, scegliendo una cartella con un nome comprensibile. Questo deposito non crea da solo un collegamento al profilo dell’istruttore.
+
+Il documento del **compenso**, quando generato, è un risultato distinto: compare nella riga della registrazione collegata a un pagamento. Non usarlo come sostituto del contratto.
+
+<Note>Conserva soltanto i documenti necessari e controlla chi può accedere all’archivio. Caricare un file nell’archivio non attesta la verifica del suo contenuto.</Note>
+
+# Assegnare un istruttore ai corsi e alle lezioni
+
+
+L’assegnazione avviene nel **calendario del corso**, attraverso il campo **Istruttore lezione**. Puoi indicare una o più persone per ciascuna lezione e scegliere gli istruttori durante la preparazione delle lezioni ricorrenti.
+
+Prima di assegnare una persona, crea il suo profilo in **Corsi e Abbonamenti → Istruttori**. Per modificare il calendario servono le autorizzazioni di aggiornamento dei corsi.
+
+Le due sezioni seguenti distinguono il collegamento alle lezioni del corso dalla modifica di una singola lezione. Il collegamento non genera automaticamente una registrazione di compenso.
+
+## Assegnazione al corso
+
+
+La configurazione generale del corso non contiene il campo per nominare un istruttore responsabile dell’intero corso. Gli istruttori vengono indicati nelle lezioni del suo calendario.
+
+Per preparare più lezioni con la stessa persona, il calendario espone **Istruttore lezione** nella preparazione degli eventi. Il riferimento resta nelle lezioni create: una successiva variazione di una lezione non va considerata automaticamente estesa a tutte le altre.
+
+Se si alternano più istruttori, controlla l’assegnazione delle singole date. La scheda **Ore a calendario** usa le lezioni effettivamente associate alla persona; non ricava l’istruttore dal nome del corso o dal suo profilo.
+
+## Assegnazione alle lezioni
+
+
+
+
+<Steps>
+  <Step title="Apri il calendario del corso">
+Vai in **Corsi e Abbonamenti → Corsi**, apri il corso e il suo **Calendario**. Individua la lezione per data e orario, senza basarti soltanto sul titolo.
+
+<Frame>![Crea lezione: orari e due istruttori selezionati.](/images/istruttori/manutenzione-reale/8.png)</Frame>
+</Step>
+  <Step title="Scegli l’istruttore">
+Nel campo **Istruttore lezione** seleziona la persona; sono ammesse più selezioni. Nell’esempio creiamo una lezione dalle **08:00** alle **09:00** con **Irene Ferri** e **Davide Costa**.
+
+Per una sostituzione, riapri la lezione e premi la **×** sulla selezione di **Irene Ferri**, lasciando **Davide Costa**. Ricontrolla titolo, giorno e orari prima di salvare: la sostituzione riguarda la persona assegnata a quella lezione.
+
+<Frame>![Lezione esistente: rimosso il primo istruttore, conservata la sostituzione.](/images/istruttori/manutenzione-reale/10.png)</Frame>
+</Step>
+  <Step title="Salva e ricontrolla la data">
+Per una lezione esistente premi **Salva**; per una nuova usa **Crea**. Attendi la conferma del salvataggio del calendario, poi riapri la lezione e controlla istruttori e orari. Ricarica la pagina per verificare che l’assegnazione sia conservata.
+
+<Frame>![Sostituzione conservata dopo la ricarica, con orari invariati.](/images/istruttori/manutenzione-reale/11.png)</Frame>
+</Step>
+</Steps>
+
+<Tip>Per una sostituzione, controlla se devi togliere il precedente istruttore oppure aggiungere una seconda persona. Lasciare entrambi selezionati attribuisce la lezione a entrambi.</Tip>
+
+<Note>Le **Ore a calendario** si basano sulla durata delle lezioni dei calendari pubblicati. Non attestano la presenza effettiva dell’istruttore e non creano un pagamento.</Note>
+
+# Gestire i compensi
+
+
+Il lavoro sui compensi ha tre momenti distinti: impostare le tariffe nel profilo, registrare l’importo dovuto per il lavoro e creare un pagamento per le righe da saldare.
+
+| Dato | A cosa serve |
+| --- | --- |
+| Tariffa predefinita nel profilo | Propone un valore nelle nuove registrazioni |
+| Registrazione **Orario** | Conserva ore, tariffa, importo, stato e note |
+| Registrazione **Percentuale** | Conserva corsi, periodo, percentuale e dettaglio del calcolo |
+| **Crea compenso** | Collega le righe ammissibili a un pagamento di uscita |
+
+Cambiare una tariffa nel profilo non ricalcola automaticamente le righe già registrate. Il totale a calendario è distinto dal totale delle ore usate per i compensi. Controlla i dati della singola registrazione prima di creare il pagamento.
+
+## Tipologie di compenso
+
+Il tipo **Orario** calcola ore × tariffa; **Percentuale** calcola un compenso dagli incassi saldati dei corsi nel periodo selezionato. Le due modalità si scelgono nella registrazione: la tariffa o percentuale nel profilo è soltanto un valore proposto.
+
+Imposta la tariffa nel profilo, poi controllala nel modulo della singola registrazione. L’esempio usa un compenso **Orario**.
+
+<Steps>
+<Step title="Imposta le tariffe predefinite">
+Nel campo **Tariffa oraria di default (€/ora)** inserisci **15**.
+Nel campo **Percentuale di default (%)** inserisci **20**.
+I valori vengono salvati nel profilo e proposti nel modulo delle ore; questo esempio registra un compenso **Orario**.
+La percentuale salvata non produce da sola un compenso sugli incassi.
+<Frame>![Tariffa oraria di 15 euro e percentuale predefinita di 20](/images/istruttori/creazione-ore/3.png)</Frame>
+</Step>
+<Step title="Inserisci ore e controlla il calcolo">
+Nel campo **Ore** inserisci **3**.
+Il campo **€/ora** propone **18**, la tariffa modificata nel profilo.
+Controlla **Compenso totale**: **3 × 18,00 € = 54,00 €**.
+Il campo Ore accetta anche incrementi di mezz'ora; usa il numero di ore effettivamente lavorate.
+<Frame>![Tre ore a 18 euro producono un compenso totale di 54 euro](/images/istruttori/creazione-ore/7.png)</Frame>
+</Step>
+</Steps>
+
+Per il secondo percorso segui [Compenso a percentuale](/docs/istruttori#compenso-a-percentuale): scelta dei corsi, calcolo, esclusioni e salvataggio hanno passaggi propri. Le ore del calendario restano distinte da queste registrazioni.
+
+## Registrare le ore lavorate
+
+<Steps>
+<Step title="Apri una nuova registrazione">
+Dalla **Scheda compensi**, premi **Aggiungi** in alto a destra.
+Si apre **Aggiungi Orario Istruttore**.
+<Frame>![Pulsante Aggiungi nella scheda compensi dell’istruttore](/images/istruttori/creazione-ore/6.png)</Frame>
+</Step>
+<Step title="Controlla data e stato">
+Nel campo **Data** scegli il giorno di lavoro; nell'esempio usiamo la data di riferimento della guida.
+Nel campo **Stato** lascia **Da Pagare**, poiché il compenso non è ancora stato saldato.
+Controlla che il tipo di compenso attivo sia **Orario**.
+<Frame>![Data, stato Da Pagare e tipo di compenso Orario](/images/istruttori/creazione-ore/7.png)</Frame>
+</Step>
+<Step title="Inserisci ore e controlla il calcolo">
+Nel campo **Ore** inserisci **3**.
+Il campo **€/ora** propone **18**, la tariffa modificata nel profilo.
+Controlla **Compenso totale**: **3 × 18,00 € = 54,00 €**.
+Il campo Ore accetta anche incrementi di mezz'ora; usa il numero di ore effettivamente lavorate.
+<Frame>![Tre ore a 18 euro producono un compenso totale di 54 euro](/images/istruttori/creazione-ore/7.png)</Frame>
+</Step>
+<Step title="Aggiungi una nota e salva">
+Nel campo **Note** scrivi una descrizione utile a riconoscere la registrazione.
+Nell'esempio: **Lezione dimostrativa di ginnastica**. Il modulo ammette al massimo **500 caratteri**.
+Ricontrolla data, stato, ore, tariffa e **Compenso totale**, poi premi **Salva**.
+<Frame>![Nota della lezione e compenso totale prima del salvataggio](/images/istruttori/creazione-ore/7.png)</Frame>
+</Step>
+<Step title="Verifica la registrazione e il riepilogo">
+Ricarica la scheda e controlla la riga della lezione: **3 ore**, tariffa **18,00 €**, importo **54,00 €** e stato **Da pagare**.
+Nel periodo che comprende la registrazione, gli indicatori mostrano **3,00** ore lavorate, **54,00 €** di compenso totale e da pagare, **0,00 €** di compenso pagato.
+<Frame>![Ore salvate, stato Da pagare e riepilogo dopo il ricaricamento](/images/istruttori/creazione-ore/8.png)</Frame>
+<Note>Il salvataggio registra le ore e il loro importo. In questo esempio non crea un pagamento contabile o un documento del compenso. La procedura **Crea compenso** è un'operazione successiva distinta.</Note>
+</Step>
+</Steps>
+
+## Calcolare i compensi
+
+
+
+
+Per un compenso **Orario**, il totale del modulo è **Ore × €/ora**. Come esempio da controllare, 3 ore a 15 € producono 45 €. Questo è un calcolo illustrativo, non una registrazione già effettuata.
+
+Per il tipo **Percentuale**, il calcolo richiede corsi, periodo e percentuale:
+
+<Steps>
+  <Step title="Scegli i dati della registrazione">
+Nella scheda dell’istruttore premi **Aggiungi**. Scegli **Percentuale**, seleziona i **Corsi** e imposta il **Periodo** con data iniziale e finale. Controlla **% introiti**, compresa fra 0 e 100.
+
+<Frame>![Compenso Percentuale: corso, 20% e periodo del mese.](/images/istruttori/compensi-report-reali/1.png)</Frame>
+</Step>
+  <Step title="Calcola e controlla le righe">
+Premi **Calcola**. Il dettaglio mostra persona, corso, data e importo del pagamento da cui viene ricavata la quota. Sono considerati i pagamenti saldati dei corsi selezionati nel periodo, secondo il loro tipo di quota o rata. Se cambi corsi o periodo, richiedi di nuovo il calcolo.
+
+<Frame>![Calcolo reale sugli incassi saldati del corso.](/images/istruttori/compensi-report-reali/2.png)</Frame>
+</Step>
+  <Step title="Verifica il totale prima del salvataggio">
+Confronta **Compenso totale** con gli incassi che intendi usare. Il cestino accanto a una riga la esclude dal dettaglio della registrazione: non elimina il pagamento originario. Completa data, stato e note, poi premi **Salva** e riapri la riga.
+
+<Frame>![Esclusa una riga dal compenso, conservando l’incasso originale.](/images/istruttori/compensi-report-reali/3.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>Il calcolo non controlla da solo gli accordi di compenso e non garantisce che gli stessi incassi non siano già stati usati in un’altra registrazione. Prima di salvare verifica il periodo e le righe già presenti. </Warning>
+
+## Creare un pagamento per il compenso
+
+
+
+
+La registrazione dell’importo non crea automaticamente il pagamento. Usa **Crea compenso** dopo avere controllato le righe e il periodo della scheda.
+
+<Steps>
+  <Step title="Seleziona le registrazioni ammissibili">
+Nella tabella della scheda dell’istruttore seleziona le caselle delle righe da pagare. Il comando considera soltanto registrazioni **non pagate** e **senza un pagamento già associato**. Non includere righe di cui non hai chiarito l’esito.
+
+<Frame>![Righe selezionate per il compenso; esclusa la registrazione già pagata.](/images/istruttori/compensi-report-reali/5.png)</Frame>
+</Step>
+  <Step title="Controlla la conferma">
+Premi **Crea compenso**. La finestra ricorda i due requisiti; usa **Annulla** per tornare alla lista oppure **Crea compenso** per procedere.
+
+<Frame>![Conferma dei requisiti prima di creare un’uscita.](/images/istruttori/compensi-report-reali/6.png)</Frame>
+</Step>
+  <Step title="Verifica il pagamento creato">
+Controlla le righe nella scheda e il pagamento in **Contabilità → Pagamenti**. Il risultato è un’uscita con causale **Compensi e Rimborsi Spese**, inizialmente non pagata, collegata alle registrazioni selezionate. Verifica l’importo totale prima di registrare il saldo.
+
+<Frame>![Pagamenti: uscita di 54 euro per l’istruttore.](/images/istruttori/compensi-report-reali/8.png)</Frame>
+</Step>
+</Steps>
+
+<Note>**Crea compenso** prepara il pagamento nell’applicazione: non dispone un bonifico e non trasferisce denaro all’istruttore. Le righe con un pagamento associato hanno i comandi di modifica ed eliminazione disattivati.</Note>
+
+# Visualizzare ore e report
+
+
+La scheda dell’istruttore mostra più riepiloghi per il periodo scelto. Le **Ore a calendario** derivano dalla durata delle lezioni assegnate nei calendari pubblicati; le ore e gli importi dei compensi derivano dalle registrazioni della tabella.
+
+**Stampa Report**, nella lista istruttori, produce invece un file delle registrazioni delle lezioni con i partecipanti. Non è un prospetto paga e non esporta la somma dei compensi del periodo.
+
+Questi risultati aiutano a controlli diversi. Una differenza fra ore a calendario e ore registrate non va corretta automaticamente: verifica prima quali lezioni e registrazioni devono rientrare nell’accordo.
+
+## Riepilogo ore
+
+<Steps>
+<Step title="Apri la scheda compensi">
+Nella lista **Istruttori**, premi il nome **PAOLO RIVA**.
+La **Scheda compensi** mostra gli indicatori **ORE LAVORATE**, **COMPENSO TOTALE**, **COMPENSO DA PAGARE** e **COMPENSO PAGATO**.
+Prima della prima registrazione sono a zero e la tabella delle ore è vuota.
+<Frame>![Scheda compensi prima della registrazione di ore](/images/istruttori/creazione-ore/6.png)</Frame>
+</Step>
+<Step title="Verifica la registrazione e il riepilogo">
+Ricarica la scheda e controlla la riga della lezione: **3 ore**, tariffa **18,00 €**, importo **54,00 €** e stato **Da pagare**.
+Nel periodo che comprende la registrazione, gli indicatori mostrano **3,00** ore lavorate, **54,00 €** di compenso totale e da pagare, **0,00 €** di compenso pagato.
+<Frame>![Ore salvate, stato Da pagare e riepilogo dopo il ricaricamento](/images/istruttori/creazione-ore/8.png)</Frame>
+<Note>Il salvataggio registra le ore e il loro importo. In questo esempio non crea un pagamento contabile o un documento del compenso. La procedura **Crea compenso** è un'operazione successiva distinta.</Note>
+</Step>
+</Steps>
+
+## Report degli istruttori
+
+
+
+
+<Steps>
+  <Step title="Apri il report dalla lista">
+    Apri **Corsi e Abbonamenti → Istruttori** e premi **Stampa Report**. La finestra si chiama **Genera Report Istruttori** e riguarda gli istruttori dell’associazione.
+  </Step>
+  <Step title="Scegli il periodo">
+Compila **Dal** e **Al**. Entrambe le date sono richieste; usa il periodo delle registrazioni che vuoi confrontare, per esempio il mese di attività.
+
+<Frame>![Stampa Report: periodo del mese scelto prima del download Excel.](/images/istruttori/compensi-report-reali/11.png)</Frame>
+</Step>
+  <Step title="Genera e apri il file">
+    Premi **Genera Report**. L’applicazione prepara un file **Excel (.xlsx)**. Aprilo e controlla istruttore, corso, titolo, descrizione, data, numero di partecipanti, partecipanti e assenti previsti.
+  </Step>
+  <Step title="Controlla eventuali righe mancanti">
+Se manca una lezione nota, verifica che sia presente nel registro del periodo e che l’evento abbia l’istruttore associato. Il file non include automaticamente ogni evento del calendario e non attesta tutte le ore lavorate.
+
+<Frame>![Lezione nota con istruttore e una presenza registrata.](/images/istruttori/compensi-report-reali/10.png)</Frame>
+</Step>
+</Steps>
+
+<Note>Il report comprende le registrazioni delle lezioni collegate agli istruttori; non è filtrato sul profilo eventualmente aperto prima. </Note>
+
+# Modificare e rimuovere un istruttore
+
+
+Aggiornare il profilo conserva la persona nella lista; eliminarlo rimuove il profilo e le sue registrazioni delle ore. Le due operazioni richiedono permessi distinti.
+
+Per un cambio di recapito o di tariffa usa la **Modifica** del profilo. Per correggere una registrazione lavora invece sulla riga nella scheda: la tariffa del profilo non corregge le righe passate.
+
+Prima di rimuovere una persona, considera lo storico delle ore, i pagamenti e le lezioni a cui è stata assegnata. L’eliminazione del profilo non è una semplice sospensione temporanea e non dispone un rimborso o uno storno dei pagamenti.
+
+## Modificare i dati
+
+<Steps>
+<Step title="Modifica la tariffa nel profilo">
+Dalla lista **Istruttori**, premi la matita con suggerimento **Modifica** nella riga **PAOLO RIVA**.
+Si apre **Modifica Istruttore**. Scorri fino a **Tariffa oraria di default (€/ora)** e cambia il valore da **15** a **18**.
+<Frame>![Finestra Modifica Istruttore con tariffa aggiornata a 18 euro](/images/istruttori/creazione-ore/5.png)</Frame>
+Premi **Salva**. Ricarica la lista, poi apri la scheda cliccando sul nome **PAOLO RIVA**.
+La prossima registrazione di ore proporrà la tariffa aggiornata di **18,00 €/ora**.
+</Step>
+</Steps>
+
+<Note>Per creare o modificare un profilo e registrare ore servono i relativi permessi.
+Un collaboratore con accesso in sola lettura vede i dati dell'esempio, ma trova disattivati **Istruttore**, la matita **Modifica** e **Aggiungi** nella scheda compensi.</Note>
+
+## Rimuovere un istruttore
+
+
+
+
+<Steps>
+  <Step title="Controlla lo storico prima di rimuovere">
+Apri la scheda della persona: nell’esempio **Irene Ferri**, **irene@example.test**. Controlla le registrazioni, il compenso e le **Ore a calendario**; apri il dettaglio delle lezioni se serve. Individua i pagamenti già creati: nell’esempio esiste un movimento da **20,00 €** collegato all’istruttore. Conserva i risultati che ti servono prima di eliminare il profilo.
+
+<Frame>![Scheda e storico del profilo prima della rimozione, con pagamento ancora collegato.](/images/istruttori/manutenzione-reale/13.png)</Frame>
+</Step>
+  <Step title="Apri l’eliminazione dalla lista">
+Torna a **Istruttori**, riconosci la persona da nome ed email e premi il cestino nella sua riga. Il comando richiede il permesso di eliminazione degli istruttori.
+
+<Frame>![Conferma dalla lista istruttori: nome ed email già controllati.](/images/istruttori/manutenzione-reale/14.png)</Frame>
+</Step>
+  <Step title="Conferma soltanto dopo il controllo">
+La finestra chiede **Vuoi eliminare l’istruttore?**. **Annulla** conserva il profilo; **Elimina** procede alla rimozione. Dopo la conferma verifica che la riga non compaia più, anche ricaricando la lista.
+
+<Frame>![Profilo rimosso dalla lista dopo la ricarica; il secondo istruttore resta presente.](/images/istruttori/manutenzione-reale/15.png)</Frame>
+</Step>
+</Steps>
+
+<Warning>L’eliminazione rimuove anche le registrazioni delle ore collegate al profilo. Non è prevista una procedura di ripristino di questo profilo. Non usarla per correggere una singola riga o una tariffa.</Warning>
+
+Dopo la rimozione, controlla anche i pagamenti e il calendario. Nell’esempio il pagamento da **20,00 €** rimane, con il collegamento all’istruttore rimosso; le lezioni salvate restano nel calendario. Il profilo **Davide Costa** resta nella lista. Per cambiare una lezione, riaprila e aggiorna la sua assegnazione: eliminare il profilo non corregge automaticamente il calendario.
+
+# Conclusione
+
+
+Il profilo identifica l’istruttore e propone le tariffe; il calendario collega la persona alle lezioni; la tabella delle registrazioni conserva gli importi da controllare. **Crea compenso** trasforma le righe ammissibili in un pagamento da saldare nell’applicazione.
+
+Usa il [capitolo Istruttori](/docs/istruttori) per i singoli campi e i limiti dei comandi. Per condividere dati consulta [Come esportare i dati dell’associazione](/tutorials/come-esportare-dati-associazione), ricordando che il report delle lezioni è distinto dal riepilogo dei compensi.
+
