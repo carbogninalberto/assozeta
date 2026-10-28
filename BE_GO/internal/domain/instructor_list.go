@@ -40,3 +40,19 @@ type InstructorListStore interface {
 	// Instructors is Instructor.objects.filter(user=owner), unordered.
 	Instructors(ctx context.Context, owner string) ([]InstructorRow, error)
 }
+
+type InstructorHourRow struct {
+	Hours  string `db:"hours"`
+	Amount string `db:"amount"`
+	Paid   bool   `db:"paid"`
+}
+
+type InstructorInfoStore interface {
+	// Instructor is Instructor.objects.filter(instructor_id=id).first().
+	Instructor(ctx context.Context, id string) (*InstructorRow, error)
+	// FirstAssociation is SportAssociation.objects.filter(user=user).first().
+	FirstAssociation(ctx context.Context, user string) (*string, error)
+	// OwnInstructor is the owner's instructor associated with the acting user.
+	OwnInstructor(ctx context.Context, owner, acting string) (*string, error)
+	Hours(ctx context.Context, instructor string, from, to time.Time) ([]InstructorHourRow, error)
+}

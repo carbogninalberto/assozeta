@@ -1,0 +1,662 @@
+{
+ "matrix_version": 1,
+ "scope": "Instructor info authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": "a1000000-0000-4000-8000-000000950001",
+  "d2": "a1000000-0000-4000-8000-000000950002"
+ },
+ "instructors": {
+  "full": {
+   "id": "a1000000-0000-4000-8000-000000950003",
+   "owner": "owner",
+   "documents": [
+    "d1",
+    "d2"
+   ],
+   "first_name": "Anna è",
+   "last_name": "Rossi",
+   "email": "anna@example.test",
+   "born_date": "1985-04-03",
+   "born_city": "Roma",
+   "born_province": null,
+   "tax_code": "RSSNNA85D43H501X",
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": "ISEF",
+   "role": null,
+   "phone": "+39 1",
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+   "is_volunteer": true,
+   "stipulated_contract_in": "2026-01-15",
+   "default_hourly_billing": "25.50",
+   "default_percentage_billing": null
+  },
+  "draft": {
+   "id": "a1000000-0000-4000-8000-000000950004",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Bruno",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": true,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "12.50"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000950005",
+   "owner": "foreign_owner",
+   "documents": [],
+   "first_name": "Carla",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  }
+ },
+ "hours": [
+  {
+   "id": "a1000000-0000-4000-8000-000000960001",
+   "instructor": "full",
+   "date": "2026-09-05",
+   "hours": "2.50",
+   "amount": "25.00",
+   "paid": true
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000960002",
+   "instructor": "full",
+   "date": "2026-09-20",
+   "hours": "1.00",
+   "amount": "10.50",
+   "paid": false
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000960003",
+   "instructor": "full",
+   "date": "2025-10-01",
+   "hours": "3.00",
+   "amount": "30.00",
+   "paid": false
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000960004",
+   "instructor": "full",
+   "date": "$today",
+   "hours": "1.25",
+   "amount": "5.00",
+   "paid": false
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000960005",
+   "instructor": "draft",
+   "date": "2026-09-10",
+   "hours": "4.00",
+   "amount": "40.00",
+   "paid": true
+  }
+ ],
+ "cases": [
+  {
+   "name": "instructor-info-owner-iso-range",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info?date_range=2026/09/01%20al%202026/09/30",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950003",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Anna è",
+     "last_name": "Rossi",
+     "email": "anna@example.test",
+     "born_date": "1985-04-03",
+     "born_city": "Roma",
+     "born_province": null,
+     "tax_code": "RSSNNA85D43H501X",
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": "ISEF",
+     "role": null,
+     "phone": "+39 1",
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": false,
+     "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+     "is_volunteer": true,
+     "stipulated_contract_in": "2026-01-15",
+     "default_hourly_billing": "25.50",
+     "default_percentage_billing": null,
+     "documents": [
+      "a1000000-0000-4000-8000-000000950001",
+      "a1000000-0000-4000-8000-000000950002"
+     ]
+    },
+    "stats": {
+     "$window": [
+      "2026/09/01",
+      "2026/09/30"
+     ],
+     "instructor": "full"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-owner-italian-range",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info?date_range=01/10/2025%20al%2031/10/2025",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950003",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Anna è",
+     "last_name": "Rossi",
+     "email": "anna@example.test",
+     "born_date": "1985-04-03",
+     "born_city": "Roma",
+     "born_province": null,
+     "tax_code": "RSSNNA85D43H501X",
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": "ISEF",
+     "role": null,
+     "phone": "+39 1",
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": false,
+     "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+     "is_volunteer": true,
+     "stipulated_contract_in": "2026-01-15",
+     "default_hourly_billing": "25.50",
+     "default_percentage_billing": null,
+     "documents": [
+      "a1000000-0000-4000-8000-000000950001",
+      "a1000000-0000-4000-8000-000000950002"
+     ]
+    },
+    "stats": {
+     "$window": [
+      "01/10/2025",
+      "31/10/2025"
+     ],
+     "instructor": "full"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-owner-current-month",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950003",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Anna è",
+     "last_name": "Rossi",
+     "email": "anna@example.test",
+     "born_date": "1985-04-03",
+     "born_city": "Roma",
+     "born_province": null,
+     "tax_code": "RSSNNA85D43H501X",
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": "ISEF",
+     "role": null,
+     "phone": "+39 1",
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": false,
+     "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+     "is_volunteer": true,
+     "stipulated_contract_in": "2026-01-15",
+     "default_hourly_billing": "25.50",
+     "default_percentage_billing": null,
+     "documents": [
+      "a1000000-0000-4000-8000-000000950001",
+      "a1000000-0000-4000-8000-000000950002"
+     ]
+    },
+    "stats": {
+     "$window": "month",
+     "instructor": "full"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-owner-unparsed-range-last-year",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info?date_range=ieri%20al%20domani",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950003",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Anna è",
+     "last_name": "Rossi",
+     "email": "anna@example.test",
+     "born_date": "1985-04-03",
+     "born_city": "Roma",
+     "born_province": null,
+     "tax_code": "RSSNNA85D43H501X",
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": "ISEF",
+     "role": null,
+     "phone": "+39 1",
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": false,
+     "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+     "is_volunteer": true,
+     "stipulated_contract_in": "2026-01-15",
+     "default_hourly_billing": "25.50",
+     "default_percentage_billing": null,
+     "documents": [
+      "a1000000-0000-4000-8000-000000950001",
+      "a1000000-0000-4000-8000-000000950002"
+     ]
+    },
+    "stats": {
+     "$window": "fallback",
+     "instructor": "full"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-owner-range-without-separator-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info?date_range=2026/09/01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "instructor-info-owner-empty-range-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info?date_range=",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "instructor-info-owner-draft-no-hours-in-month",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950004",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Bruno",
+     "last_name": "Rossi",
+     "email": null,
+     "born_date": null,
+     "born_city": null,
+     "born_province": null,
+     "tax_code": null,
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": null,
+     "role": "Istruttore",
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": true,
+     "associated_user_id": null,
+     "is_volunteer": false,
+     "stipulated_contract_in": null,
+     "default_hourly_billing": "0.00",
+     "default_percentage_billing": "12.50",
+     "documents": []
+    },
+    "stats": {
+     "$window": "month",
+     "instructor": "draft"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-full-collaborator-own-instructor",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950003",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Anna è",
+     "last_name": "Rossi",
+     "email": "anna@example.test",
+     "born_date": "1985-04-03",
+     "born_city": "Roma",
+     "born_province": null,
+     "tax_code": "RSSNNA85D43H501X",
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": "ISEF",
+     "role": null,
+     "phone": "+39 1",
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": false,
+     "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+     "is_volunteer": true,
+     "stipulated_contract_in": "2026-01-15",
+     "default_hourly_billing": "25.50",
+     "default_percentage_billing": null,
+     "documents": [
+      "a1000000-0000-4000-8000-000000950001",
+      "a1000000-0000-4000-8000-000000950002"
+     ]
+    },
+    "stats": {
+     "$window": "month",
+     "instructor": "full"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-full-collaborator-other-instructor",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   }
+  },
+  {
+   "name": "instructor-info-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/info?date_range=2026/09/01%20al%202026/09/30",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "instructor_id": "a1000000-0000-4000-8000-000000950004",
+     "user": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Bruno",
+     "last_name": "Rossi",
+     "email": null,
+     "born_date": null,
+     "born_city": null,
+     "born_province": null,
+     "tax_code": null,
+     "address_city": null,
+     "address": null,
+     "address_province": null,
+     "civic_number": null,
+     "study_title": null,
+     "role": "Istruttore",
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "draft": true,
+     "associated_user_id": null,
+     "is_volunteer": false,
+     "stipulated_contract_in": null,
+     "default_hourly_billing": "0.00",
+     "default_percentage_billing": "12.50",
+     "documents": []
+    },
+    "stats": {
+     "$window": [
+      "2026/09/01",
+      "2026/09/30"
+     ],
+     "instructor": "draft"
+    }
+   }
+  },
+  {
+   "name": "instructor-info-foreign-owner-not-allowed",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   }
+  },
+  {
+   "name": "instructor-info-athlete-not-allowed",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   }
+  },
+  {
+   "name": "instructor-info-owner-without-association-not-allowed",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "not allowed"
+   }
+  },
+  {
+   "name": "instructor-info-missing-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000720009/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   }
+  },
+  {
+   "name": "instructor-info-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/abc/info",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ]
+  },
+  {
+   "name": "instructor-info-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.read"
+   }
+  },
+  {
+   "name": "instructor-info-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "instructor-info-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "instructor-info-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "instructor-info-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "instructor-info-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Info",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

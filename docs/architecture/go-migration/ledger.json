@@ -7575,25 +7575,71 @@
         "target": "instructor_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/instructor_list.go",
+        "BE_GO/internal/dto/instructor_list.go",
+        "BE_GO/internal/repository/instructor_list.go",
+        "BE_GO/internal/service/instructor_list.go",
+        "BE_GO/internal/handler/instructor_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution and permission registry",
+        "application_instructor, application_instructorhours, application_sportassociation"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/instructor/<uid>/info",
+          "/api/v2/instructor/<uid>/info",
+          "/api/instructor/<uid>/info"
+        ],
+        "request": "Query date_range (\"A al B\") optional.",
+        "response": "200 {\"data\": InstructorSerializer, \"stats\": {hours, total_amount, total_amount_paid, total_amount_to_pay}}.",
+        "errors": "400 malformed UUID; 401; 403 not allowed / administrator without impersonation / missing permission / scoped athlete session; 404 instructor not found; 500 range without one \" al \".",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.instructor.read.",
+        "resource_scope": "Instructors of the scope user's association; instructor collaborators see only their own record.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/instructor_info_http.json",
+        "TESTS/fixtures/generate_instructor_info_http.py",
+        "TESTS/contracts/test_instructor_info_http.py",
+        "TESTS/adapters/django/instructor_info_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/service/instructor_list_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/instructor-info.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 21/21; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/instructor-info-http-red-r1/results.json",
+          "receipt_sha256": "44020dedc6a8424aed017a179ced5eb87dfcdf5984bed1fc2b0b74451d3e4376"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 21/21 on native Django, native Go, Caddy /api/v1 and /api/v2.",
+          "artifact": "quality-reports/go-migration/instructor-info-http-versioned-r1/results.json",
+          "receipt_sha256": "e48c941db29d1f84784f3f6e4622c61f0d9cb232e4ba88f8ad02112a7330e00e"
+        },
+        {
+          "revision": "committing change without the own-instructor restriction",
+          "result": "Mutation control: fails Go on the collaborator case.",
+          "artifact": "quality-reports/go-migration/instructor-info-http-mutation-r1/results.json",
+          "receipt_sha256": "79778d5fc35f773cc5cd43ac35f51096bf5b7c151e2371dafa5744814c0831e2"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:instructor/<str:uid>/lessons-hours -> instructor_lessons_hours",
