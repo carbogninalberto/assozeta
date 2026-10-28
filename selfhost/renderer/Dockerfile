@@ -28,7 +28,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && chmod -R a+rX /ms-playwright
 
 COPY fontconfig.conf /etc/fonts/conf.d/60-assozeta-fonts.conf
-RUN fc-cache -f
+RUN fc-cache -f \
+    && rm -rf /usr/local/lib/node_modules/npm \
+        /usr/local/lib/node_modules/corepack \
+        /opt/yarn-* \
+        /usr/local/bin/npm \
+        /usr/local/bin/npx \
+        /usr/local/bin/corepack \
+        /usr/local/bin/yarn \
+        /usr/local/bin/yarnpkg
 
 COPY --chown=node:node browser-pool.mjs server.mjs ./
 
