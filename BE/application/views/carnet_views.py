@@ -68,7 +68,8 @@ def carnet_add(request):
 
     # add subscriptions to carnet
     for subscription in data['subscriptions']:
-        if scoped_queryset(request, Subscription.objects).filter(subscription_id=subscription).exists():
+        if scoped_queryset(request, Subscription.objects).filter(
+                subscription_id=subscription, sport_association=carnet.sport_association).exists():
             carnet_assign(request._request, carnet.carnet_id, subscription)
 
     logger.info("Carnet added successfully", extra={'carnet_id': str(carnet.carnet_id), 'title': carnet.title})
@@ -95,9 +96,15 @@ def carnet_subscription_list(request):
 
     if subscription_id:
         # get subscription
-        subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
+        subscriptions = scoped_queryset(request, Subscription.objects)
+        if request.user.role == User.ASSOCIATION:
+            subscriptions = subscriptions.filter(sport_association__user=request.user)
+        subscription = subscriptions.filter(subscription_id=subscription_id).first()
+        if subscription is None:
+            return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
         carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(
-            Q(subscription__subscription_id=subscription_id) | Q(subscription__associate=subscription.associate))
+            Q(subscription__subscription_id=subscription_id) | Q(subscription__associate=subscription.associate),
+            subscription__sport_association=subscription.sport_association)
 
     # now serialize the data by extracting:
     # - carnet info
@@ -303,7 +310,8 @@ def carnet_subscription_delete(request, uid, uid_course):
 
     try:
         carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).get(
-            carnet_subscription_id=uid
+            carnet_subscription_id=uid,
+            subscription__sport_association__user=request.user
         )
         # remove course_subscription
         carnet_subscription.course_subscription.remove(uid_course)
@@ -335,7 +343,7 @@ def carnet_update(request, uid):
         return Response({'msg': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid, sport_association__user=request.user)
         # update carnet
         carnet.title = serializer.validated_data['title']
         carnet.description = serializer.validated_data['description']
@@ -362,7 +370,7 @@ def carnet_delete(request, uid):
         return Response({'msg': 'Missing carnet uid.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid)
+        carnet = scoped_queryset(request, Carnet.objects).get(carnet_id=uid, sport_association__user=request.user)
         carnet.delete()
         return Response({'msg': 'Carnet deleted successfully.'}, status=status.HTTP_200_OK)
     except Carnet.DoesNotExist:
@@ -469,6 +477,7 @@ def carnet_unassign(request, uid, uid_subscription):
     # get carnet_subscription
     carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).filter(
         carnet_subscription_id=uid_subscription,
+        subscription__sport_association__user=request.user,
     ).first()
 
     if carnet_subscription:
@@ -512,7 +521,8 @@ def carnet_assign(request, uid, uid_subscription):
         sport_association = subscription.sport_association
     if not sport_association:
         return Response({'msg': 'Sport association not found.'}, status=status.HTTP_404_NOT_FOUND)
-
+    if subscription.sport_association_id != sport_association.pk:
+        return Response({'msg': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     # get carnet by uid for the association
     carnet = scoped_queryset(request, Carnet.objects).filter(carnet_id=uid, sport_association=sport_association).first()
@@ -525,13 +535,21 @@ def carnet_assign(request, uid, uid_subscription):
     course_subscription = None
     if 'course_subscription_id' in data:
         course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
-            course_subscription_id=data['course_subscription_id']
+            course_subscription_id=data['course_subscription_id'],
+            course__sport_association=sport_association,
+            subscription__sport_association=sport_association,
         ).first()
 
     if 'carnet_subscription_id' in data:
-        carnet_subscription = scoped_queryset(request, CarnetSubscription.objects).filter(
-            carnet_subscription_id=data['carnet_subscription_id']
-        ).first()
+        carnet_subscriptions = scoped_queryset(request, CarnetSubscription.objects).filter(
+            carnet_subscription_id=data['carnet_subscription_id'],
+            subscription__sport_association=sport_association,
+        )
+        if request.user.role != User.ASSOCIATION:
+            carnet_subscriptions = carnet_subscriptions.filter(subscription__user=request.user)
+        carnet_subscription = carnet_subscriptions.first()
+        if carnet_subscription is None:
+            return Response({'msg': 'Carnet subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
         if course_subscription is None and 'course_id' in data:
             course = scoped_queryset(request, Course.objects).filter(course_id=data['course_id']).first()
             course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
