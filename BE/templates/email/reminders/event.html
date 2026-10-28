@@ -1,0 +1,12 @@
+{% extends "email/_base.html" %}
+{% block title %}Promemoria evento {{ settings.WHITELABEL_NAME }}{% endblock %}
+{% block preheader %}Promemoria evento {{ event_title }}{% endblock %}
+{% block aria_label %}Promemoria evento{% endblock %}
+{% block content %}
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Ciao {{ association_name }},</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px; font-size: 24px; font-weight: 600; color: #000">Il tuo evento &quot;{{ event_title }}&quot; inizierà tra {{ event_reminder_text }}.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 8px; font-weight: 600">Descrizione dell'evento:</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">{{ event_description }}</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0 0 24px">Per maggiori informazioni, visita il tuo profilo su {{ application_name }}.</p>
+<p style="font-family: 'Poppins', sans-serif; margin: 0">Lo staff di {{ application_name }}</p>
+{% endblock %}
