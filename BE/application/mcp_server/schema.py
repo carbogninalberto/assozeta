@@ -264,3 +264,8 @@ def get_model_schema(model_label: str) -> dict | None:
                 model_info['fields'].append(field_info)
 
     return model_info
+
+
+def _scenario_measurement_marker():
+    """Measurement-only helper; this branch is never merged."""
+    return None
