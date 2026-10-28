@@ -10,7 +10,40 @@ pagina. I contenuti del manuale sono inclusi in questo repository nella cartella
 `manuale/` (`docs/manuale/source.json` indica la cartella): `manuale-ci.py pin`
 la materializza dal commit corrente come repository Git pulito con un commit
 deterministico, usato come revisione immutabile della stesura. Non servono
-credenziali di scrittura, un provider AI o un deploy Mintlify.
+credenziali di scrittura, un provider AI, Mintlify o un deploy del sito.
+
+### Migrazione: Mintlify non è più richiesto
+
+Il lettore integrato nell'applicazione e il pacchetto costruito da `manuale/`
+sono la fonte di verità della pubblicazione. Mintlify non è più un requisito:
+
+- `manuale.py verify` (fase `render` in CI) non scarica `mint` e non avvia
+  `mint dev` né un browser. Controlla ogni pagina generata con la stessa
+  proiezione usata dal lettore integrato (`index.sections` e `reader_blocks`,
+  in `BE/application/manuale/reader_render.py`): ogni sezione verificata deve
+  esistere una sola volta con il testo verificato esatto, ogni schermata
+  mostrata deve essere un PNG con l'hash registrato e comparire nei blocchi del
+  lettore. Qualsiasi differenza interrompe la verifica.
+- Le ancore delle citazioni sono le identità di sezione del lettore
+  (`/#/manuale?section=pagina#sezione`), le stesse usate da Bot e MCP, non più
+  gli ID calcolati da Mintlify.
+- Il controllo nel browser reale resta `embedded-manual.json`
+  (`embedded.mjs`), eseguito sul backend reale nella fase `runtime`: lettore,
+  blocchi, schermate, ricerca, deep link e navigazione mobile.
+- `render.json` indica `"renderer": "assozeta-reader"` e non contiene più la
+  galleria Full HD `renders/`. Le prove di rendering Mintlify conservate nelle
+  baseline precedenti non vengono riusate: le pagine sono ricontrollate (pochi
+  secondi, senza servizi).
+- `selfhost/tests/browser/manuale/verify.mjs` è stato rimosso. Comandi e
+  opzioni CLI restano invariati; `mint.json` resta solo come file di
+  navigazione letto dal compilatore e dal lettore.
+- Il sito esterno è facoltativo. `manuale-release.py --verify-availability`
+  accetta soltanto la fonte inclusa (`carbogninalberto/assozeta`, cartella
+  `manuale/`): il commit manuale preparato deve avere lo stesso albero Git della
+  cartella nella revisione applicativa, i file sono letti da
+  `raw.githubusercontent.com/carbogninalberto/assozeta/REVISIONE/manuale/` e il
+  deployment GitHub deve riferirsi a quella revisione applicativa. La vecchia
+  fonte `Bakney/manuale` viene rifiutata.
 
 Il nuovo comando `manuale-release.py --bundle` riproduce l'indice dalle prove
 valutate e produce `runtime/index.json`, schermate PNG e `runtime/bundle.json`.
@@ -84,7 +117,7 @@ inventa nuove prove né promuove sezioni non supportate per rendere verde una re
 Le lacune restano nell'indice e nei resoconti di copertura.
 
 
-Il manuale utente è incluso nella cartella `manuale/` di questo repository (importato da [Bakney/manuale](https://github.com/Bakney/manuale) al commit `1cfe01f`). La pubblicazione del sito resta collegata a Bakney/manuale finché il sito Mintlify non viene ricollegato a questa cartella. Assozeta contiene anche l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
+Il manuale utente è incluso nella cartella `manuale/` di questo repository (importato da [Bakney/manuale](https://github.com/Bakney/manuale) al commit `1cfe01f`). Anche la verifica di un eventuale sito pubblicato usa questa cartella; `Bakney/manuale` non è più una fonte. Assozeta contiene anche l'ambiente dimostrativo, gli scenari browser, le evidenze del codice e la ricerca usata dall'MCP e dall'assistente esistenti.
 
 Se i repository di input hanno metadati Git in sola lettura, aggiungere `--standalone-checkouts`: il runner crea cloni locali indipendenti dentro la directory del run, conserva il commit e l'origine effettivi, applica solo le modifiche dichiarate e registra `checkout_kind: standalone-local-clone`. Senza questa opzione usa i worktree collegati. Non richiede rete o token GitHub.
 
@@ -215,7 +248,7 @@ python3 -m unittest discover -s docs/scripts/tests -p 'test_manuale*.py'
 
 Per documentare intenzionalmente le modifiche locali non ancora committate, aggiungere `--allow-dirty`. I loro hash sono registrati come evidenza del working tree. `--application-ref` e `--manual-ref` selezionano le revisioni. `--keep-services` mantiene l'istanza disponibile per l'ispezione.
 
-Il runner stampa la directory del risultato. I comandi `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export` e `cleanup` accettano `--run DIRECTORY` per eseguire una fase su quel risultato. `verify` usa il renderer Mintlify `mint@4.2.955` in una copia temporanea: l'eventuale migrazione da `mint.json` a `docs.json` resta in quella copia. `cleanup` rimuove esclusivamente i servizi e i volumi del progetto registrato, lasciando i worktree e i rapporti. Le credenziali browser sono private e vengono eliminate al termine della pulizia.
+Il runner stampa la directory del risultato. I comandi `start`, `capture`, `generate`, `verify`, `index`, `evaluate`, `export` e `cleanup` accettano `--run DIRECTORY` per eseguire una fase su quel risultato. `verify` controlla le pagine con la proiezione del lettore integrato, senza servizi, server di anteprima o browser (vedi «Migrazione: Mintlify non è più richiesto»). `cleanup` rimuove esclusivamente i servizi e i volumi del progetto registrato, lasciando i worktree e i rapporti. Le credenziali browser sono private e vengono eliminate al termine della pulizia.
 
 Per aggiornare le catture interessate da modifiche al comportamento, usare la
 selezione incrementale e poi costruire il manuale completo:
@@ -244,8 +277,8 @@ che contiene i worktree Git. Il controllo iniziale richiede le dipendenze di
 L’immagine API riceve l’indice completo per le prove MCP e del lettore; non
 richiede Git né collegamenti ai metadati Git del computer host.
 
-Le citazioni conservano l’identità stabile della sezione e usano l’ancora misurata
-nel renderer, comprese apostrofi tipografici e lettere accentate.
+Le citazioni conservano l’identità stabile della sezione e la usano come ancora,
+come il lettore integrato, Bot e MCP.
 
 Prima di avviare servizi, `authoring-preflight.json` segnala le sezioni authored prive di testo revisionato. Una procedura selezionata senza il relativo binding interrompe la preparazione: scegliere il checkout o la revisione del manuale che contiene la stesura. Le altre sezioni mancanti restano lacune esplicite.
 
@@ -361,7 +394,7 @@ CLI o chiavi persistenti: fornire la credenziale soltanto al passo fidato.
 - `manifest.json`: sezioni, evidenze e inventario completo della navigazione/backlog.
 - `coverage.json`: copertura dimostrata e pagine ancora da verificare.
 - `index.json`: corpus verificato, con identità stabile e indice per la ricerca.
-- `render.json`, `renders/index.html`: verifica del renderer e galleria Full HD per ogni sezione e immagine verificata, da ispezionare visivamente.
+- `render.json`: verifica di ogni pagina, sezione, ancora e schermata mostrata tramite la proiezione del lettore integrato (`renderer: assozeta-reader`); la verifica visiva nel browser è `embedded-manual.json` con `embedded-manual.png`.
 - `evaluation.json`: domande italiane, citazioni e astensione attraverso MCP stdio e assistente.
 - `export/`: MDX, immagini, patch binaria e rapporti da revisionare, senza credenziali o log privati.
 - `variance.json`: confronto misurato delle catture ripetute, quando disponibile.
@@ -652,12 +685,12 @@ pubbliche. L’output di promozione locale richiede anche il record del commit
 distribuito con successo nell’ambiente configurato, tramite le
 [API GitHub Deployment](https://docs.github.com/en/rest/deployments/deployments)
 e [Deployment Status](https://docs.github.com/en/rest/deployments/statuses).
-L'ispezione pubblica del 2 ottobre 2026 trova già un deployment Mintlify
-nell'ambiente GitHub `staging`, con stato riuscito per il commit manuale
-`0475c2c8b4d397982558c8453a4819587e7a9da9` e URL
-`https://manuale.bakney.com` ([deployment e stato](https://api.github.com/repos/Bakney/manuale/deployments/3829319394/statuses)). Usare `--deployment-environment staging` soltanto
-quando il deployment più recente attesta il commit finale che si vuole
-pubblicare: il successo del vecchio manuale non verifica la nuova stesura.
+Sorgenti e deployment sono quelli di `carbogninalberto/assozeta`: i file sono
+letti dalla cartella `manuale/` alla revisione applicativa esatta e il
+deployment più recente dell'ambiente indicato deve attestare quella revisione.
+I deployment storici di `Bakney/manuale` (Mintlify) non sono più accettati come
+prova. Senza un deployment del sito ricollegato a questa cartella il pacchetto
+resta `prepared`: il pacchetto `--bundle` per le immagini non ne dipende.
 In assenza della prova per quel commit il pacchetto resta `prepared`, con la
 prova mancante nel rapporto e senza indice pubblicabile.
 Questo controllo HTTP non sostituisce la verifica visiva e consente testo
@@ -696,8 +729,8 @@ Le sorgenti dichiarate in `non_capture_dependencies` sono prive di procedure
 catturate: i relativi riferimenti vengono comunque ricostruiti e validati. Una
 dipendenza esplicita di una ricetta prevale su questa esclusione. Aggiungere un
 nuovo percorso di produzione senza dichiararne i consumatori resta conservativo.
-I rendering controllano separatamente MDX, immagini, ancore, PNG di layout,
-configurazione e implementazione del renderer. Un cambiamento di prosa può
+I rendering controllano separatamente MDX, immagini, ancore, configurazione e
+implementazione della proiezione del lettore. Un cambiamento di prosa può
 richiedere un rendering senza ripetere una procedura già compatibile.
 
 La baseline persistente è l'artifact `manuale-verified-baseline` (90 giorni),

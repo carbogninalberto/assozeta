@@ -6,9 +6,10 @@ trusted CI job; that producer-authenticity check belongs to the caller. This
 module only accepts a completed evaluated run and independently rechecks every
 retained artifact it consumes.
 
-The planning API runs after target generation/compilation and before browser
-rendering. It stages exact original page records, original reports, origin
-metadata, and the layout PNGs referenced by those records. Validation is
+The planning API runs after target generation/compilation and before the
+in-app reader render check (``reader_render.py``). It stages exact original
+page records, original reports, origin metadata, and any layout PNGs
+referenced by those records (reader records have none). Validation is
 independent of the original worktrees and fails closed on later mutation.
 """
 import copy
@@ -18,6 +19,7 @@ import tempfile
 from pathlib import Path
 
 from .index import canonical, digest, png_dimensions
+from .reader_render import READER_RENDERER, READER_RENDERER_FORMAT
 from .reuse import HASH, ReuseError, file_hash, load, owned
 
 
@@ -26,10 +28,13 @@ RENDER_INPUTS = 'render-inputs.json'
 PLAN_PATH = 'render-reuse.json'
 APPLICATION_INPUTS = (
     'selfhost/tests/browser/manuale/compile.mjs',
-    'selfhost/tests/browser/manuale/verify.mjs',
     'selfhost/tests/browser/package-lock.json',
-    'selfhost/tests/browser/playwright.manual.config.mjs',
 )
+# The render gate is the in-app reader projection (reader_render.py over
+# index.sections/reader_blocks); no Mintlify CLI or preview server is involved.
+# Bind the renderer code that actually executes (this trusted package), not a
+# possibly different copy in the inspected worktree.
+RENDERER_CODE = ('index.py', 'reader_render.py')
 OPTIONAL_APPLICATION_INPUTS = (
     'selfhost/tests/browser/package.json',
 )
@@ -59,7 +64,11 @@ def renderer_inputs(state):
     a partial fingerprint.
     """
     application, manual = Path(state['application']).resolve(), Path(state['manual']).resolve()
-    inputs = {}
+    # Records from another renderer (for example retained Mintlify-era render
+    # evidence) never match, so their pages are verified fresh.
+    inputs = {'renderer': READER_RENDERER + '/' + str(READER_RENDERER_FORMAT)}
+    for name in RENDERER_CODE:
+        inputs['renderer/' + name] = digest(Path(__file__).with_name(name).read_bytes())
     for relative in APPLICATION_INPUTS:
         inputs['application/' + relative] = _hash_input(application, 'application', relative)
     for relative in OPTIONAL_APPLICATION_INPUTS:
@@ -97,7 +106,7 @@ def renderer_inputs(state):
                   and not {'.git', 'node_modules'} & set(path.relative_to(manual).parts))
     for relative in sorted(assets):
         inputs['manual/' + relative] = _hash_input(manual, 'manual', relative)
-    # Mintlify's shared sidebar can use another page's frontmatter title/icon.
+    # Shared reader navigation uses every page's frontmatter title/description.
     # Bind that metadata globally without making ordinary body edits invalidate
     # every page. A top-level heading also covers pages without frontmatter.
     navigation_metadata = {}
@@ -396,6 +405,12 @@ def _inspect_page_record(page_record, facts, run):
     layouts = page_record.get('layouts')
     if not isinstance(layouts, list):
         raise RenderReuseError('missing-layout-evidence: ' + facts['page'])
+    if page_record.get('renderer') == READER_RENDERER:
+        # The in-app reader projection has no layout screenshots; anything
+        # else under this label is not a record this renderer produced.
+        if layouts:
+            raise RenderReuseError('unexpected-reader-layouts: ' + facts['page'])
+        return {}
     by_section = {section['id']: section for section in facts['section_records']}
     heading_seen, image_seen, paths = set(), set(), set()
     hashes = {}

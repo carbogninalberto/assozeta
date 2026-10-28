@@ -16,13 +16,11 @@ import os
 import re
 import secrets
 import shutil
-import signal
 import socket
 import subprocess
 import sys
 import tempfile
 import time
-import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -788,7 +786,7 @@ def prepare(args):
     if (application / 'docs/scripts/manuale-project.mjs').is_file():
         tooling.append('docs/scripts/manuale-project.mjs')
     for relative in ('docs/scripts/manuale-ci.py', 'docs/scripts/manuale-policy.py',
-                     'BE/application/manuale/render_reuse.py'):
+                     'BE/application/manuale/render_reuse.py', 'BE/application/manuale/reader_render.py'):
         if (application / relative).is_file():
             tooling.append(relative)
     state['tooling_hashes'] = {relative: sha(application / relative) for relative in sorted(set(tooling))}
@@ -1088,11 +1086,19 @@ def index(state):
 
 
 def verify(state, after_render=None):
+    """Check generated pages through the in-app reader projection.
+
+    Mintlify is no longer required: the in-app reader and the release bundle
+    built from ``manuale/`` are the publication source of truth. This phase
+    needs no preview server or browser; the real-browser reader check runs
+    against the real backend in ``evaluate`` (embedded.mjs).
+    """
     validate_tooling(state)
     run = Path(state['run'])
     # Load the verifier from this trusted runner, never from a downloaded cache.
     sys.path.insert(0, str(ROOT / 'BE'))
     from application.manuale.render_reuse import plan_render_reuse, validate_render_reuse
+    from application.manuale.reader_render import READER_CHECKS, READER_RENDERER, render_pages
     plan = plan_render_reuse(state, state.get('reuse_evidence'))
     manifest = json.loads((run / 'manifest.json').read_text())
     for page in manifest['pages']:
@@ -1104,64 +1110,33 @@ def verify(state, after_render=None):
     write_json(run / 'manifest.json', manifest)
     validate_render_reuse(state)
     print(f"Render decision: {len(plan['fresh_pages'])} fresh pages, {len(plan['reused_pages'])} retained pages", flush=True)
-    if not plan['fresh_pages']:
-        write_json(run / 'render.json', {
-            'status': 'passed', 'mode': 'retained-only', 'cli': 'mint@4.2.955',
-            'fresh_pages': [], 'reused_pages': plan['reused_pages'],
-            'checks': ['original successful render evidence revalidated against exact current content'],
-            'pages': [plan['pages'][page]['render'] for page in plan['reused_pages']],
-        })
-        validate_render_reuse(state)
-        state['status'] = 'rendered'
-        write_json(run / 'run.json', state)
-        if after_render:
-            after_render()
-        return
-    preview = run / 'preview'
-    if preview.exists():
-        shutil.rmtree(preview)
-    shutil.copytree(state['manual'], preview, ignore=shutil.ignore_patterns('.git', '.claude', '.DS_Store', 'node_modules'))
-    if not state.get('manual_preview_url'):
-        state['manual_preview_url'] = 'http://127.0.0.1:' + str(free_port())
-        write_json(run / 'run.json', state)
-    port = state['manual_preview_url'].rsplit(':', 1)[1]
-    log = run / 'preview.log'
-    with log.open('ab') as stream:
-        log.chmod(0o600)
-        process = subprocess.Popen(['npx', '--yes', 'mint@4.2.955', 'dev', '--port', port],
-            cwd=preview, stdout=stream, stderr=stream, start_new_session=True)
-        try:
-            deadline = time.monotonic() + 180
-            while time.monotonic() < deadline:
-                if process.poll() is not None:
-                    raise RuntimeError('Mintlify preview stopped; inspect preview.log')
-                try:
-                    with urllib.request.urlopen(state['manual_preview_url'], timeout=2) as response:
-                        if response.status == 200:
-                            break
-                except OSError:
-                    pass
-                time.sleep(1)
-            else:
-                raise RuntimeError('Mintlify preview did not become ready within 180 seconds')
-            execute(['node', str(Path(state['application']) / 'selfhost/tests/browser/manuale/verify.mjs')], run,
-                    'Verify MDX, image loading, and citation anchors in the actual Mintlify renderer',
-                    env={**os.environ, 'ASSOZETA_MANUAL_RUN': str(run)}, cwd=state['application'])
-            validate_render_reuse(state)
-            state['status'] = 'rendered'
-            write_json(run / 'run.json', state)
-            if after_render:
-                after_render()
-        finally:
-            # This live handle belongs to this invocation, rather than a stale
-            # PID/state file. Terminate its group, including the CLI's children.
-            if process.poll() is None:
-                os.killpg(process.pid, signal.SIGINT)
-                try:
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGTERM)
-                    process.wait(timeout=10)
+    report = {'status': 'running', 'renderer': READER_RENDERER,
+              'mode': 'retained-only' if not plan['fresh_pages'] else ('partial' if plan['reused_pages'] else 'fresh'),
+              'fresh_pages': plan['fresh_pages'], 'reused_pages': plan['reused_pages'],
+              'pages': [plan['pages'][page]['render'] for page in plan['reused_pages']]}
+    try:
+        if plan['fresh_pages']:
+            print('Verify generated pages, citation anchors and displayed images through the in-app reader projection', flush=True)
+            report['pages'] += render_pages(state['manual'], manifest, plan['fresh_pages'])
+            report['checks'] = list(READER_CHECKS)
+        else:
+            report['checks'] = ['original successful render evidence revalidated against exact current content']
+        if not report['pages']:
+            raise ValueError('No verified pages to render')
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        report.update(status='failed', error=str(exc))
+        write_json(run / 'render.json', report)
+        raise RuntimeError('Manual render verification failed: ' + str(exc)) from exc
+    report['status'] = 'passed'
+    # Publish the anchor mappings only after every page and image passed.
+    write_json(run / 'manifest.json', manifest)
+    write_json(run / 'render.json', report)
+    validate_render_reuse(state)
+    print('Manual render verification: passed', flush=True)
+    state['status'] = 'rendered'
+    write_json(run / 'run.json', state)
+    if after_render:
+        after_render()
 
 
 def cleanup(state):
@@ -1391,8 +1366,7 @@ def main():
                 for phase in (start, capture, generate, compile_content):
                     with timed(state['run'], phase.__name__):
                         phase(state)
-                # Keep verified citation pages available while exercising the
-                # real MCP/agent; stop only this invocation's preview afterward.
+                # Index, evaluate and export only after the render check passed.
                 def complete_verification():
                     for phase in (index, evaluate, export):
                         with timed(state['run'], phase.__name__):
