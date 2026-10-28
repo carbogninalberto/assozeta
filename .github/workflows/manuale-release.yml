@@ -29,8 +29,35 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Mode C: comprehensive release verification. No change-impact plan, no
+  # incremental result and no skipped mandatory job can authorize publication.
   bundle:
     uses: ./.github/workflows/manuale-verify.yml
     with:
       release: ${{ inputs.release || format('manual-rehearsal-{0}', github.sha) }}
       force_full: ${{ inputs.force_full || false }}
+      comprehensive: true
+      run_contracts: true
+      appliance: true
+
+  authorize:
+    name: Authorize the verified release manual
+    # Jobs skipped inside a called workflow still report success to callers;
+    # this always-running job turns anything short of an explicit, complete
+    # authorization (failed, cancelled, skipped, missing) into a failure.
+    needs: bundle
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require the comprehensive gate's explicit authorization
+        env:
+          BUNDLE_RESULT: ${{ needs.bundle.result }}
+          AUTHORIZED: ${{ needs.bundle.outputs.authorized }}
+          APPLIANCE_SCOPE: ${{ needs.bundle.outputs.appliance_scope }}
+        run: |
+          echo "bundle=$BUNDLE_RESULT authorized=${AUTHORIZED:-missing} appliance=${APPLIANCE_SCOPE:-missing}"
+          if [[ "$BUNDLE_RESULT" != success || "$AUTHORIZED" != true || "$APPLIANCE_SCOPE" != full ]]; then
+            echo '::error::Release manual verification is incomplete; publication is blocked.'
+            exit 1
+          fi
