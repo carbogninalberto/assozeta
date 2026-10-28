@@ -5352,25 +5352,71 @@
         "target": "carnet_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/dto/carnet_update.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "carnet_assign port",
+        "application_carnet",
+        "Existing identity resolution, permission registry and audit index"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/add",
+          "/api/v2/carnet/add",
+          "/api/carnet/add"
+        ],
+        "request": "JSON/form: title, description, lessons_number, fee, optional meta, subscriptions.",
+        "response": "200 {\"msg\": \"Carnet added successfully.\"}.",
+        "errors": "400 {\"msg\": serializer errors}; 401; 403 Not allowed. / registry / scoped session; 500 missing association or subscriptions, non-iterable subscriptions, UUID-rejected item (after the carnet is saved).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.create.",
+        "resource_scope": "The owner's association; subscriptions of that association (group-aware).",
+        "side_effects": "Creates the carnet (create + association update entries), then carnet_assign per subscription (payment and carnet subscription create entries).",
+        "transaction": "Autocommit: each save commits; later failures keep earlier writes.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_add_http.json",
+        "TESTS/fixtures/generate_carnet_add_http.py",
+        "TESTS/contracts/test_carnet_add_http.py",
+        "TESTS/adapters/django/carnet_add_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 21/21; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-red-r2/results.json",
+          "receipt_sha256": "941ff34ec9657f9cd24bf0fb61d68107f742cb66c393424efe2e3bf0e8ca7572"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 21/21 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-versioned-r1/results.json",
+          "receipt_sha256": "c63aabf7cc325dde48c92c6f4739d4fcfe139cdc19895cee8b9544156701ba69"
+        },
+        {
+          "revision": "committing change indexing the association save directly",
+          "result": "Mutation control: fails Go on the carnet update index.",
+          "artifact": "quality-reports/go-migration/carnet-add-http-mutation-r2/results.json",
+          "receipt_sha256": "ec93b48eba2a66d78058a1faad8b13693d9552a1ad9733f6ec76df9872af4781"
+        }
+      ],
+      "notes": [
+        "Implementing: parity including serializer validation, autocommit partial effects and per-subscription carnet_assign on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/list -> carnet_list",

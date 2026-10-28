@@ -682,3 +682,135 @@ func (s *CarnetReplaces) Replace(ctx context.Context, identity domain.ResolvedId
 	}
 	return err
 }
+
+type CarnetAdds struct {
+	store   domain.CarnetAddStore
+	assigns *CarnetAssigns
+	now     func() time.Time
+	ids     func() string
+}
+
+func NewCarnetAdds(store domain.CarnetAddStore, assigns *CarnetAssigns, now func() time.Time, ids func() string) *CarnetAdds {
+	return &CarnetAdds{store: store, assigns: assigns, now: now, ids: ids}
+}
+
+// carnetAddSubscriptions is `for subscription in request.data['subscriptions']`:
+// a missing key or a value that is not iterable is a 500; text iterates by
+// character and a dict by key.
+func carnetAddSubscriptions(body any) ([]any, error) {
+	object, _ := body.(domain.RequestObject)
+	value, present := object.Lookup("subscriptions")
+	if !present {
+		return nil, ErrPaymentSaveFailed
+	}
+	switch v := value.(type) {
+	case []any:
+		return v, nil
+	case string:
+		items := []any{}
+		for _, character := range v {
+			items = append(items, string(character))
+		}
+		return items, nil
+	case domain.RequestObject:
+		items := []any{}
+		for _, field := range v {
+			items = append(items, field.Name)
+		}
+		return items, nil
+	}
+	return nil, ErrPaymentSaveFailed
+}
+
+// Add follows carnet_add. Each save commits on its own (autocommit), so a
+// failure after the carnet is created leaves it saved, as in Django.
+func (s *CarnetAdds) Add(ctx context.Context, identity domain.ResolvedIdentity, body any, group string, audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	input, err := dto.ParseCarnetAdd(body)
+	if err != nil {
+		return err
+	}
+	var meta *string
+	if input.Meta != nil {
+		text := string(dto.PythonJSONDumpsCompact(input.Meta))
+		meta = &text
+	}
+	write := domain.CarnetAddWrite{ID: s.ids(), Title: input.Title, Description: input.Description, Fee: input.Fee, Lessons: input.Lessons,
+		Meta: meta, Context: paymentCategoryAuditContext(identity, audit), At: s.now().UTC().Truncate(time.Microsecond)}
+	association, err := s.createCarnet(ctx, identity, write)
+	if err != nil {
+		return err
+	}
+	items, err := carnetAddSubscriptions(body)
+	if err != nil {
+		return err
+	}
+	groupFilter := supplierGroup(group)
+	for _, item := range items {
+		id, err := djangoUUIDValue(item)
+		if err != nil {
+			return err
+		}
+		exists, err := s.subscriptionExists(ctx, id, association, groupFilter)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+		_, err = s.assigns.Assign(ctx, identity, write.ID, id, group, body, audit)
+		switch {
+		case errors.Is(err, ErrCarnetNotAllowed), errors.Is(err, domain.ErrCarnetAssignSubscription), errors.Is(err, domain.ErrCarnetAssignAssociation),
+			errors.Is(err, domain.ErrCarnetAssignCarnet), errors.Is(err, domain.ErrCarnetSubscriptionNotFound), errors.Is(err, domain.ErrCarnetAssignCourse):
+		case err != nil:
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *CarnetAdds) createCarnet(ctx context.Context, identity domain.ResolvedIdentity, write domain.CarnetAddWrite) (string, error) {
+	tx, err := s.store.BeginCarnetAdd(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+	actorAssociation, err := tx.ActiveAssociationOf(ctx, identity.Actor.ID)
+	if err != nil {
+		return "", err
+	}
+	if err = tx.CreateCarnet(ctx, write, actorAssociation); err != nil {
+		return "", err
+	}
+	if err = tx.Commit(); err != nil {
+		return "", err
+	}
+	tx, err = s.store.BeginCarnetAdd(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+	association, err := tx.OwnerAssociation(ctx, identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return "", err
+	}
+	if association == nil {
+		// SportAssociation.objects.get(user=...) raises DoesNotExist.
+		return "", ErrPaymentSaveFailed
+	}
+	if err = tx.SetCarnetAssociation(ctx, write.ID, *association, write.Context, s.now().UTC().Truncate(time.Microsecond)); err != nil {
+		return "", err
+	}
+	return *association, tx.Commit()
+}
+
+func (s *CarnetAdds) subscriptionExists(ctx context.Context, id, association string, group *string) (bool, error) {
+	tx, err := s.store.BeginCarnetAdd(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	return tx.AssociationSubscriptionExists(ctx, id, association, group)
+}

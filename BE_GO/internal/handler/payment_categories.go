@@ -351,6 +351,8 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return "Invalid data. Expected a dictionary, but got " + kind + "."
 		}
 		return "Dati non validi. Era atteso un dizionario, ma si è ricevuto " + kind + "."
+	case code == dto.CarnetAddMetaDict:
+		return "This field must be a dictionary."
 	case code == "immutable-category-id":
 		return "L'identificativo della categoria non può essere modificato."
 	case code == "immutable-association":

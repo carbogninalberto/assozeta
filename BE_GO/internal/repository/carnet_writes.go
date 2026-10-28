@@ -666,3 +666,46 @@ func (t *carnetWriteTransaction) DeleteUnpaidCoursePayment(ctx context.Context, 
 	}
 	return t.deleteReplacePayment(ctx, payment, row, group, audit)
 }
+
+func (r *CarnetWrites) BeginCarnetAdd(ctx context.Context) (domain.CarnetAddTransaction, error) {
+	transaction, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return transaction.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) CreateCarnet(ctx context.Context, write domain.CarnetAddWrite, actorAssociation *string) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_carnet (carnet_id,title,description,lessons_number,fee,creation_date,public,meta)
+ VALUES ($1,$2,$3,$4,$5::numeric,$6,true,$7::jsonb)`, write.ID, write.Title, write.Description, write.Lessons, write.Fee, write.At, write.Meta); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_carnet", "carnet_id", write.ID)
+	if err != nil {
+		return err
+	}
+	entry := modelAuditEntry{Model: "carnet", Key: write.ID, Representation: "Carnet object (" + write.ID + ")", Action: 0, Changes: changes,
+		Context: write.Context, At: write.At}
+	if actorAssociation != nil {
+		path := "actor.sport_association"
+		entry.AssociationID, entry.ResolutionPath = actorAssociation, &path
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *carnetWriteTransaction) SetCarnetAssociation(ctx context.Context, carnet, association string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_carnet SET sport_association_id=$2 WHERE carnet_id=$1`, carnet, association); err != nil {
+		return err
+	}
+	path := "changes_json.sport_association"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnet", Key: carnet, Representation: "Carnet object (" + carnet + ")", Action: 1,
+		Changes: map[string][2]string{"sport_association": {"None", association}}, Context: audit, At: at, AssociationID: &association,
+		ResolutionPath: &path})
+}
+
+func (t *carnetWriteTransaction) AssociationSubscriptionExists(ctx context.Context, id, association string, group *string) (bool, error) {
+	var exists bool
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_subscription
+ WHERE subscription_id=$1 AND sport_association_id=$2 AND ($3::uuid IS NULL OR group_id=$3::uuid))`, id, association, group)
+	return exists, err
+}

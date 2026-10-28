@@ -241,3 +241,31 @@ type CarnetReplaceTransaction interface {
 type CarnetReplaceStore interface {
 	BeginCarnetReplace(context.Context) (CarnetReplaceTransaction, error)
 }
+
+type CarnetAddWrite struct {
+	ID, Title, Description, Fee string
+	Lessons                     int64
+	// Meta is the JSON text of the meta field, nil for SQL NULL.
+	Meta    *string
+	Context LoginAuditContext
+	At      time.Time
+}
+
+type CarnetAddTransaction interface {
+	// CreateCarnet is serializer.save(): Carnet.objects.create audited with
+	// no association, indexed through the actor's association.
+	CreateCarnet(ctx context.Context, write CarnetAddWrite, actorAssociation *string) error
+	OwnerAssociation(ctx context.Context, owner string, scope *string) (*string, error)
+	// SetCarnetAssociation is carnet.save() with the association.
+	SetCarnetAssociation(ctx context.Context, carnet, association string, audit LoginAuditContext, at time.Time) error
+	// AssociationSubscriptionExists is Subscription.objects (group-aware)
+	// .filter(subscription_id=id, sport_association=association).exists().
+	AssociationSubscriptionExists(ctx context.Context, id, association string, group *string) (bool, error)
+	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
+	Commit() error
+	Rollback() error
+}
+
+type CarnetAddStore interface {
+	BeginCarnetAdd(context.Context) (CarnetAddTransaction, error)
+}

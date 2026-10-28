@@ -3,7 +3,7 @@
 `POST carnet/<uid>/delete` and `PATCH carnet/<uid>/update` (`carnet_delete` and
 `carnet_update` in `BE/application/views/carnet_views.py`, as scoped by PR #28) are implemented in Go
 (`BE_GO/internal/{domain,repository,service,handler}/carnet_writes.go`). Django
-remains the production execution owner. Carnet add is not ported yet.
+remains the production execution owner. All carnet write routes are ported.
 
 ## Behavior
 
@@ -196,3 +196,23 @@ runs on the same request; its responses (404s, 403) are discarded and the
 view answers `200 {"msg": "Carnet added successfully."}`, but its exceptions
 still surface: with a rejected `X-Group-Id` the deletes stay and the payment
 create is a 500. `TESTS/fixtures/carnet_replace_http.json` authors 19 cases.
+
+## Carnet add
+
+`POST carnet/add` refuses non-association roles (`403 {"msg": "Not
+allowed."}`), then validates `CarnetAddSerializer` (`400 {"msg": errors}`):
+the carnet-update rules for `title`, `description`, `lessons_number` and
+`fee` (DRF 3.17 integer and decimal validation, as ported for the update)
+and an optional `meta` JSONField (null rejected) that, when truthy, must be a
+dict (`This field must be a dictionary.`; an empty list is kept). The carnet is
+created first with no association (auditlog create entry, indexed through the
+actor's association; none for a collaborator), then saved with the owner's
+association (an update entry indexed through `changes_json.sport_association`,
+as the Django reference showed; a missing association is a 500 with the
+carnet kept). Each `request.data['subscriptions']` item that is a
+group-aware subscription of the association runs `carnet_assign` on the same
+request (responses discarded, exceptions surface); a missing key, a value
+that is not iterable or an item the UUID field rejects is a 500 after the
+carnet was saved, and text is iterated by character, as in Django's
+autocommit flow. `TESTS/fixtures/carnet_add_http.json` authors 21 cases;
+the Django reference corrected the update entry's index path.

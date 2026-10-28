@@ -124,3 +124,61 @@ func ParseCarnetUpdate(body any, form bool) (CarnetUpdateInput, error) {
 	}
 	return input, nil
 }
+
+// CarnetAddInput is CarnetAddSerializer's validated data; Meta is the parsed
+// JSONField value (nil without the key: default=None).
+type CarnetAddInput struct {
+	CarnetUpdateInput
+	Meta any
+}
+
+// CarnetAddMetaDict is the serializer's is_valid() override message.
+const CarnetAddMetaDict = "carnet-meta-dict"
+
+// ParseCarnetAdd ports CarnetAddSerializer(data=...).is_valid(): the
+// CarnetUpdateSerializer field rules without public, plus meta (JSONField,
+// null rejected) that, when truthy, must be a dict.
+func ParseCarnetAdd(body any) (CarnetAddInput, error) {
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		_, err := ParseCarnetUpdate(body, false)
+		return CarnetAddInput{}, err
+	}
+	fields := domain.RequestObject{}
+	for _, field := range object {
+		if field.Name != "public" {
+			fields = append(fields, field)
+		}
+	}
+	input, err := ParseCarnetUpdate(append(fields, domain.RequestField{Name: "public", Value: true}), false)
+	errors := map[string][]string{}
+	var invalid *CarnetUpdateValidationError
+	switch {
+	case err == nil:
+	case asCarnetValidation(err, &invalid):
+		for name, codes := range invalid.Fields {
+			errors[name] = codes
+		}
+	default:
+		return CarnetAddInput{}, err
+	}
+	meta, present := object.Lookup("meta")
+	if present && meta == nil {
+		errors["meta"] = []string{PaymentCategoryValidationNull}
+	}
+	if len(errors) > 0 {
+		return CarnetAddInput{}, &CarnetUpdateValidationError{Fields: errors}
+	}
+	if _, dict := meta.(domain.RequestObject); present && PythonTruthy(meta) && !dict {
+		return CarnetAddInput{}, &CarnetUpdateValidationError{Fields: map[string][]string{"meta": {CarnetAddMetaDict}}}
+	}
+	return CarnetAddInput{CarnetUpdateInput: input, Meta: meta}, nil
+}
+
+func asCarnetValidation(err error, target **CarnetUpdateValidationError) bool {
+	value, ok := err.(*CarnetUpdateValidationError)
+	if ok {
+		*target = value
+	}
+	return ok
+}
