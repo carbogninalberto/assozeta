@@ -3294,28 +3294,69 @@
         "target": "balance_sheet_accounts_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_customaccounts"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts/<uid>/update",
+          "/api/v2/balance-sheet/accounts/<uid>/update",
+          "/api/balance-sheet/accounts/<uid>/update"
+        ],
+        "request": "JSON/form: CustomAccountSerializer fields.",
+        "response": "200 serialized account (balance, deletable).",
+        "errors": "400 DRF field errors; 401; 403 generic (athletes) / registry / scoped session; 404 CustomAccounts matching query does not exist. (update); 500 a new custom_account_id on update (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; registry bookeeping.management.accounts.update.",
+        "resource_scope": "The owner's association.",
+        "side_effects": "Saves the partial data; one update entry with the changed fields.",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_account_writes_http.json",
+        "TESTS/fixtures/generate_balance_account_writes_http.py",
+        "TESTS/contracts/test_balance_account_writes_http.py",
+        "TESTS/adapters/django/balance_account_writes_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-red-r2/results.json",
+          "receipt_sha256": "c91d8a6ad1779c5e2fb8b845997c209897151165271188661b3de75b5530e1bb"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "5d9f84bbf25400d95482fee8e6bf78c51ffb0c93b00265c313f00f70cd253659"
+        },
+        {
+          "revision": "committing change without the form boolean defaults",
+          "result": "Mutation control: fails Go on the form case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9c7eb6bfc48a39f949a486c15e151f2a81782f07be68d496c67322e9c9306cb8"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports."
       ]
     },
     {
@@ -3333,28 +3374,69 @@
         "target": "balance_sheet_accounts_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/dto/balance_account_write.go",
+        "BE_GO/internal/domain/balance_accounts.go",
+        "BE_GO/internal/repository/balance_accounts.go",
+        "BE_GO/internal/service/balance_account_writes.go",
+        "BE_GO/internal/handler/balance_account_writes.go",
+        "BE_GO/internal/handler/payment_categories.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_customaccounts"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/balance-sheet/accounts/add",
+          "/api/v2/balance-sheet/accounts/add",
+          "/api/balance-sheet/accounts/add"
+        ],
+        "request": "JSON/form: CustomAccountSerializer fields.",
+        "response": "200 serialized account (balance, deletable).",
+        "errors": "400 DRF field errors; 401; 403 generic (athletes) / registry / scoped session; 404 CustomAccounts matching query does not exist. (update); 500 a new custom_account_id on update (not ported).",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "IsAssociationUser; registry bookeeping.management.accounts.create.",
+        "resource_scope": "The owner's association.",
+        "side_effects": "Creates the account (one create entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
       "tests": [
-        "BE/application/tests/test_balance_sheet_ownership.py"
+        "TESTS/fixtures/balance_account_writes_http.json",
+        "TESTS/fixtures/generate_balance_account_writes_http.py",
+        "TESTS/contracts/test_balance_account_writes_http.py",
+        "TESTS/adapters/django/balance_account_writes_http.py"
       ],
-      "evidence": [],
+      "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 29/29; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-red-r2/results.json",
+          "receipt_sha256": "c91d8a6ad1779c5e2fb8b845997c209897151165271188661b3de75b5530e1bb"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "5d9f84bbf25400d95482fee8e6bf78c51ffb0c93b00265c313f00f70cd253659"
+        },
+        {
+          "revision": "committing change without the form boolean defaults",
+          "result": "Mutation control: fails Go on the form case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "9c7eb6bfc48a39f949a486c15e151f2a81782f07be68d496c67322e9c9306cb8"
+        }
+      ],
       "notes": [
-        "Bounded Django ownership reference correction and exact parent red/green evidence: docs/architecture/go-migration/financial-reference-correction.md. Full Go parity remains unverified."
+        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports."
       ]
     },
     {

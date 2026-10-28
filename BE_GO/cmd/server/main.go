@@ -271,6 +271,11 @@ func run() (runErr error) {
 	e.Any("/supplier/:uid/update", supplierWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/archived", balanceAccountsHandler.Archived, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/accounts/list", balanceAccountsHandler.Accounts, middleware.DjangoSessionAudit(sessionAuthentication))
+	balanceAccountWritesHandler := handler.NewBalanceAccountWritesHandler(service.NewBalanceAccountWrites(repository.NewBalanceAccounts(db),
+		service.NewBalanceAccounts(repository.NewBalanceAccounts(db)), time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens),
+		identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/balance-sheet/accounts/add", balanceAccountWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/balance-sheet/accounts/:uid/update", balanceAccountWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/balance-sheet/accounts-transfer/list", balanceAccountsHandler.Transfers, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-suppliers/stats", supplierInvoiceStatsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/invoice-customers/stats", customerInvoiceStatsHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))

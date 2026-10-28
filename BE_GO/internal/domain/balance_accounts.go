@@ -58,3 +58,31 @@ type BalanceSheetStore interface {
 	// OpenSheets lists archived=False sheets, newest first.
 	OpenSheets(ctx context.Context, association string) ([]BalanceSheetRow, error)
 }
+
+type BalanceAccountRow struct {
+	ID             string `db:"custom_account_id"`
+	Enabled        bool   `db:"enabled"`
+	Name           string `db:"name"`
+	InitialBalance string `db:"initial_balance"`
+	AccountType    int    `db:"account_type"`
+	AccountCode    string `db:"account_code"`
+	AssociationID  string `db:"sport_association_id"`
+	Editable       bool   `db:"editable"`
+}
+
+type BalanceAccountWriteTransaction interface {
+	OwnerAssociation(ctx context.Context, owner string) (string, error)
+	AccountIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
+	// AccountForUpdate locks CustomAccounts.get(id, association); nil when absent.
+	AccountForUpdate(ctx context.Context, id, association string) (*BalanceAccountRow, error)
+	InsertAccount(ctx context.Context, row BalanceAccountRow, audit LoginAuditContext, at time.Time) error
+	SaveAccount(ctx context.Context, row BalanceAccountRow, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
+	// SerializedAccount is the account with its balance and deletable.
+	SerializedAccount(ctx context.Context, association, id string, group *string) (BalanceAccount, error)
+	Commit() error
+	Rollback() error
+}
+
+type BalanceAccountWriteStore interface {
+	BeginBalanceAccountWrite(context.Context) (BalanceAccountWriteTransaction, error)
+}
