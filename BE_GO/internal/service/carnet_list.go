@@ -72,3 +72,47 @@ func (s *CarnetLists) List(ctx context.Context, identity domain.ResolvedIdentity
 		return nil, ErrCarnetListUnserializable
 	}
 }
+
+// ErrCarnetNotAllowed is carnet_info's {'msg': 'Not allowed.'} for non-association users.
+var ErrCarnetNotAllowed = errors.New("carnet not allowed")
+
+type CarnetInfos struct {
+	store domain.CarnetInfoStore
+	now   func() time.Time
+}
+
+func NewCarnetInfos(store domain.CarnetInfoStore, now func() time.Time) *CarnetInfos {
+	return &CarnetInfos{store: store, now: now}
+}
+
+// Info follows carnet_info: the scope user's carnet and its holdings, each
+// with the courses of its subscription.
+func (s *CarnetInfos) Info(ctx context.Context, identity domain.ResolvedIdentity, raw string) (map[string]any, error) {
+	user := identity.ScopeUser
+	if user.Role != domain.RoleAssociation {
+		return nil, ErrCarnetNotAllowed
+	}
+	id, err := messageReadsParseUUID(raw)
+	if err != nil {
+		return nil, err
+	}
+	scope := paymentCategoryAssociationScope(identity)
+	carnet, err := s.store.OwnedCarnet(ctx, user.ID, id, scope)
+	if err != nil {
+		return nil, err
+	}
+	holdings, err := s.store.CarnetHoldings(ctx, carnet.ID, scope)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range holdings {
+		if row.CarnetID == nil || (row.AssociateID != nil && (row.Sex == nil || row.IsMinor == nil)) {
+			return nil, ErrCarnetListUnserializable
+		}
+	}
+	info, err := dto.CarnetInfoFrom(carnet, holdings, s.now().UTC())
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"data": info}, nil
+}

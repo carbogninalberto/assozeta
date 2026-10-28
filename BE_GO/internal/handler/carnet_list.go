@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -13,14 +14,19 @@ type CarnetListService interface {
 	List(context.Context, domain.ResolvedIdentity, string) (any, error)
 }
 
+type CarnetInfoService interface {
+	Info(context.Context, domain.ResolvedIdentity, string) (map[string]any, error)
+}
+
 type CarnetListHandler struct {
 	lists      CarnetListService
+	infos      CarnetInfoService
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 }
 
-func NewCarnetListHandler(lists CarnetListService, actors *service.ActorAuthentication, identities *service.IdentityResolver) *CarnetListHandler {
-	return &CarnetListHandler{lists: lists, actors: actors, identities: identities}
+func NewCarnetListHandler(lists CarnetListService, infos CarnetInfoService, actors *service.ActorAuthentication, identities *service.IdentityResolver) *CarnetListHandler {
+	return &CarnetListHandler{lists: lists, infos: infos, actors: actors, identities: identities}
 }
 
 func (h *CarnetListHandler) List(c echo.Context) error {
@@ -38,6 +44,32 @@ func (h *CarnetListHandler) List(c echo.Context) error {
 	body, err := h.lists.List(request.Context(), *identity, request.Header.Get("X-Group-Id"))
 	if err != nil {
 		return restError(c, err)
+	}
+	return c.JSON(200, body)
+}
+
+func (h *CarnetListHandler) Info(c echo.Context) error {
+	identity, err := messageReadsIdentity(c, h.actors, h.identities, http.MethodGet, "carnet_info")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return c.JSON(200, map[string]any{"name": "Carnet Info", "description": "Info about a carnet",
+			"renders": []string{"application/json"},
+			"parses":  []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}})
+	}
+	if request.Method != http.MethodGet {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	body, err := h.infos.Info(request.Context(), *identity, c.Param("uid"))
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet not found."})
+	case err != nil:
+		return messageReadsError(c, err)
 	}
 	return c.JSON(200, body)
 }

@@ -36,54 +36,57 @@ def state_unchanged(before, after):
     contract.require(before == after, 'state.changed')
 
 
+def seed_rows(source, created):
+    """Insert the source's carnet rows in dependency order, recording each for cleanup."""
+    from application.models import Associate, Course, CourseSubscription, Payment, Subscription
+    from application.models.carnet_models import Carnet, CarnetSubscription
+    ids = source['ids']
+    user = lambda label: ids[label] if label else None
+    for row in source['carnets'].values():
+        Carnet._base_manager.bulk_create([Carnet(carnet_id=row['id'], sport_association_id=row['association'], title=row['title'],
+            description=row['description'], lessons_number=row['lessons'], fee=Decimal(row['fee']), public=row['public'], meta=row['meta'])])
+        Carnet._base_manager.filter(pk=row['id']).update(creation_date=moment(row['created']))
+        created.append((Carnet, row['id']))
+    for row in source['associates'].values():
+        Associate._base_manager.bulk_create([Associate(associate_id=row['id'], sport_association_id=row['association'], user_id=user(row['user']),
+            born_date=day(row['born_date']), **{k: row[k] for k in ('first_name', 'last_name', 'email', 'sex', 'tax_code', 'address',
+                                                                 'address_cap', 'address_city', 'born_city', 'is_minor', 'phone', 'family_role')})])
+        created.append((Associate, row['id']))
+    for row in source['subscriptions'].values():
+        Subscription._base_manager.bulk_create([Subscription(subscription_id=row['id'], sport_association_id=row['association'],
+            user_id=user(row['user']), associate_id=source['associates'][row['associate']]['id'],
+            start_date=day(row['start']), end_date=day(row['end']), status_flag=Subscription.ACCEPTED)])
+        created.append((Subscription, row['id']))
+    for row in source['courses'].values():
+        Course._base_manager.bulk_create([Course(course_id=row['id'], sport_association_id=row['association'], title=row['title'],
+            description=row.get('description', ''), fee=Decimal('50.00'), status_flag=Course.ACTIVE)])
+        created.append((Course, row['id']))
+    for row in source['course_subscriptions'].values():
+        CourseSubscription._base_manager.bulk_create([CourseSubscription(course_subscription_id=row['id'], deleted=row['deleted'],
+            course_id=source['courses'][row['course']]['id'], subscription_id=source['subscriptions'][row['subscription']]['id'])])
+        created.append((CourseSubscription, row['id']))
+    for row in source['payments'].values():
+        Payment._base_manager.bulk_create([Payment(payment_id=row['id'], sport_association_id=row['association'], user_id=user(row['user']),
+            subject=Payment.COURSE, amount=Decimal(row['amount']))])
+        created.append((Payment, row['id']))
+    for row in source['carnet_subscriptions'].values():
+        CarnetSubscription._base_manager.bulk_create([CarnetSubscription(carnet_subscription_id=row['id'],
+            carnet_id_id=source['carnets'][row['carnet']]['id'], user_id_id=user(row['user']),
+            subscription_id=source['subscriptions'][row['subscription']]['id'] if row['subscription'] else None,
+            payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None, disabled=row['disabled'], meta=row['meta'])])
+        CarnetSubscription._base_manager.filter(pk=row['id']).update(creation_date=moment(row['created']))
+        CarnetSubscription.course_subscription.through.objects.bulk_create([CarnetSubscription.course_subscription.through(
+            carnetsubscription_id=row['id'], coursesubscription_id=source['course_subscriptions'][label]['id']) for label in row['courses']])
+        created.append((CarnetSubscription, row['id']))
+
+
 def seed_fixture(apps, private_work, raw):
     from auditlog.context import disable_auditlog
     from django.db import transaction
-    from application.models import Associate, Course, CourseSubscription, Payment, Subscription
-    from application.models.carnet_models import Carnet, CarnetSubscription
     from TESTS.adapters.django.historical_read_cache import snapshot_historical_read_cache
-    source = contract.load_source()
-    ids = source['ids']
-    user = lambda label: ids[label] if label else None
     with disable_auditlog(), transaction.atomic():
         fixture = scopes.seed_fixture(apps, Path(private_work), raw)
-        created = fixture['created']
-        for row in source['carnets'].values():
-            Carnet._base_manager.bulk_create([Carnet(carnet_id=row['id'], sport_association_id=row['association'], title=row['title'],
-                description=row['description'], lessons_number=row['lessons'], fee=Decimal(row['fee']), public=row['public'], meta=row['meta'])])
-            Carnet._base_manager.filter(pk=row['id']).update(creation_date=moment(row['created']))
-            created.append((Carnet, row['id']))
-        for row in source['associates'].values():
-            Associate._base_manager.bulk_create([Associate(associate_id=row['id'], sport_association_id=row['association'], user_id=user(row['user']),
-                born_date=day(row['born_date']), **{k: row[k] for k in ('first_name', 'last_name', 'email', 'sex', 'tax_code', 'address',
-                                                                     'address_cap', 'address_city', 'born_city', 'is_minor', 'phone', 'family_role')})])
-            created.append((Associate, row['id']))
-        for row in source['subscriptions'].values():
-            Subscription._base_manager.bulk_create([Subscription(subscription_id=row['id'], sport_association_id=row['association'],
-                user_id=user(row['user']), associate_id=source['associates'][row['associate']]['id'],
-                start_date=day(row['start']), end_date=day(row['end']), status_flag=Subscription.ACCEPTED)])
-            created.append((Subscription, row['id']))
-        for label, row in source['courses'].items():
-            Course._base_manager.bulk_create([Course(course_id=row['id'], sport_association_id=row['association'], title=row['title'],
-                description='', fee=Decimal('50.00'), status_flag=Course.ACTIVE)])
-            created.append((Course, row['id']))
-        for row in source['course_subscriptions'].values():
-            CourseSubscription._base_manager.bulk_create([CourseSubscription(course_subscription_id=row['id'], deleted=row['deleted'],
-                course_id=source['courses'][row['course']]['id'], subscription_id=source['subscriptions'][row['subscription']]['id'])])
-            created.append((CourseSubscription, row['id']))
-        for row in source['payments'].values():
-            Payment._base_manager.bulk_create([Payment(payment_id=row['id'], sport_association_id=row['association'], user_id=user(row['user']),
-                subject=Payment.COURSE, amount=Decimal(row['amount']))])
-            created.append((Payment, row['id']))
-        for row in source['carnet_subscriptions'].values():
-            CarnetSubscription._base_manager.bulk_create([CarnetSubscription(carnet_subscription_id=row['id'],
-                carnet_id_id=source['carnets'][row['carnet']]['id'], user_id_id=user(row['user']),
-                subscription_id=source['subscriptions'][row['subscription']]['id'] if row['subscription'] else None,
-                payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None, disabled=row['disabled'], meta=row['meta'])])
-            CarnetSubscription._base_manager.filter(pk=row['id']).update(creation_date=moment(row['created']))
-            CarnetSubscription.course_subscription.through.objects.bulk_create([CarnetSubscription.course_subscription.through(
-                carnetsubscription_id=row['id'], coursesubscription_id=source['course_subscriptions'][label]['id']) for label in row['courses']])
-            created.append((CarnetSubscription, row['id']))
+        seed_rows(contract.load_source(), fixture['created'])
         fixture['baseline_state'] = scopes.snapshot_state(apps)
         fixture['baseline_cache'] = snapshot_historical_read_cache(raw)
     return fixture

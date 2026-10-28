@@ -4400,25 +4400,71 @@
         "target": "carnet_info",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_list.go",
+        "BE_GO/internal/dto/carnet_list.go",
+        "BE_GO/internal/repository/carnet_list.go",
+        "BE_GO/internal/service/carnet_list.go",
+        "BE_GO/internal/handler/carnet_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped impersonation enforcement",
+        "application_carnet, application_carnetsubscription (+ course_subscription M2M), application_subscription, application_associate, application_coursesubscription, application_course"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/info",
+          "/api/v2/carnet/<uid>/info",
+          "/api/carnet/<uid>/info"
+        ],
+        "request": "No body.",
+        "response": "200 {\"data\": CarnetListInfoSerializer + {\"subscriptions\": [CarnetSubscriptionSerializer + {\"courses\": [CourseSimpleSerializer]}]}}, holdings newest first.",
+        "errors": "400 malformed UUID; 401; 403 {\"msg\": \"Not allowed.\"} for non-association users, administrator without impersonation, missing association.carnet.read, scoped athlete session; 404 {\"msg\": \"Carnet not found.\"}.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.read.",
+        "resource_scope": "The scope user's association carnet (impersonation boundary).",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_info_http.json",
+        "TESTS/fixtures/generate_carnet_info_http.py",
+        "TESTS/contracts/test_carnet_info_http.py",
+        "TESTS/adapters/django/carnet_info_http.py",
+        "TESTS/adapters/django/carnet_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-info.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 16/16 after one source-confirmed correction (OPTIONS description); Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-info-http-red-r1/results.json",
+          "receipt_sha256": "0de97ab1804af86aeb9c3bdc4aabc9980c54d02b3bd05beeee4bbb58d784fc36"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 16/16 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/carnet-info-http-versioned-r1/results.json",
+          "receipt_sha256": "7c07e59869b48f153cb2573ba34b553d8dff64b99bc669aac4422164f6c72763"
+        },
+        {
+          "revision": "committing change counting soft-deleted course subscriptions",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/carnet-info-http-mutation-r1/results.json",
+          "receipt_sha256": "fe3d126fad9703bf4d258f3773e6824831072a6b3b1a104db2ad01e43b91277f"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/replace/<str:uid_subscription> -> carnet_replace",
@@ -4627,8 +4673,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 12/12 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
-          "artifact": "quality-reports/go-migration/carnet-list-http-versioned-r1/results.json",
-          "receipt_sha256": "620670d314d722549179b84c4c01e7682e345ed54626e85156ba530d6b999d1f"
+          "artifact": "quality-reports/go-migration/carnet-list-http-versioned-r2/results.json",
+          "receipt_sha256": "d703055b76cf44b001b4bcf61e8298e0775098d427e557f14b6202f09e2ae920"
         },
         {
           "revision": "committing change with the course soft-delete filter removed",

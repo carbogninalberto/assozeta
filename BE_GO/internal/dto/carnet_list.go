@@ -108,3 +108,45 @@ func CarnetHoldingFrom(row domain.CarnetListHolding, today time.Time) (CarnetHol
 	}
 	return holding, nil
 }
+
+// CarnetInfoCourse is CourseSimpleSerializer.
+type CarnetInfoCourse struct {
+	ID          string  `json:"course_id"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+}
+
+type CarnetInfoHolding struct {
+	CarnetHolding
+	Courses []CarnetInfoCourse `json:"courses"`
+}
+
+// CarnetInfo is CarnetListInfoSerializer plus the view's subscriptions.
+type CarnetInfo struct {
+	ID            string              `json:"carnet_id"`
+	Title         *string             `json:"title"`
+	Description   *string             `json:"description"`
+	LessonsNumber int                 `json:"lessons_number"`
+	CreationDate  string              `json:"creation_date"`
+	Fee           string              `json:"fee"`
+	Public        bool                `json:"public"`
+	Subscriptions []CarnetInfoHolding `json:"subscriptions"`
+}
+
+func CarnetInfoFrom(carnet domain.CarnetListCarnet, holdings []domain.CarnetInfoHolding, today time.Time) (CarnetInfo, error) {
+	info := CarnetInfo{ID: carnet.ID, Title: carnet.Title, Description: carnet.Description, LessonsNumber: carnet.LessonsNumber,
+		CreationDate: DRFUTCDateTime(carnet.CreationDate), Fee: carnet.Fee, Public: carnet.Public,
+		Subscriptions: make([]CarnetInfoHolding, 0, len(holdings))}
+	for _, row := range holdings {
+		holding, err := CarnetHoldingFrom(row.CarnetListHolding, today)
+		if err != nil {
+			return CarnetInfo{}, err
+		}
+		item := CarnetInfoHolding{CarnetHolding: holding, Courses: []CarnetInfoCourse{}}
+		if err = json.Unmarshal([]byte(row.SubscriptionCourses), &item.Courses); err != nil {
+			return CarnetInfo{}, err
+		}
+		info.Subscriptions = append(info.Subscriptions, item)
+	}
+	return info, nil
+}

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -70,3 +71,20 @@ type CarnetListStore interface {
 	// subscription's associate, newest first.
 	Holdings(ctx context.Context, user string, scope *CarnetHoldingScope) ([]CarnetListHolding, error)
 }
+
+// CarnetInfoHolding adds the courses carnet_info lists for the holding's
+// subscription (every live course subscription, not the M2M links).
+type CarnetInfoHolding struct {
+	CarnetListHolding
+	SubscriptionCourses string `db:"subscription_courses"`
+}
+
+type CarnetInfoStore interface {
+	// OwnedCarnet is Carnet.get(carnet_id=id, sport_association__user=owner)
+	// within the impersonation association; ErrCarnetNotFound when absent.
+	OwnedCarnet(ctx context.Context, owner, id string, scope *string) (CarnetListCarnet, error)
+	// CarnetHoldings lists the carnet's subscriptions, newest first.
+	CarnetHoldings(ctx context.Context, carnet string, scope *string) ([]CarnetInfoHolding, error)
+}
+
+var ErrCarnetNotFound = errors.New("carnet not found")
