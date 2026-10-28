@@ -6113,8 +6113,14 @@
         "target": "CourseLocationViewSet.as_view({'get': 'list'})",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/service/course_tags_list.go",
+        "BE_GO/internal/handler/course_tags_list.go",
+        "BE_GO/internal/repository/search_profile.go",
+        "BE_GO/internal/domain/search_profile.go",
+        "BE_GO/cmd/server/main.go"
+      ],
       "dependencies": [],
       "contract": {
         "methods": null,
@@ -6129,9 +6135,36 @@
         "transaction": null,
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_locations_list_http.json",
+        "TESTS/fixtures/generate_course_locations_list_http.py",
+        "TESTS/contracts/test_course_locations_list_http.py",
+        "TESTS/adapters/django/course_locations_list_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-locations.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 13/13; Go 404.",
+          "artifact": "quality-reports/go-migration/course-locations-list-http-red-r1/results.json",
+          "receipt_sha256": "9f12c81427b3c7df4f88f26d962f0ee62535ff9016e5ea066c231637e8ab11b3"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 13/13 on four transports.",
+          "artifact": "quality-reports/go-migration/course-locations-list-http-versioned-r1/results.json",
+          "receipt_sha256": "e987ac0b44ed783a713cc3c18300dc9fdc23af76457e72d17b142377329abb23"
+        },
+        {
+          "revision": "committing change without nested documents",
+          "result": "Mutation control: fails Go on the owner case.",
+          "artifact": "quality-reports/go-migration/course-locations-list-http-mutation-r1/results.json",
+          "receipt_sha256": "43e339b735d442c6f18a0545052e75c6c6980df7646b63a909083e1619faed8a"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/<str:tag_id>/assign/<str:course_id> -> course_tags_assign",

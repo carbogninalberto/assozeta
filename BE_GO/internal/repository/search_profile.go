@@ -79,3 +79,16 @@ func (r *SearchProfiles) OrderedTags(ctx context.Context, association string) ([
 	err := r.db.SelectContext(ctx, &rows, `SELECT tag_id, tag_name FROM application_coursetags WHERE sport_association_id=$1 ORDER BY tag_name`, association)
 	return rows, err
 }
+
+// CourseLocations lists the association's locations with their documents
+// (CourseLocationSerializer), both unordered.
+func (r *SearchProfiles) CourseLocations(ctx context.Context, association string) ([]domain.CourseLocationRow, error) {
+	rows := []domain.CourseLocationRow{}
+	err := r.db.SelectContext(ctx, &rows, `SELECT l.course_location_id, l.title, l.description, l.address, l.sport_association_id,
+ COALESCE((SELECT json_agg(json_build_object('document_id', d.document_id, 'creation_date', d.creation_date, 'filepath', d.filepath,
+   'filename', d.filename, 'file_size_bytes', d.file_size_bytes, 'token', d.token))
+  FROM application_courselocation_documents ld JOIN docmanager_document d ON d.document_id=ld.document_id
+  WHERE ld.courselocation_id=l.course_location_id), '[]'::json)::text AS documents
+ FROM application_courselocation l WHERE l.sport_association_id=$1`, association)
+	return rows, err
+}

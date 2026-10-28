@@ -1,0 +1,354 @@
+{
+ "matrix_version": 1,
+ "scope": "Course locations list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": {
+   "id": "a1000000-0000-4000-8000-000000980001",
+   "token": "a1000000-0000-4000-8000-000000980002",
+   "filename": "mappa è.pdf",
+   "filepath": "docs/mappa.pdf",
+   "size": 2048,
+   "created": "2026-09-01T08:00:00.500000Z"
+  },
+  "d2": {
+   "id": "a1000000-0000-4000-8000-000000980003",
+   "token": "a1000000-0000-4000-8000-000000980004",
+   "filename": "orari.pdf",
+   "filepath": null,
+   "size": null,
+   "created": "2026-09-02T08:00:00Z"
+  }
+ },
+ "locations": {
+  "pool": {
+   "id": "a1000000-0000-4000-8000-000000980005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Piscina è",
+   "description": "Vasca",
+   "address": "Via 1",
+   "documents": [
+    "d1",
+    "d2"
+   ]
+  },
+  "gym": {
+   "id": "a1000000-0000-4000-8000-000000980006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": null,
+   "description": null,
+   "address": null,
+   "documents": []
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000980007",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "description": "",
+   "address": "",
+   "documents": []
+  }
+ },
+ "cases": [
+  {
+   "name": "course-locations-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-locations-list-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-locations-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980005",
+      "documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/mappa.pdf",
+        "filename": "mappa è.pdf",
+        "file_size_bytes": 2048,
+        "token": "a1000000-0000-4000-8000-000000980002"
+       },
+       {
+        "document_id": "a1000000-0000-4000-8000-000000980003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "orari.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000980004"
+       }
+      ],
+      "title": "Piscina è",
+      "description": "Vasca",
+      "address": "Via 1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980006",
+      "documents": [],
+      "title": null,
+      "description": null,
+      "address": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-locations-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "course_location_id": "a1000000-0000-4000-8000-000000980007",
+      "documents": [],
+      "title": "Estero",
+      "description": "",
+      "address": "",
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-locations-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "course-locations-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "course-locations-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "course-locations-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "course-locations-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.read"
+   }
+  },
+  {
+   "name": "course-locations-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "course-locations-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "course-locations-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "course-locations-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/locations/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Location",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

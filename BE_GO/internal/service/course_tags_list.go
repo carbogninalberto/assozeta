@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 type courseTagStore interface {
@@ -30,4 +33,52 @@ func (s *CourseTagLists) List(ctx context.Context, identity domain.ResolvedIdent
 		return nil, err
 	}
 	return map[string]any{"tags": tags}, nil
+}
+
+type courseLocationStore interface {
+	OwnerAssociation(ctx context.Context, owner string) (string, error)
+	CourseLocations(ctx context.Context, association string) ([]domain.CourseLocationRow, error)
+}
+
+type CourseLocationLists struct{ store courseLocationStore }
+
+func NewCourseLocationLists(store courseLocationStore) *CourseLocationLists {
+	return &CourseLocationLists{store: store}
+}
+
+type courseLocationDocument struct {
+	ID            string    `json:"document_id"`
+	CreationDate  time.Time `json:"creation_date"`
+	Filepath      *string   `json:"filepath"`
+	Filename      string    `json:"filename"`
+	FileSizeBytes *int64    `json:"file_size_bytes"`
+	Token         string    `json:"token"`
+}
+
+// List follows CourseLocationViewSet.list: SportAssociation.objects.get(user=
+// request.user) (a miss is a 500), then CourseLocationSerializer.
+func (s *CourseLocationLists) List(ctx context.Context, identity domain.ResolvedIdentity) (map[string]any, error) {
+	association, err := s.store.OwnerAssociation(ctx, identity.ScopeUser.ID)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.store.CourseLocations(ctx, association)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]map[string]any, 0, len(rows))
+	for _, row := range rows {
+		documents := []courseLocationDocument{}
+		if err := json.Unmarshal([]byte(row.Documents), &documents); err != nil {
+			return nil, err
+		}
+		rendered := make([]map[string]any, 0, len(documents))
+		for _, document := range documents {
+			rendered = append(rendered, map[string]any{"document_id": document.ID, "creation_date": dto.DRFUTCDateTime(document.CreationDate),
+				"filepath": document.Filepath, "filename": document.Filename, "file_size_bytes": document.FileSizeBytes, "token": document.Token})
+		}
+		items = append(items, map[string]any{"course_location_id": row.ID, "documents": rendered, "title": row.Title,
+			"description": row.Description, "address": row.Address, "sport_association": row.AssociationID})
+	}
+	return map[string]any{"data": items}, nil
 }

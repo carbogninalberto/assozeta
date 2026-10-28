@@ -81,3 +81,12 @@ type SearchProfileStore interface {
 	Carnets(ctx context.Context, association string) ([]CarnetListCarnet, error)
 	Tags(ctx context.Context, association string) ([]SearchProfileTag, error)
 }
+
+type CourseLocationRow struct {
+	ID            string  `db:"course_location_id"`
+	Title         *string `db:"title"`
+	Description   *string `db:"description"`
+	Address       *string `db:"address"`
+	AssociationID *string `db:"sport_association_id"`
+	Documents     string  `db:"documents"`
+}
