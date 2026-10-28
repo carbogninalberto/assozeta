@@ -21,17 +21,22 @@ type CarnetUpdateService interface {
 	Update(context.Context, domain.ResolvedIdentity, string, any, bool, domain.LoginAuditContext) error
 }
 
+type CarnetUnassignService interface {
+	Unassign(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+}
+
 type CarnetWritesHandler struct {
 	deletes    CarnetDeleteService
 	updates    CarnetUpdateService
+	unassigns  CarnetUnassignService
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewCarnetWritesHandler(deletes CarnetDeleteService, updates CarnetUpdateService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
-	return &CarnetWritesHandler{deletes: deletes, updates: updates, actors: actors, identities: identities, audit: audit, operations: operations}
+func NewCarnetWritesHandler(deletes CarnetDeleteService, updates CarnetUpdateService, unassigns CarnetUnassignService, actors *service.ActorAuthentication, identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *CarnetWritesHandler {
+	return &CarnetWritesHandler{deletes: deletes, updates: updates, unassigns: unassigns, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *CarnetWritesHandler) Delete(c echo.Context) error {
@@ -119,3 +124,48 @@ func (h *CarnetWritesHandler) Update(c echo.Context) error {
 	}
 	return c.JSON(200, map[string]string{"msg": "Carnet updated successfully."})
 }
+
+// Unassign has no permission class in Django: an anonymous request reaches
+// request.user.role and fails (500).
+func (h *CarnetWritesHandler) Unassign(c echo.Context) error {
+	if c.Request().Header.Get("Authorization") == "" && c.Request().Method == http.MethodDelete {
+		c.Response().Header().Set("Allow", "DELETE, OPTIONS")
+		return restError(c, errCarnetAnonymous)
+	}
+	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodDelete, "carnet_unassign")
+	if identity == nil {
+		return err
+	}
+	request := c.Request()
+	if request.Method == http.MethodOptions {
+		return supplierOptions(c, "Carnet Unassign", "Remove a carnet from a subscription and delete the\nunpaid payments")
+	}
+	if request.Method != http.MethodDelete {
+		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	tracked, err := h.operations.Track(request.Context())
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	defer tracked.Release()
+	audit, err := h.audit(request)
+	if err != nil {
+		return restError(c, err)
+	}
+	ctx, err := tracked.Admit()
+	if err != nil {
+		return paymentCategoryError(c, err)
+	}
+	err = h.unassigns.Unassign(ctx, *identity, c.Param("uid_subscription"), audit)
+	switch {
+	case errors.Is(err, service.ErrCarnetNotAllowed):
+		return c.JSON(403, map[string]string{"msg": "Not allowed."})
+	case errors.Is(err, domain.ErrCarnetNotFound):
+		return c.JSON(404, map[string]string{"msg": "Carnet not found."})
+	case err != nil:
+		return restError(c, err)
+	}
+	return c.JSON(200, map[string]string{"msg": "Carnet removed successfully."})
+}
+
+var errCarnetAnonymous = errors.New("anonymous user has no role")

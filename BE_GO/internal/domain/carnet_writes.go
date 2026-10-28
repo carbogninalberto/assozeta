@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -50,4 +51,27 @@ type CarnetUpdateTransaction interface {
 
 type CarnetUpdateStore interface {
 	BeginCarnetUpdate(context.Context) (CarnetUpdateTransaction, error)
+}
+
+// ErrPaymentCascadeUnsupported refuses a payment delete whose pre_delete
+// signal would also delete course installments (not ported).
+var ErrPaymentCascadeUnsupported = errors.New("payment delete cascade unsupported")
+
+type CarnetHoldingPayment struct {
+	PaymentID *string `db:"payment_id"`
+	Paid      *bool   `db:"paid"`
+}
+
+type CarnetUnassignTransaction interface {
+	// HoldingForUnassign locks a carnet subscription of the owner's subscriptions.
+	HoldingForUnassign(ctx context.Context, holding, owner string, scope *string) (CarnetHoldingPayment, error)
+	DeleteUnpaidPayment(ctx context.Context, payment string, audit LoginAuditContext, at time.Time) error
+	DeleteHolding(ctx context.Context, holding string, actorAssociation *string, audit LoginAuditContext, at time.Time) error
+	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
+	Commit() error
+	Rollback() error
+}
+
+type CarnetUnassignStore interface {
+	BeginCarnetUnassign(context.Context) (CarnetUnassignTransaction, error)
 }

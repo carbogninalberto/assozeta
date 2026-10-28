@@ -2602,6 +2602,12 @@
           "result": "GREEN rerun after the handler gained mark-absent: four transports.",
           "artifact": "quality-reports/go-migration/attendance-day-delete-http-versioned-r5/results.json",
           "receipt_sha256": "68aa20f00f58fb8b76ca6475b943cba00f75988e581c453b1cd65afab9228f2b"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-attendance-day-delete-r1/results.json",
+          "receipt_sha256": "4e40d9249a56806704837ddd179ced54653d889fbf7716080080bee2a2941151"
         }
       ],
       "notes": [
@@ -4661,6 +4667,12 @@
           "result": "Mutation control: fails Go on the owner case.",
           "artifact": "quality-reports/go-migration/carnet-delete-http-mutation-r1/results.json",
           "receipt_sha256": "5ef398e407d5e011672f828664841b593ac302f721ad6596cab65ba24161917f"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-carnet-delete-r1/results.json",
+          "receipt_sha256": "7185aa98c4fc12488967b23b70fa046e656f42b5a69c8c5b441911770289ba95"
         }
       ],
       "notes": [
@@ -4742,6 +4754,18 @@
           "result": "Mutation control: fails Go on the owner case.",
           "artifact": "quality-reports/go-migration/carnet-info-http-mutation-r1/results.json",
           "receipt_sha256": "fe3d126fad9703bf4d258f3773e6824831072a6b3b1a104db2ad01e43b91277f"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-carnet-list-r1/results.json",
+          "receipt_sha256": "10b7058e1beeff67e48d2ab5580130985cd54d70e4de41b5cf89d96221cda805"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-carnet-info-r1/results.json",
+          "receipt_sha256": "423ff9e76ba15d232b7c7cb177ba7efdb772a8b63609fdfd32394a7801b1094f"
         }
       ],
       "notes": [
@@ -4798,25 +4822,78 @@
         "target": "carnet_unassign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_writes.go",
+        "BE_GO/internal/repository/carnet_writes.go",
+        "BE_GO/internal/service/carnet_writes.go",
+        "BE_GO/internal/handler/carnet_writes.go",
+        "BE_GO/internal/repository/model_delete_audit.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "PR #28 association scoping",
+        "Existing identity resolution, permission registry and audit index",
+        "application_carnetsubscription (+ course links), application_payment and its SET_NULL references"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/<uid>/unassign/<uid_subscription>",
+          "/api/v2/carnet/<uid>/unassign/<uid_subscription>",
+          "/api/carnet/<uid>/unassign/<uid_subscription>"
+        ],
+        "request": "No body; the carnet uid is unused.",
+        "response": "200 {\"msg\": \"Carnet removed successfully.\"}.",
+        "errors": "403 Not allowed. / administrator without impersonation / missing permission / scoped athlete session; 404 Carnet not found.; 500 anonymous or non-UUID.",
+        "authentication": "No permission class (anonymous fails with 500).",
+        "permissions": "Registry association.carnet.update.",
+        "resource_scope": "A carnet subscription of the scope user's subscriptions.",
+        "side_effects": "Deletes an unpaid payment (SET_NULL references cleared) and the carnet subscription with its course links; one audit delete entry each.",
+        "transaction": "One transaction (Django autocommit deletes).",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_unassign_http.json",
+        "TESTS/fixtures/generate_carnet_unassign_http.py",
+        "TESTS/contracts/test_carnet_unassign_http.py",
+        "TESTS/adapters/django/carnet_unassign_http.py",
+        "TESTS/adapters/django/carnet_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-writes.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 15/15; Go without the route on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-unassign-http-red-r1/results.json",
+          "receipt_sha256": "3bdcc4710db4537b22bfae9ae3ca8e0f2878077081d53dd802e0f896464bacda"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 15/15 on native Django, native Go, Caddy /api/v1 and /api/v2; the payment delete entry is identical across backends.",
+          "artifact": "quality-reports/go-migration/carnet-unassign-http-versioned-r1/results.json",
+          "receipt_sha256": "dbda4c1ebf8ea77bf6d88d919e5b9583b106f1135dbb0cfdd749de9ea2afa340"
+        },
+        {
+          "revision": "committing change deleting paid payments too",
+          "result": "Mutation control: fails Go on the paid-payment case.",
+          "artifact": "quality-reports/go-migration/carnet-unassign-http-mutation-r1/results.json",
+          "receipt_sha256": "f15a24bc33cbf16987f2754e70adc2bd39368e902bc1cdad63b16bf13b9ed979"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-carnet-list-r1/results.json",
+          "receipt_sha256": "10b7058e1beeff67e48d2ab5580130985cd54d70e4de41b5cf89d96221cda805"
+        }
+      ],
+      "notes": [
+        "Implementing: parity with the PR #28 contract on four transports; a payment whose pre_delete signal would delete course installments is refused (not ported)."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:carnet/<str:uid>/update -> carnet_update",
@@ -5012,6 +5089,12 @@
           "result": "Mutation control: fails Go on the athlete case.",
           "artifact": "quality-reports/go-migration/carnet-list-http-mutation-r1/results.json",
           "receipt_sha256": "d7cd4a108e85adc1daaa9c5d12192d13864aee0c6d2c9c3d5bc24c4da268ebb1"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-carnet-list-r1/results.json",
+          "receipt_sha256": "10b7058e1beeff67e48d2ab5580130985cd54d70e4de41b5cf89d96221cda805"
         }
       ],
       "notes": [
@@ -6590,6 +6673,12 @@
           "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
           "artifact": "quality-reports/go-migration/documents-delete-http-versioned-r4/results.json",
           "receipt_sha256": "0b2a8dc916117b2be21756257bba8fb0b47c39450a0d8867805f020f308ef077"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-documents-delete-r1/results.json",
+          "receipt_sha256": "8b62c989671d964160db98adaa8fa1513f19624ca7c57328091917b60da68e76"
         }
       ],
       "notes": [
@@ -6834,6 +6923,12 @@
           "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
           "artifact": "quality-reports/go-migration/documents-bulk-delete-http-versioned-r4/results.json",
           "receipt_sha256": "32bd5379a77c6943f9a3a1b0d67d48ce3531c115c1b20bb31b38f756956cca70"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-documents-bulk-delete-r1/results.json",
+          "receipt_sha256": "e67e944cba25059de3ca5bb292512c71648d4e23e97db811c566c6cb917fe2e3"
         }
       ],
       "notes": [
@@ -8206,6 +8301,12 @@
           "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
           "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r4/results.json",
           "receipt_sha256": "7d675a2afb131edd46c84f2b9a7d7193b38796fa91b4cba19bf35b02859eb91b"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-invoice-deletes-r1/results.json",
+          "receipt_sha256": "fccdd487332b04e39457f2891496e1ad1c070229063c607fdeb85819f94d2dbb"
         }
       ],
       "notes": [
@@ -8477,6 +8578,12 @@
           "result": "GREEN rerun after the delete renderer gained the null JSON rule: four transports.",
           "artifact": "quality-reports/go-migration/invoice-deletes-http-versioned-r4/results.json",
           "receipt_sha256": "7d675a2afb131edd46c84f2b9a7d7193b38796fa91b4cba19bf35b02859eb91b"
+        },
+        {
+          "revision": "committing change (null DateTimeField delete rendering, fixed payment seed time)",
+          "result": "Recheck: native Django and native Go still pass.",
+          "artifact": "quality-reports/go-migration/recheck-invoice-deletes-r1/results.json",
+          "receipt_sha256": "fccdd487332b04e39457f2891496e1ad1c070229063c607fdeb85819f94d2dbb"
         }
       ],
       "notes": [

@@ -98,3 +98,49 @@ func (s *CarnetUpdates) Update(ctx context.Context, identity domain.ResolvedIden
 	}
 	return tx.Commit()
 }
+
+type CarnetUnassigns struct {
+	store domain.CarnetUnassignStore
+	now   func() time.Time
+}
+
+func NewCarnetUnassigns(store domain.CarnetUnassignStore, now func() time.Time) *CarnetUnassigns {
+	return &CarnetUnassigns{store: store, now: now}
+}
+
+// Unassign follows the scoped carnet_unassign: the carnet uid is unused; the
+// holding must belong to the scope user's subscriptions (a non-UUID is the
+// ORM's ValidationError, a 500); an unpaid payment is deleted first.
+func (s *CarnetUnassigns) Unassign(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error {
+	if identity.ScopeUser.Role != domain.RoleAssociation {
+		return ErrCarnetNotAllowed
+	}
+	id, err := paymentInfoParseUUID(raw)
+	if err != nil {
+		return ErrPaymentSaveFailed
+	}
+	tx, err := s.store.BeginCarnetUnassign(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	holding, err := tx.HoldingForUnassign(ctx, id.String(), identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
+	if err != nil {
+		return err
+	}
+	context := paymentCategoryAuditContext(identity, audit)
+	at := s.now().UTC().Truncate(time.Microsecond)
+	if holding.PaymentID != nil && holding.Paid != nil && !*holding.Paid {
+		if err = tx.DeleteUnpaidPayment(ctx, *holding.PaymentID, context, at); err != nil {
+			return err
+		}
+	}
+	actorAssociation, err := tx.ActiveAssociationOf(ctx, identity.Actor.ID)
+	if err != nil {
+		return err
+	}
+	if err = tx.DeleteHolding(ctx, id.String(), actorAssociation, context, at); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

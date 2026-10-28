@@ -1,10 +1,9 @@
-# Carnet writes — delete and update implementing with HTTP parity
+# Carnet writes — delete, update and unassign implementing with HTTP parity
 
 `POST carnet/<uid>/delete` and `PATCH carnet/<uid>/update` (`carnet_delete` and
 `carnet_update` in `BE/application/views/carnet_views.py`, as scoped by PR #28) are implemented in Go
 (`BE_GO/internal/{domain,repository,service,handler}/carnet_writes.go`). Django
-remains the production execution owner. Carnet add, assign, replace and unassign
-are not ported yet.
+remains the production execution owner. Carnet add, assign and replace are not ported yet.
 
 ## Behavior
 
@@ -46,3 +45,21 @@ actor index for subscriptions fails the owner case.
 `TESTS/fixtures/carnet_update_http.json` authors 27 cases. RED: Django 27/27 and
 Go 404. GREEN: 27/27 on all four transports with exact carnet, audit and index
 effects; dropping the fee from the audit diff fails the owner case.
+
+## Unassign
+
+`DELETE carnet/<uid>/unassign/<uid_subscription>` has no permission class:
+anonymous requests reach `request.user.role` and fail (500); non-association
+roles get `403 {"msg": "Not allowed."}`. The carnet `uid` is unused: the carnet
+subscription is looked up by id among the scope user's subscriptions (404
+otherwise, including one without a subscription; a non-UUID is a 500). An
+unpaid payment is deleted first (`SET_NULL` references cleared and join rows
+removed without audit; a course-installment cascade from its `pre_delete`
+signal is refused, not ported), then the carnet subscription with its course
+links. Each deletion is audited: the payment indexed through its changes, the
+carnet subscription through the actor's association. Null `DateTimeField`s
+render as `['None', 'None']` in delete entries, like null foreign keys
+(auditlog keeps their raw None); the generic renderer now does the same.
+
+`TESTS/fixtures/carnet_unassign_http.json` authors 15 cases; the payment entry
+is checked by selected values and must be identical across backends.

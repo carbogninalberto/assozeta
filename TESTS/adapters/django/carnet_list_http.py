@@ -67,7 +67,8 @@ def seed_rows(source, created):
         created.append((CourseSubscription, row['id']))
     for row in source['payments'].values():
         Payment._base_manager.bulk_create([Payment(payment_id=row['id'], sport_association_id=row['association'], user_id=user(row['user']),
-            subject=Payment.COURSE, amount=Decimal(row['amount']))])
+            subject=Payment.COURSE, amount=Decimal(row['amount']), paid=row.get('paid', False),
+            creation_date=moment('2026-10-01T08:00:00Z'))])
         created.append((Payment, row['id']))
     for row in source['carnet_subscriptions'].values():
         CarnetSubscription._base_manager.bulk_create([CarnetSubscription(carnet_subscription_id=row['id'],

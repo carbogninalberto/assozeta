@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -111,4 +112,103 @@ func (t *carnetWriteTransaction) UpdateCarnet(ctx context.Context, write domain.
 	path := "direct"
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "carnet", Key: write.ID, Representation: "Carnet object (" + write.ID + ")",
 		Action: 1, Changes: write.Changes, Context: write.Context, AssociationID: &association, ResolutionPath: &path, At: write.At})
+}
+
+var _ domain.CarnetUnassignStore = (*CarnetWrites)(nil)
+
+func (r *CarnetWrites) BeginCarnetUnassign(ctx context.Context) (domain.CarnetUnassignTransaction, error) {
+	tx, err := r.BeginCarnetWrite(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tx.(*carnetWriteTransaction), nil
+}
+
+func (t *carnetWriteTransaction) HoldingForUnassign(ctx context.Context, holding, owner string, scope *string) (domain.CarnetHoldingPayment, error) {
+	var row domain.CarnetHoldingPayment
+	err := t.tx.GetContext(ctx, &row, `SELECT h.payment_id, p.paid FROM application_carnetsubscription h
+ JOIN application_subscription s ON s.subscription_id=h.subscription_id
+ JOIN application_sportassociation sa ON sa.sport_association_id=s.sport_association_id
+ LEFT JOIN application_carnet c ON c.carnet_id=h.carnet_id_id
+ LEFT JOIN application_payment p ON p.payment_id=h.payment_id
+ WHERE h.carnet_subscription_id=$1 AND sa.user_id=$2
+  AND ($3::uuid IS NULL OR (s.sport_association_id=$3::uuid AND c.sport_association_id=$3::uuid))
+ ORDER BY h.carnet_subscription_id LIMIT 1 FOR UPDATE OF h`, holding, owner, scope)
+	if errors.Is(err, sql.ErrNoRows) {
+		return row, domain.ErrCarnetNotFound
+	}
+	return row, err
+}
+
+// paymentThroughTables are Payment's many-to-many join tables: the collector
+// deletes their rows. Every other foreign key to a payment is SET_NULL.
+var paymentThroughTables = map[string]bool{"application_payment_attachments": true, "application_coursesubscription_membership_payments": true}
+
+// DeleteUnpaidPayment mirrors payment.delete(): installments of the payment
+// would be deleted by a pre_delete signal (refused, not ported); SET_NULL
+// references are cleared and join rows removed without audit; the payment
+// gets a delete entry indexed through its changes.
+func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, payment string, audit domain.LoginAuditContext, at time.Time) error {
+	var installments bool
+	if err := t.tx.GetContext(ctx, &installments, `SELECT EXISTS(SELECT 1 FROM application_coursesubscriptioninstallment WHERE payment_id=$1)`, payment); err != nil {
+		return err
+	}
+	if installments {
+		return domain.ErrPaymentCascadeUnsupported
+	}
+	refs := []struct {
+		Table  string `db:"table_name"`
+		Column string `db:"column_name"`
+	}{}
+	if err := t.tx.SelectContext(ctx, &refs, `SELECT kcu.table_name, kcu.column_name FROM information_schema.referential_constraints rc
+ JOIN information_schema.key_column_usage kcu ON kcu.constraint_name=rc.constraint_name AND kcu.constraint_schema=rc.constraint_schema
+ JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name=rc.unique_constraint_name AND ccu.constraint_schema=rc.unique_constraint_schema
+ WHERE ccu.table_name='application_payment' AND ccu.column_name='payment_id' AND kcu.table_schema=current_schema()
+ ORDER BY kcu.table_name, kcu.column_name`); err != nil {
+		return err
+	}
+	for _, ref := range refs {
+		statement := `UPDATE ` + pq(ref.Table) + ` SET ` + pq(ref.Column) + `=NULL WHERE ` + pq(ref.Column) + `=$1`
+		if paymentThroughTables[ref.Table] {
+			statement = `DELETE FROM ` + pq(ref.Table) + ` WHERE ` + pq(ref.Column) + `=$1`
+		}
+		if _, err := t.tx.ExecContext(ctx, statement, payment); err != nil {
+			return err
+		}
+	}
+	// The reverse many-to-many accessor is not rendered on delete.
+	changes, _, err := deleteModelWithAudit(ctx, t.tx, "application_payment", "payment_id", payment)
+	if err != nil {
+		return err
+	}
+	association := changes["sport_association"][0]
+	path := "changes_json.sport_association"
+	entry := modelAuditEntry{Model: "payment", Key: payment, Representation: "Payment object (" + payment + ")", Action: 2,
+		Changes: changes, Context: audit, At: at}
+	if association != "" && association != "None" {
+		entry.AssociationID, entry.ResolutionPath = &association, &path
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func pq(identifier string) string { return `"` + strings.ReplaceAll(identifier, `"`, `""`) + `"` }
+
+// DeleteHolding mirrors carnet_subscription.delete() after its unpaid payment
+// was cleared in memory: course links go without audit, the row gets a delete
+// entry indexed through the actor's association.
+func (t *carnetWriteTransaction) DeleteHolding(ctx context.Context, holding string, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `DELETE FROM application_carnetsubscription_course_subscription WHERE carnetsubscription_id=$1`, holding); err != nil {
+		return err
+	}
+	changes, _, err := deleteModelWithAudit(ctx, t.tx, "application_carnetsubscription", "carnet_subscription_id", holding)
+	if err != nil {
+		return err
+	}
+	entry := modelAuditEntry{Model: "carnetsubscription", Key: holding, Representation: "CarnetSubscription object (" + holding + ")",
+		Action: 2, Changes: changes, Context: audit, At: at}
+	if actorAssociation != nil {
+		path := "actor.sport_association"
+		entry.AssociationID, entry.ResolutionPath = actorAssociation, &path
+	}
+	return appendModelAudit(ctx, t.tx, entry)
 }
