@@ -4575,25 +4575,71 @@
         "target": "carnet_list",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/carnet_list.go",
+        "BE_GO/internal/dto/carnet_list.go",
+        "BE_GO/internal/repository/carnet_list.go",
+        "BE_GO/internal/service/carnet_list.go",
+        "BE_GO/internal/handler/carnet_list.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and scoped impersonation enforcement",
+        "application_carnet, application_carnetsubscription (+ course_subscription M2M), application_subscription, application_associate, application_coursesubscription, application_course"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/carnet/list",
+          "/api/v2/carnet/list",
+          "/api/carnet/list"
+        ],
+        "request": "No body; optional X-Group-Id (scoped athlete visibility only).",
+        "response": "200 {\"data\": [CarnetListSerializer]} for associations (unordered); {\"data\": [CarnetSubscriptionSerializer]} for athletes, newest first.",
+        "errors": "401; 403 administrator without impersonation or missing association.carnet.read; 500 for other roles, a missing association or a holding without a carnet.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.carnet.read; athlete view under scoped impersonation.",
+        "resource_scope": "Association: the scope user's association. Athlete: holdings by user or subscription associate, within the scoped association and family visibility.",
+        "side_effects": "None.",
+        "transaction": "Autocommit reads.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/carnet_list_http.json",
+        "TESTS/fixtures/generate_carnet_list_http.py",
+        "TESTS/contracts/test_carnet_list_http.py",
+        "TESTS/adapters/django/carnet_list_http.py",
+        "TESTS/adapters/django/staff_board_http_acceptance.py",
+        "BE_GO/internal/dto/carnet_list_test.go"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/carnet-list.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 12/12; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/carnet-list-http-red-r1/results.json",
+          "receipt_sha256": "c8770d658f00a79d6a990e65a38db00c74bef32a609eb36a8759678afeba388d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 12/12 on native Django, native Go, Caddy /api/v1 and /api/v2; state unchanged on every case.",
+          "artifact": "quality-reports/go-migration/carnet-list-http-versioned-r1/results.json",
+          "receipt_sha256": "620670d314d722549179b84c4c01e7682e345ed54626e85156ba530d6b999d1f"
+        },
+        {
+          "revision": "committing change with the course soft-delete filter removed",
+          "result": "Mutation control: fails Go on the athlete case.",
+          "artifact": "quality-reports/go-migration/carnet-list-http-mutation-r1/results.json",
+          "receipt_sha256": "d7cd4a108e85adc1daaa9c5d12192d13864aee0c6d2c9c3d5bc24c4da268ebb1"
+        }
+      ],
+      "notes": [
+        "Implementing: read parity for both role branches proven on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:check-inconsistencies -> check_inconsistencies",
