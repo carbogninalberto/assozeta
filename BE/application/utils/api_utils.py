@@ -248,6 +248,7 @@ def is_valid_uuid(uid):
 
 
 def days_between(d1, d2, absolute=False):
+    # Measurement-only change; this branch is never merged.
     # d1 = datetime.strptime(str(d1), "%Y-%m-%d")
     # d2 = datetime.strptime(str(d2), "%Y-%m-%d")
     if absolute:
