@@ -25,6 +25,7 @@
     "BE/instance/restore/"
   ],
   "reference_dependencies": [
+    "BE/application/audit_context.py",
     "BE/application/impersonation.py",
     "BE/application/management/commands/seed_selfhost.py",
     "BE/application/manuale/views.py",
