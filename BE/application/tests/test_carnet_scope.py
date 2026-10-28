@@ -120,3 +120,5 @@ class CarnetAssociationScopeTests(BaseTransactionTestCase):
         self.assertEqual(response.status_code, 200)
         courses = {row['carnet_subscription_id']: [c['course_id'] for c in row['courses']] for row in response.data['data']['subscriptions']}
         self.assertEqual(courses, {str(detached.pk): [], str(self.own_csub.pk): [str(self.own_cs.course_id)]})
+
+# Measurement-only change; this branch is never merged.
