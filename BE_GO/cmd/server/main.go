@@ -256,6 +256,13 @@ func run() (runErr error) {
 	e.Any("/payment/:uid/archive", paymentArchiveHandler.Archive, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/list", instructorListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/tags/list", courseTagListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
+	courseTagWritesHandler := handler.NewCourseTagWritesHandler(service.NewCourseTagWrites(repository.NewCourseTagWrites(db), time.Now, uuid.NewString),
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	e.Any("/course/tags/add", courseTagWritesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/tags/:tag_id/update", courseTagWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/tags/:tag_id/delete", courseTagWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/tags/:tag_id/assign/:course_id", courseTagWritesHandler.Assign, middleware.DjangoSessionAudit(sessionAuthentication))
+	e.Any("/course/tags/:tag_id/unassign/:course_id", courseTagWritesHandler.Unassign, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/course/locations/list", courseLocationListHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instructor/:uid/info", instructorListHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/audit-logs/stats", auditSummaryHandler.Stats, middleware.DjangoSessionAudit(sessionAuthentication))

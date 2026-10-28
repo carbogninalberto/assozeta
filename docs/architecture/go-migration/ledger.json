@@ -7015,25 +7015,69 @@
         "target": "course_tags_assign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_tag_writes.go",
+        "BE_GO/internal/repository/course_tag_writes.go",
+        "BE_GO/internal/service/course_tag_writes.go",
+        "BE_GO/internal/handler/course_tag_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_coursetags",
+        "application_course_tags"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/tags/<tag_id>/assign/<course_id>",
+          "/api/v2/course/tags/<tag_id>/assign/<course_id>",
+          "/api/course/tags/<tag_id>/assign/<course_id>"
+        ],
+        "request": "Path ids.",
+        "response": "200 {\"msg\": \"tag assigned\"}.",
+        "errors": "400 tag_name is required; 401; 403 User is not a sport association / registry / scoped session; 404 tag/course not found; 500 non-dict body, malformed ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association tags and live group-aware courses.",
+        "side_effects": "Adds the course link (no audit).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tag_writes_http.json",
+        "TESTS/fixtures/generate_course_tag_writes_http.py",
+        "TESTS/contracts/test_course_tag_writes_http.py",
+        "TESTS/adapters/django/course_tag_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 39/39; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-red-r1/results.json",
+          "receipt_sha256": "e8446c59ee979dfaebefe1f0de088c2ffde041b3d428644adcec2b69e54dd80e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 39/39 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f51663e0f396137055a19a05e830e6ffc764efbd76062f2b4281af2856136d45"
+        },
+        {
+          "revision": "committing change storing JSON text",
+          "result": "Mutation control: fails Go on the first add.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "d204fe7448cd5e13e476b3b7f815af877f1572269f3d6e0355658c67cd0eb43e"
+        }
+      ],
+      "notes": [
+        "Implementing: str() storage of any JSON tag_name, sport_association property denial, link semantics and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/<str:tag_id>/delete -> course_tags_delete",
@@ -7050,25 +7094,69 @@
         "target": "course_tags_delete",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_tag_writes.go",
+        "BE_GO/internal/repository/course_tag_writes.go",
+        "BE_GO/internal/service/course_tag_writes.go",
+        "BE_GO/internal/handler/course_tag_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_coursetags",
+        "application_course_tags"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "DELETE",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/tags/<tag_id>/delete",
+          "/api/v2/course/tags/<tag_id>/delete",
+          "/api/course/tags/<tag_id>/delete"
+        ],
+        "request": "Path ids.",
+        "response": "200 {\"msg\": \"tag deleted\"}.",
+        "errors": "400 tag_name is required; 401; 403 User is not a sport association / registry / scoped session; 404 tag/course not found; 500 non-dict body, malformed ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association tags and live group-aware courses.",
+        "side_effects": "Deletes the tag and its course links (delete entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tag_writes_http.json",
+        "TESTS/fixtures/generate_course_tag_writes_http.py",
+        "TESTS/contracts/test_course_tag_writes_http.py",
+        "TESTS/adapters/django/course_tag_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 39/39; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-red-r1/results.json",
+          "receipt_sha256": "e8446c59ee979dfaebefe1f0de088c2ffde041b3d428644adcec2b69e54dd80e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 39/39 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f51663e0f396137055a19a05e830e6ffc764efbd76062f2b4281af2856136d45"
+        },
+        {
+          "revision": "committing change storing JSON text",
+          "result": "Mutation control: fails Go on the first add.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "d204fe7448cd5e13e476b3b7f815af877f1572269f3d6e0355658c67cd0eb43e"
+        }
+      ],
+      "notes": [
+        "Implementing: str() storage of any JSON tag_name, sport_association property denial, link semantics and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/<str:tag_id>/unassign/<str:course_id> -> course_tags_unassign",
@@ -7085,25 +7173,69 @@
         "target": "course_tags_unassign",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_tag_writes.go",
+        "BE_GO/internal/repository/course_tag_writes.go",
+        "BE_GO/internal/service/course_tag_writes.go",
+        "BE_GO/internal/handler/course_tag_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_coursetags",
+        "application_course_tags"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/tags/<tag_id>/unassign/<course_id>",
+          "/api/v2/course/tags/<tag_id>/unassign/<course_id>",
+          "/api/course/tags/<tag_id>/unassign/<course_id>"
+        ],
+        "request": "Path ids.",
+        "response": "200 {\"msg\": \"tag assigned\"}.",
+        "errors": "400 tag_name is required; 401; 403 User is not a sport association / registry / scoped session; 404 tag/course not found; 500 non-dict body, malformed ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association tags and live group-aware courses.",
+        "side_effects": "Removes the course link (no audit).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tag_writes_http.json",
+        "TESTS/fixtures/generate_course_tag_writes_http.py",
+        "TESTS/contracts/test_course_tag_writes_http.py",
+        "TESTS/adapters/django/course_tag_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 39/39; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-red-r1/results.json",
+          "receipt_sha256": "e8446c59ee979dfaebefe1f0de088c2ffde041b3d428644adcec2b69e54dd80e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 39/39 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f51663e0f396137055a19a05e830e6ffc764efbd76062f2b4281af2856136d45"
+        },
+        {
+          "revision": "committing change storing JSON text",
+          "result": "Mutation control: fails Go on the first add.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "d204fe7448cd5e13e476b3b7f815af877f1572269f3d6e0355658c67cd0eb43e"
+        }
+      ],
+      "notes": [
+        "Implementing: str() storage of any JSON tag_name, sport_association property denial, link semantics and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/<str:tag_id>/update -> course_tags_update",
@@ -7120,25 +7252,69 @@
         "target": "course_tags_update",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_tag_writes.go",
+        "BE_GO/internal/repository/course_tag_writes.go",
+        "BE_GO/internal/service/course_tag_writes.go",
+        "BE_GO/internal/handler/course_tag_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_coursetags",
+        "application_course_tags"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "PATCH",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/tags/<tag_id>/update",
+          "/api/v2/course/tags/<tag_id>/update",
+          "/api/course/tags/<tag_id>/update"
+        ],
+        "request": "JSON/form: tag_name.",
+        "response": "200 {\"tag_id\", \"tag_name\" (as sent)}.",
+        "errors": "400 tag_name is required; 401; 403 User is not a sport association / registry / scoped session; 404 tag/course not found; 500 non-dict body, malformed ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association tags and live group-aware courses.",
+        "side_effects": "Renames the tag (update entry when changed).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tag_writes_http.json",
+        "TESTS/fixtures/generate_course_tag_writes_http.py",
+        "TESTS/contracts/test_course_tag_writes_http.py",
+        "TESTS/adapters/django/course_tag_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 39/39; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-red-r1/results.json",
+          "receipt_sha256": "e8446c59ee979dfaebefe1f0de088c2ffde041b3d428644adcec2b69e54dd80e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 39/39 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f51663e0f396137055a19a05e830e6ffc764efbd76062f2b4281af2856136d45"
+        },
+        {
+          "revision": "committing change storing JSON text",
+          "result": "Mutation control: fails Go on the first add.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "d204fe7448cd5e13e476b3b7f815af877f1572269f3d6e0355658c67cd0eb43e"
+        }
+      ],
+      "notes": [
+        "Implementing: str() storage of any JSON tag_name, sport_association property denial, link semantics and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/add -> course_tags_add",
@@ -7155,25 +7331,69 @@
         "target": "course_tags_add",
         "syntax": "path"
       },
-      "status": "uncharacterized",
-      "go": [],
-      "dependencies": [],
+      "status": "implementing",
+      "go": [
+        "BE_GO/internal/domain/course_tag_writes.go",
+        "BE_GO/internal/repository/course_tag_writes.go",
+        "BE_GO/internal/service/course_tag_writes.go",
+        "BE_GO/internal/handler/course_tag_writes.go",
+        "BE_GO/cmd/server/main.go"
+      ],
+      "dependencies": [
+        "Existing identity resolution, permission registry and audit index",
+        "application_coursetags",
+        "application_course_tags"
+      ],
       "contract": {
-        "methods": null,
-        "external_paths": null,
-        "request": null,
-        "response": null,
-        "errors": null,
-        "authentication": null,
-        "permissions": null,
-        "resource_scope": null,
-        "side_effects": null,
-        "transaction": null,
+        "methods": [
+          "POST",
+          "OPTIONS"
+        ],
+        "external_paths": [
+          "/api/v1/course/tags/add",
+          "/api/v2/course/tags/add",
+          "/api/course/tags/add"
+        ],
+        "request": "JSON/form: tag_name.",
+        "response": "200 {\"tag_id\", \"tag_name\" (as sent)}.",
+        "errors": "400 tag_name is required; 401; 403 User is not a sport association / registry / scoped session; 404 tag/course not found; 500 non-dict body, malformed ids.",
+        "authentication": "DRF IsAuthenticated (JWT/session).",
+        "permissions": "Registry association.courses.update.",
+        "resource_scope": "The owner's association tags and live group-aware courses.",
+        "side_effects": "Creates the tag (create entry).",
+        "transaction": "One transaction.",
         "execution_owner": "django"
       },
-      "tests": [],
-      "evidence": [],
-      "notes": []
+      "tests": [
+        "TESTS/fixtures/course_tag_writes_http.json",
+        "TESTS/fixtures/generate_course_tag_writes_http.py",
+        "TESTS/contracts/test_course_tag_writes_http.py",
+        "TESTS/adapters/django/course_tag_writes_http.py"
+      ],
+      "evidence": [
+        "docs/architecture/go-migration/course-tags.md",
+        {
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 39/39; Go 404 on the first case.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-red-r1/results.json",
+          "receipt_sha256": "e8446c59ee979dfaebefe1f0de088c2ffde041b3d428644adcec2b69e54dd80e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 39/39 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-versioned-r1/results.json",
+          "receipt_sha256": "f51663e0f396137055a19a05e830e6ffc764efbd76062f2b4281af2856136d45"
+        },
+        {
+          "revision": "committing change storing JSON text",
+          "result": "Mutation control: fails Go on the first add.",
+          "artifact": "quality-reports/go-migration/course-tag-writes-http-mutation-r1/results.json",
+          "receipt_sha256": "d204fe7448cd5e13e476b3b7f815af877f1572269f3d6e0355658c67cd0eb43e"
+        }
+      ],
+      "notes": [
+        "Implementing: str() storage of any JSON tag_name, sport_association property denial, link semantics and audit on four transports."
+      ]
     },
     {
       "id": "route:BE/application/urls.py:course/tags/list -> course_tags_list",
